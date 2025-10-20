@@ -12,15 +12,9 @@ import sharp from 'sharp'
 // Import collections directly (TypeScript resolves extensions)
 import { Users } from './payload/collections/Users'
 import { Media } from './payload/collections/Media'
-import { Pages } from './payload/collections/Pages'
 import { Posts } from './payload/collections/Posts'
 import { Categories } from './payload/collections/Categories'
-import { Tenants } from './payload/collections/Tenants'
-import { TestimonialsCollection } from './payload/collections/TestimonialsCollection'
-import { Gallery } from './payload/collections/Gallery'
 // NOTE: Products collection is created by ecommercePlugin, not imported here
-// import { Products } from './payload/collections/Products'
-import { Newsletter } from './payload/collections/Newsletter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -54,14 +48,9 @@ export default buildConfig({
   collections: [
     Users,
     Media,
-    Pages,
     Posts,
     Categories,
-    Tenants,
-    TestimonialsCollection,
-    Gallery,
     // Products collection created by ecommercePlugin
-    Newsletter,
   ],
   editor: lexicalEditor({}),
   secret: process.env['PAYLOAD_SECRET'] || 'your-secret-key-here',
@@ -88,11 +77,10 @@ export default buildConfig({
     }),
     // Search plugin - fast indexed search
     searchPlugin({
-      collections: ['pages', 'posts', 'products', 'team-members'],
+      collections: ['posts', 'products'],
       defaultPriorities: {
-        pages: 10,
-        posts: 20,
-        products: 30,
+        posts: 10,
+        products: 20,
       },
     }),
     // Ecommerce plugin

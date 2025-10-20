@@ -3,8 +3,6 @@
  * Centralized constants help maintain consistency and make updates easier
  */
 
-import type { TenantFeatures } from '@/types'
-
 /**
  * Application name and branding
  */
@@ -150,53 +148,6 @@ export const RESERVED_SUBDOMAINS = [
   'production',
 ] as const
 
-/**
- * Tenant plan limits
- */
-export const PLAN_LIMITS = {
-  free: {
-    pages: 5,
-    blogPosts: 10,
-    storage: 100 * 1024 * 1024, // 100MB
-    bandwidth: 1 * 1024 * 1024 * 1024, // 1GB
-    customDomain: false,
-  },
-  starter: {
-    pages: 20,
-    blogPosts: 50,
-    storage: 500 * 1024 * 1024, // 500MB
-    bandwidth: 10 * 1024 * 1024 * 1024, // 10GB
-    customDomain: true,
-  },
-  professional: {
-    pages: 100,
-    blogPosts: 500,
-    storage: 5 * 1024 * 1024 * 1024, // 5GB
-    bandwidth: 100 * 1024 * 1024 * 1024, // 100GB
-    customDomain: true,
-  },
-  enterprise: {
-    pages: Infinity,
-    blogPosts: Infinity,
-    storage: Infinity,
-    bandwidth: Infinity,
-    customDomain: true,
-  },
-} as const
-
-/**
- * Default tenant features
- */
-export const DEFAULT_TENANT_FEATURES: TenantFeatures = {
-  blog: true,
-  booking: false,
-  testimonials: true,
-  team: false,
-  gallery: true,
-  ecommerce: true,
-  contactForm: true,
-  newsletter: true,
-} as const
 
 /**
  * Brand color palette
@@ -250,29 +201,6 @@ export const BRAND_COLORS = {
   },
 } as const
 
-/**
- * Default tenant theme
- * Opal-inspired color palette with vibrant blues, teals, and accent colors
- */
-export const DEFAULT_TENANT_THEME = {
-  colors: {
-    primary: '#0099FF', // Vibrant opal blue
-    secondary: '#00CCFF', // Teal/cyan from opal
-    accent: '#FF6600', // Coral/orange from opal fire
-    background: '#ffffff',
-    foreground: '#0a0a0a',
-    muted: '#f3f4f6', // gray-100
-    border: '#e5e7eb', // gray-200
-  },
-  fonts: {
-    heading: 'Inter, sans-serif',
-    body: 'Inter, sans-serif',
-  },
-  layout: {
-    containerMaxWidth: '1280px',
-    borderRadius: 'md' as const,
-  },
-} as const
 
 /**
  * Rate limiting

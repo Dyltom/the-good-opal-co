@@ -36,21 +36,6 @@ export type {
   Visibility,
 } from './common'
 
-// Tenant types
-export type {
-  CreateTenantInput,
-  SubscriptionPlan,
-  Tenant,
-  TenantConfig,
-  TenantContext,
-  TenantFeatures,
-  TenantResolution,
-  TenantTheme,
-  UpdateTenantConfigInput,
-  UpdateTenantInput,
-  UpdateTenantThemeInput,
-} from './tenant'
-
 // Site types
 export type {
   Author,
