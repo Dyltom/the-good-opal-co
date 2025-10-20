@@ -1,0 +1,71 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: rapid-sites-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rapidsites
+      POSTGRES_USER: rapidsites
+      POSTGRES_PASSWORD: rapidsites_dev_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rapidsites']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: rapid-sites-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://rapidsites:rapidsites_dev_password@postgres:5432/rapidsites
+      - PAYLOAD_SECRET=development-secret-key-minimum-32-chars-long
+      - PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+      - NEXT_PUBLIC_BASE_DOMAIN=localhost:3000
+    volumes:
+      # Mount source for hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+      # Media uploads
+      - media_uploads:/app/public/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: pnpm dev
+
+  # Adminer - Database UI (optional, for debugging)
+  adminer:
+    image: adminer:latest
+    container_name: rapid-sites-adminer
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    name: rapid-sites-postgres-data
+  media_uploads:
+    name: rapid-sites-media-uploads
+
+networks:
+  default:
+    name: rapid-sites-network
