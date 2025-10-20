@@ -43,8 +43,8 @@ export function AddToCartButton({
     })
 
     toast({
-      title: 'Added to your pouch',
-      description: `${product.name} is ready for checkout.`,
+      title: 'Added to cart',
+      description: `${product.name} has been added to your cart.`,
     })
   }
 
