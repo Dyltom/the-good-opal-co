@@ -15,7 +15,7 @@ import { CartButton } from '@/components/cart/CartButton'
  */
 export function Navigation({
   logo,
-  logoText = 'Rapid Sites',
+  logoText = 'The Good Opal Co',
   items = [],
   cta,
   sticky = true,

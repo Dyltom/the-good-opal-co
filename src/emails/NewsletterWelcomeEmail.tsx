@@ -22,7 +22,7 @@ interface NewsletterWelcomeEmailProps {
  * Sent when user subscribes to newsletter
  */
 export default function NewsletterWelcomeEmail({
-  tenantName = 'Rapid Sites',
+  tenantName = 'The Good Opal Co',
   name,
 }: NewsletterWelcomeEmailProps) {
   const greeting = name ? `Hi ${name},` : 'Hi there,'
@@ -42,13 +42,13 @@ export default function NewsletterWelcomeEmail({
           </Text>
 
           <Text style={text}>
-            We&apos;ll keep you updated with our latest news, updates, and exclusive content
-            delivered straight to your inbox.
+            We&apos;ll keep you updated with our latest opal collections, jewelry care tips,
+            exclusive offers, and stories from the Australian outback delivered straight to your inbox.
           </Text>
 
           <Section style={buttonContainer}>
-            <Button style={button} href="https://rapidsites.dev">
-              Visit Our Website
+            <Button style={button} href="https://thegoodopal.co">
+              Shop Opal Jewelry
             </Button>
           </Section>
 
@@ -110,7 +110,7 @@ const buttonContainer = {
 }
 
 const button = {
-  backgroundColor: '#3b82f6',
+  backgroundColor: '#0099FF',
   borderRadius: '8px',
   color: '#fff',
   fontSize: '16px',

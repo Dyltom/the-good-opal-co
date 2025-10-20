@@ -1,268 +1,321 @@
 # The Good Opal Co
 
-> Premium jewelry and opal ecommerce store powered by Next.js, Payload CMS, and Stripe.
+> Premium Australian opal jewelry ecommerce store - Authentic opals that don't cost the earth
 
 ## Overview
 
-The Good Opal Co is a modern, SEO-optimized ecommerce platform for selling fine jewelry and opals. Built on the Rapid Sites framework, it features:
+The Good Opal Co is a modern, SEO-optimized ecommerce platform for selling authentic Australian opal jewelry. Built with Next.js, Payload CMS, and Stripe, it features:
 
 - Full-featured ecommerce with Stripe checkout
-- Product catalog with images, variants, and inventory management
+- Jewelry-specific product catalog with material, stone type, and origin tracking
+- Certificate of authenticity management
 - SEO-optimized product and blog pages
 - Content management via Payload CMS
-- Beautiful, responsive design with Tailwind CSS
-- Newsletter signup and email marketing capabilities
+- Beautiful, responsive design with opal-inspired color palette
+- Newsletter signup and email marketing
+- Blog for opal education and care guides
+
+## Brand
+
+**Tagline**: Australian Opal That Doesn't Cost The Earth
+
+**Color Palette** (inspired by Australian opal):
+- Primary Blue: `#0099FF` (vibrant opal blue)
+- Teal/Cyan: `#00CCFF` (opal flash)
+- Orange/Coral: `#FF6600` (opal fire)
+- Pink/Magenta: `#FF3399` (opal color play)
+- Yellow Accent: `#FFCC00` (golden flash)
 
 ## Tech Stack
 
 ### Core
 - **Next.js 15** - React framework with App Router
 - **TypeScript** - Type safety throughout
-- **Tailwind CSS** - Utility-first styling
+- **Tailwind CSS** - Utility-first styling with opal color palette
 - **PostgreSQL** - Primary database
 
-### CMS & Content
-- **Payload CMS 3.0** - Native Next.js integration, installed directly into the app
+### CMS & Ecommerce
+- **Payload CMS 3.0** - Native Next.js integration
   - Built-in admin panel at `/admin`
   - TypeScript-native with full type safety
-  - Collections for blogs, pages, media, etc.
-  - Only 27 dependencies (vs 88 in v2)
+  - Custom collections for jewelry products
+- **Stripe** - Payment processing
+- **Payload Ecommerce Plugin** - Complete ecommerce features
+  - Products with variants
+  - Shopping cart
+  - Order management
+  - Inventory tracking
 
 ### UI Components
-- **shadcn/ui** - Copy-paste components with full control
-- **Magic UI / Aceternity UI** - Premium animated components for landing pages
-- **Framer Motion** - Smooth animations
+- **shadcn/ui** - Accessible React components
+- **Radix UI** - Headless component primitives
+- **React Email** - Beautiful transactional emails
 
 ### Features & Integrations
-- **Cal.com** - Self-hosted booking and scheduling (optional)
-- **Drizzle ORM** - Type-safe database access
-- **Clerk / NextAuth** - Authentication (for multi-tenant admin)
+- **React Email** - Beautiful branded email templates
+- **Resend** - Email delivery
+- **SEO Plugin** - Automated meta tags and structured data
+- **Search Plugin** - Fast indexed search
 
-### Deployment
-- **Docker** - Containerized deployments
-- **Coolify** - Self-hosted PaaS (recommended)
-- Alternative: Vercel, Railway, any Node.js host
+## Product Categories
 
-## Architecture
+- **Opal Rings** - Engagement rings, statement rings, everyday wear
+- **Opal Necklaces & Pendants** - Elegant pieces showcasing opal fire
+- **Opal Earrings** - Studs, drops, and dangles
+- **Opal Bracelets** - Delicate and bold designs
+- **Raw Opals** - Unset stones for collectors and custom work
+- **Custom Commissions** - Bespoke jewelry design services
 
-### Multi-Tenant Approach
+## Jewelry-Specific Features
 
-This framework uses a **multi-tenant architecture** where:
-- Single codebase serves multiple client websites
-- Each client has isolated data via database tenancy
-- Clients access their own admin panel with scoped permissions
-- Subdomains or custom domains route to the correct tenant
-- Shared infrastructure = lower costs per client
+### Product Information
+Each product includes:
+- Material (sterling silver, gold, platinum)
+- Stone type (black opal, white opal, boulder, crystal, fire, matrix)
+- Origin (Lightning Ridge, Coober Pedy, etc.)
+- Dimensions (length, width, depth in mm)
+- Weight (carats or grams)
+- Ring size (for rings)
+- Care instructions
+- Certificate of authenticity
 
-**Benefits:**
-- Deploy once, serve many clients
-- Single version of code to maintain
-- Updates propagate automatically
-- Cost-effective: $0.40-2/month per site on shared infrastructure
-- Easy to manage and scale
-
-**When to Use Separate Deployments:**
-- Enterprise clients needing dedicated resources
-- High isolation/security requirements
-- Heavy customization beyond template capabilities
-
-## Research Findings
-
-### Why These Technologies?
-
-#### Payload CMS 3.0
-- **Next.js Native**: Installs directly into Next.js apps (single codebase)
-- **Free & Open Source**: No licensing costs
-- **Developer-Friendly**: TypeScript, GraphQL, REST APIs
-- **Flexible**: Works with PostgreSQL, MySQL, SQLite
-- **Production-Ready**: Built-in job queues, file uploads, admin UI
-
-**Alternatives Considered:**
-- Sanity: Great collaboration features but $99/mo for teams, costs scale
-- Strapi: Popular but separate deployment, heavier
-- Contentful: Enterprise pricing, overkill for small business
-
-#### shadcn/ui
-- **Copy-Paste Approach**: Full control, no lock-in
-- **Easy Theming**: CSS variables make recoloring simple
-- **No Dependencies**: Components live in your codebase
-- **Tailwind Integration**: Works seamlessly
-
-**Enhancement Libraries:**
-- **Magic UI**: 50+ animated components built on shadcn
-- **Aceternity UI**: Beautiful Framer Motion components for marketing sites
-
-#### Cal.com
-- **Open Source**: Self-host or embed
-- **Next.js Based**: Perfect integration
-- **Feature-Rich**: Google Calendar, Zoom, payment integrations
-- **Customizable**: Full API and webhook support
-
-**Alternatives:**
-- Google Calendar API: Free, simpler, less features
-- Calendly embed: Quick but limited, not self-hosted
-- Custom build: More work, full control
-
-### Deployment Strategy
-
-#### Coolify (Recommended)
-- Open-source, self-hostable Heroku alternative
-- Built-in CI/CD from GitHub
-- Automatic SSL certificates
-- One-click deployments
-- Docker-based with Nixpacks support
-
-**Requirements:**
-- Minimum 8GB RAM for Next.js builds
-- 2vCPU insufficient, 4vCPU+ recommended
-
-**Cost Analysis:**
-- VPS (8GB RAM): $20-40/month (Hetzner, DigitalOcean)
-- Can host 20-50+ small sites per instance
-- **Cost per site: $0.40-2/month**
-
-**Pricing Model for Clients:**
-- Setup: $500-2000 (one-time)
-- Monthly: $50-150/client
-- Your margin: ~95%+ on hosting
-
-## Features
-
-### Core Modules (Planned)
-
-- **Page Builder**: Flexible sections and layouts
-- **Booking System**: Cal.com integration or custom
-- **Blog**: Full-featured with categories, tags, SEO
-- **Contact Forms**: With email notifications
-- **Image Galleries**: Optimized with Next.js Image
-- **Testimonials**: Client reviews and ratings
-- **Pricing Tables**: Service pricing display
-- **Team Members**: Staff profiles and bios
-- **SEO Tools**: Meta tags, OpenGraph, sitemap
-- **Analytics**: Privacy-focused tracking
-
-### Templates (Planned)
-
-- Service Business (plumbers, electricians, contractors)
-- Professional Services (lawyers, consultants, accountants)
-- Restaurants & Cafes
-- Health & Wellness (gyms, yoga studios, therapists)
-- Retail & E-commerce (basic product showcase)
-- Creative Services (photographers, designers)
-
-### Theming System
-
-- CSS variable-based color schemes
-- Per-client customization
-- Logo and favicon upload
-- Google Fonts integration
-- Dark mode support (optional per template)
+### Australian Sourcing
+All opals sourced from Australian mines:
+- Lightning Ridge, NSW (black opals)
+- Coober Pedy, SA (white opals)
+- Mintabie, SA
+- Andamooka, SA
+- Queensland (boulder opals)
 
 ## Getting Started
-
-> **Status**: Currently in initial setup phase. Full setup instructions coming soon.
 
 ### Prerequisites
 
 - Node.js 18+
 - PostgreSQL database
 - Docker (for deployment)
-- Git
+- Stripe account (for payments)
+- Resend account (for emails)
 
 ### Development Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/rapid-sites.git
-cd rapid-sites
+git clone https://github.com/yourusername/the-good-opal-co.git
+cd the-good-opal-co
 
 # Install dependencies
-pnpm install
+npm install
 
 # Setup environment variables
-cp .env.example .env.local
+cp .env.example .env
+# Edit .env with your credentials
 
 # Run database migrations
-pnpm db:migrate
+npm run payload migrate
 
 # Start development server
-pnpm dev
+npm run dev
 ```
 
-Visit `http://localhost:3000` for the main site and `http://localhost:3000/admin` for the CMS.
-
-## Deployment
-
-### Docker + Coolify
-
-```bash
-# Build Docker image
-docker build -t rapid-sites .
-
-# Deploy to Coolify
-# Use the Coolify UI to connect your GitHub repo
-# Set environment variables in Coolify dashboard
-# Deploy with one click
-```
+Visit:
+- `http://localhost:3000` - Main website
+- `http://localhost:3000/admin` - CMS admin panel
+- `http://localhost:3000/store` - Product catalog
 
 ### Environment Variables
 
+Required variables in `.env`:
+
 ```env
-DATABASE_URL=postgresql://...
-PAYLOAD_SECRET=your-secret-key
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-# Add Cal.com, email, etc.
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/goodopale
+
+# Payload CMS
+PAYLOAD_SECRET=your-secret-key-minimum-32-characters
+PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
+
+# Next.js
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_BASE_DOMAIN=localhost:3000
+
+# Email (Resend)
+RESEND_API_KEY=re_xxxxxxxxxxxx
+EMAIL_FROM=noreply@thegoodopal.co
+CONTACT_EMAIL=contact@thegoodopal.co
+
+# Stripe (Ecommerce)
+STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxx
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxx
 ```
 
 ## Project Structure
 
 ```
-rapid-sites/
-├── .claude/              # Claude Code configuration
-├── docs/                 # Documentation
-│   ├── ROADMAP.md       # Development roadmap
-│   └── RESEARCH.md      # Research findings
+the-good-opal-co/
 ├── src/
-│   ├── app/             # Next.js app directory
-│   │   ├── (app)/       # Main site routes
-│   │   ├── (admin)/     # Payload admin
-│   │   └── api/         # API routes
-│   ├── components/      # Shared components
-│   │   ├── ui/          # shadcn/ui components
-│   │   ├── sections/    # Reusable page sections
-│   │   └── templates/   # Full page templates
-│   ├── lib/             # Utilities and helpers
-│   ├── payload/         # Payload CMS configuration
-│   │   ├── collections/ # Content collections
-│   │   └── globals/     # Global settings
-│   └── styles/          # Global styles
-├── public/              # Static assets
-├── docker/              # Docker configuration
-├── .env.example         # Environment template
+│   ├── app/
+│   │   ├── (marketing)/      # Public website
+│   │   │   ├── page.tsx       # Home page
+│   │   │   ├── store/         # Product catalog
+│   │   │   ├── blog/          # Opal education
+│   │   │   ├── cart/          # Shopping cart
+│   │   │   └── checkout/      # Checkout flow
+│   │   ├── (payload)/         # CMS admin
+│   │   └── api/               # API routes
+│   ├── components/
+│   │   ├── ui/                # shadcn/ui components
+│   │   ├── sections/          # Page sections
+│   │   ├── navigation/        # Header/Footer
+│   │   ├── cart/              # Shopping cart components
+│   │   └── product/           # Product components
+│   ├── emails/                # Email templates
+│   │   ├── ContactFormEmail.tsx
+│   │   ├── NewsletterWelcomeEmail.tsx
+│   │   └── OrderConfirmationEmail.tsx
+│   ├── lib/                   # Utilities
+│   │   ├── constants.ts       # Brand constants
+│   │   ├── stripe.ts          # Stripe integration
+│   │   └── email.ts           # Email utilities
+│   ├── payload/
+│   │   └── collections/       # CMS collections
+│   │       ├── Products.ts    # Jewelry products
+│   │       ├── Posts.ts       # Blog posts
+│   │       ├── Categories.ts  # Product categories
+│   │       └── Newsletter.ts  # Subscribers
+│   └── styles/                # Global styles
+├── public/                    # Static assets
+│   └── cropped-cropped-logo-final-goc-1.png
+├── .env.example               # Environment template
 ├── package.json
-├── tsconfig.json
-└── tailwind.config.ts
+├── tailwind.config.ts         # Tailwind + brand colors
+└── TRANSFORMATION_PLAN.md     # Detailed transformation plan
 ```
+
+## Key Pages
+
+- **Home** (`/`) - Hero, features, testimonials
+- **Shop** (`/store`) - Product catalog with filtering
+- **Product Details** (`/store/[slug]`) - Individual product pages
+- **Blog** (`/blog`) - Opal education and care guides
+- **Cart** (`/cart`) - Shopping cart
+- **Checkout** (`/checkout`) - Stripe payment
+- **Admin** (`/admin`) - CMS dashboard
+
+## Content Management
+
+### Adding Products
+
+1. Log into `/admin`
+2. Navigate to Products collection
+3. Click "Create New"
+4. Fill in required fields:
+   - Name, slug, description
+   - Price, stock quantity
+   - Category (opal rings, necklaces, etc.)
+   - Material, stone type, origin
+   - Dimensions and weight
+   - Upload images
+   - Add care instructions
+   - Certificate number (if applicable)
+5. Set status to "Published"
+
+### Blog Posts
+
+Create blog content in the Posts collection:
+- Opal education (types, formation, history)
+- Care & maintenance guides
+- Behind-the-scenes stories
+- New arrivals and collections
+- Customer stories
+
+### Categories
+
+Blog post categories:
+- Opal Education
+- Care & Maintenance
+- Behind the Scenes
+- Customer Stories
+- New Arrivals
+
+## Email Templates
+
+All emails use The Good Opal Co branding with opal blue colors:
+
+- **Contact Form** - Customer inquiry notifications
+- **Newsletter Welcome** - New subscriber welcome
+- **Order Confirmation** - Purchase confirmation with order details
+
+Email preview: `npm run email` then visit `http://localhost:3002`
+
+## SEO Optimization
+
+- Metadata configured for all pages
+- Product schema with structured data
+- SEO plugin auto-generates titles and descriptions
+- Search plugin for fast content search
+- Sitemap generation
+- Open Graph images
+
+## Deployment
+
+### Docker
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build manually
+docker build -t the-good-opal-co .
+docker run -p 3000:3000 the-good-opal-co
+```
+
+### Production Checklist
+
+- [ ] Set up production database
+- [ ] Configure Stripe production keys
+- [ ] Set up Resend for email delivery
+- [ ] Update `NEXT_PUBLIC_APP_URL` to production domain
+- [ ] Enable SSL/HTTPS
+- [ ] Configure custom domain
+- [ ] Set strong `PAYLOAD_SECRET`
+- [ ] Test checkout flow end-to-end
+- [ ] Add product images and content
+- [ ] Create initial blog posts
+- [ ] Test email templates
+
+## Development Roadmap
+
+- [x] Rebrand from Rapid Sites to The Good Opal Co
+- [x] Implement opal-inspired color palette
+- [x] Configure jewelry product categories
+- [x] Add jewelry-specific product fields
+- [x] Update email templates
+- [ ] Add customer reviews/testimonials
+- [ ] Implement wishlist functionality
+- [ ] Add size guide
+- [ ] Create FAQ page
+- [ ] Add shipping information page
+- [ ] Create returns policy page
+- [ ] Implement Instagram feed integration
+- [ ] Add gift card functionality
+- [ ] Create custom commission request form
 
 ## Contributing
 
-This project is currently in early development. Contributions, ideas, and feedback welcome!
+This is a private ecommerce project for The Good Opal Co. For development inquiries, contact the maintainers.
 
 ## License
 
-MIT
+Proprietary - All Rights Reserved
 
-## Acknowledgments
+## Support
 
-Built on the shoulders of giants:
-- [Next.js](https://nextjs.org) - The React Framework
-- [Payload CMS](https://payloadcms.com) - The Next.js CMS
-- [shadcn/ui](https://ui.shadcn.com) - Re-usable components
-- [Tailwind CSS](https://tailwindcss.com) - CSS framework
-- [Cal.com](https://cal.com) - Scheduling infrastructure
+For questions or support:
+- Email: contact@thegoodopal.co
+- Admin: Login to `/admin` for content management
 
 ---
 
-**Status**: 🚧 In Development
-
-For questions or support, open an issue on GitHub.
+**The Good Opal Co** - Australian Opal That Doesn't Cost The Earth 💎

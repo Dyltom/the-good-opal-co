@@ -16,7 +16,6 @@ import { Pages } from './payload/collections/Pages'
 import { Posts } from './payload/collections/Posts'
 import { Categories } from './payload/collections/Categories'
 import { Tenants } from './payload/collections/Tenants'
-import { TeamMembers } from './payload/collections/TeamMembers'
 import { TestimonialsCollection } from './payload/collections/TestimonialsCollection'
 import { Gallery } from './payload/collections/Gallery'
 // NOTE: Products collection is created by ecommercePlugin, not imported here
@@ -59,7 +58,6 @@ export default buildConfig({
     Posts,
     Categories,
     Tenants,
-    TeamMembers,
     TestimonialsCollection,
     Gallery,
     // Products collection created by ecommercePlugin
@@ -84,9 +82,9 @@ export default buildConfig({
     seoPlugin({
       collections: ['pages', 'posts', 'products'],
       uploadsCollection: 'media',
-      generateTitle: ({ doc }) => `${doc?.title || doc?.name || 'Page'} | Rapid Sites`,
+      generateTitle: ({ doc }) => `${doc?.title || doc?.name || 'Page'} | The Good Opal Co`,
       generateDescription: ({ doc }) =>
-        doc?.description || doc?.excerpt || 'Professional website solution',
+        doc?.description || doc?.excerpt || 'Premium Australian opal jewelry',
     }),
     // Search plugin - fast indexed search
     searchPlugin({

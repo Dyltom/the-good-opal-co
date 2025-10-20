@@ -51,7 +51,7 @@ function SocialIcon({ platform, className }: { platform: string; className?: str
  */
 export function Footer({
   logo,
-  logoText = 'Rapid Sites',
+  logoText = 'The Good Opal Co',
   description,
   links = [],
   social = [],

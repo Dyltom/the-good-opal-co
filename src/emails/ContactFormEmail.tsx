@@ -24,7 +24,7 @@ interface ContactFormEmailProps {
  * Sent to business owner when customer submits contact form
  */
 export default function ContactFormEmail({
-  tenantName = 'Rapid Sites',
+  tenantName = 'The Good Opal Co',
   name = 'John Doe',
   email = 'john@example.com',
   phone,
@@ -143,11 +143,11 @@ const messageText = {
   padding: '16px',
   backgroundColor: '#f9fafb',
   borderRadius: '8px',
-  borderLeft: '4px solid #3b82f6',
+  borderLeft: '4px solid #0099FF',
 }
 
 const link = {
-  color: '#3b82f6',
+  color: '#0099FF',
   textDecoration: 'none',
 }
 

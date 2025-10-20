@@ -8,9 +8,9 @@ import type { TenantFeatures } from '@/types'
 /**
  * Application name and branding
  */
-export const APP_NAME = 'Rapid Sites' as const
+export const APP_NAME = 'The Good Opal Co' as const
 export const APP_DESCRIPTION =
-  'Multi-tenant website framework for small businesses' as const
+  'Premium Australian opal jewelry - authentic opals that don\'t cost the earth' as const
 export const APP_URL = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'
 
 /**
@@ -45,10 +45,10 @@ export const DEFAULT_CURRENCY = 'USD' as const
  * SEO defaults
  */
 export const DEFAULT_SEO = {
-  titleTemplate: '%s | Rapid Sites',
-  defaultTitle: 'Rapid Sites - Multi-tenant Website Framework',
+  titleTemplate: '%s | The Good Opal Co',
+  defaultTitle: 'The Good Opal Co - Premium Australian Opal Jewelry',
   description:
-    'Build and deploy professional websites for small businesses in minutes with our multi-tenant Next.js framework.',
+    'Discover authentic Australian opal jewelry including rings, necklaces, earrings and raw opals. Premium quality opals that don\'t cost the earth.',
   openGraph: {
     type: 'website',
     locale: DEFAULT_LOCALE,
@@ -191,21 +191,74 @@ export const DEFAULT_TENANT_FEATURES: TenantFeatures = {
   blog: true,
   booking: false,
   testimonials: true,
-  team: true,
+  team: false,
   gallery: true,
-  ecommerce: false,
+  ecommerce: true,
   contactForm: true,
-  newsletter: false,
+  newsletter: true,
+} as const
+
+/**
+ * Brand color palette
+ * Inspired by the vibrant colors of Australian opal
+ */
+export const BRAND_COLORS = {
+  // Primary blues from opal
+  blue: {
+    light: '#00CCFF',
+    DEFAULT: '#0099FF',
+    dark: '#0066CC',
+  },
+  // Teals and cyans
+  teal: {
+    light: '#00FFCC',
+    DEFAULT: '#33CCCC',
+    dark: '#009999',
+  },
+  // Pink/magenta fire
+  pink: {
+    light: '#FF66CC',
+    DEFAULT: '#FF3399',
+    dark: '#FF0099',
+  },
+  // Orange/coral fire
+  orange: {
+    light: '#FF9933',
+    DEFAULT: '#FF6600',
+    dark: '#CC5500',
+  },
+  // Accent yellow
+  yellow: {
+    light: '#FFDD00',
+    DEFAULT: '#FFCC00',
+    dark: '#FFAA00',
+  },
+  // Neutrals
+  black: '#000000',
+  white: '#FFFFFF',
+  gray: {
+    50: '#f9fafb',
+    100: '#f3f4f6',
+    200: '#e5e7eb',
+    300: '#d1d5db',
+    400: '#9ca3af',
+    500: '#6b7280',
+    600: '#4b5563',
+    700: '#374151',
+    800: '#1f2937',
+    900: '#111827',
+  },
 } as const
 
 /**
  * Default tenant theme
+ * Opal-inspired color palette with vibrant blues, teals, and accent colors
  */
 export const DEFAULT_TENANT_THEME = {
   colors: {
-    primary: '#3b82f6', // blue-500
-    secondary: '#8b5cf6', // violet-500
-    accent: '#f59e0b', // amber-500
+    primary: '#0099FF', // Vibrant opal blue
+    secondary: '#00CCFF', // Teal/cyan from opal
+    accent: '#FF6600', // Coral/orange from opal fire
     background: '#ffffff',
     foreground: '#0a0a0a',
     muted: '#f3f4f6', // gray-100
@@ -317,15 +370,15 @@ export const HTTP_STATUS = {
  * Cookie names
  */
 export const COOKIES = {
-  tenant: 'rapid-sites-tenant',
-  session: 'rapid-sites-session',
-  theme: 'rapid-sites-theme',
+  tenant: 'good-opal-tenant',
+  session: 'good-opal-session',
+  theme: 'good-opal-theme',
 } as const
 
 /**
  * Local storage keys
  */
 export const STORAGE_KEYS = {
-  theme: 'rapid-sites-theme',
-  recentTenants: 'rapid-sites-recent-tenants',
+  theme: 'good-opal-theme',
+  recentTenants: 'good-opal-recent-tenants',
 } as const

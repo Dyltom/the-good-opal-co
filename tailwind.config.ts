@@ -25,6 +25,32 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Brand colors (opal-inspired palette)
+        'opal-blue': {
+          light: '#00CCFF',
+          DEFAULT: '#0099FF',
+          dark: '#0066CC',
+        },
+        'opal-teal': {
+          light: '#00FFCC',
+          DEFAULT: '#33CCCC',
+          dark: '#009999',
+        },
+        'opal-pink': {
+          light: '#FF66CC',
+          DEFAULT: '#FF3399',
+          dark: '#FF0099',
+        },
+        'opal-orange': {
+          light: '#FF9933',
+          DEFAULT: '#FF6600',
+          dark: '#CC5500',
+        },
+        'opal-yellow': {
+          light: '#FFDD00',
+          DEFAULT: '#FFCC00',
+          dark: '#FFAA00',
+        },
         // Base colors using CSS variables for tenant theming
         primary: {
           DEFAULT: 'hsl(var(--primary))',

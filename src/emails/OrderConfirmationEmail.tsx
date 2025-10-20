@@ -25,7 +25,7 @@ interface OrderConfirmationEmailProps {
  * Sent when order is successfully placed
  */
 export default function OrderConfirmationEmail({
-  tenantName = 'Rapid Sites',
+  tenantName = 'The Good Opal Co',
   name = 'John Doe',
   orderId = 'ORDER-12345',
   total = '$99.99',
@@ -42,7 +42,8 @@ export default function OrderConfirmationEmail({
           <Text style={text}>Hi {name},</Text>
 
           <Text style={text}>
-            Thank you for your order! We&apos;ve received your purchase and are getting it ready.
+            Thank you for your order! We&apos;re thrilled you&apos;ve chosen to add authentic Australian
+            opal jewelry to your collection. Your piece is being carefully prepared for shipment.
           </Text>
 
           <Section style={orderBox}>
@@ -99,7 +100,7 @@ const container = {
 }
 
 const h1 = {
-  color: '#16a34a',
+  color: '#0099FF',
   fontSize: '28px',
   fontWeight: '700',
   lineHeight: '40px',
@@ -155,7 +156,7 @@ const buttonContainer = {
 }
 
 const button = {
-  backgroundColor: '#3b82f6',
+  backgroundColor: '#0099FF',
   borderRadius: '8px',
   color: '#fff',
   fontSize: '16px',
