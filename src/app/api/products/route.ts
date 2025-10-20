@@ -27,6 +27,7 @@ export async function GET(request: Request) {
       image: doc.images?.[0]?.image?.url || null,
       origin: doc.stoneOrigin,
       stoneType: doc.stoneType,
+      material: doc.material,
       weight: doc.weight,
     }))
 

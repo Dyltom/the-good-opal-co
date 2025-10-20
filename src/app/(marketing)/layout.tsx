@@ -19,7 +19,12 @@ export default function MarketingLayout({
 }) {
   return (
     <html lang="en">
-      <head />
+      <head>
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+        <link rel="shortcut icon" href="/favicon.png" />
+      </head>
       <body suppressHydrationWarning>
         <CartProvider>
           {children}

@@ -29,15 +29,18 @@ export function CTASection({
 }: CTASectionProps) {
   return (
     <section
-      className={`py-20 ${
+      className={`py-20 md:py-28 relative overflow-hidden ${
         gradient
-          ? 'bg-gradient-to-r from-opal-blue to-opal-teal text-white'
+          ? 'bg-gradient-to-br from-opal-blue via-opal-purple to-opal-pink text-white'
           : 'bg-background'
       } ${className}`}
     >
-      <Container className="text-center max-w-3xl">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">{title}</h2>
-        <p className={`text-lg md:text-xl mb-8 ${gradient ? 'opacity-90' : 'text-muted-foreground'}`}>
+      {gradient && (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
+      )}
+      <Container className="text-center max-w-3xl relative z-10">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">{title}</h2>
+        <p className={`text-lg md:text-xl mb-10 leading-relaxed ${gradient ? 'opacity-95' : 'text-muted-foreground'}`}>
           {description}
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -49,8 +52,10 @@ export function CTASection({
               variant={button.variant || 'secondary'}
               className={
                 gradient
-                  ? 'bg-white text-opal-blue hover:bg-gray-100 font-semibold'
-                  : 'bg-opal-blue text-white hover:bg-opal-blue-dark font-semibold'
+                  ? button.variant === 'outline'
+                    ? 'border-2 border-white text-white hover:bg-white hover:text-opal-blue font-semibold px-8 rounded-xl backdrop-blur-sm bg-white/10 hover:scale-105 transition-transform shadow-xl'
+                    : 'bg-white text-opal-blue hover:bg-white/90 font-semibold px-8 rounded-xl hover:scale-105 transition-transform shadow-xl'
+                  : 'bg-opal-blue text-white hover:bg-opal-blue-dark font-semibold px-8 rounded-xl hover:scale-105 transition-transform shadow-lg'
               }
             >
               <Link href={button.href}>{button.label}</Link>

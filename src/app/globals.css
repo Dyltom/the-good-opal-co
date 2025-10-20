@@ -258,19 +258,20 @@
 /* Custom scrollbar styles */
 @layer utilities {
   .scrollbar-thin::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-muted;
+    background: #FAF9F6; /* cream */
+    border-radius: 12px; /* matches rounded-xl container */
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-full;
+    background: #E8E6E3; /* warm-grey */
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/50;
+    background: #d0cec9; /* darker warm-grey on hover */
   }
 }

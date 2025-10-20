@@ -4,137 +4,288 @@ import { Container } from '@/components/layout'
 import { ProductCard } from '@/components/product/ProductCard'
 import { HeroSection, TrustBadges, CTASection } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
-import { CATEGORY_FILTERS, getCategoryName } from '@/data/categories'
+import { ProductFilters } from '@/components/store/ProductFilters'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { sortProducts, type Product } from '@/data/products'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export default function StorePage() {
-  const [category, setCategory] = useState('all')
   const [sort, setSort] = useState('featured')
   const [showOutOfStock, setShowOutOfStock] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Filter states
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [selectedStoneTypes, setSelectedStoneTypes] = useState<string[]>([])
+  const [selectedOrigins, setSelectedOrigins] = useState<string[]>([])
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000])
 
   // Fetch products from Payload API
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/products?category=${category}&includeOutOfStock=${showOutOfStock}`)
+    fetch('/api/products')
       .then(res => res.json())
       .then(data => {
         setProducts(data)
+        // Set max price for slider
+        const maxPrice = Math.max(...data.map((p: Product) => p.price), 1000)
+        setPriceRange([0, maxPrice])
         setLoading(false)
       })
       .catch(err => {
         console.error('Failed to fetch products:', err)
         setLoading(false)
       })
-  }, [category, showOutOfStock])
+  }, [])
 
-  const sortedProducts = sortProducts(products, sort)
+  // Extract unique filter options from products
+  const filterOptions = useMemo(() => {
+    const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)))
+    const stoneTypes = Array.from(new Set(products.map((p: any) => p.stoneType).filter(Boolean)))
+    const origins = Array.from(new Set(products.map((p: any) => p.origin).filter(Boolean)))
+    const materials = Array.from(new Set(products.map((p: any) => p.material).filter(Boolean)))
+    const maxPrice = Math.max(...products.map(p => p.price), 1000)
+
+    return {
+      categories: ['all', ...categories],
+      stoneTypes,
+      origins,
+      materials,
+      priceRange: [0, maxPrice] as [number, number],
+      maxPrice,
+    }
+  }, [products])
+
+  // Apply filters
+  const filteredProducts = useMemo(() => {
+    return products.filter((product: any) => {
+      // Stock filter
+      if (!showOutOfStock && product.stock === 0) return false
+
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        const searchableText = `${product.name} ${product.description} ${product.category} ${product.stoneType} ${product.origin}`.toLowerCase()
+        if (!searchableText.includes(query)) return false
+      }
+
+      // Category filter
+      if (selectedCategories.length > 0 && !selectedCategories.includes('all')) {
+        if (!selectedCategories.includes(product.category)) return false
+      }
+
+      // Stone type filter
+      if (selectedStoneTypes.length > 0) {
+        if (!selectedStoneTypes.includes(product.stoneType)) return false
+      }
+
+      // Origin filter
+      if (selectedOrigins.length > 0) {
+        if (!selectedOrigins.includes(product.origin)) return false
+      }
+
+      // Material filter
+      if (selectedMaterials.length > 0) {
+        if (!selectedMaterials.includes(product.material)) return false
+      }
+
+      // Price range filter
+      if (product.price < priceRange[0] || product.price > priceRange[1]) return false
+
+      return true
+    })
+  }, [products, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, showOutOfStock])
+
+  const sortedProducts = sortProducts(filteredProducts, sort)
   const outOfStockCount = products.filter(p => p.stock === 0).length
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
+  // Filter handlers
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev.filter(c => c !== 'all'), category]
+    )
+  }
 
-      {/* Hero Section */}
-      <HeroSection
-        badge={`${sortedProducts.length} ${sortedProducts.length === 1 ? 'Product' : 'Products'} Available`}
-        title={getCategoryName(category === 'all' ? undefined : category)}
-        description="Hand-selected authentic Australian opals, each piece certified for quality and authenticity"
-        buttons={[]}
-        gradient={true}
-        className="py-16 md:py-20"
+  const handleStoneTypeChange = (type: string) => {
+    setSelectedStoneTypes(prev =>
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+    )
+  }
+
+  const handleOriginChange = (origin: string) => {
+    setSelectedOrigins(prev =>
+      prev.includes(origin) ? prev.filter(o => o !== origin) : [...prev, origin]
+    )
+  }
+
+  const handleMaterialChange = (material: string) => {
+    setSelectedMaterials(prev =>
+      prev.includes(material) ? prev.filter(m => m !== material) : [...prev, material]
+    )
+  }
+
+  const handleClearFilters = () => {
+    setSearchQuery('')
+    setSelectedCategories([])
+    setSelectedStoneTypes([])
+    setSelectedOrigins([])
+    setSelectedMaterials([])
+    setPriceRange([0, filterOptions.maxPrice])
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navigation
+        logo={{ url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        items={[
+          { href: '/store', label: 'Shop' },
+          { href: '/blog', label: 'Blog' },
+          { href: '/faq', label: 'FAQ' },
+        ]}
       />
 
       {/* Products Section */}
-      <section className="py-12">
+      <section className="py-8">
         <Container>
-          {/* Category Filter Pills */}
-          <div className="mb-8 flex flex-wrap gap-2 justify-center">
-            {CATEGORY_FILTERS.map((cat) => (
-              <button
-                key={cat.value}
-                onClick={() => setCategory(cat.value)}
-                className={`px-6 py-2.5 rounded-full border-2 transition-all duration-300 font-medium ${
-                  category === cat.value
-                    ? 'bg-opal-blue text-white border-opal-blue shadow-lg scale-105'
-                    : 'bg-white border-gray-200 hover:border-opal-blue hover:text-opal-blue hover:shadow-md'
-                }`}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Filters Sidebar */}
+            <aside className="lg:w-72 flex-shrink-0">
+              <div
+                className="lg:sticky lg:top-24 bg-cream rounded-xl border border-warm-grey shadow-sm p-6 pr-4 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto scrollbar-thin"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#E8E6E3 #FAF9F6',
+                  scrollbarGutter: 'stable'
+                }}
               >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort Bar & Filters */}
-          <div className="mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-y py-4">
-            <div className="flex items-center gap-4">
-              <p className="text-sm text-charcoal-80 font-medium">
-                {sortedProducts.length} {sortedProducts.length === 1 ? 'piece' : 'pieces'}
-                {!showOutOfStock && outOfStockCount > 0 && (
-                  <span className="text-charcoal-40 ml-2">
-                    ({outOfStockCount} sold out)
-                  </span>
-                )}
-              </p>
-            </div>
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Out of Stock Toggle */}
-              <label className="flex items-center gap-2 text-sm text-charcoal-80 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showOutOfStock}
-                  onChange={(e) => setShowOutOfStock(e.target.checked)}
-                  className="rounded border-warm-grey text-opal-blue focus:ring-opal-blue"
+                <ProductFilters
+                  filters={filterOptions}
+                  selectedCategories={selectedCategories}
+                  selectedStoneTypes={selectedStoneTypes}
+                  selectedOrigins={selectedOrigins}
+                  selectedMaterials={selectedMaterials}
+                  priceRange={priceRange}
+                  onCategoryChange={handleCategoryChange}
+                  onStoneTypeChange={handleStoneTypeChange}
+                  onOriginChange={handleOriginChange}
+                  onMaterialChange={handleMaterialChange}
+                  onPriceRangeChange={setPriceRange}
+                  onClearAll={handleClearFilters}
                 />
-                <span>Show sold items</span>
-              </label>
-
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <label htmlFor="sort" className="text-sm font-medium text-charcoal-80">
-                  Sort:
-                </label>
-                <select
-                  id="sort"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  className="px-4 py-2 rounded-lg border-2 border-warm-grey bg-white text-sm font-medium hover:border-opal-blue focus:border-opal-blue focus:outline-none focus:ring-2 focus:ring-opal-blue/20 transition-all"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                </select>
               </div>
+            </aside>
+
+            {/* Products Area */}
+            <div className="flex-1">
+              {/* Search Bar */}
+              <div className="mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search for your next treasure..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-blue focus:outline-none focus:ring-2 focus:ring-opal-blue/20 transition-all shadow-sm"
+                  />
+                  <svg
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal-40"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Sort Bar */}
+              <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-cream rounded-xl border border-warm-grey shadow-sm p-5">
+                <div className="flex items-center gap-4">
+                  <p className="text-sm text-charcoal font-semibold">
+                    {sortedProducts.length} {sortedProducts.length === 1 ? 'treasure' : 'treasures'} available
+                    {!showOutOfStock && outOfStockCount > 0 && (
+                      <span className="text-charcoal-60 ml-2 font-normal">
+                        ({outOfStockCount} collected)
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 flex-wrap">
+                  {/* Out of Stock Toggle */}
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="show-sold"
+                      checked={showOutOfStock}
+                      onCheckedChange={setShowOutOfStock}
+                      className="data-[state=checked]:bg-opal-blue data-[state=checked]:border-opal-blue"
+                    />
+                    <Label htmlFor="show-sold" className="text-sm cursor-pointer font-medium text-charcoal">
+                      Show already collected items
+                    </Label>
+                  </div>
+
+                  {/* Sort - Using shadcn Select */}
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="sort" className="text-sm font-semibold text-charcoal">
+                      Sort:
+                    </Label>
+                    <Select value={sort} onValueChange={setSort}>
+                      <SelectTrigger className="w-[180px] rounded-lg border border-warm-grey hover:border-opal-blue focus:border-opal-blue focus:ring-2 focus:ring-opal-blue/20 shadow-sm bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-warm-grey">
+                        <SelectItem value="featured" className="focus:bg-opal-blue/10 focus:text-opal-blue">Featured Finds</SelectItem>
+                        <SelectItem value="price-low" className="focus:bg-opal-blue/10 focus:text-opal-blue">Price: Low to High</SelectItem>
+                        <SelectItem value="price-high" className="focus:bg-opal-blue/10 focus:text-opal-blue">Price: High to Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Products Grid - Apple Style */}
+              {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+                  {[...Array(12)].map((_, i) => (
+                    <div key={i}>
+                      <div className="aspect-square bg-warm-grey-light animate-pulse mb-3" />
+                      <div className="h-4 bg-warm-grey-light animate-pulse mb-2" />
+                      <div className="h-4 bg-warm-grey-light animate-pulse w-20" />
+                    </div>
+                  ))}
+                </div>
+              ) : sortedProducts.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+                  {sortedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-white rounded-2xl shadow-lg">
+                  <div className="text-6xl mb-4">💎</div>
+                  <p className="text-lg text-muted-foreground mb-4">No products match your filters</p>
+                  <button
+                    onClick={handleClearFilters}
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors h-10 px-6 bg-opal-blue text-white hover:bg-opal-blue-dark shadow-lg"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-
-          {/* Products Grid */}
-          {loading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-96 bg-warm-grey-light animate-pulse rounded-lg" />
-              ))}
-            </div>
-          ) : sortedProducts.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">💎</div>
-              <p className="text-lg text-muted-foreground mb-4">No products found in this category</p>
-              <button
-                onClick={() => setCategory('all')}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors h-9 px-4 py-2 bg-opal-blue text-white hover:bg-opal-blue-dark"
-              >
-                View All Products
-              </button>
-            </div>
-          )}
         </Container>
       </section>
 

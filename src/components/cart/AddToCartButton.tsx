@@ -3,6 +3,7 @@
 import { useCart } from '@/hooks/useCart'
 import { useToast } from '@/hooks/use-toast'
 import { Button } from '@/components/ui/button'
+import type { ReactNode } from 'react'
 
 interface AddToCartButtonProps {
   product: {
@@ -13,6 +14,8 @@ interface AddToCartButtonProps {
   }
   quantity?: number
   disabled?: boolean
+  className?: string
+  children?: ReactNode
 }
 
 /**
@@ -20,7 +23,13 @@ interface AddToCartButtonProps {
  *
  * Client component that adds product to cart with toast notification
  */
-export function AddToCartButton({ product, quantity = 1, disabled }: AddToCartButtonProps) {
+export function AddToCartButton({
+  product,
+  quantity = 1,
+  disabled,
+  className,
+  children
+}: AddToCartButtonProps) {
   const { addItem } = useCart()
   const { toast } = useToast()
 
@@ -34,19 +43,19 @@ export function AddToCartButton({ product, quantity = 1, disabled }: AddToCartBu
     })
 
     toast({
-      title: 'Added to cart!',
-      description: `${quantity} × ${product.name} added to your cart.`,
+      title: 'Added to your pouch',
+      description: `${product.name} is ready for checkout.`,
     })
   }
 
   return (
     <Button
       size="lg"
-      className="flex-1"
+      className={className || "flex-1"}
       disabled={disabled}
       onClick={handleAddToCart}
     >
-      Add to Cart
+      {children || 'Add to Cart'}
     </Button>
   )
 }

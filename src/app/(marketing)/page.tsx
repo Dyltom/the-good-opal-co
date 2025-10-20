@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { HeroSection, CategoryGrid, FeaturesGrid, TrustBadges, CTASection } from '@/components/sections'
+import { CategoryGrid, FeaturesGrid, TrustBadges, FeaturedProducts } from '@/components/sections'
 import { TrustSignalBar } from '@/components/trust'
 import { Navigation, Footer } from '@/components/navigation'
 import { PRODUCT_CATEGORIES } from '@/data/categories'
 import { WHY_CHOOSE_FEATURES } from '@/data/features'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'The Good Opal Co - Premium Australian Opal Jewelry',
@@ -12,26 +13,64 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col">
-      <Navigation />
-      {/* Hero Section */}
-      <HeroSection
-        badge="Authentic Australian Opals"
-        title="Each Opal Tells a Story Millions of Years in the Making"
-        subtitle="Premium Australian Opal Jewelry"
-        description="Discover the vibrant beauty of authentic Australian opals. Hand-selected for exceptional fire and color from the mines of Lightning Ridge, Coober Pedy, and beyond."
-        buttons={[
-          { href: '/store', label: 'Discover Your Perfect Opal →', className: 'bg-opal-blue hover:bg-opal-blue-dark text-white font-semibold px-8' },
-          { href: '/blog', label: 'Our Story', variant: 'outline', className: 'border-opal-blue text-opal-blue hover:bg-opal-blue/10' },
+    <div className="flex flex-col bg-white">
+      <Navigation
+        logo={{ url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        items={[
+          { href: '/store', label: 'Shop' },
+          { href: '/blog', label: 'Blog' },
+          { href: '/faq', label: 'FAQ' },
         ]}
       />
 
+      {/* Hero Section */}
+      <section className="relative bg-white py-20 md:py-32">
+        <div className="max-w-screen-xl mx-auto px-6 text-center">
+          <p className="text-sm uppercase tracking-widest text-opal-blue mb-4 font-semibold">Authentic Australian Opals</p>
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-charcoal">
+            Each Opal Tells a Story<br />Millions of Years in the Making
+          </h1>
+          <p className="text-xl text-charcoal-60 mb-10 max-w-2xl mx-auto">
+            Hand-selected for exceptional fire and color from the mines of Lightning Ridge, Coober Pedy, and beyond.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/store" className="inline-flex items-center justify-center bg-opal-blue text-white px-10 py-4 rounded-md font-semibold hover:bg-opal-blue-dark transition-all shadow-md hover:shadow-lg">
+              Discover Your Perfect Opal →
+            </Link>
+            <Link href="/blog" className="inline-flex items-center justify-center border-2 border-charcoal px-10 py-4 rounded-md font-semibold hover:bg-charcoal hover:text-white transition-all">
+              Our Story
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Trust Signal Bar */}
-      <TrustSignalBar />
+      <TrustSignalBar className="bg-cream" />
+
+      {/* Featured Products */}
+      <FeaturedProducts
+        title="Featured Collection"
+        description="Exceptional pieces from our latest arrivals"
+        limit={4}
+        featured={true}
+        className="bg-white"
+      />
 
       {/* Shop By Collection */}
       <CategoryGrid
-        categories={PRODUCT_CATEGORIES.slice(0, 3)} // Show first 3 categories
+        title="Shop By Collection"
+        description="Explore our carefully curated collections of Australian opal jewelry"
+        categories={PRODUCT_CATEGORIES.slice(0, 3)}
+        className="bg-cream"
+      />
+
+      {/* New Arrivals */}
+      <FeaturedProducts
+        title="New Arrivals"
+        description="Just arrived from the Australian opal mines"
+        limit={8}
+        featured={false}
+        className="bg-white"
       />
 
       {/* Why Choose Us */}
@@ -40,27 +79,35 @@ export default function HomePage() {
         description="Premium Australian opals, ethically sourced and expertly crafted"
         features={WHY_CHOOSE_FEATURES}
         columns={3}
-        className="bg-muted/30"
+        className="bg-cream"
       />
 
       {/* Trust Badges */}
-      <TrustBadges />
+      <TrustBadges className="bg-white" />
 
       {/* CTA Section */}
-      <CTASection
-        title="Ready to Find Your Perfect Opal?"
-        description="Browse our collection of stunning Australian opal jewelry, each piece one-of-a-kind"
-        buttons={[
-          { href: '/store', label: 'Explore Collection →' },
-          { href: '/contact', label: 'Design Your Dream Piece', variant: 'outline' },
-        ]}
-      />
+      <section className="py-24 bg-gradient-to-br from-opal-blue to-opal-turquoise text-white">
+        <div className="max-w-screen-xl mx-auto px-6 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Find Your Perfect Opal?</h2>
+          <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
+            Browse our collection of stunning Australian opal jewelry, each piece one-of-a-kind
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/store" className="inline-flex items-center justify-center bg-white text-opal-blue px-10 py-4 rounded-md font-semibold hover:bg-cream transition-all shadow-xl">
+              Explore Full Collection →
+            </Link>
+            <Link href="/contact" className="inline-flex items-center justify-center border-2 border-white px-10 py-4 rounded-md font-semibold hover:bg-white hover:text-opal-blue transition-all">
+              Custom Commissions
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      {/* Newsletter Section - Simple inline */}
-      <section className="py-20 bg-muted/30">
+      {/* Newsletter Section */}
+      <section className="py-20 bg-cream">
         <div className="w-full max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
           <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">Stay Connected</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Stay Connected</h2>
             <p className="text-lg text-muted-foreground mb-8">
               Join our newsletter for new arrivals, opal care tips, and exclusive offers
             </p>
@@ -68,12 +115,12 @@ export default function HomePage() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-md border bg-background"
+                className="flex-1 px-5 py-3 rounded-md border-2 border-warm-grey bg-white focus:outline-none focus:border-opal-gold transition-all"
                 required
               />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-primary-foreground shadow h-10 px-4 py-2 bg-opal-blue hover:bg-opal-blue-dark"
+                className="px-6 py-3 bg-black text-white rounded-md font-semibold hover:bg-charcoal transition-colors"
               >
                 Subscribe
               </button>

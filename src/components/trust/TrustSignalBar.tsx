@@ -5,7 +5,7 @@ import { ShieldCheck, Truck, RefreshCcw, Award } from 'lucide-react'
  * Displays 4 key trust signals to build customer confidence
  * Place below hero or in sticky header
  */
-export function TrustSignalBar() {
+export function TrustSignalBar({ className = '' }: { className?: string }) {
   const trustSignals = [
     {
       icon: ShieldCheck,
@@ -30,22 +30,24 @@ export function TrustSignalBar() {
   ]
 
   return (
-    <div className="bg-cream-dark border-y border-warm-grey py-6">
+    <div className={`border-y border-warm-grey/50 py-8 ${className}`}>
       <div className="w-full max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {trustSignals.map((signal) => {
             const Icon = signal.icon
             return (
               <div
                 key={signal.title}
-                className="flex items-center justify-center gap-3 text-center md:text-left"
+                className="flex items-center justify-center gap-3 text-center md:text-left group"
               >
-                <Icon className="w-6 h-6 text-opal-blue flex-shrink-0" strokeWidth={2} />
+                <div className="p-2.5 rounded-xl bg-opal-blue/10 group-hover:bg-opal-blue/20 transition-colors">
+                  <Icon className="w-5 h-5 text-opal-blue flex-shrink-0" strokeWidth={2.5} />
+                </div>
                 <div className="hidden md:block">
                   <p className="font-semibold text-charcoal text-sm leading-tight">
                     {signal.title}
                   </p>
-                  <p className="text-xs text-charcoal-60 mt-0.5">
+                  <p className="text-xs text-charcoal-60 mt-1">
                     {signal.description}
                   </p>
                 </div>

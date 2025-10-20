@@ -7,11 +7,10 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useEffect, useState, useRef } from 'react'
 
 /**
- * Cart Button Component
+ * Pouch Button Component
  *
- * Shows cart item count and opens cart drawer
- * Uses localStorage-based cart (ready for Payload ecommerce integration)
- * Includes pulse animation when items are added
+ * Shows pouch item count and opens pouch drawer
+ * Authentic opal mining language - miners carry finds in pouches
  */
 export function CartButton() {
   const { itemCount, isLoaded } = useCart()
@@ -31,26 +30,31 @@ export function CartButton() {
   if (!isLoaded) {
     return (
       <CartDrawer>
-        <Button variant="outline" size="sm" className="relative">
-          🛒 Cart
+        <Button
+          variant="outline"
+          size="sm"
+          className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
+        >
+          Pouch
         </Button>
       </CartDrawer>
     )
   }
 
+  const itemText = itemCount === 1 ? 'find' : 'finds'
+
   return (
     <CartDrawer>
-      <Button variant="outline" size="sm" className="relative">
-        🛒 Cart
+      <Button
+        variant="outline"
+        size="sm"
+        className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
+      >
+        Pouch
         {itemCount > 0 && (
-          <Badge
-            variant="destructive"
-            className={`absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs transition-all ${
-              animate ? 'animate-ping-once' : ''
-            }`}
-          >
-            {itemCount}
-          </Badge>
+          <span className="text-xs opacity-70">
+            ({itemCount} {itemText})
+          </span>
         )}
       </Button>
     </CartDrawer>
