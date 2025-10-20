@@ -56,7 +56,7 @@ function CheckoutSuccessContent() {
   if (isVerifying) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navigation logoText="Rapid Sites" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
+        <Navigation logoText="The Good Opal Co" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
         <main className="flex-1">
           <Section padding="lg">
             <Container>
@@ -77,7 +77,7 @@ function CheckoutSuccessContent() {
   if (verificationError) {
     return (
       <div className="min-h-screen flex flex-col">
-        <Navigation logoText="Rapid Sites" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
+        <Navigation logoText="The Good Opal Co" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
         <main className="flex-1">
           <Section padding="lg">
             <Container>
@@ -100,7 +100,7 @@ function CheckoutSuccessContent() {
   }
   return (
     <div className="min-h-screen flex flex-col">
-      <Navigation logoText="Rapid Sites" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
+      <Navigation logoText="The Good Opal Co" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
       <main className="flex-1">
         <Section padding="lg">
           <Container>
@@ -161,7 +161,7 @@ export default function CheckoutSuccessPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex flex-col">
-          <Navigation logoText="Rapid Sites" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
+          <Navigation logoText="The Good Opal Co" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
           <main className="flex-1">
             <Section padding="lg">
               <Container>

@@ -34,7 +34,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navigation logoText="Rapid Sites" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
+      <Navigation logoText="The Good Opal Co" items={[{ href: '/', label: 'Home' }, { href: '/store', label: 'Store' }]} />
       <main className="flex-1">
         {/* Breadcrumb */}
         <Section padding="sm">

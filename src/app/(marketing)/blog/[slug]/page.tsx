@@ -21,7 +21,7 @@ export default async function BlogPostPage({
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation
-        logoText="Rapid Sites"
+        logoText="The Good Opal Co"
         items={[
           { href: '/', label: 'Home' },
           { href: '/blog', label: 'Blog' },
@@ -30,7 +30,7 @@ export default async function BlogPostPage({
       <main className="flex-1">
         {/* Content will be added when database is connected */}
       </main>
-      <Footer logoText="Rapid Sites" />
+      <Footer logoText="The Good Opal Co" />
     </div>
   )
 }

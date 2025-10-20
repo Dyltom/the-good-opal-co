@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { HeroSection, CategoryGrid, FeaturesGrid, TrustBadges, CTASection } from '@/components/sections'
 import { TrustSignalBar } from '@/components/trust'
+import { Navigation, Footer } from '@/components/navigation'
 import { PRODUCT_CATEGORIES } from '@/data/categories'
 import { WHY_CHOOSE_FEATURES } from '@/data/features'
 
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="flex flex-col">
+      <Navigation />
       {/* Hero Section */}
       <HeroSection
         badge="Authentic Australian Opals"
@@ -79,6 +81,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   )
 }

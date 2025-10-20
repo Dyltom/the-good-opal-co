@@ -24,7 +24,7 @@ export default async function BlogPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navigation logoText="Rapid Sites" items={[{ href: '/', label: 'Home' }]} />
+      <Navigation logoText="The Good Opal Co" items={[{ href: '/', label: 'Home' }]} />
 
       <main className="flex-1">
         {/* Header */}
@@ -73,7 +73,7 @@ export default async function BlogPage({
         </Section>
       </main>
 
-      <Footer logoText="Rapid Sites" />
+      <Footer logoText="The Good Opal Co" />
     </div>
   )
 }
