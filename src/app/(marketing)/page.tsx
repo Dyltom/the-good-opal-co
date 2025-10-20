@@ -89,16 +89,16 @@ export default function HomePage() {
         <div className="max-w-screen-xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-charcoal">Selected Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-            {/* Opals */}
+            {/* Raw Opals */}
             <Link
-              href="/store?category=opals"
+              href="/store?category=raw-opals"
               className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
             >
               <div className="aspect-square relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/categories/opals.jpg"
-                  alt="Australian Opals"
+                  src="/api/media/file/20210627_202327-3.jpg"
+                  alt="Raw Australian Opals"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
@@ -110,13 +110,13 @@ export default function HomePage() {
 
             {/* Earrings */}
             <Link
-              href="/store?category=earrings"
+              href="/store"
               className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
             >
               <div className="aspect-square relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/categories/earrings.jpg"
+                  src="/api/media/file/IMG_5903-3.jpg"
                   alt="Opal Earrings"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -129,13 +129,13 @@ export default function HomePage() {
 
             {/* Rings */}
             <Link
-              href="/store?category=rings"
+              href="/store?category=opal-rings"
               className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
             >
               <div className="aspect-square relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/images/categories/rings.jpg"
+                  src="/api/media/file/20210819_102625-4.jpg"
                   alt="Opal Rings"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -245,32 +245,32 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Image Gallery */}
+            {/* Image Gallery - Custom Rings */}
             <div className="order-1 lg:order-2">
               <div className="grid grid-cols-2 gap-4">
-                {/* Large Image */}
+                {/* Large Image - Aurora Ring */}
                 <div className="col-span-2 rounded-2xl overflow-hidden shadow-xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/customs/custom-1.jpg"
-                    alt="Custom Opal Ring"
+                    src="/api/media/file/20210819_102625-4.jpg"
+                    alt="Custom Aurora Opal Ring"
                     className="w-full h-80 object-cover hover:scale-105 transition-transform duration-700"
                   />
                 </div>
-                {/* Small Images */}
+                {/* Small Images - More Custom Rings */}
                 <div className="rounded-2xl overflow-hidden shadow-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/customs/custom-2.jpg"
-                    alt="Custom Opal Jewelry"
+                    src="/api/media/file/20210819_102749-7.jpg"
+                    alt="Sun and Moon Opal Ring"
                     className="w-full h-48 object-cover hover:scale-105 transition-transform duration-700"
                   />
                 </div>
                 <div className="rounded-2xl overflow-hidden shadow-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/customs/custom-3.jpg"
-                    alt="Bespoke Opal Piece"
+                    src="/api/media/file/20210819_101509-7.jpg"
+                    alt="Coral Opal Ring"
                     className="w-full h-48 object-cover hover:scale-105 transition-transform duration-700"
                   />
                 </div>
