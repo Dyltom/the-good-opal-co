@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
+import { getCategoryGradient } from '@/data/categories'
 
 interface ProductCardProps {
   product: {
@@ -20,27 +21,10 @@ interface ProductCardProps {
   }
 }
 
-// Elegant gradient backgrounds based on product category
-const getCategoryGradient = (category?: string) => {
-  switch(category) {
-    case 'opal-rings':
-      return 'bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400'
-    case 'opal-necklaces':
-      return 'bg-gradient-to-br from-teal-400 via-cyan-400 to-blue-400'
-    case 'opal-earrings':
-      return 'bg-gradient-to-br from-pink-400 via-rose-400 to-orange-400'
-    case 'opal-bracelets':
-      return 'bg-gradient-to-br from-indigo-400 via-blue-400 to-teal-400'
-    case 'raw-opals':
-      return 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500'
-    default:
-      return 'bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400'
-  }
-}
-
 /**
  * Luxury Product Card Component
  * Premium jewelry display with elegant hover effects
+ * Uses centralized category gradients for consistency
  */
 export function ProductCard({ product }: ProductCardProps) {
   const discountPercent = product.compareAtPrice && product.compareAtPrice > product.price
