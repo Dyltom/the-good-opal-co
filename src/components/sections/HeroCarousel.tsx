@@ -27,7 +27,8 @@ const slides: Slide[] = [
       label: 'SHOP OPALS',
       href: '/store?category=opals',
     },
-    gradient: 'from-charcoal/90 to-charcoal/80',
+    backgroundImage: '/images/hero/opal-1.jpg',
+    gradient: 'from-black/30 via-black/20 to-black/40',
   },
   {
     id: 2,
@@ -38,7 +39,8 @@ const slides: Slide[] = [
       label: 'EXPLORE COURSES',
       href: '/courses',
     },
-    gradient: 'from-charcoal/90 to-charcoal/80',
+    backgroundImage: '/images/hero/opal-2.jpg',
+    gradient: 'from-black/30 via-black/20 to-black/40',
   },
   {
     id: 3,
@@ -49,7 +51,8 @@ const slides: Slide[] = [
       label: 'SHOP JEWELLERY',
       href: '/store?category=jewellery',
     },
-    gradient: 'from-charcoal/90 to-charcoal/80',
+    backgroundImage: '/images/hero/opal-3.jpg',
+    gradient: 'from-black/30 via-black/20 to-black/40',
   },
 ]
 
@@ -88,12 +91,12 @@ export function HeroCarousel() {
   }
 
   return (
-    <section className="relative h-[600px] md:h-[700px] overflow-hidden bg-charcoal">
+    <section className="relative h-[500px] md:h-[600px] lg:h-[650px] overflow-hidden bg-charcoal">
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
             index === currentSlide
               ? 'opacity-100 translate-x-0'
               : index < currentSlide
@@ -101,21 +104,47 @@ export function HeroCarousel() {
               : 'opacity-0 translate-x-full'
           }`}
         >
-          {/* Background Gradient */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
+          {/* Background Image with Ken Burns Effect */}
+          {slide.backgroundImage && (
+            <>
+              <div className="absolute inset-0 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={slide.backgroundImage}
+                  alt={slide.title}
+                  className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${
+                    index === currentSlide ? 'scale-110' : 'scale-100'
+                  }`}
+                />
+              </div>
+              {/* Lighter overlay to show opal colors */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
+            </>
+          )}
 
-          {/* Animated Pattern Overlay */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-20 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-white rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          {/* Fallback gradient if no image */}
+          {!slide.backgroundImage && (
+            <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />
+          )}
+
+          {/* Subtle shimmer overlay */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div
+              className={`absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-[3000ms] ${
+                index === currentSlide ? 'translate-x-full' : '-translate-x-full'
+              }`}
+              style={{ transform: index === currentSlide ? 'translateX(100%)' : 'translateX(-100%)' }}
+            />
           </div>
 
-          {/* Content */}
+          {/* Content with Entrance Animations */}
           <div className="relative z-10 h-full flex items-center">
             <div className="max-w-screen-xl mx-auto px-6 w-full">
               <div className="max-w-3xl">
-                {/* Slide Counter */}
-                <div className="flex items-center gap-4 mb-6">
+                {/* Slide Counter - Fade in */}
+                <div className={`flex items-center gap-4 mb-6 transition-all duration-700 delay-100 ${
+                  index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}>
                   <span className="text-7xl md:text-8xl font-bold text-white/40">
                     0{slide.id}
                   </span>
@@ -124,29 +153,39 @@ export function HeroCarousel() {
                   </span>
                 </div>
 
-                {/* Badge */}
-                <p className="text-sm uppercase tracking-[0.3em] text-white/90 font-bold mb-4">
+                {/* Badge - Fade in with delay */}
+                <p className={`text-sm uppercase tracking-[0.3em] text-white/90 font-bold mb-4 transition-all duration-700 delay-200 ${
+                  index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}>
                   {slide.badge}
                 </p>
 
-                {/* Title */}
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-none">
+                {/* Title - Slide in from left */}
+                <h1 className={`text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-none transition-all duration-700 delay-300 ${
+                  index === currentSlide ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
+                }`}>
                   {slide.title}
                 </h1>
 
-                {/* Description */}
-                <p className="text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-2xl">
+                {/* Description - Fade in with delay */}
+                <p className={`text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-2xl transition-all duration-700 delay-500 ${
+                  index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}>
                   {slide.description}
                 </p>
 
-                {/* CTA */}
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-opal-blue text-white hover:bg-opal-blue-dark font-bold px-10 py-6 text-base shadow-xl transition-all duration-300"
-                >
-                  <Link href={slide.cta.href}>{slide.cta.label}</Link>
-                </Button>
+                {/* CTA - Pop in with delay */}
+                <div className={`transition-all duration-700 delay-700 ${
+                  index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                }`}>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-opal-blue text-white hover:bg-opal-blue-dark hover:scale-105 font-bold px-10 py-6 text-base shadow-xl transition-all duration-300"
+                  >
+                    <Link href={slide.cta.href}>{slide.cta.label}</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

@@ -25,15 +25,52 @@ export default function HomePage() {
       {/* Hero Carousel */}
       <HeroCarousel />
 
-      {/* Handmade in Australia + Shop Picks */}
-      <section className="py-20 md:py-24 bg-cream">
-        <div className="max-w-screen-xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-charcoal">Handmade in Australia</h2>
-            <p className="text-lg md:text-xl text-charcoal-60 max-w-3xl mx-auto leading-relaxed">
-              We source all our materials directly from Australian opal miners and handcraft each piece from start to finish,
-              offering our customers ethically sourced, eco-conscious Australian opals at an exceptional price.
-            </p>
+      {/* Handmade in Australia with Image */}
+      <section className="py-20 md:py-28 bg-cream overflow-hidden">
+        <div className="max-w-screen-2xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Content */}
+            <div className="px-6 lg:pl-12 order-2 lg:order-1">
+              <h2 className="text-4xl md:text-6xl font-bold mb-8 text-charcoal leading-tight">
+                Handmade in Australia
+              </h2>
+              <p className="text-lg md:text-xl text-charcoal-60 mb-8 leading-relaxed">
+                We source all our materials directly from Australian opal miners and handcraft each piece from start to finish,
+                offering our customers ethically sourced, eco-conscious Australian opals at an exceptional price.
+              </p>
+              <div className="flex gap-4">
+                <Link
+                  href="/store"
+                  className="inline-flex items-center justify-center bg-opal-blue text-white px-8 py-4 rounded-xl font-semibold hover:bg-opal-blue-dark transition-all shadow-lg text-base"
+                >
+                  Shop Our Collection
+                </Link>
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center justify-center border-2 border-charcoal text-charcoal px-8 py-4 rounded-xl font-semibold hover:bg-charcoal hover:text-white transition-all text-base"
+                >
+                  Our Story
+                </Link>
+              </div>
+            </div>
+
+            {/* Image Grid */}
+            <div className="px-6 lg:pr-0 order-1 lg:order-2">
+              <div className="grid grid-cols-2 gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/api/media/file/20211104_234659-1-4.jpg"
+                  alt="Vibrant Australian Opal"
+                  className="rounded-2xl shadow-xl object-cover w-full h-64 lg:h-80"
+                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/api/media/file/20220109_133519-3.jpg"
+                  alt="Colorful Handcrafted Opals"
+                  className="rounded-2xl shadow-xl object-cover w-full h-64 lg:h-80 mt-12"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </section>
