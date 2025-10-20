@@ -1,11 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
 import { getCategoryGradient } from '@/data/categories'
+import { StockBadge, NewBadge, AuthenticityBadge } from '@/components/trust'
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { ShoppingCart } from 'lucide-react'
 
 interface ProductCardProps {
   product: {
@@ -34,42 +37,45 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/store/${product.slug}`} className="group block">
       <Card className="h-full overflow-hidden border-0 shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white">
-        {/* Product Image Area with Opal-inspired Gradient */}
-        <div className="relative aspect-square overflow-hidden">
-          {/* Beautiful gradient representing opal colors */}
-          <div className={`absolute inset-0 ${getCategoryGradient(product.category)} opacity-90 group-hover:opacity-100 transition-opacity duration-500`}>
-            {/* Subtle pattern overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
-
-            {/* Shimmer effect on hover */}
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          </div>
-
-          {/* Centered Gemstone Icon */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-8xl opacity-60 group-hover:opacity-80 transition-opacity group-hover:scale-110 duration-500 transform">
-              💎
-            </div>
-          </div>
+        {/* Product Image Area */}
+        <div className="relative aspect-square overflow-hidden bg-warm-grey-light">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={product.image || '/images/placeholder-opal.jpg'}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            onError={(e) => {
+              // Fallback to gradient if image fails to load
+              const target = e.target as HTMLImageElement
+              target.style.display = 'none'
+              const parent = target.parentElement
+              if (parent) {
+                parent.innerHTML = `
+                  <div class="absolute inset-0 ${getCategoryGradient(product.category)} opacity-90">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-8xl opacity-60">💎</div>
+                  </div>
+                ` + parent.innerHTML
+              }
+            }}
+          />
+          {/* Subtle overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
           {/* Badges */}
-          <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
+          <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10 gap-2">
             <div className="flex flex-col gap-2">
-              {product.featured && (
-                <Badge className="bg-black/80 text-white backdrop-blur-sm border-0 hover:bg-black/90">
-                  Featured
-                </Badge>
-              )}
+              {product.featured && <NewBadge />}
               {discountPercent > 0 && (
-                <Badge className="bg-red-500 text-white backdrop-blur-sm border-0 hover:bg-red-600">
-                  Save {discountPercent}%
-                </Badge>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-error text-white shadow-lg backdrop-blur-sm">
+                  <span className="text-xs font-bold">SAVE {discountPercent}%</span>
+                </div>
               )}
             </div>
-            {product.stock <= 3 && product.stock > 0 && (
-              <Badge className="bg-amber-500/90 text-white backdrop-blur-sm border-0">
-                Only {product.stock} left
-              </Badge>
+            {product.stock <= 10 && product.stock > 0 && (
+              <StockBadge stock={product.stock} variant="compact" />
             )}
           </div>
 
@@ -105,13 +111,27 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* Stock Status */}
-          {product.stock === 0 ? (
-            <p className="text-sm font-medium text-red-600">Out of Stock</p>
-          ) : product.stock <= 3 ? (
-            <p className="text-sm font-medium text-amber-600">Limited Availability</p>
-          ) : (
-            <p className="text-sm font-medium text-green-600">In Stock</p>
+          {/* Authenticity Badge */}
+          <div className="pt-3 border-t border-warm-grey">
+            <AuthenticityBadge />
+          </div>
+
+          {/* Add to Cart Button */}
+          {product.stock > 0 && (
+            <div className="pt-3" onClick={(e) => e.preventDefault()}>
+              <AddToCartButton
+                product={{
+                  id: product.id,
+                  slug: product.slug,
+                  name: product.name,
+                  price: product.price,
+                }}
+                className="w-full bg-opal-blue hover:bg-opal-blue-dark text-white font-semibold"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                <span>Add to Cart</span>
+              </AddToCartButton>
+            </div>
           )}
         </div>
       </Card>

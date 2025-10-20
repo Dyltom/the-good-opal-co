@@ -61,6 +61,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.6",
     "graphql": "^16.11.0",
+    "lucide-react": "^0.546.0",
     "next": "^15.0.0",
     "payload": "^3.60.0",
     "postgres": "^3.4.7",

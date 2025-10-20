@@ -2,78 +2,17 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Container, Section } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
-import { Badge } from '@/components/ui/badge'
 import { ProductActions } from '@/components/product/ProductActions'
 import { formatCurrency } from '@/lib/utils'
-
-// Demo products (same as store page)
-const demoProducts = [
-  {
-    id: '1',
-    slug: 'premium-coffee-beans',
-    name: 'Premium Coffee Beans',
-    description: 'Organic, fair-trade coffee beans sourced from the highlands of Colombia. Rich, smooth flavor with notes of chocolate and caramel.',
-    longDescription: 'Our Premium Coffee Beans are carefully sourced from sustainable farms in Colombia. Each batch is roasted to perfection to bring out the unique flavor profile. Perfect for pour-over, French press, or espresso.',
-    price: 24.99,
-    compareAtPrice: 29.99,
-    stock: 50,
-    featured: true,
-    sku: 'COF-001',
-  },
-  {
-    id: '2',
-    slug: 'artisan-tea-collection',
-    name: 'Artisan Tea Collection',
-    description: 'A curated selection of premium loose-leaf teas from around the world.',
-    longDescription: 'This collection includes 5 unique tea varieties: Green Tea, Black Tea, Oolong, White Tea, and Herbal Blend. Each tea is hand-selected for quality and flavor.',
-    price: 34.99,
-    stock: 30,
-    featured: true,
-    sku: 'TEA-001',
-  },
-  {
-    id: '3',
-    slug: 'handcrafted-mug',
-    name: 'Handcrafted Mug',
-    description: 'Beautiful ceramic mug handmade by local artisans.',
-    longDescription: 'Each mug is unique, crafted by skilled artisans using traditional techniques. Microwave and dishwasher safe. Holds 12oz.',
-    price: 18.99,
-    stock: 25,
-    sku: 'MUG-001',
-  },
-  {
-    id: '4',
-    slug: 'french-press',
-    name: 'French Press Coffee Maker',
-    description: 'Premium stainless steel french press',
-    longDescription: 'Professional-grade French press with double-wall insulation to keep coffee hot. Makes 8 cups (34oz). Easy to clean and built to last.',
-    price: 45.99,
-    stock: 15,
-    sku: 'FRP-001',
-  },
-  {
-    id: '5',
-    slug: 'tea-infuser-set',
-    name: 'Tea Infuser Set',
-    description: 'Set of 3 premium stainless steel infusers',
-    longDescription: 'Three different sizes for perfect steeping. Fine mesh design for loose leaf teas. Easy to clean and dishwasher safe.',
-    price: 22.99,
-    stock: 40,
-    sku: 'INF-001',
-  },
-  {
-    id: '6',
-    slug: 'coffee-grinder',
-    name: 'Burr Coffee Grinder',
-    description: 'Professional grade burr grinder',
-    longDescription: 'Precision burr grinding with 18 settings from coarse to fine. Quiet operation and consistent grind size. Essential for serious coffee lovers.',
-    price: 89.99,
-    compareAtPrice: 99.99,
-    stock: 10,
-    featured: true,
-    sku: 'GRN-001',
-  },
-]
+import {
+  StockBadge,
+  NewBadge,
+  AuthenticityChecklist,
+  SocialProof,
+  PaymentBadgesCompact,
+} from '@/components/trust'
+import { DEMO_PRODUCTS } from '@/data/products'
+import { getCategoryGradient } from '@/data/categories'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -82,21 +21,16 @@ interface ProductPageProps {
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params
 
-  // TODO: Fetch from Payload API
-  // const payload = await getPayload({ config })
-  // const products = await payload.find({
-  //   collection: 'products',
-  //   where: { slug: { equals: slug } },
-  //   limit: 1,
-  // })
-  // if (!products.docs.length) notFound()
-  // const product = products.docs[0]
-
-  const product = demoProducts.find((p) => p.slug === slug)
+  // TODO: Fetch from Payload API when products are created
+  const product = DEMO_PRODUCTS.find((p) => p.slug === slug)
 
   if (!product) {
     notFound()
   }
+
+  // Simulated social proof (would come from analytics)
+  const viewCount = Math.floor(Math.random() * 20) + 5
+  const lastSoldDaysAgo = product.stock < 5 ? Math.floor(Math.random() * 3) : undefined
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -122,77 +56,85 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       {/* Product Detail */}
       <Section padding="lg">
         <Container>
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Product Image */}
-            <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
-              <div className="absolute inset-0 flex items-center justify-center text-9xl">
-                {product.name.includes('Coffee') && '☕'}
-                {product.name.includes('Tea') && '🍵'}
-                {product.name.includes('Mug') && '🍺'}
-                {product.name.includes('Grinder') && '⚙️'}
-                {product.name.includes('Press') && '🫖'}
-                {product.name.includes('Infuser') && '🌿'}
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Product Image Gallery */}
+            <div className="space-y-4">
+              {/* Main Image */}
+              <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-warm-grey-light">
+                {product.image ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </>
+                ) : (
+                  <div className={`absolute inset-0 ${getCategoryGradient(product.category)}`}>
+                    <div className="absolute inset-0 flex items-center justify-center text-9xl opacity-70">
+                      💎
+                    </div>
+                  </div>
+                )}
+
+                {/* Badges */}
+                <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
+                  <div className="flex flex-col gap-2">
+                    {product.featured && <NewBadge />}
+                  </div>
+                  {product.stock <= 10 && product.stock > 0 && (
+                    <StockBadge stock={product.stock} />
+                  )}
+                </div>
               </div>
-              {product.featured && (
-                <Badge className="absolute top-4 right-4">Featured</Badge>
-              )}
-              {product.compareAtPrice && (
-                <Badge variant="destructive" className="absolute top-4 left-4">
-                  Sale
-                </Badge>
-              )}
+
+              {/* Social Proof */}
+              <div className="flex items-center justify-center">
+                <SocialProof viewCount={viewCount} lastSoldDaysAgo={lastSoldDaysAgo} />
+              </div>
             </div>
 
             {/* Product Info */}
-            <div>
-              <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
+            <div className="space-y-6">
+              {/* Title */}
+              <div>
+                <p className="text-sm text-opal-blue font-semibold uppercase tracking-wide mb-2">
+                  {product.category?.replace('-', ' ')}
+                </p>
+                <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
+                  {product.name}
+                </h1>
+              </div>
 
               {/* Price */}
-              <div className="flex items-center gap-4 mb-6">
-                <span className="text-3xl font-bold">
+              <div className="flex items-baseline gap-4 pb-6 border-b border-warm-grey">
+                <span className="text-4xl font-bold text-opal-blue">
                   {formatCurrency(product.price, 'USD')}
                 </span>
                 {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <span className="text-xl text-muted-foreground line-through">
-                    {formatCurrency(product.compareAtPrice, 'USD')}
-                  </span>
-                )}
-                {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <Badge variant="destructive">
-                    Save {formatCurrency(product.compareAtPrice - product.price, 'USD')}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Stock Status */}
-              <div className="mb-6">
-                {product.stock > 20 && (
-                  <p className="text-success font-medium">
-                    ✓ In Stock - {product.stock} available
-                  </p>
-                )}
-                {product.stock > 0 && product.stock <= 20 && (
-                  <p className="text-warning font-medium">
-                    ⚠️ Low Stock - Only {product.stock} left!
-                  </p>
-                )}
-                {product.stock === 0 && (
-                  <p className="text-destructive font-medium">✗ Out of Stock</p>
+                  <>
+                    <span className="text-xl text-charcoal-60 line-through">
+                      {formatCurrency(product.compareAtPrice, 'USD')}
+                    </span>
+                    <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-error text-white text-sm font-bold">
+                      SAVE {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
+                    </div>
+                  </>
                 )}
               </div>
 
               {/* Description */}
-              <div className="prose prose-sm max-w-none mb-8">
-                <p className="text-lg text-muted-foreground mb-4">{product.description}</p>
-                {product.longDescription && (
-                  <p className="text-muted-foreground">{product.longDescription}</p>
-                )}
+              <div className="text-charcoal-80 leading-relaxed">
+                <p className="text-lg">{product.description}</p>
               </div>
 
-              {/* SKU */}
-              <p className="text-sm text-muted-foreground mb-6">SKU: {product.sku}</p>
+              {/* Authenticity Checklist */}
+              <div className="py-6 border-y border-warm-grey">
+                <AuthenticityChecklist />
+              </div>
 
-              {/* Product Actions - Quantity Selector + Add to Cart */}
+              {/* Product Actions */}
               <ProductActions
                 product={{
                   id: product.id,
@@ -203,26 +145,56 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 }}
               />
 
-              {/* Features */}
-              <div className="mt-8 pt-8 border-t">
-                <h3 className="font-semibold mb-4">Product Features</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>✓ Premium quality guaranteed</li>
-                  <li>✓ Fast shipping available</li>
-                  <li>✓ 30-day return policy</li>
-                  <li>✓ Secure checkout with Stripe</li>
-                </ul>
+              {/* Payment Security */}
+              <div className="pt-6 border-t border-warm-grey">
+                <PaymentBadgesCompact />
               </div>
 
-              {/* Ecommerce Info */}
-              <div className="mt-8 p-4 bg-muted rounded-lg">
-                <p className="text-sm font-semibold mb-2">🛒 Powered by Payload Ecommerce Plugin</p>
-                <p className="text-xs text-muted-foreground">
-                  This store uses Payload CMS ecommerce plugin with Orders, Carts, Variants, and Stripe integration.
+              {/* Shipping Info */}
+              <div className="p-4 bg-opal-blue-pale rounded-lg">
+                <p className="text-sm text-charcoal-80">
+                  <span className="font-semibold">Free shipping</span> on orders over $500 AUD •
+                  <span className="font-semibold"> 30-day returns</span> •
+                  <span className="font-semibold"> Arrives in 3-7 business days</span>
                 </p>
               </div>
             </div>
           </div>
+
+          {/* Product Specifications */}
+          {(product.origin || product.stoneType || product.metal || product.weight) && (
+            <div className="mt-16 border-t border-warm-grey pt-12">
+              <h2 className="font-serif text-2xl font-bold text-charcoal mb-6">
+                Specifications
+              </h2>
+              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
+                {product.stoneType && (
+                  <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <span className="text-charcoal-60">Stone Type</span>
+                    <span className="font-semibold text-charcoal">{product.stoneType}</span>
+                  </div>
+                )}
+                {product.origin && (
+                  <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <span className="text-charcoal-60">Origin</span>
+                    <span className="font-semibold text-charcoal">{product.origin}</span>
+                  </div>
+                )}
+                {product.metal && (
+                  <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <span className="text-charcoal-60">Metal</span>
+                    <span className="font-semibold text-charcoal">{product.metal}</span>
+                  </div>
+                )}
+                {product.weight && (
+                  <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <span className="text-charcoal-60">Weight</span>
+                    <span className="font-semibold text-charcoal">{product.weight} carats</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </Container>
       </Section>
       </main>
@@ -233,7 +205,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
 // Generate static params for all products
 export async function generateStaticParams() {
-  return demoProducts.map((product) => ({
+  return DEMO_PRODUCTS.map((product) => ({
     slug: product.slug,
   }))
 }

@@ -53,3 +53,6 @@ media/
 # Database
 *.db
 *.db-journal
+
+# WordPress Backup
+gdopalco-bkup/

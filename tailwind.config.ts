@@ -25,31 +25,47 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Brand colors (opal-inspired palette)
+        // Luxury Opal Brand Colors
         'opal-blue': {
-          light: '#00CCFF',
-          DEFAULT: '#0099FF',
-          dark: '#0066CC',
+          pale: '#E8F2F9',
+          light: '#2E6FA8',
+          DEFAULT: '#1B4B7C',
+          dark: '#123456',
         },
-        'opal-teal': {
-          light: '#00FFCC',
-          DEFAULT: '#33CCCC',
-          dark: '#009999',
+        'opal-turquoise': {
+          light: '#7FFFD4',
+          DEFAULT: '#40E0D0',
+          dark: '#20B2AA',
         },
         'opal-pink': {
-          light: '#FF66CC',
-          DEFAULT: '#FF3399',
-          dark: '#FF0099',
+          light: '#FFD6DD',
+          DEFAULT: '#FFB6C1',
+          dark: '#FF69B4',
         },
-        'opal-orange': {
-          light: '#FF9933',
-          DEFAULT: '#FF6600',
-          dark: '#CC5500',
+        'opal-purple': {
+          light: '#C084FC',
+          DEFAULT: '#9B4DCA',
+          dark: '#7C3AED',
         },
-        'opal-yellow': {
-          light: '#FFDD00',
-          DEFAULT: '#FFCC00',
-          dark: '#FFAA00',
+        'opal-gold': {
+          light: '#F4CF67',
+          DEFAULT: '#D4AF37',
+          dark: '#B8941F',
+        },
+        // Neutral palette
+        charcoal: {
+          DEFAULT: '#2C2C2C',
+          80: '#484848',
+          60: '#6B6B6B',
+          40: '#8E8E8E',
+        },
+        cream: {
+          DEFAULT: '#FAF9F6',
+          dark: '#F5F4F1',
+        },
+        'warm-grey': {
+          DEFAULT: '#E8E6E3',
+          light: '#F0EFEC',
         },
         // Base colors using CSS variables for tenant theming
         primary: {
@@ -89,12 +105,26 @@ const config: Config = {
           foreground: 'hsl(var(--destructive-foreground))',
         },
         success: {
-          DEFAULT: 'hsl(var(--success))',
+          DEFAULT: '#10B981',
+          light: '#D1FAE5',
+          dark: '#047857',
           foreground: 'hsl(var(--success-foreground))',
         },
         warning: {
-          DEFAULT: 'hsl(var(--warning))',
+          DEFAULT: '#F59E0B',
+          light: '#FEF3C7',
+          dark: '#D97706',
           foreground: 'hsl(var(--warning-foreground))',
+        },
+        error: {
+          DEFAULT: '#EF4444',
+          light: '#FEE2E2',
+          dark: '#DC2626',
+        },
+        info: {
+          DEFAULT: '#3B82F6',
+          light: '#DBEAFE',
+          dark: '#1D4ED8',
         },
         card: {
           DEFAULT: 'hsl(var(--card))',
@@ -111,8 +141,10 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
-        heading: ['var(--font-heading)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'var(--font-sans)', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        serif: ['Playfair Display', 'Georgia', 'serif'],
+        accent: ['Montserrat', 'sans-serif'],
+        heading: ['var(--font-heading)', 'Playfair Display', 'Georgia', 'serif'],
       },
       fontSize: {
         '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
@@ -199,6 +231,13 @@ const config: Config = {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'gradient-hero': 'linear-gradient(135deg, #1B4B7C 0%, #9B4DCA 50%, #FFB6C1 100%)',
+        'gradient-rings': 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%)',
+        'gradient-necklaces': 'linear-gradient(135deg, #2DD4BF 0%, #06B6D4 50%, #3B82F6 100%)',
+        'gradient-earrings': 'linear-gradient(135deg, #F472B6 0%, #FB7185 50%, #FB923C 100%)',
+        'gradient-bracelets': 'linear-gradient(135deg, #818CF8 0%, #3B82F6 50%, #14B8A6 100%)',
+        'gradient-raw': 'linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #FB923C 100%)',
+        'gradient-custom': 'linear-gradient(135deg, #475569 0%, #64748B 50%, #1E293B 100%)',
       },
     },
   },

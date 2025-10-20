@@ -1,27 +1,33 @@
 'use client'
 
 import { Container } from '@/components/layout'
-import { Badge } from '@/components/ui/badge'
 import { ProductCard } from '@/components/product/ProductCard'
 import { HeroSection, TrustBadges, CTASection } from '@/components/sections'
+import { Navigation, Footer } from '@/components/navigation'
 import { CATEGORY_FILTERS, getCategoryName } from '@/data/categories'
-import { DEMO_PRODUCTS, getProductsByCategory, sortProducts } from '@/data/products'
-import Link from 'next/link'
+import { PRODUCTS, getProductsByCategory, sortProducts } from '@/data/products'
 import { useState } from 'react'
 
 export default function StorePage() {
   const [category, setCategory] = useState('all')
   const [sort, setSort] = useState('featured')
+  const [showOutOfStock, setShowOutOfStock] = useState(false)
 
-  // Get filtered and sorted products
-  const filteredProducts = getProductsByCategory(category)
+  // Get filtered products
+  let filteredProducts = showOutOfStock
+    ? PRODUCTS.filter(p => category === 'all' ? true : p.category === category)
+    : getProductsByCategory(category)
+
   const sortedProducts = sortProducts(filteredProducts, sort)
+  const outOfStockCount = PRODUCTS.filter(p => p.stock === 0).length
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Navigation />
+
       {/* Hero Section */}
       <HeroSection
-        badge={`${sortedProducts.length} ${sortedProducts.length === 1 ? 'Product' : 'Products'}`}
+        badge={`${sortedProducts.length} ${sortedProducts.length === 1 ? 'Product' : 'Products'} Available`}
         title={getCategoryName(category === 'all' ? undefined : category)}
         description="Hand-selected authentic Australian opals, each piece certified for quality and authenticity"
         buttons={[]}
@@ -49,25 +55,46 @@ export default function StorePage() {
             ))}
           </div>
 
-          {/* Sort Bar */}
+          {/* Sort Bar & Filters */}
           <div className="mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-y py-4">
-            <p className="text-sm text-muted-foreground font-medium">
-              {sortedProducts.length} {sortedProducts.length === 1 ? 'piece' : 'pieces'}
-            </p>
-            <div className="flex items-center gap-3">
-              <label htmlFor="sort" className="text-sm font-medium">
-                Sort by:
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-charcoal-80 font-medium">
+                {sortedProducts.length} {sortedProducts.length === 1 ? 'piece' : 'pieces'}
+                {!showOutOfStock && outOfStockCount > 0 && (
+                  <span className="text-charcoal-40 ml-2">
+                    ({outOfStockCount} sold out)
+                  </span>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-4 flex-wrap">
+              {/* Out of Stock Toggle */}
+              <label className="flex items-center gap-2 text-sm text-charcoal-80 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showOutOfStock}
+                  onChange={(e) => setShowOutOfStock(e.target.checked)}
+                  className="rounded border-warm-grey text-opal-blue focus:ring-opal-blue"
+                />
+                <span>Show sold items</span>
               </label>
-              <select
-                id="sort"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="px-4 py-2 rounded-lg border-2 bg-white text-sm font-medium hover:border-opal-blue focus:border-opal-blue focus:outline-none focus:ring-2 focus:ring-opal-blue/20 transition-all"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
+
+              {/* Sort */}
+              <div className="flex items-center gap-2">
+                <label htmlFor="sort" className="text-sm font-medium text-charcoal-80">
+                  Sort:
+                </label>
+                <select
+                  id="sort"
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="px-4 py-2 rounded-lg border-2 border-warm-grey bg-white text-sm font-medium hover:border-opal-blue focus:border-opal-blue focus:outline-none focus:ring-2 focus:ring-opal-blue/20 transition-all"
+                >
+                  <option value="featured">Featured</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -102,6 +129,8 @@ export default function StorePage() {
         description="We offer custom commission services for bespoke opal jewelry"
         buttons={[{ href: '/contact', label: 'Get In Touch' }]}
       />
+
+      <Footer />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { HeroSection, CategoryGrid, FeaturesGrid, TrustBadges, CTASection } from '@/components/sections'
+import { TrustSignalBar } from '@/components/trust'
 import { PRODUCT_CATEGORIES } from '@/data/categories'
 import { WHY_CHOOSE_FEATURES } from '@/data/features'
 
@@ -14,14 +15,17 @@ export default function HomePage() {
       {/* Hero Section */}
       <HeroSection
         badge="Authentic Australian Opals"
-        title="Australian Opal That Doesn't Cost The Earth"
-        subtitle="Premium Opal Jewelry"
-        description="Discover the vibrant beauty of authentic Australian opals. Hand-selected for exceptional fire and color."
+        title="Each Opal Tells a Story Millions of Years in the Making"
+        subtitle="Premium Australian Opal Jewelry"
+        description="Discover the vibrant beauty of authentic Australian opals. Hand-selected for exceptional fire and color from the mines of Lightning Ridge, Coober Pedy, and beyond."
         buttons={[
-          { href: '/store', label: 'Shop Collection', className: 'bg-opal-blue hover:bg-opal-blue-dark text-white font-semibold px-8' },
-          { href: '/blog', label: 'Learn About Opals', variant: 'outline', className: 'border-opal-blue text-opal-blue hover:bg-opal-blue/10' },
+          { href: '/store', label: 'Discover Your Perfect Opal →', className: 'bg-opal-blue hover:bg-opal-blue-dark text-white font-semibold px-8' },
+          { href: '/blog', label: 'Our Story', variant: 'outline', className: 'border-opal-blue text-opal-blue hover:bg-opal-blue/10' },
         ]}
       />
+
+      {/* Trust Signal Bar */}
+      <TrustSignalBar />
 
       {/* Shop By Collection */}
       <CategoryGrid
@@ -43,10 +47,10 @@ export default function HomePage() {
       {/* CTA Section */}
       <CTASection
         title="Ready to Find Your Perfect Opal?"
-        description="Browse our collection of stunning Australian opal jewelry"
+        description="Browse our collection of stunning Australian opal jewelry, each piece one-of-a-kind"
         buttons={[
-          { href: '/store', label: 'Shop Now' },
-          { href: '/contact', label: 'Custom Commissions', variant: 'outline' },
+          { href: '/store', label: 'Explore Collection →' },
+          { href: '/contact', label: 'Design Your Dream Piece', variant: 'outline' },
         ]}
       />
 
