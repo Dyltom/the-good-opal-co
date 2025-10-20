@@ -7,10 +7,9 @@ import { CartDrawer } from '@/components/cart/CartDrawer'
 import { useEffect, useState, useRef } from 'react'
 
 /**
- * Pouch Button Component
+ * Cart Button Component
  *
- * Shows pouch item count and opens pouch drawer
- * Authentic opal mining language - miners carry finds in pouches
+ * Shows cart item count and opens cart drawer
  */
 export function CartButton() {
   const { itemCount, isLoaded } = useCart()
@@ -35,13 +34,13 @@ export function CartButton() {
           size="sm"
           className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
         >
-          Pouch
+          Cart
         </Button>
       </CartDrawer>
     )
   }
 
-  const itemText = itemCount === 1 ? 'find' : 'finds'
+  const itemText = itemCount === 1 ? 'item' : 'items'
 
   return (
     <CartDrawer>
@@ -50,7 +49,7 @@ export function CartButton() {
         size="sm"
         className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
       >
-        Pouch
+        Cart
         {itemCount > 0 && (
           <span className="text-xs opacity-70">
             ({itemCount} {itemText})
