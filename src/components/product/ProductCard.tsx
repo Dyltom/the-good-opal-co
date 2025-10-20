@@ -64,7 +64,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 }}
                 className="w-full bg-opal-blue text-white hover:bg-opal-blue-dark font-medium py-3 rounded-lg transition-all duration-200 text-sm tracking-wide shadow-lg"
               >
-                Add to Pouch
+                Add to Cart
               </AddToCartButton>
             </div>
           )}

@@ -31,12 +31,23 @@ export function CartDrawer({ children }: { children: React.ReactNode }) {
             <div className="text-muted-foreground">Loading...</div>
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full -mt-8">
-            <div className="text-6xl mb-4">🛒</div>
-            <h3 className="text-xl font-semibold mb-2">Your cart is empty</h3>
-            <p className="text-muted-foreground text-center mb-6">
-              Add some products to get started!
+          <div className="flex flex-col items-center justify-center h-full -mt-8 px-4">
+            {/* Animated Icon */}
+            <div className="relative mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-opal-blue to-opal-purple rounded-full flex items-center justify-center animate-pulse">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-bold mb-3 text-charcoal">Start Your Collection</h3>
+            <p className="text-charcoal-60 text-center mb-8 max-w-xs leading-relaxed">
+              Discover one-of-a-kind Australian opals, each with its own unique play of color
             </p>
+            <Button asChild size="lg" className="bg-opal-blue hover:bg-opal-blue-dark text-white shadow-lg w-full max-w-xs">
+              <Link href="/store">Explore Opals →</Link>
+            </Button>
           </div>
         ) : (
           <div className="flex flex-col h-full mt-6">

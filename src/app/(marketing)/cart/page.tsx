@@ -52,17 +52,67 @@ export default function CartPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
 
-            {/* Empty cart state */}
-            <Card className="p-12 text-center">
-              <div className="text-6xl mb-4">🛒</div>
-              <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
-              <p className="text-muted-foreground mb-8">
-                Add some products from our store to get started!
-              </p>
-              <Button size="lg" asChild>
-                <Link href="/store">Continue Shopping</Link>
-              </Button>
-            </Card>
+            {/* Empty cart state - Stunning Visual */}
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+              {/* Background Image */}
+              <div className="absolute inset-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/hero/opal-1.jpg"
+                  alt="Australian Opals"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-charcoal/80 via-charcoal/70 to-opal-blue/80" />
+              </div>
+
+              {/* Content */}
+              <div className="relative z-10 p-12 md:p-20 text-center text-white">
+                <div className="max-w-2xl mx-auto">
+                  {/* Icon */}
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full mb-6 border-2 border-white/20">
+                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+
+                  <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                    Your Collection Awaits
+                  </h2>
+                  <p className="text-xl text-white/90 mb-10 leading-relaxed">
+                    Each Australian opal is a unique masterpiece formed over millions of years.
+                    Start your journey and discover the perfect piece today.
+                  </p>
+
+                  {/* CTAs */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button size="lg" asChild className="bg-white text-opal-blue hover:bg-cream font-semibold shadow-xl hover:scale-105 transition-all">
+                      <Link href="/store">Explore Collection →</Link>
+                    </Button>
+                    <Button size="lg" variant="outline" asChild className="border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm font-semibold">
+                      <Link href="/">Back to Home</Link>
+                    </Button>
+                  </div>
+
+                  {/* Trust Elements */}
+                  <div className="mt-12 pt-8 border-t border-white/20">
+                    <div className="grid grid-cols-3 gap-6 text-center">
+                      <div>
+                        <div className="text-2xl font-bold mb-1">130+</div>
+                        <div className="text-sm text-white/80">Unique Opals</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold mb-1">100%</div>
+                        <div className="text-sm text-white/80">Australian</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold mb-1">1 Year</div>
+                        <div className="text-sm text-white/80">Warranty</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Cart functionality info */}
             <div className="mt-8 p-6 bg-muted rounded-lg">
