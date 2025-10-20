@@ -59,11 +59,11 @@ export default buildConfig({
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env['DATABASE_URL'] || '',
+      connectionString: process.env['DATABASE_URL'],
     },
     // Auto-run migrations without prompts
     migrationDir: path.resolve(dirname, 'migrations'),
-    push: false, // Don't auto-push schema changes (prevents prompts)
+    push: true, // Auto-create tables on init
   }),
   sharp,
   plugins: [

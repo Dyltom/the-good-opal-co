@@ -3,6 +3,9 @@
  * Run with: npx tsx scripts/import-to-payload.ts
  */
 
+import { config as dotenvConfig } from 'dotenv'
+dotenvConfig() // Load .env file
+
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import * as fs from 'fs'

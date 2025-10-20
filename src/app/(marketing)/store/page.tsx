@@ -5,21 +5,33 @@ import { ProductCard } from '@/components/product/ProductCard'
 import { HeroSection, TrustBadges, CTASection } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
 import { CATEGORY_FILTERS, getCategoryName } from '@/data/categories'
-import { PRODUCTS, getProductsByCategory, sortProducts } from '@/data/products'
-import { useState } from 'react'
+import { sortProducts, type Product } from '@/data/products'
+import { useState, useEffect } from 'react'
 
 export default function StorePage() {
   const [category, setCategory] = useState('all')
   const [sort, setSort] = useState('featured')
   const [showOutOfStock, setShowOutOfStock] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // Get filtered products
-  let filteredProducts = showOutOfStock
-    ? PRODUCTS.filter(p => category === 'all' ? true : p.category === category)
-    : getProductsByCategory(category)
+  // Fetch products from Payload API
+  useEffect(() => {
+    setLoading(true)
+    fetch(`/api/products?category=${category}&includeOutOfStock=${showOutOfStock}`)
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Failed to fetch products:', err)
+        setLoading(false)
+      })
+  }, [category, showOutOfStock])
 
-  const sortedProducts = sortProducts(filteredProducts, sort)
-  const outOfStockCount = PRODUCTS.filter(p => p.stock === 0).length
+  const sortedProducts = sortProducts(products, sort)
+  const outOfStockCount = products.filter(p => p.stock === 0).length
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -99,7 +111,13 @@ export default function StorePage() {
           </div>
 
           {/* Products Grid */}
-          {sortedProducts.length > 0 ? (
+          {loading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-96 bg-warm-grey-light animate-pulse rounded-lg" />
+              ))}
+            </div>
+          ) : sortedProducts.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {sortedProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
