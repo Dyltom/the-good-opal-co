@@ -63,31 +63,61 @@ async function importToPayload() {
       // 2. Create product in Products collection
       console.log(`  → Creating product...`)
 
-      const productData = {
+      const productData: any = {
         name: product.title,
         slug: product.slug,
-        description: [
-          {
-            type: 'paragraph',
-            children: [{ text: product.description }],
+        description: {
+          root: {
+            type: 'root',
+            children: [
+              {
+                type: 'paragraph',
+                children: [{ text: product.description, type: 'text' }],
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1,
           },
-        ],
+        },
         price: product.price,
-        stock: product.stock,
+        stock: product.stock || 0,
         status: product.stock > 0 ? 'published' : 'archived',
         featured: product.featured || false,
         category: product.category,
-        stoneType: product.stone_type,
-        stoneOrigin: product.origin,
-        weight: product.weight,
-        tenantId: 'good-opal-co',
-        images: mediaId
-          ? [
-              {
-                image: mediaId,
-              },
-            ]
-          : [],
+        weight: product.weight || undefined,
+        tenantId: 'goodopalco',
+      }
+
+      // Add stoneType if exists
+      if (product.stone_type) {
+        const stoneTypeMap: any = {
+          'Black Opal': 'black-opal',
+          'White Opal': 'white-opal',
+          'Boulder Opal': 'boulder-opal',
+          'Crystal Opal': 'crystal-opal',
+          'Doublet': 'black-opal',
+          'Fire Opal': 'fire-opal',
+        }
+        productData.stoneType = stoneTypeMap[product.stone_type] || 'white-opal'
+      }
+
+      // Add stoneOrigin if exists
+      if (product.origin) {
+        const originMap: any = {
+          'Lightning Ridge, NSW': 'lightning-ridge',
+          'Coober Pedy, SA': 'coober-pedy',
+          'Mintabie, SA': 'mintabie',
+          'Andamooka, SA': 'andamooka',
+          'Queensland': 'queensland',
+        }
+        productData.stoneOrigin = originMap[product.origin] || 'other-australian'
+      }
+
+      // Add images if exists
+      if (mediaId) {
+        productData.images = [{ image: mediaId }]
       }
 
       await payload.create({
