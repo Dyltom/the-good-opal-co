@@ -484,56 +484,59 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trust Badges */}
-      <section className="py-20 md:py-24 bg-white">
+      {/* Trust Badges / Promise Section */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-whisper">
         <div className="max-w-screen-xl mx-auto px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Why Us</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-charcoal">The Good Opal <span className="text-gradient-prismatic">Promise</span></h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-4">The Good Opal <span className="text-gradient-prismatic">Promise</span></h2>
+            <p className="text-lg text-charcoal/60 max-w-2xl mx-auto">
+              Quality, authenticity, and care in every piece we create
+            </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Express Delivery */}
-            <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-opal-deep rounded-2xl flex items-center justify-center mb-4 mx-auto group-hover:shadow-glow transition-shadow duration-300">
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
+              <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-opal-deep rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">Express Delivery</h3>
-              <p className="text-charcoal/60">Free express delivery for a limited period.</p>
+              <h3 className="font-bold text-xl mb-3 text-charcoal">Express Delivery</h3>
+              <p className="text-charcoal/70 leading-relaxed">Free express delivery for a limited period.</p>
             </div>
 
             {/* Warranty */}
-            <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-fire-pink to-fire-coral rounded-2xl flex items-center justify-center mb-4 mx-auto group-hover:shadow-glow transition-shadow duration-300">
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
+              <div className="w-16 h-16 bg-gradient-to-br from-fire-pink to-fire-coral rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">1 Year Warranty</h3>
-              <p className="text-charcoal/60">Free cleaning and polishing services on all jewellery.</p>
+              <h3 className="font-bold text-xl mb-3 text-charcoal">1 Year Warranty</h3>
+              <p className="text-charcoal/70 leading-relaxed">Free cleaning and polishing services on all jewellery.</p>
             </div>
 
             {/* Premium Packaging */}
-            <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-2xl flex items-center justify-center mb-4 mx-auto group-hover:shadow-glow transition-shadow duration-300">
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
+              <div className="w-16 h-16 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">Premium Packaging</h3>
-              <p className="text-charcoal/60">Glass display boxes for opals, premium jewellery boxes with care kit.</p>
+              <h3 className="font-bold text-xl mb-3 text-charcoal">Premium Packaging</h3>
+              <p className="text-charcoal/70 leading-relaxed">Glass display boxes for opals, premium jewellery boxes with care kit.</p>
             </div>
 
             {/* Authenticity */}
-            <div className="text-center group">
-              <div className="w-16 h-16 bg-gradient-to-br from-fire-orange to-fire-gold rounded-2xl flex items-center justify-center mb-4 mx-auto group-hover:shadow-glow transition-shadow duration-300">
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
+              <div className="w-16 h-16 bg-gradient-to-br from-fire-orange to-fire-gold rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">Certificate Included</h3>
-              <p className="text-charcoal/60">Every piece comes with a certificate of authenticity.</p>
+              <h3 className="font-bold text-xl mb-3 text-charcoal">Certificate Included</h3>
+              <p className="text-charcoal/70 leading-relaxed">Every piece comes with a certificate of authenticity.</p>
             </div>
           </div>
         </div>
