@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { HeroCarousel } from '@/components/sections/HeroCarousel'
-import { FeaturedProducts } from '@/components/sections'
+import { HomeHero, TrustMarquee, FeaturedProducts } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 
@@ -27,8 +27,11 @@ export default function HomePage() {
         ]}
       />
 
-      {/* Hero Carousel */}
-      <HeroCarousel />
+      {/* Hero Section */}
+      <HomeHero />
+
+      {/* Trust Marquee */}
+      <TrustMarquee />
 
       {/* Handmade in Australia with Image */}
       <section className="py-20 md:py-28 bg-cream overflow-hidden">
@@ -44,18 +47,12 @@ export default function HomePage() {
                 offering our customers ethically sourced, eco-conscious Australian opals at an exceptional price.
               </p>
               <div className="flex gap-4">
-                <Link
-                  href="/store"
-                  className="inline-flex items-center justify-center bg-opal-blue text-white px-8 py-4 rounded-xl font-semibold hover:bg-opal-blue-dark transition-all shadow-lg text-base"
-                >
-                  Shop Our Collection
-                </Link>
-                <Link
-                  href="/blog"
-                  className="inline-flex items-center justify-center border-2 border-charcoal text-charcoal px-8 py-4 rounded-xl font-semibold hover:bg-charcoal hover:text-white transition-all text-base"
-                >
-                  Our Story
-                </Link>
+                <Button size="lg" asChild>
+                  <Link href="/store">Shop Our Collection</Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/blog">Our Story</Link>
+                </Button>
               </div>
             </div>
 
@@ -80,35 +77,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Shop Picks */}
-      <FeaturedProducts
-        title="Shop Picks"
-        description="Handpicked treasures from our collection"
-        limit={4}
-        featured={true}
-        className="bg-white py-16"
-      />
+      {/* Shop Picks - DARK background for opal pop */}
+      <section className="bg-black-rich py-20 md:py-28">
+        <div className="max-w-screen-xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-light text-white mb-4">
+              Shop <span className="text-gradient-prismatic">Picks</span>
+            </h2>
+            <p className="text-lg text-white/60 max-w-2xl mx-auto">
+              Handpicked treasures from our collection
+            </p>
+          </div>
+          <FeaturedProducts limit={4} featured={true} />
+          <div className="text-center mt-12">
+            <Button variant="glass" size="lg" asChild>
+              <Link href="/store">View All Products</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Selected Categories with Images */}
-      <section className="py-20 md:py-24 bg-cream">
+      <section className="py-20 md:py-24 bg-gray-whisper">
         <div className="max-w-screen-xl mx-auto px-6">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-charcoal">Selected Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
             {/* Raw Opals */}
             <Link
               href="/store?category=raw-opals"
-              className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-glow transition-all duration-500"
             >
-              <div className="aspect-square relative">
+              <div className="aspect-square relative bg-black-rich">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/api/media/file/20210627_202327-3.jpg"
                   alt="Raw Australian Opals"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-xl font-bold text-white">OPALS</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-wide">OPALS</h3>
                 </div>
               </div>
             </Link>
@@ -116,18 +124,18 @@ export default function HomePage() {
             {/* Earrings */}
             <Link
               href="/store"
-              className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-glow transition-all duration-500"
             >
-              <div className="aspect-square relative">
+              <div className="aspect-square relative bg-black-rich">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/api/media/file/IMG_5903-3.jpg"
                   alt="Opal Earrings"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-xl font-bold text-white">EARRINGS</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-wide">EARRINGS</h3>
                 </div>
               </div>
             </Link>
@@ -135,18 +143,18 @@ export default function HomePage() {
             {/* Rings */}
             <Link
               href="/store?category=opal-rings"
-              className="group relative rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-glow transition-all duration-500"
             >
-              <div className="aspect-square relative">
+              <div className="aspect-square relative bg-black-rich">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/api/media/file/20210819_102625-4.jpg"
                   alt="Opal Rings"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-xl font-bold text-white">RINGS</h3>
+                  <h3 className="text-xl font-semibold text-white tracking-wide">RINGS</h3>
                 </div>
               </div>
             </Link>
@@ -154,26 +162,26 @@ export default function HomePage() {
             {/* Services */}
             <Link
               href="/services"
-              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-blue to-opal-purple shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
+              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric to-opal-deep shadow-lg hover:shadow-glow transition-all duration-500"
             >
               <div className="aspect-square relative flex flex-col items-center justify-center p-6">
                 <svg className="w-16 h-16 text-white mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 008 10.586V5L7 4z" />
                 </svg>
-                <h3 className="text-xl font-bold text-white text-center">SERVICES</h3>
+                <h3 className="text-xl font-semibold text-white text-center tracking-wide">SERVICES</h3>
               </div>
             </Link>
 
             {/* Courses */}
             <Link
               href="/courses"
-              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-gold to-opal-pink shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
+              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-fire-pink to-fire-coral shadow-lg hover:shadow-glow transition-all duration-500"
             >
               <div className="aspect-square relative flex flex-col items-center justify-center p-6">
                 <svg className="w-16 h-16 text-white mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                <h3 className="text-xl font-bold text-white text-center">COURSES</h3>
+                <h3 className="text-xl font-semibold text-white text-center tracking-wide">COURSES</h3>
               </div>
             </Link>
           </div>
@@ -242,12 +250,9 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center bg-opal-blue text-white px-10 py-4 rounded-xl font-semibold hover:bg-opal-blue-dark transition-all shadow-lg text-lg hover:scale-105 duration-300"
-              >
-                GET A QUOTE →
-              </Link>
+              <Button size="lg" asChild>
+                <Link href="/contact">GET A QUOTE →</Link>
+              </Button>
             </div>
 
             {/* Image Gallery - Custom Rings */}
@@ -442,12 +447,9 @@ export default function HomePage() {
 
           {/* CTA */}
           <div className="text-center">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center bg-opal-blue text-white px-10 py-4 rounded-xl font-semibold hover:bg-opal-blue-dark transition-all shadow-lg text-lg hover:scale-105 duration-300"
-            >
-              CHAT TO US TODAY →
-            </Link>
+            <Button size="lg" asChild>
+              <Link href="/contact">CHAT TO US TODAY →</Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -461,18 +463,12 @@ export default function HomePage() {
               Automatic discounts are applied to your order. The more items you add, the greater the discount on your total.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/store?category=opals"
-                className="inline-flex items-center justify-center bg-opal-blue text-white px-10 py-4 rounded-xl font-semibold hover:bg-opal-blue-dark transition-all shadow-lg text-lg"
-              >
-                SHOP OPALS
-              </Link>
-              <Link
-                href="/store?category=jewellery"
-                className="inline-flex items-center justify-center border-2 border-charcoal text-charcoal px-10 py-4 rounded-xl font-semibold hover:bg-charcoal hover:text-white transition-all text-lg"
-              >
-                SHOP JEWELLERY
-              </Link>
+              <Button size="lg" asChild>
+                <Link href="/store?category=opals">SHOP OPALS</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/store?category=jewellery">SHOP JEWELLERY</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -541,15 +537,10 @@ export default function HomePage() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-xl border-2 border-warm-grey bg-white focus:outline-none focus:border-opal-blue focus:ring-2 focus:ring-opal-blue/20 transition-all"
+                className="flex-1 px-6 py-4 rounded-full border-2 border-gray-soft bg-white focus:outline-none focus:border-opal-electric focus:ring-2 focus:ring-opal-electric/20 transition-all"
                 required
               />
-              <button
-                type="submit"
-                className="px-8 py-4 bg-opal-blue text-white rounded-xl font-semibold hover:bg-opal-blue-dark transition-all shadow-lg"
-              >
-                Subscribe
-              </button>
+              <Button type="submit">Subscribe</Button>
             </form>
           </div>
         </div>

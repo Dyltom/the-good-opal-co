@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import type { NavigationProps } from '@/types'
 import { Container } from '@/components/layout'
@@ -11,7 +11,16 @@ import { CartButton } from '@/components/cart/CartButton'
 
 /**
  * Navigation Component
- * Main site navigation with mobile menu support
+ *
+ * Main site navigation with:
+ * - Glassmorphism effect on scroll
+ * - Mobile menu support
+ * - Cart integration
+ *
+ * Follows SOLID principles:
+ * - Single Responsibility: Navigation display and state
+ * - Open/Closed: Extendable via props
+ * - Dependency Inversion: Uses NavigationProps interface
  */
 export function Navigation({
   logo,
@@ -23,13 +32,25 @@ export function Navigation({
   className,
 }: NavigationProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  // Track scroll position for glass effect
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
     <nav
       className={cn(
-        'w-full border-b',
-        sticky && 'sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
-        transparent && 'bg-transparent border-transparent',
+        'w-full transition-all duration-300',
+        sticky && 'fixed top-0 left-0 right-0 z-50',
+        scrolled
+          ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-soft/50'
+          : transparent
+            ? 'bg-transparent border-transparent'
+            : 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b',
         className
       )}
     >
@@ -56,7 +77,12 @@ export function Navigation({
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm font-medium transition-colors hover:text-primary"
+                className={cn(
+                  'text-sm font-medium transition-colors',
+                  scrolled
+                    ? 'text-charcoal hover:text-opal-electric'
+                    : 'text-charcoal hover:text-opal-electric'
+                )}
                 target={item.external ? '_blank' : undefined}
                 rel={item.external ? 'noopener noreferrer' : undefined}
               >
@@ -75,45 +101,48 @@ export function Navigation({
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            type="button"
-            className="md:hidden rounded-md p-2 hover:bg-muted"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-6 w-6"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-6 w-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              </svg>
-            )}
-          </button>
+          <div className="flex items-center gap-2 md:hidden">
+            <CartButton />
+            <button
+              type="button"
+              className="rounded-md p-2 hover:bg-muted"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-6 w-6"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="border-t py-4 md:hidden">
+          <div className="border-t py-4 md:hidden bg-white/95 backdrop-blur-xl">
             <div className="flex flex-col space-y-3">
               {items.map((item) => (
                 <Link

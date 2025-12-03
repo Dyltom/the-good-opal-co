@@ -25,6 +25,32 @@ const config: Config = {
   	},
   	extend: {
   		colors: {
+  			// Opal Electric Blues (from logo)
+  			'opal-electric': '#00B4D8',
+  			'opal-deep': '#0077B6',
+  			'opal-light': '#90E0EF',
+  			'opal-sky': '#CAF0F8',
+
+  			// Opal Fire Accents (from logo)
+  			'fire-coral': '#FF6B6B',
+  			'fire-pink': '#FF8FAB',
+  			'fire-orange': '#FF9F43',
+  			'fire-gold': '#FFD93D',
+
+  			// Opal Greens (from logo)
+  			'opal-emerald': '#2ECC71',
+  			'opal-teal': '#48D1CC',
+  			'opal-mint': '#A8E6CF',
+
+  			// Refined Neutrals
+  			'white-pure': '#FFFFFF',
+  			'white-warm': '#FEFDFB',
+  			'gray-whisper': '#F8F7F6',
+  			'gray-soft': '#E8E6E3',
+  			'charcoal-light': '#6B6966',
+  			'black-rich': '#0A0A12',
+
+  			// Legacy colors (backwards compatibility)
   			'opal-blue': {
   				pale: '#E8F2F9',
   				light: '#2E6FA8',
@@ -55,7 +81,8 @@ const config: Config = {
   				'40': '#8E8E8E',
   				'60': '#6B6B6B',
   				'80': '#484848',
-  				DEFAULT: '#2C2C2C'
+  				DEFAULT: '#2C2C2C',
+  				dark: '#1A1A1A'
   			},
   			cream: {
   				DEFAULT: '#FAF9F6',
@@ -282,6 +309,36 @@ const config: Config = {
   					transform: 'scale(1)',
   					opacity: '1'
   				}
+  			},
+  			// New opal-inspired keyframes
+  			'shimmer-slide': {
+  				'0%': { backgroundPosition: '-200% 0' },
+  				'100%': { backgroundPosition: '200% 0' }
+  			},
+  			'float': {
+  				'0%, 100%': { transform: 'translateY(0px)' },
+  				'50%': { transform: 'translateY(-10px)' }
+  			},
+  			'pulse-glow': {
+  				'0%, 100%': { boxShadow: '0 0 20px rgba(0, 180, 216, 0.3)' },
+  				'50%': { boxShadow: '0 0 40px rgba(0, 180, 216, 0.6)' }
+  			},
+  			'gradient-shift': {
+  				'0%': { backgroundPosition: '0% 50%' },
+  				'50%': { backgroundPosition: '100% 50%' },
+  				'100%': { backgroundPosition: '0% 50%' }
+  			},
+  			'fade-up': {
+  				'0%': { opacity: '0', transform: 'translateY(20px)' },
+  				'100%': { opacity: '1', transform: 'translateY(0)' }
+  			},
+  			'scale-in': {
+  				'0%': { opacity: '0', transform: 'scale(0.95)' },
+  				'100%': { opacity: '1', transform: 'scale(1)' }
+  			},
+  			'marquee': {
+  				'0%': { transform: 'translateX(0%)' },
+  				'100%': { transform: 'translateX(-50%)' }
   			}
   		},
   		animation: {
@@ -295,7 +352,15 @@ const config: Config = {
   			'slide-in-from-right': 'slide-in-from-right 0.3s ease-out',
   			'zoom-in': 'zoom-in 0.2s ease-out',
   			'zoom-out': 'zoom-out 0.2s ease-out',
-  			'ping-once': 'ping-once 0.6s cubic-bezier(0, 0, 0.2, 1)'
+  			'ping-once': 'ping-once 0.6s cubic-bezier(0, 0, 0.2, 1)',
+  			// New opal-inspired animations
+  			'shimmer-slide': 'shimmer-slide 2s linear infinite',
+  			'float': 'float 6s ease-in-out infinite',
+  			'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+  			'gradient-shift': 'gradient-shift 8s linear infinite',
+  			'fade-up': 'fade-up 0.5s ease-out forwards',
+  			'scale-in': 'scale-in 0.3s ease-out forwards',
+  			'marquee': 'marquee 30s linear infinite'
   		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

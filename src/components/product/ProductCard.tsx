@@ -1,105 +1,176 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { Heart, ShoppingBag } from 'lucide-react'
+
+/**
+ * Product interface following Interface Segregation Principle
+ * Only includes properties needed for card display
+ */
+interface ProductCardProduct {
+  id: string
+  slug: string
+  name: string
+  description: string
+  price: number
+  compareAtPrice?: number
+  stock: number
+  featured?: boolean
+  category?: string
+  image?: string
+}
 
 interface ProductCardProps {
-  product: {
-    id: string
-    slug: string
-    name: string
-    description: string
-    price: number
-    compareAtPrice?: number
-    stock: number
-    featured?: boolean
-    category?: string
-    image?: string
-  }
+  product: ProductCardProduct
+  index?: number
 }
 
 /**
- * Clean Premium Product Card
- * Image-first, minimal framing, maximum visual space
+ * Enhanced ProductCard Component
+ *
+ * Features:
+ * - Dark background for opal color pop
+ * - Gradient border on hover
+ * - Staggered fade-up animation
+ * - Quick add to cart overlay
+ * - Wishlist button
+ * - Featured/category badges
+ *
+ * Follows SOLID principles:
+ * - Single Responsibility: Only handles product card display
+ * - Open/Closed: Extendable via props without modification
+ * - Interface Segregation: Uses focused ProductCardProduct interface
  */
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const isAvailable = product.stock > 0
 
   return (
-    <div className={`group ${!isAvailable ? 'opacity-60' : ''}`}>
-      {/* Image Container - Maximum Space */}
-      <Link href={`/store/${product.slug}`} className="block relative mb-3.5">
-        <div className="relative aspect-square overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-lg transition-all duration-500">
-          {/* Product Image - Full Coverage */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.image || '/images/placeholder-opal.jpg'}
-            alt={product.name}
-            className={`w-full h-full object-cover transition-all duration-500 ease-out ${
-              isAvailable ? 'group-hover:scale-[1.03]' : 'grayscale'
-            }`}
-          />
+    <div
+      className="group animate-fade-up"
+      style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
+    >
+      <Link href={`/store/${product.slug}`} className="block">
+        {/* Image Container - DARK background for opal pop */}
+        <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-black-rich mb-4 shadow-lg group-hover:shadow-glow transition-all duration-500">
+          {/* Gradient Border on Hover */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-pink to-opal-emerald opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-[1px]">
+            <div className="absolute inset-[1px] rounded-2xl bg-black-rich" />
+          </div>
 
-          {/* Sold Overlay - Much More Obvious */}
+          {/* Product Image */}
+          <div className="relative w-full h-full">
+            {product.image ? (
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                className={`object-cover transition-all duration-700 ease-out ${
+                  isAvailable
+                    ? 'group-hover:scale-105'
+                    : 'grayscale opacity-60'
+                }`}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src="/images/placeholder-opal.jpg"
+                alt={product.name}
+                className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+                  isAvailable
+                    ? 'group-hover:scale-105'
+                    : 'grayscale opacity-60'
+                }`}
+              />
+            )}
+          </div>
+
+          {/* Sold Overlay */}
           {!isAvailable && (
-            <div className="absolute inset-0 bg-charcoal/75 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2">
-              <span className="text-lg font-bold text-white tracking-wide">Already Collected</span>
-              <span className="text-xs text-white/80 font-medium">This treasure has found its home</span>
+            <div className="absolute inset-0 flex items-center justify-center z-10">
+              <div className="bg-black-rich/90 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10">
+                <span className="text-white font-medium tracking-wide text-sm">Collected</span>
+              </div>
             </div>
           )}
 
-          {/* Hover: Quick Add */}
+          {/* Quick Actions on Hover */}
           {isAvailable && (
             <div
-              className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4"
+              className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-10"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
-              <AddToCartButton
-                product={{
-                  id: product.id,
-                  slug: product.slug,
-                  name: product.name,
-                  price: product.price,
-                }}
-                className="w-full bg-opal-blue text-white hover:bg-opal-blue-dark font-medium py-3 rounded-lg transition-all duration-200 text-sm tracking-wide shadow-lg"
-              >
-                Add to Cart
-              </AddToCartButton>
+              <div className="flex gap-2">
+                <AddToCartButton
+                  product={{
+                    id: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    price: product.price,
+                  }}
+                  className="flex-1 bg-white text-charcoal hover:bg-opal-electric hover:text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-200"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  Add to Cart
+                </AddToCartButton>
+                <button
+                  className="w-12 h-12 bg-white rounded-xl flex items-center justify-center hover:bg-fire-pink hover:text-white shadow-lg transition-all duration-200"
+                  aria-label="Add to wishlist"
+                >
+                  <Heart className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Featured Badge */}
+          {product.featured && (
+            <div className="absolute top-4 right-4 px-3 py-1.5 bg-gradient-to-r from-opal-electric to-fire-pink rounded-full z-10">
+              <span className="text-xs font-semibold text-white">Featured</span>
+            </div>
+          )}
+
+          {/* Category Badge */}
+          {product.category && (
+            <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full z-10">
+              <span className="text-xs font-medium text-charcoal capitalize">{product.category}</span>
             </div>
           )}
         </div>
-      </Link>
 
-      {/* Product Info */}
-      <div className="space-y-2">
-        <Link href={`/store/${product.slug}`}>
-          <h3 className={`font-semibold text-base leading-snug transition-colors duration-200 line-clamp-2 min-h-[2.75rem] ${
-            isAvailable ? 'text-charcoal group-hover:text-opal-blue' : 'text-charcoal-60'
+        {/* Product Info */}
+        <div className="space-y-2 px-1">
+          <h3 className={`font-medium text-base leading-snug transition-colors duration-200 line-clamp-2 ${
+            isAvailable
+              ? 'text-charcoal group-hover:text-opal-electric'
+              : 'text-charcoal-light'
           }`}>
             {product.name}
           </h3>
-        </Link>
 
-        <div className="flex items-baseline gap-2">
-          {isAvailable ? (
-            <>
-              <p className="text-lg font-bold text-opal-blue">
-                {formatCurrency(product.price, 'USD')}
-              </p>
-              {product.compareAtPrice && product.compareAtPrice > product.price && (
-                <p className="text-sm text-charcoal-60 line-through">
-                  {formatCurrency(product.compareAtPrice, 'USD')}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm font-medium text-charcoal-60">
-              No longer available
-            </p>
-          )}
+          <div className="flex items-baseline gap-2">
+            {isAvailable ? (
+              <>
+                <span className="text-lg font-bold text-opal-deep">
+                  {formatCurrency(product.price, 'AUD')}
+                </span>
+                {product.compareAtPrice && product.compareAtPrice > product.price && (
+                  <span className="text-sm text-charcoal-light line-through">
+                    {formatCurrency(product.compareAtPrice, 'AUD')}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-sm font-medium text-charcoal-light">
+                No longer available
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      </Link>
     </div>
   )
 }

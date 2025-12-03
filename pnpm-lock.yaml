@@ -92,6 +92,9 @@ dependencies:
   drizzle-orm:
     specifier: ^0.44.6
     version: 0.44.6(@types/pg@8.10.2)(@upstash/redis@1.35.6)(pg@8.16.3)(postgres@3.4.7)
+  framer-motion:
+    specifier: ^12.23.25
+    version: 12.23.25(react-dom@19.2.0)(react@19.2.0)
   graphql:
     specifier: ^16.11.0
     version: 16.11.0
@@ -100,7 +103,7 @@ dependencies:
     version: 0.546.0(react@19.2.0)
   next:
     specifier: ^15.0.0
-    version: 15.5.6(@babel/core@7.26.10)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
+    version: 15.5.6(@babel/core@7.28.4)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
   payload:
     specifier: ^3.60.0
     version: 3.60.0(graphql@16.11.0)(typescript@5.9.3)
@@ -222,6 +225,7 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
+    dev: true
 
   /@apidevtools/json-schema-ref-parser@11.9.3:
     resolution: {integrity: sha512-60vepv88RwcJtSHrD6MjIL6Ta3SOYbgfnkHb+ppAVK+o9mXprRtulx7VlRl3lN3bbvysAfCS7WMVfhUYemB0IQ==}
@@ -289,6 +293,7 @@ packages:
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /@babel/core@7.28.4:
     resolution: {integrity: sha512-2BCOP7TN8M+gVDj7/ht3hsaO/B/n5oDbiAyyvnRlNOs+u1o+JWNYTQrmpuNp1/Wq2gcFrI01JAW+paEKDMx/CA==}
@@ -311,7 +316,6 @@ packages:
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/generator@7.28.3:
     resolution: {integrity: sha512-3lSpxGgvnmZznmBkCRnVREPUFJv2wrv9iAoFDvADJc0ypmdOxdUtcLeBgBJ6zE0PMeTKnxeQzyk0xTBq4Ep7zw==}
@@ -358,6 +362,7 @@ packages:
       '@babel/traverse': 7.28.4
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /@babel/helper-module-transforms@7.28.3(@babel/core@7.28.4):
     resolution: {integrity: sha512-gytXUbs8k2sXS9PnQptz5o0QnpLL51SwASIORY6XaBKF88nsOT0Zw9szLqlSGQDP/4TljBAD5y98p2U1fqkdsw==}
@@ -371,7 +376,6 @@ packages:
       '@babel/traverse': 7.28.4
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /@babel/helper-plugin-utils@7.27.1:
     resolution: {integrity: sha512-1gn1Up5YXka3YYAHGKpbideQ5Yjf1tDa9qYcgysz+cNCXukyLl6DjPXhD3VRwSb8c0J9tA4b2+rHEZtc6R0tlw==}
@@ -403,6 +407,7 @@ packages:
     hasBin: true
     dependencies:
       '@babel/types': 7.28.4
+    dev: true
 
   /@babel/parser@7.28.4:
     resolution: {integrity: sha512-yZbBqeM6TkpP9du/I2pUZnJsRMGGvOuIrhjzC1AwHwW+6he4mni6Bp/m8ijn0iOuZuPI2BfkCoSRunpyjnrQKg==}
@@ -456,6 +461,7 @@ packages:
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /@babel/traverse@7.28.4:
     resolution: {integrity: sha512-YEzuboP2qvQavAcjgQNVgsvHIDv6ZpwXvcvjmyySP2DIMuByS/6ioU5G9pYrWHM6T2YDfc7xga9iNzYOs12CFQ==}
@@ -1772,7 +1778,6 @@ packages:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
-    dev: true
 
   /@jridgewell/resolve-uri@3.1.2:
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -2350,7 +2355,7 @@ packages:
       graphql-http: 1.22.4(graphql@16.11.0)
       graphql-playground-html: 1.6.30
       http-status: 2.1.0
-      next: 15.5.6(@babel/core@7.26.10)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
+      next: 15.5.6(@babel/core@7.28.4)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
       path-to-regexp: 6.3.0
       payload: 3.60.0(graphql@16.11.0)(typescript@5.9.3)
       qs-esm: 7.0.2
@@ -2553,7 +2558,7 @@ packages:
       date-fns: 4.1.0
       dequal: 2.0.3
       md5: 2.3.0
-      next: 15.5.6(@babel/core@7.26.10)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
+      next: 15.5.6(@babel/core@7.28.4)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
       object-to-formdata: 4.5.1
       payload: 3.60.0(graphql@16.11.0)(typescript@5.9.3)
       qs-esm: 7.0.2
@@ -5058,7 +5063,7 @@ packages:
       vue-router:
         optional: true
     dependencies:
-      next: 15.5.6(@babel/core@7.26.10)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
+      next: 15.5.6(@babel/core@7.28.4)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
       react: 19.2.0
     dev: false
 
@@ -7179,6 +7184,27 @@ packages:
       tslib: 2.8.1
     dev: true
 
+  /framer-motion@12.23.25(react-dom@19.2.0)(react@19.2.0):
+    resolution: {integrity: sha512-gUHGl2e4VG66jOcH0JHhuJQr6ZNwrET9g31ZG0xdXzT0CznP7fHX4P8Bcvuc4MiUB90ysNnWX2ukHRIggkl6hQ==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      motion-dom: 12.23.23
+      motion-utils: 12.23.6
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      tslib: 2.8.1
+    dev: false
+
   /fsevents@2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -7334,6 +7360,7 @@ packages:
   /globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
     engines: {node: '>=4'}
+    dev: true
 
   /globals@14.0.0:
     resolution: {integrity: sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==}
@@ -8616,11 +8643,9 @@ packages:
     resolution: {integrity: sha512-n5yolOs0TQQBRUFImrRfs/+6X4p3Q4n1dUEqt/H58Vx7OW6RF+foWEgmTVDhIWJIMXOuNNL0apKH2S16en9eiA==}
     dependencies:
       motion-utils: 12.23.6
-    dev: true
 
   /motion-utils@12.23.6:
     resolution: {integrity: sha512-eAWoPgr4eFEOFfg2WjIsMoqJTW6Z8MTUCgn/GZ3VRpClWBdnbjryiA3ZSNLyxCTmCQx4RmYX6jX1iWHbenUPNQ==}
-    dev: true
 
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -8709,7 +8734,7 @@ packages:
       - babel-plugin-macros
     dev: true
 
-  /next@15.5.6(@babel/core@7.26.10)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0):
+  /next@15.5.6(@babel/core@7.28.4)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0):
     resolution: {integrity: sha512-zTxsnI3LQo3c9HSdSf91O1jMNsEzIXDShXd4wVdg9y5shwLqBXi4ZtUUJyB86KGVSJLZx0PFONvO54aheGX8QQ==}
     engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
     hasBin: true
@@ -8737,7 +8762,7 @@ packages:
       postcss: 8.4.31
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      styled-jsx: 5.1.6(@babel/core@7.26.10)(react@19.2.0)
+      styled-jsx: 5.1.6(@babel/core@7.28.4)(react@19.2.0)
     optionalDependencies:
       '@next/swc-darwin-arm64': 15.5.6
       '@next/swc-darwin-x64': 15.5.6
@@ -10629,7 +10654,7 @@ packages:
       react: 19.0.0
     dev: true
 
-  /styled-jsx@5.1.6(@babel/core@7.26.10)(react@19.2.0):
+  /styled-jsx@5.1.6(@babel/core@7.28.4)(react@19.2.0):
     resolution: {integrity: sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==}
     engines: {node: '>= 12.0.0'}
     peerDependencies:
@@ -10642,7 +10667,7 @@ packages:
       babel-plugin-macros:
         optional: true
     dependencies:
-      '@babel/core': 7.26.10
+      '@babel/core': 7.28.4
       client-only: 0.0.1
       react: 19.2.0
     dev: false
@@ -11169,7 +11194,7 @@ packages:
       '@uploadthing/mime-types': 0.3.2
       '@uploadthing/shared': 7.1.1
       effect: 3.10.3
-      next: 15.5.6(@babel/core@7.26.10)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
+      next: 15.5.6(@babel/core@7.28.4)(@playwright/test@1.56.1)(react-dom@19.2.0)(react@19.2.0)
       tailwindcss: 3.4.18(tsx@4.20.6)
     dev: false
 

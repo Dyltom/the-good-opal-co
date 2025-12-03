@@ -76,6 +76,38 @@
     /* Border radius */
     --radius: 0.5rem;
 
+    /* Opal-Inspired Design Tokens */
+    --gradient-opal-shimmer: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 180, 216, 0.4) 25%,
+      rgba(255, 107, 107, 0.4) 50%,
+      rgba(46, 204, 113, 0.4) 75%,
+      transparent 100%
+    );
+
+    --gradient-hero: linear-gradient(
+      135deg,
+      #0A0A12 0%,
+      #1a1a2e 50%,
+      #16213e 100%
+    );
+
+    --gradient-cta: linear-gradient(
+      135deg,
+      #00B4D8 0%,
+      #0077B6 100%
+    );
+
+    --gradient-prismatic: linear-gradient(
+      90deg,
+      #00B4D8,
+      #FF8FAB,
+      #2ECC71,
+      #FF9F43,
+      #00B4D8
+    );
+
     /* Shadows */
     --shadow-2xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.05);
     --shadow-xs: 0px 4px 10px 0px hsl(0 0% 0% / 0.05);
@@ -332,5 +364,47 @@
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: #d0cec9; /* darker warm-grey on hover */
+  }
+
+  /* Opal-Inspired Utility Classes */
+  .text-gradient-prismatic {
+    background: var(--gradient-prismatic);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 8s linear infinite;
+  }
+
+  .bg-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bg-glass-dark {
+    background: rgba(10, 10, 18, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 30px rgba(0, 180, 216, 0.2);
+  }
+
+  .shadow-glow-lg {
+    box-shadow: 0 0 60px rgba(0, 180, 216, 0.3);
+  }
+
+  .border-gradient {
+    border: 1px solid transparent;
+    background: linear-gradient(var(--background), var(--background)) padding-box,
+                var(--gradient-prismatic) border-box;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 }
