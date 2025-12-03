@@ -1,9 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+/**
+ * Product Actions Component
+ *
+ * Client component that handles quantity selection and add to cart.
+ * Works with the new cookie-based cart system.
+ */
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { QuantitySelector } from '@/components/ui/quantity-selector'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 
 interface ProductActionsProps {
@@ -13,32 +18,20 @@ interface ProductActionsProps {
     name: string
     price: number
     stock: number
+    image?: string
   }
 }
 
-/**
- * Product Actions Component
- *
- * Client component that handles quantity selection and add to cart
- */
 export function ProductActions({ product }: ProductActionsProps) {
-  const [quantity, setQuantity] = useState(1)
-
   const isOutOfStock = product.stock === 0
 
   return (
     <div className="space-y-6">
-      {/* Quantity Selector */}
-      {!isOutOfStock && (
-        <div>
-          <label className="block text-sm font-medium mb-2">Quantity</label>
-          <QuantitySelector
-            quantity={quantity}
-            onQuantityChange={setQuantity}
-            min={1}
-            max={Math.min(product.stock, 99)}
-          />
-        </div>
+      {/* Stock Status */}
+      {product.stock > 0 && product.stock <= 5 && (
+        <p className="text-sm text-amber-600 font-medium">
+          Only {product.stock} left in stock - order soon!
+        </p>
       )}
 
       {/* Action Buttons */}
@@ -48,10 +41,18 @@ export function ProductActions({ product }: ProductActionsProps) {
             Out of Stock
           </Button>
         ) : (
-          <AddToCartButton product={product} quantity={quantity} />
+          <AddToCartButton
+            product={{
+              id: product.id,
+              slug: product.slug,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+            }}
+          />
         )}
         <Button size="lg" variant="outline" asChild>
-          <Link href="/store">← Back to Store</Link>
+          <Link href="/store">Back to Store</Link>
         </Button>
       </div>
     </div>

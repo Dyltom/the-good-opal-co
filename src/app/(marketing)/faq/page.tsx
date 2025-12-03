@@ -195,7 +195,7 @@ export default function FAQPage() {
             </h1>
             <p className="text-lg text-charcoal-80 leading-relaxed">
               Find answers to common questions about Australian opals, our jewelry,
-              shipping, care, and more. Can't find what you're looking for?{' '}
+              shipping, care, and more. Can&apos;t find what you&apos;re looking for?{' '}
               <a href="/contact" className="text-opal-blue hover:text-opal-blue-dark underline font-medium">
                 Contact us
               </a>
@@ -254,7 +254,7 @@ export default function FAQPage() {
               Still Have Questions?
             </h3>
             <p className="text-charcoal-80 mb-6">
-              We're here to help! Our team of opal experts is ready to answer any questions
+              We&apos;re here to help! Our team of opal experts is ready to answer any questions
               you might have.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">

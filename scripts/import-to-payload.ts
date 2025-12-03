@@ -128,7 +128,8 @@ async function importToPayload() {
       createdProducts++
       console.log(`  ✓ Product created`)
     } catch (error) {
-      console.error(`  ✗ Error: ${error.message}`)
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      console.error(`  ✗ Error: ${message}`)
     }
   }
 

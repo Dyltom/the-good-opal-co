@@ -7,5 +7,6 @@ export type {
   FormActions,
   UseFormStateReturn,
 } from './useFormState'
-export { useCart } from './useCart'
-export type { CartItem } from './useCart'
+
+// Cart is now handled via server actions - see src/app/(marketing)/cart/actions.ts
+// CartItem type is exported from src/lib/cart.ts

@@ -13,6 +13,8 @@ import { Media } from './payload/collections/Media'
 import { Posts } from './payload/collections/Posts'
 import { Categories } from './payload/collections/Categories'
 import { Products } from './payload/collections/Products'
+import { Orders } from './payload/collections/Orders'
+import { Customers } from './payload/collections/Customers'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -34,6 +36,8 @@ export default buildConfig({
     Posts,
     Categories,
     Products,
+    Orders,
+    Customers,
   ],
   editor: lexicalEditor({}),
   secret: process.env['PAYLOAD_SECRET'] || 'your-secret-key-here',

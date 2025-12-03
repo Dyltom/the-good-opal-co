@@ -1,149 +1,131 @@
-'use client'
-
+import { Suspense } from 'react'
 import { Container } from '@/components/layout'
-import { ProductCard } from '@/components/product/ProductCard'
-import { HeroSection, TrustBadges, CTASection } from '@/components/sections'
+import { TrustBadges, CTASection } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
-import { ProductFilters } from '@/components/store/ProductFilters'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { sortProducts, type Product } from '@/data/products'
-import { useState, useEffect, useMemo } from 'react'
+import { getPayload } from '@/lib/payload'
+import { StoreContent } from './store-content'
+import { CollectionJsonLd } from '@/components/seo'
 
-export default function StorePage() {
-  const [sort, setSort] = useState('featured')
-  const [showOutOfStock, setShowOutOfStock] = useState(false)
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
+/**
+ * Store Page Metadata
+ */
+export const metadata = {
+  title: 'Shop Australian Opals | The Good Opal Co',
+  description:
+    'Discover our collection of authentic Australian opals. Handpicked from Lightning Ridge, Coober Pedy, and Queensland mines. Free shipping on orders over $500.',
+}
 
-  // Filter states
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedStoneTypes, setSelectedStoneTypes] = useState<string[]>([])
-  const [selectedOrigins, setSelectedOrigins] = useState<string[]>([])
-  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000])
-
-  // Fetch products from Payload API
-  useEffect(() => {
-    setLoading(true)
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
-        setProducts(data)
-        // Set max price for slider
-        const maxPrice = Math.max(...data.map((p: Product) => p.price), 1000)
-        setPriceRange([0, maxPrice])
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Failed to fetch products:', err)
-        setLoading(false)
-      })
-  }, [])
-
-  // Extract unique filter options from products
-  const filterOptions = useMemo(() => {
-    const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)))
-    const stoneTypes = Array.from(new Set(products.map((p: any) => p.stoneType).filter(Boolean)))
-    const origins = Array.from(new Set(products.map((p: any) => p.origin).filter(Boolean)))
-    const materials = Array.from(new Set(products.map((p: any) => p.material).filter(Boolean)))
-    const maxPrice = Math.max(...products.map(p => p.price), 1000)
-
-    return {
-      categories: ['all', ...categories],
-      stoneTypes,
-      origins,
-      materials,
-      priceRange: [0, maxPrice] as [number, number],
-      maxPrice,
+/**
+ * Product type derived from Payload collection
+ */
+export interface Product {
+  id: string
+  name: string
+  slug: string
+  description: string
+  price: number
+  compareAtPrice?: number
+  images?: Array<{
+    image?: {
+      url?: string
     }
-  }, [products])
+  }>
+  category: string
+  status: 'draft' | 'published' | 'archived'
+  featured: boolean
+  stock: number
+  material?: string
+  stoneType?: string
+  stoneOrigin?: string
+  weight?: number
+  createdAt: string
+  updatedAt: string
+}
 
-  // Apply filters
-  const filteredProducts = useMemo(() => {
-    return products.filter((product: any) => {
-      // Stock filter
-      if (!showOutOfStock && product.stock === 0) return false
+/**
+ * Loading skeleton for products
+ */
+function ProductsSkeleton() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+      {[...Array(12)].map((_, i) => (
+        <div key={i}>
+          <div className="aspect-square bg-warm-grey-light animate-pulse mb-3 rounded-lg" />
+          <div className="h-4 bg-warm-grey-light animate-pulse mb-2 rounded" />
+          <div className="h-4 bg-warm-grey-light animate-pulse w-20 rounded" />
+        </div>
+      ))}
+    </div>
+  )
+}
 
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        const searchableText = `${product.name} ${product.description} ${product.category} ${product.stoneType} ${product.origin}`.toLowerCase()
-        if (!searchableText.includes(query)) return false
-      }
+/**
+ * Store Page
+ *
+ * Server Component that fetches products from Payload and renders the store.
+ * Uses direct Payload Local API queries for optimal performance.
+ */
+export default async function StorePage() {
+  // Fetch all published products using Payload Local API
+  const payload = await getPayload()
 
-      // Category filter
-      if (selectedCategories.length > 0 && !selectedCategories.includes('all')) {
-        if (!selectedCategories.includes(product.category)) return false
-      }
+  const { docs: products } = await payload.find({
+    collection: 'products',
+    where: {
+      status: { equals: 'published' },
+    },
+    limit: 200, // Reasonable limit for product catalog
+    sort: '-createdAt',
+    depth: 2, // Include related media
+  })
 
-      // Stone type filter
-      if (selectedStoneTypes.length > 0) {
-        if (!selectedStoneTypes.includes(product.stoneType)) return false
-      }
+  // Transform products for client component
+  const transformedProducts: Product[] = products.map((product) => ({
+    id: String(product.id),
+    name: product.name,
+    slug: product.slug,
+    description:
+      typeof product.description === 'string'
+        ? product.description
+        : product.description?.root?.children
+            ?.map((node: { children?: Array<{ text?: string }> }) =>
+              node.children?.map((child: { text?: string }) => child.text ?? '').join('')
+            )
+            .join(' ') ?? '',
+    price: product.price,
+    compareAtPrice: product.compareAtPrice ?? undefined,
+    images: product.images as Product['images'],
+    category: product.category,
+    status: product.status as Product['status'],
+    featured: product.featured ?? false,
+    stock: product.stock ?? 0,
+    material: product.material ?? undefined,
+    stoneType: product.stoneType ?? undefined,
+    stoneOrigin: product.stoneOrigin ?? undefined,
+    weight: product.weight ?? undefined,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  }))
 
-      // Origin filter
-      if (selectedOrigins.length > 0) {
-        if (!selectedOrigins.includes(product.origin)) return false
-      }
-
-      // Material filter
-      if (selectedMaterials.length > 0) {
-        if (!selectedMaterials.includes(product.material)) return false
-      }
-
-      // Price range filter
-      if (product.price < priceRange[0] || product.price > priceRange[1]) return false
-
-      return true
-    })
-  }, [products, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, showOutOfStock])
-
-  const sortedProducts = sortProducts(filteredProducts, sort)
-  const outOfStockCount = products.filter(p => p.stock === 0).length
-
-  // Filter handlers
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev.filter(c => c !== 'all'), category]
-    )
-  }
-
-  const handleStoneTypeChange = (type: string) => {
-    setSelectedStoneTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-    )
-  }
-
-  const handleOriginChange = (origin: string) => {
-    setSelectedOrigins(prev =>
-      prev.includes(origin) ? prev.filter(o => o !== origin) : [...prev, origin]
-    )
-  }
-
-  const handleMaterialChange = (material: string) => {
-    setSelectedMaterials(prev =>
-      prev.includes(material) ? prev.filter(m => m !== material) : [...prev, material]
-    )
-  }
-
-  const handleClearFilters = () => {
-    setSearchQuery('')
-    setSelectedCategories([])
-    setSelectedStoneTypes([])
-    setSelectedOrigins([])
-    setSelectedMaterials([])
-    setPriceRange([0, filterOptions.maxPrice])
-  }
+  // Prepare products for JSON-LD
+  const productsForJsonLd = transformedProducts.slice(0, 10).map((product) => ({
+    name: product.name,
+    slug: product.slug,
+    price: product.price,
+    image: product.images?.[0]?.image?.url,
+  }))
 
   return (
+    <>
+      <CollectionJsonLd
+        name="Australian Opals Collection"
+        description="Discover our collection of authentic Australian opals. Handpicked from Lightning Ridge, Coober Pedy, and Queensland mines."
+        url="/store"
+        products={productsForJsonLd}
+      />
     <div className="min-h-screen flex flex-col bg-white">
       <Navigation
-        logo={{ url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
         items={[
           { href: '/store', label: 'Shop' },
           { href: '/blog', label: 'Blog' },
@@ -154,138 +136,9 @@ export default function StorePage() {
       {/* Products Section */}
       <section className="py-8">
         <Container>
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Filters Sidebar */}
-            <aside className="lg:w-72 flex-shrink-0">
-              <div
-                className="lg:sticky lg:top-24 bg-cream rounded-xl border border-warm-grey shadow-sm p-6 pr-4 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto scrollbar-thin"
-                style={{
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#E8E6E3 #FAF9F6',
-                  scrollbarGutter: 'stable'
-                }}
-              >
-                <ProductFilters
-                  filters={filterOptions}
-                  selectedCategories={selectedCategories}
-                  selectedStoneTypes={selectedStoneTypes}
-                  selectedOrigins={selectedOrigins}
-                  selectedMaterials={selectedMaterials}
-                  priceRange={priceRange}
-                  onCategoryChange={handleCategoryChange}
-                  onStoneTypeChange={handleStoneTypeChange}
-                  onOriginChange={handleOriginChange}
-                  onMaterialChange={handleMaterialChange}
-                  onPriceRangeChange={setPriceRange}
-                  onClearAll={handleClearFilters}
-                />
-              </div>
-            </aside>
-
-            {/* Products Area */}
-            <div className="flex-1">
-              {/* Search Bar */}
-              <div className="mb-6">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search for your next treasure..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-blue focus:outline-none focus:ring-2 focus:ring-opal-blue/20 transition-all shadow-sm"
-                  />
-                  <svg
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal-40"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Sort Bar */}
-              <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-cream rounded-xl border border-warm-grey shadow-sm p-5">
-                <div className="flex items-center gap-4">
-                  <p className="text-sm text-charcoal font-semibold">
-                    {sortedProducts.length} {sortedProducts.length === 1 ? 'treasure' : 'treasures'} available
-                    {!showOutOfStock && outOfStockCount > 0 && (
-                      <span className="text-charcoal-60 ml-2 font-normal">
-                        ({outOfStockCount} collected)
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4 flex-wrap">
-                  {/* Out of Stock Toggle */}
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="show-sold"
-                      checked={showOutOfStock}
-                      onCheckedChange={setShowOutOfStock}
-                      className="data-[state=checked]:bg-opal-blue data-[state=checked]:border-opal-blue"
-                    />
-                    <Label htmlFor="show-sold" className="text-sm cursor-pointer font-medium text-charcoal">
-                      Show already collected items
-                    </Label>
-                  </div>
-
-                  {/* Sort - Using shadcn Select */}
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="sort" className="text-sm font-semibold text-charcoal">
-                      Sort:
-                    </Label>
-                    <Select value={sort} onValueChange={setSort}>
-                      <SelectTrigger className="w-[180px] rounded-lg border border-warm-grey hover:border-opal-blue focus:border-opal-blue focus:ring-2 focus:ring-opal-blue/20 shadow-sm bg-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white border-warm-grey">
-                        <SelectItem value="featured" className="focus:bg-opal-blue/10 focus:text-opal-blue">Featured Finds</SelectItem>
-                        <SelectItem value="price-low" className="focus:bg-opal-blue/10 focus:text-opal-blue">Price: Low to High</SelectItem>
-                        <SelectItem value="price-high" className="focus:bg-opal-blue/10 focus:text-opal-blue">Price: High to Low</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Products Grid - Apple Style */}
-              {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
-                  {[...Array(12)].map((_, i) => (
-                    <div key={i}>
-                      <div className="aspect-square bg-warm-grey-light animate-pulse mb-3" />
-                      <div className="h-4 bg-warm-grey-light animate-pulse mb-2" />
-                      <div className="h-4 bg-warm-grey-light animate-pulse w-20" />
-                    </div>
-                  ))}
-                </div>
-              ) : sortedProducts.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
-                  {sortedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 bg-white rounded-2xl shadow-lg">
-                  <div className="text-6xl mb-4">💎</div>
-                  <p className="text-lg text-muted-foreground mb-4">No products match your filters</p>
-                  <button
-                    onClick={handleClearFilters}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-colors h-10 px-6 bg-opal-blue text-white hover:bg-opal-blue-dark shadow-lg"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <Suspense fallback={<ProductsSkeleton />}>
+            <StoreContent products={transformedProducts} />
+          </Suspense>
         </Container>
       </section>
 
@@ -301,5 +154,6 @@ export default function StorePage() {
 
       <Footer />
     </div>
+    </>
   )
 }

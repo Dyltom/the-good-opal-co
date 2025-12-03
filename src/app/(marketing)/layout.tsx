@@ -1,7 +1,6 @@
 import '../globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
-import { CartProvider } from '@/contexts/CartContext'
 
 /**
  * Marketing Layout
@@ -11,6 +10,9 @@ import { CartProvider } from '@/contexts/CartContext'
  *
  * NOTE: The (payload) route group has its own layout that does NOT
  * import globals.css to avoid conflicts with Payload admin styles.
+ *
+ * Cart management now uses cookie-based storage with Server Actions,
+ * eliminating the need for a CartProvider context.
  */
 export default function MarketingLayout({
   children,
@@ -26,10 +28,8 @@ export default function MarketingLayout({
         <link rel="shortcut icon" href="/favicon.png" />
       </head>
       <body suppressHydrationWarning>
-        <CartProvider>
-          {children}
-          <Toaster />
-        </CartProvider>
+        {children}
+        <Toaster />
         <Analytics />
       </body>
     </html>

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { HeroCarousel } from '@/components/sections/HeroCarousel'
 import { FeaturedProducts } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
-import { PRODUCT_CATEGORIES } from '@/data/categories'
 import Link from 'next/link'
+import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 
 export const metadata: Metadata = {
   title: 'The Good Opal Co - Premium Australian Opal Jewelry',
@@ -12,9 +12,14 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
+    <>
+      {/* Structured Data for SEO */}
+      <OrganizationJsonLd />
+      <WebsiteJsonLd />
+
     <div className="flex flex-col bg-white">
       <Navigation
-        logo={{ url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
         items={[
           { href: '/store', label: 'Shop' },
           { href: '/blog', label: 'Blog' },
@@ -306,7 +311,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-charcoal-80 mb-6 leading-relaxed">
-                "Absolutely stunning! The opal ring I ordered has the most incredible play of color - blues, greens, and flashes of red. It's even more beautiful in person than the photos. The craftsmanship is exceptional!"
+                &ldquo;Absolutely stunning! The opal ring I ordered has the most incredible play of color - blues, greens, and flashes of red. It&apos;s even more beautiful in person than the photos. The craftsmanship is exceptional!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-opal-blue to-opal-purple rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -329,7 +334,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-charcoal-80 mb-6 leading-relaxed">
-                "I took the opal cutting course and learned so much! Now I can spot quality opals and appreciate the skill involved. The hands-on experience was invaluable. Highly recommend!"
+                &ldquo;I took the opal cutting course and learned so much! Now I can spot quality opals and appreciate the skill involved. The hands-on experience was invaluable. Highly recommend!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-opal-gold to-opal-pink rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -352,7 +357,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-charcoal-80 mb-6 leading-relaxed">
-                "The custom engagement ring exceeded all expectations! They helped me design the perfect piece featuring a Lightning Ridge black opal. My fiancée cries every time she looks at it. Worth every cent!"
+                &ldquo;The custom engagement ring exceeded all expectations! They helped me design the perfect piece featuring a Lightning Ridge black opal. My fiancée cries every time she looks at it. Worth every cent!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-opal-turquoise to-opal-blue rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -375,7 +380,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-charcoal-80 mb-6 leading-relaxed">
-                "Fast shipping, beautiful packaging, and the opal earrings are gorgeous! The colors shift as I move - it's like wearing little rainbows. Great value for authentic Australian opals."
+                &ldquo;Fast shipping, beautiful packaging, and the opal earrings are gorgeous! The colors shift as I move - it&apos;s like wearing little rainbows. Great value for authentic Australian opals.&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-opal-pink to-opal-gold rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -398,7 +403,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-charcoal-80 mb-6 leading-relaxed">
-                "I've been collecting opals for years and these are genuine, quality stones at fair prices. The descriptions are accurate and the customer service is excellent. Will definitely buy again!"
+                &ldquo;I&apos;ve been collecting opals for years and these are genuine, quality stones at fair prices. The descriptions are accurate and the customer service is excellent. Will definitely buy again!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-opal-blue to-opal-turquoise rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -421,7 +426,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-charcoal-80 mb-6 leading-relaxed">
-                "Bought a pendant as a gift for my mum - she absolutely loves it! The Coober Pedy opal has amazing color and the setting is beautifully crafted. Came with certificate of authenticity too."
+                &ldquo;Bought a pendant as a gift for my mum - she absolutely loves it! The Coober Pedy opal has amazing color and the setting is beautifully crafted. Came with certificate of authenticity too.&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-opal-purple to-opal-pink rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -552,5 +557,6 @@ export default function HomePage() {
 
       <Footer />
     </div>
+    </>
   )
 }

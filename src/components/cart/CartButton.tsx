@@ -1,56 +1,58 @@
 'use client'
 
-import { useCart } from '@/hooks/useCart'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { CartDrawer } from '@/components/cart/CartDrawer'
-import { useEffect, useState, useRef } from 'react'
-
 /**
  * Cart Button Component
  *
- * Shows cart item count and opens cart drawer
+ * Shows cart item count and opens cart drawer.
+ * Uses server actions for cart data fetching.
  */
+
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { CartDrawer } from '@/components/cart/CartDrawer'
+import { fetchCart } from '@/app/(marketing)/cart/actions'
+import type { Cart } from '@/lib/cart'
+
 export function CartButton() {
-  const { itemCount, isLoaded } = useCart()
-  const prevCountRef = useRef(itemCount)
-  const [animate, setAnimate] = useState(false)
+  const [cart, setCart] = useState<Cart | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const prevCountRef = useRef(0)
+
+  // Fetch cart data on mount and when cart updates
+  const loadCart = useCallback(async () => {
+    const result = await fetchCart()
+    if (result.success && result.data) {
+      setCart(result.data)
+      prevCountRef.current = result.data.itemCount
+    }
+    setIsLoading(false)
+  }, [])
 
   useEffect(() => {
-    // Only animate if cart is loaded and count actually increased
-    if (isLoaded && itemCount > prevCountRef.current && itemCount > 0) {
-      setAnimate(true)
-      setTimeout(() => setAnimate(false), 600)
+    loadCart()
+  }, [loadCart])
+
+  // Listen for cart updates (custom event fired by cart actions)
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      loadCart()
     }
-    prevCountRef.current = itemCount
-  }, [itemCount, isLoaded])
+    window.addEventListener('cart-updated', handleCartUpdate)
+    return () => window.removeEventListener('cart-updated', handleCartUpdate)
+  }, [loadCart])
 
-  // Don't render badge until cart is loaded (prevents hydration mismatch)
-  if (!isLoaded) {
-    return (
-      <CartDrawer>
-        <Button
-          variant="outline"
-          size="sm"
-          className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
-        >
-          Cart
-        </Button>
-      </CartDrawer>
-    )
-  }
-
+  const itemCount = cart?.itemCount ?? 0
   const itemText = itemCount === 1 ? 'item' : 'items'
 
   return (
-    <CartDrawer>
+    <CartDrawer onCartUpdate={loadCart}>
       <Button
         variant="outline"
         size="sm"
         className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
       >
         Cart
-        {itemCount > 0 && (
+        {!isLoading && itemCount > 0 && (
           <span className="text-xs opacity-70">
             ({itemCount} {itemText})
           </span>

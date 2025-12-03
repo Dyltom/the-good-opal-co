@@ -45,7 +45,7 @@ export function FeaturedProducts({
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
-        let filtered = featured ? data.filter((p: Product) => p.featured) : data
+        const filtered = featured ? data.filter((p: Product) => p.featured) : data
         setProducts(filtered.slice(0, limit))
         setLoading(false)
       })
