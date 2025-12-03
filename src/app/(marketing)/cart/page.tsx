@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
+import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { getCart } from '@/lib/cart'
@@ -24,7 +24,7 @@ export default async function CartPage() {
   const cart = await getCart()
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navigation
         logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
         items={[
@@ -32,14 +32,38 @@ export default async function CartPage() {
           { href: '/blog', label: 'Blog' },
           { href: '/faq', label: 'FAQ' },
         ]}
+        transparent
       />
 
       <main className="flex-1">
-        <Section padding="lg">
+        {/* Header - Dark opal-inspired */}
+        <section className="relative py-16 md:py-20 bg-black-rich overflow-hidden pt-28">
+          {/* Background gradient orbs */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-electric" />
+            <div className="absolute -bottom-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
+          </div>
+          <Container>
+            <div className="relative z-10 text-center">
+              <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
+                Your Selection
+              </span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">
+                Shopping <span className="text-gradient-prismatic">Cart</span>
+              </h1>
+              <p className="text-lg text-white/60">
+                {cart.items.length === 0
+                  ? 'Your cart is empty'
+                  : `${cart.itemCount} ${cart.itemCount === 1 ? 'treasure' : 'treasures'} waiting for you`}
+              </p>
+            </div>
+          </Container>
+        </section>
+
+        {/* Cart Content */}
+        <section className="py-12 md:py-16 bg-gray-whisper">
           <Container>
             <div className="max-w-4xl mx-auto">
-              <h1 className="text-4xl font-bold mb-8">Shopping Cart</h1>
-
               {cart.items.length === 0 ? (
                 <EmptyCartState />
               ) : (
@@ -47,7 +71,7 @@ export default async function CartPage() {
               )}
             </div>
           </Container>
-        </Section>
+        </section>
       </main>
 
       <Footer />

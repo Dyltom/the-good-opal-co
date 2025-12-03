@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
+import { Navigation, Footer } from '@/components/navigation'
+import { Button } from '@/components/ui/button'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { TrustSignalBarCompact } from '@/components/trust'
 import { ShieldCheck, Package, CreditCard, Gem, Wrench, Mail } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -185,95 +187,130 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <div className="flex flex-col">
-      {/* Header */}
-      <Section className="bg-gradient-to-b from-cream to-white border-b border-warm-grey">
-        <Container>
-          <div className="max-w-3xl mx-auto text-center py-12">
-            <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mb-4">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-lg text-charcoal-80 leading-relaxed">
-              Find answers to common questions about Australian opals, our jewelry,
-              shipping, care, and more. Can&apos;t find what you&apos;re looking for?{' '}
-              <a href="/contact" className="text-opal-blue hover:text-opal-blue-dark underline font-medium">
-                Contact us
-              </a>
-              .
-            </p>
+    <div className="min-h-screen flex flex-col bg-white">
+      <Navigation
+        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        items={[
+          { href: '/store', label: 'Shop' },
+          { href: '/blog', label: 'Blog' },
+          { href: '/faq', label: 'FAQ' },
+        ]}
+        transparent
+      />
+
+      <main className="flex-1">
+        {/* Header - Dark opal-inspired */}
+        <section className="relative py-20 md:py-28 bg-black-rich overflow-hidden pt-28">
+          {/* Background gradient orbs */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-emerald" />
+            <div className="absolute -bottom-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
           </div>
-        </Container>
-      </Section>
-
-      {/* Trust Bar */}
-      <TrustSignalBarCompact />
-
-      {/* FAQ Content */}
-      <Section className="py-16">
-        <Container>
-          <div className="max-w-4xl mx-auto space-y-12">
-            {faqCategories.map((category) => {
-              const Icon = category.icon
-              return (
-                <div key={category.title} className="space-y-4">
-                  {/* Category Header */}
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-opal-blue-pale flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-opal-blue" strokeWidth={2} />
-                    </div>
-                    <h2 className="font-serif text-2xl font-bold text-charcoal">
-                      {category.title}
-                    </h2>
-                  </div>
-
-                  {/* FAQ Accordion */}
-                  <Accordion type="single" collapsible className="space-y-3">
-                    {category.faqs.map((faq, index) => (
-                      <AccordionItem
-                        key={index}
-                        value={`${category.title}-${index}`}
-                        className="border border-warm-grey rounded-lg px-6 bg-white hover:border-opal-blue transition-colors"
-                      >
-                        <AccordionTrigger className="text-left font-semibold text-charcoal hover:text-opal-blue py-5">
-                          {faq.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-charcoal-80 leading-relaxed pb-5">
-                          {faq.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Still have questions CTA */}
-          <div className="max-w-2xl mx-auto mt-16 text-center p-8 bg-opal-blue-pale rounded-xl border border-opal-blue/20">
-            <h3 className="font-serif text-2xl font-bold text-charcoal mb-3">
-              Still Have Questions?
-            </h3>
-            <p className="text-charcoal-80 mb-6">
-              We&apos;re here to help! Our team of opal experts is ready to answer any questions
-              you might have.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a
-                href="/contact"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-opal-blue hover:bg-opal-blue-dark text-white font-semibold transition-colors"
-              >
-                Contact Us
-              </a>
-              <a
-                href="mailto:info@goodopalco.com"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white font-semibold transition-colors"
-              >
-                Email Us
-              </a>
+          <Container>
+            <div className="relative z-10 text-center max-w-3xl mx-auto">
+              <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
+                Help Center
+              </span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+                Frequently Asked <span className="text-gradient-prismatic">Questions</span>
+              </h1>
+              <p className="text-lg md:text-xl text-white/70">
+                Find answers to common questions about Australian opals, our jewelry,
+                shipping, care, and more.
+              </p>
             </div>
-          </div>
-        </Container>
-      </Section>
+          </Container>
+        </section>
+
+        {/* Trust Bar - Modern */}
+        <section className="py-6 bg-gray-whisper border-b border-gray-soft">
+          <Container>
+            <div className="flex flex-wrap justify-center gap-8 text-sm">
+              <div className="flex items-center gap-2 text-charcoal-60">
+                <span className="w-2 h-2 rounded-full bg-opal-electric" />
+                100% Australian Opals
+              </div>
+              <div className="flex items-center gap-2 text-charcoal-60">
+                <span className="w-2 h-2 rounded-full bg-fire-pink" />
+                Free Shipping $500+
+              </div>
+              <div className="flex items-center gap-2 text-charcoal-60">
+                <span className="w-2 h-2 rounded-full bg-opal-emerald" />
+                30-Day Returns
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        {/* FAQ Content */}
+        <Section className="py-16">
+          <Container>
+            <div className="max-w-4xl mx-auto space-y-12">
+              {faqCategories.map((category) => {
+                const Icon = category.icon
+                return (
+                  <div key={category.title} className="space-y-4">
+                    {/* Category Header */}
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-opal-electric to-opal-deep flex items-center justify-center shadow-md">
+                        <Icon className="w-6 h-6 text-white" strokeWidth={2} />
+                      </div>
+                      <h2 className="text-2xl font-bold text-charcoal">
+                        {category.title}
+                      </h2>
+                    </div>
+
+                    {/* FAQ Accordion */}
+                    <Accordion type="single" collapsible className="space-y-3">
+                      {category.faqs.map((faq, index) => (
+                        <AccordionItem
+                          key={index}
+                          value={`${category.title}-${index}`}
+                          className="border border-gray-soft rounded-xl px-6 bg-white hover:border-opal-electric/50 hover:shadow-sm transition-all duration-200"
+                        >
+                          <AccordionTrigger className="text-left font-semibold text-charcoal hover:text-opal-electric py-5">
+                            {faq.question}
+                          </AccordionTrigger>
+                          <AccordionContent className="text-charcoal-60 leading-relaxed pb-5">
+                            {faq.answer}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Still have questions CTA */}
+            <div className="max-w-3xl mx-auto mt-20 relative rounded-2xl overflow-hidden">
+              <div className="absolute inset-0 bg-black-rich">
+                <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-30 blur-3xl bg-opal-electric" />
+                <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-30 blur-3xl bg-fire-pink" />
+              </div>
+              <div className="relative z-10 text-center p-10 md:p-14">
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                  Still Have Questions?
+                </h3>
+                <p className="text-white/70 mb-8 max-w-lg mx-auto">
+                  We&apos;re here to help! Our team of opal experts is ready to answer any questions
+                  you might have.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button size="lg" variant="shimmer" asChild>
+                    <Link href="/contact">Contact Us</Link>
+                  </Button>
+                  <Button size="lg" variant="glass" asChild>
+                    <a href="mailto:info@goodopalco.com">Email Us</a>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </Section>
+      </main>
+
+      <Footer />
     </div>
   )
 }

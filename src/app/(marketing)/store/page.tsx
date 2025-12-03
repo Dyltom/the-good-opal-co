@@ -131,18 +131,44 @@ export default async function StorePage() {
           { href: '/blog', label: 'Blog' },
           { href: '/faq', label: 'FAQ' },
         ]}
+        transparent
       />
 
-      {/* Products Section - Dark background for opal pop */}
-      <section className="py-8 bg-gradient-to-b from-white via-gray-whisper to-black-rich">
-        <Container>
-          <div className="bg-black-rich rounded-3xl p-8 md:p-12 shadow-2xl">
-            <Suspense fallback={<ProductsSkeleton />}>
-              <StoreContent products={transformedProducts} />
-            </Suspense>
+      <main className="flex-1">
+        {/* Header - Dark opal-inspired */}
+        <section className="relative py-16 md:py-20 bg-black-rich overflow-hidden pt-28">
+          {/* Background gradient orbs */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-electric" />
+            <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
           </div>
-        </Container>
-      </section>
+          <Container>
+            <div className="relative z-10 text-center">
+              <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
+                Our Collection
+              </span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+                Australian <span className="text-gradient-prismatic">Opals</span>
+              </h1>
+              <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto">
+                Handpicked treasures from Lightning Ridge, Coober Pedy, and Queensland mines.
+                Each piece is one-of-a-kind.
+              </p>
+            </div>
+          </Container>
+        </section>
+
+        {/* Products Section - Dark background for opal pop */}
+        <section className="py-8 bg-black-rich">
+          <Container>
+            <div className="bg-black-rich/50 rounded-3xl p-4 md:p-8">
+              <Suspense fallback={<ProductsSkeleton />}>
+                <StoreContent products={transformedProducts} />
+              </Suspense>
+            </div>
+          </Container>
+        </section>
+      </main>
 
       {/* Trust Section */}
       <TrustBadges />

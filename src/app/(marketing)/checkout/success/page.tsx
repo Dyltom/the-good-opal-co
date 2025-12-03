@@ -144,7 +144,7 @@ function SuccessState({ email }: { email?: string }) {
 
       {/* Shipping Info */}
       <div className="bg-opal-blue-pale rounded-lg p-4 mb-8">
-        <p className="text-sm text-charcoal-80">
+        <p className="text-sm text-charcoal/80">
           Your opal will be carefully packaged and shipped within{' '}
           <span className="font-semibold">1-2 business days</span>. Expect delivery in{' '}
           <span className="font-semibold">3-7 business days</span> depending on your location.

@@ -296,7 +296,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {/* Description */}
-                <div className="text-charcoal-80 leading-relaxed">
+                <div className="text-charcoal/80 leading-relaxed">
                   <p className="text-lg">{descriptionText}</p>
                 </div>
 
@@ -324,7 +324,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
                 {/* Shipping Info */}
                 <div className="p-4 bg-opal-blue-pale rounded-lg">
-                  <p className="text-sm text-charcoal-80">
+                  <p className="text-sm text-charcoal/80">
                     <span className="font-semibold">Free shipping</span> on orders over $500 AUD •
                     <span className="font-semibold"> 30-day returns</span> •
                     <span className="font-semibold"> Arrives in 3-7 business days</span>

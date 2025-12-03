@@ -84,10 +84,10 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
   return (
     <>
       <div className="flex items-center justify-between mb-8">
-        <p className="text-muted-foreground">
+        <p className="text-charcoal/60">
           {cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'} in your cart
         </p>
-        <Button variant="outline" size="sm" onClick={handleClearCart} disabled={isPending}>
+        <Button variant="ghost" size="sm" onClick={handleClearCart} disabled={isPending} className="text-charcoal/60 hover:text-fire-coral">
           Clear Cart
         </Button>
       </div>
@@ -106,20 +106,20 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
       </div>
 
       {/* Cart Summary */}
-      <Card className="p-6 bg-muted">
-        <div className="space-y-4">
-          <div className="flex justify-between text-lg">
-            <span>Subtotal ({cart.itemCount} items):</span>
-            <span className="font-bold">{formatCurrency(cart.total, 'AUD')}</span>
+      <Card className="p-8 bg-white border-gray-soft shadow-lg rounded-2xl">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center text-lg">
+            <span className="text-charcoal">Subtotal ({cart.itemCount} items):</span>
+            <span className="font-bold text-2xl text-opal-deep">{formatCurrency(cart.total, 'AUD')}</span>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-charcoal/60">
             Shipping calculated at checkout. Free shipping on orders over $500 AUD.
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 pt-2">
             <Button size="lg" variant="outline" asChild className="flex-1">
               <Link href="/store">Continue Shopping</Link>
             </Button>
-            <Button size="lg" asChild className="flex-1">
+            <Button size="lg" variant="shimmer" asChild className="flex-1">
               <Link href="/checkout">Proceed to Checkout</Link>
             </Button>
           </div>
@@ -141,53 +141,59 @@ interface CartItemRowProps {
 
 function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRowProps) {
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-white border-gray-soft rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300">
       <div className="flex gap-6">
         {/* Product Image */}
-        <Link href={`/store/${item.slug}`} className="flex-shrink-0">
-          <div className="w-24 h-24 rounded-lg overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+        <Link href={`/store/${item.slug}`} className="flex-shrink-0 group">
+          <div className="w-24 h-24 rounded-xl overflow-hidden bg-black-rich flex items-center justify-center">
             {item.image ? (
               <Image
                 src={item.image}
                 alt={item.name}
                 width={96}
                 height={96}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             ) : (
-              <span className="text-4xl">💎</span>
+              <div className="w-full h-full bg-gradient-to-br from-opal-electric/20 to-fire-pink/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
             )}
           </div>
         </Link>
 
         {/* Product Info */}
         <div className="flex-1">
-          <Link href={`/store/${item.slug}`} className="hover:text-opal-blue transition-colors">
-            <h3 className="font-semibold text-lg mb-1">{item.name}</h3>
+          <Link href={`/store/${item.slug}`} className="hover:text-opal-electric transition-colors">
+            <h3 className="font-semibold text-lg mb-1 text-charcoal">{item.name}</h3>
           </Link>
-          <p className="text-muted-foreground text-sm mb-4">
+          <p className="text-charcoal/60 text-sm mb-4">
             {formatCurrency(item.price, 'AUD')} each
           </p>
 
           <div className="flex items-center gap-4">
             {/* Quantity Controls */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
-                size="sm"
-                variant="outline"
+                size="icon"
+                variant="ghost"
                 onClick={() => onUpdateQuantity(item.quantity - 1)}
                 disabled={isPending}
                 aria-label={`Decrease quantity of ${item.name}`}
+                className="h-8 w-8 rounded-full hover:bg-gray-whisper"
               >
                 −
               </Button>
-              <span className="w-12 text-center font-medium">{item.quantity}</span>
+              <span className="w-10 text-center font-medium text-charcoal">{item.quantity}</span>
               <Button
-                size="sm"
-                variant="outline"
+                size="icon"
+                variant="ghost"
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending}
                 aria-label={`Increase quantity of ${item.name}`}
+                className="h-8 w-8 rounded-full hover:bg-gray-whisper"
               >
                 +
               </Button>
@@ -196,10 +202,11 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
             {/* Remove Button */}
             <Button
               size="sm"
-              variant="destructive"
+              variant="ghost"
               onClick={onRemove}
               disabled={isPending}
               aria-label={`Remove ${item.name} from cart`}
+              className="text-charcoal/60 hover:text-fire-coral hover:bg-fire-coral/10"
             >
               Remove
             </Button>
@@ -208,8 +215,8 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
 
         {/* Item Total */}
         <div className="text-right">
-          <p className="text-lg font-bold">{formatCurrency(item.price * item.quantity, 'AUD')}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-lg font-bold text-opal-deep">{formatCurrency(item.price * item.quantity, 'AUD')}</p>
+          <p className="text-sm text-charcoal/60">
             {item.quantity} × {formatCurrency(item.price, 'AUD')}
           </p>
         </div>

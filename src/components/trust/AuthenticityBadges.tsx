@@ -72,7 +72,7 @@ export function AuthenticityChecklist() {
       {checks.map((check) => (
         <div key={check} className="flex items-start gap-2">
           <BadgeCheck className="w-5 h-5 text-success flex-shrink-0 mt-0.5" strokeWidth={2} />
-          <span className="text-sm text-charcoal-80">{check}</span>
+          <span className="text-sm text-charcoal/80">{check}</span>
         </div>
       ))}
     </div>
