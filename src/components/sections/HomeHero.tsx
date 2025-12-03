@@ -27,7 +27,7 @@ export function HomeHero() {
   }, [])
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black-rich">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black-rich pt-24">
       {/* Animated Gradient Orbs - Opal play-of-color effect */}
       <div className="absolute inset-0 overflow-hidden">
         <div

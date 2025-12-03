@@ -25,6 +25,7 @@ export default function HomePage() {
           { href: '/blog', label: 'Blog' },
           { href: '/faq', label: 'FAQ' },
         ]}
+        transparent
       />
 
       {/* Hero Section */}
