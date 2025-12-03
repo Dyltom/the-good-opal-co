@@ -84,9 +84,9 @@ export default function HomePage() {
         <div className="max-w-screen-xl mx-auto px-6">
           <FeaturedProducts
             title="Shop Picks"
-            description="Handpicked treasures from our collection"
+            description="Our latest Australian opals and jewelry"
             limit={4}
-            featured={true}
+            featured={false}
             variant="dark"
           />
           <div className="text-center mt-12">
