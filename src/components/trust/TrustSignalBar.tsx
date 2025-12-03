@@ -40,14 +40,14 @@ export function TrustSignalBar({ className = '' }: { className?: string }) {
                 key={signal.title}
                 className="flex items-center justify-center gap-3 text-center md:text-left group"
               >
-                <div className="p-2.5 rounded-xl bg-opal-blue/10 group-hover:bg-opal-blue/20 transition-colors">
-                  <Icon className="w-5 h-5 text-opal-blue flex-shrink-0" strokeWidth={2.5} />
+                <div className="p-2.5 rounded-xl bg-opal-electric/10 group-hover:bg-opal-electric/20 transition-colors">
+                  <Icon className="w-5 h-5 text-opal-electric flex-shrink-0" strokeWidth={2.5} />
                 </div>
                 <div className="hidden md:block">
                   <p className="font-semibold text-charcoal text-sm leading-tight">
                     {signal.title}
                   </p>
-                  <p className="text-xs text-charcoal-60 mt-1">
+                  <p className="text-xs text-charcoal/60 mt-1">
                     {signal.description}
                   </p>
                 </div>
@@ -68,17 +68,17 @@ export function TrustSignalBar({ className = '' }: { className?: string }) {
  */
 export function TrustSignalBarCompact() {
   return (
-    <div className="flex items-center justify-center gap-6 py-3 text-xs text-charcoal-60">
+    <div className="flex items-center justify-center gap-6 py-3 text-xs text-charcoal/60">
       <div className="flex items-center gap-1.5">
-        <ShieldCheck className="w-4 h-4 text-opal-blue" />
+        <ShieldCheck className="w-4 h-4 text-opal-electric" />
         <span>Certified</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <Truck className="w-4 h-4 text-opal-blue" />
+        <Truck className="w-4 h-4 text-opal-electric" />
         <span>Free Shipping</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <RefreshCcw className="w-4 h-4 text-opal-blue" />
+        <RefreshCcw className="w-4 h-4 text-opal-electric" />
         <span>30-Day Returns</span>
       </div>
     </div>

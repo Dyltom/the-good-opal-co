@@ -36,10 +36,10 @@ export function AuthenticityBadges() {
         return (
           <div
             key={guarantee.title}
-            className="flex items-start gap-3 p-4 bg-white border border-warm-grey rounded-lg hover:border-opal-blue transition-colors"
+            className="flex items-start gap-3 p-4 bg-white border border-warm-grey rounded-lg hover:border-opal-electric transition-colors"
           >
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-opal-blue-pale flex items-center justify-center">
-              <Icon className="w-5 h-5 text-opal-blue" strokeWidth={2} />
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-opal-light/20 flex items-center justify-center">
+              <Icon className="w-5 h-5 text-opal-electric" strokeWidth={2} />
             </div>
             <div>
               <h4 className="font-semibold text-charcoal text-sm leading-tight mb-1">

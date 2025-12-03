@@ -207,7 +207,7 @@ export default function HomePage() {
               {/* Features */}
               <div className="grid grid-cols-2 gap-4 mb-10">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-opal-blue rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-opal-electric rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -218,7 +218,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-opal-blue rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-opal-electric rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -229,7 +229,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-opal-blue rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-opal-electric rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -240,7 +240,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-opal-blue rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-opal-electric rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -321,7 +321,7 @@ export default function HomePage() {
                 &ldquo;Absolutely stunning! The opal ring I ordered has the most incredible play of color - blues, greens, and flashes of red. It&apos;s even more beautiful in person than the photos. The craftsmanship is exceptional!&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-opal-blue to-opal-purple rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-opal-electric to-fire-pink rounded-full flex items-center justify-center text-white font-bold text-lg">
                   E
                 </div>
                 <div>
@@ -367,7 +367,7 @@ export default function HomePage() {
                 &ldquo;The custom engagement ring exceeded all expectations! They helped me design the perfect piece featuring a Lightning Ridge black opal. My fiancée cries every time she looks at it. Worth every cent!&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-opal-turquoise to-opal-blue rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-opal-turquoise to-opal-electric rounded-full flex items-center justify-center text-white font-bold text-lg">
                   M
                 </div>
                 <div>
@@ -413,7 +413,7 @@ export default function HomePage() {
                 &ldquo;I&apos;ve been collecting opals for years and these are genuine, quality stones at fair prices. The descriptions are accurate and the customer service is excellent. Will definitely buy again!&rdquo;
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-opal-blue to-opal-turquoise rounded-full flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-12 h-12 bg-gradient-to-br from-opal-electric to-opal-turquoise rounded-full flex items-center justify-center text-white font-bold text-lg">
                   R
                 </div>
                 <div>

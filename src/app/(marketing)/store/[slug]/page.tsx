@@ -213,7 +213,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-opal-blue/20 to-opal-purple/20">
+                    <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/20 to-fire-pink/20">
                       <div className="absolute inset-0 flex items-center justify-center text-9xl opacity-70">
                         💎
                       </div>
@@ -241,7 +241,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       return (
                         <div
                           key={index}
-                          className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 border-transparent hover:border-opal-blue transition-colors cursor-pointer"
+                          className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 border-transparent hover:border-opal-electric transition-colors cursor-pointer"
                         >
                           <Image
                             src={thumbUrl}
@@ -266,7 +266,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="space-y-6">
                 {/* Title */}
                 <div>
-                  <p className="text-sm text-opal-blue font-semibold uppercase tracking-wide mb-2">
+                  <p className="text-sm text-opal-electric font-semibold uppercase tracking-wide mb-2">
                     {categoryName}
                   </p>
                   <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
@@ -276,12 +276,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-4 pb-6 border-b border-warm-grey">
-                  <span className="text-4xl font-bold text-opal-blue">
+                  <span className="text-4xl font-bold text-opal-electric">
                     {formatCurrency(product.price, 'AUD')}
                   </span>
                   {product.compareAtPrice && product.compareAtPrice > product.price && (
                     <>
-                      <span className="text-xl text-charcoal-60 line-through">
+                      <span className="text-xl text-charcoal/60 line-through">
                         {formatCurrency(product.compareAtPrice, 'AUD')}
                       </span>
                       <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-error text-white text-sm font-bold">
@@ -323,7 +323,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {/* Shipping Info */}
-                <div className="p-4 bg-opal-blue-pale rounded-lg">
+                <div className="p-4 bg-opal-light/20 rounded-lg">
                   <p className="text-sm text-charcoal/80">
                     <span className="font-semibold">Free shipping</span> on orders over $500 AUD •
                     <span className="font-semibold"> 30-day returns</span> •
@@ -340,7 +340,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
                   {product.stoneType && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
-                      <span className="text-charcoal-60">Stone Type</span>
+                      <span className="text-charcoal/60">Stone Type</span>
                       <span className="font-semibold text-charcoal">
                         {product.stoneType.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
                       </span>
@@ -348,7 +348,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   )}
                   {product.stoneOrigin && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
-                      <span className="text-charcoal-60">Origin</span>
+                      <span className="text-charcoal/60">Origin</span>
                       <span className="font-semibold text-charcoal">
                         {product.stoneOrigin.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
                       </span>
@@ -356,7 +356,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   )}
                   {product.material && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
-                      <span className="text-charcoal-60">Metal</span>
+                      <span className="text-charcoal/60">Metal</span>
                       <span className="font-semibold text-charcoal">
                         {product.material.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
                       </span>
@@ -364,19 +364,19 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   )}
                   {product.weight && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
-                      <span className="text-charcoal-60">Weight</span>
+                      <span className="text-charcoal/60">Weight</span>
                       <span className="font-semibold text-charcoal">{product.weight} carats</span>
                     </div>
                   )}
                   {product.ringSize && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
-                      <span className="text-charcoal-60">Ring Size</span>
+                      <span className="text-charcoal/60">Ring Size</span>
                       <span className="font-semibold text-charcoal">{product.ringSize}</span>
                     </div>
                   )}
                   {product.certified && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
-                      <span className="text-charcoal-60">Certificate</span>
+                      <span className="text-charcoal/60">Certificate</span>
                       <span className="font-semibold text-charcoal">
                         {product.certificateNumber ?? 'Included'}
                       </span>

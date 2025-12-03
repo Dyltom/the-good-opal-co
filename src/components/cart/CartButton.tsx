@@ -49,7 +49,7 @@ export function CartButton() {
       <Button
         variant="outline"
         size="sm"
-        className="relative gap-1.5 font-semibold border-opal-blue text-opal-blue hover:bg-opal-blue hover:text-white hover:border-opal-blue transition-all duration-200"
+        className="relative gap-1.5 font-semibold border-opal-electric text-opal-electric hover:bg-opal-electric hover:text-white hover:border-opal-electric transition-all duration-200"
       >
         Cart
         {!isLoading && itemCount > 0 && (

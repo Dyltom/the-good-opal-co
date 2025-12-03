@@ -95,7 +95,7 @@ function EmptyCartState() {
             alt="Australian Opals"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-charcoal/80 via-charcoal/70 to-opal-blue/80" />
+          <div className="absolute inset-0 bg-gradient-to-br from-charcoal/80 via-charcoal/70 to-opal-electric/80" />
         </div>
 
         {/* Content */}
@@ -129,7 +129,7 @@ function EmptyCartState() {
               <Button
                 size="lg"
                 asChild
-                className="bg-white text-opal-blue hover:bg-cream font-semibold shadow-xl hover:scale-105 transition-all"
+                className="bg-white text-opal-electric hover:bg-cream font-semibold shadow-xl hover:scale-105 transition-all"
               >
                 <Link href="/store">Explore Collection</Link>
               </Button>

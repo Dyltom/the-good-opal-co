@@ -132,18 +132,18 @@ function SuccessState({ email }: { email?: string }) {
             Payment processed successfully
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-opal-blue">→</span>
+            <span className="text-opal-electric">→</span>
             Your order is being prepared
           </li>
           <li className="flex items-center gap-2">
             <span className="text-muted-foreground">○</span>
-            Shipping notification coming soon
+            Shipping notification on its way
           </li>
         </ul>
       </div>
 
       {/* Shipping Info */}
-      <div className="bg-opal-blue-pale rounded-lg p-4 mb-8">
+      <div className="bg-opal-light/20 rounded-lg p-4 mb-8">
         <p className="text-sm text-charcoal/80">
           Your opal will be carefully packaged and shipped within{' '}
           <span className="font-semibold">1-2 business days</span>. Expect delivery in{' '}

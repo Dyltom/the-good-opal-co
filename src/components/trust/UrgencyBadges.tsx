@@ -76,7 +76,7 @@ export function StockBadge({ stock, variant = 'default' }: StockBadgeProps) {
  */
 export function NewBadge() {
   return (
-    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-opal-pink via-opal-purple to-opal-blue text-white shadow-lg">
+    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-fire-pink via-opal-deep to-opal-electric text-white shadow-lg">
       <Sparkles className="w-3.5 h-3.5" strokeWidth={2.5} />
       <span className="text-xs font-bold uppercase tracking-wide">New</span>
     </div>
@@ -107,7 +107,7 @@ interface SocialProofProps {
 export function SocialProof({ viewCount, lastSoldDaysAgo, variant = 'default' }: SocialProofProps) {
   if (variant === 'compact') {
     return (
-      <div className="flex items-center gap-3 text-xs text-charcoal-60">
+      <div className="flex items-center gap-3 text-xs text-charcoal/60">
         {viewCount && (
           <div className="flex items-center gap-1">
             <Eye className="w-3.5 h-3.5" />
@@ -128,7 +128,7 @@ export function SocialProof({ viewCount, lastSoldDaysAgo, variant = 'default' }:
     <div className="flex flex-wrap items-center gap-2">
       {viewCount && (
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-warm-grey-light rounded-full">
-          <Eye className="w-4 h-4 text-charcoal-60" />
+          <Eye className="w-4 h-4 text-charcoal/60" />
           <span className="text-sm text-charcoal">
             <strong>{viewCount}</strong> people viewing
           </span>

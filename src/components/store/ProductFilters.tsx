@@ -142,11 +142,11 @@ export function ProductFilters({
                     id={`category-${category}`}
                     checked={selectedCategories.includes(category)}
                     onCheckedChange={() => onCategoryChange(category)}
-                    className="data-[state=checked]:bg-opal-blue data-[state=checked]:border-opal-blue"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric"
                   />
                   <Label
                     htmlFor={`category-${category}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-blue transition-colors"
+                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
                   >
                     {CATEGORY_LABELS[category] || category}
                   </Label>
@@ -167,11 +167,11 @@ export function ProductFilters({
                     id={`stone-${type}`}
                     checked={selectedStoneTypes.includes(type)}
                     onCheckedChange={() => onStoneTypeChange(type)}
-                    className="data-[state=checked]:bg-opal-blue data-[state=checked]:border-opal-blue"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric"
                   />
                   <Label
                     htmlFor={`stone-${type}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-blue transition-colors"
+                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
                   >
                     {STONE_TYPE_LABELS[type] || type}
                   </Label>
@@ -192,11 +192,11 @@ export function ProductFilters({
                     id={`origin-${origin}`}
                     checked={selectedOrigins.includes(origin)}
                     onCheckedChange={() => onOriginChange(origin)}
-                    className="data-[state=checked]:bg-opal-blue data-[state=checked]:border-opal-blue"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric"
                   />
                   <Label
                     htmlFor={`origin-${origin}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-blue transition-colors"
+                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
                   >
                     {ORIGIN_LABELS[origin] || origin}
                   </Label>
@@ -217,11 +217,11 @@ export function ProductFilters({
                     id={`material-${material}`}
                     checked={selectedMaterials.includes(material)}
                     onCheckedChange={() => onMaterialChange(material)}
-                    className="data-[state=checked]:bg-opal-blue data-[state=checked]:border-opal-blue"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric"
                   />
                   <Label
                     htmlFor={`material-${material}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-blue transition-colors"
+                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
                   >
                     {MATERIAL_LABELS[material] || material}
                   </Label>

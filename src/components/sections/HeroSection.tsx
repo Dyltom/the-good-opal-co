@@ -43,13 +43,13 @@ export function HeroSection({
     >
       <Container className="text-center">
         {badge && (
-          <Badge className="mb-6 bg-opal-blue/10 text-opal-blue border-opal-blue/20 text-sm px-4 py-1.5">
+          <Badge className="mb-6 bg-opal-electric/10 text-opal-electric border-opal-electric/20 text-sm px-4 py-1.5">
             {badge}
           </Badge>
         )}
 
         {subtitle && (
-          <p className="text-sm uppercase tracking-wider text-opal-blue font-semibold mb-4">
+          <p className="text-sm uppercase tracking-wider text-opal-electric font-semibold mb-4">
             {subtitle}
           </p>
         )}
@@ -69,7 +69,7 @@ export function HeroSection({
               asChild
               size="lg"
               variant={button.variant || 'default'}
-              className={button.className || (button.variant === 'default' ? 'bg-opal-blue hover:bg-opal-blue-dark text-white font-semibold px-8' : '')}
+              className={button.className || (button.variant === 'default' ? 'bg-opal-electric hover:bg-opal-deep text-white font-semibold px-8' : '')}
             >
               <Link href={button.href}>{button.label}</Link>
             </Button>

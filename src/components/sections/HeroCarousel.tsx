@@ -181,7 +181,7 @@ export function HeroCarousel() {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-opal-blue text-white hover:bg-opal-blue-dark hover:scale-105 font-bold px-10 py-6 text-base shadow-xl transition-all duration-300"
+                    className="bg-opal-electric text-white hover:bg-opal-deep hover:scale-105 font-bold px-10 py-6 text-base shadow-xl transition-all duration-300"
                   >
                     <Link href={slide.cta.href}>{slide.cta.label}</Link>
                   </Button>

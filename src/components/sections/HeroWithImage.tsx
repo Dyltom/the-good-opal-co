@@ -61,10 +61,10 @@ export function HeroWithImage({
               alt="Featured Opal"
               className="w-full h-full object-cover scale-105 blur-sm"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-opal-blue/95 via-opal-purple/90 to-opal-blue/95" />
+            <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/95 via-fire-pink/90 to-opal-electric/95" />
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-opal-blue via-opal-purple to-opal-pink" />
+          <div className="w-full h-full bg-gradient-to-br from-opal-electric via-fire-pink to-opal-light" />
         )}
         {/* Animated Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]" />
@@ -103,7 +103,7 @@ export function HeroWithImage({
                 className={
                   button.className ||
                   (button.variant === 'default'
-                    ? 'bg-white text-opal-blue hover:bg-white/90 font-semibold px-8 shadow-xl'
+                    ? 'bg-white text-opal-electric hover:bg-white/90 font-semibold px-8 shadow-xl'
                     : 'border-white/50 text-white hover:bg-white/10 backdrop-blur-sm')
                 }
               >

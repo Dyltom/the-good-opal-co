@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { ProductCard } from '@/components/product/ProductCard'
 import { useEffect, useState } from 'react'
@@ -84,11 +85,25 @@ export function FeaturedProducts({
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">💎</div>
-            <p className="text-lg text-muted-foreground">
-              New collection coming soon...
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-opal-electric to-fire-pink flex items-center justify-center">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-charcoal mb-2">Explore Our Collection</h3>
+            <p className="text-charcoal/60 max-w-md mx-auto mb-6">
+              Discover unique Australian opals and handcrafted jewelry pieces in our store.
             </p>
+            <Link
+              href="/store"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-opal-electric to-opal-deep text-white font-semibold rounded-full hover:shadow-lg transition-all"
+            >
+              Visit Store
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         )}
       </Container>

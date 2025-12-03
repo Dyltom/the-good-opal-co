@@ -45,7 +45,7 @@ export function FeaturesGrid({
         <div className={`grid ${gridClass} gap-8`}>
           {features.map((feature, index) => (
             <div key={index} className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-opal-blue/10 to-opal-teal/10 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-opal-electric/10 to-opal-deep/10 flex items-center justify-center">
                 <span className="text-3xl">{feature.icon}</span>
               </div>
               <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
