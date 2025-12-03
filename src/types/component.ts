@@ -230,7 +230,7 @@ export interface FooterLinkGroup {
  * Social link
  */
 export interface SocialLink {
-  platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube' | 'github'
+  platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube' | 'github' | 'tiktok'
   url: string
   label?: string
 }
