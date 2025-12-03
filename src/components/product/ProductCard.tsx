@@ -26,6 +26,8 @@ interface ProductCardProduct {
 interface ProductCardProps {
   product: ProductCardProduct
   index?: number
+  /** Use 'dark' when card is on dark backgrounds */
+  variant?: 'light' | 'dark'
 }
 
 /**
@@ -44,8 +46,9 @@ interface ProductCardProps {
  * - Open/Closed: Extendable via props without modification
  * - Interface Segregation: Uses focused ProductCardProduct interface
  */
-export function ProductCard({ product, index = 0 }: ProductCardProps) {
+export function ProductCard({ product, index = 0, variant = 'light' }: ProductCardProps) {
   const isAvailable = product.stock > 0
+  const isDark = variant === 'dark'
 
   return (
     <div
@@ -128,15 +131,19 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
 
           {/* Featured Badge */}
           {product.featured && (
-            <div className="absolute top-4 right-4 px-3 py-1.5 bg-gradient-to-r from-opal-electric to-fire-pink rounded-full z-10">
-              <span className="text-xs font-semibold text-white">Featured</span>
+            <div className="absolute top-3 right-3 z-10">
+              <div className="px-3 py-1.5 bg-gradient-to-r from-opal-electric to-fire-pink rounded-lg shadow-lg">
+                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Featured</span>
+              </div>
             </div>
           )}
 
           {/* Category Badge */}
           {product.category && (
-            <div className="absolute top-4 left-4 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full z-10">
-              <span className="text-xs font-medium text-charcoal capitalize">{product.category}</span>
+            <div className="absolute top-3 left-3 z-10">
+              <div className="px-3 py-1.5 bg-black-rich/80 backdrop-blur-md rounded-lg border border-white/20 shadow-lg">
+                <span className="text-[10px] font-semibold text-white uppercase tracking-wider">{product.category.replace(/-/g, ' ')}</span>
+              </div>
             </div>
           )}
         </div>
@@ -145,8 +152,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         <div className="space-y-2 px-1 py-3">
           <h3 className={`font-medium text-base leading-snug transition-colors duration-200 line-clamp-2 ${
             isAvailable
-              ? 'text-charcoal group-hover:text-opal-electric'
-              : 'text-charcoal/50'
+              ? isDark
+                ? 'text-white group-hover:text-opal-light'
+                : 'text-charcoal group-hover:text-opal-electric'
+              : isDark ? 'text-white/50' : 'text-charcoal/50'
           }`}>
             {product.name}
           </h3>
@@ -154,17 +163,17 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <div className="flex items-baseline gap-2">
             {isAvailable ? (
               <>
-                <span className="text-lg font-bold text-opal-deep">
+                <span className={`text-lg font-bold ${isDark ? 'text-opal-light' : 'text-opal-deep'}`}>
                   {formatCurrency(product.price, 'AUD')}
                 </span>
                 {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <span className="text-sm text-charcoal/50 line-through">
+                  <span className={`text-sm line-through ${isDark ? 'text-white/40' : 'text-charcoal/50'}`}>
                     {formatCurrency(product.compareAtPrice, 'AUD')}
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-sm font-medium text-charcoal/50">
+              <span className={`text-sm font-medium ${isDark ? 'text-white/50' : 'text-charcoal/50'}`}>
                 Sold
               </span>
             )}

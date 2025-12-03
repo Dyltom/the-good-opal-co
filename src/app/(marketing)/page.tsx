@@ -98,25 +98,32 @@ export default function HomePage() {
       </section>
 
       {/* Selected Categories with Images */}
-      <section className="py-20 md:py-24 bg-gray-whisper">
+      <section className="py-20 md:py-28 bg-white">
         <div className="max-w-screen-xl mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-charcoal">Selected Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+          <div className="text-center mb-14">
+            <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Browse</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-4">Shop by <span className="text-gradient-prismatic">Category</span></h2>
+            <p className="text-lg text-charcoal/60 max-w-2xl mx-auto">
+              Explore our collection of loose opals, handcrafted jewelry, and expert services
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6">
             {/* Raw Opals */}
             <Link
               href="/store?category=raw-opals"
-              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-glow transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
               <div className="aspect-square relative bg-black-rich">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/api/media/file/20210627_202327-3.jpg"
                   alt="Raw Australian Opals"
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-xl font-semibold text-white tracking-wide">OPALS</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
+                  <h3 className="text-lg font-bold text-white tracking-wide mb-1">OPALS</h3>
+                  <span className="text-xs text-white/70 font-medium">Loose Stones</span>
                 </div>
               </div>
             </Link>
@@ -124,18 +131,19 @@ export default function HomePage() {
             {/* Earrings */}
             <Link
               href="/store"
-              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-glow transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
               <div className="aspect-square relative bg-black-rich">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/api/media/file/IMG_5903-3.jpg"
                   alt="Opal Earrings"
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-xl font-semibold text-white tracking-wide">EARRINGS</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
+                  <h3 className="text-lg font-bold text-white tracking-wide mb-1">EARRINGS</h3>
+                  <span className="text-xs text-white/70 font-medium">Handcrafted</span>
                 </div>
               </div>
             </Link>
@@ -143,18 +151,19 @@ export default function HomePage() {
             {/* Rings */}
             <Link
               href="/store?category=opal-rings"
-              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-glow transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
               <div className="aspect-square relative bg-black-rich">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/api/media/file/20210819_102625-4.jpg"
                   alt="Opal Rings"
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-xl font-semibold text-white tracking-wide">RINGS</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
+                  <h3 className="text-lg font-bold text-white tracking-wide mb-1">RINGS</h3>
+                  <span className="text-xs text-white/70 font-medium">One-of-a-Kind</span>
                 </div>
               </div>
             </Link>
@@ -162,26 +171,32 @@ export default function HomePage() {
             {/* Services */}
             <Link
               href="/services"
-              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric to-opal-deep shadow-lg hover:shadow-glow transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric to-opal-deep shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
               <div className="aspect-square relative flex flex-col items-center justify-center p-6">
-                <svg className="w-16 h-16 text-white mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 008 10.586V5L7 4z" />
-                </svg>
-                <h3 className="text-xl font-semibold text-white text-center tracking-wide">SERVICES</h3>
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 008 10.586V5L7 4z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white text-center tracking-wide mb-1">SERVICES</h3>
+                <span className="text-xs text-white/70 font-medium">Repairs & Custom</span>
               </div>
             </Link>
 
             {/* Courses */}
             <Link
               href="/courses"
-              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-fire-pink to-fire-coral shadow-lg hover:shadow-glow transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-fire-pink to-fire-coral shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
               <div className="aspect-square relative flex flex-col items-center justify-center p-6">
-                <svg className="w-16 h-16 text-white mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                <h3 className="text-xl font-semibold text-white text-center tracking-wide">COURSES</h3>
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-white text-center tracking-wide mb-1">COURSES</h3>
+                <span className="text-xs text-white/70 font-medium">Learn Opal Cutting</span>
               </div>
             </Link>
           </div>
@@ -485,7 +500,7 @@ export default function HomePage() {
       </section>
 
       {/* Trust Badges / Promise Section */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-whisper">
+      <section className="py-20 md:py-28 bg-gray-whisper">
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Why Us</span>
@@ -494,49 +509,49 @@ export default function HomePage() {
               Quality, authenticity, and care in every piece we create
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Express Delivery */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
-              <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-opal-deep rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
+              <div className="w-14 h-14 bg-gradient-to-br from-opal-electric to-opal-deep rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-xl mb-3 text-charcoal">Express Delivery</h3>
-              <p className="text-charcoal/70 leading-relaxed">Free express delivery for a limited period.</p>
+              <h3 className="font-bold text-lg mb-2 text-charcoal">Express Delivery</h3>
+              <p className="text-sm text-charcoal/60 leading-relaxed">Free express shipping for a limited time</p>
             </div>
 
             {/* Warranty */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
-              <div className="w-16 h-16 bg-gradient-to-br from-fire-pink to-fire-coral rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
+              <div className="w-14 h-14 bg-gradient-to-br from-fire-pink to-fire-coral rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-xl mb-3 text-charcoal">1 Year Warranty</h3>
-              <p className="text-charcoal/70 leading-relaxed">Free cleaning and polishing services on all jewellery.</p>
+              <h3 className="font-bold text-lg mb-2 text-charcoal">1 Year Warranty</h3>
+              <p className="text-sm text-charcoal/60 leading-relaxed">Free cleaning and polishing included</p>
             </div>
 
             {/* Premium Packaging */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
-              <div className="w-16 h-16 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
+              <div className="w-14 h-14 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h3 className="font-bold text-xl mb-3 text-charcoal">Premium Packaging</h3>
-              <p className="text-charcoal/70 leading-relaxed">Glass display boxes for opals, premium jewellery boxes with care kit.</p>
+              <h3 className="font-bold text-lg mb-2 text-charcoal">Premium Packaging</h3>
+              <p className="text-sm text-charcoal/60 leading-relaxed">Luxury gift boxes with care kit</p>
             </div>
 
             {/* Authenticity */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl transition-all duration-300 border border-gray-soft">
-              <div className="w-16 h-16 bg-gradient-to-br from-fire-orange to-fire-gold rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:shadow-glow transition-shadow duration-300">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
+              <div className="w-14 h-14 bg-gradient-to-br from-fire-orange to-fire-gold rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-xl mb-3 text-charcoal">Certificate Included</h3>
-              <p className="text-charcoal/70 leading-relaxed">Every piece comes with a certificate of authenticity.</p>
+              <h3 className="font-bold text-lg mb-2 text-charcoal">Certified Authentic</h3>
+              <p className="text-sm text-charcoal/60 leading-relaxed">Certificate of authenticity included</p>
             </div>
           </div>
         </div>

@@ -223,29 +223,29 @@ export default function FAQPage() {
         </section>
 
         {/* Trust Bar - Modern */}
-        <section className="py-6 bg-gray-whisper border-b border-gray-soft">
+        <section className="py-5 bg-white border-b border-gray-soft">
           <Container>
-            <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
-              <div className="flex items-center gap-2 text-charcoal/70">
-                <span className="w-2 h-2 rounded-full bg-opal-electric" />
-                100% Australian Opals
+            <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-sm">
+              <div className="flex items-center gap-2.5 text-charcoal">
+                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-opal-electric to-opal-deep" />
+                <span className="font-medium">100% Australian Opals</span>
               </div>
-              <div className="flex items-center gap-2 text-charcoal/70">
-                <span className="w-2 h-2 rounded-full bg-fire-pink" />
-                Free Shipping $500+
+              <div className="flex items-center gap-2.5 text-charcoal">
+                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-fire-pink to-fire-coral" />
+                <span className="font-medium">Free Shipping $500+</span>
               </div>
-              <div className="flex items-center gap-2 text-charcoal/70">
-                <span className="w-2 h-2 rounded-full bg-opal-emerald" />
-                30-Day Returns
+              <div className="flex items-center gap-2.5 text-charcoal">
+                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-opal-emerald to-opal-teal" />
+                <span className="font-medium">30-Day Returns</span>
               </div>
             </div>
           </Container>
         </section>
 
         {/* FAQ Content */}
-        <Section className="py-16 md:py-20">
+        <Section className="py-16 md:py-24 bg-gray-whisper">
           <Container>
-            <div className="max-w-4xl mx-auto space-y-16">
+            <div className="max-w-4xl mx-auto space-y-14">
               {faqCategories.map((category, categoryIndex) => {
                 const Icon = category.icon
                 // Rotate through different gradient colors for each category
@@ -254,36 +254,36 @@ export default function FAQPage() {
                   'from-fire-pink to-fire-coral',
                   'from-opal-emerald to-opal-teal',
                   'from-fire-orange to-fire-gold',
-                  'from-opal-purple to-fire-pink',
-                  'from-opal-turquoise to-opal-electric',
+                  'from-opal-electric to-fire-pink',
+                  'from-opal-teal to-opal-electric',
                   'from-fire-coral to-fire-orange',
                 ]
                 const gradient = gradients[categoryIndex % gradients.length]
 
                 return (
-                  <div key={category.title} className="space-y-6">
+                  <div key={category.title} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-soft/50">
                     {/* Category Header */}
-                    <div className="flex items-center gap-4 pb-4 border-b border-gray-soft">
-                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg flex-shrink-0`}>
-                        <Icon className="w-7 h-7 text-white" strokeWidth={1.5} />
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
+                        <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
                       </div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-charcoal tracking-tight">
+                      <h2 className="text-xl md:text-2xl font-bold text-charcoal">
                         {category.title}
                       </h2>
                     </div>
 
                     {/* FAQ Accordion */}
-                    <Accordion type="single" collapsible className="space-y-4">
+                    <Accordion type="single" collapsible className="space-y-3">
                       {category.faqs.map((faq, index) => (
                         <AccordionItem
                           key={index}
                           value={`${category.title}-${index}`}
-                          className="border border-gray-soft rounded-2xl px-6 bg-white hover:border-opal-electric/40 hover:shadow-md transition-all duration-300 data-[state=open]:border-opal-electric/60 data-[state=open]:shadow-lg"
+                          className="border border-gray-soft/80 rounded-xl px-5 bg-gray-whisper/50 hover:bg-white hover:border-opal-electric/30 transition-all duration-200 data-[state=open]:bg-white data-[state=open]:border-opal-electric/50 data-[state=open]:shadow-sm"
                         >
-                          <AccordionTrigger className="text-left font-semibold text-charcoal hover:text-opal-electric py-6 text-lg leading-snug [&[data-state=open]]:text-opal-electric">
+                          <AccordionTrigger className="text-left font-medium text-charcoal hover:text-opal-electric py-4 text-base leading-snug [&[data-state=open]]:text-opal-electric">
                             {faq.question}
                           </AccordionTrigger>
-                          <AccordionContent className="text-charcoal/80 leading-relaxed pb-6 text-base">
+                          <AccordionContent className="text-charcoal/70 leading-relaxed pb-4 text-[15px]">
                             {faq.answer}
                           </AccordionContent>
                         </AccordionItem>
