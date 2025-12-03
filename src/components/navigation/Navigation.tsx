@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import type { NavigationProps } from '@/types'
 import { Container } from '@/components/layout'
@@ -37,6 +38,13 @@ export function Navigation({
   const brandName = logoText
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+
+  // Check if a nav item is active
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
+  }
 
   // Track scroll position for glass effect
   useEffect(() => {
@@ -108,22 +116,51 @@ export function Navigation({
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex md:items-center md:gap-1">
+              {/* Home Link */}
+              <Link
+                href="/"
+                className={cn(
+                  'relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full group',
+                  isActive('/')
+                    ? onDarkBackground
+                      ? 'text-white'
+                      : 'text-opal-electric'
+                    : onDarkBackground
+                      ? 'text-white/90 hover:text-white'
+                      : 'text-charcoal hover:text-opal-electric'
+                )}
+              >
+                Home
+                {/* Active/Hover underline with gradient */}
+                <span className={cn(
+                  'absolute bottom-1 left-4 right-4 h-0.5 bg-gradient-to-r from-opal-electric to-fire-pink transition-transform duration-300 origin-left rounded-full',
+                  isActive('/') ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                )} />
+              </Link>
+
               {items.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
                     'relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full group',
-                    onDarkBackground
-                      ? 'text-white/90 hover:text-white'
-                      : 'text-charcoal hover:text-opal-electric'
+                    isActive(item.href)
+                      ? onDarkBackground
+                        ? 'text-white'
+                        : 'text-opal-electric'
+                      : onDarkBackground
+                        ? 'text-white/90 hover:text-white'
+                        : 'text-charcoal hover:text-opal-electric'
                   )}
                   target={item.external ? '_blank' : undefined}
                   rel={item.external ? 'noopener noreferrer' : undefined}
                 >
                   {item.label}
-                  {/* Hover underline with gradient */}
-                  <span className="absolute bottom-1 left-4 right-4 h-0.5 bg-gradient-to-r from-opal-electric to-fire-pink scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full" />
+                  {/* Active/Hover underline with gradient */}
+                  <span className={cn(
+                    'absolute bottom-1 left-4 right-4 h-0.5 bg-gradient-to-r from-opal-electric to-fire-pink transition-transform duration-300 origin-left rounded-full',
+                    isActive(item.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  )} />
                 </Link>
               ))}
 
@@ -206,11 +243,35 @@ export function Navigation({
         <div className="bg-white/95 backdrop-blur-xl border-t border-gray-soft shadow-xl">
           <Container>
             <div className="py-6 space-y-2">
+              {/* Home Link - Mobile */}
+              <Link
+                href="/"
+                className={cn(
+                  'flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-300 group',
+                  isActive('/')
+                    ? 'text-opal-electric bg-gradient-to-r from-opal-electric/10 to-fire-pink/10'
+                    : 'text-charcoal hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10'
+                )}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {/* Opal dot indicator */}
+                <span className={cn(
+                  'w-2 h-2 rounded-full bg-gradient-to-r from-opal-electric to-fire-pink mr-3 transition-opacity duration-300',
+                  isActive('/') ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                )} />
+                Home
+              </Link>
+
               {items.map((item, index) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center px-4 py-3 text-base font-medium text-charcoal rounded-xl hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10 transition-all duration-300 group"
+                  className={cn(
+                    'flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-300 group',
+                    isActive(item.href)
+                      ? 'text-opal-electric bg-gradient-to-r from-opal-electric/10 to-fire-pink/10'
+                      : 'text-charcoal hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10'
+                  )}
                   style={{
                     animationDelay: `${index * 50}ms`,
                     animation: mobileMenuOpen ? 'fade-up 0.3s ease-out forwards' : 'none'
@@ -220,7 +281,10 @@ export function Navigation({
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {/* Opal dot indicator */}
-                  <span className="w-2 h-2 rounded-full bg-gradient-to-r from-opal-electric to-fire-pink mr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className={cn(
+                    'w-2 h-2 rounded-full bg-gradient-to-r from-opal-electric to-fire-pink mr-3 transition-opacity duration-300',
+                    isActive(item.href) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                  )} />
                   {item.label}
                 </Link>
               ))}

@@ -225,16 +225,16 @@ export default function FAQPage() {
         {/* Trust Bar - Modern */}
         <section className="py-6 bg-gray-whisper border-b border-gray-soft">
           <Container>
-            <div className="flex flex-wrap justify-center gap-8 text-sm">
-              <div className="flex items-center gap-2 text-charcoal-60">
+            <div className="flex flex-wrap justify-center gap-8 text-sm font-medium">
+              <div className="flex items-center gap-2 text-charcoal/70">
                 <span className="w-2 h-2 rounded-full bg-opal-electric" />
                 100% Australian Opals
               </div>
-              <div className="flex items-center gap-2 text-charcoal-60">
+              <div className="flex items-center gap-2 text-charcoal/70">
                 <span className="w-2 h-2 rounded-full bg-fire-pink" />
                 Free Shipping $500+
               </div>
-              <div className="flex items-center gap-2 text-charcoal-60">
+              <div className="flex items-center gap-2 text-charcoal/70">
                 <span className="w-2 h-2 rounded-full bg-opal-emerald" />
                 30-Day Returns
               </div>
@@ -251,11 +251,11 @@ export default function FAQPage() {
                 return (
                   <div key={category.title} className="space-y-4">
                     {/* Category Header */}
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-opal-electric to-opal-deep flex items-center justify-center shadow-md">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-opal-electric to-opal-deep flex items-center justify-center shadow-md flex-shrink-0">
                         <Icon className="w-6 h-6 text-white" strokeWidth={2} />
                       </div>
-                      <h2 className="text-2xl font-bold text-charcoal">
+                      <h2 className="text-xl md:text-2xl font-bold text-charcoal">
                         {category.title}
                       </h2>
                     </div>
@@ -268,10 +268,10 @@ export default function FAQPage() {
                           value={`${category.title}-${index}`}
                           className="border border-gray-soft rounded-xl px-6 bg-white hover:border-opal-electric/50 hover:shadow-sm transition-all duration-200"
                         >
-                          <AccordionTrigger className="text-left font-semibold text-charcoal hover:text-opal-electric py-5">
+                          <AccordionTrigger className="text-left font-semibold text-charcoal hover:text-opal-electric py-5 text-base">
                             {faq.question}
                           </AccordionTrigger>
-                          <AccordionContent className="text-charcoal-60 leading-relaxed pb-5">
+                          <AccordionContent className="text-charcoal/70 leading-relaxed pb-5 text-base">
                             {faq.answer}
                           </AccordionContent>
                         </AccordionItem>

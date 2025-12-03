@@ -9,7 +9,7 @@ export function PaymentBadges() {
   return (
     <div className="space-y-3">
       {/* SSL Secure */}
-      <div className="flex items-center justify-center gap-2 text-sm text-charcoal-60">
+      <div className="flex items-center justify-center gap-2 text-sm text-charcoal/60">
         <Lock className="w-4 h-4 text-success" />
         <span className="font-medium">Secure SSL Encrypted Checkout</span>
       </div>
@@ -59,9 +59,9 @@ export function PaymentBadges() {
       </div>
 
       {/* Powered by Stripe */}
-      <p className="text-center text-xs text-charcoal-40">
+      <p className="text-center text-xs text-charcoal/40">
         Payments powered by{' '}
-        <span className="font-semibold text-charcoal-60">Stripe</span>
+        <span className="font-semibold text-charcoal/60">Stripe</span>
       </p>
     </div>
   )
@@ -72,7 +72,7 @@ export function PaymentBadges() {
  */
 export function PaymentBadgesCompact() {
   return (
-    <div className="flex items-center gap-2 text-xs text-charcoal-60">
+    <div className="flex items-center gap-2 text-xs text-charcoal/60">
       <Lock className="w-3.5 h-3.5 text-success" />
       <span>Secure checkout with</span>
       <div className="flex gap-1.5">

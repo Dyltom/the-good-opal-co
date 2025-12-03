@@ -158,14 +158,12 @@ export default async function StorePage() {
           </Container>
         </section>
 
-        {/* Products Section - Dark background for opal pop */}
-        <section className="py-8 bg-black-rich">
+        {/* Products Section - Clean professional layout */}
+        <section className="py-12 bg-gray-whisper">
           <Container>
-            <div className="bg-black-rich/50 rounded-3xl p-4 md:p-8">
-              <Suspense fallback={<ProductsSkeleton />}>
-                <StoreContent products={transformedProducts} />
-              </Suspense>
-            </div>
+            <Suspense fallback={<ProductsSkeleton />}>
+              <StoreContent products={transformedProducts} />
+            </Suspense>
           </Container>
         </section>
       </main>

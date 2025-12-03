@@ -45,7 +45,7 @@ export function AuthenticityBadges() {
               <h4 className="font-semibold text-charcoal text-sm leading-tight mb-1">
                 {guarantee.title}
               </h4>
-              <p className="text-xs text-charcoal-60 leading-relaxed">
+              <p className="text-xs text-charcoal/60 leading-relaxed">
                 {guarantee.description}
               </p>
             </div>

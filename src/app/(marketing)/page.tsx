@@ -82,15 +82,13 @@ export default function HomePage() {
       {/* Shop Picks - DARK background for opal pop */}
       <section className="bg-black-rich py-20 md:py-28">
         <div className="max-w-screen-xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-light text-white mb-4">
-              Shop <span className="text-gradient-prismatic">Picks</span>
-            </h2>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto">
-              Handpicked treasures from our collection
-            </p>
-          </div>
-          <FeaturedProducts limit={4} featured={true} />
+          <FeaturedProducts
+            title="Shop Picks"
+            description="Handpicked treasures from our collection"
+            limit={4}
+            featured={true}
+            variant="dark"
+          />
           <div className="text-center mt-12">
             <Button variant="glass" size="lg" asChild>
               <Link href="/store">View All Products</Link>

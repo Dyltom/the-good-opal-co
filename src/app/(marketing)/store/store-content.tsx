@@ -151,10 +151,10 @@ export function StoreContent({ products }: StoreContentProps) {
       {/* Filters Sidebar */}
       <aside className="lg:w-72 flex-shrink-0">
         <div
-          className="lg:sticky lg:top-24 bg-cream rounded-xl border border-warm-grey shadow-sm p-6 pr-4 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto scrollbar-thin"
+          className="lg:sticky lg:top-24 bg-white rounded-xl border border-warm-grey shadow-sm p-6 pr-4 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto scrollbar-thin"
           style={{
             scrollbarWidth: 'thin',
-            scrollbarColor: '#E8E6E3 #FAF9F6',
+            scrollbarColor: '#E8E6E3 #FFFFFF',
             scrollbarGutter: 'stable'
           }}
         >
@@ -188,7 +188,7 @@ export function StoreContent({ products }: StoreContentProps) {
               className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-electric focus:outline-none focus:ring-2 focus:ring-opal-electric/20 transition-all shadow-sm"
             />
             <svg
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal-40"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/50"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -204,13 +204,13 @@ export function StoreContent({ products }: StoreContentProps) {
         </div>
 
         {/* Sort Bar */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-cream rounded-xl border border-warm-grey shadow-sm p-5">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-xl border border-warm-grey shadow-sm p-5">
           <div className="flex items-center gap-4">
             <p className="text-sm text-charcoal font-semibold">
-              {sortedProducts.length} {sortedProducts.length === 1 ? 'treasure' : 'treasures'} available
+              {sortedProducts.length} {sortedProducts.length === 1 ? 'piece' : 'pieces'} available
               {!showOutOfStock && outOfStockCount > 0 && (
-                <span className="text-charcoal-60 ml-2 font-normal">
-                  ({outOfStockCount} collected)
+                <span className="text-charcoal/50 ml-2 font-normal">
+                  ({outOfStockCount} sold)
                 </span>
               )}
             </p>
@@ -224,8 +224,8 @@ export function StoreContent({ products }: StoreContentProps) {
                 onCheckedChange={(checked) => setShowOutOfStock(!!checked)}
                 className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric"
               />
-              <Label htmlFor="show-sold" className="text-sm cursor-pointer font-medium text-charcoal">
-                Show already collected items
+              <Label htmlFor="show-sold" className="text-sm cursor-pointer font-medium text-charcoal/80">
+                Show sold items
               </Label>
             </div>
 

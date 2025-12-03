@@ -142,11 +142,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         </div>
 
         {/* Product Info */}
-        <div className="space-y-2 px-1">
+        <div className="space-y-2 px-1 py-3">
           <h3 className={`font-medium text-base leading-snug transition-colors duration-200 line-clamp-2 ${
             isAvailable
               ? 'text-charcoal group-hover:text-opal-electric'
-              : 'text-charcoal-light'
+              : 'text-charcoal/50'
           }`}>
             {product.name}
           </h3>
@@ -158,14 +158,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                   {formatCurrency(product.price, 'AUD')}
                 </span>
                 {product.compareAtPrice && product.compareAtPrice > product.price && (
-                  <span className="text-sm text-charcoal-light line-through">
+                  <span className="text-sm text-charcoal/50 line-through">
                     {formatCurrency(product.compareAtPrice, 'AUD')}
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-sm font-medium text-charcoal-light">
-                No longer available
+              <span className="text-sm font-medium text-charcoal/50">
+                Sold
               </span>
             )}
           </div>

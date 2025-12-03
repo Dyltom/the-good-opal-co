@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Container } from '@/components/layout'
 import { ProductCard } from '@/components/product/ProductCard'
 import { useEffect, useState } from 'react'
 
@@ -26,6 +25,10 @@ interface FeaturedProductsProps {
   limit?: number
   featured?: boolean
   className?: string
+  /** Use 'dark' when on dark backgrounds, 'light' for light backgrounds */
+  variant?: 'light' | 'dark'
+  /** Hide the title section */
+  hideTitle?: boolean
 }
 
 /**
@@ -38,6 +41,8 @@ export function FeaturedProducts({
   limit = 8,
   featured = true,
   className = '',
+  variant = 'light',
+  hideTitle = false,
 }: FeaturedProductsProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,43 +61,46 @@ export function FeaturedProducts({
       })
   }, [limit, featured])
 
+  const isDark = variant === 'dark'
+
   return (
-    <section className={`py-16 md:py-24 ${className}`}>
-      <Container>
+    <div className={className}>
+      {!hideTitle && (
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          <h2 className={`text-3xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-charcoal'}`}>
             {title}
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className={`text-lg md:text-xl max-w-2xl mx-auto ${isDark ? 'text-white/60' : 'text-charcoal/60'}`}>
             {description}
           </p>
         </div>
+      )}
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[...Array(limit)].map((_, i) => (
               <div key={i}>
-                <div className="aspect-square bg-warm-grey-light animate-pulse mb-3" />
-                <div className="h-4 bg-warm-grey-light animate-pulse mb-2" />
-                <div className="h-4 bg-warm-grey-light animate-pulse w-20" />
+                <div className={`aspect-[4/5] animate-pulse mb-3 rounded-2xl ${isDark ? 'bg-white/10' : 'bg-charcoal/10'}`} />
+                <div className={`h-4 animate-pulse mb-2 rounded ${isDark ? 'bg-white/10' : 'bg-charcoal/10'}`} />
+                <div className={`h-4 animate-pulse w-20 rounded ${isDark ? 'bg-white/10' : 'bg-charcoal/10'}`} />
               </div>
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map((product, index) => (
+              <ProductCard key={product.id} product={product} index={index} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
+          <div className={`text-center py-16 rounded-2xl ${isDark ? 'bg-white/5 backdrop-blur-sm' : 'bg-charcoal/5'}`}>
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-opal-electric to-fire-pink flex items-center justify-center">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-charcoal mb-2">Explore Our Collection</h3>
-            <p className="text-charcoal/60 max-w-md mx-auto mb-6">
+            <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-charcoal'}`}>Explore Our Collection</h3>
+            <p className={`max-w-md mx-auto mb-6 ${isDark ? 'text-white/60' : 'text-charcoal/60'}`}>
               Discover unique Australian opals and handcrafted jewelry pieces in our store.
             </p>
             <Link
@@ -106,7 +114,6 @@ export function FeaturedProducts({
             </Link>
           </div>
         )}
-      </Container>
-    </section>
+    </div>
   )
 }
