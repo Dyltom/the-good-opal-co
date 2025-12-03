@@ -98,7 +98,27 @@ Currency: AUD | Shipping: Free over $500, otherwise $15
 - Use `getPayload()` from `@/lib/payload` for server-side CMS access
 - All prices stored in cents, display with `formatPrice()` from utils
 
-## Research & Documentation
+## Claude Code Productivity Tips
+
+### Model Selection (Cost Optimization)
+- Use **Sonnet** for routine coding, refactoring, tests (~80% cheaper)
+- Use **Opus** for architecture decisions, complex algorithms
+- Switch with `/model sonnet` or `/model opus`
+
+### Useful Slash Commands
+- `/project:store` - Implement store features following project patterns
+- `/project:deploy-check` - Pre-deployment verification
+- `/user:morning` - Daily standup check
+- `/user:ready` - Pre-commit verification
+- `/user:pr` - Create pull request with AI
+- `/user:tdd` - Test-driven development cycle
+
+### Context Management
+- Use `/clear` between distinct tasks to reset context
+- Use `/compact` before major features to free token space
+- Keep prompts specific - reduces back-and-forth
+
+### Research & Documentation
 
 Use MCP servers for enhanced capabilities:
 - **sequential-thinking**: Complex problem decomposition and planning
