@@ -4,7 +4,7 @@ import { Navigation, Footer } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { getCart } from '@/lib/cart'
-import { CartPageContent } from './cart-content-improved'
+import { CartPageContentMobileOptimized } from './cart-content-mobile-optimized'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import { PageTransition } from '@/components/layout/PageTransition'
 
@@ -44,7 +44,7 @@ export default async function CartPage() {
               <CartEmptyState />
             </Container>
           ) : (
-            <CartPageContent initialCart={cart} />
+            <CartPageContentMobileOptimized initialCart={cart} />
           )}
         </main>
 

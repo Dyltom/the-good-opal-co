@@ -88,8 +88,8 @@ export function CartEmptyState() {
         href: "/store"
       }}
       secondaryAction={{
-        label: "View Wishlist",
-        href: "/wishlist"
+        label: "Browse Categories",
+        href: "/store"
       }}
     />
   )
