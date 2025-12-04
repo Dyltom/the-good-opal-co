@@ -1,10 +1,11 @@
 import { Suspense } from 'react'
 import { Container } from '@/components/layout'
-import { TrustBadges, CTASection } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
+import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
-import { StoreContent } from './store-content'
+import { StoreContentPro } from './store-content-pro'
 import { CollectionJsonLd } from '@/components/seo'
+import { PageTransition } from '@/components/layout/PageTransition'
 
 /**
  * Store Page Metadata
@@ -45,19 +46,6 @@ export interface Product {
 /**
  * Loading skeleton for products
  */
-function ProductsSkeleton() {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
-      {[...Array(12)].map((_, i) => (
-        <div key={i}>
-          <div className="aspect-square bg-warm-grey-light animate-pulse mb-3 rounded-lg" />
-          <div className="h-4 bg-warm-grey-light animate-pulse mb-2 rounded" />
-          <div className="h-4 bg-warm-grey-light animate-pulse w-20 rounded" />
-        </div>
-      ))}
-    </div>
-  )
-}
 
 /**
  * Store Page
@@ -123,63 +111,81 @@ export default async function StorePage() {
         url="/store"
         products={productsForJsonLd}
       />
-    <div className="min-h-screen flex flex-col bg-white">
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-        transparent
-      />
 
-      <main className="flex-1">
-        {/* Header - Dark opal-inspired */}
-        <section className="relative py-16 md:py-20 bg-black-rich overflow-hidden pt-28">
-          {/* Background gradient orbs */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-electric" />
-            <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
-          </div>
-          <Container>
-            <div className="relative z-10 text-center">
-              <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
-                Our Collection
-              </span>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
-                Australian <span className="text-gradient-prismatic">Opals</span>
-              </h1>
-              <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto">
-                Handpicked treasures from Lightning Ridge, Coober Pedy, and Queensland mines.
-                Each piece is one-of-a-kind.
-              </p>
-            </div>
-          </Container>
-        </section>
+      <PageTransition>
+        <div className="min-h-screen flex flex-col bg-white">
+          <Navigation
+            logoText="The Good Opal Co"
+            items={[
+              { href: '/store', label: 'Shop' },
+              { href: '/blog', label: 'Blog' },
+              { href: '/faq', label: 'FAQ' },
+            ]}
+            transparent
+          />
 
-        {/* Products Section - Clean professional layout */}
-        <section className="py-12 bg-gray-whisper">
-          <Container>
-            <Suspense fallback={<ProductsSkeleton />}>
-              <StoreContent products={transformedProducts} />
-            </Suspense>
-          </Container>
-        </section>
-      </main>
+          <main className="flex-1">
+            {/* Header - Dark opal-inspired */}
+            <section className="relative py-20 md:py-28 bg-black-rich overflow-hidden pt-28">
+              {/* Background gradient orbs */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-gold" />
+                <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-deep" />
+              </div>
+              <Container>
+                <div className="relative z-10 text-center max-w-3xl mx-auto">
+                  <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
+                    Premium Collection
+                  </span>
+                  <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+                    Australian <span className="text-gradient-prismatic">Opals</span>
+                  </h1>
+                  <p className="text-lg md:text-xl text-white/70">
+                    Handpicked opals from Lightning Ridge, Coober Pedy, and Queensland.
+                    Each piece is unique, ethically sourced, and absolutely breathtaking.
+                  </p>
+                </div>
+              </Container>
+            </section>
 
-      {/* Trust Section */}
-      <TrustBadges />
+            {/* Products Section */}
+            <section className="py-12 md:py-16 bg-gray-whisper">
+              <Container>
+                <Suspense fallback={<ProductGridSkeleton count={12} />}>
+                  <StoreContentPro products={transformedProducts} />
+                </Suspense>
+              </Container>
+            </section>
 
-      {/* CTA Section */}
-      <CTASection
-        title="Looking for Something Unique?"
-        description="We offer custom commission services for bespoke opal jewelry"
-        buttons={[{ href: '/contact', label: 'Get In Touch' }]}
-      />
+            {/* Bottom CTA */}
+            <section className="relative py-20 bg-black-rich overflow-hidden">
+              {/* Gradient orbs */}
+              <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute -bottom-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-10 blur-3xl bg-fire-orange" />
+                <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-10 blur-3xl bg-opal-teal" />
+              </div>
+              <Container>
+                <div className="relative z-10 text-center max-w-2xl mx-auto">
+                  <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
+                    Looking for Something <span className="text-gradient-prismatic">Special?</span>
+                  </h2>
+                  <p className="text-lg text-white/70 mb-8">
+                    We offer custom commission services for bespoke opal jewelry.
+                    Let us help you create a one-of-a-kind piece.
+                  </p>
+                  <a
+                    href="/contact"
+                    className="inline-flex items-center gap-2 px-8 py-3 bg-white text-charcoal font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl"
+                  >
+                    Get In Touch
+                  </a>
+                </div>
+              </Container>
+            </section>
+          </main>
 
-      <Footer />
-    </div>
-    </>
-  )
+          <Footer logoText="The Good Opal Co" />
+        </div>
+      </PageTransition>
+    </>  )
 }

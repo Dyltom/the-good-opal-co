@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 import forms from '@tailwindcss/forms'
 import typography from '@tailwindcss/typography'
+import { designTokens } from './src/styles/tokens'
 
 const config: Config = {
   darkMode: ['class'],
@@ -25,8 +26,46 @@ const config: Config = {
   	},
   	extend: {
   		colors: {
+  			// Design token semantic colors
+  			surface: {
+  				primary: designTokens.colors['surface-primary'],
+  				secondary: designTokens.colors['surface-secondary'],
+  				tertiary: designTokens.colors['surface-tertiary'],
+  				overlay: designTokens.colors['surface-overlay'],
+  				card: designTokens.colors['surface-card'],
+  			},
+  			content: {
+  				primary: designTokens.colors['content-primary'],
+  				secondary: designTokens.colors['content-secondary'],
+  				tertiary: designTokens.colors['content-tertiary'],
+  				inverse: designTokens.colors['content-inverse'],
+  				muted: designTokens.colors['content-muted'],
+  			},
+  			brand: {
+  				opal: designTokens.colors['brand-opal'],
+  				fire: designTokens.colors['brand-fire'],
+  				emerald: designTokens.colors['brand-emerald'],
+  				ocean: designTokens.colors['brand-ocean'],
+  				sunset: designTokens.colors['brand-sunset'],
+  			},
+  			interactive: {
+  				primary: designTokens.colors['interactive-primary'],
+  				'primary-hover': designTokens.colors['interactive-primary-hover'],
+  				secondary: designTokens.colors['interactive-secondary'],
+  				'secondary-hover': designTokens.colors['interactive-secondary-hover'],
+  			},
+  			status: {
+  				success: designTokens.colors['status-success'],
+  				error: designTokens.colors['status-error'],
+  				warning: designTokens.colors['status-warning'],
+  				info: designTokens.colors['status-info'],
+  			},
+
+  			// Original colors with accessible variants for WCAG AA
   			// Opal Electric Blues (from logo)
   			'opal-electric': '#00B4D8',
+  			'opal-electric-dark': '#0077B6',
+  			'opal-electric-accessible': '#005A87', // WCAG AA on white
   			'opal-deep': '#0077B6',
   			'opal-light': '#90E0EF',
   			'opal-sky': '#CAF0F8',
@@ -34,11 +73,13 @@ const config: Config = {
   			// Opal Fire Accents (from logo)
   			'fire-coral': '#FF6B6B',
   			'fire-pink': '#FF8FAB',
+  			'fire-pink-dark': '#CC5A7A', // WCAG AA on white
   			'fire-orange': '#FF9F43',
   			'fire-gold': '#FFD93D',
 
   			// Opal Greens (from logo)
   			'opal-emerald': '#2ECC71',
+  			'opal-emerald-dark': '#1A7F41', // WCAG AA on white
   			'opal-teal': '#48D1CC',
   			'opal-mint': '#A8E6CF',
 
@@ -119,12 +160,28 @@ const config: Config = {
   				foreground: 'var(--destructive-foreground)'
   			},
   			success: {
-  				DEFAULT: 'var(--success)',
-  				foreground: 'var(--success-foreground)'
+  				DEFAULT: '#059669', // WCAG AA compliant
+  				foreground: 'var(--success-foreground)',
+  				light: '#059669',
+  				dark: '#047857'
   			},
   			warning: {
-  				DEFAULT: 'var(--warning)',
-  				foreground: 'var(--warning-foreground)'
+  				DEFAULT: '#D97706', // WCAG AA compliant
+  				foreground: 'var(--warning-foreground)',
+  				light: '#D97706',
+  				dark: '#B45309'
+  			},
+  			error: {
+  				DEFAULT: '#DC2626', // WCAG AA compliant
+  				foreground: 'var(--destructive-foreground)',
+  				light: '#DC2626',
+  				dark: '#B91C1C'
+  			},
+  			info: {
+  				DEFAULT: '#2563EB', // WCAG AA compliant
+  				foreground: 'var(--primary-foreground)',
+  				light: '#2563EB',
+  				dark: '#1D4ED8'
   			},
   			/* Chart colors for analytics */
   			chart: {
@@ -155,6 +212,8 @@ const config: Config = {
   			}
   		},
   		borderRadius: {
+  			...designTokens.borderRadius,
+  			// Legacy CSS variable support
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
@@ -185,6 +244,8 @@ const config: Config = {
   			]
   		},
   		fontSize: {
+  			...designTokens.typography.fontSize,
+  			// Additional custom sizes
   			'2xs': [
   				'0.625rem',
   				{
@@ -192,7 +253,11 @@ const config: Config = {
   				}
   			]
   		},
+  		lineHeight: designTokens.typography.lineHeight,
+  		fontWeight: designTokens.typography.fontWeight,
   		spacing: {
+  			...designTokens.spacing,
+  			// Additional custom spacing
   			'18': '4.5rem',
   			'88': '22rem',
   			'100': '25rem',
@@ -205,12 +270,17 @@ const config: Config = {
   			'9xl': '96rem'
   		},
   		zIndex: {
+  			...designTokens.zIndex,
+  			// Additional legacy values
   			'60': '60',
   			'70': '70',
   			'80': '80',
   			'90': '90',
   			'100': '100'
   		},
+  		boxShadow: designTokens.shadows,
+  		transitionDuration: designTokens.motion.duration,
+  		transitionTimingFunction: designTokens.motion.easing,
   		keyframes: {
   			'accordion-down': {
   				from: {
