@@ -41,7 +41,7 @@ export function TrustSignalBar({ className = '' }: { className?: string }) {
                 className="flex items-center justify-center gap-3 text-center md:text-left group"
               >
                 <div className="p-2.5 rounded-xl bg-opal-electric/10 group-hover:bg-opal-electric/20 transition-colors">
-                  <Icon className="w-5 h-5 text-opal-electric flex-shrink-0" strokeWidth={2.5} />
+                  <Icon className="w-5 h-5 text-opal-electric-accessible flex-shrink-0" strokeWidth={2.5} />
                 </div>
                 <div className="hidden md:block">
                   <p className="font-semibold text-charcoal text-sm leading-tight">
@@ -70,15 +70,15 @@ export function TrustSignalBarCompact() {
   return (
     <div className="flex items-center justify-center gap-6 py-3 text-xs text-charcoal/60">
       <div className="flex items-center gap-1.5">
-        <ShieldCheck className="w-4 h-4 text-opal-electric" />
+        <ShieldCheck className="w-4 h-4 text-opal-electric-accessible" />
         <span>Certified</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <Truck className="w-4 h-4 text-opal-electric" />
+        <Truck className="w-4 h-4 text-opal-electric-accessible" />
         <span>Free Shipping</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <RefreshCcw className="w-4 h-4 text-opal-electric" />
+        <RefreshCcw className="w-4 h-4 text-opal-electric-accessible" />
         <span>30-Day Returns</span>
       </div>
     </div>

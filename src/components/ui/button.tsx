@@ -23,7 +23,7 @@ const buttonVariants = cva(
         ghost:
           'text-charcoal hover:bg-charcoal/5 dark:text-white dark:hover:bg-white/10',
         link:
-          'text-opal-electric underline-offset-4 hover:underline',
+          'text-opal-electric-accessible underline-offset-4 hover:underline',
         glass:
           'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
         shimmer:

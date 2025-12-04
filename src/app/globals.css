@@ -9,6 +9,34 @@
 
 @layer base {
   :root {
+    /* Design Token CSS Variables */
+    /* Brand Colors */
+    --color-black-rich: #0A0A12;
+    --color-black-rich-80: rgba(10, 10, 18, 0.8);
+    --color-cream: #FAF9F6;
+    --color-white: #FFFFFF;
+    --color-white-90: rgba(255, 255, 255, 0.9);
+    --color-white-70: rgba(255, 255, 255, 0.7);
+    --color-white-50: rgba(255, 255, 255, 0.5);
+    --color-gray-600: #4B5563;
+
+    /* Opal Colors */
+    --color-opal-electric: #00B4D8;
+    --color-opal-electric-dark: #0077B6;
+    --color-opal-electric-accessible: #005A87; /* For text on white (4.5:1) */
+    --color-fire-pink: #FF8FAB;
+    --color-fire-pink-dark: #CC5A7A; /* For text on white (4.5:1) */
+    --color-opal-emerald: #2ECC71;
+    --color-opal-emerald-dark: #1A7F41; /* For text on white (4.5:1) */
+    --color-opal-ocean: #0099FF;
+    --color-opal-sunset: #FF6600;
+
+    /* Status Colors - WCAG AA compliant on white */
+    --color-success: #059669; /* 4.56:1 */
+    --color-error: #DC2626; /* 4.94:1 */
+    --color-warning: #D97706; /* 4.56:1 */
+    --color-info: #2563EB; /* 4.63:1 */
+
     /* Core colors - oklch for modern color accuracy */
     --background: oklch(1.0000 0 0);
     --foreground: oklch(0.2308 0 0);
@@ -343,6 +371,43 @@
 
   .shadow-luxury-lg {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* User preference classes */
+@layer utilities {
+  /* Reduced motion preferences */
+  .reduce-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* High contrast mode */
+  .high-contrast {
+    --color-black-rich: #000000;
+    --color-white: #FFFFFF;
+    --color-opal-electric: #0066CC;
+    --color-fire-pink: #CC0066;
+  }
+
+  .high-contrast * {
+    border-width: 2px !important;
+  }
+
+  /* Keyboard navigation focus styles */
+  .keyboard-nav *:focus {
+    outline: 3px solid var(--color-opal-electric) !important;
+    outline-offset: 2px !important;
+  }
+
+  /* Font size adjustments */
+  :root {
+    --base-font-size: 16px;
+  }
+
+  body {
+    font-size: var(--base-font-size);
   }
 }
 

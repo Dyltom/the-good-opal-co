@@ -185,7 +185,7 @@ export function StoreContent({ products }: StoreContentProps) {
               placeholder="Search for your next treasure..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-electric focus:outline-none focus:ring-2 focus:ring-opal-electric/20 transition-all shadow-sm"
+              className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric/20 transition-all shadow-sm"
             />
             <svg
               className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/50"
@@ -222,7 +222,7 @@ export function StoreContent({ products }: StoreContentProps) {
                 id="show-sold"
                 checked={showOutOfStock}
                 onCheckedChange={(checked) => setShowOutOfStock(!!checked)}
-                className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric"
+                className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible"
               />
               <Label htmlFor="show-sold" className="text-sm cursor-pointer font-medium text-charcoal/80">
                 Show sold items
@@ -235,14 +235,14 @@ export function StoreContent({ products }: StoreContentProps) {
                 Sort:
               </Label>
               <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
-                <SelectTrigger className="w-[180px] rounded-lg border border-warm-grey hover:border-opal-electric focus:border-opal-electric focus:ring-2 focus:ring-opal-electric/20 shadow-sm bg-white">
+                <SelectTrigger className="w-[180px] rounded-lg border border-warm-grey hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric/20 shadow-sm bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-warm-grey">
-                  <SelectItem value="featured" className="focus:bg-opal-electric/10 focus:text-opal-electric">Featured Finds</SelectItem>
-                  <SelectItem value="price-low" className="focus:bg-opal-electric/10 focus:text-opal-electric">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high" className="focus:bg-opal-electric/10 focus:text-opal-electric">Price: High to Low</SelectItem>
-                  <SelectItem value="newest" className="focus:bg-opal-electric/10 focus:text-opal-electric">Newest First</SelectItem>
+                  <SelectItem value="featured" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Featured Finds</SelectItem>
+                  <SelectItem value="price-low" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Price: High to Low</SelectItem>
+                  <SelectItem value="newest" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Newest First</SelectItem>
                 </SelectContent>
               </Select>
             </div>

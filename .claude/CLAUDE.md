@@ -10,9 +10,22 @@ src/
 ├── app/(payload)/      # CMS admin (/admin)
 ├── app/api/webhooks/   # Stripe webhooks only
 ├── components/         # UI primitives + feature components
-├── lib/                # Utilities (cart, stripe, email, payload)
-├── payload/            # CMS collections (Products, Orders, Customers)
-└── types/              # TypeScript definitions
+│   ├── ui/            # Base UI components (Button, Sheet, Toast, etc.)
+│   ├── product/       # Product cards, galleries, filters
+│   ├── cart/          # Cart drawer, buttons, item components
+│   ├── navigation/    # Header, Footer, Skip navigation
+│   ├── sections/      # Hero sections, carousels
+│   ├── trust/         # Trust signals, authenticity badges
+│   └── layout/        # Page transitions, error boundaries
+├── hooks/             # Custom React hooks
+├── lib/               # Utilities and core functionality
+│   ├── accessibility/ # WCAG compliance utilities
+│   ├── animations/    # Framer Motion configurations
+│   ├── utils/         # Helper functions, cn(), formatters
+│   └── validations/   # Zod schemas, form validation
+├── payload/           # CMS collections (Products, Orders, Customers)
+├── styles/            # Design tokens, global styles
+└── types/             # TypeScript definitions
 ```
 
 **Data Flow:** Browser → Next.js Server Components → Payload CMS → PostgreSQL
@@ -53,7 +66,35 @@ pnpm docker:up        # Start PostgreSQL
 pnpm build            # Production build
 pnpm validate         # Type check + lint + test
 pnpm test:e2e         # Playwright E2E tests
+pnpm test             # Run Vitest unit tests
+pnpm type-check       # TypeScript type checking only
+pnpm lint             # ESLint with auto-fix
+pnpm format           # Prettier formatting
+pnpm payload generate # Generate Payload types
 ```
+
+## UI/UX Standards (2025)
+
+### Design System
+- **Design Tokens**: Use tokens from `src/styles/tokens.ts` for consistency
+- **Color System**: WCAG AA compliant colors with accessible variants
+- **Loading States**: Always show loading feedback (spinners, skeletons)
+- **Empty States**: Helpful messages when no content exists
+- **Error Handling**: User-friendly error messages with recovery actions
+- **Animations**: Subtle, purposeful animations via Framer Motion
+
+### Accessibility (A11Y)
+- **Skip Navigation**: Skip to main content link
+- **Focus Management**: Trap focus in modals/drawers
+- **ARIA Labels**: Proper labels for interactive elements
+- **Keyboard Navigation**: Full keyboard support
+- **Screen Readers**: Tested with NVDA/JAWS
+
+### Performance
+- **Lazy Loading**: Images and heavy components
+- **Optimistic UI**: Immediate feedback for user actions
+- **Code Splitting**: Route-based and component splitting
+- **Image Optimization**: Next.js Image component with blur placeholders
 
 ## Key Files
 
@@ -64,6 +105,11 @@ pnpm test:e2e         # Playwright E2E tests
 | `src/app/(marketing)/checkout/actions.ts` | Stripe checkout logic |
 | `src/app/api/webhooks/stripe/route.ts` | Order creation, stock updates |
 | `src/payload.config.ts` | CMS configuration |
+| `src/styles/tokens.ts` | Design system tokens |
+| `src/lib/accessibility/contrast.ts` | WCAG contrast utilities |
+| `src/lib/animations/variants.ts` | Framer Motion animation presets |
+| `src/components/ui/LoadingStates.tsx` | Reusable loading components |
+| `src/components/ui/EmptyStates.tsx` | Empty state components |
 
 ## Code Style
 
@@ -72,6 +118,17 @@ pnpm test:e2e         # Playwright E2E tests
 - Use `cn()` from `@/lib/utils` for conditional classes
 - Prefer composition over inheritance
 - Extract reusable logic to custom hooks in `src/hooks/`
+
+## Custom Hooks
+
+| Hook | Purpose |
+|------|---------|
+| `useOptimisticCart` | Optimistic cart updates with rollback |
+| `useUserPreferences` | Persistent user settings (theme, currency) |
+| `useFocusTrap` | Trap focus within modals/drawers |
+| `useMediaQuery` | Responsive breakpoint detection |
+| `useFormState` | Form state management with validation |
+| `useToast` | Toast notification system |
 
 ## Stripe Integration
 
@@ -97,6 +154,10 @@ Currency: AUD | Shipping: Free over $500, otherwise $15
 - Product stock is decremented via Stripe webhook, not checkout action
 - Use `getPayload()` from `@/lib/payload` for server-side CMS access
 - All prices stored in cents, display with `formatPrice()` from utils
+- Blog posts migrated from WordPress - 17 posts with SEO metadata
+- UI components follow 2025 best practices with accessibility built-in
+- All colors are WCAG AA compliant with accessible variants available
+- Use design tokens for consistent spacing, typography, and animations
 
 ## Claude Code Productivity Tips
 

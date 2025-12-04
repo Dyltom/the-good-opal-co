@@ -241,7 +241,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       return (
                         <div
                           key={index}
-                          className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 border-transparent hover:border-opal-electric transition-colors cursor-pointer"
+                          className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 border-transparent hover:border-opal-electric-accessible transition-colors cursor-pointer"
                         >
                           <Image
                             src={thumbUrl}
@@ -266,7 +266,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="space-y-6">
                 {/* Title */}
                 <div>
-                  <p className="text-sm text-opal-electric font-semibold uppercase tracking-wide mb-2">
+                  <p className="text-sm text-opal-electric-accessible font-semibold uppercase tracking-wide mb-2">
                     {categoryName}
                   </p>
                   <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
@@ -276,7 +276,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
                 {/* Price */}
                 <div className="flex items-baseline gap-4 pb-6 border-b border-warm-grey">
-                  <span className="text-4xl font-bold text-opal-electric">
+                  <span className="text-4xl font-bold text-opal-electric-accessible">
                     {formatCurrency(product.price, 'AUD')}
                   </span>
                   {product.compareAtPrice && product.compareAtPrice > product.price && (

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 
 interface Slide {
   id: number
@@ -108,14 +109,21 @@ export function HeroCarousel() {
           {slide.backgroundImage && (
             <>
               <div className="absolute inset-0 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={slide.backgroundImage}
-                  alt={slide.title}
-                  className={`absolute inset-0 w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${
-                    index === currentSlide ? 'scale-110' : 'scale-100'
-                  }`}
-                />
+                <div className="absolute inset-0 w-full h-full">
+                  <OptimizedImage
+                    src={slide.backgroundImage}
+                    alt={slide.title}
+                    fill={false}
+                    width={1920}
+                    height={800}
+                    priority={index === 0}
+                    quality={90}
+                    className={`w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${
+                      index === currentSlide ? 'scale-110' : 'scale-100'
+                    }`}
+                    sizes="100vw"
+                  />
+                </div>
               </div>
               {/* Lighter overlay to show opal colors */}
               <div className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`} />

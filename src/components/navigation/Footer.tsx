@@ -170,7 +170,7 @@ export function Footer({
                   Subscribe for new arrivals, exclusive offers, and opal care tips.
                 </p>
                 {subscribed ? (
-                  <div className="inline-flex items-center gap-2 text-opal-emerald">
+                  <div className="inline-flex items-center gap-2 text-opal-emerald-dark">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
@@ -184,7 +184,7 @@ export function Footer({
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-opal-electric focus:ring-2 focus:ring-opal-electric/20 transition-all w-full sm:w-72"
+                      className="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric/20 transition-all w-full sm:w-72"
                     />
                     <Button type="submit" variant="shimmer" className="whitespace-nowrap">
                       Subscribe
@@ -204,7 +204,7 @@ export function Footer({
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="text-sm text-white/50 hover:text-opal-electric transition-colors duration-200"
+                          className="text-sm text-white/50 hover:text-opal-electric-dark-accessible transition-colors duration-200"
                           target={link.external ? '_blank' : undefined}
                           rel={link.external ? 'noopener noreferrer' : undefined}
                         >

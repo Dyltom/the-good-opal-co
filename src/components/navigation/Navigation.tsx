@@ -124,10 +124,10 @@ export function Navigation({
                   isActive('/')
                     ? onDarkBackground
                       ? 'text-white'
-                      : 'text-opal-electric'
+                      : 'text-opal-electric-accessible'
                     : onDarkBackground
                       ? 'text-white/90 hover:text-white'
-                      : 'text-charcoal hover:text-opal-electric'
+                      : 'text-charcoal hover:text-opal-electric-accessible'
                 )}
               >
                 Home
@@ -147,10 +147,10 @@ export function Navigation({
                     isActive(item.href)
                       ? onDarkBackground
                         ? 'text-white'
-                        : 'text-opal-electric'
+                        : 'text-opal-electric-accessible'
                       : onDarkBackground
                         ? 'text-white/90 hover:text-white'
-                        : 'text-charcoal hover:text-opal-electric'
+                        : 'text-charcoal hover:text-opal-electric-accessible'
                   )}
                   target={item.external ? '_blank' : undefined}
                   rel={item.external ? 'noopener noreferrer' : undefined}
@@ -249,7 +249,7 @@ export function Navigation({
                 className={cn(
                   'flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-300 group',
                   isActive('/')
-                    ? 'text-opal-electric bg-gradient-to-r from-opal-electric/10 to-fire-pink/10'
+                    ? 'text-opal-electric-accessible bg-gradient-to-r from-opal-electric/10 to-fire-pink/10'
                     : 'text-charcoal hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10'
                 )}
                 onClick={() => setMobileMenuOpen(false)}
@@ -269,7 +269,7 @@ export function Navigation({
                   className={cn(
                     'flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-300 group',
                     isActive(item.href)
-                      ? 'text-opal-electric bg-gradient-to-r from-opal-electric/10 to-fire-pink/10'
+                      ? 'text-opal-electric-accessible bg-gradient-to-r from-opal-electric/10 to-fire-pink/10'
                       : 'text-charcoal hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10'
                   )}
                   style={{

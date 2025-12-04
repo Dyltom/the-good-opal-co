@@ -139,7 +139,7 @@ export default async function BlogPage({
                 </p>
                 <Link
                   href="/admin/collections/posts"
-                  className="text-sm text-opal-electric hover:underline"
+                  className="text-sm text-opal-electric-accessible hover:underline"
                 >
                   Admin: Add blog posts →
                 </Link>

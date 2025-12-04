@@ -132,7 +132,7 @@ function SuccessState({ email }: { email?: string }) {
             Payment processed successfully
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-opal-electric">→</span>
+            <span className="text-opal-electric-accessible">→</span>
             Your order is being prepared
           </li>
           <li className="flex items-center gap-2">

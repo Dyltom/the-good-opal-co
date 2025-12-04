@@ -1,9 +1,33 @@
 import type { Metadata } from 'next'
-import { HomeHero, TrustMarquee, FeaturedProducts } from '@/components/sections'
+import dynamic from 'next/dynamic'
+import { HomeHero, TrustMarquee } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import Link from 'next/link'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
+
+// Lazy load heavy components
+const FeaturedProducts = dynamic(
+  () => import('@/components/sections').then(mod => mod.FeaturedProducts),
+  {
+    loading: () => (
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-200 rounded w-48 mx-auto mb-4" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <div className="aspect-square bg-gray-200 rounded-lg" />
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-4 bg-gray-200 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+    ssr: true,
+  }
+)
 
 export const metadata: Metadata = {
   title: 'The Good Opal Co - Premium Australian Opal Jewelry',
@@ -28,23 +52,24 @@ export default function HomePage() {
         transparent
       />
 
-      {/* Hero Section */}
-      <HomeHero />
+      <main id="main-content" tabIndex={-1}>
+        {/* Hero Section */}
+        <HomeHero />
 
       {/* Trust Marquee */}
       <TrustMarquee />
 
       {/* Handmade in Australia with Image */}
-      <section className="py-20 md:py-28 bg-white overflow-hidden">
+      <section className="py-section-bottom md:py-section-top bg-white overflow-hidden">
         <div className="max-w-screen-2xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
             <div className="px-6 lg:pl-12 order-2 lg:order-1">
-              <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Our Craft</span>
-              <h2 className="text-4xl md:text-6xl font-bold mb-8 text-charcoal leading-tight">
+              <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Our Craft</span>
+              <h2 className="text-4xl md:text-6xl font-bold mb-8 text-content-inverse leading-tight">
                 Handmade in <span className="text-gradient-prismatic">Australia</span>
               </h2>
-              <p className="text-lg md:text-xl text-charcoal/60 mb-8 leading-relaxed">
+              <p className="text-lg md:text-xl text-content-muted mb-8 leading-relaxed">
                 We source all our materials directly from Australian opal miners and handcraft each piece from start to finish,
                 offering our customers ethically sourced, eco-conscious Australian opals at an exceptional price.
               </p>
@@ -61,49 +86,36 @@ export default function HomePage() {
             {/* Image Grid */}
             <div className="px-6 lg:pr-0 order-1 lg:order-2">
               <div className="grid grid-cols-2 gap-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <OptimizedImage
                   src="/api/media/file/20211104_234659-1-4.jpg"
                   alt="Vibrant Australian Opal"
-                  className="rounded-2xl shadow-xl hover:shadow-glow object-cover w-full h-64 lg:h-80 transition-shadow duration-500"
+                  aspectRatio="4:3"
+                  className="rounded-2xl shadow-xl hover:shadow-glow transition-shadow duration-500"
+                  sizes="(max-width: 1024px) 50vw, 33vw"
                 />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/api/media/file/20220109_133519-3.jpg"
-                  alt="Colorful Handcrafted Opals"
-                  className="rounded-2xl shadow-xl hover:shadow-glow object-cover w-full h-64 lg:h-80 mt-12 transition-shadow duration-500"
-                />
+                <div className="mt-12">
+                  <OptimizedImage
+                    src="/api/media/file/20220109_133519-3.jpg"
+                    alt="Colorful Handcrafted Opals"
+                    aspectRatio="4:3"
+                    className="rounded-2xl shadow-xl hover:shadow-glow transition-shadow duration-500"
+                    sizes="(max-width: 1024px) 50vw, 33vw"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Shop Picks - DARK background for opal pop */}
-      <section className="bg-black-rich py-20 md:py-28">
-        <div className="max-w-screen-xl mx-auto px-6">
-          <FeaturedProducts
-            title="Shop Picks"
-            description="Our latest Australian opals and jewelry"
-            limit={4}
-            featured={false}
-            variant="dark"
-          />
-          <div className="text-center mt-12">
-            <Button variant="glass" size="lg" asChild>
-              <Link href="/store">View All Products</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Selected Categories with Images */}
-      <section className="py-20 md:py-28 bg-white">
+      <section className="py-section-bottom md:py-section-top bg-white">
         <div className="max-w-screen-xl mx-auto px-6">
-          <div className="text-center mb-14">
-            <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Browse</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-4">Shop by <span className="text-gradient-prismatic">Category</span></h2>
-            <p className="text-lg text-charcoal/60 max-w-2xl mx-auto">
+          <div className="text-center mb-section-gap">
+            <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Browse</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-content-inverse mb-4">Shop by <span className="text-gradient-prismatic">Category</span></h2>
+            <p className="text-lg text-content-muted max-w-2xl mx-auto">
               Explore our collection of loose opals, handcrafted jewelry, and expert services
             </p>
           </div>
@@ -113,17 +125,18 @@ export default function HomePage() {
               href="/store?category=raw-opals"
               className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
-              <div className="aspect-square relative bg-black-rich">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="aspect-square relative bg-surface-primary">
+                <OptimizedImage
                   src="/api/media/file/20210627_202327-3.jpg"
                   alt="Raw Australian Opals"
-                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  aspectRatio="1:1"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-primary via-surface-overlay to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
-                  <h3 className="text-lg font-bold text-white tracking-wide mb-1">OPALS</h3>
-                  <span className="text-xs text-white/70 font-medium">Loose Stones</span>
+                  <h3 className="text-lg font-bold text-content-primary tracking-wide mb-1">OPALS</h3>
+                  <span className="text-xs text-content-secondary font-medium">Loose Stones</span>
                 </div>
               </div>
             </Link>
@@ -133,17 +146,18 @@ export default function HomePage() {
               href="/store"
               className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
-              <div className="aspect-square relative bg-black-rich">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="aspect-square relative bg-surface-primary">
+                <OptimizedImage
                   src="/api/media/file/IMG_5903-3.jpg"
                   alt="Opal Earrings"
-                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  aspectRatio="1:1"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-primary via-surface-overlay to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
-                  <h3 className="text-lg font-bold text-white tracking-wide mb-1">EARRINGS</h3>
-                  <span className="text-xs text-white/70 font-medium">Handcrafted</span>
+                  <h3 className="text-lg font-bold text-content-primary tracking-wide mb-1">EARRINGS</h3>
+                  <span className="text-xs text-content-secondary font-medium">Handcrafted</span>
                 </div>
               </div>
             </Link>
@@ -153,17 +167,18 @@ export default function HomePage() {
               href="/store?category=opal-rings"
               className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
             >
-              <div className="aspect-square relative bg-black-rich">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+              <div className="aspect-square relative bg-surface-primary">
+                <OptimizedImage
                   src="/api/media/file/20210819_102625-4.jpg"
                   alt="Opal Rings"
-                  className="w-full h-full object-cover opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  aspectRatio="1:1"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black-rich via-black-rich/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface-primary via-surface-overlay to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-center">
-                  <h3 className="text-lg font-bold text-white tracking-wide mb-1">RINGS</h3>
-                  <span className="text-xs text-white/70 font-medium">One-of-a-Kind</span>
+                  <h3 className="text-lg font-bold text-content-primary tracking-wide mb-1">RINGS</h3>
+                  <span className="text-xs text-content-secondary font-medium">One-of-a-Kind</span>
                 </div>
               </div>
             </Link>
@@ -180,7 +195,7 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-white text-center tracking-wide mb-1">SERVICES</h3>
-                <span className="text-xs text-white/70 font-medium">Repairs & Custom</span>
+                <span className="text-xs text-content-secondary font-medium">Repairs & Custom</span>
               </div>
             </Link>
 
@@ -196,23 +211,52 @@ export default function HomePage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-bold text-white text-center tracking-wide mb-1">COURSES</h3>
-                <span className="text-xs text-white/70 font-medium">Learn Opal Cutting</span>
+                <span className="text-xs text-content-secondary font-medium">Learn Opal Cutting</span>
               </div>
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Latest Arrivals - Dark background for opal pop */}
+      <section className="bg-black-rich py-20 md:py-28 relative overflow-hidden">
+        {/* Subtle background effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-opal-electric/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-fire-pink/10 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-screen-xl mx-auto px-6 relative z-10">
+          <FeaturedProducts
+            title="Latest Arrivals"
+            description="Fresh from our workshop - new opals and jewelry pieces"
+            limit={4}
+            featured={false}
+            variant="dark"
+          />
+          <div className="text-center mt-12">
+            <Button
+              variant="outline"
+              size="lg"
+              asChild
+              className="border-white text-white hover:bg-white hover:text-black-rich font-semibold transition-all"
+            >
+              <Link href="/store">View All Products</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Customs Section with Image Gallery */}
-      <section className="py-20 md:py-28 bg-white">
+      <section className="py-section-bottom md:py-section-top bg-white">
         <div className="max-w-screen-2xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
             <div className="order-2 lg:order-1">
-              <h2 className="text-4xl md:text-6xl font-bold mb-6 text-charcoal leading-tight">
+              <h2 className="text-4xl md:text-6xl font-bold mb-6 text-content-inverse leading-tight">
                 Custom Creations
               </h2>
-              <p className="text-lg md:text-xl text-charcoal/60 mb-8 leading-relaxed">
+              <p className="text-lg md:text-xl text-content-muted mb-8 leading-relaxed">
                 Turn the opal of your dreams into a one-of-a-kind treasure, crafted to last a lifetime.
                 Our custom jewellery is designed to be both affordable and uniquely yours.
               </p>
@@ -226,8 +270,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-charcoal">Personal Consultation</p>
-                    <p className="text-sm text-charcoal/60">1:1 design guidance</p>
+                    <p className="font-semibold text-content-inverse">Personal Consultation</p>
+                    <p className="text-sm text-content-muted">1:1 design guidance</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -237,8 +281,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-charcoal">Hand-Selected Opals</p>
-                    <p className="text-sm text-charcoal/60">Choose your stone</p>
+                    <p className="font-semibold text-content-inverse">Hand-Selected Opals</p>
+                    <p className="text-sm text-content-muted">Choose your stone</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -248,8 +292,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-charcoal">Expert Craftsmanship</p>
-                    <p className="text-sm text-charcoal/60">Years of experience</p>
+                    <p className="font-semibold text-content-inverse">Expert Craftsmanship</p>
+                    <p className="text-sm text-content-muted">Years of experience</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -259,8 +303,8 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-charcoal">Fair Pricing</p>
-                    <p className="text-sm text-charcoal/60">Affordable luxury</p>
+                    <p className="font-semibold text-content-inverse">Fair Pricing</p>
+                    <p className="text-sm text-content-muted">Affordable luxury</p>
                   </div>
                 </div>
               </div>
@@ -274,31 +318,30 @@ export default function HomePage() {
             <div className="order-1 lg:order-2">
               <div className="grid grid-cols-2 gap-4">
                 {/* Large Image - Aurora Ring */}
-                <div className="col-span-2 rounded-2xl overflow-hidden shadow-xl">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                <div className="col-span-2">
+                  <OptimizedImage
                     src="/api/media/file/20210819_102625-4.jpg"
                     alt="Custom Aurora Opal Ring"
-                    className="w-full h-80 object-cover hover:scale-105 transition-transform duration-700"
+                    aspectRatio="16:9"
+                    className="rounded-2xl shadow-xl hover:scale-105 transition-transform duration-700"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
                 {/* Small Images - More Custom Rings */}
-                <div className="rounded-2xl overflow-hidden shadow-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/api/media/file/20210819_102749-7.jpg"
-                    alt="Sun and Moon Opal Ring"
-                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                <div className="rounded-2xl overflow-hidden shadow-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/api/media/file/20210819_101509-7.jpg"
-                    alt="Coral Opal Ring"
-                    className="w-full h-48 object-cover hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
+                <OptimizedImage
+                  src="/api/media/file/20210819_102749-7.jpg"
+                  alt="Sun and Moon Opal Ring"
+                  aspectRatio="4:3"
+                  className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
+                <OptimizedImage
+                  src="/api/media/file/20210819_101509-7.jpg"
+                  alt="Coral Opal Ring"
+                  aspectRatio="4:3"
+                  className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
               </div>
             </div>
           </div>
@@ -306,14 +349,14 @@ export default function HomePage() {
       </section>
 
       {/* Customer Reviews */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-whisper">
+      <section className="py-section-bottom md:py-section-top bg-gradient-to-b from-surface-tertiary to-surface-secondary">
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Testimonials</span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-charcoal">
+            <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Testimonials</span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-content-inverse">
               Customer <span className="text-gradient-prismatic">Reviews</span>
             </h2>
-            <p className="text-lg text-charcoal/60 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-content-muted max-w-3xl mx-auto leading-relaxed">
               Everything we create is done with care, from start to finish. From ethically sourcing our rough materials
               to intricately crafting opals and jewellery for their forever homes, every step matters to us.
             </p>
@@ -330,7 +373,7 @@ export default function HomePage() {
                   </svg>
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">
+              <p className="text-content-muted mb-6 leading-relaxed">
                 &ldquo;Absolutely stunning! The opal ring I ordered has the most incredible play of color - blues, greens, and flashes of red. It&apos;s even more beautiful in person than the photos. The craftsmanship is exceptional!&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -338,8 +381,8 @@ export default function HomePage() {
                   E
                 </div>
                 <div>
-                  <p className="font-bold text-charcoal">Emma Thompson</p>
-                  <p className="text-sm text-charcoal/60">Melbourne, VIC</p>
+                  <p className="font-bold text-content-inverse">Emma Thompson</p>
+                  <p className="text-sm text-content-muted">Melbourne, VIC</p>
                 </div>
               </div>
             </div>
@@ -353,7 +396,7 @@ export default function HomePage() {
                   </svg>
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">
+              <p className="text-content-muted mb-6 leading-relaxed">
                 &ldquo;I took the opal cutting course and learned so much! Now I can spot quality opals and appreciate the skill involved. The hands-on experience was invaluable. Highly recommend!&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -361,8 +404,8 @@ export default function HomePage() {
                   J
                 </div>
                 <div>
-                  <p className="font-bold text-charcoal">James Wilson</p>
-                  <p className="text-sm text-charcoal/60">Sydney, NSW</p>
+                  <p className="font-bold text-content-inverse">James Wilson</p>
+                  <p className="text-sm text-content-muted">Sydney, NSW</p>
                 </div>
               </div>
             </div>
@@ -376,7 +419,7 @@ export default function HomePage() {
                   </svg>
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">
+              <p className="text-content-muted mb-6 leading-relaxed">
                 &ldquo;The custom engagement ring exceeded all expectations! They helped me design the perfect piece featuring a Lightning Ridge black opal. My fiancée cries every time she looks at it. Worth every cent!&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -384,8 +427,8 @@ export default function HomePage() {
                   M
                 </div>
                 <div>
-                  <p className="font-bold text-charcoal">Marcus Chen</p>
-                  <p className="text-sm text-charcoal/60">Brisbane, QLD</p>
+                  <p className="font-bold text-content-inverse">Marcus Chen</p>
+                  <p className="text-sm text-content-muted">Brisbane, QLD</p>
                 </div>
               </div>
             </div>
@@ -399,7 +442,7 @@ export default function HomePage() {
                   </svg>
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">
+              <p className="text-content-muted mb-6 leading-relaxed">
                 &ldquo;Fast shipping, beautiful packaging, and the opal earrings are gorgeous! The colors shift as I move - it&apos;s like wearing little rainbows. Great value for authentic Australian opals.&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -407,8 +450,8 @@ export default function HomePage() {
                   S
                 </div>
                 <div>
-                  <p className="font-bold text-charcoal">Sophie Martin</p>
-                  <p className="text-sm text-charcoal/60">Perth, WA</p>
+                  <p className="font-bold text-content-inverse">Sophie Martin</p>
+                  <p className="text-sm text-content-muted">Perth, WA</p>
                 </div>
               </div>
             </div>
@@ -422,7 +465,7 @@ export default function HomePage() {
                   </svg>
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">
+              <p className="text-content-muted mb-6 leading-relaxed">
                 &ldquo;I&apos;ve been collecting opals for years and these are genuine, quality stones at fair prices. The descriptions are accurate and the customer service is excellent. Will definitely buy again!&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -430,8 +473,8 @@ export default function HomePage() {
                   R
                 </div>
                 <div>
-                  <p className="font-bold text-charcoal">Rachel Davies</p>
-                  <p className="text-sm text-charcoal/60">Adelaide, SA</p>
+                  <p className="font-bold text-content-inverse">Rachel Davies</p>
+                  <p className="text-sm text-content-muted">Adelaide, SA</p>
                 </div>
               </div>
             </div>
@@ -445,7 +488,7 @@ export default function HomePage() {
                   </svg>
                 ))}
               </div>
-              <p className="text-charcoal/80 mb-6 leading-relaxed">
+              <p className="text-content-muted mb-6 leading-relaxed">
                 &ldquo;Bought a pendant as a gift for my mum - she absolutely loves it! The Coober Pedy opal has amazing color and the setting is beautifully crafted. Came with certificate of authenticity too.&rdquo;
               </p>
               <div className="flex items-center gap-3">
@@ -453,8 +496,8 @@ export default function HomePage() {
                   L
                 </div>
                 <div>
-                  <p className="font-bold text-charcoal">Luke Anderson</p>
-                  <p className="text-sm text-charcoal/60">Hobart, TAS</p>
+                  <p className="font-bold text-content-inverse">Luke Anderson</p>
+                  <p className="text-sm text-content-muted">Hobart, TAS</p>
                 </div>
               </div>
             </div>
@@ -470,7 +513,7 @@ export default function HomePage() {
       </section>
 
       {/* Bundle and Save */}
-      <section className="py-20 md:py-24 bg-black-rich">
+      <section className="py-section-bottom md:py-4xl bg-surface-primary">
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="relative rounded-3xl p-10 md:p-16 text-center overflow-hidden">
             {/* Background gradient orbs */}
@@ -483,7 +526,7 @@ export default function HomePage() {
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
                 Bundle and <span className="text-gradient-prismatic">Save</span>
               </h2>
-              <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto mb-10 leading-relaxed">
+              <p className="text-lg md:text-xl text-content-secondary max-w-3xl mx-auto mb-10 leading-relaxed">
                 Automatic discounts are applied to your order. The more items you add, the greater the discount on your total.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -499,63 +542,131 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trust Badges / Promise Section */}
-      <section className="py-20 md:py-28 bg-gray-whisper">
+      {/* Trust Badges / Promise Section - Improved Design */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-white via-gray-whisper to-white">
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-opal-electric text-sm font-semibold uppercase tracking-wider mb-4 block">Why Us</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-charcoal mb-4">The Good Opal <span className="text-gradient-prismatic">Promise</span></h2>
-            <p className="text-lg text-charcoal/60 max-w-2xl mx-auto">
-              Quality, authenticity, and care in every piece we create
+            <span className="inline-flex items-center gap-2 text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-6">
+              <span className="w-12 h-px bg-opal-electric-accessible"></span>
+              Why Choose Us
+              <span className="w-12 h-px bg-opal-electric-accessible"></span>
+            </span>
+            <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal mb-6">
+              The Good Opal Promise
+            </h2>
+            <p className="text-lg md:text-xl text-content-muted max-w-3xl mx-auto leading-relaxed">
+              Quality, authenticity, and exceptional care in every piece. When you choose The Good Opal Co,
+              you're not just buying jewelry – you're investing in a lifetime treasure.
             </p>
           </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Express Delivery */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
-              <div className="w-14 h-14 bg-gradient-to-br from-opal-electric to-opal-deep rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-opal-electric to-opal-deep rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-opal-deep rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-fire-pink rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">✦</span>
+                  </div>
+                </div>
+                <h3 className="font-display font-bold text-xl mb-3 text-charcoal">Express Delivery</h3>
+                <p className="text-sm text-content-muted leading-relaxed">
+                  Free express shipping Australia-wide. Limited time offer.
+                </p>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-opal-electric-accessible">2-3 Business Days</p>
+                </div>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">Express Delivery</h3>
-              <p className="text-sm text-charcoal/60 leading-relaxed">Free express shipping for a limited time</p>
             </div>
 
             {/* Warranty */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
-              <div className="w-14 h-14 bg-gradient-to-br from-fire-pink to-fire-coral rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-fire-pink to-fire-coral rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-fire-pink to-fire-coral rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-opal-electric rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">1</span>
+                  </div>
+                </div>
+                <h3 className="font-display font-bold text-xl mb-3 text-charcoal">1 Year Warranty</h3>
+                <p className="text-sm text-content-muted leading-relaxed">
+                  Comprehensive warranty with free cleaning & polishing service.
+                </p>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-fire-pink-dark">Peace of Mind</p>
+                </div>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">1 Year Warranty</h3>
-              <p className="text-sm text-charcoal/60 leading-relaxed">Free cleaning and polishing included</p>
             </div>
 
             {/* Premium Packaging */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
-              <div className="w-14 h-14 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-opal-emerald to-opal-teal rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-fire-gold rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">♦</span>
+                  </div>
+                </div>
+                <h3 className="font-display font-bold text-xl mb-3 text-charcoal">Premium Packaging</h3>
+                <p className="text-sm text-content-muted leading-relaxed">
+                  Luxury gift box, care kit & polishing cloth included.
+                </p>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-opal-emerald-dark">Ready to Gift</p>
+                </div>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">Premium Packaging</h3>
-              <p className="text-sm text-charcoal/60 leading-relaxed">Luxury gift boxes with care kit</p>
             </div>
 
             {/* Authenticity */}
-            <div className="bg-white rounded-2xl p-8 text-center group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-soft/50">
-              <div className="w-14 h-14 bg-gradient-to-br from-fire-orange to-fire-gold rounded-xl flex items-center justify-center mb-5 mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-fire-orange to-fire-gold rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+                <div className="relative mb-6">
+                  <div className="w-16 h-16 bg-gradient-to-br from-fire-orange to-fire-gold rounded-2xl flex items-center justify-center mx-auto shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-opal-deep rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                </div>
+                <h3 className="font-display font-bold text-xl mb-3 text-charcoal">100% Authentic</h3>
+                <p className="text-sm text-content-muted leading-relaxed">
+                  Certificate of authenticity with every opal purchase.
+                </p>
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-fire-orange">Guaranteed Genuine</p>
+                </div>
               </div>
-              <h3 className="font-bold text-lg mb-2 text-charcoal">Certified Authentic</h3>
-              <p className="text-sm text-charcoal/60 leading-relaxed">Certificate of authenticity included</p>
             </div>
+          </div>
+
+          {/* Additional trust element */}
+          <div className="mt-16 text-center">
+            <p className="text-sm text-content-muted">
+              <span className="font-semibold text-charcoal">Trusted by 10,000+</span> opal lovers across Australia and worldwide
+            </p>
           </div>
         </div>
       </section>
+      </main>
 
       <Footer />
     </div>

@@ -103,7 +103,7 @@ export function HeroWithImage({
                 className={
                   button.className ||
                   (button.variant === 'default'
-                    ? 'bg-white text-opal-electric hover:bg-white/90 font-semibold px-8 shadow-xl'
+                    ? 'bg-white text-opal-electric-accessible hover:bg-white/90 font-semibold px-8 shadow-xl'
                     : 'border-white/50 text-white hover:bg-white/10 backdrop-blur-sm')
                 }
               >

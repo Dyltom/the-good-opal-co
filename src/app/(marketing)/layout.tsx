@@ -1,6 +1,7 @@
 import '../globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
+import { SkipNavigation } from '@/components/SkipNavigation'
 
 /**
  * Marketing Layout
@@ -28,6 +29,7 @@ export default function MarketingLayout({
         <link rel="shortcut icon" href="/favicon.png" />
       </head>
       <body suppressHydrationWarning>
+        <SkipNavigation />
         {children}
         <Toaster />
         <Analytics />

@@ -16,35 +16,35 @@ export function StockBadge({ stock, variant = 'default' }: StockBadgeProps) {
       return {
         text: 'Sold Out',
         bgColor: 'bg-error-light',
-        textColor: 'text-error-dark',
+        textColor: 'text-error',
         borderColor: 'border-error',
       }
     } else if (stock === 1) {
       return {
         text: 'Only 1 left!',
         bgColor: 'bg-warning-light',
-        textColor: 'text-warning-dark',
+        textColor: 'text-warning',
         borderColor: 'border-warning',
       }
     } else if (stock <= 3) {
       return {
         text: `Only ${stock} left`,
         bgColor: 'bg-warning-light',
-        textColor: 'text-warning-dark',
+        textColor: 'text-warning',
         borderColor: 'border-warning',
       }
     } else if (stock <= 10) {
       return {
         text: 'Low stock',
         bgColor: 'bg-info-light',
-        textColor: 'text-info-dark',
+        textColor: 'text-info',
         borderColor: 'border-info',
       }
     }
     return {
       text: 'In stock',
       bgColor: 'bg-success-light',
-      textColor: 'text-success-dark',
+      textColor: 'text-success',
       borderColor: 'border-success',
     }
   }
@@ -136,8 +136,8 @@ export function SocialProof({ viewCount, lastSoldDaysAgo, variant = 'default' }:
       )}
       {lastSoldDaysAgo !== undefined && lastSoldDaysAgo < 7 && (
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-success-light rounded-full">
-          <Clock className="w-4 h-4 text-success-dark" />
-          <span className="text-sm text-success-dark">
+          <Clock className="w-4 h-4 text-success" />
+          <span className="text-sm text-success">
             Last sold{' '}
             <strong>
               {lastSoldDaysAgo === 0 ? 'today' : `${lastSoldDaysAgo} day${lastSoldDaysAgo > 1 ? 's' : ''} ago`}

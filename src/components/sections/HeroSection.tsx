@@ -43,13 +43,13 @@ export function HeroSection({
     >
       <Container className="text-center">
         {badge && (
-          <Badge className="mb-6 bg-opal-electric/10 text-opal-electric border-opal-electric/20 text-sm px-4 py-1.5">
+          <Badge className="mb-6 bg-opal-electric/10 text-opal-electric-accessible border-opal-electric-accessible/20 text-sm px-4 py-1.5">
             {badge}
           </Badge>
         )}
 
         {subtitle && (
-          <p className="text-sm uppercase tracking-wider text-opal-electric font-semibold mb-4">
+          <p className="text-sm uppercase tracking-wider text-opal-electric-accessible font-semibold mb-4">
             {subtitle}
           </p>
         )}

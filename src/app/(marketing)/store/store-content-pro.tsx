@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo } from 'react'
-import { ProductCardPro } from '@/components/product/ProductCardPro'
+import { ProductCardPro } from '@/components/product'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import type { Product } from './page'
 import { cn } from '@/lib/utils'
@@ -141,15 +141,18 @@ export function StoreContentPro({ products }: StoreContentProps) {
     <div className="flex flex-col lg:flex-row gap-8">
       {/* Filters Sidebar - Desktop */}
       <aside className="hidden lg:block lg:w-72 flex-shrink-0">
-        <div className="sticky top-24 bg-white rounded-2xl shadow-xl shadow-black/5 border border-gray-100 p-6">
+        <div className="sticky top-24 bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100/50 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-semibold text-lg">Filters</h3>
+            <h3 className="font-semibold text-lg text-gray-900">Refine</h3>
             {activeFilterCount > 0 && (
               <button
                 onClick={clearAllFilters}
-                className="text-sm text-opal-electric-accessible hover:text-opal-electric transition-colors"
+                className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1"
               >
-                Clear all ({activeFilterCount})
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Clear ({activeFilterCount})
               </button>
             )}
           </div>
@@ -157,19 +160,19 @@ export function StoreContentPro({ products }: StoreContentProps) {
           <div className="space-y-6">
             {/* Categories */}
             <div>
-              <h4 className="font-medium text-sm mb-3">Category</h4>
-              <div className="space-y-2">
+              <h4 className="font-medium text-sm mb-3 text-gray-900">Category</h4>
+              <div className="space-y-1">
                 {filterOptions.categories.map((category) => (
-                  <label key={category} className="flex items-center cursor-pointer">
+                  <label key={category} className="flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <input
                       type="radio"
                       name="category"
                       value={category}
                       checked={selectedCategory === category}
                       onChange={() => setSelectedCategory(category)}
-                      className="w-4 h-4 text-opal-electric focus:ring-opal-electric"
+                      className="w-4 h-4 text-opal-electric focus:ring-opal-electric border-gray-300"
                     />
-                    <span className="ml-2 text-sm capitalize">
+                    <span className="ml-3 text-sm capitalize text-gray-700">
                       {category === 'all' ? 'All Products' : category.replace(/-/g, ' ')}
                     </span>
                   </label>
@@ -179,11 +182,11 @@ export function StoreContentPro({ products }: StoreContentProps) {
 
             {/* Stone Types */}
             {filterOptions.stoneTypes.length > 0 && (
-              <div>
-                <h4 className="font-medium text-sm mb-3">Stone Type</h4>
-                <div className="space-y-2">
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="font-medium text-sm mb-3 text-gray-900">Stone Type</h4>
+                <div className="space-y-1">
                   {filterOptions.stoneTypes.map((type) => (
-                    <label key={type} className="flex items-center cursor-pointer">
+                    <label key={type} className="flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                       <input
                         type="checkbox"
                         checked={selectedStoneTypes.includes(type)}
@@ -194,9 +197,9 @@ export function StoreContentPro({ products }: StoreContentProps) {
                             setSelectedStoneTypes(selectedStoneTypes.filter(t => t !== type))
                           }
                         }}
-                        className="w-4 h-4 rounded text-opal-electric focus:ring-opal-electric"
+                        className="w-4 h-4 rounded text-opal-electric focus:ring-opal-electric border-gray-300"
                       />
-                      <span className="ml-2 text-sm">{type}</span>
+                      <span className="ml-3 text-sm text-gray-700">{type}</span>
                     </label>
                   ))}
                 </div>
@@ -205,11 +208,11 @@ export function StoreContentPro({ products }: StoreContentProps) {
 
             {/* Origins */}
             {filterOptions.origins.length > 0 && (
-              <div>
-                <h4 className="font-medium text-sm mb-3">Origin</h4>
-                <div className="space-y-2">
+              <div className="border-t border-gray-100 pt-6">
+                <h4 className="font-medium text-sm mb-3 text-gray-900">Origin</h4>
+                <div className="space-y-1">
                   {filterOptions.origins.map((origin) => (
-                    <label key={origin} className="flex items-center cursor-pointer">
+                    <label key={origin} className="flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                       <input
                         type="checkbox"
                         checked={selectedOrigins.includes(origin)}
@@ -220,9 +223,9 @@ export function StoreContentPro({ products }: StoreContentProps) {
                             setSelectedOrigins(selectedOrigins.filter(o => o !== origin))
                           }
                         }}
-                        className="w-4 h-4 rounded text-opal-electric focus:ring-opal-electric"
+                        className="w-4 h-4 rounded text-opal-electric focus:ring-opal-electric border-gray-300"
                       />
-                      <span className="ml-2 text-sm">{origin}</span>
+                      <span className="ml-3 text-sm text-gray-700">{origin}</span>
                     </label>
                   ))}
                 </div>
@@ -474,6 +477,7 @@ export function StoreContentPro({ products }: StoreContentProps) {
                 stock: product.stock,
                 stoneOrigin: product.stoneOrigin,
                 stoneType: product.stoneType,
+                createdAt: product.createdAt,
               }}
               index={index}
               variant="light"

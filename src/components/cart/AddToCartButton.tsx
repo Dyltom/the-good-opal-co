@@ -14,6 +14,7 @@
 
 import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { ButtonLoading } from '@/components/ui/LoadingStates'
 import { useToast } from '@/hooks/use-toast'
 import { addToCart } from '@/app/(marketing)/cart/actions'
 import type { ReactNode } from 'react'
@@ -74,7 +75,7 @@ export function AddToCartButton({
       disabled={disabled ?? isPending}
       onClick={handleClick}
     >
-      {isPending ? 'Adding...' : (children ?? 'Add to Cart')}
+      {isPending ? <ButtonLoading>Adding to cart</ButtonLoading> : (children ?? 'Add to Cart')}
     </Button>
   )
 }

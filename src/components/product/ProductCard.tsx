@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { formatCurrency } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { Heart, ShoppingBag } from 'lucide-react'
@@ -78,15 +79,16 @@ export function ProductCard({ product, index = 0, variant = 'light' }: ProductCa
                 }`}
               />
             ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <OptimizedImage
                 src="/images/placeholder-opal.jpg"
                 alt={product.name}
-                className={`w-full h-full object-cover transition-all duration-700 ease-out ${
+                aspectRatio="4:3"
+                className={`transition-all duration-700 ease-out ${
                   isAvailable
                     ? 'group-hover:scale-105'
                     : 'grayscale opacity-60'
                 }`}
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               />
             )}
           </div>
@@ -154,8 +156,8 @@ export function ProductCard({ product, index = 0, variant = 'light' }: ProductCa
             isAvailable
               ? isDark
                 ? 'text-white group-hover:text-opal-light'
-                : 'text-charcoal group-hover:text-opal-electric'
-              : isDark ? 'text-white/50' : 'text-charcoal/50'
+                : 'text-charcoal group-hover:text-opal-electric-dark-accessible'
+              : isDark ? 'text-content-secondary' : 'text-content-muted'
           }`}>
             {product.name}
           </h3>

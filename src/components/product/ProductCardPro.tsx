@@ -22,6 +22,7 @@ interface ProductCardProduct {
   image?: string
   stoneOrigin?: string
   stoneType?: string
+  createdAt?: string
 }
 
 interface ProductCardProps {
@@ -57,29 +58,25 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
       <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-electric/20 via-fire-gold/20 to-opal-deep/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
       <Link href={`/store/${product.slug}`} className="block relative">
-        {/* Image Container - Enchanted display */}
+        {/* Image Container - Clean white background */}
         <div className={cn(
-          "relative aspect-square overflow-hidden rounded-3xl mb-5",
-          "bg-gradient-to-br from-charcoal via-black-rich to-charcoal",
-          "transition-all duration-1000",
-          "group-hover:shadow-[0_0_50px_rgba(0,180,216,0.3)]",
-          "before:absolute before:inset-0 before:bg-gradient-to-br before:from-transparent before:via-opal-electric/5 before:to-transparent",
-          "before:opacity-0 before:group-hover:opacity-100 before:transition-opacity before:duration-1000"
+          "relative aspect-square overflow-hidden rounded-2xl mb-4",
+          "bg-white",
+          "transition-all duration-500",
+          "group-hover:shadow-xl",
+          "border border-gray-100"
         )}>
-          {/* Mystical light effects */}
-          <div className="absolute inset-0 bg-gradient-radial from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          {/* Shimmer effect overlay */}
+          {/* Beautiful shimmer effect overlay */}
           <div
             className="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"
             style={{
-              background: 'linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.2) 50%, transparent 60%)',
+              background: 'linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%)',
               backgroundSize: '200% 200%',
               animation: 'shimmer-slide 2s ease-out infinite',
             }}
           />
 
-          {/* Product Image - Enchanted stone */}
+          {/* Product Image - Smart enhancement */}
           {product.image ? (
             <Image
               src={product.image}
@@ -87,42 +84,25 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className={cn(
-                "object-cover transition-all duration-1000 z-10",
-                isAvailable && "group-hover:scale-105 brightness-100 contrast-110",
-                !isAvailable && "opacity-40 grayscale blur-[0.5px]"
+                "object-cover transition-all duration-700 z-10",
+                isAvailable && "group-hover:scale-105",
+                !isAvailable && "opacity-60 grayscale"
               )}
+              style={{
+                // Very subtle enhancement - focusing on quality
+                filter: isAvailable ? `
+                  brightness(1.01)
+                  contrast(1.02)
+                  saturate(1.01)
+                `.replace(/\s+/g, ' ').trim() : undefined,
+              }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className={cn(
-                "w-24 h-24 rounded-full",
-                isDark ? "bg-white/10" : "bg-gray-200"
-              )} />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
+              <div className="w-16 h-16 rounded-full bg-gray-300" />
             </div>
           )}
 
-          {/* Magical sparkles */}
-          {isAvailable && (
-            <>
-              <div className="absolute top-6 left-8 opacity-0 group-hover:opacity-100 transition-all duration-1000 delay-100">
-                <div className="w-3 h-3">
-                  <div className="absolute inset-0 bg-white rounded-full animate-ping" />
-                  <div className="relative w-3 h-3 bg-white rounded-full" />
-                </div>
-              </div>
-              <div className="absolute bottom-10 right-6 opacity-0 group-hover:opacity-100 transition-all duration-1000 delay-300">
-                <div className="w-2 h-2">
-                  <div className="absolute inset-0 bg-opal-light rounded-full animate-ping" />
-                  <div className="relative w-2 h-2 bg-opal-light rounded-full" />
-                </div>
-              </div>
-              <div className="absolute top-1/2 left-1/3 opacity-0 group-hover:opacity-100 transition-all duration-1000 delay-500">
-                <svg className="w-4 h-4 text-white/60" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                </svg>
-              </div>
-            </>
-          )}
 
           {/* Sold Out Overlay */}
           {!isAvailable && (
@@ -136,15 +116,21 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
             </div>
           )}
 
-          {/* Rare find badge */}
-          {discount > 0 && isAvailable && (
-            <div className="absolute top-4 left-4 z-20">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-fire-gold to-fire-orange blur-md opacity-70" />
-                <span className="relative bg-gradient-to-r from-fire-gold to-fire-orange text-black font-bold text-xs px-3 py-1.5 rounded-full shadow-xl flex items-center gap-1.5">
-                  <span className="text-[10px]">✦</span> RARE FIND
-                </span>
-              </div>
+          {/* Price reduction badge - only show for significant discounts */}
+          {discount >= 20 && isAvailable && (
+            <div className="absolute top-3 left-3 z-20">
+              <span className="bg-red-500 text-white text-xs font-medium px-2.5 py-1 rounded-md">
+                -{discount}%
+              </span>
+            </div>
+          )}
+
+          {/* New arrival badge - if product was created in last 7 days */}
+          {isAvailable && !discount && product.createdAt && new Date(product.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000 && (
+            <div className="absolute top-3 left-3 z-20">
+              <span className="bg-black text-white text-xs font-medium px-2.5 py-1 rounded-md">
+                NEW
+              </span>
             </div>
           )}
 
@@ -209,20 +195,6 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
               </div>
             )}
 
-            {/* One of a kind indicator */}
-            {isAvailable && (
-              <div className="flex items-center gap-2 justify-center">
-                <svg className="w-3 h-3 text-opal-electric/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                </svg>
-                <p className="text-[11px] font-light italic text-gray-600 tracking-wider">
-                  One of a Kind Specimen
-                </p>
-                <svg className="w-3 h-3 text-opal-electric/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                </svg>
-              </div>
-            )}
           </div>
 
           {/* View Details CTA */}
