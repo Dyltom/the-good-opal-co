@@ -124,7 +124,7 @@ export function Footer({
             <div className="grid gap-12 lg:grid-cols-2 mb-16">
               {/* Brand Column */}
               <div>
-                <Link href="/" className="flex items-center gap-3 mb-6 group">
+                <Link href="/" className="flex items-center gap-3 mb-6 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich">
                   {logo ? (
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-opal-electric to-fire-pink opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500 rounded-full scale-150" />
@@ -153,7 +153,7 @@ export function Footer({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-gradient-to-r hover:from-opal-electric hover:to-fire-pink hover:text-white transition-all duration-300"
+                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-gradient-to-r hover:from-opal-electric hover:to-fire-pink hover:text-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich"
                         aria-label={link.label || link.platform}
                       >
                         <SocialIcon platform={link.platform} className="h-5 w-5" />
@@ -184,7 +184,7 @@ export function Footer({
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric/20 transition-all w-full sm:w-72"
+                      className="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all w-full sm:w-72"
                     />
                     <Button type="submit" variant="shimmer" className="whitespace-nowrap">
                       Subscribe
@@ -204,7 +204,7 @@ export function Footer({
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="text-sm text-white/50 hover:text-opal-electric-dark-accessible transition-colors duration-200"
+                          className="text-sm text-white/50 hover:text-opal-electric-accessible-dark-accessible transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded"
                           target={link.external ? '_blank' : undefined}
                           rel={link.external ? 'noopener noreferrer' : undefined}
                         >
@@ -246,8 +246,8 @@ export function Footer({
                 {copyright || `© ${currentYear} ${logoText}. All rights reserved.`}
               </div>
               <div className="flex gap-6 text-sm text-white/40">
-                <Link href="/privacy" className="hover:text-white/70 transition-colors">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-white/70 transition-colors">Terms of Service</Link>
+                <Link href="/privacy" className="hover:text-white/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded px-1">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-white/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded px-1">Terms of Service</Link>
               </div>
               <div className="text-xs text-white/30 tracking-wider uppercase">
                 Australian Opal That Doesn&apos;t Cost The Earth

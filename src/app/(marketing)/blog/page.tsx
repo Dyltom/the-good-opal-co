@@ -88,7 +88,7 @@ export default async function BlogPage({
           </div>
           <Container>
             <div className="relative z-10 text-center">
-              <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
+              <span className="text-opal-deep text-sm font-semibold uppercase tracking-wider mb-4 block">
                 Insights & Stories
               </span>
               <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
  * Follows SOLID principles with single responsibility and open/closed design
  */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -30,11 +30,11 @@ const buttonVariants = cva(
           'bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald bg-[length:200%_100%] animate-shimmer-slide text-white font-semibold shadow-xl hover:shadow-2xl',
       },
       size: {
-        default: 'h-11 px-6 py-2',
-        sm: 'h-9 px-4 text-xs',
-        lg: 'h-12 px-8 text-base',
-        xl: 'h-14 px-10 text-lg',
-        icon: 'h-10 w-10',
+        default: 'min-h-[44px] h-11 px-6 py-2.5 sm:min-h-[40px] sm:py-2',
+        sm: 'min-h-[44px] h-11 px-4 py-2 text-xs sm:h-9 sm:min-h-[36px]',
+        lg: 'min-h-[48px] h-12 px-8 py-3 text-base sm:min-h-[44px]',
+        xl: 'min-h-[56px] h-14 px-10 py-3.5 text-lg',
+        icon: 'min-w-[44px] min-h-[44px] h-11 w-11 sm:h-10 sm:w-10 sm:min-w-[40px] sm:min-h-[40px]',
       },
     },
     defaultVariants: {

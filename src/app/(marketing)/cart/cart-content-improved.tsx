@@ -132,7 +132,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-opal-sky/10 rounded-xl border border-opal-electric/20"
+              className="mb-6 p-4 bg-opal-sky/10 rounded-xl border border-opal-electric-accessible/20"
             >
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium text-charcoal">
@@ -183,7 +183,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
           {/* Continue Shopping */}
           <Link
             href="/store"
-            className="inline-flex items-center gap-2 mt-6 text-opal-electric-accessible hover:text-opal-electric font-medium transition-colors"
+            className="inline-flex items-center gap-2 mt-6 text-opal-electric-accessible hover:text-opal-electric-accessible font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Continue Shopping
@@ -316,7 +316,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
             {/* Quantity and Actions */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {/* Quantity Controls */}
+                {/* Quantity Controls - Mobile optimized */}
                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                   <Button
                     size="icon"
@@ -324,11 +324,11 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                     onClick={() => onUpdateQuantity(item.quantity - 1)}
                     disabled={isPending || item.quantity <= 1}
                     aria-label={`Decrease quantity of ${item.name}`}
-                    className="h-8 w-8 rounded-none hover:bg-gray-100"
+                    className="min-h-[44px] min-w-[44px] h-11 w-11 sm:h-8 sm:w-8 sm:min-h-[32px] sm:min-w-[32px] rounded-none hover:bg-gray-100"
                   >
                     <Minus className="w-4 h-4" />
                   </Button>
-                  <span className="w-12 text-center font-medium text-charcoal select-none">
+                  <span className="min-w-[48px] w-12 text-center font-medium text-charcoal select-none">
                     {item.quantity}
                   </span>
                   <Button
@@ -337,7 +337,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                     onClick={() => onUpdateQuantity(item.quantity + 1)}
                     disabled={isPending}
                     aria-label={`Increase quantity of ${item.name}`}
-                    className="h-8 w-8 rounded-none hover:bg-gray-100"
+                    className="min-h-[44px] min-w-[44px] h-11 w-11 sm:h-8 sm:w-8 sm:min-h-[32px] sm:min-w-[32px] rounded-none hover:bg-gray-100"
                   >
                     <Plus className="w-4 h-4" />
                   </Button>

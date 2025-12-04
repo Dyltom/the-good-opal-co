@@ -9,7 +9,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { CartDrawer } from '@/components/cart/CartDrawer'
+import { AnimatedCartDrawer } from '@/components/cart/AnimatedCartDrawer'
 import { fetchCart } from '@/app/(marketing)/cart/actions'
 import type { Cart } from '@/lib/cart'
 
@@ -45,11 +45,11 @@ export function CartButton() {
   const itemText = itemCount === 1 ? 'item' : 'items'
 
   return (
-    <CartDrawer onCartUpdate={loadCart}>
+    <AnimatedCartDrawer onCartUpdate={loadCart}>
       <Button
         variant="outline"
         size="sm"
-        className="relative gap-1.5 font-semibold border-opal-electric-accessible text-opal-electric-accessible hover:bg-opal-electric hover:text-white hover:border-opal-electric-accessible transition-all duration-200"
+        className="relative gap-1.5 font-semibold border-opal-electric-accessible text-opal-electric-accessible hover:bg-opal-electric hover:text-white hover:border-opal-electric-accessible transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2"
       >
         Cart
         {!isLoading && itemCount > 0 && (
@@ -58,6 +58,6 @@ export function CartButton() {
           </span>
         )}
       </Button>
-    </CartDrawer>
+    </AnimatedCartDrawer>
   )
 }

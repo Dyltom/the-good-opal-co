@@ -295,7 +295,7 @@ export default function HomePage() {
                   variants={fadeInUp}
                   className="text-center mb-12"
                 >
-                  <span className="inline-flex items-center gap-2 text-opal-light text-sm font-semibold uppercase tracking-wider mb-6">
+                  <span className="inline-flex items-center gap-2 text-opal-deep text-sm font-semibold uppercase tracking-wider mb-6">
                     <span className="w-12 h-px bg-opal-light"></span>
                     Featured
                     <span className="w-12 h-px bg-opal-light"></span>
@@ -517,7 +517,7 @@ export default function HomePage() {
                           transition={{ delay: i * 0.1 }}
                           className="flex gap-4"
                         >
-                          <span className="flex-shrink-0 w-12 h-12 rounded-full bg-opal-sky flex items-center justify-center text-opal-electric-accessible font-display font-bold">
+                          <span className="flex-shrink-0 w-12 h-12 rounded-full bg-opal-sky flex items-center justify-center text-white font-display font-bold">
                             {item.step}
                           </span>
                           <div>

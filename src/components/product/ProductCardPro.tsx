@@ -57,7 +57,10 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
       {/* Treasure glow effect */}
       <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-electric/20 via-fire-gold/20 to-opal-deep/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-      <Link href={`/store/${product.slug}`} className="block relative">
+      <Link
+        href={`/store/${product.slug}`}
+        className="block relative rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 transition-all"
+      >
         {/* Image Container - Clean white background */}
         <div className={cn(
           "relative aspect-square overflow-hidden rounded-2xl mb-4",
@@ -200,7 +203,7 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
           {/* View Details CTA */}
           {isAvailable && (
             <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <span className="text-xs font-medium text-opal-electric-dark-accessible tracking-wide flex items-center gap-1">
+              <span className="text-xs font-medium text-opal-electric-accessible-dark-accessible tracking-wide flex items-center gap-1">
                 Examine Specimen
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

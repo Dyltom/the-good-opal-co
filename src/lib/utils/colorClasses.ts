@@ -8,7 +8,7 @@ export const colorClasses = {
   brand: {
     opal: {
       text: 'text-opal-electric-accessible', // #005A87 - 4.5:1 on white
-      hover: 'hover:text-opal-electric-dark',
+      hover: 'hover:text-opal-electric-accessible-dark',
       bg: 'bg-opal-electric',
       bgHover: 'hover:bg-opal-electric-dark',
     },
@@ -60,7 +60,7 @@ export const colorClasses = {
 
   // Interactive states
   interactive: {
-    link: 'text-opal-electric-accessible hover:text-opal-electric-dark',
+    link: 'text-opal-electric-accessible hover:text-opal-electric-accessible-dark',
     button: {
       primary: 'bg-opal-electric text-white hover:bg-opal-electric-dark',
       secondary: 'bg-white text-opal-electric-accessible hover:bg-gray-50',
@@ -89,17 +89,17 @@ export function getTextColorForBackground(background: 'light' | 'dark' | 'brand'
  */
 export const colorReplacements: Record<string, string> = {
   // Direct replacements for text colors on white backgrounds
-  'text-opal-electric': 'text-opal-electric-accessible',
+  'text-opal-electric-accessible': 'text-opal-electric-accessible',
   'text-fire-pink': 'text-fire-pink-dark',
   'text-opal-emerald': 'text-opal-emerald-dark',
 
   // Hover states
-  'hover:text-opal-electric': 'hover:text-opal-electric-dark',
+  'hover:text-opal-electric-accessible': 'hover:text-opal-electric-accessible-dark',
   'hover:text-fire-pink': 'hover:text-fire-pink-dark',
   'hover:text-opal-emerald': 'hover:text-opal-emerald-dark',
 
   // Border colors
-  'border-opal-electric': 'border-opal-electric-accessible',
+  'border-opal-electric-accessible': 'border-opal-electric-accessible',
   'border-fire-pink': 'border-fire-pink-dark',
   'border-opal-emerald': 'border-opal-emerald-dark',
 

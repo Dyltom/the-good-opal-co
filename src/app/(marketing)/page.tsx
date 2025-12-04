@@ -60,7 +60,7 @@ export default function HomePage() {
       <TrustMarquee />
 
       {/* Handmade in Australia with Image */}
-      <section className="py-section-bottom md:py-section-top bg-white overflow-hidden">
+      <section className="py-16 md:py-24 bg-white overflow-hidden">
         <div className="max-w-screen-2xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
@@ -110,9 +110,9 @@ export default function HomePage() {
 
 
       {/* Selected Categories with Images */}
-      <section className="py-section-bottom md:py-section-top bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="max-w-screen-xl mx-auto px-6">
-          <div className="text-center mb-section-gap">
+          <div className="text-center mb-12">
             <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Browse</span>
             <h2 className="text-4xl md:text-5xl font-bold text-content-inverse mb-4">Shop by <span className="text-gradient-prismatic">Category</span></h2>
             <p className="text-lg text-content-muted max-w-2xl mx-auto">
@@ -219,7 +219,7 @@ export default function HomePage() {
       </section>
 
       {/* Latest Arrivals - Dark background for opal pop */}
-      <section className="bg-black-rich py-20 md:py-28 relative overflow-hidden">
+      <section className="bg-black-rich py-20 md:py-32 relative overflow-hidden">
         {/* Subtle background effects */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-opal-electric/10 rounded-full blur-3xl" />
@@ -248,7 +248,7 @@ export default function HomePage() {
       </section>
 
       {/* Customs Section with Image Gallery */}
-      <section className="py-section-bottom md:py-section-top bg-white">
+      <section className="py-16 md:py-24 bg-white">
         <div className="max-w-screen-2xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
@@ -522,7 +522,7 @@ export default function HomePage() {
               <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
             </div>
             <div className="relative z-10">
-              <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">Save More</span>
+              <span className="text-opal-deep text-sm font-semibold uppercase tracking-wider mb-4 block">Save More</span>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
                 Bundle and <span className="text-gradient-prismatic">Save</span>
               </h2>

@@ -61,7 +61,7 @@ export function HomeHero() {
       >
         {/* Eyebrow */}
         <p
-          className="text-opal-light uppercase tracking-[0.3em] text-sm mb-6 transition-all duration-700 delay-200"
+          className="text-opal-deep uppercase tracking-[0.3em] text-sm mb-6 transition-all duration-700 delay-200"
           style={{ opacity: mounted ? 1 : 0 }}
         >
           Australian Opal That Doesn&apos;t Cost The Earth

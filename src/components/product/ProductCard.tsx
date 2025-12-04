@@ -56,7 +56,10 @@ export function ProductCard({ product, index = 0, variant = 'light' }: ProductCa
       className="group animate-fade-up"
       style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'backwards' }}
     >
-      <Link href={`/store/${product.slug}`} className="block">
+      <Link
+        href={`/store/${product.slug}`}
+        className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 transition-all"
+      >
         {/* Image Container - DARK background for opal pop */}
         <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-black-rich mb-4 shadow-lg group-hover:shadow-glow transition-all duration-500">
           {/* Gradient Border on Hover */}
@@ -122,7 +125,7 @@ export function ProductCard({ product, index = 0, variant = 'light' }: ProductCa
                   Add to Cart
                 </AddToCartButton>
                 <button
-                  className="w-12 h-12 bg-white rounded-xl flex items-center justify-center hover:bg-fire-pink hover:text-white shadow-lg transition-all duration-200"
+                  className="w-12 h-12 bg-white rounded-xl flex items-center justify-center hover:bg-fire-pink hover:text-white shadow-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fire-pink focus-visible:ring-offset-2"
                   aria-label="Add to wishlist"
                 >
                   <Heart className="w-4 h-4" />
@@ -155,8 +158,8 @@ export function ProductCard({ product, index = 0, variant = 'light' }: ProductCa
           <h3 className={`font-medium text-base leading-snug transition-colors duration-200 line-clamp-2 ${
             isAvailable
               ? isDark
-                ? 'text-white group-hover:text-opal-light'
-                : 'text-charcoal group-hover:text-opal-electric-dark-accessible'
+                ? 'text-white group-hover:text-opal-deep'
+                : 'text-charcoal group-hover:text-opal-electric-accessible-dark-accessible'
               : isDark ? 'text-content-secondary' : 'text-content-muted'
           }`}>
             {product.name}
@@ -165,7 +168,7 @@ export function ProductCard({ product, index = 0, variant = 'light' }: ProductCa
           <div className="flex items-baseline gap-2">
             {isAvailable ? (
               <>
-                <span className={`text-lg font-bold ${isDark ? 'text-opal-light' : 'text-opal-deep'}`}>
+                <span className={`text-lg font-bold ${isDark ? 'text-opal-deep' : 'text-opal-deep'}`}>
                   {formatCurrency(product.price, 'AUD')}
                 </span>
                 {product.compareAtPrice && product.compareAtPrice > product.price && (

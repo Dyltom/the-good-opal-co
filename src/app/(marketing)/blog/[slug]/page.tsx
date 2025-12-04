@@ -160,7 +160,7 @@ export default async function BlogPostPage({
                             </div>
                           )}
                           <div className="p-4">
-                            <h3 className="font-medium text-charcoal mb-2 group-hover:text-opal-electric transition-colors">
+                            <h3 className="font-medium text-charcoal mb-2 group-hover:text-opal-electric-accessible transition-colors">
                               {product.name}
                             </h3>
                             <p className="text-lg font-bold text-charcoal">
@@ -180,7 +180,7 @@ export default async function BlogPostPage({
               <div className="max-w-4xl mx-auto px-4 text-center">
                 <a
                   href="/blog"
-                  className="inline-flex items-center gap-2 text-opal-electric-accessible hover:text-opal-electric font-medium transition-colors"
+                  className="inline-flex items-center gap-2 text-opal-electric-accessible hover:text-opal-electric-accessible font-medium transition-colors"
                 >
                   <svg
                     className="w-5 h-5"

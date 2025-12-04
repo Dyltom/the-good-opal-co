@@ -83,7 +83,7 @@ export function Navigation({
             {/* Logo with Opal Glow on Hover */}
             <Link
               href="/"
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-3 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2"
             >
               {logo ? (
                 <div className="relative">
@@ -121,6 +121,7 @@ export function Navigation({
                 href="/"
                 className={cn(
                   'relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full group',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2',
                   isActive('/')
                     ? onDarkBackground
                       ? 'text-white'
@@ -144,6 +145,7 @@ export function Navigation({
                   href={item.href}
                   className={cn(
                     'relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full group',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2',
                     isActive(item.href)
                       ? onDarkBackground
                         ? 'text-white'

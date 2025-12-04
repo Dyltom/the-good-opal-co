@@ -185,7 +185,7 @@ export function StoreContent({ products }: StoreContentProps) {
               placeholder="Search for your next treasure..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric/20 transition-all shadow-sm"
+              className="w-full px-6 py-3.5 pr-12 text-base rounded-xl border border-warm-grey bg-white focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-sm"
             />
             <svg
               className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/50"
@@ -235,14 +235,14 @@ export function StoreContent({ products }: StoreContentProps) {
                 Sort:
               </Label>
               <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
-                <SelectTrigger className="w-[180px] rounded-lg border border-warm-grey hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric/20 shadow-sm bg-white">
+                <SelectTrigger className="w-[180px] rounded-lg border border-warm-grey hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20 shadow-sm bg-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-warm-grey">
-                  <SelectItem value="featured" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Featured Finds</SelectItem>
-                  <SelectItem value="price-low" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Price: High to Low</SelectItem>
-                  <SelectItem value="newest" className="focus:bg-opal-electric/10 focus:text-opal-electric-accessible">Newest First</SelectItem>
+                  <SelectItem value="featured" className="focus:bg-opal-electric/10 focus:text-white">Featured Finds</SelectItem>
+                  <SelectItem value="price-low" className="focus:bg-opal-electric/10 focus:text-white">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high" className="focus:bg-opal-electric/10 focus:text-white">Price: High to Low</SelectItem>
+                  <SelectItem value="newest" className="focus:bg-opal-electric/10 focus:text-white">Newest First</SelectItem>
                 </SelectContent>
               </Select>
             </div>

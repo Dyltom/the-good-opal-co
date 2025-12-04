@@ -3,7 +3,7 @@ import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
-import { StoreContentPro } from './store-content-pro'
+import { ResponsiveStoreContent } from '@/components/store/ResponsiveStoreContent'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
 
@@ -126,7 +126,7 @@ export default async function StorePage() {
 
           <main className="flex-1">
             {/* Header - Dark opal-inspired */}
-            <section className="relative py-20 md:py-28 bg-black-rich overflow-hidden pt-28">
+            <section className="relative py-20 md:py-32 bg-black-rich overflow-hidden pt-28">
               {/* Background gradient orbs */}
               <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-gold" />
@@ -134,7 +134,7 @@ export default async function StorePage() {
               </div>
               <Container>
                 <div className="relative z-10 text-center max-w-3xl mx-auto">
-                  <span className="text-opal-light text-sm font-semibold uppercase tracking-wider mb-4 block">
+                  <span className="text-opal-deep text-sm font-semibold uppercase tracking-wider mb-4 block">
                     Premium Collection
                   </span>
                   <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
@@ -149,10 +149,10 @@ export default async function StorePage() {
             </section>
 
             {/* Products Section */}
-            <section className="py-12 md:py-16 bg-gray-whisper">
+            <section className="py-16 md:py-20 bg-gray-whisper">
               <Container>
                 <Suspense fallback={<ProductGridSkeleton count={12} />}>
-                  <StoreContentPro products={transformedProducts} />
+                  <ResponsiveStoreContent products={transformedProducts} />
                 </Suspense>
               </Container>
             </section>

@@ -4,7 +4,7 @@ import { Container, Section } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { getCart } from '@/lib/cart'
-import { CheckoutForm } from './checkout-form'
+import { CheckoutFormImproved } from './checkout-form-improved'
 
 /**
  * Checkout Page Metadata
@@ -50,7 +50,7 @@ export default async function CheckoutPage() {
                 </Button>
               </div>
 
-              <CheckoutForm cart={cart} />
+              <CheckoutFormImproved cart={cart} />
             </div>
           </Container>
         </Section>

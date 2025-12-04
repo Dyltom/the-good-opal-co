@@ -309,7 +309,7 @@ export function MagicalProductCard({ product, index = 0, variant = 'light' }: Ma
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                   >
-                    <svg className="w-3 h-3 text-opal-electric/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <svg className="w-3 h-3 text-opal-electric-accessible/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                     </svg>
                   </motion.div>
@@ -320,7 +320,7 @@ export function MagicalProductCard({ product, index = 0, variant = 'light' }: Ma
                     animate={{ rotate: [0, -360] }}
                     transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
                   >
-                    <svg className="w-3 h-3 text-opal-electric/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <svg className="w-3 h-3 text-opal-electric-accessible/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                     </svg>
                   </motion.div>
@@ -336,7 +336,7 @@ export function MagicalProductCard({ product, index = 0, variant = 'light' }: Ma
                 animate={{ opacity: isHovered ? 1 : 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="text-xs font-medium text-opal-electric-dark-accessible tracking-wide flex items-center gap-1">
+                <span className="text-xs font-medium text-opal-electric-accessible-dark-accessible tracking-wide flex items-center gap-1">
                   Examine Specimen
                   <motion.svg
                     className="w-3 h-3"
