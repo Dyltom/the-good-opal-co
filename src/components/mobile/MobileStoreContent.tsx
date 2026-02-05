@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { Filter, X, ChevronUp, Search } from 'lucide-react'
 import { MobileProductCard } from './MobileProductCard'
-import { AnimatedAddToCartButton } from '@/components/cart/AnimatedAddToCartButton'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/app/(marketing)/store/page'
 

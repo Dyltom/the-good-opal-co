@@ -5,8 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils'
 import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motion'
-import { Heart, ShoppingBag, Eye } from 'lucide-react'
-import { AnimatedAddToCartButton } from '@/components/cart/AnimatedAddToCartButton'
+import { Heart } from 'lucide-react'
+import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { cn } from '@/lib/utils'
 
 interface MobileProductCardProduct {
@@ -199,9 +199,11 @@ export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProd
 
                 {/* Quick Add Button */}
                 {isAvailable && (
-                  <AnimatedAddToCartButton
+                  <AddToCartButton
                     product={product}
                     variant="icon"
+                    animated={true}
+                    showConfetti={true}
                   />
                 )}
               </div>
