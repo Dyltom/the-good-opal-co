@@ -6,7 +6,7 @@
  */
 
 import { useState, useMemo } from 'react'
-import { ProductCardPro } from '@/components/product'
+import { ProductCard } from '@/components/product'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import type { Product } from './page'
 import { cn } from '@/lib/utils'
@@ -475,7 +475,7 @@ export function StoreContentPro({ products }: StoreContentProps) {
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 md:gap-8"
         >
           {sortedProducts.map((product, index) => (
-            <ProductCardPro
+            <ProductCard
               key={product.id}
               product={{
                 id: product.id,
@@ -491,7 +491,8 @@ export function StoreContentPro({ products }: StoreContentProps) {
                 createdAt: product.createdAt,
               }}
               index={index}
-              variant="light"
+              variant="museum"
+              showMetadata={true}
             />
           ))}
         </motion.div>

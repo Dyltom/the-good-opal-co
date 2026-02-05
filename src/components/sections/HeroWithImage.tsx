@@ -22,6 +22,12 @@ interface HeroWithImageProps {
   className?: string
 }
 
+// Minimal product type for hero image selection
+interface ProductForHero {
+  featured?: boolean
+  image?: string
+}
+
 /**
  * Hero Section with Product Image Background
  * Premium visual hero showcasing actual products
@@ -41,7 +47,7 @@ export function HeroWithImage({
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
-        const featured = data.find((p: any) => p.featured && p.image)
+        const featured = data.find((p: ProductForHero) => p.featured && p.image)
         if (featured?.image) {
           setFeaturedImage(featured.image)
         }

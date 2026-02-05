@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ProductCardPro } from '@/components/product/ProductCardPro'
+import { ProductCard } from '@/components/product/ProductCard'
 import { useEffect, useState } from 'react'
 import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { ArrowRight } from 'lucide-react'
@@ -115,11 +115,13 @@ export function FeaturedProductsPro({
       ) : products.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map((product, index) => (
-            <ProductCardPro
+            <ProductCard
               key={product.id}
               product={product}
               index={index}
-              variant={variant}
+              variant="museum"
+              darkBackground={variant === 'dark'}
+              showMetadata={true}
             />
           ))}
         </div>
