@@ -9,6 +9,7 @@ import type { NavigationProps } from '@/types'
 import { Container } from '@/components/layout'
 import { Button } from '@/components/ui/button'
 import { CartButton } from '@/components/cart/CartButton'
+import { SearchInput } from '@/components/search/SearchInput'
 
 /**
  * Navigation Component
@@ -166,6 +167,11 @@ export function Navigation({
                 </Link>
               ))}
 
+              {/* Search Input - Desktop */}
+              <div className="ml-4">
+                <SearchInput variant="default" />
+              </div>
+
               {cta && (
                 <Button asChild size="sm" className="ml-2">
                   <Link href={cta.href} target={cta.external ? '_blank' : undefined}>
@@ -245,6 +251,11 @@ export function Navigation({
         <div className="bg-white/95 backdrop-blur-xl border-t border-gray-soft shadow-xl">
           <Container>
             <div className="py-6 space-y-2">
+              {/* Search Input - Mobile */}
+              <div className="px-4 pb-4">
+                <SearchInput variant="mobile" onClose={() => setMobileMenuOpen(false)} />
+              </div>
+
               {/* Home Link - Mobile */}
               <Link
                 href="/"

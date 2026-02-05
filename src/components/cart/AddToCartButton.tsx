@@ -20,6 +20,7 @@ import { ShoppingBag, Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { addToCart } from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
+import { trackAddToCart } from '@/lib/analytics'
 import type { ReactNode } from 'react'
 
 // Lazy load confetti only when needed
@@ -81,6 +82,15 @@ export function AddToCartButton({
 
       if (result.success) {
         setIsSuccess(true)
+
+        // Track add to cart event
+        // Create a minimal product object that satisfies the analytics tracking
+        trackAddToCart({
+          id: product.id,
+          title: product.name,
+          price: product.price,
+          slug: product.slug
+        } as any, 1) // TODO: Support quantity in future
 
         // Trigger confetti if enabled
         if (showConfetti && confetti) {
@@ -336,6 +346,15 @@ export function useAddToCart() {
 
         if (result.success) {
           setIsSuccess(true)
+
+          // Track add to cart event
+          trackAddToCart({
+            id: product.id,
+            title: product.name,
+            price: product.price,
+            slug: product.slug
+          } as any, 1) // TODO: Support quantity in future
+
           setTimeout(() => setIsSuccess(false), 2000)
           window.dispatchEvent(new CustomEvent('cart-updated'))
           toast({

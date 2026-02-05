@@ -2,6 +2,8 @@ import '../globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
 import { SkipNavigation } from '@/components/SkipNavigation'
+import { CookieConsent } from '@/components/layout/CookieConsent'
+import { GoogleAnalyticsProvider } from '@/components/analytics/GoogleAnalytics'
 
 /**
  * Marketing Layout
@@ -33,6 +35,8 @@ export default function MarketingLayout({
         {children}
         <Toaster />
         <Analytics />
+        <GoogleAnalyticsProvider />
+        <CookieConsent />
       </body>
     </html>
   )

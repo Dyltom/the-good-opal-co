@@ -5,8 +5,7 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import type { FooterProps, SocialLink } from '@/types'
 import { Container } from '@/components/layout'
-import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { NewsletterForm } from '@/components/newsletter/NewsletterForm'
 
 /**
  * Social Icon Component
@@ -101,15 +100,6 @@ export function Footer({
   className,
 }: FooterProps) {
   const currentYear = new Date().getFullYear()
-  const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault()
-    // TODO: Implement newsletter subscription
-    setSubscribed(true)
-    setEmail('')
-  }
 
   return (
     <footer className={cn('relative', className)}>
@@ -169,28 +159,7 @@ export function Footer({
                 <p className="text-white/60 mb-6">
                   Subscribe for new arrivals, exclusive offers, and opal care tips.
                 </p>
-                {subscribed ? (
-                  <div className="inline-flex items-center gap-2 text-opal-emerald-dark">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Thanks for subscribing!</span>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 lg:justify-end">
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                      required
-                      className="px-5 py-3 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 focus:outline-none focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all w-full sm:w-72"
-                    />
-                    <Button type="submit" variant="shimmer" className="whitespace-nowrap">
-                      Subscribe
-                    </Button>
-                  </form>
-                )}
+                <NewsletterForm variant="compact" source="footer" className="lg:max-w-md lg:ml-auto" />
               </div>
             </div>
 

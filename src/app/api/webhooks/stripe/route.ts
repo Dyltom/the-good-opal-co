@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getPayload } from '@/lib/payload'
+import { Resend } from 'resend'
+import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 
 /**
  * Stripe Webhook Handler
@@ -19,6 +21,8 @@ import { getPayload } from '@/lib/payload'
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
   apiVersion: '2025-09-30.clover',
 })
+
+const resend = new Resend(process.env['RESEND_API_KEY'] ?? '')
 
 const webhookSecret = process.env['STRIPE_WEBHOOK_SECRET'] ?? ''
 
@@ -257,8 +261,48 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // TODO: Send order confirmation email via Resend
-      // This would use the React Email templates
+      // Send order confirmation email
+      if (session.customer_email) {
+        try {
+          await resend.emails.send({
+            from: 'The Good Opal Co <noreply@thegoodpalco.com>',
+            to: session.customer_email,
+            subject: `Order Confirmation - ${order.orderNumber}`,
+            react: OrderConfirmationEmail({
+              orderNumber: order.orderNumber,
+              customerName: customerName || (shippingDetails?.name ?? ''),
+              items: items.map(item => ({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                image: item.image,
+              })),
+              subtotal,
+              shipping: session.shipping_cost?.amount_total
+                ? session.shipping_cost.amount_total / 100
+                : 0,
+              tax: session.total_details?.amount_tax
+                ? session.total_details.amount_tax / 100
+                : 0,
+              total: session.amount_total
+                ? session.amount_total / 100
+                : subtotal,
+              shippingAddress: {
+                line1: shippingDetails?.address?.line1 ?? '',
+                line2: shippingDetails?.address?.line2,
+                city: shippingDetails?.address?.city ?? '',
+                state: shippingDetails?.address?.state ?? '',
+                postalCode: shippingDetails?.address?.postal_code ?? '',
+                country: shippingDetails?.address?.country ?? 'AU',
+              },
+            }),
+          })
+          console.log(`Order confirmation email sent to ${session.customer_email}`)
+        } catch (emailError) {
+          console.error('Failed to send order confirmation email:', emailError)
+          // Don't fail the webhook for email sending errors
+        }
+      }
 
       return NextResponse.json({
         received: true,

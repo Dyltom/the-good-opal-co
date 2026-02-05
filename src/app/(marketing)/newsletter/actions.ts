@@ -3,183 +3,85 @@
 /**
  * Newsletter Server Actions
  *
- * Handles newsletter subscription with customer creation/update in Payload.
+ * Handles newsletter subscription with Resend email integration.
  * Uses Server Actions for form submission.
  */
 
 import { z } from 'zod'
-import { getPayload } from '@/lib/payload'
+import { getNewsletterService } from '@/lib/newsletter/service'
+import { redirect } from 'next/navigation'
+import { trackNewsletterSignup } from '@/lib/analytics'
 
 /**
  * Validation schema for newsletter subscription
  */
 const subscribeSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  name: z.string().min(1, 'Please enter your name').optional(),
+  name: z.string().min(1).optional(),
+  source: z.enum(['footer', 'popup', 'checkout', 'account']).optional()
 })
 
 /**
- * Result type for newsletter actions
+ * Subscribe to newsletter with email confirmation
  */
-interface NewsletterResult {
-  success: boolean
-  message: string
-  error?: string
+export async function subscribeToNewsletter(
+  prevState: unknown,
+  formData: FormData
+) {
+  try {
+    const data = subscribeSchema.parse({
+      email: formData.get('email'),
+      name: formData.get('name') || undefined,
+      source: formData.get('source') || 'footer'
+    })
+
+    const service = getNewsletterService()
+    const result = await service.subscribe(data.email, {
+      name: data.name,
+      source: data.source as any
+    })
+
+    return {
+      success: result.success,
+      message: result.message,
+      requiresConfirmation: result.requiresConfirmation
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false,
+        message: error.errors[0]?.message || 'Invalid input'
+      }
+    }
+
+    return {
+      success: false,
+      message: 'Something went wrong. Please try again.'
+    }
+  }
 }
 
 /**
- * Subscribe to newsletter
- *
- * Creates or updates a customer record with newsletter subscription.
- * Handles duplicate emails gracefully.
+ * Confirm newsletter subscription
  */
-export async function subscribeToNewsletter(formData: FormData): Promise<NewsletterResult> {
-  const rawEmail = formData.get('email')
-  const rawName = formData.get('name')
+export async function confirmNewsletterSubscription(token: string) {
+  const service = getNewsletterService()
+  const result = await service.confirm(token)
 
-  // Validate input
-  const validation = subscribeSchema.safeParse({
-    email: rawEmail,
-    name: rawName || undefined,
-  })
+  if (result.success) {
+    // Track newsletter signup event
+    trackNewsletterSignup('email-confirmation')
 
-  if (!validation.success) {
-    return {
-      success: false,
-      message: 'Validation failed',
-      error: validation.error.issues[0]?.message ?? 'Invalid email address',
-    }
+    redirect('/newsletter/success')
   }
 
-  const { email, name } = validation.data
-
-  try {
-    const payload = await getPayload()
-
-    // Check if customer already exists
-    const existingCustomer = await payload.find({
-      collection: 'customers',
-      where: {
-        email: { equals: email.toLowerCase() },
-      },
-      limit: 1,
-    })
-
-    const customer = existingCustomer.docs[0]
-    if (customer) {
-      // Already subscribed
-      if (customer['subscribedToNewsletter']) {
-        return {
-          success: true,
-          message: "You're already subscribed to our newsletter!",
-        }
-      }
-
-      // Update existing customer to subscribe
-      await payload.update({
-        collection: 'customers',
-        id: customer['id'],
-        data: {
-          subscribedToNewsletter: true,
-          subscribedAt: new Date().toISOString(),
-          name: name ?? customer['name'],
-        },
-      })
-
-      return {
-        success: true,
-        message: 'Welcome back! You are now subscribed to our newsletter.',
-      }
-    }
-
-    // Create new customer with newsletter subscription
-    await payload.create({
-      collection: 'customers',
-      data: {
-        email: email.toLowerCase(),
-        name: name ?? '',
-        subscribedToNewsletter: true,
-        subscribedAt: new Date().toISOString(),
-        source: 'newsletter',
-      },
-    })
-
-    return {
-      success: true,
-      message: 'Thank you for subscribing! Check your inbox for a welcome email.',
-    }
-  } catch (error) {
-    console.error('Newsletter subscription error:', error)
-
-    return {
-      success: false,
-      message: 'Subscription failed',
-      error: 'An unexpected error occurred. Please try again later.',
-    }
-  }
+  return result
 }
 
 /**
  * Unsubscribe from newsletter
- *
- * Updates customer record to unsubscribe from newsletter.
  */
-export async function unsubscribeFromNewsletter(email: string): Promise<NewsletterResult> {
-  const validation = z.string().email().safeParse(email)
-
-  if (!validation.success) {
-    return {
-      success: false,
-      message: 'Invalid email',
-      error: 'Please provide a valid email address',
-    }
-  }
-
-  try {
-    const payload = await getPayload()
-
-    const existingCustomer = await payload.find({
-      collection: 'customers',
-      where: {
-        email: { equals: email.toLowerCase() },
-      },
-      limit: 1,
-    })
-
-    if (existingCustomer.docs.length === 0) {
-      return {
-        success: true,
-        message: 'You have been unsubscribed.',
-      }
-    }
-
-    const customer = existingCustomer.docs[0]
-    if (!customer) {
-      return {
-        success: true,
-        message: 'You have been unsubscribed.',
-      }
-    }
-
-    await payload.update({
-      collection: 'customers',
-      id: customer['id'],
-      data: {
-        subscribedToNewsletter: false,
-      },
-    })
-
-    return {
-      success: true,
-      message: 'You have been successfully unsubscribed from our newsletter.',
-    }
-  } catch (error) {
-    console.error('Newsletter unsubscribe error:', error)
-
-    return {
-      success: false,
-      message: 'Unsubscribe failed',
-      error: 'An unexpected error occurred. Please try again later.',
-    }
-  }
+export async function unsubscribeFromNewsletter(token: string) {
+  const service = getNewsletterService()
+  return await service.unsubscribe(token)
 }

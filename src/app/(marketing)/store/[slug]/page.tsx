@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import { Container, Section } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductActions } from '@/components/product/ProductActions'
+import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { formatCurrency } from '@/lib/utils'
 import { getPayload } from '@/lib/payload'
 import {
@@ -15,6 +16,7 @@ import {
   PaymentBadgesCompact,
 } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
+import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -168,16 +170,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         ]}
       />
 
-    <div className="min-h-screen flex flex-col">
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-      />
-      <main className="flex-1">
+    <ProductViewTracker product={product}>
+      <div className="min-h-screen flex flex-col">
+        <Navigation
+          logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+          items={[
+            { href: '/store', label: 'Shop' },
+            { href: '/blog', label: 'Blog' },
+            { href: '/faq', label: 'FAQ' },
+          ]}
+        />
+        <main className="flex-1">
         {/* Breadcrumb */}
         <Section padding="sm">
           <Container>
@@ -385,11 +388,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
               </div>
             )}
+
+            {/* Related Products */}
+            <RelatedProductsWithSuspense
+              product={product}
+              className="mt-16 border-t border-warm-grey pt-12"
+            />
           </Container>
         </Section>
       </main>
       <Footer />
     </div>
+    </ProductViewTracker>
     </>
   )
 }
