@@ -4,9 +4,8 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Gem, MapPin } from 'lucide-react'
-import { formatCurrency } from '@/lib/formatters'
+import { formatCurrency, cn } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
-import { cn } from '@/lib/utils'
 
 interface ProductQuickViewModalProps {
   product: {
@@ -53,7 +52,7 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed inset-x-4 top-[50%] -translate-y-[50%] md:inset-x-auto md:left-[50%] md:-translate-x-[50%] max-w-4xl w-full bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-4xl w-[calc(100%-2rem)] bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
             <div className="grid md:grid-cols-2 gap-6 p-6 md:p-8">
               {/* Image Section */}

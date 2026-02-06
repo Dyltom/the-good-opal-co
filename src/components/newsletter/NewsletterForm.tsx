@@ -1,6 +1,6 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { subscribeToNewsletter } from '@/app/(marketing)/newsletter/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,7 +20,7 @@ export function NewsletterForm({
   className,
   showName = false
 }: NewsletterFormProps) {
-  const [state, formAction] = useFormState(subscribeToNewsletter, null)
+  const [state, formAction] = useActionState(subscribeToNewsletter, null)
 
   return (
     <form action={formAction} className={cn('w-full', className)}>

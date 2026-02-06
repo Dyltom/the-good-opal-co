@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import Link from 'next/link'
-import { PackageReturn, Shield, Clock, CreditCard } from 'lucide-react'
+import { Package, Shield, Clock, CreditCard } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Returns & Refunds | The Good Opal Co',
@@ -48,7 +48,7 @@ export default function ReturnsPage() {
             <div className="bg-gray-50 p-6 rounded-xl">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-fire-pink/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <PackageReturn className="w-6 h-6 text-fire-pink" />
+                  <Package className="w-6 h-6 text-fire-pink" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-charcoal mb-2">Free Return Shipping</h3>

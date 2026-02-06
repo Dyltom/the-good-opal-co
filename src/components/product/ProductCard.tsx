@@ -109,17 +109,12 @@ export function ProductCard({
           "relative h-full",
           variant === 'museum' && "bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
         )}>
-        {/* Badges */}
-        {isAvailable && (
+          {/* Badges */}
+          {isAvailable && (
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             {isNew && (
               <span className="px-3 py-1 bg-black-rich text-white text-xs font-medium rounded-full">
                 New
-              </span>
-            )}
-            {product.featured && (
-              <span className="px-3 py-1 bg-gradient-to-r from-opal-electric to-opal-deep text-white text-xs font-medium rounded-full">
-                Featured
               </span>
             )}
             {discount > 0 && (
@@ -130,12 +125,12 @@ export function ProductCard({
           </div>
         )}
 
-      <Link
-        href={`/store/${product.slug}`}
-        className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 rounded-lg"
-      >
-        {/* Image Container */}
-        <div className={cn(
+        <Link
+          href={`/store/${product.slug}`}
+          className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 rounded-lg"
+        >
+          {/* Image Container */}
+          <div className={cn(
           "relative aspect-[4/5] overflow-hidden transition-all duration-500",
           variant === 'default' && !darkBackground && "bg-gradient-to-br from-gray-50 to-white",
           variant === 'default' && darkBackground && "bg-black-rich shadow-lg group-hover:shadow-glow rounded-2xl",
@@ -265,8 +260,8 @@ export function ProductCard({
               </div>
             </div>
           )}
-        </div>
-      </Link>
+          </div>
+        </Link>
 
         {/* Product Info */}
         {variant === 'museum' ? (
@@ -288,11 +283,6 @@ export function ProductCard({
               </p>
             )}
 
-            {/* One of a Kind Badge */}
-            <div className="flex items-center gap-1.5 text-xs text-opal-electric mb-3">
-              <Sparkles size={14} />
-              <span className="font-medium">One of a Kind</span>
-            </div>
 
             {/* Price and Actions */}
             <div className="flex items-end justify-between">
@@ -389,8 +379,8 @@ export function ProductCard({
             )}
           </div>
         )}
-      </div>
-    </Container>
+        </div>
+      </Container>
 
       {/* Quick View Modal */}
       <ProductQuickViewModal

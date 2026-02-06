@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { Navigation, Footer } from '@/components/navigation'
 import { getPayload } from '@/lib/payload'
 import type { Post } from '@/types/payload-types'
 import Image from 'next/image'
-import { formatPrice } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { PageTransition } from '@/components/layout/PageTransition'
@@ -161,7 +162,7 @@ export default async function BlogPostPage({
                               {product.name}
                             </h3>
                             <p className="text-lg font-bold text-charcoal">
-                              {formatPrice(product.price)}
+                              {formatCurrency(product.price, 'AUD')}
                             </p>
                           </div>
                         </a>
@@ -175,7 +176,7 @@ export default async function BlogPostPage({
             {/* Back to Blog */}
             <div className="bg-surface-soft py-12">
               <div className="max-w-4xl mx-auto px-4 text-center">
-                <a
+                <Link
                   href="/blog"
                   className="inline-flex items-center gap-2 text-opal-electric-accessible hover:text-opal-electric-accessible font-medium transition-colors"
                 >
@@ -193,7 +194,7 @@ export default async function BlogPostPage({
                     />
                   </svg>
                   Back to All Articles
-                </a>
+                </Link>
               </div>
             </div>
           </main>
