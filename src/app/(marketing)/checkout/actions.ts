@@ -98,7 +98,8 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
         subtotal,
         shipping,
         tax,
-        customerId: undefined
+        customerId: undefined,
+        currentDate: new Date()
       })
 
       if (!discountResult.error && discountResult.application) {

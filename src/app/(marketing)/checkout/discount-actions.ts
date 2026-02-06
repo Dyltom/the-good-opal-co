@@ -30,7 +30,8 @@ export async function applyDiscountCode(code: string) {
       subtotal,
       shipping,
       tax,
-      customerId: undefined // Could pass authenticated user ID here
+      customerId: undefined, // Could pass authenticated user ID here
+      currentDate: new Date()
     })
 
     if (result.error) {

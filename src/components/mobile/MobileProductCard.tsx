@@ -8,6 +8,7 @@ import { motion, useMotionValue, useTransform, useAnimation } from 'framer-motio
 import { Heart } from 'lucide-react'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { cn } from '@/lib/utils'
+import { usePrefersReducedMotion } from '@/lib/animations/motion'
 
 interface MobileProductCardProduct {
   id: string
@@ -32,6 +33,7 @@ export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProd
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   // Touch interactions
   const cardRef = useRef<HTMLDivElement>(null)
@@ -110,10 +112,10 @@ export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProd
             {/* Product Image with Ken Burns effect */}
             {product.image ? (
               <motion.div
-                animate={{
+                animate={prefersReducedMotion ? {} : {
                   scale: [1, 1.1, 1],
                 }}
-                transition={{
+                transition={prefersReducedMotion ? {} : {
                   duration: 20,
                   repeat: Infinity,
                   repeatType: "reverse"

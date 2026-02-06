@@ -16,15 +16,7 @@ export function LoginForm() {
   const [loginState, loginAction] = useFormState(login, null)
   const [registerState, registerAction] = useFormState(register, null)
 
-  const handleSubmit = async (formData: FormData) => {
-    setIsLoading(true)
-    if (isRegister) {
-      await registerAction(formData)
-    } else {
-      await loginAction(formData)
-    }
-    setIsLoading(false)
-  }
+  const action = isRegister ? registerAction : loginAction
 
   const error = isRegister ? registerState?.error : loginState?.error
 
@@ -64,7 +56,7 @@ export function LoginForm() {
         </div>
       )}
 
-      <form action={handleSubmit} className="space-y-6">
+      <form action={action} className="space-y-6">
         {/* Name field (register only) */}
         {isRegister && (
           <div>

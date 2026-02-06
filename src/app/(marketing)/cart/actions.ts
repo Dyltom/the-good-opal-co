@@ -54,6 +54,32 @@ export async function addToCart(
 }
 
 /**
+ * Add an item to the cart with a specific quantity
+ * Can be called from Client Components
+ *
+ * @param item - Product details to add
+ * @param quantity - Number of items to add
+ * @returns ActionResult with updated cart
+ */
+export async function addToCartWithQuantity(
+  item: Omit<CartItem, 'quantity'>,
+  quantity: number
+): Promise<ActionResult<Cart>> {
+  try {
+    const { addItemToCartWithQuantity } = await import('@/lib/cart')
+    const cart = await addItemToCartWithQuantity(item, quantity)
+    revalidatePath('/', 'layout')
+    return { success: true, data: cart }
+  } catch (error) {
+    console.error('Failed to add item to cart:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to add item to cart',
+    }
+  }
+}
+
+/**
  * Remove an item from the cart
  *
  * @param productId - ID of the product to remove

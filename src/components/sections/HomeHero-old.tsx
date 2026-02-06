@@ -68,9 +68,9 @@ export function HomeHero() {
         </p>
 
         {/* Main Heading */}
-        <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-light text-white mb-8 leading-[1.05] tracking-tight">
           <span className="block">Discover the</span>
-          <span className="text-gradient-prismatic">Magic of Opal</span>
+          <span className="text-gradient-prismatic font-normal">Magic of Opal</span>
         </h1>
 
         {/* Subheading */}

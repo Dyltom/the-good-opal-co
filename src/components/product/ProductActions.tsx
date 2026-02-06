@@ -7,9 +7,11 @@
  * Works with the new cookie-based cart system.
  */
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { QuantitySelector } from '@/components/ui/quantity-selector'
 
 interface ProductActionsProps {
   product: {
@@ -23,6 +25,7 @@ interface ProductActionsProps {
 }
 
 export function ProductActions({ product }: ProductActionsProps) {
+  const [quantity, setQuantity] = useState(1)
   const isOutOfStock = product.stock === 0
 
   return (
@@ -32,6 +35,19 @@ export function ProductActions({ product }: ProductActionsProps) {
         <p className="text-sm text-amber-600 font-medium">
           Only {product.stock} left in stock - order soon!
         </p>
+      )}
+
+      {/* Quantity Selector */}
+      {!isOutOfStock && (
+        <div>
+          <label className="block text-sm font-medium mb-2">Quantity</label>
+          <QuantitySelector
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            max={Math.min(product.stock, 99)}
+            disabled={isOutOfStock}
+          />
+        </div>
       )}
 
       {/* Action Buttons */}
@@ -49,6 +65,7 @@ export function ProductActions({ product }: ProductActionsProps) {
               price: product.price,
               image: product.image,
             }}
+            quantity={quantity}
           />
         )}
         <Button size="lg" variant="outline" asChild>

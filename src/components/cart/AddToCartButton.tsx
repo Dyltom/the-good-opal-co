@@ -18,7 +18,7 @@ import { useState, useTransition, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag, Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { addToCart } from '@/app/(marketing)/cart/actions'
+import { addToCart, addToCartWithQuantity } from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
 import { trackAddToCart } from '@/lib/analytics'
 import type { ReactNode } from 'react'
@@ -34,6 +34,7 @@ interface AddToCartButtonProps {
     price: number
     image?: string
   }
+  quantity?: number
   disabled?: boolean
   className?: string
   children?: ReactNode
@@ -45,6 +46,7 @@ interface AddToCartButtonProps {
 
 export function AddToCartButton({
   product,
+  quantity = 1,
   disabled,
   className,
   children,
@@ -72,13 +74,21 @@ export function AddToCartButton({
     const y = rect.top + rect.height / 2
 
     startTransition(async () => {
-      const result = await addToCart({
-        productId: product.id,
-        slug: product.slug,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-      })
+      const result = quantity > 1
+        ? await addToCartWithQuantity({
+            productId: product.id,
+            slug: product.slug,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+          }, quantity)
+        : await addToCart({
+            productId: product.id,
+            slug: product.slug,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+          })
 
       if (result.success) {
         setIsSuccess(true)
@@ -90,7 +100,7 @@ export function AddToCartButton({
           title: product.name,
           price: product.price,
           slug: product.slug
-        } as any, 1) // TODO: Support quantity in future
+        } as any, quantity)
 
         // Trigger confetti if enabled
         if (showConfetti && confetti) {

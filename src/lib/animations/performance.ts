@@ -81,20 +81,20 @@ export function getSpringConfig(type: 'default' | 'gentle' | 'wobbly' | 'stiff' 
   // Mobile-optimized springs
   if (mobile) {
     const configs = {
-      default: { type: 'spring', stiffness: 400, damping: 30 },
-      gentle: { type: 'spring', stiffness: 200, damping: 25 },
-      wobbly: { type: 'spring', stiffness: 150, damping: 15 },
-      stiff: { type: 'spring', stiffness: 500, damping: 35 },
+      default: { type: 'spring' as const, stiffness: 400, damping: 30 },
+      gentle: { type: 'spring' as const, stiffness: 200, damping: 25 },
+      wobbly: { type: 'spring' as const, stiffness: 150, damping: 15 },
+      stiff: { type: 'spring' as const, stiffness: 500, damping: 35 },
     }
     return configs[type]
   }
 
   // Desktop springs
   const configs = {
-    default: { type: 'spring', stiffness: 300, damping: 25 },
-    gentle: { type: 'spring', stiffness: 120, damping: 20 },
-    wobbly: { type: 'spring', stiffness: 100, damping: 10 },
-    stiff: { type: 'spring', stiffness: 400, damping: 30 },
+    default: { type: 'spring' as const, stiffness: 300, damping: 25 },
+    gentle: { type: 'spring' as const, stiffness: 120, damping: 20 },
+    wobbly: { type: 'spring' as const, stiffness: 100, damping: 10 },
+    stiff: { type: 'spring' as const, stiffness: 400, damping: 30 },
   }
 
   return configs[type]

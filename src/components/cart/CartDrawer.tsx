@@ -174,20 +174,20 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending }: CartDra
           <Button
             size="sm"
             variant="outline"
-            className="h-7 w-7 p-0"
+            className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
             onClick={() => onUpdateQuantity(item.quantity - 1)}
             disabled={isPending}
             aria-label={`Decrease quantity of ${item.name}`}
           >
             −
           </Button>
-          <span className="text-sm font-medium w-8 text-center">
+          <span className="text-sm font-medium w-12 text-center">
             {item.quantity}
           </span>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 w-7 p-0"
+            className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
             onClick={() => onUpdateQuantity(item.quantity + 1)}
             disabled={isPending}
             aria-label={`Increase quantity of ${item.name}`}
@@ -197,7 +197,7 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending }: CartDra
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 text-xs ml-auto"
+            className="h-9 text-xs ml-auto px-3"
             onClick={onRemove}
             disabled={isPending}
           >

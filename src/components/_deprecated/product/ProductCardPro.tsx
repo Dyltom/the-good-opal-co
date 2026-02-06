@@ -203,7 +203,7 @@ export function ProductCardPro({ product, index = 0, variant = 'light' }: Produc
           {/* View Details CTA */}
           {isAvailable && (
             <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <span className="text-xs font-medium text-opal-electric-accessible-dark-accessible tracking-wide flex items-center gap-1">
+              <span className="text-xs font-medium text-opal-electric tracking-wide flex items-center gap-1">
                 Examine Specimen
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

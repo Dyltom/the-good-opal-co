@@ -10,14 +10,9 @@ import type {
   FixedDiscount,
   ShippingDiscount,
   DiscountCalculationResult,
-  DiscountApplication
+  DiscountApplication,
+  CalculationContext
 } from './types'
-
-export interface CalculationContext {
-  subtotal: number
-  shipping: number
-  tax: number
-}
 
 export interface DiscountCalculator {
   calculate(discount: Discount, context: CalculationContext): DiscountCalculationResult
@@ -110,7 +105,7 @@ export class DiscountCalculatorFactory {
   private calculators: Map<string, DiscountCalculator>
 
   constructor() {
-    this.calculators = new Map([
+    this.calculators = new Map<string, DiscountCalculator>([
       ['percentage', new PercentageDiscountCalculator()],
       ['fixed', new FixedDiscountCalculator()],
       ['shipping', new ShippingDiscountCalculator()]

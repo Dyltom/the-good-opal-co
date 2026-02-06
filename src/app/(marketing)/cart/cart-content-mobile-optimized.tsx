@@ -339,9 +339,9 @@ function CartItemRowMobile({ item, onRemove, onUpdateQuantity, isPending }: Cart
                 onClick={() => onUpdateQuantity(item.quantity - 1)}
                 disabled={isPending || item.quantity <= 1}
                 aria-label={`Decrease quantity of ${item.name}`}
-                className="h-8 w-8 rounded-none hover:bg-gray-100"
+                className="h-11 w-11 md:h-8 md:w-8 rounded-none hover:bg-gray-100"
               >
-                <Minus className="w-3 h-3" />
+                <Minus className="w-4 h-4 md:w-3 md:h-3" />
               </Button>
               <span className="w-10 text-center text-sm font-medium">
                 {item.quantity}
@@ -352,9 +352,9 @@ function CartItemRowMobile({ item, onRemove, onUpdateQuantity, isPending }: Cart
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending}
                 aria-label={`Increase quantity of ${item.name}`}
-                className="h-8 w-8 rounded-none hover:bg-gray-100"
+                className="h-11 w-11 md:h-8 md:w-8 rounded-none hover:bg-gray-100"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="w-4 h-4 md:w-3 md:h-3" />
               </Button>
             </div>
 

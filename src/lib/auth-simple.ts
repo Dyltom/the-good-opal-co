@@ -89,5 +89,5 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     limit: 1
   })
 
-  return users.docs[0] || null
+  return users.docs[0] as User | null
 }

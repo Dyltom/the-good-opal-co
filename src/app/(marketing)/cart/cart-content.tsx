@@ -166,7 +166,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
 
         {/* Product Info */}
         <div className="flex-1">
-          <Link href={`/store/${item.slug}`} className="hover:text-opal-electric-accessible-dark-accessible transition-colors">
+          <Link href={`/store/${item.slug}`} className="hover:text-opal-electric transition-colors">
             <h3 className="font-semibold text-lg mb-1 text-charcoal">{item.name}</h3>
           </Link>
           <p className="text-charcoal/60 text-sm mb-4">
@@ -182,7 +182,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                 onClick={() => onUpdateQuantity(item.quantity - 1)}
                 disabled={isPending}
                 aria-label={`Decrease quantity of ${item.name}`}
-                className="h-8 w-8 rounded-full hover:bg-gray-whisper"
+                className="h-11 w-11 md:h-8 md:w-8 rounded-full hover:bg-gray-whisper text-lg md:text-base"
               >
                 −
               </Button>
@@ -193,7 +193,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending}
                 aria-label={`Increase quantity of ${item.name}`}
-                className="h-8 w-8 rounded-full hover:bg-gray-whisper"
+                className="h-11 w-11 md:h-8 md:w-8 rounded-full hover:bg-gray-whisper text-lg md:text-base"
               >
                 +
               </Button>

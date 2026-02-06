@@ -18,7 +18,7 @@ const registerSchema = z.object({
   phone: z.string().optional()
 })
 
-export async function login(formData: FormData) {
+export async function login(_prevState: { error: string } | null, formData: FormData) {
   try {
     const data = loginSchema.parse({
       email: formData.get('email'),
@@ -32,14 +32,15 @@ export async function login(formData: FormData) {
     }
 
     // Verify password
-    const isValid = await verifyPassword(data.password, user.password)
+    const userPassword = user.password || ''
+    const isValid = await verifyPassword(data.password, userPassword)
     if (!isValid) {
       return { error: 'Invalid email or password' }
     }
 
     // Create session
     await createSession({
-      id: user.id,
+      id: String(user.id),
       email: user.email,
       name: user.name || undefined,
       role: user.role || undefined
@@ -54,7 +55,7 @@ export async function login(formData: FormData) {
   }
 }
 
-export async function register(formData: FormData) {
+export async function register(_prevState: { error: string } | null, formData: FormData) {
   try {
     const data = registerSchema.parse({
       email: formData.get('email'),
@@ -112,7 +113,7 @@ export async function register(formData: FormData) {
 
     // Create session
     await createSession({
-      id: user.id,
+      id: String(user.id),
       email: user.email,
       name: user.name || undefined,
       role: user.role || undefined

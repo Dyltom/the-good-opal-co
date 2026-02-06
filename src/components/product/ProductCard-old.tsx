@@ -8,6 +8,7 @@ import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { formatCurrency, cn } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { Heart, ShoppingBag } from 'lucide-react'
+import { usePrefersReducedMotion, reducedMotionClass } from '@/lib/animations/motion'
 
 /**
  * Unified Product Card Component
@@ -79,6 +80,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false)
   const isAvailable = product.stock > 0
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   // Calculate discount percentage
   const discount = product.compareAtPrice
@@ -90,8 +92,8 @@ export function ProductCard({
     new Date(product.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
 
   // Base container with conditional animations
-  const Container = animated ? motion.div : 'div'
-  const containerProps = animated ? {
+  const Container = animated && !prefersReducedMotion ? motion.div : 'div'
+  const containerProps = animated && !prefersReducedMotion ? {
     ...cardAnimations,
     ...(variant === 'default' ? hoverLift : {}),
     transition: {
@@ -127,7 +129,7 @@ export function ProductCard({
           )}
 
           {/* Shimmer effect for museum variant */}
-          {variant === 'museum' && animated && (
+          {variant === 'museum' && animated && !prefersReducedMotion && (
             <motion.div
               className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover:opacity-100"
               initial={{ x: '-100%' }}
@@ -142,7 +144,7 @@ export function ProductCard({
           {/* Product Image */}
           <motion.div
             className="relative w-full h-full"
-            whileHover={animated ? { scale: 1.05 } : {}}
+            whileHover={animated && !prefersReducedMotion ? { scale: 1.05 } : {}}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             {product.image ? (

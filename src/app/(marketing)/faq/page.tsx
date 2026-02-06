@@ -280,7 +280,7 @@ export default function FAQPage() {
                           value={`${category.title}-${index}`}
                           className="border border-gray-soft/80 rounded-xl px-5 bg-gray-whisper/50 hover:bg-white hover:border-opal-electric-accessible/30 transition-all duration-200 data-[state=open]:bg-white data-[state=open]:border-opal-electric-accessible/50 data-[state=open]:shadow-sm"
                         >
-                          <AccordionTrigger className="text-left font-medium text-charcoal hover:text-opal-electric-accessible-dark-accessible py-4 text-base leading-snug [&[data-state=open]]:text-opal-electric-accessible">
+                          <AccordionTrigger className="text-left font-medium text-charcoal hover:text-opal-electric py-4 text-base leading-snug [&[data-state=open]]:text-opal-electric-accessible">
                             {faq.question}
                           </AccordionTrigger>
                           <AccordionContent className="text-charcoal/70 leading-relaxed pb-4 text-[15px]">

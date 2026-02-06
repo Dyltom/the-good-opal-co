@@ -100,6 +100,20 @@ export async function setCart(items: CartItem[]): Promise<void> {
  * @returns Promise<Cart> - Updated cart state
  */
 export async function addItemToCart(item: Omit<CartItem, 'quantity'>): Promise<Cart> {
+  return addItemToCartWithQuantity(item, 1)
+}
+
+/**
+ * Add an item to the cart with a specific quantity
+ *
+ * @param item - Cart item to add (without quantity)
+ * @param quantity - Number of items to add
+ * @returns Promise<Cart> - Updated cart state
+ */
+export async function addItemToCartWithQuantity(
+  item: Omit<CartItem, 'quantity'>,
+  quantity: number
+): Promise<Cart> {
   const cart = await getCart()
   const existingIndex = cart.items.findIndex((i) => i.productId === item.productId)
 
@@ -107,11 +121,11 @@ export async function addItemToCart(item: Omit<CartItem, 'quantity'>): Promise<C
     // Increment quantity of existing item
     const existingItem = cart.items[existingIndex]
     if (existingItem) {
-      existingItem.quantity += 1
+      existingItem.quantity += quantity
     }
   } else {
-    // Add new item with quantity 1
-    cart.items.push({ ...item, quantity: 1 })
+    // Add new item with specified quantity
+    cart.items.push({ ...item, quantity })
   }
 
   await setCart(cart.items)

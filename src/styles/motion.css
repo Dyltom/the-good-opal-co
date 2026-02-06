@@ -1,0 +1,73 @@
+/**
+ * Motion preferences CSS utilities
+ * Global styles for respecting prefers-reduced-motion
+ */
+
+/* Disable all CSS animations and transitions when reduced motion is preferred */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Keep opacity transitions for accessibility */
+  .motion-safe\:transition-opacity {
+    transition-property: opacity !important;
+    transition-duration: 0.2s !important;
+  }
+
+  /* Disable transform animations */
+  .motion-reduce\:transform-none {
+    transform: none !important;
+  }
+
+  /* Disable Tailwind animations */
+  .motion-reduce\:animate-none {
+    animation: none !important;
+  }
+
+  /* Disable hover lift effects */
+  .group:hover .group-hover\:translate-y-0 {
+    transform: translateY(0) !important;
+  }
+
+  /* Disable shimmer effects */
+  .animate-shimmer {
+    animation: none !important;
+  }
+
+  /* Disable pulse animations */
+  .animate-pulse {
+    animation: none !important;
+  }
+
+  /* Disable spin animations */
+  .animate-spin {
+    animation: none !important;
+  }
+
+  /* Disable bounce animations */
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  /* Keep essential loading indicators with reduced motion */
+  .motion-safe\:animate-spin {
+    animation: spin 1.5s linear infinite !important;
+  }
+}
+
+/* Motion-safe utilities */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-safe\:transition-all {
+    transition-property: all;
+  }
+
+  .motion-safe\:animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+}

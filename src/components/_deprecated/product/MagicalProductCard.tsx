@@ -336,7 +336,7 @@ export function MagicalProductCard({ product, index = 0, variant = 'light' }: Ma
                 animate={{ opacity: isHovered ? 1 : 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="text-xs font-medium text-opal-electric-accessible-dark-accessible tracking-wide flex items-center gap-1">
+                <span className="text-xs font-medium text-opal-electric tracking-wide flex items-center gap-1">
                   Examine Specimen
                   <motion.svg
                     className="w-3 h-3"

@@ -66,7 +66,7 @@ export default function HomePage() {
             {/* Content */}
             <div className="px-6 lg:pl-12 order-2 lg:order-1">
               <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Our Craft</span>
-              <h2 className="text-4xl md:text-6xl font-bold mb-8 text-content-inverse leading-tight">
+              <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-content-inverse leading-tight">
                 Handmade in <span className="text-gradient-prismatic">Australia</span>
               </h2>
               <p className="text-lg md:text-xl text-content-muted mb-8 leading-relaxed">
@@ -90,7 +90,7 @@ export default function HomePage() {
                   src="/api/media/file/20211104_234659-1-4.jpg"
                   alt="Vibrant Australian Opal"
                   aspectRatio="4:3"
-                  className="rounded-2xl shadow-xl hover:shadow-glow transition-shadow duration-500"
+                  className="rounded-2xl shadow-xl hover:shadow-glow transition-shadow duration-300"
                   sizes="(max-width: 1024px) 50vw, 33vw"
                 />
                 <div className="mt-12">
@@ -98,7 +98,7 @@ export default function HomePage() {
                     src="/api/media/file/20220109_133519-3.jpg"
                     alt="Colorful Handcrafted Opals"
                     aspectRatio="4:3"
-                    className="rounded-2xl shadow-xl hover:shadow-glow transition-shadow duration-500"
+                    className="rounded-2xl shadow-xl hover:shadow-glow transition-shadow duration-300"
                     sizes="(max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
@@ -114,7 +114,7 @@ export default function HomePage() {
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="text-center mb-12">
             <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Browse</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-content-inverse mb-4">Shop by <span className="text-gradient-prismatic">Category</span></h2>
+            <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-content-inverse mb-4 leading-tight">Shop by <span className="text-gradient-prismatic">Category</span></h2>
             <p className="text-lg text-content-muted max-w-2xl mx-auto">
               Explore our collection of loose opals, handcrafted jewelry, and expert services
             </p>
@@ -123,13 +123,13 @@ export default function HomePage() {
             {/* Raw Opals */}
             <Link
               href="/store?category=raw-opals"
-              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="aspect-square relative bg-surface-primary">
                 <OptimizedImage
                   src="/api/media/file/20210627_202327-3.jpg"
                   alt="Raw Australian Opals"
-                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
                   aspectRatio="1:1"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
@@ -144,13 +144,13 @@ export default function HomePage() {
             {/* Earrings */}
             <Link
               href="/store"
-              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="aspect-square relative bg-surface-primary">
                 <OptimizedImage
                   src="/api/media/file/IMG_5903-3.jpg"
                   alt="Opal Earrings"
-                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
                   aspectRatio="1:1"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
@@ -165,13 +165,13 @@ export default function HomePage() {
             {/* Rings */}
             <Link
               href="/store?category=opal-rings"
-              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="aspect-square relative bg-surface-primary">
                 <OptimizedImage
                   src="/api/media/file/20210819_102625-4.jpg"
                   alt="Opal Rings"
-                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700"
+                  className="opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
                   aspectRatio="1:1"
                   sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                 />
@@ -186,10 +186,10 @@ export default function HomePage() {
             {/* Services */}
             <Link
               href="/services"
-              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric to-opal-deep shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric to-opal-deep shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="aspect-square relative flex flex-col items-center justify-center p-6">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 008 10.586V5L7 4z" />
                   </svg>
@@ -202,10 +202,10 @@ export default function HomePage() {
             {/* Courses */}
             <Link
               href="/courses"
-              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-fire-pink to-fire-coral shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+              className="group relative rounded-2xl overflow-hidden bg-gradient-to-br from-fire-pink to-fire-coral shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div className="aspect-square relative flex flex-col items-center justify-center p-6">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
@@ -253,7 +253,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Content */}
             <div className="order-2 lg:order-1">
-              <h2 className="text-4xl md:text-6xl font-bold mb-6 text-content-inverse leading-tight">
+              <h2 className="font-serif text-4xl md:text-6xl font-bold mb-6 text-content-inverse leading-tight">
                 Custom Creations
               </h2>
               <p className="text-lg md:text-xl text-content-muted mb-8 leading-relaxed">
@@ -323,7 +323,7 @@ export default function HomePage() {
                     src="/api/media/file/20210819_102625-4.jpg"
                     alt="Custom Aurora Opal Ring"
                     aspectRatio="16:9"
-                    className="rounded-2xl shadow-xl hover:scale-105 transition-transform duration-700"
+                    className="rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
@@ -332,14 +332,14 @@ export default function HomePage() {
                   src="/api/media/file/20210819_102749-7.jpg"
                   alt="Sun and Moon Opal Ring"
                   aspectRatio="4:3"
-                  className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-700"
+                  className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300"
                   sizes="(max-width: 1024px) 50vw, 25vw"
                 />
                 <OptimizedImage
                   src="/api/media/file/20210819_101509-7.jpg"
                   alt="Coral Opal Ring"
                   aspectRatio="4:3"
-                  className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-700"
+                  className="rounded-2xl shadow-lg hover:scale-105 transition-transform duration-300"
                   sizes="(max-width: 1024px) 50vw, 25vw"
                 />
               </div>
@@ -353,7 +353,7 @@ export default function HomePage() {
         <div className="max-w-screen-xl mx-auto px-6">
           <div className="text-center mb-16">
             <span className="text-opal-electric-accessible text-sm font-semibold uppercase tracking-wider mb-4 block">Testimonials</span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-content-inverse">
+            <h2 className="font-serif text-4xl md:text-5xl font-bold mb-4 text-content-inverse">
               Customer <span className="text-gradient-prismatic">Reviews</span>
             </h2>
             <p className="text-lg text-content-muted max-w-3xl mx-auto leading-relaxed">
@@ -365,7 +365,7 @@ export default function HomePage() {
           {/* Reviews Grid */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             {/* Review 1 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-warm-grey">
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-200 border border-warm-grey">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-opal-gold fill-current" viewBox="0 0 20 20">
@@ -388,7 +388,7 @@ export default function HomePage() {
             </div>
 
             {/* Review 2 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-warm-grey">
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-200 border border-warm-grey">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-opal-gold fill-current" viewBox="0 0 20 20">
@@ -411,7 +411,7 @@ export default function HomePage() {
             </div>
 
             {/* Review 3 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-warm-grey">
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-200 border border-warm-grey">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-opal-gold fill-current" viewBox="0 0 20 20">
@@ -434,7 +434,7 @@ export default function HomePage() {
             </div>
 
             {/* Review 4 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-warm-grey">
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-200 border border-warm-grey">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-opal-gold fill-current" viewBox="0 0 20 20">
@@ -457,7 +457,7 @@ export default function HomePage() {
             </div>
 
             {/* Review 5 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-warm-grey">
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-200 border border-warm-grey">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-opal-gold fill-current" viewBox="0 0 20 20">
@@ -480,7 +480,7 @@ export default function HomePage() {
             </div>
 
             {/* Review 6 */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-warm-grey">
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-200 border border-warm-grey">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <svg key={i} className="w-5 h-5 text-opal-gold fill-current" viewBox="0 0 20 20">
@@ -523,7 +523,7 @@ export default function HomePage() {
             </div>
             <div className="relative z-10">
               <span className="text-opal-deep text-sm font-semibold uppercase tracking-wider mb-4 block">Save More</span>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              <h2 className="font-serif text-4xl md:text-5xl font-bold mb-6 text-white">
                 Bundle and <span className="text-gradient-prismatic">Save</span>
               </h2>
               <p className="text-lg md:text-xl text-content-secondary max-w-3xl mx-auto mb-10 leading-relaxed">
@@ -563,8 +563,8 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Express Delivery */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-opal-electric to-opal-deep rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+              <div className="absolute inset-0 bg-gradient-to-r from-opal-electric to-opal-deep rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-200 border border-gray-200">
                 <div className="relative mb-6">
                   <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-opal-deep rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -587,8 +587,8 @@ export default function HomePage() {
 
             {/* Warranty */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-fire-pink to-fire-coral rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+              <div className="absolute inset-0 bg-gradient-to-r from-fire-pink to-fire-coral rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-200 border border-gray-200">
                 <div className="relative mb-6">
                   <div className="w-16 h-16 bg-gradient-to-br from-fire-pink to-fire-coral rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -611,8 +611,8 @@ export default function HomePage() {
 
             {/* Premium Packaging */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-opal-emerald to-opal-teal rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+              <div className="absolute inset-0 bg-gradient-to-r from-opal-emerald to-opal-teal rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-200 border border-gray-200">
                 <div className="relative mb-6">
                   <div className="w-16 h-16 bg-gradient-to-br from-opal-emerald to-opal-teal rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -635,8 +635,8 @@ export default function HomePage() {
 
             {/* Authenticity */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-fire-orange to-fire-gold rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
-              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-300 border border-gray-200">
+              <div className="absolute inset-0 bg-gradient-to-r from-fire-orange to-fire-gold rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur-xl"></div>
+              <div className="relative bg-white rounded-2xl p-8 text-center hover:shadow-2xl transform hover:-translate-y-2 transition-all duration-200 border border-gray-200">
                 <div className="relative mb-6">
                   <div className="w-16 h-16 bg-gradient-to-br from-fire-orange to-fire-gold rounded-2xl flex items-center justify-center mx-auto shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

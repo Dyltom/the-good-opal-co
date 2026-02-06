@@ -48,6 +48,7 @@ export function QuantitySelector({
         type="button"
         size="sm"
         variant="outline"
+        className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
         onClick={handleDecrease}
         disabled={disabled || quantity <= min}
         aria-label="Decrease quantity"
@@ -68,6 +69,7 @@ export function QuantitySelector({
         type="button"
         size="sm"
         variant="outline"
+        className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
         onClick={handleIncrease}
         disabled={disabled || quantity >= max}
         aria-label="Increase quantity"

@@ -55,3 +55,18 @@ export interface DiscountCalculationResult {
   finalTotal: number
   application?: DiscountApplication
 }
+
+export interface CalculationContext {
+  subtotal: number
+  shipping: number
+  tax: number
+  items?: Array<{
+    price: number
+    quantity: number
+  }>
+}
+
+export interface ValidationContext extends CalculationContext {
+  currentDate: Date
+  customerId?: string
+}

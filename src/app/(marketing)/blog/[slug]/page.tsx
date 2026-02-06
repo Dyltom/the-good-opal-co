@@ -121,9 +121,6 @@ export default async function BlogPostPage({
                 {post.content && (
                   <RichText
                     data={post.content as SerializedEditorState}
-                    converters={({
-                      defaultConverters,
-                    }) => [...defaultConverters]}
                   />
                 )}
               </div>

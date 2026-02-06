@@ -173,7 +173,7 @@ export function Footer({
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="text-sm text-white/50 hover:text-opal-electric-accessible-dark-accessible transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded"
+                          className="text-sm text-white/50 hover:text-opal-electric transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded"
                           target={link.external ? '_blank' : undefined}
                           rel={link.external ? 'noopener noreferrer' : undefined}
                         >
