@@ -146,7 +146,7 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
   return (
     <div className="min-h-screen">
       {/* Refined Header */}
-      <div className="border-b bg-white/50 backdrop-blur-sm sticky top-0 z-40">
+      <div className="border-b bg-white sticky top-0 z-40 shadow-sm">
         <div className="px-4 sm:px-6 lg:px-8 py-4 space-y-4">
           {/* Search and Filter Bar */}
           <div className="flex items-center gap-4 max-w-6xl mx-auto">
@@ -190,26 +190,21 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
           </div>
 
           {/* Quick Filter Pills */}
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
             <QuickFilterPills
               onFilterSelect={handleQuickFilterSelect}
               activeFilter={activeQuickFilter}
               productCount={filteredProducts.length}
             />
+            <div className="text-sm text-gray-600">
+              <span className="font-semibold text-gray-900">{filteredProducts.length}</span> products
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Results Summary */}
-      <div className="text-center py-8 px-4">
-        <h1 className="text-4xl font-serif mb-2">Our Collection</h1>
-        <p className="text-gray-600">
-          {filteredProducts.length} exceptional {filteredProducts.length === 1 ? 'piece' : 'pieces'}
-        </p>
-      </div>
-
       {/* Products Grid */}
-      <div className="px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="px-4 sm:px-6 lg:px-8 py-8">
         {filteredProducts.length > 0 ? (
           <motion.div
             layout

@@ -129,9 +129,8 @@ export default async function StorePage() {
             <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
               {/* Enhanced background effects */}
               <div className="absolute inset-0">
-                <div className="absolute -top-40 left-1/3 w-[700px] h-[700px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
-                <div className="absolute -bottom-40 right-1/3 w-[500px] h-[500px] rounded-full opacity-15 blur-3xl bg-gradient-to-tl from-fire-orange to-fire-gold" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[300px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-emerald to-opal-turquoise" />
+                <div className="absolute -top-40 left-1/3 w-[400px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
+                <div className="absolute -bottom-40 right-1/3 w-[300px] h-[300px] rounded-full opacity-5 blur-3xl bg-gradient-to-tl from-fire-orange to-fire-gold" />
               </div>
 
               {/* Decorative pattern overlay */}

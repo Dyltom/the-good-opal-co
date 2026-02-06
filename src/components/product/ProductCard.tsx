@@ -105,7 +105,13 @@ export function ProductCard({
     <Container {...containerProps} className="group">
       {/* Museum variant glow effect */}
       {variant === 'museum' && (
-        <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-electric/20 via-fire-gold/20 to-opal-deep/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <>
+          {/* Base subtle gradient */}
+          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-gray-200/50 via-transparent to-gray-200/50 opacity-50" />
+
+          {/* Hover gradient */}
+          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-opal-electric/40 via-fire-gold/20 to-opal-deep/40 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700" />
+        </>
       )}
 
       <Link
