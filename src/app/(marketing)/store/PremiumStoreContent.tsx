@@ -206,20 +206,9 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
       {/* Products Grid */}
       <div className="px-4 sm:px-6 lg:px-8 py-8">
         {filteredProducts.length > 0 ? (
-          <motion.div
-            layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-screen-2xl mx-auto"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: index * 0.05 }}
-                >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-screen-2xl mx-auto">
+            {filteredProducts.map((product, index) => (
+              <div key={product.id}>
                   <ProductCard
                     product={{
                       id: product.id,
@@ -241,10 +230,9 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
                     showMetadata
                     animated
                   />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </motion.div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="text-center py-20">
             <h3 className="text-xl font-medium text-gray-900 mb-2">No products found</h3>

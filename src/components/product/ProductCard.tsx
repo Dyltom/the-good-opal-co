@@ -65,7 +65,7 @@ const cardAnimations = {
 }
 
 const hoverLift = {
-  whileHover: { y: -8, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
+  // Removed hover lift animation for performance
 }
 
 export function ProductCard({
@@ -103,16 +103,6 @@ export function ProductCard({
 
   return (
     <Container {...containerProps} className="group">
-      {/* Museum variant glow effect */}
-      {variant === 'museum' && (
-        <>
-          {/* Base subtle gradient */}
-          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-gray-200/50 via-transparent to-gray-200/50 opacity-50" />
-
-          {/* Hover gradient */}
-          <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-opal-electric/40 via-fire-gold/20 to-opal-deep/40 blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700" />
-        </>
-      )}
 
       <Link
         href={`/store/${product.slug}`}
@@ -130,25 +120,9 @@ export function ProductCard({
           variant === 'minimal' && "bg-gray-100"
         )}>
 
-          {/* Shimmer effect for museum variant */}
-          {variant === 'museum' && animated && (
-            <motion.div
-              className="absolute inset-0 z-20 pointer-events-none opacity-0 group-hover:opacity-100"
-              initial={{ x: '-100%' }}
-              whileHover={{ x: '100%' }}
-              transition={{ duration: 1.2, ease: 'linear' }}
-              style={{
-                background: 'linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.4) 50%, transparent 60%)',
-              }}
-            />
-          )}
 
           {/* Product Image */}
-          <motion.div
-            className="relative w-full h-full"
-            whileHover={animated ? { scale: 1.05 } : {}}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
+          <div className="relative w-full h-full">
             {product.image ? (
               <Image
                 src={product.image}
@@ -171,7 +145,7 @@ export function ProductCard({
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
 
           {/* Sold Overlay */}
           {!isAvailable && (
