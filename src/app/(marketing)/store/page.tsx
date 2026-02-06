@@ -5,7 +5,6 @@ import { getPayload } from '@/lib/payload'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Container } from '@/components/layout'
-import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { PremiumStoreContent } from './PremiumStoreContent'
 
 /**
@@ -122,35 +121,46 @@ export default async function StorePage() {
               { href: '/blog', label: 'Blog' },
               { href: '/faq', label: 'FAQ' },
             ]}
-            transparent={false}
+            transparent
           />
 
           <main className="flex-1">
-            {/* Header Section */}
-            <div className="bg-white">
-              <Container className="py-12">
-                <Breadcrumb
-                  items={[
-                    { label: 'Home', href: '/' },
-                    { label: 'Store' },
-                  ]}
-                  className="mb-8"
-                />
+            {/* Header - Premium opal-inspired design matching blog and FAQ pages */}
+            <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+              {/* Enhanced background effects */}
+              <div className="absolute inset-0">
+                <div className="absolute -top-40 left-1/3 w-[700px] h-[700px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
+                <div className="absolute -bottom-40 right-1/3 w-[500px] h-[500px] rounded-full opacity-15 blur-3xl bg-gradient-to-tl from-fire-orange to-fire-gold" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[300px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-emerald to-opal-turquoise" />
+              </div>
 
-                <div className="text-center mb-12">
-                  <h1 className="text-4xl font-display font-bold text-charcoal mb-4">
-                    Australian Opals
+              {/* Decorative pattern overlay */}
+              <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0" style={{
+                  backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px)`
+                }} />
+              </div>
+
+              <Container>
+                <div className="relative z-10 text-center max-w-4xl mx-auto">
+                  <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-turquoise via-fire-gold to-opal-electric">
+                    <span className="h-px w-16 bg-gradient-to-r from-transparent to-opal-turquoise"></span>
+                    Our Collection
+                    <span className="h-px w-16 bg-gradient-to-l from-transparent to-opal-electric"></span>
+                  </span>
+                  <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
+                    Australian <span className="text-gradient-prismatic">Opals</span>
                   </h1>
-                  <p className="text-lg text-content-muted max-w-2xl mx-auto">
+                  <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
                     Discover our collection of authentic Australian opals, handpicked from Lightning Ridge,
                     Coober Pedy, and Queensland's boulder opal fields.
                   </p>
                 </div>
               </Container>
-            </div>
+            </section>
 
             {/* Products Section */}
-            <section id="products" className="bg-gray-50">
+            <section id="products" className="bg-white">
               <Suspense fallback={<ProductGridSkeleton count={12} />}>
                 <PremiumStoreContent products={transformedProducts} />
               </Suspense>

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Search, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import type { Product } from './page'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,14 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Slider } from '@/components/ui/slider'
 import { Separator } from '@/components/ui/separator'
+import { QuickFilterPills, type QuickFilter } from '@/components/store/QuickFilterPills'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface PremiumStoreContentProps {
   products: Product[]
@@ -31,6 +39,7 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
   const [selectedOrigins, setSelectedOrigins] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
   const [sortBy, setSortBy] = useState<SortOption>('featured')
+  const [activeQuickFilter, setActiveQuickFilter] = useState<string | undefined>()
 
   // Extract filter options
   const filterOptions = useMemo(() => {
@@ -44,6 +53,13 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
   // Apply filters
   const filteredProducts = useMemo(() => {
     let filtered = [...products] // Start with all products
+
+    // Handle quick filter for new arrivals
+    if (activeQuickFilter === 'new-arrivals') {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      filtered = filtered.filter(p => new Date(p.createdAt) >= sevenDaysAgo)
+    }
 
     // Search
     if (searchQuery) {
@@ -84,7 +100,36 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
     }
 
     return filtered
-  }, [products, searchQuery, selectedCategories, selectedOrigins, priceRange, sortBy])
+  }, [products, searchQuery, selectedCategories, selectedOrigins, priceRange, sortBy, activeQuickFilter])
+
+  const handleQuickFilterSelect = (filter: QuickFilter) => {
+    // Clear other filters when using quick filters
+    setSelectedCategories([])
+    setSelectedOrigins([])
+    setPriceRange([0, filterOptions.maxPrice])
+
+    if (activeQuickFilter === filter.id) {
+      // Toggle off if clicking same filter
+      setActiveQuickFilter(undefined)
+      setSortBy('featured')
+    } else {
+      setActiveQuickFilter(filter.id)
+
+      // Apply the filter action
+      switch (filter.action.type) {
+        case 'category':
+          setSelectedCategories([filter.action.value as string])
+          break
+        case 'price':
+          const [min, max] = filter.action.value as [number, number]
+          setPriceRange([min, max])
+          break
+        case 'sort':
+          setSortBy(filter.action.value as SortOption)
+          break
+      }
+    }
+  }
 
   const clearFilters = () => {
     setSearchQuery('')
@@ -92,6 +137,7 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
     setSelectedOrigins([])
     setPriceRange([0, filterOptions.maxPrice])
     setSortBy('featured')
+    setActiveQuickFilter(undefined)
   }
 
   const activeFilterCount = selectedCategories.length + selectedOrigins.length +
@@ -101,9 +147,9 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
     <div className="min-h-screen">
       {/* Refined Header */}
       <div className="border-b bg-white/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="px-4 sm:px-6 lg:px-8 py-4 space-y-4">
           {/* Search and Filter Bar */}
-          <div className="flex items-center gap-4 max-w-3xl mx-auto">
+          <div className="flex items-center gap-4 max-w-6xl mx-auto">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
@@ -114,6 +160,18 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
                 className="pl-10 h-12 border-gray-200 focus:border-opal-electric"
               />
             </div>
+
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="w-[180px] h-12 border-gray-200">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="featured">Featured</SelectItem>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                <SelectItem value="price-high">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
 
             <Button
               variant="outline"
@@ -129,6 +187,15 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
                 </span>
               )}
             </Button>
+          </div>
+
+          {/* Quick Filter Pills */}
+          <div className="max-w-6xl mx-auto">
+            <QuickFilterPills
+              onFilterSelect={handleQuickFilterSelect}
+              activeFilter={activeQuickFilter}
+              productCount={filteredProducts.length}
+            />
           </div>
         </div>
       </div>
@@ -202,35 +269,6 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
           </SheetHeader>
 
           <div className="mt-8 space-y-8">
-            {/* Sort */}
-            <div>
-              <Label className="text-base font-medium mb-4 block">Sort by</Label>
-              <div className="space-y-2">
-                {[
-                  { value: 'featured', label: 'Featured' },
-                  { value: 'newest', label: 'Newest' },
-                  { value: 'price-low', label: 'Price: Low to High' },
-                  { value: 'price-high', label: 'Price: High to Low' },
-                ].map((option) => (
-                  <label
-                    key={option.value}
-                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="sort"
-                      value={option.value}
-                      checked={sortBy === option.value}
-                      onChange={(e) => setSortBy(e.target.value as SortOption)}
-                      className="w-4 h-4 text-opal-electric"
-                    />
-                    <span className="ml-3">{option.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
 
             {/* Categories */}
             {filterOptions.categories.length > 0 && (
