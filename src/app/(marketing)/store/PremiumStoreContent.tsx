@@ -146,7 +146,7 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
   return (
     <div className="min-h-screen">
       {/* Refined Header */}
-      <div className="border-b bg-white sticky top-0 z-40 shadow-sm">
+      <div className="border-b bg-white sticky top-[84px] z-40 shadow-sm">
         <div className="px-4 sm:px-6 lg:px-8 py-4 space-y-4">
           {/* Search and Filter Bar */}
           <div className="flex items-center gap-4 max-w-6xl mx-auto">
