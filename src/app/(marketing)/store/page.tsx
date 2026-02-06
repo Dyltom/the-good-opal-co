@@ -5,9 +5,8 @@ import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
-import { TrustSignalBarCompact } from '@/components/trust/TrustSignalBar'
-import { PersonalizedHero } from '@/components/store/PersonalizedHero'
-import { EnhancedStoreContent } from './EnhancedStoreContent'
+import { MinimalHero } from '@/components/store/MinimalHero'
+import { PremiumStoreContent } from './PremiumStoreContent'
 
 /**
  * Store Page Metadata
@@ -123,27 +122,18 @@ export default async function StorePage() {
               { href: '/blog', label: 'Blog' },
               { href: '/faq', label: 'FAQ' },
             ]}
-            transparent
+            transparent={false}
           />
 
           <main className="flex-1">
-            {/* Personalized Hero Section - Adapts based on user preferences */}
-            <div className="pt-20">
-              <PersonalizedHero />
-            </div>
+            {/* Minimal Hero Section */}
+            <MinimalHero />
 
-            {/* Trust Signals - 2026 Best Practice for Building Confidence */}
-            <section className="bg-gray-50 sticky top-20 z-10 shadow-sm">
-              <TrustSignalBarCompact />
-            </section>
-
-            {/* Products Section with All Enhanced Features */}
-            <section className="py-12 bg-white">
-              <Container>
-                <Suspense fallback={<ProductGridSkeleton count={12} />}>
-                  <EnhancedStoreContent products={transformedProducts} />
-                </Suspense>
-              </Container>
+            {/* Products Section */}
+            <section id="products" className="bg-white">
+              <Suspense fallback={<ProductGridSkeleton count={12} />}>
+                <PremiumStoreContent products={transformedProducts} />
+              </Suspense>
             </section>
 
           </main>

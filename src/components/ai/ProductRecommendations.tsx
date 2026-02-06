@@ -49,7 +49,7 @@ export function ProductRecommendations({
           </h2>
 
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            {subtitle || 'Based on your preferences and browsing history, we think you'll love these opals'}
+            {subtitle || 'Based on your preferences and browsing history, we think you\'ll love these opals'}
           </p>
         </motion.div>
       </div>
