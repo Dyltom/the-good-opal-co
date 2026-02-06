@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
