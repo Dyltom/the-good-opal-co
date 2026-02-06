@@ -43,7 +43,7 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
 
   // Apply filters
   const filteredProducts = useMemo(() => {
-    let filtered = products.filter(p => p.stock > 0) // Only show available products
+    let filtered = [...products] // Start with all products
 
     // Search
     if (searchQuery) {
@@ -159,7 +159,21 @@ export function PremiumStoreContent({ products }: PremiumStoreContentProps) {
                   transition={{ delay: index * 0.05 }}
                 >
                   <ProductCard
-                    product={product}
+                    product={{
+                      id: product.id,
+                      slug: product.slug,
+                      name: product.name,
+                      description: product.description,
+                      price: product.price,
+                      compareAtPrice: product.compareAtPrice,
+                      stock: product.stock,
+                      featured: product.featured,
+                      category: product.category,
+                      image: product.images?.[0]?.image?.url,
+                      stoneOrigin: product.stoneOrigin,
+                      stoneType: product.stoneType,
+                      createdAt: product.createdAt,
+                    }}
                     index={index}
                     variant="museum"
                     showMetadata

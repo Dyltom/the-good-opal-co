@@ -4,7 +4,8 @@ import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
-import { MinimalHero } from '@/components/store/MinimalHero'
+import { Container } from '@/components/layout'
+import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { PremiumStoreContent } from './PremiumStoreContent'
 
 /**
@@ -125,11 +126,31 @@ export default async function StorePage() {
           />
 
           <main className="flex-1">
-            {/* Minimal Hero Section */}
-            <MinimalHero />
+            {/* Header Section */}
+            <div className="bg-white">
+              <Container className="py-12">
+                <Breadcrumb
+                  items={[
+                    { label: 'Home', href: '/' },
+                    { label: 'Store' },
+                  ]}
+                  className="mb-8"
+                />
+
+                <div className="text-center mb-12">
+                  <h1 className="text-4xl font-display font-bold text-charcoal mb-4">
+                    Australian Opals
+                  </h1>
+                  <p className="text-lg text-content-muted max-w-2xl mx-auto">
+                    Discover our collection of authentic Australian opals, handpicked from Lightning Ridge,
+                    Coober Pedy, and Queensland's boulder opal fields.
+                  </p>
+                </div>
+              </Container>
+            </div>
 
             {/* Products Section */}
-            <section id="products" className="bg-white">
+            <section id="products" className="bg-gray-50">
               <Suspense fallback={<ProductGridSkeleton count={12} />}>
                 <PremiumStoreContent products={transformedProducts} />
               </Suspense>

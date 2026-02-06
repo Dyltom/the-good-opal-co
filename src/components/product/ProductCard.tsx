@@ -157,20 +157,12 @@ export function ProductCard({
                   filter: 'brightness(1.01) contrast(1.02) saturate(1.01)',
                 } : undefined}
               />
-            ) : product.image === undefined ? (
-              <OptimizedImage
-                src="/images/placeholder-opal.jpg"
-                alt={product.name}
-                aspectRatio="4:3"
-                className={cn(
-                  "transition-all duration-700",
-                  !isAvailable && "grayscale opacity-60"
-                )}
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                <div className="w-16 h-16 rounded-full bg-gray-300" />
+              <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-full bg-gray-300 mx-auto mb-2" />
+                  <p className="text-xs text-gray-400">No image</p>
+                </div>
               </div>
             )}
           </motion.div>
