@@ -5,6 +5,7 @@
 
 export { HeroSection } from './HeroSection'
 export { HomeHero } from './HomeHero'
+export { ProductHero } from './ProductHero'
 export { HeroWithImage } from './HeroWithImage'
 export { TrustBadges } from './TrustBadges'
 export { TrustMarquee } from './TrustMarquee'

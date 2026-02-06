@@ -79,30 +79,60 @@ export default async function BlogPage({
       />
 
       <main className="flex-1">
-        {/* Header - Dark opal-inspired */}
-        <section className="relative py-20 md:py-28 bg-black-rich overflow-hidden pt-28">
-          {/* Background gradient orbs */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-electric" />
-            <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
+        {/* Header - Premium opal-inspired design */}
+        <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+          {/* Enhanced background effects */}
+          <div className="absolute inset-0">
+            <div className="absolute -top-40 left-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
+            <div className="absolute -bottom-40 right-1/4 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-tr from-fire-pink to-fire-orange" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-turquoise to-opal-emerald" />
           </div>
+
+          {/* Decorative pattern overlay */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px)`
+            }} />
+          </div>
+
           <Container>
-            <div className="relative z-10 text-center">
-              <span className="text-opal-deep text-sm font-semibold uppercase tracking-wider mb-4 block">
+            <div className="relative z-10 text-center max-w-4xl mx-auto">
+              <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-electric via-fire-gold to-fire-pink">
+                <span className="h-px w-16 bg-gradient-to-r from-transparent to-opal-electric"></span>
                 Insights & Stories
+                <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-pink"></span>
               </span>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
                 The Opal <span className="text-gradient-prismatic">Journal</span>
               </h1>
-              <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto">
-                Discover the magic of Australian opals through our stories, guides, and behind-the-scenes glimpses.
+              <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
+                Discover the magic of Australian opals through our stories, expert guides,
+                and behind-the-scenes glimpses into the world of precious gemstones.
               </p>
+
+              {/* Quick stats */}
+              <div className="flex justify-center gap-8 mt-12">
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-white">{posts.length}</p>
+                  <p className="text-sm text-white/60 mt-1">Articles</p>
+                </div>
+                <div className="h-12 w-px bg-white/20" />
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-white">Expert</p>
+                  <p className="text-sm text-white/60 mt-1">Insights</p>
+                </div>
+                <div className="h-12 w-px bg-white/20" />
+                <div className="text-center">
+                  <p className="text-3xl font-bold text-white">Weekly</p>
+                  <p className="text-sm text-white/60 mt-1">Updates</p>
+                </div>
+              </div>
             </div>
           </Container>
         </section>
 
         {/* Posts Grid */}
-        <Section padding="lg">
+        <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50">
           <Container>
             {transformedPosts.length > 0 ? (
               <>
@@ -146,7 +176,7 @@ export default async function BlogPage({
               </div>
             )}
           </Container>
-        </Section>
+        </section>
       </main>
 
       <Footer />

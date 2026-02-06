@@ -181,44 +181,59 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           ]}
         />
         <main className="flex-1">
+        {/* Premium Background */}
+        <div className="relative">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50 -z-10" />
+
+          {/* Decorative orbs */}
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-opal-electric/5 to-fire-gold/5 rounded-full blur-3xl -z-10" />
+          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-gradient-to-r from-opal-deep/5 to-fire-pink/5 rounded-full blur-3xl -z-10" />
+        </div>
+
         {/* Breadcrumb */}
-        <Section padding="sm">
+        <section className="pt-24 pb-4">
           <Container>
-            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Link href="/" className="hover:text-primary transition-colors">
+            <nav className="flex items-center gap-2 text-sm">
+              <Link href="/" className="text-gray-500 hover:text-opal-electric-accessible transition-colors">
                 Home
               </Link>
-              <span>/</span>
-              <Link href="/store" className="hover:text-primary transition-colors">
+              <span className="text-gray-400">/</span>
+              <Link href="/store" className="text-gray-500 hover:text-opal-electric-accessible transition-colors">
                 Store
               </Link>
-              <span>/</span>
-              <span className="text-foreground">{product.name}</span>
+              <span className="text-gray-400">/</span>
+              <span className="text-charcoal font-medium">{product.name}</span>
             </nav>
           </Container>
-        </Section>
+        </section>
 
         {/* Product Detail */}
-        <Section padding="lg">
+        <section className="pb-20">
           <Container>
             <div className="grid lg:grid-cols-2 gap-12">
               {/* Product Image Gallery */}
               <div className="space-y-4">
                 {/* Main Image */}
-                <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-warm-grey-light">
+                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl group">
+                  {/* Premium border */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[1px] opacity-50">
+                    <div className="absolute inset-[1px] rounded-2xl bg-white" />
+                  </div>
+
                   {imageUrl ? (
                     <Image
                       src={imageUrl}
                       alt={product.name}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                       priority
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/20 to-fire-pink/20">
-                      <div className="absolute inset-0 flex items-center justify-center text-9xl opacity-70">
-                        💎
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-opal-electric to-fire-pink opacity-30" />
                       </div>
                     </div>
                   )}
@@ -226,10 +241,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   {/* Badges */}
                   <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
                     <div className="flex flex-col gap-2">
-                      {product.featured && <NewBadge />}
+                      {product.featured && (
+                        <span className="px-3 py-1.5 bg-gradient-to-r from-fire-gold to-fire-orange text-white text-xs font-bold rounded-full shadow-lg">
+                          FEATURED
+                        </span>
+                      )}
                     </div>
                     {product.stock <= 10 && product.stock > 0 && (
-                      <StockBadge stock={product.stock} />
+                      <span className="px-3 py-1.5 bg-fire-pink text-white text-xs font-bold rounded-full shadow-lg">
+                        Only {product.stock} left
+                      </span>
                     )}
                   </div>
                 </div>
@@ -269,33 +290,32 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="space-y-6">
                 {/* Title */}
                 <div>
-                  <p className="text-sm text-opal-electric-accessible font-semibold uppercase tracking-wide mb-2">
+                  <span className="mb-4 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-gold">
+                    <span className="h-px w-12 bg-gradient-to-r from-transparent to-opal-electric"></span>
                     {categoryName}
-                  </p>
-                  <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal leading-tight">
+                  </span>
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight mt-2">
                     {product.name}
                   </h1>
                 </div>
 
                 {/* Price */}
-                <div className="flex items-baseline gap-4 pb-6 border-b border-warm-grey">
-                  <span className="text-4xl font-bold text-opal-electric-accessible">
-                    {formatCurrency(product.price, 'AUD')}
-                  </span>
-                  {product.compareAtPrice && product.compareAtPrice > product.price && (
-                    <>
-                      <span className="text-xl text-charcoal/60 line-through">
-                        {formatCurrency(product.compareAtPrice, 'AUD')}
-                      </span>
-                      <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-error text-white text-sm font-bold">
-                        SAVE{' '}
-                        {Math.round(
-                          ((product.compareAtPrice - product.price) / product.compareAtPrice) * 100
-                        )}
-                        %
+                <div className="flex items-start gap-4 pb-8 border-b border-gray-200">
+                  <div>
+                    <span className="text-5xl font-light text-charcoal">
+                      {formatCurrency(product.price, 'AUD')}
+                    </span>
+                    {product.compareAtPrice && product.compareAtPrice > product.price && (
+                      <div className="flex items-center gap-3 mt-2">
+                        <span className="text-lg text-gray-400 line-through">
+                          {formatCurrency(product.compareAtPrice, 'AUD')}
+                        </span>
+                        <span className="px-3 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold">
+                          Save {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
+                        </span>
                       </div>
-                    </>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -326,20 +346,32 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {/* Shipping Info */}
-                <div className="p-4 bg-opal-light/20 rounded-lg">
-                  <p className="text-sm text-charcoal/80">
-                    <span className="font-semibold">Free shipping</span> on orders over $500 AUD •
-                    <span className="font-semibold"> 30-day returns</span> •
-                    <span className="font-semibold"> Arrives in 3-7 business days</span>
-                  </p>
+                <div className="p-6 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100">
+                  <div className="flex items-center gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-opal-electric-accessible" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                      </svg>
+                      <span className="font-medium">Free shipping over $500</span>
+                    </div>
+                    <div className="h-4 w-px bg-gray-200" />
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-opal-electric-accessible" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                      </svg>
+                      <span className="font-medium">30-day returns</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Product Specifications */}
             {(product.stoneOrigin || product.stoneType || product.material || product.weight) && (
-              <div className="mt-16 border-t border-warm-grey pt-12">
-                <h2 className="font-serif text-2xl font-bold text-charcoal mb-6">Specifications</h2>
+              <div className="mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12">
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-charcoal mb-8 text-center">
+                  Gemstone <span className="text-gradient-prismatic">Specifications</span>
+                </h2>
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
                   {product.stoneType && (
                     <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
@@ -390,12 +422,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             )}
 
             {/* Related Products */}
-            <RelatedProductsWithSuspense
-              product={product}
-              className="mt-16 border-t border-warm-grey pt-12"
-            />
+            <div className="mt-24">
+              <RelatedProductsWithSuspense
+                product={product}
+                className="border-t border-gray-200 pt-16"
+              />
+            </div>
           </Container>
-        </Section>
+        </section>
       </main>
       <Footer />
     </div>

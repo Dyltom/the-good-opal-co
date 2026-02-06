@@ -111,13 +111,13 @@ export function StoreContentPro({ products }: StoreContentProps) {
       key={category}
       onClick={() => setSelectedCategory(category)}
       className={cn(
-        "px-4 py-2 rounded-full text-sm font-medium transition-all",
+        "px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
         selectedCategory === category
-          ? "bg-charcoal text-white shadow-md"
-          : "bg-gray-100 text-charcoal hover:bg-gray-200"
+          ? "bg-gradient-to-r from-opal-electric to-opal-deep text-white"
+          : "bg-white border border-gray-200 text-gray-700 hover:border-gray-300"
       )}
     >
-      {category === 'all' ? 'All Products' : category.replace(/-/g, ' ')}
+      {category === 'all' ? 'All' : category.replace(/-/g, ' ')}
     </button>
   ))
 
@@ -141,10 +141,10 @@ export function StoreContentPro({ products }: StoreContentProps) {
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       {/* Filters Sidebar - Desktop */}
-      <aside className="hidden lg:block lg:w-72 flex-shrink-0">
+      <aside className="hidden lg:block lg:w-64 flex-shrink-0">
         <div
           className={cn(
-            "sticky bg-gradient-to-br from-gray-50 to-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100/50 overflow-hidden flex flex-col",
+            "sticky bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col",
             getStickyOffset(),
             "max-h-[calc(100vh-6rem)]" // 6rem = 96px (80px nav + 16px gap)
           )}
@@ -276,17 +276,17 @@ export function StoreContentPro({ products }: StoreContentProps) {
       {/* Main Content */}
       <div className="flex-1">
         {/* Search and Filter Bar */}
-        <div className="mb-8 space-y-4">
+        <div className="mb-6 space-y-4">
           {/* Search */}
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search Australian opals..."
+                placeholder="Search opals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white border border-gray-200 focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 text-sm shadow-sm transition-all"
+                className="w-full pl-11 pr-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 focus:border-opal-electric-accessible focus:bg-white focus:outline-none focus:ring-1 focus:ring-opal-electric-accessible/20 text-sm transition-all"
               />
             </div>
 
@@ -294,7 +294,7 @@ export function StoreContentPro({ products }: StoreContentProps) {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="px-4 py-3 rounded-xl border border-gray-200 focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 bg-white cursor-pointer shadow-sm transition-all font-medium"
+              className="px-4 py-2.5 rounded-lg border border-gray-200 focus:border-opal-electric-accessible focus:outline-none focus:ring-1 focus:ring-opal-electric-accessible/20 bg-white cursor-pointer transition-all text-sm"
             >
             <option value="featured">Featured</option>
             <option value="newest">Newest</option>

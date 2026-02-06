@@ -119,11 +119,11 @@ export function CartDrawer({ children, onCartUpdate }: CartDrawerProps) {
 
               {/* Actions */}
               <div className="space-y-2">
-                <Button className="w-full" size="lg" asChild onClick={() => setIsOpen(false)}>
-                  <Link href="/checkout">Proceed to Checkout</Link>
+                <Button className="w-full" size="lg" asChild>
+                  <Link href="/checkout" onClick={() => setIsOpen(false)}>Proceed to Checkout</Link>
                 </Button>
-                <Button variant="outline" className="w-full" asChild onClick={() => setIsOpen(false)}>
-                  <Link href="/cart">View Full Cart</Link>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/cart" onClick={() => setIsOpen(false)}>View Full Cart</Link>
                 </Button>
               </div>
             </div>

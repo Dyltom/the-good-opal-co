@@ -116,13 +116,21 @@ export function ProductCard({
         <div className={cn(
           "relative aspect-[4/5] overflow-hidden rounded-2xl mb-4 transition-all duration-500",
           variant === 'default' && "bg-black-rich shadow-lg group-hover:shadow-glow",
-          variant === 'museum' && "bg-white border border-gray-100 group-hover:shadow-xl",
+          variant === 'museum' && "bg-white border-2 border-gray-200 group-hover:border-transparent group-hover:shadow-xl",
           variant === 'minimal' && "bg-gray-100"
         )}>
-          {/* Gradient border for default variant */}
-          {variant === 'default' && (
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-pink to-opal-emerald opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-[1px]">
-              <div className="absolute inset-[1px] rounded-2xl bg-black-rich" />
+          {/* Gradient border for default and museum variants */}
+          {(variant === 'default' || variant === 'museum') && (
+            <div className={cn(
+              "absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+              variant === 'default' && "bg-gradient-to-br from-opal-electric via-fire-pink to-opal-emerald p-[1px]",
+              variant === 'museum' && "bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[2px]"
+            )}>
+              <div className={cn(
+                "absolute inset-[1px] rounded-2xl",
+                variant === 'default' && "bg-black-rich",
+                variant === 'museum' && "bg-white inset-[2px]"
+              )} />
             </div>
           )}
 
@@ -306,76 +314,82 @@ export function ProductCard({
 
         {/* Product Info */}
         {variant === 'museum' ? (
-          // Museum style info
-          <div className="space-y-4 px-1">
-            {/* Name with divider */}
+          // Museum style info - Clean and elegant
+          <div className="space-y-3 px-1">
+            {/* Name */}
             <div>
               <h3 className={cn(
-                "font-light text-lg leading-tight line-clamp-2 transition-all duration-500 tracking-wide",
-                "text-charcoal group-hover:text-black",
+                "font-serif text-lg leading-tight line-clamp-2 transition-all duration-300",
+                "text-charcoal group-hover:text-opal-deep-accessible",
                 !isAvailable && "text-gray-500"
               )}>
                 {product.name}
               </h3>
-              <div className="mt-2 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
             </div>
 
-            {/* Price section */}
-            <div className="space-y-2">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-medium">
-                Acquisition Value
-              </p>
-              <div className="flex items-baseline gap-3">
+            {/* Metadata - Subtle */}
+            {showMetadata && (product.stoneOrigin || product.stoneType) && (
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                {product.stoneType && <span>{product.stoneType}</span>}
+                {product.stoneType && product.stoneOrigin && <span>•</span>}
+                {product.stoneOrigin && <span>{product.stoneOrigin}</span>}
+              </div>
+            )}
+
+            {/* Price section - Clean */}
+            <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline gap-2">
                 {isAvailable ? (
                   <>
-                    <span className="text-2xl font-light text-black tracking-tight">
+                    <span className="text-2xl font-light text-charcoal">
                       {formatCurrency(product.price, 'AUD')}
                     </span>
                     {product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className="text-sm line-through text-gray-400 font-light">
+                      <span className="text-sm line-through text-gray-400">
                         {formatCurrency(product.compareAtPrice, 'AUD')}
                       </span>
                     )}
                   </>
                 ) : (
                   <span className="text-sm font-light italic text-gray-500">
-                    In Private Collection
+                    Sold Out
                   </span>
                 )}
               </div>
+
+              {/* Stock indicator - Minimal */}
+              {isAvailable && product.stock && product.stock <= 3 && (
+                <span className="text-xs font-medium text-fire-pink">
+                  Only {product.stock} left
+                </span>
+              )}
             </div>
 
-            {/* Metadata */}
-            {showMetadata && (product.stoneOrigin || product.stoneType) && (
-              <div className="flex flex-wrap gap-3 text-[11px]">
-                {product.stoneOrigin && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-gradient-to-br from-opal-electric/30 to-opal-deep/30" />
-                    <span className="font-light text-gray-600">{product.stoneOrigin}</span>
-                  </div>
-                )}
-                {product.stoneType && (
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-fire-gold to-fire-orange opacity-50" />
-                    <span className="font-light text-gray-600">{product.stoneType}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* View Details CTA */}
+            {/* Quick Add - Subtle on hover */}
             {isAvailable && (
               <motion.div
-                initial={animated ? { opacity: 0 } : {}}
-                whileHover={animated ? { opacity: 1 } : {}}
-                className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+                className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               >
-                <span className="text-xs font-medium text-opal-electric tracking-wide flex items-center gap-1">
-                  Examine Specimen
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative"
+                >
+                  <AddToCartButton
+                    product={{
+                      id: product.id,
+                      slug: product.slug,
+                      name: product.name,
+                      price: product.price,
+                      image: product.image,
+                    }}
+                    className="w-full bg-gradient-to-r from-opal-electric to-opal-deep text-white font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-sm hover:shadow-lg"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Add to Cart
+                  </AddToCartButton>
+                </div>
               </motion.div>
             )}
           </div>
@@ -398,7 +412,7 @@ export function ProductCard({
                 <>
                   <span className={cn(
                     "text-lg font-bold",
-                    darkBackground ? "text-opal-deep" : "text-opal-deep"
+                    darkBackground ? "text-white" : "text-opal-deep"
                   )}>
                     {formatCurrency(product.price, 'AUD')}
                   </span>

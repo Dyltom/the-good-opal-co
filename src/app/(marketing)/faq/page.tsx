@@ -199,22 +199,33 @@ export default function FAQPage() {
       />
 
       <main className="flex-1">
-        {/* Header - Dark opal-inspired */}
-        <section className="relative py-20 md:py-28 bg-black-rich overflow-hidden pt-28">
-          {/* Background gradient orbs */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-opal-emerald" />
-            <div className="absolute -bottom-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-20 blur-3xl bg-fire-pink" />
+        {/* Header - Premium opal-inspired design */}
+        <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+          {/* Enhanced background effects */}
+          <div className="absolute inset-0">
+            <div className="absolute -top-40 right-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-emerald to-opal-turquoise" />
+            <div className="absolute -bottom-40 left-1/4 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-tr from-fire-pink to-fire-orange" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-electric to-fire-gold" />
           </div>
+
+          {/* Decorative pattern overlay */}
+          <div className="absolute inset-0 opacity-5">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px)`
+            }} />
+          </div>
+
           <Container>
-            <div className="relative z-10 text-center max-w-3xl mx-auto">
-              <span className="text-opal-deep text-sm font-semibold uppercase tracking-wider mb-4 block">
+            <div className="relative z-10 text-center max-w-4xl mx-auto">
+              <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-emerald via-opal-electric to-fire-gold">
+                <span className="h-px w-16 bg-gradient-to-r from-transparent to-opal-emerald"></span>
                 Help Center
+                <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-gold"></span>
               </span>
-              <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white">
+              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
                 Frequently Asked <span className="text-gradient-prismatic">Questions</span>
               </h1>
-              <p className="text-lg md:text-xl text-white/70">
+              <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
                 Find answers to common questions about Australian opals, our jewelry,
                 shipping, care, and more.
               </p>
@@ -243,7 +254,7 @@ export default function FAQPage() {
         </section>
 
         {/* FAQ Content */}
-        <Section className="py-16 md:py-24 bg-gray-whisper">
+        <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50">
           <Container>
             <div className="max-w-4xl mx-auto space-y-14">
               {faqCategories.map((category, categoryIndex) => {
@@ -261,19 +272,25 @@ export default function FAQPage() {
                 const gradient = gradients[categoryIndex % gradients.length]
 
                 return (
-                  <div key={category.title} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-soft/50">
+                  <div key={category.title} className="relative bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100 overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    {/* Gradient border on hover */}
+                    <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-[1px]">
+                      <div className="absolute inset-[1px] rounded-3xl bg-white" />
+                    </div>
+
                     {/* Category Header */}
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md flex-shrink-0`}>
-                        <Icon className="w-6 h-6 text-white" strokeWidth={1.5} />
+                    <div className="relative z-10 flex items-center gap-5 mb-8">
+                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon className="w-7 h-7 text-white" strokeWidth={1.5} />
                       </div>
-                      <h2 className="text-xl md:text-2xl font-bold text-charcoal">
+                      <h2 className="font-serif text-2xl md:text-3xl font-bold text-charcoal">
                         {category.title}
                       </h2>
                     </div>
 
                     {/* FAQ Accordion */}
-                    <Accordion type="single" collapsible className="space-y-3">
+                    <div className="relative z-10">
+                      <Accordion type="single" collapsible className="space-y-3">
                       {category.faqs.map((faq, index) => (
                         <AccordionItem
                           key={index}
@@ -289,6 +306,7 @@ export default function FAQPage() {
                         </AccordionItem>
                       ))}
                     </Accordion>
+                    </div>
                   </div>
                 )
               })}
@@ -319,7 +337,7 @@ export default function FAQPage() {
               </div>
             </div>
           </Container>
-        </Section>
+        </section>
       </main>
 
       <Footer />
