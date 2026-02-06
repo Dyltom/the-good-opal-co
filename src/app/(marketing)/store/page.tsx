@@ -6,6 +6,7 @@ import { getPayload } from '@/lib/payload'
 import { ResponsiveStoreContent } from '@/components/store/ResponsiveStoreContent'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
+import { TrustSignalBarCompact } from '@/components/trust/TrustSignalBar'
 
 /**
  * Store Page Metadata
@@ -177,8 +178,13 @@ export default async function StorePage() {
               </Container>
             </section>
 
+            {/* Trust Signals - 2026 Best Practice for Building Confidence */}
+            <section className="bg-gray-50 sticky top-20 z-10 shadow-sm">
+              <TrustSignalBarCompact />
+            </section>
+
             {/* Products Section */}
-            <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50">
+            <section className="py-12 bg-white">
               <Container>
                 <Suspense fallback={<ProductGridSkeleton count={12} />}>
                   <ResponsiveStoreContent products={transformedProducts} />
@@ -186,31 +192,6 @@ export default async function StorePage() {
               </Container>
             </section>
 
-            {/* Bottom CTA */}
-            <section className="relative py-20 bg-black-rich overflow-hidden">
-              {/* Gradient orbs */}
-              <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -bottom-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-10 blur-3xl bg-fire-orange" />
-                <div className="absolute -top-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-10 blur-3xl bg-opal-teal" />
-              </div>
-              <Container>
-                <div className="relative z-10 text-center max-w-2xl mx-auto">
-                  <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
-                    Looking for Something <span className="text-gradient-prismatic">Special?</span>
-                  </h2>
-                  <p className="text-lg text-white/70 mb-8">
-                    We offer custom commission services for bespoke opal jewelry.
-                    Let us help you create a one-of-a-kind piece.
-                  </p>
-                  <a
-                    href="/contact"
-                    className="inline-flex items-center gap-2 px-8 py-3 bg-white text-charcoal font-semibold rounded-full hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl"
-                  >
-                    Get In Touch
-                  </a>
-                </div>
-              </Container>
-            </section>
           </main>
 
           <Footer logoText="The Good Opal Co" />

@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { ShieldCheck, Package, CreditCard, Gem, Wrench, Mail } from 'lucide-react'
+import { PageTransition } from '@/components/layout/PageTransition'
 
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions - The Good Opal Co',
@@ -187,160 +188,119 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-        transparent
-      />
+    <PageTransition>
+      <div className="min-h-screen flex flex-col bg-white">
+        <Navigation
+          logoText="The Good Opal Co"
+          items={[
+            { href: '/store', label: 'Shop' },
+            { href: '/blog', label: 'Blog' },
+            { href: '/faq', label: 'FAQ' },
+          ]}
+          transparent
+        />
 
-      <main className="flex-1">
-        {/* Header - Premium opal-inspired design */}
-        <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
-          {/* Enhanced background effects */}
-          <div className="absolute inset-0">
-            <div className="absolute -top-40 right-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-emerald to-opal-turquoise" />
-            <div className="absolute -bottom-40 left-1/4 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-tr from-fire-pink to-fire-orange" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-electric to-fire-gold" />
-          </div>
-
-          {/* Decorative pattern overlay */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px)`
-            }} />
-          </div>
-
-          <Container>
-            <div className="relative z-10 text-center max-w-4xl mx-auto">
-              <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-emerald via-opal-electric to-fire-gold">
-                <span className="h-px w-16 bg-gradient-to-r from-transparent to-opal-emerald"></span>
-                Help Center
-                <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-gold"></span>
-              </span>
-              <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
-                Frequently Asked <span className="text-gradient-prismatic">Questions</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
-                Find answers to common questions about Australian opals, our jewelry,
-                shipping, care, and more.
-              </p>
+        <main className="flex-1">
+          {/* Header - Premium opal-inspired design matching shop page */}
+          <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+            {/* Enhanced background effects */}
+            <div className="absolute inset-0">
+              <div className="absolute -top-40 right-1/4 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-bl from-fire-coral to-fire-pink" />
+              <div className="absolute -bottom-40 left-1/4 w-[800px] h-[800px] rounded-full opacity-10 blur-3xl bg-gradient-to-tr from-opal-teal to-opal-emerald" />
             </div>
-          </Container>
-        </section>
 
-        {/* Trust Bar - Modern */}
-        <section className="py-5 bg-white border-b border-gray-soft">
-          <Container>
-            <div className="flex flex-wrap justify-center gap-6 md:gap-10 text-sm">
-              <div className="flex items-center gap-2.5 text-charcoal">
-                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-opal-electric to-opal-deep" />
-                <span className="font-medium">100% Australian Opals</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-charcoal">
-                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-fire-pink to-fire-coral" />
-                <span className="font-medium">Free Shipping $500+</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-charcoal">
-                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-opal-emerald to-opal-teal" />
-                <span className="font-medium">30-Day Returns</span>
-              </div>
+            {/* Decorative pattern overlay */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px)`
+              }} />
             </div>
-          </Container>
-        </section>
 
-        {/* FAQ Content */}
-        <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50">
-          <Container>
-            <div className="max-w-4xl mx-auto space-y-14">
-              {faqCategories.map((category, categoryIndex) => {
-                const Icon = category.icon
-                // Rotate through different gradient colors for each category
-                const gradients = [
-                  'from-opal-electric to-opal-deep',
-                  'from-fire-pink to-fire-coral',
-                  'from-opal-emerald to-opal-teal',
-                  'from-fire-orange to-fire-gold',
-                  'from-opal-electric to-fire-pink',
-                  'from-opal-teal to-opal-electric',
-                  'from-fire-coral to-fire-orange',
-                ]
-                const gradient = gradients[categoryIndex % gradients.length]
+            <Container>
+              <div className="relative z-10 text-center max-w-4xl mx-auto">
+                <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-fire-gold via-opal-electric to-fire-pink">
+                  <span className="h-px w-16 bg-gradient-to-r from-transparent to-fire-gold"></span>
+                  Knowledge Center
+                  <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-pink"></span>
+                </span>
+                <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
+                  Frequently Asked <span className="text-gradient-prismatic">Questions</span>
+                </h1>
+                <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
+                  Everything you need to know about our Australian opals, jewelry, and services
+                </p>
+              </div>
+            </Container>
+          </section>
 
-                return (
-                  <div key={category.title} className="relative bg-white rounded-3xl p-8 md:p-10 shadow-sm border border-gray-100 overflow-hidden group hover:shadow-xl transition-all duration-300">
-                    {/* Gradient border on hover */}
-                    <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep opacity-0 group-hover:opacity-100 transition-opacity duration-500 p-[1px]">
-                      <div className="absolute inset-[1px] rounded-3xl bg-white" />
-                    </div>
 
-                    {/* Category Header */}
-                    <div className="relative z-10 flex items-center gap-5 mb-8">
-                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                        <Icon className="w-7 h-7 text-white" strokeWidth={1.5} />
+          {/* FAQ Content */}
+          <section className="py-16 md:py-24 bg-white">
+            <Container>
+              <div className="max-w-4xl mx-auto space-y-16">
+                {faqCategories.map((category, categoryIndex) => {
+                  const Icon = category.icon
+
+                  return (
+                    <div key={category.title}>
+                      {/* Category Header */}
+                      <div className="flex items-center gap-3 mb-8">
+                        <Icon className="w-6 h-6 text-opal-deep" />
+                        <h2 className="text-2xl font-serif font-semibold text-charcoal">
+                          {category.title}
+                        </h2>
                       </div>
-                      <h2 className="font-serif text-2xl md:text-3xl font-bold text-charcoal">
-                        {category.title}
-                      </h2>
-                    </div>
 
-                    {/* FAQ Accordion */}
-                    <div className="relative z-10">
-                      <Accordion type="single" collapsible className="space-y-3">
-                      {category.faqs.map((faq, index) => (
-                        <AccordionItem
-                          key={index}
-                          value={`${category.title}-${index}`}
-                          className="border border-gray-soft/80 rounded-xl px-5 bg-gray-whisper/50 hover:bg-white hover:border-opal-electric-accessible/30 transition-all duration-200 data-[state=open]:bg-white data-[state=open]:border-opal-electric-accessible/50 data-[state=open]:shadow-sm"
-                        >
-                          <AccordionTrigger className="text-left font-medium text-charcoal hover:text-opal-electric py-4 text-base leading-snug [&[data-state=open]]:text-opal-electric-accessible">
-                            {faq.question}
-                          </AccordionTrigger>
-                          <AccordionContent className="text-charcoal/70 leading-relaxed pb-4 text-[15px]">
-                            {faq.answer}
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
+                      {/* FAQ Accordion */}
+                      <Accordion type="single" collapsible className="space-y-4">
+                        {category.faqs.map((faq, index) => (
+                          <AccordionItem
+                            key={index}
+                            value={`${category.title}-${index}`}
+                            className="border border-gray-200 rounded-lg px-6"
+                          >
+                            <AccordionTrigger className="text-left text-lg py-5 hover:no-underline text-charcoal hover:text-opal-deep font-medium">
+                              {faq.question}
+                            </AccordionTrigger>
+                            <AccordionContent className="text-gray-600 leading-relaxed pb-5 text-base">
+                              {faq.answer}
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Still have questions CTA */}
-            <div className="max-w-3xl mx-auto mt-20 relative rounded-2xl overflow-hidden">
-              <div className="absolute inset-0 bg-black-rich">
-                <div className="absolute -top-1/2 -left-1/4 w-1/2 h-full rounded-full opacity-30 blur-3xl bg-opal-electric" />
-                <div className="absolute -bottom-1/2 -right-1/4 w-1/2 h-full rounded-full opacity-30 blur-3xl bg-fire-pink" />
+                  )
+                })}
               </div>
-              <div className="relative z-10 text-center p-10 md:p-14">
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                  Still Have Questions?
+
+              {/* Still have questions CTA */}
+              <div className="text-center mt-20 py-12 border-t border-gray-200">
+                <h3 className="text-2xl font-serif text-charcoal mb-4">
+                  Still have questions?
                 </h3>
-                <p className="text-white/70 mb-8 max-w-lg mx-auto">
-                  We&apos;re here to help! Our team of opal experts is ready to answer any questions
-                  you might have.
+                <p className="text-gray-600 mb-6 text-lg">
+                  Our opal experts are here to help
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button size="lg" variant="shimmer" asChild>
-                    <Link href="/contact">Contact Us</Link>
+                  <Button size="lg" asChild>
+                    <a href="mailto:info@goodopalco.com">
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email Us
+                    </a>
                   </Button>
-                  <Button size="lg" variant="glass" asChild>
-                    <a href="mailto:info@goodopalco.com">Email Us</a>
+                  <Button size="lg" variant="outline" asChild>
+                    <Link href="/store">
+                      Browse Our Collection
+                    </Link>
                   </Button>
                 </div>
               </div>
-            </div>
-          </Container>
-        </section>
-      </main>
+            </Container>
+          </section>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer logoText="The Good Opal Co" />
+      </div>
+    </PageTransition>
   )
 }

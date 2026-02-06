@@ -12,6 +12,15 @@ import type { Product } from './page'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getStickyOffset, LAYOUT } from '@/lib/constants/layout'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
+import { EnhancedSearchEmptyState } from '@/components/store/EnhancedSearchEmptyState'
+import { QuickFilterPills, type QuickFilter } from '@/components/store/QuickFilterPills'
 
 interface StoreContentProps {
   products: Product[]
@@ -45,6 +54,7 @@ export function StoreContentPro({ products }: StoreContentProps) {
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
+  const [activeQuickFilter, setActiveQuickFilter] = useState<string | undefined>(undefined)
 
   // Extract unique filter options
   const filterOptions = useMemo(() => {
@@ -68,6 +78,14 @@ export function StoreContentPro({ products }: StoreContentProps) {
     return products.filter((product) => {
       // Stock filter
       if (!showOutOfStock && product.stock === 0) return false
+
+      // New arrivals filter (products created within last 7 days)
+      if (activeQuickFilter === 'new-arrivals') {
+        const productDate = new Date(product.createdAt)
+        const daysAgo = new Date()
+        daysAgo.setDate(daysAgo.getDate() - 7)
+        if (productDate < daysAgo) return false
+      }
 
       // Search filter
       if (searchQuery) {
@@ -101,7 +119,7 @@ export function StoreContentPro({ products }: StoreContentProps) {
 
       return true
     })
-  }, [products, searchQuery, selectedCategory, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, showOutOfStock])
+  }, [products, searchQuery, selectedCategory, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, showOutOfStock, activeQuickFilter])
 
   const sortedProducts = sortProducts(filteredProducts, sort)
 
@@ -128,6 +146,31 @@ export function StoreContentPro({ products }: StoreContentProps) {
     setSelectedOrigins([])
     setSelectedMaterials([])
     setPriceRange([0, filterOptions.maxPrice])
+    setActiveQuickFilter(undefined)
+  }
+
+  // Handle quick filter selection
+  const handleQuickFilterSelect = (filter: QuickFilter) => {
+    // Clear all filters first
+    clearAllFilters()
+
+    // Apply the selected filter
+    switch (filter.action.type) {
+      case 'category':
+        setSelectedCategory(filter.action.value as string)
+        break
+      case 'price':
+        setPriceRange(filter.action.value as [number, number])
+        break
+      case 'sort':
+        setSort(filter.action.value as SortOption)
+        break
+      case 'new':
+        // Will be handled in filtering logic
+        break
+    }
+
+    setActiveQuickFilter(filter.id === 'clear' ? undefined : filter.id)
   }
 
   const activeFilterCount = [
@@ -139,78 +182,74 @@ export function StoreContentPro({ products }: StoreContentProps) {
   ].reduce((a, b) => a + b, 0)
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col lg:flex-row gap-12">
       {/* Filters Sidebar - Desktop */}
       <aside className="hidden lg:block lg:w-64 flex-shrink-0">
         <div
           className={cn(
-            "sticky bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col",
+            "sticky",
             getStickyOffset(),
-            "max-h-[calc(100vh-6rem)]" // 6rem = 96px (80px nav + 16px gap)
+            "max-h-[calc(100vh-6rem)]"
           )}
           style={{
             maxHeight: `calc(100vh - ${LAYOUT.navigation.desktop}px - 1rem)`
           }}>
-          <div className="flex items-center justify-between p-4 pb-0">
-            <h3 className="font-semibold text-base text-gray-900">Refine</h3>
+          <div className="mb-6">
+            <h3 className="text-base font-semibold text-foreground">Filters</h3>
             {activeFilterCount > 0 && (
-              <button
+              <Button
+                variant="link"
                 onClick={clearAllFilters}
-                className="text-xs font-medium text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1"
+                className="p-0 h-auto text-sm mt-1"
               >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Clear ({activeFilterCount})
-              </button>
+                Clear all ({activeFilterCount})
+              </Button>
             )}
           </div>
 
-          <div className="overflow-y-auto flex-1 p-4 pt-3">
-            <div className="space-y-4">
+          <div className="space-y-6">
             {/* Categories */}
             <div>
-              <h4 className="font-medium text-sm mb-2 text-gray-900">Category</h4>
-              <div className="space-y-0.5">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Category</h4>
+              <div className="space-y-1">
                 {filterOptions.categories.map((category) => (
-                  <label key={category} className="flex items-center cursor-pointer px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                    <input
-                      type="radio"
-                      name="category"
-                      value={category}
-                      checked={selectedCategory === category}
-                      onChange={() => setSelectedCategory(category)}
-                      className="w-4 h-4 text-opal-electric-accessible focus:ring-opal-electric-accessible border-gray-300"
-                    />
-                    <span className="ml-2 text-sm capitalize text-gray-700">
-                      {category === 'all' ? 'All Products' : category.replace(/-/g, ' ')}
-                    </span>
-                  </label>
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? "secondary" : "ghost"}
+                    onClick={() => setSelectedCategory(category)}
+                    className="w-full justify-start text-sm"
+                  >
+                    {category === 'all' ? 'All Products' : category.replace(/-/g, ' ')}
+                  </Button>
                 ))}
               </div>
             </div>
 
             {/* Stone Types */}
             {filterOptions.stoneTypes.length > 0 && (
-              <div className="border-t border-gray-100 pt-4">
-                <h4 className="font-medium text-sm mb-2 text-gray-900">Stone Type</h4>
-                <div className="space-y-0.5">
+              <div>
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Stone Type</h4>
+                <div className="space-y-2">
                   {filterOptions.stoneTypes.map((type) => (
-                    <label key={type} className="flex items-center cursor-pointer px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                      <input
-                        type="checkbox"
+                    <div key={type} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`stone-${type}`}
                         checked={selectedStoneTypes.includes(type)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             setSelectedStoneTypes([...selectedStoneTypes, type])
                           } else {
                             setSelectedStoneTypes(selectedStoneTypes.filter(t => t !== type))
                           }
                         }}
-                        className="w-4 h-4 rounded text-opal-electric-accessible focus:ring-opal-electric-accessible border-gray-300"
                       />
-                      <span className="ml-2 text-sm text-gray-700">{type}</span>
-                    </label>
+                      <Label
+                        htmlFor={`stone-${type}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {type}
+                      </Label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -218,56 +257,61 @@ export function StoreContentPro({ products }: StoreContentProps) {
 
             {/* Origins */}
             {filterOptions.origins.length > 0 && (
-              <div className="border-t border-gray-100 pt-4">
-                <h4 className="font-medium text-sm mb-2 text-gray-900">Origin</h4>
-                <div className="space-y-0.5">
+              <div>
+                <Separator className="mb-4" />
+                <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Origin</h4>
+                <div className="space-y-2">
                   {filterOptions.origins.map((origin) => (
-                    <label key={origin} className="flex items-center cursor-pointer px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                      <input
-                        type="checkbox"
+                    <div key={origin} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`origin-${origin}`}
                         checked={selectedOrigins.includes(origin)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
+                        onCheckedChange={(checked) => {
+                          if (checked) {
                             setSelectedOrigins([...selectedOrigins, origin])
                           } else {
                             setSelectedOrigins(selectedOrigins.filter(o => o !== origin))
                           }
                         }}
-                        className="w-4 h-4 rounded text-opal-electric-accessible focus:ring-opal-electric-accessible border-gray-300"
                       />
-                      <span className="ml-2 text-sm text-gray-700">{origin}</span>
-                    </label>
+                      <Label
+                        htmlFor={`origin-${origin}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {origin}
+                      </Label>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
             {/* Price Range */}
-            <div className="border-t border-gray-100 pt-4">
-              <h4 className="font-medium text-sm mb-2">Price Range</h4>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <input
+            <div>
+              <Separator className="mb-4" />
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Price Range</h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Input
                     type="number"
                     value={priceRange[0]}
                     onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
                     placeholder="Min"
-                    className="w-full px-2 py-1.5 text-sm rounded border border-gray-200 focus:border-charcoal focus:outline-none"
+                    className="h-9"
                   />
-                  <span className="py-1.5 text-gray-400">-</span>
-                  <input
+                  <span className="text-muted-foreground">-</span>
+                  <Input
                     type="number"
                     value={priceRange[1]}
                     onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
                     placeholder="Max"
-                    className="w-full px-2 py-1.5 text-sm rounded border border-gray-200 focus:border-charcoal focus:outline-none"
+                    className="h-9"
                   />
                 </div>
-                <div className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   AUD ${priceRange[0]} - ${priceRange[1]}
-                </div>
+                </p>
               </div>
-            </div>
             </div>
           </div>
         </div>
@@ -276,64 +320,68 @@ export function StoreContentPro({ products }: StoreContentProps) {
       {/* Main Content */}
       <div className="flex-1">
         {/* Search and Filter Bar */}
-        <div className="mb-6 space-y-4">
+        <div className="mb-8 space-y-4">
           {/* Search */}
           <div className="flex gap-3">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
+            <div className="relative flex-1 max-w-lg">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+              <Input
                 type="text"
-                placeholder="Search opals..."
+                placeholder="Search Australian opals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 rounded-lg bg-gray-50 border border-gray-200 focus:border-opal-electric-accessible focus:bg-white focus:outline-none focus:ring-1 focus:ring-opal-electric-accessible/20 text-sm transition-all"
+                className="pl-10 h-12 text-base"
               />
             </div>
 
             {/* Sort Dropdown */}
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortOption)}
-              className="px-4 py-2.5 rounded-lg border border-gray-200 focus:border-opal-electric-accessible focus:outline-none focus:ring-1 focus:ring-opal-electric-accessible/20 bg-white cursor-pointer transition-all text-sm"
-            >
-            <option value="featured">Featured</option>
-            <option value="newest">Newest</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-          </select>
+            <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
+              <SelectTrigger className="w-[200px] h-12">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="featured">Featured</SelectItem>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="price-low">Price: Low to High</SelectItem>
+                <SelectItem value="price-high">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Filter Toggle (Mobile) */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden px-4 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-          </button>
+          {/* Quick Filter Pills - 2026 Best Practice for One-Click Filtering */}
+          <QuickFilterPills
+            onFilterSelect={handleQuickFilterSelect}
+            activeFilter={activeQuickFilter}
+            productCount={sortedProducts.length}
+          />
+
+          {/* Results Count */}
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <p className="text-lg font-semibold text-charcoal">
+                {sortedProducts.length} {sortedProducts.length === 1 ? 'Opal' : 'Opals'}
+              </p>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Handpicked from Australia's finest mines
+              </p>
+            </div>
+
+            {/* Show out of stock toggle */}
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-sold"
+                checked={showOutOfStock}
+                onCheckedChange={setShowOutOfStock}
+              />
+              <Label
+                htmlFor="show-sold"
+                className="text-sm font-medium cursor-pointer"
+              >
+                Show sold items
+              </Label>
+            </div>
+          </div>
         </div>
-
-        {/* Category Pills */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {categoryPills}
-        </div>
-
-        {/* Results Count */}
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-content-muted">
-            {sortedProducts.length} {sortedProducts.length === 1 ? 'product' : 'products'} found
-          </p>
-
-          {/* Show out of stock toggle */}
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showOutOfStock}
-              onChange={(e) => setShowOutOfStock(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-charcoal focus:ring-charcoal"
-            />
-            <span className="text-sm text-content-muted">Show sold items</span>
-          </label>
-        </div>
-      </div>
 
       {/* Mobile Filters Panel */}
       <AnimatePresence>
@@ -472,7 +520,7 @@ export function StoreContentPro({ products }: StoreContentProps) {
       {sortedProducts.length > 0 ? (
         <motion.div
           layout
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 md:gap-8"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8"
         >
           {sortedProducts.map((product, index) => (
             <ProductCard
@@ -489,33 +537,23 @@ export function StoreContentPro({ products }: StoreContentProps) {
                 stoneOrigin: product.stoneOrigin,
                 stoneType: product.stoneType,
                 createdAt: product.createdAt,
+                featured: product.featured,
               }}
               index={index}
-              variant="museum"
+              variant="default"
               showMetadata={true}
+              animated={true}
+              darkBackground={false}
             />
           ))}
         </motion.div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center py-32"
-        >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
-            <Search className="w-10 h-10 text-gray-400" />
-          </div>
-          <h3 className="text-xl font-semibold text-charcoal mb-2">No products found</h3>
-          <p className="text-content-muted mb-6">
-            Try adjusting your filters or search query
-          </p>
-          <button
-            onClick={clearAllFilters}
-            className="px-6 py-2 bg-charcoal text-white rounded-lg hover:bg-charcoal/90 transition-colors"
-          >
-            Clear Filters
-          </button>
-        </motion.div>
+        <EnhancedSearchEmptyState
+          query={searchQuery}
+          onClearFilters={clearAllFilters}
+          onSelectCategory={setSelectedCategory}
+          onSelectPriceRange={setPriceRange}
+        />
       )}
       </div>
     </div>

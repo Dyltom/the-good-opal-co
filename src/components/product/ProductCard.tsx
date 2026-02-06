@@ -93,7 +93,7 @@ export function ProductCard({
   const Container = animated ? motion.div : 'div'
   const containerProps = animated ? {
     ...cardAnimations,
-    ...(variant === 'default' ? hoverLift : {}),
+    ...(variant === 'default' && darkBackground ? hoverLift : {}),
     transition: {
       duration: 0.6,
       delay: index * 0.1,
@@ -110,29 +110,19 @@ export function ProductCard({
 
       <Link
         href={`/store/${product.slug}`}
-        className="block relative rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 transition-all"
+        className={cn(
+          "block relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 transition-all",
+          variant === 'default' && !darkBackground && "bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+        )}
       >
         {/* Image Container */}
         <div className={cn(
-          "relative aspect-[4/5] overflow-hidden rounded-2xl mb-4 transition-all duration-500",
-          variant === 'default' && "bg-black-rich shadow-lg group-hover:shadow-glow",
-          variant === 'museum' && "bg-white border-2 border-gray-200 group-hover:border-transparent group-hover:shadow-xl",
+          "relative aspect-[4/5] overflow-hidden transition-all duration-500",
+          variant === 'default' && !darkBackground && "bg-gradient-to-br from-gray-50 to-white",
+          variant === 'default' && darkBackground && "bg-black-rich shadow-lg group-hover:shadow-glow rounded-2xl",
+          variant === 'museum' && "bg-gray-50",
           variant === 'minimal' && "bg-gray-100"
         )}>
-          {/* Gradient border for default and museum variants */}
-          {(variant === 'default' || variant === 'museum') && (
-            <div className={cn(
-              "absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-              variant === 'default' && "bg-gradient-to-br from-opal-electric via-fire-pink to-opal-emerald p-[1px]",
-              variant === 'museum' && "bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[2px]"
-            )}>
-              <div className={cn(
-                "absolute inset-[1px] rounded-2xl",
-                variant === 'default' && "bg-black-rich",
-                variant === 'museum' && "bg-white inset-[2px]"
-              )} />
-            </div>
-          )}
 
           {/* Shimmer effect for museum variant */}
           {variant === 'museum' && animated && (
@@ -208,66 +198,6 @@ export function ProductCard({
             </motion.div>
           )}
 
-          {/* Smart Badges */}
-          <AnimatePresence>
-            {/* Discount badge - only for 20%+ */}
-            {discount >= 20 && isAvailable && (
-              <motion.div
-                initial={animated ? { opacity: 0, scale: 0, x: -20 } : {}}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0 }}
-                className="absolute top-3 left-3 z-20"
-              >
-                <span className="bg-red-500 text-white text-xs font-medium px-2.5 py-1 rounded-md">
-                  -{discount}%
-                </span>
-              </motion.div>
-            )}
-
-            {/* New arrival badge */}
-            {isNew && isAvailable && !discount && (
-              <motion.div
-                initial={animated ? { opacity: 0, scale: 0, x: -20 } : {}}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0 }}
-                className="absolute top-3 left-3 z-20"
-              >
-                <span className="bg-black text-white text-xs font-medium px-2.5 py-1 rounded-md">
-                  NEW
-                </span>
-              </motion.div>
-            )}
-
-            {/* Featured badge */}
-            {product.featured && (
-              <motion.div
-                initial={animated ? { opacity: 0, scale: 0, rotate: -180 } : {}}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0 }}
-                transition={animated ? { delay: 0.3, type: 'spring', stiffness: 200, damping: 15 } : {}}
-                className="absolute top-3 right-3 z-20"
-              >
-                <div className="px-3 py-1.5 bg-gradient-to-r from-opal-electric to-fire-pink rounded-lg shadow-lg">
-                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">Featured</span>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Category badge */}
-            {product.category && variant === 'default' && (
-              <motion.div
-                initial={animated ? { opacity: 0, scale: 0 } : {}}
-                animate={{ opacity: 1, scale: 1 }}
-                className="absolute top-3 left-3 z-10"
-              >
-                <div className="px-3 py-1.5 bg-black-rich/80 backdrop-blur-md rounded-lg border border-white/20 shadow-lg">
-                  <span className="text-[10px] font-semibold text-white uppercase tracking-wider">
-                    {product.category.replace(/-/g, ' ')}
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* Quick Actions on Hover */}
           {isAvailable && variant === 'default' && (
@@ -314,146 +244,101 @@ export function ProductCard({
 
         {/* Product Info */}
         {variant === 'museum' ? (
-          // Museum style info - Clean and elegant
-          <div className="space-y-3 px-1">
-            {/* Name */}
-            <div>
-              <h3 className={cn(
-                "font-serif text-lg leading-tight line-clamp-2 transition-all duration-300",
-                "text-charcoal group-hover:text-opal-deep-accessible",
-                !isAvailable && "text-gray-500"
-              )}>
-                {product.name}
-              </h3>
-            </div>
-
-            {/* Metadata - Subtle */}
-            {showMetadata && (product.stoneOrigin || product.stoneType) && (
-              <div className="flex items-center gap-2 text-xs text-gray-500">
-                {product.stoneType && <span>{product.stoneType}</span>}
-                {product.stoneType && product.stoneOrigin && <span>•</span>}
-                {product.stoneOrigin && <span>{product.stoneOrigin}</span>}
-              </div>
-            )}
-
-            {/* Price section - Clean */}
-            <div className="flex items-baseline justify-between">
-              <div className="flex items-baseline gap-2">
-                {isAvailable ? (
-                  <>
-                    <span className="text-2xl font-light text-charcoal">
-                      {formatCurrency(product.price, 'AUD')}
-                    </span>
-                    {product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className="text-sm line-through text-gray-400">
-                        {formatCurrency(product.compareAtPrice, 'AUD')}
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-sm font-light italic text-gray-500">
-                    Sold Out
-                  </span>
-                )}
-              </div>
-
-              {/* Stock indicator - Minimal */}
-              {isAvailable && product.stock && product.stock <= 3 && (
-                <span className="text-xs font-medium text-fire-pink">
-                  Only {product.stock} left
-                </span>
-              )}
-            </div>
-
-            {/* Quick Add - Subtle on hover */}
-            {isAvailable && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              >
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className="relative"
-                >
-                  <AddToCartButton
-                    product={{
-                      id: product.id,
-                      slug: product.slug,
-                      name: product.name,
-                      price: product.price,
-                      image: product.image,
-                    }}
-                    className="w-full bg-gradient-to-r from-opal-electric to-opal-deep text-white font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-sm hover:shadow-lg"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    Add to Cart
-                  </AddToCartButton>
-                </div>
-              </motion.div>
-            )}
-          </div>
-        ) : (
-          // Default style info
-          <div className="space-y-2 px-1 py-3">
+          // Museum style info - Minimal luxury
+          <div className="pt-4">
             <h3 className={cn(
-              "font-medium text-base leading-snug transition-colors duration-200 line-clamp-2",
-              isAvailable
-                ? darkBackground
-                  ? "text-white group-hover:text-opal-deep"
-                  : "text-charcoal group-hover:text-opal-electric"
-                : darkBackground ? "text-content-secondary" : "text-content-muted"
+              "text-sm font-medium text-charcoal mb-2",
+              !isAvailable && "text-gray-400"
             )}>
               {product.name}
             </h3>
 
-            <div className="flex items-baseline gap-2">
+            {/* Metadata */}
+            {showMetadata && (product.stoneOrigin || product.stoneType) && (
+              <p className="text-xs text-gray-500 mb-3">
+                {[product.stoneType, product.stoneOrigin].filter(Boolean).join(', ')}
+              </p>
+            )}
+
+            {/* Price */}
+            <div className="flex items-baseline justify-between">
               {isAvailable ? (
-                <>
+                <span className="text-base text-charcoal">
+                  {formatCurrency(product.price, 'AUD')}
+                </span>
+              ) : (
+                <span className="text-sm text-gray-400">
+                  Sold
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          // Default style info
+          <div className="p-4">
+            <h3 className={cn(
+              "font-serif text-lg mb-2 leading-tight",
+              isAvailable
+                ? darkBackground
+                  ? "text-white group-hover:text-opal-deep"
+                  : "text-charcoal"
+                : darkBackground ? "text-content-secondary" : "text-gray-400"
+            )}>
+              {product.name}
+            </h3>
+
+            <div className="space-y-2">
+              {isAvailable ? (
+                <div>
                   <span className={cn(
-                    "text-lg font-bold",
-                    darkBackground ? "text-white" : "text-opal-deep"
+                    "text-xl font-semibold",
+                    darkBackground ? "text-white" : "text-charcoal"
                   )}>
                     {formatCurrency(product.price, 'AUD')}
                   </span>
                   {product.compareAtPrice && product.compareAtPrice > product.price && (
-                    <span className={cn(
-                      "text-sm line-through",
-                      darkBackground ? "text-white/40" : "text-charcoal/50"
-                    )}>
-                      {formatCurrency(product.compareAtPrice, 'AUD')}
-                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className={cn(
+                        "text-sm line-through",
+                        darkBackground ? "text-white/40" : "text-gray-400"
+                      )}>
+                        {formatCurrency(product.compareAtPrice, 'AUD')}
+                      </span>
+                      <span className="text-xs font-medium text-fire-coral">
+                        {discount}% OFF
+                      </span>
+                    </div>
                   )}
-                </>
+                </div>
               ) : (
                 <span className={cn(
                   "text-sm font-medium",
-                  darkBackground ? "text-white/50" : "text-charcoal/50"
+                  darkBackground ? "text-white/50" : "text-gray-400"
                 )}>
-                  Sold
+                  Sold Out
                 </span>
               )}
             </div>
 
             {/* Metadata for default variant */}
             {showMetadata && (product.stoneOrigin || product.stoneType) && (
-              <div className="flex flex-wrap gap-2 text-[10px] pt-1">
+              <div className="flex flex-wrap gap-1.5 mt-3">
                 {product.stoneOrigin && (
                   <span className={cn(
-                    "px-2 py-0.5 rounded-full",
+                    "text-xs px-2 py-1 rounded-md",
                     darkBackground
                       ? "bg-white/10 text-white/70"
-                      : "bg-gray-100 text-gray-600"
+                      : "bg-gray-50 text-gray-600 border border-gray-200"
                   )}>
                     {product.stoneOrigin}
                   </span>
                 )}
                 {product.stoneType && (
                   <span className={cn(
-                    "px-2 py-0.5 rounded-full",
+                    "text-xs px-2 py-1 rounded-md",
                     darkBackground
                       ? "bg-white/10 text-white/70"
-                      : "bg-gray-100 text-gray-600"
+                      : "bg-gray-50 text-gray-600 border border-gray-200"
                   )}>
                     {product.stoneType}
                   </span>
