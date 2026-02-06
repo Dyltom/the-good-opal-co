@@ -4,10 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { formatCurrency, cn } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
-import { Heart, ShoppingBag } from 'lucide-react'
+import { Heart, ShoppingBag, Eye, Sparkles } from 'lucide-react'
+import { ProductQuickViewModal } from './ProductQuickViewModal'
 
 /**
  * Unified Product Card Component
@@ -78,6 +78,7 @@ export function ProductCard({
   darkBackground = false,
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [showQuickView, setShowQuickView] = useState(false)
   const isAvailable = product.stock > 0
 
   // Calculate discount percentage
@@ -102,11 +103,12 @@ export function ProductCard({
   } : {}
 
   return (
-    <Container {...containerProps} className="group">
-      <div className={cn(
-        "relative h-full",
-        variant === 'museum' && "bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
-      )}>
+    <>
+      <Container {...containerProps} className="group">
+        <div className={cn(
+          "relative h-full",
+          variant === 'museum' && "bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+        )}>
         {/* Badges */}
         {isAvailable && (
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
@@ -193,15 +195,15 @@ export function ProductCard({
 
 
           {/* Quick Actions on Hover */}
-          {isAvailable && variant === 'default' && (
-            <motion.div
-              initial={animated ? { opacity: 0, y: 20 } : {}}
-              whileHover={animated ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.3 }}
-              className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-10"
+          {isAvailable && (
+            <div
+              className={cn(
+                "absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-300",
+                variant === 'museum' ? "bg-gradient-to-t from-white/95 to-transparent" : "bg-gradient-to-t from-black/80 to-transparent"
+              )}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <AddToCartButton
                   product={{
                     id: product.id,
@@ -210,28 +212,58 @@ export function ProductCard({
                     price: product.price,
                     image: product.image,
                   }}
-                  className="flex-1 bg-white text-charcoal hover:bg-opal-electric hover:text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-200"
+                  variant="minimal"
+                  size="sm"
+                  className={cn(
+                    "flex-1 rounded-full",
+                    variant === 'museum'
+                      ? "bg-black-rich text-white hover:bg-black-rich/90"
+                      : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-900"
+                  )}
+                  showConfetti
+                />
+
+                {/* Quick View */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setShowQuickView(true)
+                  }}
+                  className={cn(
+                    "p-2 rounded-full transition-colors",
+                    variant === 'museum'
+                      ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                      : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
+                  )}
+                  aria-label="Quick view"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  Add to Cart
-                </AddToCartButton>
+                  <Eye size={18} />
+                </button>
+
+                {/* Wishlist */}
                 {showWishlist && (
-                  <motion.button
-                    whileTap={animated ? { scale: 0.95 } : {}}
-                    onClick={() => setIsWishlisted(!isWishlisted)}
-                    className="w-12 h-12 bg-white rounded-xl flex items-center justify-center hover:bg-fire-pink hover:text-white shadow-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fire-pink focus-visible:ring-offset-2"
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsWishlisted(!isWishlisted)
+                    }}
+                    className={cn(
+                      "p-2 rounded-full transition-all",
+                      isWishlisted
+                        ? "bg-fire-coral text-white"
+                        : variant === 'museum'
+                          ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                          : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
+                    )}
                     aria-label="Add to wishlist"
                   >
-                    <motion.div
-                      animate={animated && isWishlisted ? { scale: [1, 1.2, 1] } : {}}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Heart className={cn("w-4 h-4", isWishlisted && "fill-current")} />
-                    </motion.div>
-                  </motion.button>
+                    <Heart size={18} className={cn(isWishlisted && "fill-current")} />
+                  </button>
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
       </Link>
@@ -251,10 +283,16 @@ export function ProductCard({
 
             {/* Metadata */}
             {showMetadata && (product.stoneOrigin || product.stoneType) && (
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-gray-600 mb-2">
                 {[product.stoneType, product.stoneOrigin].filter(Boolean).join(' • ')}
               </p>
             )}
+
+            {/* One of a Kind Badge */}
+            <div className="flex items-center gap-1.5 text-xs text-opal-electric mb-3">
+              <Sparkles size={14} />
+              <span className="font-medium">One of a Kind</span>
+            </div>
 
             {/* Price and Actions */}
             <div className="flex items-end justify-between">
@@ -275,17 +313,6 @@ export function ProductCard({
                 </span>
               )}
 
-              {/* Quick View Button */}
-              {isAvailable && (
-                <Link
-                  href={`/store/${product.slug}`}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity block"
-                >
-                  <span className="text-sm font-medium text-opal-electric-accessible hover:text-opal-electric transition-colors">
-                    View →
-                  </span>
-                </Link>
-              )}
             </div>
           </div>
         ) : (
@@ -364,5 +391,13 @@ export function ProductCard({
         )}
       </div>
     </Container>
+
+      {/* Quick View Modal */}
+      <ProductQuickViewModal
+        product={product}
+        isOpen={showQuickView}
+        onClose={() => setShowQuickView(false)}
+      />
+    </>
   )
 }
