@@ -3,10 +3,11 @@ import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
-import { ResponsiveStoreContent } from '@/components/store/ResponsiveStoreContent'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { TrustSignalBarCompact } from '@/components/trust/TrustSignalBar'
+import { PersonalizedHero } from '@/components/store/PersonalizedHero'
+import { EnhancedStoreContent } from './EnhancedStoreContent'
 
 /**
  * Store Page Metadata
@@ -126,68 +127,21 @@ export default async function StorePage() {
           />
 
           <main className="flex-1">
-            {/* Header - Premium opal-inspired design */}
-            <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
-              {/* Enhanced background effects */}
-              <div className="absolute inset-0">
-                <div className="absolute -top-40 left-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-fire-gold to-fire-orange" />
-                <div className="absolute -bottom-40 right-1/4 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-tr from-opal-electric to-opal-deep" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-turquoise to-opal-emerald" />
-              </div>
-
-              {/* Decorative pattern overlay */}
-              <div className="absolute inset-0 opacity-5">
-                <div className="absolute inset-0" style={{
-                  backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px)`
-                }} />
-              </div>
-
-              <Container>
-                <div className="relative z-10 text-center max-w-4xl mx-auto">
-                  <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-fire-gold via-opal-electric to-fire-pink">
-                    <span className="h-px w-16 bg-gradient-to-r from-transparent to-fire-gold"></span>
-                    Premium Collection
-                    <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-pink"></span>
-                  </span>
-                  <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
-                    Australian <span className="text-gradient-prismatic">Opals</span>
-                  </h1>
-                  <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
-                    Handpicked treasures from Lightning Ridge, Coober Pedy, and Queensland.
-                    Each piece is unique, ethically sourced, and absolutely breathtaking.
-                  </p>
-
-                  {/* Quick stats */}
-                  <div className="flex justify-center gap-8 mt-12">
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-white">{transformedProducts.length}</p>
-                      <p className="text-sm text-white/60 mt-1">Unique Pieces</p>
-                    </div>
-                    <div className="h-12 w-px bg-white/20" />
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-white">100%</p>
-                      <p className="text-sm text-white/60 mt-1">Australian</p>
-                    </div>
-                    <div className="h-12 w-px bg-white/20" />
-                    <div className="text-center">
-                      <p className="text-3xl font-bold text-white">Free</p>
-                      <p className="text-sm text-white/60 mt-1">Shipping $500+</p>
-                    </div>
-                  </div>
-                </div>
-              </Container>
-            </section>
+            {/* Personalized Hero Section - Adapts based on user preferences */}
+            <div className="pt-20">
+              <PersonalizedHero />
+            </div>
 
             {/* Trust Signals - 2026 Best Practice for Building Confidence */}
             <section className="bg-gray-50 sticky top-20 z-10 shadow-sm">
               <TrustSignalBarCompact />
             </section>
 
-            {/* Products Section */}
+            {/* Products Section with All Enhanced Features */}
             <section className="py-12 bg-white">
               <Container>
                 <Suspense fallback={<ProductGridSkeleton count={12} />}>
-                  <ResponsiveStoreContent products={transformedProducts} />
+                  <EnhancedStoreContent products={transformedProducts} />
                 </Suspense>
               </Container>
             </section>
