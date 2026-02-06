@@ -103,20 +103,41 @@ export function ProductCard({
 
   return (
     <Container {...containerProps} className="group">
+      <div className={cn(
+        "relative h-full",
+        variant === 'museum' && "bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+      )}>
+        {/* Badges */}
+        {isAvailable && (
+          <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+            {isNew && (
+              <span className="px-3 py-1 bg-black-rich text-white text-xs font-medium rounded-full">
+                New
+              </span>
+            )}
+            {product.featured && (
+              <span className="px-3 py-1 bg-gradient-to-r from-opal-electric to-opal-deep text-white text-xs font-medium rounded-full">
+                Featured
+              </span>
+            )}
+            {discount > 0 && (
+              <span className="px-3 py-1 bg-fire-coral text-white text-xs font-medium rounded-full">
+                {discount}% Off
+              </span>
+            )}
+          </div>
+        )}
 
       <Link
         href={`/store/${product.slug}`}
-        className={cn(
-          "block relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 transition-all",
-          variant === 'default' && !darkBackground && "bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-        )}
+        className="block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 rounded-lg"
       >
         {/* Image Container */}
         <div className={cn(
           "relative aspect-[4/5] overflow-hidden transition-all duration-500",
           variant === 'default' && !darkBackground && "bg-gradient-to-br from-gray-50 to-white",
           variant === 'default' && darkBackground && "bg-black-rich shadow-lg group-hover:shadow-glow rounded-2xl",
-          variant === 'museum' && "bg-gray-50",
+          variant === 'museum' && "bg-gray-50 group-hover:bg-gray-100",
           variant === 'minimal' && "bg-gray-100"
         )}>
 
@@ -130,7 +151,7 @@ export function ProductCard({
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 className={cn(
-                  "object-cover transition-all duration-700",
+                  "object-cover transition-transform duration-700 group-hover:scale-105",
                   !isAvailable && "grayscale opacity-60"
                 )}
                 style={variant === 'museum' && isAvailable ? {
@@ -213,35 +234,57 @@ export function ProductCard({
             </motion.div>
           )}
         </div>
+      </Link>
 
         {/* Product Info */}
         {variant === 'museum' ? (
-          // Museum style info - Minimal luxury
-          <div className="pt-4">
-            <h3 className={cn(
-              "text-sm font-medium text-charcoal mb-2",
-              !isAvailable && "text-gray-400"
-            )}>
-              {product.name}
-            </h3>
+          // Museum style info - Refined luxury
+          <div className="p-4">
+            <Link href={`/store/${product.slug}`}>
+              <h3 className={cn(
+                "text-base font-medium text-gray-900 mb-1 hover:text-opal-electric-accessible transition-colors",
+                !isAvailable && "text-gray-400"
+              )}>
+                {product.name}
+              </h3>
+            </Link>
 
             {/* Metadata */}
             {showMetadata && (product.stoneOrigin || product.stoneType) && (
-              <p className="text-xs text-gray-500 mb-3">
-                {[product.stoneType, product.stoneOrigin].filter(Boolean).join(', ')}
+              <p className="text-sm text-gray-600 mb-3">
+                {[product.stoneType, product.stoneOrigin].filter(Boolean).join(' • ')}
               </p>
             )}
 
-            {/* Price */}
-            <div className="flex items-baseline justify-between">
+            {/* Price and Actions */}
+            <div className="flex items-end justify-between">
               {isAvailable ? (
-                <span className="text-base text-charcoal">
-                  {formatCurrency(product.price, 'AUD')}
-                </span>
+                <div>
+                  <span className="text-lg font-semibold text-gray-900">
+                    {formatCurrency(product.price, 'AUD')}
+                  </span>
+                  {product.compareAtPrice && product.compareAtPrice > product.price && (
+                    <span className="ml-2 text-sm line-through text-gray-400">
+                      {formatCurrency(product.compareAtPrice, 'AUD')}
+                    </span>
+                  )}
+                </div>
               ) : (
-                <span className="text-sm text-gray-400">
+                <span className="text-sm font-medium text-gray-500">
                   Sold
                 </span>
+              )}
+
+              {/* Quick View Button */}
+              {isAvailable && (
+                <Link
+                  href={`/store/${product.slug}`}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity block"
+                >
+                  <span className="text-sm font-medium text-opal-electric-accessible hover:text-opal-electric transition-colors">
+                    View →
+                  </span>
+                </Link>
               )}
             </div>
           </div>
@@ -319,7 +362,7 @@ export function ProductCard({
             )}
           </div>
         )}
-      </Link>
+      </div>
     </Container>
   )
 }
