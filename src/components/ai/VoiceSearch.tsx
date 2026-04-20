@@ -6,6 +6,36 @@ import { Mic, MicOff, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
+// Web Speech API types
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number
+  results: SpeechRecognitionResultList
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start(): void
+  stop(): void
+  abort(): void
+  onstart: ((event: Event) => void) | null
+  onend: ((event: Event) => void) | null
+  onresult: ((event: SpeechRecognitionEvent) => void) | null
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition
+    webkitSpeechRecognition?: new () => SpeechRecognition
+  }
+}
+
 interface VoiceSearchProps {
   onSearch: (query: string) => void
   className?: string
@@ -38,19 +68,20 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
   const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
 
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   useEffect(() => {
     // Check if Web Speech API is supported
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
       setIsSupported(true)
-      const SpeechRecognition = (window as any).webkitSpeechRecognition
-      recognitionRef.current = new SpeechRecognition()
+      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition()
 
-      const recognition = recognitionRef.current
-      recognition.continuous = false
-      recognition.interimResults = true
-      recognition.lang = 'en-US'
+        const recognition = recognitionRef.current
+        recognition.continuous = false
+        recognition.interimResults = true
+        recognition.lang = 'en-AU'
 
       recognition.onstart = () => {
         setIsListening(true)
@@ -58,24 +89,25 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
         setShowModal(true)
       }
 
-      recognition.onresult = (event: any) => {
-        const current = event.resultIndex
-        const transcript = event.results[current][0].transcript.toLowerCase()
-        setTranscript(transcript)
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          const current = event.resultIndex
+          const transcript = event.results[current][0].transcript.toLowerCase()
+          setTranscript(transcript)
 
-        // If the result is final, process it
-        if (event.results[current].isFinal) {
-          handleVoiceCommand(transcript)
+          // If the result is final, process it
+          if (event.results[current].isFinal) {
+            handleVoiceCommand(transcript)
+          }
         }
-      }
 
-      recognition.onerror = (event: any) => {
-        setError(getErrorMessage(event.error))
-        setIsListening(false)
-      }
+        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          setError(getErrorMessage(event.error))
+          setIsListening(false)
+        }
 
-      recognition.onend = () => {
-        setIsListening(false)
+        recognition.onend = () => {
+          setIsListening(false)
+        }
       }
     }
   }, [])
@@ -179,6 +211,7 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
                   setShowModal(false)
                 }}
                 className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Close voice search"
               >
                 <X className="w-5 h-5" />
               </button>

@@ -44,6 +44,7 @@ export function createToken(user: AuthUser): string {
 }
 
 export function verifyToken(token: string): AuthUser | null {
+  if (!JWT_SECRET) return null
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as AuthUser
     return decoded
