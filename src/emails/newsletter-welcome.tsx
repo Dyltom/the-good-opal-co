@@ -15,6 +15,7 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
 }) => {
   return (
     <html>
+      {/* eslint-disable-next-line @next/next/no-head-element */}
       <head />
       <body style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f5f5f5', margin: 0, padding: 0 }}>
         <table width="100%" cellPadding="0" cellSpacing="0" style={{ backgroundColor: '#f5f5f5', padding: '20px 0' }}>

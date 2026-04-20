@@ -85,7 +85,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
 
   const { docs: products } = await payload.find({
     collection: 'products',
-    where: whereCondition as any,
+    where: whereCondition as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     limit: 200, // Reasonable limit for product catalog
     sort: searchQuery ? '-featured,-createdAt' : '-createdAt',
     depth: 2, // Include related media
