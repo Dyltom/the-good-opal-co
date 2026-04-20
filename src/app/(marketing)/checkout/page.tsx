@@ -47,7 +47,7 @@ export default async function CheckoutPage() {
           <Container>
             <div className="max-w-5xl mx-auto">
               <div className="flex items-center justify-between mb-8">
-                <h1 className="text-4xl font-bold">Checkout</h1>
+                <h1 className="text-4xl font-serif font-bold">Checkout</h1>
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/cart">Back to Cart</Link>
                 </Button>

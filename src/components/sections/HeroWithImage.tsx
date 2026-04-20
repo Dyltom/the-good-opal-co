@@ -91,7 +91,7 @@ export function HeroWithImage({
             </p>
           )}
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance max-w-5xl mx-auto leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-6 text-balance max-w-5xl mx-auto leading-tight">
             {title}
           </h1>
 

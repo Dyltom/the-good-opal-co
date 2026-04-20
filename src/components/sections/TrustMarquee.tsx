@@ -26,7 +26,7 @@ export function TrustMarquee() {
         {[...TRUST_ITEMS, ...TRUST_ITEMS].map((item, i) => (
           <span
             key={i}
-            className="mx-8 text-sm font-medium text-white uppercase tracking-widest flex items-center gap-3"
+            className="mx-8 text-sm font-medium text-white tracking-normal flex items-center gap-3"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-white/50" />
             {item}

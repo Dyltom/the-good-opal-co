@@ -37,7 +37,7 @@ export function FeaturesGrid({
       <Container>
         {(title || description) && (
           <div className="text-center mb-12">
-            {title && <h2 className="text-3xl md:text-4xl font-bold mb-4">{title}</h2>}
+            {title && <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{title}</h2>}
             {description && <p className="text-lg text-muted-foreground">{description}</p>}
           </div>
         )}
@@ -48,7 +48,7 @@ export function FeaturesGrid({
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-opal-electric/10 to-opal-deep/10 flex items-center justify-center">
                 <span className="text-3xl">{feature.icon}</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <h3 className="text-xl font-serif font-semibold mb-2">{feature.title}</h3>
               <p className="text-muted-foreground text-sm md:text-base">{feature.description}</p>
             </div>
           ))}

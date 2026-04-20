@@ -98,8 +98,10 @@
     --sidebar-ring: oklch(0.6531 0.1347 242.6867);
 
     /* Typography */
-    --font-sans: 'Montserrat', sans-serif;
-    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Merriweather', serif;
+    --font-serif: 'EB Garamond', serif;
+    --font-accent: 'Dancing Script', cursive;
+    --font-inter: 'EB Garamond', serif;
     --font-mono: 'Fira Code', monospace;
     --font-heading: var(--font-serif);
 

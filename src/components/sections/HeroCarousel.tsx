@@ -169,7 +169,7 @@ export function HeroCarousel() {
                 </p>
 
                 {/* Title - Slide in from left */}
-                <h1 className={`text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-none transition-all duration-700 delay-300 ${
+                <h1 className={`text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-none transition-all duration-700 delay-300 ${
                   index === currentSlide ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
                 }`}>
                   {slide.title}

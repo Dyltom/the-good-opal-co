@@ -20,7 +20,7 @@ export default function NewsletterSuccessPage() {
               <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
 
-            <h1 className="text-3xl font-display font-bold text-charcoal mb-2">
+            <h1 className="text-3xl font-accent font-bold text-charcoal mb-2">
               Welcome to the Family! 🎉
             </h1>
 
@@ -44,7 +44,7 @@ export default function NewsletterSuccessPage() {
 
           {/* What to Expect */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-display font-bold text-charcoal mb-6 text-center">
+            <h2 className="text-2xl font-serif font-bold text-charcoal mb-6 text-center">
               What&apos;s Coming Your Way
             </h2>
 

@@ -113,7 +113,7 @@ function SuccessState({ email }: { email?: string }) {
       </div>
 
       {/* Success Message */}
-      <h1 className="text-3xl font-bold mb-4">Order Confirmed!</h1>
+      <h1 className="text-3xl font-accent font-bold mb-4">Order Confirmed!</h1>
       <p className="text-lg text-muted-foreground mb-2">Thank you for your order</p>
 
       {email && (

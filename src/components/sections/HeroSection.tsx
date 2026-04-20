@@ -54,7 +54,7 @@ export function HeroSection({
           </p>
         )}
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance max-w-4xl mx-auto">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-6 text-balance max-w-4xl mx-auto">
           {title}
         </h1>
 

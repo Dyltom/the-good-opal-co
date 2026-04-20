@@ -30,7 +30,7 @@ export function CategoryGrid({
     <section className={`py-16 lg:py-24 ${className}`}>
       <Container>
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+          <h2 className="text-3xl md:text-5xl font-serif font-bold mb-4">
             {title}
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -48,7 +48,7 @@ export function CategoryGrid({
               <div className={`absolute inset-0 ${category.gradient}`} />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
               <div className="absolute inset-0 flex flex-col items-center justify-end p-8 text-white">
-                <h3 className="text-2xl md:text-3xl font-bold mb-3 text-shadow">{category.name}</h3>
+                <h3 className="text-2xl md:text-3xl font-serif font-bold mb-3 text-shadow">{category.name}</h3>
                 <p className="text-sm md:text-base opacity-95 mb-6 text-center leading-relaxed">
                   {category.description}
                 </p>

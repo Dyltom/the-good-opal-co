@@ -221,33 +221,37 @@ const config: Config = {
   		fontFamily: {
   			sans: [
   				'var(--font-sans)',
-  				'Montserrat',
-  				'ui-sans-serif',
-  				'system-ui',
-  				'sans-serif'
+  				'Merriweather',
+  				'Georgia',
+  				'serif'
   			],
   			serif: [
   				'var(--font-serif)',
-  				'Playfair Display',
+  				'EB Garamond',
   				'Georgia',
   				'serif'
   			],
   			display: [
   				'var(--font-serif)',
-  				'Playfair Display',
+  				'EB Garamond',
   				'Georgia',
   				'serif'
   			],
   			accent: [
-  				'var(--font-sans)',
-  				'Montserrat',
-  				'sans-serif'
+  				'var(--font-accent)',
+  				'Dancing Script',
+  				'cursive'
   			],
   			heading: [
   				'var(--font-heading)',
   				'var(--font-serif)',
-  				'Playfair Display',
+  				'EB Garamond',
   				'Georgia',
+  				'serif'
+  			],
+  			inter: [
+  				'var(--font-inter)',
+  				'EB Garamond',
   				'serif'
   			]
   		},

@@ -1,31 +1,32 @@
 import '../globals.css'
-import { Inter, Playfair_Display, Montserrat } from 'next/font/google'
+import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { GoogleAnalyticsProvider } from '@/components/analytics/GoogleAnalytics'
 
 // Self-hosted via next/font — no external CDN request, optimal loading
-const inter = Inter({
+const merriweather = Merriweather({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-inter',
+  weight: ['300', '400', '700'],
+  variable: '--font-sans',
   display: 'swap',
 })
 
-const playfairDisplay = Playfair_Display({
+const ebGaramond = EB_Garamond({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-serif',
   display: 'swap',
 })
 
-const montserrat = Montserrat({
+const dancingScript = Dancing_Script({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-sans',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-accent',
   display: 'swap',
 })
+
 
 /**
  * Marketing Layout
@@ -51,7 +52,7 @@ export default function MarketingLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${playfairDisplay.variable} ${montserrat.variable}`}
+      className={`${merriweather.variable} ${ebGaramond.variable} ${dancingScript.variable}`}
     >
       <head>
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

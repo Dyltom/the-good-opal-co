@@ -7,10 +7,10 @@
 export const TYPOGRAPHY = {
   // Font families
   fontFamily: {
-    display: 'font-display', // Playfair Display
-    sans: 'font-sans',       // Inter
-    serif: 'font-serif',     // Playfair Display
-    accent: 'font-accent',   // Montserrat
+    display: 'font-serif',   // EB Garamond
+    sans: 'font-sans',       // Merriweather
+    serif: 'font-serif',     // EB Garamond
+    accent: 'font-accent',   // Dancing Script
   },
 
   // Font sizes with line heights
@@ -103,16 +103,16 @@ export const TYPOGRAPHY = {
 export const TYPOGRAPHY_PRESETS = {
   // Display headings (marketing pages)
   display: {
-    h1: 'text-4xl md:text-5xl lg:text-6xl font-display font-bold leading-tight tracking-tight',
-    h2: 'text-3xl md:text-4xl lg:text-5xl font-display font-bold leading-tight',
-    h3: 'text-2xl md:text-3xl font-display font-semibold leading-snug',
+    h1: 'text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight tracking-tight',
+    h2: 'text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight',
+    h3: 'text-2xl md:text-3xl font-serif font-semibold leading-snug',
   },
 
   // Regular headings (content pages)
   heading: {
-    h1: 'text-3xl md:text-4xl font-display font-bold leading-tight',
-    h2: 'text-2xl md:text-3xl font-display font-semibold leading-snug',
-    h3: 'text-xl md:text-2xl font-display font-semibold leading-snug',
+    h1: 'text-3xl md:text-4xl font-serif font-bold leading-tight',
+    h2: 'text-2xl md:text-3xl font-serif font-semibold leading-snug',
+    h3: 'text-xl md:text-2xl font-serif font-semibold leading-snug',
     h4: 'text-lg md:text-xl font-sans font-semibold leading-snug',
     h5: 'text-base md:text-lg font-sans font-semibold',
     h6: 'text-sm md:text-base font-sans font-semibold',

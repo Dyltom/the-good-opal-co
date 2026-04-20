@@ -30,6 +30,20 @@ pnpm payload generate   # Generate CMS types
 - **Styling:** `cn()` utility, design tokens from `styles/tokens.ts`
 - **Forms:** React Hook Form + Zod validation at boundaries
 
+## 🎨 Typography System (Fairytale Theme)
+**Goal:** Warm, magical, artsy-but-trustworthy feel (like Shrek fairytale vibes)
+
+**Font Stack:**
+- **font-serif** → EB Garamond (elegant display headings)
+- **font-sans** → Merriweather (warm readable body text)  
+- **font-accent** → Dancing Script (magical handwritten moments)
+
+**Usage Rules:**
+- All h1/h2/h3 headings use `font-serif` (EB Garamond)
+- Body text defaults to `font-sans` (Merriweather)
+- `font-accent` (Dancing Script) for emotional moments: success pages, taglines, celebrations
+- Avoid corporate sharp fonts - stick to the warm fairytale aesthetic
+
 ## 🎯 Karpathy-Inspired Coding Principles
 
 ### 1. Think Before Coding

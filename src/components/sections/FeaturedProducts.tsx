@@ -67,7 +67,7 @@ export function FeaturedProducts({
     <div className={className}>
       {!hideTitle && (
         <div className="text-center mb-12">
-          <h2 className={`text-3xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-charcoal'}`}>
+          <h2 className={`text-3xl md:text-5xl font-serif font-bold mb-4 ${isDark ? 'text-white' : 'text-charcoal'}`}>
             {title}
           </h2>
           <p className={`text-lg md:text-xl max-w-2xl mx-auto ${isDark ? 'text-white/60' : 'text-charcoal/60'}`}>
@@ -105,7 +105,7 @@ export function FeaturedProducts({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-charcoal'}`}>Explore Our Collection</h3>
+            <h3 className={`text-xl font-serif font-semibold mb-2 ${isDark ? 'text-white' : 'text-charcoal'}`}>Explore Our Collection</h3>
             <p className={`max-w-md mx-auto mb-6 ${isDark ? 'text-white/60' : 'text-charcoal/60'}`}>
               Discover unique Australian opals and handcrafted jewelry pieces in our store.
             </p>
