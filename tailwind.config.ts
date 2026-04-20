@@ -232,6 +232,12 @@ const config: Config = {
   				'Georgia',
   				'serif'
   			],
+  			display: [
+  				'var(--font-serif)',
+  				'Playfair Display',
+  				'Georgia',
+  				'serif'
+  			],
   			accent: [
   				'var(--font-sans)',
   				'Montserrat',

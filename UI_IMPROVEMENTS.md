@@ -1,47 +1,257 @@
-# UI Cohesion Improvements - The Good Opal Co
+# The Good Opal Co - Comprehensive UI/UX Audit & Critical Fix Plan
+
+## 🚨 CRITICAL ISSUES (Fix Immediately Before Launch)
+
+**STATUS: MAJOR CREDIBILITY CRISIS DETECTED**
+This audit reveals severe trust and functionality issues that make the site unsuitable for live traffic. Several issues violate Australian Consumer Law and create legal liability.
 
 ## Overview
-Fix typography inconsistencies, improve color application, and enhance visual hierarchy to create a more professional and cohesive user experience.
+Complete audit of UI/UX reveals 22 critical issues including fake social proof (illegal), broken typography, missing navigation, fraudulent contact info, and inconsistent founder stories that destroy credibility for a luxury goods business.
 
-## Priority 1: Typography System Fix (Critical)
+## 🚨 CRITICAL ISSUE #1: Broken Typography Across Half the Site
+**Severity: HIGH - Site-breaking bug**
 
 ### Problem
-Font family conflicts causing inconsistent rendering:
-- `globals.css` sets `body { font-family: var(--font-inter) }`  
-- `--font-sans` in CSS variables points to Montserrat
-- Tailwind's `font-sans` class uses different font
-- Three font families loaded but inconsistent usage
+`font-display` class used in 17+ files but **NOT DEFINED** in Tailwind config. All headings using this class fall back to browser default fonts, completely breaking brand consistency on:
+- About page, Contact page, Account pages
+- All legal pages (Terms, Privacy, Cookies)
+- Shipping, Returns, Order Tracking pages
 
-### Solution
-1. **Standardize body font**: Choose either Inter or Montserrat as primary UI font
-2. **Reconcile CSS variables**: Ensure all font references point to same variables
-3. **Apply consistent font hierarchy**: Serif for display headlines, sans for UI/body
-4. **Add proper letter-spacing**: Tight spacing for large headings
+### Files Affected (Must Fix All):
+```bash
+src/app/(marketing)/about/page.tsx
+src/app/(marketing)/account/page.tsx  
+src/app/(marketing)/contact/page.tsx
+src/app/(marketing)/shipping/page.tsx
+src/app/(marketing)/returns/page.tsx
+src/app/(marketing)/order-tracking/page.tsx
+src/app/(marketing)/search/page.tsx
+src/app/(marketing)/legal/terms/page.tsx
+src/app/(marketing)/legal/privacy/page.tsx
+src/app/(marketing)/legal/cookies/page.tsx
+```
 
-### Files to modify:
-- `src/app/globals.css` - lines 101-104 font variables
-- `tailwind.config.ts` - font family configuration  
-- `src/styles/tokens.ts` - typography tokens if needed
-- Components using mixed font classes
-
-### Implementation:
-```css
-/* globals.css - standardize to Montserrat */
---font-sans: 'Montserrat', sans-serif;
---font-serif: 'Playfair Display', serif;
-
-body {
-  font-family: var(--font-sans); /* Remove --font-inter reference */
+### Fix Options:
+**Option A (Recommended):** Find/replace `font-display` → `font-serif`
+**Option B:** Add font-display to Tailwind config:
+```typescript
+// tailwind.config.ts
+fontFamily: {
+  display: ['var(--font-playfair)', 'serif'], // Same as serif
 }
 ```
 
-```typescript
-// Apply consistent hierarchy in components:
-// Display headings: font-serif text-4xl tracking-tight
-// Section headings: font-serif text-2xl  
-// Body text: font-sans text-base
-// UI elements: font-sans text-sm
+## 🚨 CRITICAL ISSUE #2: Missing Navigation on Trust Pages
+**Severity: HIGH - UX dead ends**
+
+### Problem
+About and Contact pages render **without Navigation component**. Users landing on these critical trust-building pages cannot navigate to the rest of the site.
+
+### Fix:
+Add `<Navigation />` to both pages:
+```tsx
+// src/app/(marketing)/about/page.tsx
+// src/app/(marketing)/contact/page.tsx
+import { Navigation } from '@/components/navigation/Navigation'
+
+export default function Page() {
+  return (
+    <div>
+      <Navigation />
+      {/* existing content */}
+    </div>
+  )
+}
 ```
+
+## 🚨 CRITICAL ISSUE #3: Fraudulent Contact Information
+**Severity: HIGH - Destroys credibility immediately**
+
+### Problems:
+1. **Fake phone number**: `+61 2 XXXX XXXX` (literal placeholder text)
+2. **Wrong email domain**: `thegoodpalco.com` (missing 'o' in opalco)
+3. **Inconsistent emails**: Contact page, FAQ page, success page all use different addresses
+
+### Fix:
+Replace ALL contact info with real, consistent details:
+```typescript
+// lib/constants.ts
+export const CONTACT_INFO = {
+  email: 'hello@thegoodopalco.com', // Fix domain
+  phone: '+61 2 9XXX XXXX', // MUST be real number
+  supportEmail: 'support@thegoodopalco.com'
+}
+```
+
+## 🚨 CRITICAL ISSUE #4: Illegal Fake Social Proof
+**Severity: HIGH - Legal liability under Australian Consumer Law**
+
+### Problem:
+Product pages use `Math.random()` to generate fake metrics:
+```typescript
+// ILLEGAL - Remove immediately
+const viewCount = Math.floor(Math.random() * 20) + 5
+const lastSoldDaysAgo = Math.floor(Math.random() * 3) + 1
+```
+Numbers change on every page reload. This is **false advertising**.
+
+### Fix:
+**Remove entirely** or connect to real analytics. Do NOT use fake metrics.
+
+## 🚨 CRITICAL ISSUE #5: Contradictory Founder Stories
+**Severity: HIGH - Credibility crisis**
+
+### Problem:
+About page has **3 conflicting narratives**:
+- Metadata: "Family-owned since 2015"
+- Body: "Founded in 2020 by Stephanie Caruana" 
+- Team section: "Sarah and Michael Henderson" as founders
+
+### Fix:
+Choose ONE story and update all references consistently.
+
+## 🚨 CRITICAL ISSUE #6: Fake Testimonials (Illegal)
+**Severity: HIGH - ACL violation**
+
+### Problem:
+Hardcoded testimonials with invented names on:
+- Homepage: Emma Thompson, Marcus Chen, Sophie Martin
+- Services page: Sarah M., David L., Emma K.
+- Courses: Various fake ratings and counts
+
+### Fix:
+**Remove all fake testimonials** immediately. Replace with real reviews or remove sections entirely.
+
+## 🚨 CRITICAL ISSUE #7: Missing Images = Broken About Page
+**Severity: HIGH - Professional appearance destroyed**
+
+### Problem:
+About page references 5 images that don't exist:
+- `/images/about-hero.jpg`
+- `/images/founders.jpg`
+- `/images/team-sarah.jpg`, `/images/team-michael.jpg`, `/images/team-emma.jpg`
+
+Result: Broken image placeholders across entire About page.
+
+### Fix:
+Add real images to `public/images/` or use professional placeholder service with proper alt text.
+
+## 🔴 HIGH PRIORITY FIXES
+
+### Issue #8: Outdated Course Content
+Course dates hardcoded as "March 2024" - **2+ years old**. Makes business appear abandoned.
+
+### Issue #9: Incomplete Product Gallery  
+Thumbnail images render but clicking does nothing. Incomplete implementation.
+
+### Issue #10: Admin URL Exposed
+Blog empty state shows link to `/admin/collections/posts` - exposes internal admin interface.
+
+### Issue #11: No Shipping Address Collection
+Checkout only collects name/email before Stripe redirect. No shipping address = customer confusion.
+
+## 🟡 MEDIUM PRIORITY IMPROVEMENTS
+
+### Navigation Inconsistencies
+- Different pages use different logo props (logo object vs logoText)
+- About/Contact missing from navigation menu
+- Category filters use inconsistent slugs
+
+### UX Issues  
+- "Clear Cart" has no confirmation dialog
+- Account page links to non-existent sub-pages
+- Footer privacy/terms links may 404
+
+### Professional Polish
+- Contact map is grey placeholder
+- Courses use mailto instead of booking system
+- No cross-sell in cart
+
+## 📋 IMPLEMENTATION PRIORITY ORDER
+
+### **WEEK 1 - CRITICAL (Before any marketing)**
+1. ✅ Fix font-display → font-serif across 17+ files
+2. ✅ Add Navigation to About and Contact pages  
+3. ✅ Replace fake phone number with real one
+4. ✅ Fix email domain typos consistently
+5. ✅ Remove Math.random() social proof entirely
+6. ✅ Choose one founder story and implement consistently
+7. ✅ Remove all fake testimonials
+8. ✅ Add missing About page images
+
+### **WEEK 2 - HIGH PRIORITY**  
+9. Update course dates to current
+10. Fix product gallery interactivity
+11. Remove admin URL from blog
+12. Add shipping address collection or clear messaging
+
+### **WEEK 3 - MEDIUM PRIORITY**
+13. Standardize navigation across all pages
+14. Add About/Contact to main navigation
+15. Add cart confirmation dialog
+16. Fix footer routing issues
+
+### **WEEK 4 - POLISH**
+17. Add order tracking integration
+18. Implement real booking system
+19. Add cross-sell to cart
+20. Professional contact map
+
+## 🎯 SPECIFIC CODE CHANGES REQUIRED
+
+### Typography Fix (Most Critical):
+```bash
+# Find and replace across entire codebase:
+find src -name "*.tsx" -exec sed -i '' 's/font-display/font-serif/g' {} \;
+```
+
+### Contact Information Standardization:
+```typescript
+// lib/constants.ts
+export const CONTACT_INFO = {
+  email: 'hello@thegoodopalco.com',
+  phone: '+61 2 9XXX XXXX', // MUST BE REAL
+  address: 'Sydney, NSW, Australia',
+  supportEmail: 'support@thegoodopalco.com'
+}
+```
+
+### Remove Fake Social Proof:
+```typescript
+// In src/app/(marketing)/store/[slug]/page.tsx
+// DELETE THESE LINES:
+// const viewCount = Math.floor(Math.random() * 20) + 5
+// const lastSoldDaysAgo = Math.floor(Math.random() * 3) + 1
+```
+
+### Add Missing Navigation:
+```tsx
+// src/app/(marketing)/about/page.tsx
+// src/app/(marketing)/contact/page.tsx
+import { Navigation } from '@/components/navigation/Navigation'
+
+export default function Page() {
+  return (
+    <>
+      <Navigation />
+      {/* existing content */}
+    </>
+  )
+}
+```
+
+## ⚠️ LEGAL & COMPLIANCE WARNINGS
+
+1. **Fake testimonials violate Australian Consumer Law**
+2. **Math.random() social proof is false advertising** 
+3. **Inconsistent founder stories damage credibility for luxury goods**
+4. **Missing contact info makes business appear illegitimate**
+
+**RECOMMENDATION: Do NOT drive traffic to site until Critical issues 1-8 are resolved.**
+
+---
+
+## 🎨 ORIGINAL UI COHESION IMPROVEMENTS (Lower Priority)
 
 ## Priority 2: Color Application Refinement
 
