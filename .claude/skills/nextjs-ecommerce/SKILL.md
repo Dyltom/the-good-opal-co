@@ -1,13 +1,8 @@
 ---
-name: Next.js E-commerce
-description: Specialized knowledge for building e-commerce features in Next.js 15 with Payload CMS and Stripe
-triggers:
-  - store
-  - cart
-  - checkout
-  - product
-  - order
-  - payment
+name: nextjs-ecommerce
+description: Specialized knowledge for building e-commerce features in Next.js 15 with Payload CMS and Stripe. Use when implementing store, cart, checkout, product, order, or payment features.
+when_to_use: Triggered by mentions of store, cart, checkout, products, Stripe, orders, Payload CMS, pricing, inventory, or webhooks.
+user-invocable: false
   - stripe
 ---
 
