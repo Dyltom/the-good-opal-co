@@ -5,7 +5,7 @@ import { getPayload } from '@/lib/payload'
 import { CollectionJsonLd } from '@/components/seo'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Container } from '@/components/layout'
-import { PremiumStoreContent } from './PremiumStoreContent'
+import { StoreContent } from './store-content'
 
 /**
  * Store Page Metadata
@@ -161,7 +161,7 @@ export default async function StorePage() {
             {/* Products Section */}
             <section id="products" className="bg-white">
               <Suspense fallback={<ProductGridSkeleton count={12} />}>
-                <PremiumStoreContent products={transformedProducts} />
+                <StoreContent products={transformedProducts} />
               </Suspense>
             </section>
 

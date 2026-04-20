@@ -33,12 +33,12 @@ export function OrganizationJsonLd() {
     url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co',
     logo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'}/logo.png`,
     sameAs: [
-      'https://instagram.com/thegoodopalco',
-      'https://facebook.com/thegoodopalco',
+      'https://instagram.com/goodopalco',
+      'https://facebook.com/goodopalco',
     ],
     contactPoint: {
       '@type': 'ContactPoint',
-      email: 'support@thegoodopal.co',
+      email: 'thegoodopalco@gmail.com',
       contactType: 'customer service',
     },
     address: {

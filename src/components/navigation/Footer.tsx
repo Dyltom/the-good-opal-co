@@ -71,9 +71,9 @@ const defaultLinks = [
 ]
 
 const defaultSocial: SocialLink[] = [
-  { platform: 'instagram', url: 'https://instagram.com/thegoodopalco', label: 'Instagram' },
-  { platform: 'facebook', url: 'https://facebook.com/thegoodopalco', label: 'Facebook' },
-  { platform: 'tiktok', url: 'https://tiktok.com/@thegoodopalco', label: 'TikTok' },
+  { platform: 'instagram', url: 'https://instagram.com/goodopalco', label: 'Instagram' },
+  { platform: 'facebook', url: 'https://facebook.com/goodopalco', label: 'Facebook' },
+  { platform: 'tiktok', url: 'https://tiktok.com/@goodopalco', label: 'TikTok' },
 ]
 
 /**
@@ -128,8 +128,8 @@ export function Footer({
                     </div>
                   ) : null}
                   <div>
-                    <span className="text-2xl font-semibold tracking-tight">{logoText}</span>
-                    <span className="block text-xs tracking-wider uppercase text-white/50">Australian Opals</span>
+                    <span className="font-serif text-2xl font-semibold tracking-tight">{logoText}</span>
+                    <span className="font-accent block text-xs tracking-wider uppercase text-white/50">Australian Opals</span>
                   </div>
                 </Link>
                 <p className="text-white/60 mb-8 max-w-md leading-relaxed">{description}</p>
@@ -155,7 +155,7 @@ export function Footer({
 
               {/* Newsletter Column */}
               <div className="lg:text-right">
-                <h3 className="text-lg font-semibold mb-2">Stay in the Loop</h3>
+                <h3 className="font-serif text-lg font-semibold mb-2">Stay in the Loop</h3>
                 <p className="text-white/60 mb-6">
                   Subscribe for new arrivals, exclusive offers, and opal care tips.
                 </p>

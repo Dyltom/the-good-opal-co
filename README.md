@@ -141,8 +141,8 @@ NEXT_PUBLIC_BASE_DOMAIN=localhost:3000
 
 # Email (Resend)
 RESEND_API_KEY=re_xxxxxxxxxxxx
-EMAIL_FROM=noreply@thegoodopal.co
-CONTACT_EMAIL=contact@thegoodopal.co
+EMAIL_FROM=noreply@goodopalco.com
+CONTACT_EMAIL=thegoodopalco@gmail.com
 
 # Stripe (Ecommerce)
 STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxx

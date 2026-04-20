@@ -27,6 +27,29 @@ interface ProductHeroProps {
 
 export function ProductHero({ products }: ProductHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [scrollY, setScrollY] = useState(0)
+  const [imageLoading, setImageLoading] = useState(true)
+  const [reducedMotion, setReducedMotion] = useState(false)
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReducedMotion(mediaQuery.matches)
+
+    const handleChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  // Parallax effect for background
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -40,10 +63,12 @@ export function ProductHero({ products }: ProductHeroProps) {
   }, [products.length])
 
   const goToPrevious = () => {
+    setImageLoading(true)
     setCurrentIndex((prev) => (prev - 1 + products.length) % products.length)
   }
 
   const goToNext = () => {
+    setImageLoading(true)
     setCurrentIndex((prev) => (prev + 1) % products.length)
   }
 
@@ -54,7 +79,11 @@ export function ProductHero({ products }: ProductHeroProps) {
   const currentProduct = products[currentIndex]
 
   return (
-    <section className="relative min-h-screen bg-black-rich overflow-hidden">
+    <section className="relative bg-black-rich overflow-hidden pt-[84px]">
+      {/* Screen reader announcement for slide changes */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {currentProduct && `Now showing ${currentProduct.name}, ${currentIndex + 1} of ${products.length}`}
+      </div>
       {/* Background texture - subtle opal pattern */}
       <div className="absolute inset-0 opacity-10">
         <div
@@ -65,44 +94,50 @@ export function ProductHero({ products }: ProductHeroProps) {
         />
       </div>
 
-      {/* Gradient overlay */}
+      {/* Gradient overlay with parallax */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-opal-electric/20 to-transparent blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-fire-pink/20 to-transparent blur-3xl" />
+        <div
+          className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-opal-electric/20 to-transparent blur-3xl transition-transform duration-0"
+          style={{ transform: reducedMotion ? 'none' : `translateY(${scrollY * 0.3}px)` }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-fire-pink/20 to-transparent blur-3xl transition-transform duration-0"
+          style={{ transform: reducedMotion ? 'none' : `translateY(${scrollY * -0.2}px)` }}
+        />
       </div>
 
-      <div className="container relative z-10 min-h-screen flex items-center py-20">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center w-full">
+      <div className="container relative z-10 py-8 sm:py-12 md:py-16 lg:py-20">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center w-full">
           {/* Left Content */}
           <div className="order-2 lg:order-1 text-center lg:text-left">
             {/* Limited Time Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-fire-pink to-fire-coral text-white rounded-full mb-8 shadow-lg"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-fire-pink to-fire-coral text-white rounded-full mb-6 text-sm shadow-lg"
             >
-              <Sparkles className="w-5 h-5" />
-              <span className="font-semibold">FLASH SALE: Up to 25% OFF + Free Express Shipping</span>
-              <Sparkles className="w-5 h-5" />
+              <Sparkles className="w-4 h-4" />
+              <span className="font-medium">Limited Time: Up to 25% OFF</span>
+              <Sparkles className="w-4 h-4" />
             </motion.div>
 
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="font-serif text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-6 leading-tight"
+              className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 leading-tight"
             >
               Authentic Australian
-              <span className="block text-gradient-prismatic">Opal Jewelry</span>
+              <span className="block text-gradient-prismatic">Opal Jewellery</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl md:text-2xl text-white/80 max-w-2xl mb-8"
+              className="text-lg md:text-xl text-white/80 max-w-xl mb-8"
             >
-              From Lightning Ridge to your jewelry box. Each piece handcrafted, ethically sourced, and
+              From Lightning Ridge to your jewellery box. Each piece handcrafted, ethically sourced, and
               absolutely breathtaking.
             </motion.p>
 
@@ -111,21 +146,21 @@ export function ProductHero({ products }: ProductHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex justify-center lg:justify-start gap-8 mb-12"
+              className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 mb-8"
             >
               <div className="text-center lg:text-left">
-                <p className="text-4xl font-bold text-white">15K+</p>
-                <p className="text-base text-white/60 mt-1">Happy Customers</p>
+                <p className="font-accent text-2xl font-bold text-white">15K+</p>
+                <p className="font-sans text-xs text-white/60">Happy Customers</p>
               </div>
-              <div className="h-14 w-px bg-white/20" />
+              <div className="hidden sm:block h-10 w-px bg-white/20" />
               <div className="text-center lg:text-left">
-                <p className="text-4xl font-bold text-white">4.9★</p>
-                <p className="text-base text-white/60 mt-1">Average Rating</p>
+                <p className="font-accent text-2xl font-bold text-white">4.9★</p>
+                <p className="font-sans text-xs text-white/60">Average Rating</p>
               </div>
-              <div className="h-14 w-px bg-white/20" />
+              <div className="hidden sm:block h-10 w-px bg-white/20" />
               <div className="text-center lg:text-left">
-                <p className="text-4xl font-bold text-white">100%</p>
-                <p className="text-base text-white/60 mt-1">Authentic</p>
+                <p className="font-accent text-2xl font-bold text-white">100%</p>
+                <p className="font-sans text-xs text-white/60">Authentic</p>
               </div>
             </motion.div>
 
@@ -136,16 +171,16 @@ export function ProductHero({ products }: ProductHeroProps) {
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
               <Button
-                size="xl"
-                className="px-12 py-6 text-lg shadow-2xl hover:shadow-3xl"
+                size="lg"
+                className="px-8 py-3 shadow-2xl hover:shadow-3xl"
                 asChild
               >
                 <Link href="/store">Shop Collection</Link>
               </Button>
               <Button
-                size="xl"
+                size="lg"
                 variant="outline"
-                className="px-12 py-6 text-lg bg-white/10 text-white border-white/20 hover:bg-white/20"
+                className="px-8 py-3 bg-white/10 text-white border-white/20 hover:bg-white/20"
                 asChild
               >
                 <Link href="/blog">Learn More</Link>
@@ -155,7 +190,7 @@ export function ProductHero({ products }: ProductHeroProps) {
 
           {/* Right Product Showcase */}
           <div className="order-1 lg:order-2 relative">
-            <div className="relative aspect-[4/5] max-w-lg mx-auto">
+            <div className="relative aspect-[4/5] max-w-sm mx-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentProduct.id}
@@ -170,36 +205,44 @@ export function ProductHero({ products }: ProductHeroProps) {
                     className="block relative w-full h-full group"
                   >
                     {/* Product Card */}
-                    <div className="relative w-full h-full bg-white rounded-3xl overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                    <div className="relative w-full h-full bg-white rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(0,180,216,0.3)] transition-all duration-300 group">
                       {/* Badge */}
-                      <div className="absolute top-6 left-6 z-20">
-                        <div className="px-5 py-2.5 bg-gradient-to-r from-fire-pink to-fire-coral text-white text-base font-bold rounded-full shadow-lg">
+                      <div className="absolute top-4 left-4 z-20">
+                        <div className="px-4 py-2 bg-gradient-to-r from-fire-pink to-fire-coral text-white text-sm font-bold rounded-full shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
                           {currentProduct.badge}
                         </div>
                       </div>
 
                       {/* Product Image */}
                       <div className="relative h-3/5 overflow-hidden bg-gray-100">
+                        {imageLoading && (
+                          <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 animate-pulse" />
+                        )}
                         <Image
                           src={currentProduct.image}
                           alt={currentProduct.name}
                           fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          className={`object-cover group-hover:scale-110 transition-transform duration-500 ${
+                            imageLoading ? 'opacity-0' : 'opacity-100'
+                          }`}
                           sizes="(max-width: 768px) 100vw, 50vw"
                           priority
+                          onLoad={() => setImageLoading(false)}
+                          placeholder="blur"
+                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                         />
                       </div>
 
                       {/* Product Info */}
-                      <div className="p-8">
-                        <h3 className="text-2xl font-bold text-charcoal mb-4 line-clamp-2">
+                      <div className="p-6">
+                        <h3 className="text-lg font-bold text-charcoal mb-3 line-clamp-2">
                           {currentProduct.name}
                         </h3>
 
                         {/* Rating & Sold */}
-                        <div className="flex items-center gap-4 mb-4 text-base">
+                        <div className="flex items-center gap-3 mb-3 text-sm">
                           <div className="flex items-center gap-1">
-                            <Star className="w-5 h-5 fill-current text-opal-gold" />
+                            <Star className="w-4 h-4 fill-current text-opal-gold" />
                             <span className="text-charcoal/70">{currentProduct.rating.toFixed(1)}</span>
                           </div>
                           <span className="text-charcoal/50">•</span>
@@ -207,10 +250,10 @@ export function ProductHero({ products }: ProductHeroProps) {
                         </div>
 
                         {/* Price */}
-                        <div className="flex items-baseline gap-4">
-                          <span className="text-3xl font-bold text-charcoal">{currentProduct.price}</span>
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-2xl font-bold text-charcoal">{currentProduct.price}</span>
                           {currentProduct.originalPrice && (
-                            <span className="text-xl text-charcoal/50 line-through">
+                            <span className="text-lg text-charcoal/50 line-through">
                               {currentProduct.originalPrice}
                             </span>
                           )}
@@ -226,24 +269,24 @@ export function ProductHero({ products }: ProductHeroProps) {
                 <>
                   <button
                     onClick={goToPrevious}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich transition-all duration-300 group"
                     aria-label="Previous product"
                   >
-                    <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
+                    <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                   </button>
                   <button
                     onClick={goToNext}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich transition-all duration-300 group"
                     aria-label="Next product"
                   >
-                    <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                   </button>
                 </>
               )}
 
               {/* Product Indicators */}
               {products.length > 1 && (
-                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex gap-2">
+                <div className="flex justify-center gap-2 mt-6">
                   {products.map((_, index) => (
                     <button
                       key={index}
@@ -264,12 +307,12 @@ export function ProductHero({ products }: ProductHeroProps) {
       </div>
 
       {/* Bottom Trust Badges */}
-      <div className="absolute bottom-8 left-0 right-0">
+      <div className="relative pb-8 pt-6">
         <div className="container">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -278,11 +321,11 @@ export function ProductHero({ products }: ProductHeroProps) {
                   />
                 </svg>
               </div>
-              <p className="text-base text-white/80">100% Authentic</p>
+              <p className="text-sm text-white/80">100% Authentic</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -291,11 +334,11 @@ export function ProductHero({ products }: ProductHeroProps) {
                   />
                 </svg>
               </div>
-              <p className="text-base text-white/80">Free Express Shipping</p>
+              <p className="text-sm text-white/80">Free Express Shipping</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -304,11 +347,11 @@ export function ProductHero({ products }: ProductHeroProps) {
                   />
                 </svg>
               </div>
-              <p className="text-base text-white/80">30-Day Returns</p>
+              <p className="text-sm text-white/80">30-Day Returns</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -317,7 +360,7 @@ export function ProductHero({ products }: ProductHeroProps) {
                   />
                 </svg>
               </div>
-              <p className="text-base text-white/80">Secure Payment</p>
+              <p className="text-sm text-white/80">Secure Payment</p>
             </div>
           </div>
         </div>

@@ -43,7 +43,7 @@ export class CategoryRelatedProductStrategy implements RelatedProductStrategy {
           },
           {
             status: {
-              equals: 'active'
+              equals: 'published'
             }
           },
           {
@@ -89,7 +89,7 @@ export class TagsRelatedProductStrategy implements RelatedProductStrategy {
           },
           {
             status: {
-              equals: 'active'
+              equals: 'published'
             }
           },
           {
@@ -141,7 +141,7 @@ export class PriceRangeRelatedProductStrategy implements RelatedProductStrategy 
           },
           {
             status: {
-              equals: 'active'
+              equals: 'published'
             }
           },
           {

@@ -269,7 +269,7 @@ export function ProductCard({
           <div className="p-4">
             <Link href={`/store/${product.slug}`}>
               <h3 className={cn(
-                "text-base font-medium text-gray-900 mb-1 hover:text-opal-electric-accessible transition-colors",
+                "font-serif text-base font-medium text-gray-900 mb-1 hover:text-opal-electric-accessible transition-colors",
                 !isAvailable && "text-gray-400"
               )}>
                 {product.name}
@@ -288,7 +288,7 @@ export function ProductCard({
             <div className="flex items-end justify-between">
               {isAvailable ? (
                 <div>
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="font-sans text-lg font-semibold text-gray-900">
                     {formatCurrency(product.price, 'AUD')}
                   </span>
                   {product.compareAtPrice && product.compareAtPrice > product.price && (
@@ -323,7 +323,7 @@ export function ProductCard({
               {isAvailable ? (
                 <div>
                   <span className={cn(
-                    "text-xl font-semibold",
+                    "font-sans text-xl font-semibold",
                     darkBackground ? "text-white" : "text-charcoal"
                   )}>
                     {formatCurrency(product.price, 'AUD')}

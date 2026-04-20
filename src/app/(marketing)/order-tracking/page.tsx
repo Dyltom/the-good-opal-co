@@ -40,10 +40,10 @@ export default function OrderTrackingPage() {
             <p className="text-sm text-gray-600">
               Contact our support team at{' '}
               <a
-                href="mailto:support@thegoodpalco.com"
+                href="mailto:thegoodopalco@gmail.com"
                 className="text-opal-electric-accessible hover:underline"
               >
-                support@thegoodpalco.com
+                thegoodopalco@gmail.com
               </a>
             </p>
           </div>

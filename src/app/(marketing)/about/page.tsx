@@ -54,8 +54,8 @@ export default function AboutPage() {
               Treasures from the Australian Outback
             </h2>
             <p className="text-lg text-content leading-relaxed">
-              The Good Opal Co is more than just a jewelry company—we're custodians of nature's most captivating gemstones.
-              Our mission is to share the extraordinary beauty of Australian opals with collectors and jewelry lovers worldwide,
+              The Good Opal Co is more than just a jewellery company—we're custodians of nature's most captivating gemstones.
+              Our mission is to share the extraordinary beauty of Australian opals with collectors and jewellery lovers worldwide,
               while maintaining the highest standards of quality, authenticity, and ethical sourcing.
             </p>
           </div>
@@ -78,9 +78,9 @@ export default function AboutPage() {
               <div className="w-16 h-16 bg-fire-pink/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="w-8 h-8 text-fire-pink" />
               </div>
-              <h3 className="font-semibold text-charcoal text-xl mb-2">Industry Recognition</h3>
+              <h3 className="font-semibold text-charcoal text-xl mb-2">Quality Commitment</h3>
               <p className="text-content">
-                Member of the Australian Opal Association and recognized for excellence in gemstone quality.
+                Recognized for our commitment to excellence in sourcing and crafting quality Australian opals.
               </p>
             </div>
 
@@ -90,7 +90,7 @@ export default function AboutPage() {
               </div>
               <h3 className="font-semibold text-charcoal text-xl mb-2">Customer First</h3>
               <p className="text-content">
-                Over 5,000 satisfied customers worldwide with a 98% satisfaction rate and lifetime support.
+                Dedicated to providing exceptional service with lifetime support for every purchase.
               </p>
             </div>
           </div>
@@ -105,18 +105,16 @@ export default function AboutPage() {
               </h2>
               <div className="prose prose-lg">
                 <p className="text-content mb-4">
-                  Founded in 2015 by siblings Sarah and Michael Henderson, The Good Opal Co began as a small family
-                  venture born from a lifelong fascination with Australia's national gemstone.
+                  Founded in 2020 by Stephanie Caruana, The Good Opal Co was born from a genuine passion for
+                  Australia's national gemstone and a commitment to making these beautiful stones accessible to everyone.
                 </p>
                 <p className="text-content mb-4">
-                  Growing up in Lightning Ridge, the opal capital of Australia, we spent our childhood surrounded
-                  by miners, cutters, and the incredible stories behind each stone. Our father, a third-generation
-                  opal miner, taught us to recognize quality and appreciate the unique character of every opal.
+                  Our mission is simple: to source authentic Australian opals directly from ethical miners and
+                  handcraft each piece from start to finish, ensuring quality and affordability go hand in hand.
                 </p>
                 <p className="text-content mb-4">
-                  What started as selling a few pieces at local markets has grown into a trusted international
-                  business, but our values remain unchanged: quality over quantity, transparency in every transaction,
-                  and sharing our genuine passion for these remarkable gemstones.
+                  What sets us apart is our dedication to transparency and ethical sourcing. We believe everyone
+                  should be able to own a piece of Australia's natural beauty without compromising on quality or ethics.
                 </p>
                 <p className="text-content">
                   Today, we work directly with ethical miners across Australia's opal fields, ensuring fair prices

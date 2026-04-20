@@ -1,9 +1,31 @@
 import '../globals.css'
+import { Inter, Playfair_Display, Montserrat } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
-import { SkipNavigation } from '@/components/SkipNavigation'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { GoogleAnalyticsProvider } from '@/components/analytics/GoogleAnalytics'
+
+// Self-hosted via next/font — no external CDN request, optimal loading
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const playfairDisplay = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-serif',
+  display: 'swap',
+})
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-sans',
+  display: 'swap',
+})
 
 /**
  * Marketing Layout
@@ -14,6 +36,10 @@ import { GoogleAnalyticsProvider } from '@/components/analytics/GoogleAnalytics'
  * NOTE: The (payload) route group has its own layout that does NOT
  * import globals.css to avoid conflicts with Payload admin styles.
  *
+ * Fonts are self-hosted via next/font/google (no CDN dependency).
+ * CSS variables --font-sans, --font-serif, --font-inter are injected
+ * onto <html> and consumed by the design tokens in globals.css.
+ *
  * Cart management now uses cookie-based storage with Server Actions,
  * eliminating the need for a CartProvider context.
  */
@@ -23,7 +49,10 @@ export default function MarketingLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${inter.variable} ${playfairDisplay.variable} ${montserrat.variable}`}
+    >
       <head>
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -31,7 +60,6 @@ export default function MarketingLayout({
         <link rel="shortcut icon" href="/favicon.png" />
       </head>
       <body suppressHydrationWarning>
-        <SkipNavigation />
         {children}
         <Toaster />
         <Analytics />

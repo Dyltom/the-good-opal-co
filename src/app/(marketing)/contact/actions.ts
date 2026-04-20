@@ -26,7 +26,7 @@ export async function sendContactEmail(data: ContactFormData) {
     // Send email to support team
     const { error: supportError } = await resend.emails.send({
       from: 'The Good Opal Co <noreply@thegoodpalco.com>',
-      to: process.env.CONTACT_EMAIL || 'support@thegoodpalco.com',
+      to: process.env.CONTACT_EMAIL || 'thegoodopalco@gmail.com',
       replyTo: validated.email,
       subject: `[Contact Form] ${validated.subject}`,
       html: `

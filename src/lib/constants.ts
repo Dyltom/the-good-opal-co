@@ -8,7 +8,7 @@
  */
 export const APP_NAME = 'The Good Opal Co' as const
 export const APP_DESCRIPTION =
-  'Premium Australian opal jewelry - authentic opals that don\'t cost the earth' as const
+  'Premium Australian opal jewellery - authentic opals that don\'t cost the earth' as const
 export const APP_URL = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'
 
 /**
@@ -44,9 +44,9 @@ export const DEFAULT_CURRENCY = 'USD' as const
  */
 export const DEFAULT_SEO = {
   titleTemplate: '%s | The Good Opal Co',
-  defaultTitle: 'The Good Opal Co - Premium Australian Opal Jewelry',
+  defaultTitle: 'The Good Opal Co - Premium Australian Opal Jewellery',
   description:
-    'Discover authentic Australian opal jewelry including rings, necklaces, earrings and raw opals. Premium quality opals that don\'t cost the earth.',
+    'Discover authentic Australian opal jewellery including rings, necklaces, earrings and raw opals. Premium quality opals that don\'t cost the earth.',
   openGraph: {
     type: 'website',
     locale: DEFAULT_LOCALE,

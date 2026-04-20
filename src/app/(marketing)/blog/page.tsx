@@ -27,7 +27,7 @@ export default async function BlogPage({
   const { docs: posts, totalPages } = await payload.find({
     collection: 'posts',
     where: {
-      status: { equals: 'published' },
+      _status: { equals: 'published' },
       ...(categorySlug && {
         'categories.slug': { equals: categorySlug },
       }),

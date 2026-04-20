@@ -56,7 +56,7 @@ export interface Product {
   id: string
   name: string
   slug: string
-  description?: string
+  description?: any // RichText field
   price: number
   compareAtPrice?: number
   stock: number
@@ -64,7 +64,7 @@ export interface Product {
   images?: (string | Media)[]
   category?: string | Category
   tags?: string[]
-  status: 'active' | 'draft' | 'archived'
+  status: 'published' | 'draft' | 'archived'
   featured?: boolean
   createdAt: string
   updatedAt: string

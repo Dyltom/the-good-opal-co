@@ -242,7 +242,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                     <table cellPadding="0" cellSpacing="0" style={{ margin: '0 auto' }}>
                       <tr>
                         <td style={{ paddingRight: '15px' }}>
-                          <a href="mailto:support@thegoodpalco.com" style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#1a1a1a', color: '#ffffff', textDecoration: 'none', borderRadius: '4px', fontSize: '14px' }}>
+                          <a href="mailto:thegoodopalco@gmail.com" style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#1a1a1a', color: '#ffffff', textDecoration: 'none', borderRadius: '4px', fontSize: '14px' }}>
                             Email Support
                           </a>
                         </td>

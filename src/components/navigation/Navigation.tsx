@@ -101,13 +101,13 @@ export function Navigation({
               ) : null}
               <div className="flex flex-col">
                 <span className={cn(
-                  'text-lg font-semibold tracking-tight transition-colors duration-300',
+                  'font-serif text-lg font-semibold tracking-tight transition-colors duration-300',
                   onDarkBackground ? 'text-white' : 'text-charcoal'
                 )}>
                   {brandName}
                 </span>
                 <span className={cn(
-                  'text-xs tracking-wider uppercase transition-colors duration-300',
+                  'font-accent text-xs tracking-wider uppercase transition-colors duration-300',
                   onDarkBackground ? 'text-white/60' : 'text-charcoal-light'
                 )}>
                   Australian Opals

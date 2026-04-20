@@ -30,9 +30,9 @@ const FeaturedProducts = dynamic(
 )
 
 export const metadata: Metadata = {
-  title: 'The Good Opal Co - Premium Australian Opal Jewelry',
+  title: 'The Good Opal Co - Premium Australian Opal Jewellery',
   description:
-    "Discover authentic Australian opal jewelry including rings, necklaces, earrings and raw opals. Premium quality opals that don't cost the earth.",
+    "Discover authentic Australian opal jewellery including rings, necklaces, earrings and raw opals. Premium quality opals that don't cost the earth.",
 }
 
 export default function HomePage() {
@@ -74,7 +74,7 @@ export default function HomePage() {
                   Shop by <span className="text-gradient-prismatic">Category</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-charcoal/70">
-                  Explore our curated collection of Australian opals, from raw stones to exquisite jewelry pieces
+                  Explore our curated collection of Australian opals, from raw stones to exquisite jewellery pieces
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 md:gap-8 lg:grid-cols-5">
