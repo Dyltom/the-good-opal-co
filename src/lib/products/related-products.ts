@@ -33,7 +33,7 @@ export class CategoryRelatedProductStrategy implements RelatedProductStrategy {
         and: [
           {
             'category.value': {
-              equals: category.value.id
+              equals: typeof category.value === 'string' ? category.value : category.value.id
             }
           },
           {

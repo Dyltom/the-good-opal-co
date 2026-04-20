@@ -56,7 +56,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   const { toast } = useToast()
 
   // Handle discount application
-  const handleDiscountApplied = (discount: DiscountApplication, totals: DiscountCalculationResult) => {
+  const handleDiscountApplied = (discount: DiscountApplication | null, totals: DiscountCalculationResult | null) => {
     setAppliedDiscount(discount)
     setDiscountedTotals(totals)
     if (discount) {
@@ -161,7 +161,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
 
         // Small delay for user feedback
         setTimeout(() => {
-          window.location.href = result.url
+          window.location.href = result.url!
         }, 500)
       } else {
         toast({
@@ -395,7 +395,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <div className="space-y-2 mb-6">
             <div className="flex justify-between text-sm">
               <span>Subtotal ({cart.itemCount} items)</span>
-              <span>{formatCurrency(discountedTotals?.subtotal || cart.total, 'AUD')}</span>
+              <span>{formatCurrency(discountedTotals?.finalSubtotal || cart.total, 'AUD')}</span>
             </div>
             {appliedDiscount && (
               <motion.div
@@ -405,7 +405,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                 className="flex justify-between text-sm text-green-600"
               >
                 <span>Discount ({appliedDiscount.code})</span>
-                <span>-{formatCurrency(discountedTotals?.discount || 0, 'AUD')}</span>
+                <span>-{formatCurrency(discountedTotals?.discountAmount || 0, 'AUD')}</span>
               </motion.div>
             )}
             <div className="flex justify-between text-sm">
@@ -421,7 +421,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                   exit={{ opacity: 0, y: 10 }}
                   className={shippingCost === 0 ? 'text-green-600 font-medium' : ''}
                 >
-                  {shippingCost === 0 ? 'FREE' : formatCurrency(discountedTotals?.shipping ?? shippingCost, 'AUD')}
+                  {shippingCost === 0 ? 'FREE' : formatCurrency(discountedTotals?.finalShipping ?? shippingCost, 'AUD')}
                 </motion.span>
               </AnimatePresence>
             </div>
@@ -443,7 +443,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.8, opacity: 0 }}
                 >
-                  {formatCurrency(discountedTotals?.total || orderTotal, 'AUD')}
+                  {formatCurrency(discountedTotals?.finalTotal || orderTotal, 'AUD')}
                 </motion.span>
               </AnimatePresence>
             </div>
