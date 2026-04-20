@@ -2,10 +2,13 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { HomeHero, TrustMarquee } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
+import { Container, Section } from '@/components/layout'
 import { Button } from '@/components/ui/button'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
+import { PageTransition } from '@/components/layout/PageTransition'
 import Link from 'next/link'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
+import { Gem, Crown, Sparkles, Wrench, GraduationCap } from 'lucide-react'
 
 // Lazy load heavy components
 const FeaturedProducts = dynamic(
@@ -42,42 +45,49 @@ export default function HomePage() {
       <OrganizationJsonLd />
       <WebsiteJsonLd />
 
-      <div className="flex flex-col bg-white">
-        <Navigation
-          logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-          items={[
-            { href: '/store', label: 'Shop' },
-            { href: '/blog', label: 'Blog' },
-            { href: '/courses', label: 'Courses' },
-            { href: '/about', label: 'About' },
-            { href: '/contact', label: 'Contact' },
-            { href: '/faq', label: 'FAQ' },
-          ]}
-          transparent
-        />
+      <PageTransition>
+        <div className="min-h-screen flex flex-col bg-white">
+          <Navigation
+            logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+            items={[
+              { href: '/store', label: 'Shop' },
+              { href: '/blog', label: 'Blog' },
+              { href: '/courses', label: 'Courses' },
+              { href: '/about', label: 'About' },
+              { href: '/contact', label: 'Contact' },
+              { href: '/faq', label: 'FAQ' },
+            ]}
+            transparent
+          />
 
-        <main id="main-content" tabIndex={-1}>
+          <main id="main-content" tabIndex={-1}>
           {/* Hero Section */}
           <HomeHero />
 
           {/* Shop by Category - Beautiful grid immediately after hero */}
-          <section className="relative bg-gradient-to-b from-white to-gray-50 py-16 lg:py-24 overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-opal-electric/5 blur-3xl" />
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-fire-pink/5 blur-3xl" />
+          <Section className="relative bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden py-16 lg:py-24">
+            {/* Magical sparkle effects */}
+            <div className="absolute inset-0">
+              <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
+              <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
+              <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
+              <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-opal-electric/5 blur-3xl" />
+              <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-fire-pink/5 blur-3xl" />
+            </div>
 
-            <div className="relative mx-auto max-w-screen-xl px-6">
-              <div className="mb-14 text-center">
-                <span className="mb-4 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-opal-electric">
-                  <span className="h-px w-12 bg-opal-electric"></span>
-                  Browse Collection
-                  <span className="h-px w-12 bg-opal-electric"></span>
+            <Container>
+              <div className="mb-14 text-center max-w-5xl mx-auto">
+                <span className="font-accent text-lg text-opal-electric mb-4 block">
+                  ✨ Discover Our Collection ✨
                 </span>
                 <h2 className="mb-6 font-serif text-4xl font-bold leading-tight text-charcoal md:text-5xl lg:text-6xl">
-                  Shop by <span className="text-opal-electric">Category</span>
+                  Shop by <span className="font-accent text-opal-electric">Category</span>
                 </h2>
-                <p className="mx-auto max-w-3xl text-xl text-charcoal/70">
+                <p className="mx-auto max-w-3xl text-xl text-charcoal/70 leading-relaxed">
                   Explore our curated collection of Australian opals, from raw stones to exquisite jewellery pieces
+                </p>
+                <p className="font-accent text-lg text-opal-electric/80 mt-2">
+                  ~ Each piece tells its own magical story ~
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 md:gap-8 lg:grid-cols-5">
@@ -95,8 +105,11 @@ export default function HomePage() {
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <Gem className="w-6 h-6 text-white/80" />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h3 className="mb-1.5 text-xl font-bold tracking-wide text-white">RAW OPALS</h3>
+                      <h3 className="mb-1.5 font-serif text-xl font-bold tracking-wide text-white">RAW OPALS</h3>
                       <span className="text-sm font-medium text-white/90">Uncut Gems</span>
                     </div>
                   </div>
@@ -116,8 +129,11 @@ export default function HomePage() {
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <Sparkles className="w-6 h-6 text-white/80" />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h3 className="mb-1.5 text-xl font-bold tracking-wide text-white">EARRINGS</h3>
+                      <h3 className="mb-1.5 font-serif text-xl font-bold tracking-wide text-white">EARRINGS</h3>
                       <span className="text-sm font-medium text-white/90">Handcrafted</span>
                     </div>
                   </div>
@@ -137,8 +153,11 @@ export default function HomePage() {
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute top-4 left-4">
+                      <Crown className="w-6 h-6 text-white/80" />
+                    </div>
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h3 className="mb-1.5 text-xl font-bold tracking-wide text-white">RINGS</h3>
+                      <h3 className="mb-1.5 font-serif text-xl font-bold tracking-wide text-white">RINGS</h3>
                       <span className="text-sm font-medium text-white/90">Unique Designs</span>
                     </div>
                   </div>
@@ -151,21 +170,9 @@ export default function HomePage() {
                 >
                   <div className="relative flex aspect-square flex-col items-center justify-center p-6">
                     <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform duration-300 group-hover:scale-110">
-                      <svg
-                        className="h-8 w-8 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 008 10.586V5L7 4z"
-                        />
-                      </svg>
+                      <Wrench className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="mb-1.5 text-center text-xl font-bold tracking-wide text-white">
+                    <h3 className="mb-1.5 text-center font-serif text-xl font-bold tracking-wide text-white">
                       SERVICES
                     </h3>
                     <span className="text-sm font-medium text-white/90">Repairs & Custom</span>
@@ -179,35 +186,23 @@ export default function HomePage() {
                 >
                   <div className="relative flex aspect-square flex-col items-center justify-center p-6">
                     <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform duration-300 group-hover:scale-110">
-                      <svg
-                        className="h-8 w-8 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                        />
-                      </svg>
+                      <GraduationCap className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="mb-1.5 text-center text-xl font-bold tracking-wide text-white">
+                    <h3 className="mb-1.5 text-center font-serif text-xl font-bold tracking-wide text-white">
                       COURSES
                     </h3>
                     <span className="text-sm font-medium text-white/90">Learn Opal Cutting</span>
                   </div>
                 </Link>
               </div>
-            </div>
-          </section>
+            </Container>
+          </Section>
 
           {/* Trust Marquee */}
           <TrustMarquee />
 
           {/* Latest Arrivals - Premium dark section */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-black-rich via-gray-900 to-black-rich py-24 lg:py-32">
+          <Section className="relative overflow-hidden bg-gradient-to-br from-black-rich via-gray-900 to-black-rich py-24 lg:py-32">
             {/* Enhanced background effects */}
             <div className="absolute inset-0">
               <div className="absolute left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-opal-electric/20 to-opal-deep/10 blur-3xl" />
@@ -222,18 +217,19 @@ export default function HomePage() {
               }} />
             </div>
 
-            <div className="relative z-10 mx-auto max-w-screen-xl px-6">
-              <div className="mb-14 text-center">
-                <span className="mb-6 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink">
-                  <span className="h-px w-16 bg-gradient-to-r from-transparent to-opal-electric"></span>
-                  New & Exclusive
-                  <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-pink"></span>
+            <Container className="relative z-10">
+              <div className="mb-14 text-center max-w-5xl mx-auto">
+                <span className="font-accent text-lg text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block">
+                  🌟 Fresh from our workshop 🌟
                 </span>
                 <h2 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl lg:text-7xl">
-                  Latest <span className="text-gradient-prismatic">Arrivals</span>
+                  Latest <span className="font-accent text-gradient-prismatic">Arrivals</span>
                 </h2>
-                <p className="mx-auto max-w-3xl text-xl text-white/80 font-light">
+                <p className="mx-auto max-w-3xl text-xl text-white/80 font-light leading-relaxed">
                   Fresh from our workshop - discover new masterpieces crafted with passion
+                </p>
+                <p className="font-accent text-lg text-white/60 mt-2">
+                  ~ Where dreams become reality ~
                 </p>
               </div>
 
@@ -258,25 +254,28 @@ export default function HomePage() {
                   </Link>
                 </Button>
               </div>
-            </div>
-          </section>
+            </Container>
+          </Section>
 
           {/* Handmade in Australia */}
-          <section className="overflow-hidden bg-white py-16 lg:py-24">
-            <div className="mx-auto max-w-screen-2xl">
+          <Section className="overflow-hidden bg-white py-16 lg:py-24">
+            <Container className="max-w-screen-2xl">
               <div className="grid items-center gap-12 lg:grid-cols-2">
                 {/* Content */}
-                <div className="order-2 px-6 lg:order-1 lg:pl-12">
-                  <span className="mb-4 block text-sm font-semibold uppercase tracking-wider text-opal-electric">
-                    Our Craft
+                <div className="order-2 lg:order-1 lg:pl-12">
+                  <span className="font-accent text-lg text-opal-electric mb-4 block">
+                    ✨ Our Craft ✨
                   </span>
                   <h2 className="mb-6 font-serif text-4xl font-bold leading-tight text-charcoal md:text-5xl lg:text-6xl">
-                    Handmade in <span className="text-opal-electric">Australia</span>
+                    Handmade in <span className="font-accent text-opal-electric">Australia</span>
                   </h2>
-                  <p className="mb-8 text-lg leading-relaxed text-charcoal/70 md:text-xl">
+                  <p className="mb-6 text-lg leading-relaxed text-charcoal/70 md:text-xl">
                     We source all our materials directly from Australian opal miners and handcraft
                     each piece from start to finish, offering our customers ethically sourced,
                     eco-conscious Australian opals at an exceptional price.
+                  </p>
+                  <p className="font-accent text-lg text-opal-electric/80 mb-8">
+                    ~ From the earth to your heart ~
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button size="lg" asChild>
@@ -289,7 +288,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Image Grid */}
-                <div className="order-1 px-6 lg:order-2 lg:pr-0">
+                <div className="order-1 lg:order-2 lg:pr-0">
                   <div className="grid grid-cols-2 gap-4">
                     <OptimizedImage
                       src="/api/media/file/20211104_234659-1-4.jpg"
@@ -310,8 +309,8 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
+            </Container>
+          </Section>
 
           {/* Customer Testimonials Section - Temporarily Disabled */}
           {/*
@@ -501,7 +500,8 @@ export default function HomePage() {
         </main>
 
         <Footer />
-      </div>
+        </div>
+      </PageTransition>
     </>
   )
 }

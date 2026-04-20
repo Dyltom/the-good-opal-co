@@ -44,13 +44,13 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
   {
     name: 'Custom Commissions',
     slug: 'custom-commissions',
-    description: 'Bespoke jewelry design',
+    description: 'Bespoke jewellery design',
     gradient: 'bg-gradient-to-br from-slate-600 via-slate-700 to-slate-800',
   },
 ]
 
 export const CATEGORY_FILTERS = [
-  { label: 'All Jewelry', value: 'all' },
+  { label: 'All Jewellery', value: 'all' },
   ...PRODUCT_CATEGORIES.map(cat => ({ label: cat.name, value: cat.slug })),
 ]
 
@@ -63,5 +63,5 @@ export function getCategoryGradient(categorySlug?: string): string {
 // Get category name by slug
 export function getCategoryName(categorySlug?: string): string {
   const category = PRODUCT_CATEGORIES.find(c => c.slug === categorySlug)
-  return category?.name || 'All Jewelry'
+  return category?.name || 'All Jewellery'
 }

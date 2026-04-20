@@ -26,7 +26,6 @@ export default function ContactPage() {
             { href: '/contact', label: 'Contact' },
             { href: '/faq', label: 'FAQ' },
           ]}
-          transparent
         />
 
         {/* Hero Section */}

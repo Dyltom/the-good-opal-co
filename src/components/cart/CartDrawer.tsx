@@ -18,6 +18,7 @@ import { CartItemSkeleton, InlineLoading } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import { formatCurrency } from '@/lib/utils'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
+import { Gem } from 'lucide-react'
 import type { Cart, CartItem } from '@/lib/cart'
 
 interface CartDrawerProps {
@@ -78,11 +79,18 @@ export function CartDrawer({ children, onCartUpdate }: CartDrawerProps) {
       <SheetTrigger asChild>
         {children}
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>
-            Shopping Cart {isLoading ? <InlineLoading text="" /> : `(${itemCount} items)`}
+      <SheetContent className="w-full sm:max-w-lg bg-gradient-to-br from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm border-l border-warm-grey/20">
+        <SheetHeader className="border-b border-warm-grey/20 pb-4 mb-6">
+          <SheetTitle className="font-serif text-2xl font-bold text-charcoal flex items-center gap-2">
+            <span className="font-accent text-opal-electric">✨</span>
+            Your Magical Cart
+            <span className="font-accent text-opal-electric">✨</span>
           </SheetTitle>
+          {!isLoading && (
+            <p className="font-accent text-sm text-opal-electric/70 mt-1">
+              ~ {itemCount === 0 ? 'Awaiting treasures' : `${itemCount} ${itemCount === 1 ? 'treasure' : 'treasures'} gathered`} ~
+            </p>
+          )}
         </SheetHeader>
 
         {isLoading ? (
@@ -110,20 +118,37 @@ export function CartDrawer({ children, onCartUpdate }: CartDrawerProps) {
               </div>
             </ScrollArea>
 
-            {/* Cart Summary */}
-            <div className="border-t pt-4 space-y-4">
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total:</span>
-                <span>{formatCurrency(total, 'AUD')}</span>
+            {/* Magical Cart Summary */}
+            <div className="border-t border-warm-grey/20 pt-6 space-y-6 bg-gradient-to-r from-white/50 to-opal-electric/5 rounded-t-2xl p-4 -mx-6 mt-4">
+              <div className="flex justify-between items-center">
+                <span className="font-serif text-lg font-semibold text-charcoal">
+                  <span className="font-accent text-opal-electric">💎</span> Total:
+                </span>
+                <span className="font-serif text-xl font-bold text-charcoal">{formatCurrency(total, 'AUD')}</span>
               </div>
 
-              {/* Actions */}
-              <div className="space-y-2">
-                <Button className="w-full" size="lg" asChild>
-                  <Link href="/checkout" onClick={() => setIsOpen(false)}>Proceed to Checkout</Link>
+              {/* Magical Actions */}
+              <div className="space-y-3">
+                <Button
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-opal-electric to-opal-deep text-white hover:from-opal-deep hover:to-opal-electric shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 font-serif"
+                  size="lg"
+                  asChild
+                >
+                  <Link href="/checkout" onClick={() => setIsOpen(false)}>
+                    <span className="font-accent mr-2">✨</span>
+                    Claim Your Treasures
+                    <span className="font-accent ml-2">✨</span>
+                  </Link>
                 </Button>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/cart" onClick={() => setIsOpen(false)}>View Full Cart</Link>
+                <Button
+                  variant="outline"
+                  className="w-full h-12 rounded-xl border-warm-grey/30 bg-white/50 hover:bg-opal-electric/10 hover:border-opal-electric/50 transition-all font-serif"
+                  asChild
+                >
+                  <Link href="/cart" onClick={() => setIsOpen(false)}>
+                    <span className="font-accent mr-2">🔍</span>
+                    View Full Collection
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -146,48 +171,48 @@ interface CartDrawerItemProps {
 
 function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending }: CartDrawerItemProps) {
   return (
-    <div className="flex gap-4 py-4 border-b">
-      {/* Product Image */}
-      <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+    <div className="flex gap-4 py-4 border-b border-warm-grey/20 hover:bg-opal-electric/5 transition-all rounded-xl px-2 mx-2">
+      {/* Magical Product Image */}
+      <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-opal-electric/20 to-fire-pink/20 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg border border-warm-grey/20">
         {item.image ? (
           <Image
             src={item.image}
             alt={item.name}
             width={80}
             height={80}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-xl"
           />
         ) : (
-          <span className="text-3xl">🔮</span>
+          <Gem size={32} className="text-opal-electric/60" />
         )}
       </div>
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-sm mb-1 truncate">{item.name}</h4>
-        <p className="text-sm text-muted-foreground mb-2">
+        <h4 className="font-serif text-sm font-semibold mb-1 truncate text-charcoal">{item.name}</h4>
+        <p className="font-sans text-sm text-charcoal/60 mb-2">
           {formatCurrency(item.price, 'AUD')} each
         </p>
 
-        {/* Quantity Controls */}
+        {/* Magical Quantity Controls */}
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="outline"
-            className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
+            className="h-8 w-8 p-0 text-lg rounded-lg border-warm-grey/30 hover:border-opal-electric/50 hover:bg-opal-electric/10 transition-all"
             onClick={() => onUpdateQuantity(item.quantity - 1)}
             disabled={isPending}
             aria-label={`Decrease quantity of ${item.name}`}
           >
             −
           </Button>
-          <span className="text-sm font-medium w-12 text-center">
+          <span className="font-sans text-sm font-medium w-10 text-center text-charcoal">
             {item.quantity}
           </span>
           <Button
             size="sm"
             variant="outline"
-            className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
+            className="h-8 w-8 p-0 text-lg rounded-lg border-warm-grey/30 hover:border-opal-electric/50 hover:bg-opal-electric/10 transition-all"
             onClick={() => onUpdateQuantity(item.quantity + 1)}
             disabled={isPending}
             aria-label={`Increase quantity of ${item.name}`}
@@ -197,7 +222,7 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending }: CartDra
           <Button
             size="sm"
             variant="ghost"
-            className="h-9 text-xs ml-auto px-3"
+            className="h-8 text-xs ml-auto px-3 rounded-lg hover:bg-fire-pink/10 hover:text-fire-pink transition-colors font-sans"
             onClick={onRemove}
             disabled={isPending}
           >
@@ -206,9 +231,9 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending }: CartDra
         </div>
       </div>
 
-      {/* Item Total */}
+      {/* Magical Item Total */}
       <div className="text-right">
-        <p className="font-bold text-sm">
+        <p className="font-serif text-sm font-bold text-charcoal">
           {formatCurrency(item.price * item.quantity, 'AUD')}
         </p>
       </div>

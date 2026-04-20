@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, X, Loader2 } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Sparkles, X, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getSearchSuggestions } from '@/app/(marketing)/search/actions'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -12,6 +12,7 @@ interface SearchInputProps {
   onClose?: () => void
   className?: string
   autoFocus?: boolean
+  initialQuery?: string
 }
 
 export function SearchInput({
@@ -19,25 +20,32 @@ export function SearchInput({
   onClose,
   className,
   autoFocus = false,
+  initialQuery,
 }: SearchInputProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [query, setQuery] = useState('')
+  const [query, setQuery] = useState(initialQuery || searchParams.get('q') || '')
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [loading, setLoading] = useState(false)
-  const debouncedQuery = useDebounce(query, 300)
+  const debouncedQuery = useDebounce(query, 200)
 
   // Fetch suggestions
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!debouncedQuery || debouncedQuery.length < 2) {
+      if (!debouncedQuery || debouncedQuery.length < 1) {
         setSuggestions([])
+        setLoading(false)
         return
       }
 
-      setLoading(true)
+      // Show loading only for longer queries to avoid flashing
+      if (debouncedQuery.length >= 2) {
+        setLoading(true)
+      }
+
       try {
         const results = await getSearchSuggestions(debouncedQuery)
         setSuggestions(results)
@@ -66,8 +74,8 @@ export function SearchInput({
       // Navigate to search results
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
 
-      // Reset state
-      setQuery('')
+      // Don't reset query - keep it in the search box
+      // setQuery('') // Removed this line
       setSuggestions([])
       setShowSuggestions(false)
       onClose?.()
@@ -127,12 +135,13 @@ export function SearchInput({
           'relative flex items-center rounded-lg border bg-white transition-all',
           'focus-within:border-opal-electric focus-within:ring-2 focus-within:ring-opal-electric/20',
           variant === 'default' && 'w-80 h-10 border-gray-200',
-          variant === 'mobile' && 'w-full h-12 border-gray-300'
+          variant === 'mobile' && 'w-full h-12 border-gray-300',
+          className?.includes('w-full') && 'w-full'
         )}
       >
-        <Search
+        <Sparkles
           className={cn(
-            'absolute left-3 text-gray-400',
+            'absolute left-3 text-opal-electric/60',
             variant === 'default' && 'h-4 w-4',
             variant === 'mobile' && 'h-5 w-5'
           )}
@@ -152,7 +161,7 @@ export function SearchInput({
             setTimeout(() => setShowSuggestions(false), 200)
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search for opals..."
+          placeholder="Search for your magical opal..."
           className={cn(
             'w-full bg-transparent outline-none placeholder:text-gray-400',
             variant === 'default' && 'pl-9 pr-9 text-sm',
@@ -193,7 +202,7 @@ export function SearchInput({
       </div>
 
       {/* Suggestions dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && query.length >= 2 && !loading && (
         <div
           id="search-suggestions"
           role="listbox"
@@ -203,26 +212,40 @@ export function SearchInput({
             'max-h-64 overflow-auto'
           )}
         >
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={suggestion}
-              type="button"
-              role="option"
-              aria-selected={index === selectedIndex}
-              onClick={() => handleSuggestionClick(suggestion)}
-              onMouseEnter={() => setSelectedIndex(index)}
-              className={cn(
-                'w-full px-4 py-2 text-left text-sm transition-colors',
-                'hover:bg-gray-50',
-                index === selectedIndex && 'bg-gray-50'
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <span className="truncate">{suggestion}</span>
+          {suggestions.length > 0 ? (
+            suggestions.map((suggestion, index) => (
+              <button
+                key={suggestion}
+                type="button"
+                role="option"
+                aria-selected={index === selectedIndex}
+                onClick={() => handleSuggestionClick(suggestion)}
+                onMouseEnter={() => setSelectedIndex(index)}
+                className={cn(
+                  'w-full px-4 py-2 text-left text-sm transition-colors',
+                  'hover:bg-gray-50',
+                  index === selectedIndex && 'bg-gray-50'
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-opal-electric/60 shrink-0" />
+                  <span className="truncate">{suggestion}</span>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span>No results found</span>
               </div>
-            </button>
-          ))}
+              <p className="text-xs text-gray-400">
+                Try searching for "black opal" or "rings"
+              </p>
+            </div>
+          )}
         </div>
       )}
     </form>

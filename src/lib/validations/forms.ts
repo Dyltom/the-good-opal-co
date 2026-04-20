@@ -174,8 +174,8 @@ export const customJewelrySchema = z.object({
     .regex(AUSTRALIAN_PHONE_REGEX, 'Please enter a valid Australian mobile number'),
 
   // Project details
-  jewelryType: z.enum(['ring', 'necklace', 'earrings', 'bracelet', 'other'])
-      .describe( 'Please select a jewelry type'),
+  jewelleryType: z.enum(['ring', 'necklace', 'earrings', 'bracelet', 'other'])
+      .describe( 'Please select a jewellery type'),
 
   customType: z.string()
     .max(50, 'Custom type must be less than 50 characters')

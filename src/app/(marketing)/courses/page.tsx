@@ -148,7 +148,7 @@ export default function CoursesPage() {
       />
 
       <PageTransition>
-        <main className="min-h-screen">
+        <main className="min-h-screen pt-10">
           {/* Hero Section */}
           <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-opal-deep via-opal-electric to-fire-pink opacity-90" />

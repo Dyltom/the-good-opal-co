@@ -5,6 +5,7 @@ import { Navigation, Footer } from '@/components/navigation'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { SearchResults } from './search-results'
 import { SearchInput } from '@/components/search/SearchInput'
+import { Sparkles } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Search | The Good Opal Co',
@@ -36,7 +37,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           transparent
         />
 
-        <main className="flex-1">
+        <main className="flex-1 pt-10">
           {/* Fairytale Search Header */}
           <section className="relative py-8 lg:py-12 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden pt-32">
             {/* Magical sparkle effects */}
@@ -48,30 +49,34 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
             <Container>
               <div className="text-center max-w-4xl mx-auto">
-                <span className="font-accent text-lg text-opal-electric mb-4 block">
-                  🔮 Discover Your Treasure 🔮
-                </span>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Sparkles size={20} className="text-opal-electric" />
+                  <span className="font-accent text-lg text-opal-electric">
+                    Discover Your Treasure
+                  </span>
+                  <Sparkles size={20} className="text-opal-electric" />
+                </div>
                 <h1 className="font-serif text-4xl md:text-5xl font-bold mb-6 text-charcoal leading-tight">
                   {query ? (
                     <>
-                      Search Results for <span className="font-accent text-opal-electric">&ldquo;{query}&rdquo;</span>
+                      Results for <span className="font-accent text-opal-electric">&ldquo;{query}&rdquo;</span>
                     </>
                   ) : (
                     <>
-                      Find Your Perfect <span className="font-accent text-opal-electric">Opal</span>
+                      Search Our <span className="font-accent text-opal-electric">Treasure Trove</span>
                     </>
                   )}
                 </h1>
                 <p className="text-lg text-charcoal/70 leading-relaxed max-w-2xl mx-auto mb-8">
                   {query ?
-                    "Every search reveals hidden gems waiting to find their forever home." :
-                    "Search through our magical collection of authentic Australian opals."
+                    "Discovering treasures across products, stories, and knowledge." :
+                    "Search our entire collection: opals, jewellery, blog stories, courses, and helpful guides."
                   }
                 </p>
 
                 {/* Search Input */}
-                <div className="max-w-xl mx-auto">
-                  <SearchInput variant="default" />
+                <div className="max-w-2xl mx-auto">
+                  <SearchInput variant="default" initialQuery={query} className="w-full" />
                 </div>
 
                 <p className="font-accent text-lg text-opal-electric/80 mt-6">

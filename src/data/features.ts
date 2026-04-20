@@ -2,9 +2,10 @@
  * Features & Benefits Data
  * Reusable feature definitions for why-choose-us sections
  */
+import React from 'react'
 
 export interface Feature {
-  icon: string
+  icon: string | React.ReactNode
   title: string
   description: string
 }

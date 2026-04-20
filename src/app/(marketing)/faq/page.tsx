@@ -189,7 +189,7 @@ const faqCategories = [
 export default function FAQPage() {
   return (
     <PageTransition>
-      <div className="min-h-screen flex flex-col bg-black-rich">
+      <div className="min-h-screen flex flex-col bg-white">
         <Navigation
           logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
           items={[
@@ -200,42 +200,42 @@ export default function FAQPage() {
             { href: '/contact', label: 'Contact' },
             { href: '/faq', label: 'FAQ' },
           ]}
-          transparent
         />
 
         <main className="flex-1">
-          {/* Premium Header with Dark Background */}
-          <section className="relative pt-40 pb-24 overflow-hidden">
-            {/* Background gradient effects */}
+          {/* Hero Section */}
+          <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden">
+            {/* Magical sparkle effects */}
             <div className="absolute inset-0">
-              <div className="absolute top-0 right-1/4 w-[500px] h-[500px] rounded-full opacity-20 blur-3xl bg-gradient-to-bl from-fire-pink to-opal-electric" />
-              <div className="absolute bottom-0 left-1/3 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-tr from-opal-teal to-opal-emerald" />
+              <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
+              <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
+              <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
             </div>
 
             <Container>
-              <div className="relative z-10 max-w-4xl mx-auto text-center">
-                <div className="mb-6">
-                  <span className="inline-block px-4 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium tracking-wider text-fire-pink uppercase">
-                    Knowledge Center
-                  </span>
-                </div>
-                <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-normal mb-6 text-white tracking-tight">
-                  Frequently Asked <span className="text-gradient-prismatic">Questions</span>
+              <div className="text-center max-w-4xl mx-auto">
+                <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
+                  ✨ Knowledge Center ✨
+                </span>
+                <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mb-4">
+                  Frequently Asked <span className="font-accent text-opal-electric">Questions</span>
                 </h1>
-                <p className="font-sans text-xl md:text-2xl text-white/80 leading-relaxed max-w-3xl mx-auto">
+                <p className="font-sans text-lg text-content-muted max-w-2xl mx-auto mb-4">
                   Expert guidance on Australian opals, craftsmanship, and care
+                </p>
+                <p className="font-accent text-base text-opal-electric/70">
+                  ~ Where questions become wisdom ~
                 </p>
               </div>
             </Container>
           </section>
 
-          {/* FAQ Content - Dark Premium Design */}
-          <section className="relative py-24 md:py-32 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich">
-            {/* Subtle pattern overlay */}
-            <div className="absolute inset-0 opacity-[0.02]">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 70px)`
-              }} />
+          {/* FAQ Content */}
+          <section className="py-16 lg:py-24 bg-white">
+            {/* Decorative background elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full opacity-5 blur-3xl bg-gradient-to-br from-opal-electric to-fire-pink" />
+              <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full opacity-5 blur-3xl bg-gradient-to-tr from-opal-turquoise to-opal-emerald" />
             </div>
 
             <Container>
@@ -243,49 +243,49 @@ export default function FAQPage() {
                 {faqCategories.map((category, categoryIndex) => {
                   const Icon = category.icon
                   const colors = [
-                    'from-opal-electric to-opal-deep',
-                    'from-fire-pink to-fire-coral',
-                    'from-opal-emerald to-opal-teal',
-                    'from-fire-orange to-fire-gold',
-                    'from-opal-turquoise to-opal-electric',
-                    'from-opal-pink to-fire-pink',
+                    'from-opal-electric to-opal-electric/80',
+                    'from-fire-pink to-fire-pink/80',
+                    'from-opal-emerald to-opal-emerald/80',
+                    'from-fire-gold to-fire-gold/80',
+                    'from-opal-turquoise to-opal-turquoise/80',
+                    'from-opal-pink to-opal-pink/80',
                   ]
                   const gradient = colors[categoryIndex % colors.length]
 
                   return (
                     <div key={category.title} className={cn(
-                      "mb-20",
-                      categoryIndex !== 0 && "pt-20 border-t border-white/10"
+                      "mb-16",
+                      categoryIndex !== 0 && "pt-16 border-t border-gray-soft"
                     )}>
-                      {/* Premium Category Header */}
-                      <div className="mb-12">
-                        <div className="flex items-center gap-5">
+                      {/* Category Header */}
+                      <div className="mb-8">
+                        <div className="flex items-center gap-4">
                           <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg`}>
                             <Icon className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h2 className="font-accent text-sm font-bold tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-white to-white/60 uppercase">
+                            <h2 className="font-serif text-2xl font-semibold text-charcoal">
                               {category.title}
                             </h2>
                           </div>
                         </div>
                       </div>
 
-                      {/* Premium Dark Accordion */}
-                      <Accordion type="single" collapsible className="space-y-4">
+                      {/* Magical Accordion */}
+                      <Accordion type="single" collapsible className="space-y-3">
                         {category.faqs.map((faq, index) => (
                           <AccordionItem
                             key={index}
                             value={`${category.title}-${index}`}
-                            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-all duration-300"
+                            className="bg-gradient-to-r from-gray-50/50 to-opal-electric/5 border border-gray-soft/50 rounded-xl overflow-hidden hover:from-opal-electric/10 hover:to-fire-pink/10 transition-all duration-300 shadow-sm hover:shadow-md"
                           >
-                            <AccordionTrigger className="px-6 py-5 hover:no-underline group">
-                              <span className="font-sans text-left text-lg text-white/90 group-hover:text-white transition-colors pr-8 font-normal">
+                            <AccordionTrigger className="px-6 py-4 hover:no-underline group">
+                              <span className="font-sans text-left text-base font-medium text-charcoal group-hover:text-opal-electric-accessible transition-colors pr-6">
                                 {faq.question}
                               </span>
                             </AccordionTrigger>
-                            <AccordionContent className="px-6 pb-5">
-                              <p className="font-sans text-white/70 leading-relaxed text-base">
+                            <AccordionContent className="px-6 pb-4">
+                              <p className="font-sans text-content leading-relaxed">
                                 {faq.answer}
                               </p>
                             </AccordionContent>
@@ -297,39 +297,42 @@ export default function FAQPage() {
                 })}
               </div>
 
-              {/* Premium CTA */}
-              <div className="relative mt-32 text-center">
-                <div className="max-w-2xl mx-auto p-16 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-3xl border border-white/20">
-                  <div className="mb-8 inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-fire-pink to-opal-electric shadow-lg">
+              {/* CTA Section */}
+              <div className="relative mt-20 text-center">
+                <div className="max-w-2xl mx-auto p-12 bg-gradient-to-br from-opal-electric/10 to-fire-pink/10 rounded-3xl border border-opal-electric/20">
+                  <div className="mb-6 inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-fire-pink to-opal-electric shadow-lg">
                     <Mail className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="font-serif text-4xl font-medium text-white mb-4">
-                    Need Personal Assistance?
+                  <h3 className="font-serif text-3xl font-bold text-charcoal mb-4">
+                    Need Personal <span className="font-accent text-opal-electric">Assistance?</span>
                   </h3>
-                  <p className="font-sans text-xl text-white/80 mb-12 leading-relaxed">
+                  <p className="font-sans text-lg text-content mb-8 leading-relaxed">
                     Our opal experts are available to guide you through your selection
                   </p>
                   <div className="space-y-4">
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-fire-pink to-opal-electric hover:from-opal-electric hover:to-fire-pink text-white px-12 py-6 text-base font-medium tracking-wide w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-gradient-to-r from-fire-pink to-opal-electric hover:from-opal-electric hover:to-fire-pink text-white px-8 py-3 text-base font-medium w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
                       asChild
                     >
                       <a href="mailto:goodopalco@gmail.com">
                         Schedule a Consultation
                       </a>
                     </Button>
-                    <div className="font-sans text-sm text-white/60">
+                    <div className="font-sans text-sm text-content-muted">
                       or message us <span className="text-fire-pink font-medium">@goodopalco</span> on Instagram
                     </div>
                   </div>
+                  <p className="font-accent text-sm text-opal-electric/70 mt-4">
+                    ~ Where expertise meets magic ~
+                  </p>
                 </div>
               </div>
             </Container>
           </section>
         </main>
 
-        <Footer logoText="The Good Opal Co" />
+        <Footer />
       </div>
     </PageTransition>
   )

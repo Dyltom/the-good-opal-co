@@ -39,17 +39,7 @@ export function Navigation({
   const brandName = logoText
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [collectionsOpen, setCollectionsOpen] = useState(false)
   const pathname = usePathname()
-  const collectionsRef = useRef<HTMLDivElement>(null)
-
-  // Collections data
-  const collections = [
-    { name: 'Raw Opals', href: '/store?category=raw', count: 12 },
-    { name: 'Rings', href: '/store?category=rings', count: 8 },
-    { name: 'Pendants', href: '/store?category=pendants', count: 15 },
-    { name: 'Earrings', href: '/store?category=earrings', count: 6 }
-  ]
 
   // Check if a nav item is active
   const isActive = (href: string) => {
@@ -62,18 +52,6 @@ export function Navigation({
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Close collections dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (collectionsRef.current && !collectionsRef.current.contains(event.target as Node)) {
-        setCollectionsOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   // Determine if we're on a dark background (transparent mode = dark hero)
@@ -162,58 +140,6 @@ export function Navigation({
                 )} />
               </Link>
 
-              {/* Collections Dropdown */}
-              <div className="relative" ref={collectionsRef}>
-                <button
-                  type="button"
-                  className={cn(
-                    'flex items-center gap-1 px-4 py-2 text-sm font-medium transition-all duration-300 rounded-full group',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2',
-                    onDarkBackground
-                      ? 'text-white/90 hover:text-white'
-                      : 'text-charcoal hover:text-opal-electric-accessible'
-                  )}
-                  onClick={() => setCollectionsOpen(!collectionsOpen)}
-                  aria-expanded={collectionsOpen}
-                  aria-haspopup="true"
-                >
-                  Collections
-                  <svg
-                    className={cn(
-                      'h-4 w-4 transition-transform duration-200',
-                      collectionsOpen ? 'rotate-180' : 'rotate-0'
-                    )}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                  {/* Hover underline */}
-                  <span className={cn(
-                    'absolute bottom-1 left-4 right-4 h-0.5 bg-opal-electric transition-transform duration-300 origin-left rounded-full',
-                    'scale-x-0 group-hover:scale-x-100'
-                  )} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {collectionsOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-lg shadow-lg border border-gray-soft py-2 z-50">
-                    {collections.map((collection) => (
-                      <Link
-                        key={collection.href}
-                        href={collection.href}
-                        className="flex items-center justify-between px-4 py-3 text-sm text-charcoal hover:bg-opal-electric/10 hover:text-opal-electric-accessible transition-colors duration-200"
-                        onClick={() => setCollectionsOpen(false)}
-                      >
-                        <span>{collection.name}</span>
-                        <span className="text-xs text-charcoal-light">({collection.count})</span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
 
               {items.map((item) => (
                 <Link
@@ -352,27 +278,6 @@ export function Navigation({
                 Home
               </Link>
 
-              {/* Collections - Mobile */}
-              <div className="space-y-1">
-                <div className="px-4 py-2 text-sm font-semibold text-charcoal-light uppercase tracking-wider">
-                  Collections
-                </div>
-                {collections.map((collection, index) => (
-                  <Link
-                    key={collection.href}
-                    href={collection.href}
-                    className="flex items-center justify-between px-6 py-2 text-base font-medium rounded-xl transition-all duration-300 group text-charcoal hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10"
-                    style={{
-                      animationDelay: `${(index + 1) * 50}ms`,
-                      animation: mobileMenuOpen ? 'fade-up 0.3s ease-out forwards' : 'none'
-                    }}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <span>{collection.name}</span>
-                    <span className="text-xs text-charcoal-light">({collection.count})</span>
-                  </Link>
-                ))}
-              </div>
 
               {items.map((item, index) => (
                 <Link
@@ -385,7 +290,7 @@ export function Navigation({
                       : 'text-charcoal hover:bg-gradient-to-r hover:from-opal-electric/10 hover:to-fire-pink/10'
                   )}
                   style={{
-                    animationDelay: `${(index + collections.length + 2) * 50}ms`,
+                    animationDelay: `${(index + 2) * 50}ms`,
                     animation: mobileMenuOpen ? 'fade-up 0.3s ease-out forwards' : 'none'
                   }}
                   target={item.external ? '_blank' : undefined}

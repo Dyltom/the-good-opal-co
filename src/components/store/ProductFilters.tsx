@@ -91,28 +91,29 @@ export function ProductFilters({
     priceRange[1] !== filters.maxPrice
 
   return (
-    <div className="w-full space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Filters</h3>
-        {hasActiveFilters && (
+    <div className="w-full space-y-8">
+      {/* Magical Clear All Button */}
+      {hasActiveFilters && (
+        <div className="text-center">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={onClearAll}
-            className="h-8 text-xs"
+            className="h-10 px-4 rounded-xl border-warm-grey/30 bg-white/50 hover:bg-gradient-to-r hover:from-fire-pink/10 hover:to-opal-electric/10 hover:border-opal-electric/50 transition-all font-sans shadow-sm"
           >
-            <X className="w-3 h-3 mr-1" />
-            Clear All
+            <X className="w-4 h-4 mr-2 text-fire-pink" />
+            <span className="font-accent">✨</span> Clear All Filters <span className="font-accent">✨</span>
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Filters - Always Expanded */}
       <div className="w-full space-y-6">
-        {/* Price Range Filter - Moved to Top */}
-        <div className="pb-6 border-b border-warm-grey/50">
-          <h3 className="text-sm font-semibold mb-4 text-charcoal">Price Range</h3>
+        {/* Magical Price Range Filter */}
+        <div className="pb-6 border-b border-warm-grey/30">
+          <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
+            <span className="font-accent text-fire-pink">💎</span> Price Range
+          </h3>
           <div className="space-y-4">
             {/* Price Input Fields */}
             <div className="flex items-center gap-3">
@@ -174,22 +175,24 @@ export function ProductFilters({
           </div>
         </div>
 
-        {/* Category Filter */}
+        {/* Magical Category Filter */}
         {filters.categories.length > 0 && (
-          <div className="pb-6 border-b border-warm-grey/50">
-            <h3 className="text-sm font-semibold mb-3 text-charcoal">Category</h3>
-            <div className="space-y-2.5">
+          <div className="pb-6 border-b border-warm-grey/30">
+            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
+              <span className="font-accent text-opal-electric">⭐</span> Category
+            </h3>
+            <div className="space-y-3">
               {filters.categories.map((category) => (
-                <div key={category} className="flex items-center space-x-2">
+                <div key={category} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-opal-electric/5 transition-all">
                   <Checkbox
                     id={`category-${category}`}
                     checked={selectedCategories.includes(category)}
                     onCheckedChange={() => onCategoryChange(category)}
-                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
                     htmlFor={`category-${category}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex items-center gap-2"
+                    className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex items-center gap-2 flex-1"
                   >
                     {CATEGORY_LABELS[category]?.icon}
                     <span>{CATEGORY_LABELS[category]?.label || category}</span>
@@ -200,22 +203,24 @@ export function ProductFilters({
           </div>
         )}
 
-        {/* Stone Type Filter */}
+        {/* Magical Stone Type Filter */}
         {filters.stoneTypes.length > 0 && (
-          <div className="pb-6 border-b border-warm-grey/50">
-            <h3 className="text-sm font-semibold mb-3 text-charcoal">Stone Type</h3>
-            <div className="space-y-2.5">
+          <div className="pb-6 border-b border-warm-grey/30">
+            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
+              <span className="font-accent text-opal-turquoise">💠</span> Stone Type
+            </h3>
+            <div className="space-y-3">
               {filters.stoneTypes.map((type) => (
-                <div key={type} className="flex items-center space-x-2">
+                <div key={type} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-opal-turquoise/5 transition-all">
                   <Checkbox
                     id={`stone-${type}`}
                     checked={selectedStoneTypes.includes(type)}
                     onCheckedChange={() => onStoneTypeChange(type)}
-                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
                     htmlFor={`stone-${type}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
+                    className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex-1"
                   >
                     {STONE_TYPE_LABELS[type] || type}
                   </Label>
@@ -225,22 +230,24 @@ export function ProductFilters({
           </div>
         )}
 
-        {/* Origin Filter */}
+        {/* Magical Origin Filter */}
         {filters.origins.length > 0 && (
-          <div className="pb-6 border-b border-warm-grey/50">
-            <h3 className="text-sm font-semibold mb-3 text-charcoal">Origin</h3>
-            <div className="space-y-2.5">
+          <div className="pb-6 border-b border-warm-grey/30">
+            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
+              <span className="font-accent text-fire-pink">🌍</span> Origin
+            </h3>
+            <div className="space-y-3">
               {filters.origins.map((origin) => (
-                <div key={origin} className="flex items-center space-x-2">
+                <div key={origin} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-fire-pink/5 transition-all">
                   <Checkbox
                     id={`origin-${origin}`}
                     checked={selectedOrigins.includes(origin)}
                     onCheckedChange={() => onOriginChange(origin)}
-                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
                     htmlFor={`origin-${origin}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
+                    className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex-1"
                   >
                     {ORIGIN_LABELS[origin] || origin}
                   </Label>
@@ -250,22 +257,24 @@ export function ProductFilters({
           </div>
         )}
 
-        {/* Material Filter */}
+        {/* Magical Material Filter */}
         {filters.materials.length > 0 && (
           <div className="pb-6">
-            <h3 className="text-sm font-semibold mb-3 text-charcoal">Material</h3>
-            <div className="space-y-2.5">
+            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
+              <span className="font-accent text-fire-gold">⚡</span> Material
+            </h3>
+            <div className="space-y-3">
               {filters.materials.map((material) => (
-                <div key={material} className="flex items-center space-x-2">
+                <div key={material} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-fire-gold/5 transition-all">
                   <Checkbox
                     id={`material-${material}`}
                     checked={selectedMaterials.includes(material)}
                     onCheckedChange={() => onMaterialChange(material)}
-                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible"
+                    className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
                     htmlFor={`material-${material}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
+                    className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex-1"
                   >
                     {MATERIAL_LABELS[material] || material}
                   </Label>

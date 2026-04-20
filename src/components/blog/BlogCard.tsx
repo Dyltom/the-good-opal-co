@@ -4,13 +4,23 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { formatDate } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import type { BlogPost } from '@/types'
-
 /**
  * Blog Card Props
  */
 interface BlogCardProps {
-  post: Pick<BlogPost, 'slug' | 'title' | 'excerpt' | 'featuredImage' | 'publishedAt' | 'categories'>
+  post: {
+    slug: string
+    title: string
+    excerpt?: string
+    featuredImage?: {
+      id: string
+      url: string
+      alt: string
+      width: number
+      height: number
+    }
+    publishedAt?: Date | null
+  }
   showImage?: boolean
   showExcerpt?: boolean
   showDate?: boolean
@@ -57,19 +67,6 @@ export function BlogCard({
           )}
 
           <div className="relative p-6">
-            {/* Categories */}
-            {showCategories && post.categories && post.categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-3">
-                {post.categories.map((category) => (
-                  <span
-                    key={category.id}
-                    className="text-xs font-semibold uppercase tracking-wider text-opal-deep-accessible bg-gradient-to-r from-opal-electric/10 to-fire-gold/10 px-3 py-1 rounded-full"
-                  >
-                    {category.name}
-                  </span>
-                ))}
-              </div>
-            )}
 
             {/* Title */}
             <h3 className="font-serif text-xl md:text-2xl font-bold mb-3 line-clamp-2 text-charcoal group-hover:text-opal-electric transition-all duration-300">
