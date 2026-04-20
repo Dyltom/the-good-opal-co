@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
+import { PageTransition } from '@/components/layout/PageTransition'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Award, Shield, Heart, Sparkles, Users, Globe } from 'lucide-react'
@@ -14,8 +15,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <Navigation
+    <PageTransition>
+      <div className="min-h-screen bg-white">
+        <Navigation
         logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
         items={[
           { href: '/store', label: 'Shop' },
@@ -40,11 +42,17 @@ export default function AboutPage() {
         </div>
         <div className="absolute inset-0 flex items-center justify-center z-20">
           <div className="text-center text-white max-w-3xl mx-auto px-6">
-            <h1 className="text-5xl md:text-6xl font-display font-bold mb-4">
-              Our Story
+            <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
+              ✨ Our Journey ✨
+            </span>
+            <h1 className="font-serif text-5xl md:text-6xl font-bold mb-4">
+              Our <span className="font-accent text-opal-electric">Story</span>
             </h1>
-            <p className="text-xl md:text-2xl">
+            <p className="font-sans text-xl md:text-2xl">
               Bringing the magic of Australian opals to the world since 2015
+            </p>
+            <p className="font-accent text-lg text-white/70 mt-2">
+              ~ From the heart of Australia to yours ~
             </p>
           </div>
         </div>
@@ -62,13 +70,19 @@ export default function AboutPage() {
         {/* Mission Statement */}
         <section className="max-w-4xl mx-auto mb-20">
           <div className="text-center">
-            <h2 className="text-3xl font-display font-bold text-charcoal mb-6">
-              Treasures from the Australian Outback
+            <span className="font-accent text-lg text-opal-electric mb-4 block">
+              ✨ Our Mission ✨
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-charcoal mb-6">
+              Treasures from the Australian <span className="font-accent text-opal-electric">Outback</span>
             </h2>
-            <p className="text-lg text-content leading-relaxed">
+            <p className="font-sans text-lg text-content leading-relaxed mb-4">
               The Good Opal Co is more than just a jewellery company—we&apos;re custodians of nature&apos;s most captivating gemstones.
               Our mission is to share the extraordinary beauty of Australian opals with collectors and jewellery lovers worldwide,
               while maintaining the highest standards of quality, authenticity, and ethical sourcing.
+            </p>
+            <p className="font-accent text-base text-opal-electric/70">
+              ~ Sharing Australia's treasures with the world ~
             </p>
           </div>
         </section>
@@ -80,8 +94,8 @@ export default function AboutPage() {
               <div className="w-16 h-16 bg-opal-electric/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-opal-electric" />
               </div>
-              <h3 className="font-semibold text-charcoal text-xl mb-2">Authenticity Guaranteed</h3>
-              <p className="text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-xl mb-2">Authenticity Guaranteed</h3>
+              <p className="font-sans text-content">
                 Every opal is certified genuine and natural. We provide certificates of authenticity for all purchases.
               </p>
             </div>
@@ -90,8 +104,8 @@ export default function AboutPage() {
               <div className="w-16 h-16 bg-fire-pink/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="w-8 h-8 text-fire-pink" />
               </div>
-              <h3 className="font-semibold text-charcoal text-xl mb-2">Quality Commitment</h3>
-              <p className="text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-xl mb-2">Quality Commitment</h3>
+              <p className="font-sans text-content">
                 Recognized for our commitment to excellence in sourcing and crafting quality Australian opals.
               </p>
             </div>
@@ -100,8 +114,8 @@ export default function AboutPage() {
               <div className="w-16 h-16 bg-opal-emerald/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-8 h-8 text-opal-emerald" />
               </div>
-              <h3 className="font-semibold text-charcoal text-xl mb-2">Customer First</h3>
-              <p className="text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-xl mb-2">Customer First</h3>
+              <p className="font-sans text-content">
                 Dedicated to providing exceptional service with lifetime support for every purchase.
               </p>
             </div>
@@ -112,26 +126,32 @@ export default function AboutPage() {
         <section className="mb-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-display font-bold text-charcoal mb-6">
-                Our Journey
+              <span className="font-accent text-lg text-opal-electric mb-4 block">
+                ✨ How We Began ✨
+              </span>
+              <h2 className="font-serif text-3xl font-bold text-charcoal mb-6">
+                Our <span className="font-accent text-opal-electric">Journey</span>
               </h2>
               <div className="prose prose-lg">
-                <p className="text-content mb-4">
+                <p className="font-sans text-content mb-4 leading-relaxed">
                   Founded in 2020 by Sarah and Michael Henderson, The Good Opal Co was born from a genuine passion for
                   Australia&apos;s national gemstone and a commitment to making these beautiful stones accessible to everyone.
                 </p>
-                <p className="text-content mb-4">
+                <p className="font-sans text-content mb-4 leading-relaxed">
                   Our mission is simple: to source authentic Australian opals directly from ethical miners and
                   handcraft each piece from start to finish, ensuring quality and affordability go hand in hand.
                 </p>
-                <p className="text-content mb-4">
+                <p className="font-sans text-content mb-4 leading-relaxed">
                   What sets us apart is our dedication to transparency and ethical sourcing. We believe everyone
                   should be able to own a piece of Australia&apos;s natural beauty without compromising on quality or ethics.
                 </p>
-                <p className="text-content">
+                <p className="font-sans text-content leading-relaxed">
                   Today, we work directly with ethical miners across Australia&apos;s opal fields, ensuring fair prices
                   for miners and exceptional value for our customers. Every piece in our collection is hand-selected
                   for its beauty, quality, and that special something that makes Australian opals truly magical.
+                </p>
+                <p className="font-accent text-base text-opal-electric/70 mt-4">
+                  ~ Where tradition meets passion ~
                 </p>
               </div>
             </div>
@@ -153,38 +173,43 @@ export default function AboutPage() {
 
         {/* Values Section */}
         <section className="mb-20">
-          <h2 className="text-3xl font-display font-bold text-charcoal text-center mb-12">
-            Our Values
-          </h2>
+          <div className="text-center mb-12">
+            <span className="font-accent text-lg text-opal-electric mb-4 block">
+              ✨ What Drives Us ✨
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-charcoal">
+              Our <span className="font-accent text-opal-electric">Values</span>
+            </h2>
+          </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
               <Sparkles className="w-12 h-12 text-opal-electric mx-auto mb-4" />
-              <h3 className="font-semibold text-charcoal text-lg mb-2">Quality First</h3>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg mb-2">Quality First</h3>
+              <p className="font-sans text-sm text-content">
                 We never compromise on quality. Each opal is carefully inspected and must meet our strict standards.
               </p>
             </div>
 
             <div className="text-center">
               <Users className="w-12 h-12 text-fire-pink mx-auto mb-4" />
-              <h3 className="font-semibold text-charcoal text-lg mb-2">Ethical Sourcing</h3>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg mb-2">Ethical Sourcing</h3>
+              <p className="font-sans text-sm text-content">
                 We work directly with miners, ensuring fair compensation and sustainable mining practices.
               </p>
             </div>
 
             <div className="text-center">
               <Shield className="w-12 h-12 text-opal-emerald mx-auto mb-4" />
-              <h3 className="font-semibold text-charcoal text-lg mb-2">Transparency</h3>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg mb-2">Transparency</h3>
+              <p className="font-sans text-sm text-content">
                 Full disclosure about origins, treatments, and pricing. What you see is what you get.
               </p>
             </div>
 
             <div className="text-center">
               <Globe className="w-12 h-12 text-fire-gold mx-auto mb-4" />
-              <h3 className="font-semibold text-charcoal text-lg mb-2">Global Community</h3>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg mb-2">Global Community</h3>
+              <p className="font-sans text-sm text-content">
                 Connecting opal lovers worldwide through education, fair trade, and shared appreciation.
               </p>
             </div>
@@ -194,44 +219,49 @@ export default function AboutPage() {
         {/* Mining Locations */}
         <section className="mb-20">
           <div className="bg-gray-50 rounded-3xl p-12">
-            <h2 className="text-3xl font-display font-bold text-charcoal text-center mb-4">
-              From Australia&apos;s Premier Opal Fields
-            </h2>
-            <p className="text-center text-content mb-12 max-w-2xl mx-auto">
-              We source directly from Australia&apos;s most renowned opal mining locations,
-              each producing unique varieties of this precious gemstone.
-            </p>
+            <div className="text-center mb-12">
+              <span className="font-accent text-lg text-opal-electric mb-4 block">
+                ✨ From Sacred Lands ✨
+              </span>
+              <h2 className="font-serif text-3xl font-bold text-charcoal mb-4">
+                From Australia&apos;s Premier <span className="font-accent text-opal-electric">Opal Fields</span>
+              </h2>
+              <p className="font-sans text-center text-content max-w-2xl mx-auto">
+                We source directly from Australia&apos;s most renowned opal mining locations,
+                each producing unique varieties of this precious gemstone.
+              </p>
+            </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="bg-white p-6 rounded-xl">
-                <h3 className="font-semibold text-charcoal text-xl mb-3">Lightning Ridge</h3>
-                <p className="text-content mb-4">
+                <h3 className="font-serif font-semibold text-charcoal text-xl mb-3">Lightning Ridge</h3>
+                <p className="font-sans text-content mb-4">
                   Home of the rare and valuable black opal, Lightning Ridge produces the world&apos;s
                   most sought-after opals with their distinctive dark body tone and brilliant play of color.
                 </p>
-                <p className="text-sm text-content-muted">
+                <p className="font-sans text-sm text-content-muted">
                   <strong>Specialties:</strong> Black opal, dark crystal opal
                 </p>
               </div>
 
               <div className="bg-white p-6 rounded-xl">
-                <h3 className="font-semibold text-charcoal text-xl mb-3">Coober Pedy</h3>
-                <p className="text-content mb-4">
+                <h3 className="font-serif font-semibold text-charcoal text-xl mb-3">Coober Pedy</h3>
+                <p className="font-sans text-content mb-4">
                   The &quot;Opal Capital of the World&quot; produces the majority of the world&apos;s white opals,
                   known for their light body tone and spectacular color displays.
                 </p>
-                <p className="text-sm text-content-muted">
+                <p className="font-sans text-sm text-content-muted">
                   <strong>Specialties:</strong> White opal, light crystal opal
                 </p>
               </div>
 
               <div className="bg-white p-6 rounded-xl">
-                <h3 className="font-semibold text-charcoal text-xl mb-3">Queensland Boulder Fields</h3>
-                <p className="text-content mb-4">
+                <h3 className="font-serif font-semibold text-charcoal text-xl mb-3">Queensland Boulder Fields</h3>
+                <p className="font-sans text-content mb-4">
                   Unique boulder opals form in ironstone, creating stunning natural patterns
                   where precious opal fills cracks and voids in the host rock.
                 </p>
-                <p className="text-sm text-content-muted">
+                <p className="font-sans text-sm text-content-muted">
                   <strong>Specialties:</strong> Boulder opal, matrix opal
                 </p>
               </div>
@@ -241,9 +271,14 @@ export default function AboutPage() {
 
         {/* Team Section */}
         <section className="mb-20">
-          <h2 className="text-3xl font-display font-bold text-charcoal text-center mb-12">
-            Meet Our Team
-          </h2>
+          <div className="text-center mb-12">
+            <span className="font-accent text-lg text-opal-electric mb-4 block">
+              ✨ The Artists Behind the Magic ✨
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-charcoal">
+              Meet Our <span className="font-accent text-opal-electric">Team</span>
+            </h2>
+          </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden relative">
@@ -254,9 +289,9 @@ export default function AboutPage() {
                   className="object-cover"
                 />
               </div>
-              <h3 className="font-semibold text-charcoal text-lg">Sarah Henderson</h3>
-              <p className="text-content-muted mb-2">Co-Founder & Creative Director</p>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg">Sarah Henderson</h3>
+              <p className="font-sans text-content-muted mb-2">Co-Founder & Creative Director</p>
+              <p className="font-sans text-sm text-content">
                 Gemologist with 15+ years experience. Oversees design and quality control.
               </p>
             </div>
@@ -270,9 +305,9 @@ export default function AboutPage() {
                   className="object-cover"
                 />
               </div>
-              <h3 className="font-semibold text-charcoal text-lg">Michael Henderson</h3>
-              <p className="text-content-muted mb-2">Co-Founder & Operations Director</p>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg">Michael Henderson</h3>
+              <p className="font-sans text-content-muted mb-2">Co-Founder & Operations Director</p>
+              <p className="font-sans text-sm text-content">
                 Third-generation opal expert. Manages sourcing and miner relationships.
               </p>
             </div>
@@ -286,9 +321,9 @@ export default function AboutPage() {
                   className="object-cover"
                 />
               </div>
-              <h3 className="font-semibold text-charcoal text-lg">Emma Chen</h3>
-              <p className="text-content-muted mb-2">Head Jeweler</p>
-              <p className="text-sm text-content">
+              <h3 className="font-serif font-semibold text-charcoal text-lg">Emma Chen</h3>
+              <p className="font-sans text-content-muted mb-2">Head Jeweler</p>
+              <p className="font-sans text-sm text-content">
                 Award-winning jeweler specializing in custom opal settings.
               </p>
             </div>
@@ -298,10 +333,13 @@ export default function AboutPage() {
         {/* Press & Awards */}
         <section className="mb-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-display font-bold text-charcoal mb-4">
-              Recognition & Press
+            <span className="font-accent text-lg text-opal-electric mb-4 block">
+              ✨ In the Spotlight ✨
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-charcoal mb-4">
+              Recognition & <span className="font-accent text-opal-electric">Press</span>
             </h2>
-            <p className="text-content">
+            <p className="font-sans text-content">
               Proud to be recognized by industry leaders and media
             </p>
           </div>
@@ -324,12 +362,18 @@ export default function AboutPage() {
         {/* CTA Section */}
         <section className="text-center">
           <div className="bg-gradient-to-r from-opal-electric to-fire-pink p-12 rounded-3xl">
-            <h2 className="text-3xl font-display font-bold text-white mb-4">
-              Experience the Magic of Australian Opals
+            <span className="font-accent text-lg text-white/80 mb-4 block">
+              ✨ Join Our Journey ✨
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-white mb-4">
+              Experience the Magic of Australian <span className="font-accent">Opals</span>
             </h2>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="font-sans text-xl text-white/90 mb-6 max-w-2xl mx-auto leading-relaxed">
               Join thousands of collectors worldwide who trust The Good Opal Co
               for authentic, high-quality Australian opals.
+            </p>
+            <p className="font-accent text-base text-white/70 mb-8">
+              ~ Where dreams become treasures ~
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" variant="secondary">
@@ -342,7 +386,8 @@ export default function AboutPage() {
           </div>
         </section>
       </Container>
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </PageTransition>
   )
 }
