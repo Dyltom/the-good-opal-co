@@ -25,7 +25,7 @@ export async function sendContactEmail(data: ContactFormData) {
 
     // Send email to support team
     const { error: supportError } = await resend.emails.send({
-      from: 'The Good Opal Co <noreply@thegoodpalco.com>',
+      from: 'The Good Opal Co <noreply@thegoodopalco.com>',
       to: process.env.CONTACT_EMAIL || 'thegoodopalco@gmail.com',
       replyTo: validated.email,
       subject: `[Contact Form] ${validated.subject}`,
@@ -49,7 +49,7 @@ export async function sendContactEmail(data: ContactFormData) {
           </div>
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #888;">
-            <p>This email was sent from the contact form at thegoodpalco.com</p>
+            <p>This email was sent from the contact form at thegoodopalco.com</p>
             <p>Submitted on: ${new Date().toLocaleString('en-AU', { timeZone: 'Australia/Sydney' })}</p>
           </div>
         </div>
@@ -66,7 +66,7 @@ export async function sendContactEmail(data: ContactFormData) {
 
     // Send confirmation email to customer
     const { error: customerError } = await resend.emails.send({
-      from: 'The Good Opal Co <noreply@thegoodpalco.com>',
+      from: 'The Good Opal Co <noreply@thegoodopalco.com>',
       to: validated.email,
       subject: 'Thank you for contacting The Good Opal Co',
       html: `
@@ -102,10 +102,10 @@ export async function sendContactEmail(data: ContactFormData) {
             </p>
 
             <ul style="color: #666; line-height: 1.8;">
-              <li><a href="https://thegoodpalco.com/faq" style="color: #0066cc;">Frequently Asked Questions</a></li>
-              <li><a href="https://thegoodpalco.com/shipping" style="color: #0066cc;">Shipping Information</a></li>
-              <li><a href="https://thegoodpalco.com/returns" style="color: #0066cc;">Returns & Refunds</a></li>
-              <li><a href="https://thegoodpalco.com/care-guide" style="color: #0066cc;">Opal Care Guide</a></li>
+              <li><a href="https://thegoodopalco.com/faq" style="color: #0066cc;">Frequently Asked Questions</a></li>
+              <li><a href="https://thegoodopalco.com/shipping" style="color: #0066cc;">Shipping Information</a></li>
+              <li><a href="https://thegoodopalco.com/returns" style="color: #0066cc;">Returns & Refunds</a></li>
+              <li><a href="https://thegoodopalco.com/care-guide" style="color: #0066cc;">Opal Care Guide</a></li>
             </ul>
 
             <p style="color: #666; line-height: 1.6;">

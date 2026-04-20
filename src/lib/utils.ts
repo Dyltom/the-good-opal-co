@@ -26,34 +26,16 @@ export function formatNumber(value: number, locale: string = 'en-US'): string {
 }
 
 /**
- * Format a currency value
- * @param value - Number to format
- * @param currency - Currency code (default: 'USD')
- * @param locale - Locale string (default: 'en-US')
- * @returns Formatted currency string
- */
-export function formatCurrency(
-  value: number,
-  currency: string = 'USD',
-  locale: string = 'en-US'
-): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-  }).format(value)
-}
-
-/**
  * Format a date using locale
  * @param date - Date to format
  * @param options - Intl.DateTimeFormat options
- * @param locale - Locale string (default: 'en-US')
+ * @param locale - Locale string (default: 'en-AU')
  * @returns Formatted date string
  */
 export function formatDate(
   date: Date | string | number,
   options: Intl.DateTimeFormatOptions = {},
-  locale: string = 'en-US'
+  locale: string = 'en-AU'
 ): string {
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
 
@@ -67,12 +49,12 @@ export function formatDate(
 /**
  * Format a relative time string (e.g., "2 hours ago")
  * @param date - Date to format
- * @param locale - Locale string (default: 'en-US')
+ * @param locale - Locale string (default: 'en-AU')
  * @returns Relative time string
  */
 export function formatRelativeTime(
   date: Date | string | number,
-  locale: string = 'en-US'
+  locale: string = 'en-AU'
 ): string {
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
 

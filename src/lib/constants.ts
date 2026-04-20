@@ -35,9 +35,9 @@ export const ISO_DATE_FORMAT = 'yyyy-MM-dd' as const
 /**
  * Localization defaults
  */
-export const DEFAULT_LOCALE = 'en-US' as const
-export const DEFAULT_TIMEZONE = 'America/New_York' as const
-export const DEFAULT_CURRENCY = 'USD' as const
+export const DEFAULT_LOCALE = 'en-AU' as const
+export const DEFAULT_TIMEZONE = 'Australia/Sydney' as const
+export const DEFAULT_CURRENCY = 'AUD' as const
 
 /**
  * SEO defaults
