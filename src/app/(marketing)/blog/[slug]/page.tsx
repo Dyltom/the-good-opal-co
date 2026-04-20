@@ -4,11 +4,11 @@ import { Navigation, Footer } from '@/components/navigation'
 import { getPayload } from '@/lib/payload'
 import type { Post } from '@/types/payload-types'
 import Image from 'next/image'
-import { formatCurrency, cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import { PageTransition } from '@/components/layout/PageTransition'
-import { Clock, User, Calendar } from 'lucide-react'
+import { User, Calendar } from 'lucide-react'
 
 /**
  * Blog Post Detail Page

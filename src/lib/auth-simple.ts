@@ -8,6 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET
 if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is required but not set')
 }
+// TypeScript narrowing: JWT_SECRET is guaranteed non-undefined after the throw above
+const JWT_SECRET_VALUE: string = JWT_SECRET
 const COOKIE_NAME = 'opal-auth'
 
 export interface AuthUser {
@@ -38,7 +40,7 @@ export function createToken(user: AuthUser): string {
       name: user.name,
       role: user.role
     },
-    JWT_SECRET,
+    JWT_SECRET_VALUE,
     { expiresIn: '7d' }
   )
 }

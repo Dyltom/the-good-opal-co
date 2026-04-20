@@ -31,7 +31,7 @@ export default function CheckoutError({
             </h1>
 
             <p className="text-content mb-6">
-              We encountered an issue processing your checkout. Don't worry - no payment has been taken.
+              We encountered an issue processing your checkout. Don&apos;t worry - no payment has been taken.
             </p>
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">

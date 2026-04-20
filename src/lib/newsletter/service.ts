@@ -52,9 +52,9 @@ export class ResendNewsletterService implements NewsletterService {
         limit: 1
       })
 
-      if (existingCustomer.docs.length > 0) {
-        const customer = existingCustomer.docs[0]
-        if (customer.subscribedToNewsletter && customer.emailVerified) {
+      const existingDoc = existingCustomer.docs[0]
+      if (existingDoc) {
+        if (existingDoc.subscribedToNewsletter && existingDoc.emailVerified) {
           return {
             success: false,
             message: 'You are already subscribed to our newsletter'
@@ -66,15 +66,15 @@ export class ResendNewsletterService implements NewsletterService {
       const unsubscribeToken = generateToken()
 
       // Create or update customer record
-      if (existingCustomer.docs.length > 0) {
+      if (existingDoc) {
         // Update existing customer
         await payload.update({
           collection: 'customers',
-          id: existingCustomer.docs[0].id,
+          id: existingDoc.id,
           data: {
             subscribedToNewsletter: true,
             emailVerified: options?.skipConfirmation || false,
-            tags: [...(existingCustomer.docs[0].tags || []), ...(options?.tags || [])],
+            tags: [...(existingDoc.tags || []), ...(options?.tags || [])],
             // Store tokens in metadata (would need to add these fields to schema)
             // confirmationToken,
             // unsubscribeToken
@@ -120,7 +120,7 @@ export class ResendNewsletterService implements NewsletterService {
         from: this.fromEmail,
         to: email,
         subject: 'Please confirm your newsletter subscription',
-        react: NewsletterConfirmationEmail({
+        react: await NewsletterConfirmationEmail({
           confirmationUrl,
           email
         })
@@ -140,7 +140,7 @@ export class ResendNewsletterService implements NewsletterService {
     }
   }
 
-  async confirm(token: string): Promise<SubscriptionResult> {
+  async confirm(_token: string): Promise<SubscriptionResult> {
     try {
       // In production, find customer by confirmation token
       // For now, we'll just update the first unconfirmed subscriber
@@ -173,6 +173,12 @@ export class ResendNewsletterService implements NewsletterService {
       }
 
       const customer = unconfirmedCustomers.docs[0]
+      if (!customer) {
+        return {
+          success: false,
+          message: 'Invalid or expired confirmation token'
+        }
+      }
 
       // Mark as confirmed
       await payload.update({
@@ -227,9 +233,16 @@ export class ResendNewsletterService implements NewsletterService {
         }
       }
 
+      const unsubDoc = customers.docs[0]
+      if (!unsubDoc) {
+        return {
+          success: false,
+          message: 'Invalid unsubscribe link'
+        }
+      }
       await payload.update({
         collection: 'customers',
-        id: customers.docs[0].id,
+        id: unsubDoc.id,
         data: {
           subscribedToNewsletter: false
         }
@@ -256,7 +269,7 @@ export class ResendNewsletterService implements NewsletterService {
       from: this.fromEmail,
       to: subscriber.email,
       subject: 'Welcome to The Good Opal Co Newsletter! 🌟',
-      react: NewsletterWelcomeEmail({
+      react: await NewsletterWelcomeEmail({
         name: subscriber.name,
         unsubscribeUrl,
         shopUrl
@@ -270,7 +283,7 @@ export class ResendNewsletterService implements NewsletterService {
   async sendCampaign(
     subject: string,
     content: string,
-    segment?: string[]
+    _segment?: string[]
   ): Promise<{ sent: number; failed: number }> {
     const payload = await getPayload()
 

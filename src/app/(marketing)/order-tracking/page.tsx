@@ -35,7 +35,7 @@ export default function OrderTrackingPage() {
           {/* Help Section */}
           <div className="mt-12 text-center">
             <p className="text-sm text-gray-600 mb-2">
-              Can't find your order?
+              Can&apos;t find your order?
             </p>
             <p className="text-sm text-gray-600">
               Contact our support team at{' '}

@@ -54,7 +54,7 @@ export default function AboutPage() {
               Treasures from the Australian Outback
             </h2>
             <p className="text-lg text-content leading-relaxed">
-              The Good Opal Co is more than just a jewellery company—we're custodians of nature's most captivating gemstones.
+              The Good Opal Co is more than just a jewellery company—we&apos;re custodians of nature&apos;s most captivating gemstones.
               Our mission is to share the extraordinary beauty of Australian opals with collectors and jewellery lovers worldwide,
               while maintaining the highest standards of quality, authenticity, and ethical sourcing.
             </p>
@@ -106,7 +106,7 @@ export default function AboutPage() {
               <div className="prose prose-lg">
                 <p className="text-content mb-4">
                   Founded in 2020 by Stephanie Caruana, The Good Opal Co was born from a genuine passion for
-                  Australia's national gemstone and a commitment to making these beautiful stones accessible to everyone.
+                  Australia&apos;s national gemstone and a commitment to making these beautiful stones accessible to everyone.
                 </p>
                 <p className="text-content mb-4">
                   Our mission is simple: to source authentic Australian opals directly from ethical miners and
@@ -114,10 +114,10 @@ export default function AboutPage() {
                 </p>
                 <p className="text-content mb-4">
                   What sets us apart is our dedication to transparency and ethical sourcing. We believe everyone
-                  should be able to own a piece of Australia's natural beauty without compromising on quality or ethics.
+                  should be able to own a piece of Australia&apos;s natural beauty without compromising on quality or ethics.
                 </p>
                 <p className="text-content">
-                  Today, we work directly with ethical miners across Australia's opal fields, ensuring fair prices
+                  Today, we work directly with ethical miners across Australia&apos;s opal fields, ensuring fair prices
                   for miners and exceptional value for our customers. Every piece in our collection is hand-selected
                   for its beauty, quality, and that special something that makes Australian opals truly magical.
                 </p>
@@ -183,10 +183,10 @@ export default function AboutPage() {
         <section className="mb-20">
           <div className="bg-gray-50 rounded-3xl p-12">
             <h2 className="text-3xl font-display font-bold text-charcoal text-center mb-4">
-              From Australia's Premier Opal Fields
+              From Australia&apos;s Premier Opal Fields
             </h2>
             <p className="text-center text-content mb-12 max-w-2xl mx-auto">
-              We source directly from Australia's most renowned opal mining locations,
+              We source directly from Australia&apos;s most renowned opal mining locations,
               each producing unique varieties of this precious gemstone.
             </p>
 
@@ -194,7 +194,7 @@ export default function AboutPage() {
               <div className="bg-white p-6 rounded-xl">
                 <h3 className="font-semibold text-charcoal text-xl mb-3">Lightning Ridge</h3>
                 <p className="text-content mb-4">
-                  Home of the rare and valuable black opal, Lightning Ridge produces the world's
+                  Home of the rare and valuable black opal, Lightning Ridge produces the world&apos;s
                   most sought-after opals with their distinctive dark body tone and brilliant play of color.
                 </p>
                 <p className="text-sm text-content-muted">
@@ -205,7 +205,7 @@ export default function AboutPage() {
               <div className="bg-white p-6 rounded-xl">
                 <h3 className="font-semibold text-charcoal text-xl mb-3">Coober Pedy</h3>
                 <p className="text-content mb-4">
-                  The "Opal Capital of the World" produces the majority of the world's white opals,
+                  The &quot;Opal Capital of the World&quot; produces the majority of the world&apos;s white opals,
                   known for their light body tone and spectacular color displays.
                 </p>
                 <p className="text-sm text-content-muted">
@@ -298,7 +298,7 @@ export default function AboutPage() {
               <p className="text-2xl font-bold text-gray-400">Vogue AU</p>
             </div>
             <div className="flex items-center justify-center">
-              <p className="text-2xl font-bold text-gray-400">Harper's</p>
+              <p className="text-2xl font-bold text-gray-400">Harper&apos;s</p>
             </div>
             <div className="flex items-center justify-center">
               <p className="text-2xl font-bold text-gray-400">The Australian</p>

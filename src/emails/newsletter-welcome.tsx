@@ -42,7 +42,7 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
                     </h2>
 
                     <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666', margin: '0 0 20px 0' }}>
-                      Welcome to our exclusive newsletter! You're now part of a community that appreciates
+                      Welcome to our exclusive newsletter! You&apos;re now part of a community that appreciates
                       the natural beauty of Australian opals.
                     </p>
 
@@ -56,7 +56,7 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
                       textAlign: 'center'
                     }}>
                       <p style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 'bold', color: '#1a1a1a' }}>
-                        Here's your welcome gift!
+                        Here&apos;s your welcome gift!
                       </p>
                       <p style={{ margin: '0 0 20px 0', fontSize: '36px', fontWeight: 'bold', color: '#7c3aed' }}>
                         {couponCode}
@@ -116,7 +116,7 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
                 <tr>
                   <td style={{ backgroundColor: '#f8f8f8', padding: '30px', textAlign: 'center' }}>
                     <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#999999' }}>
-                      You're receiving this email because you subscribed to our newsletter.
+                      You&apos;re receiving this email because you subscribed to our newsletter.
                     </p>
                     <a
                       href={unsubscribeUrl}

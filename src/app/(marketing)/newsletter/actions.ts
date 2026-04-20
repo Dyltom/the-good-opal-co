@@ -25,7 +25,7 @@ const subscribeSchema = z.object({
  * Subscribe to newsletter with email confirmation
  */
 export async function subscribeToNewsletter(
-  prevState: unknown,
+  _prevState: unknown,
   formData: FormData
 ) {
   try {
@@ -38,7 +38,7 @@ export async function subscribeToNewsletter(
     const service = getNewsletterService()
     const result = await service.subscribe(data.email, {
       name: data.name,
-      source: data.source as any
+      source: data.source
     })
 
     return {
@@ -50,7 +50,7 @@ export async function subscribeToNewsletter(
     if (error instanceof z.ZodError) {
       return {
         success: false,
-        message: error.errors[0]?.message || 'Invalid input'
+        message: error.issues[0]?.message || 'Invalid input'
       }
     }
 

@@ -315,7 +315,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
               <span className="text-base md:text-lg font-medium">Secure Stripe Checkout</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              You'll be redirected to Stripe to complete your payment securely.
+              You&apos;ll be redirected to Stripe to complete your payment securely.
               Shipping address will be collected during checkout.
             </p>
           </div>

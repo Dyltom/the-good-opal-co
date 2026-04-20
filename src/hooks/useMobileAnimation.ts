@@ -133,6 +133,7 @@ export function useMobileTouchAnimation() {
     if (!isMobile) return
 
     const touch = e.touches[0]
+    if (!touch) return
     x.set(touch.clientX)
     y.set(touch.clientY)
   }
@@ -141,6 +142,7 @@ export function useMobileTouchAnimation() {
     if (!isMobile) return
 
     const touch = e.touches[0]
+    if (!touch) return
     x.set(touch.clientX)
     y.set(touch.clientY)
   }

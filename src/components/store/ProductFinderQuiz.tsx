@@ -184,7 +184,7 @@ const questions: QuizQuestion[] = [
  * AI-Powered Product Finder Quiz
  * Interactive quiz to help customers find their perfect opal
  */
-export function ProductFinderQuiz({ onComplete, onSkip, products }: ProductFinderQuizProps) {
+export function ProductFinderQuiz({ onComplete, onSkip, products: _products }: ProductFinderQuizProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [showResults, setShowResults] = useState(false)
@@ -254,6 +254,7 @@ export function ProductFinderQuiz({ onComplete, onSkip, products }: ProductFinde
   }
 
   const question = questions[currentQuestion]
+  if (!question) return null
 
   return (
     <Card className="max-w-2xl mx-auto border-2 border-opal-electric/20">
@@ -330,7 +331,7 @@ export function ProductFinderQuiz({ onComplete, onSkip, products }: ProductFinde
                 Finding Your Perfect Opal...
               </CardTitle>
               <p className="text-muted-foreground">
-                Based on your preferences, we're curating a personalized selection
+                Based on your preferences, we&apos;re curating a personalized selection
               </p>
             </motion.div>
           )}

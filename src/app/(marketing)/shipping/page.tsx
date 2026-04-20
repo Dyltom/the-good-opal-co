@@ -207,7 +207,7 @@ export default function ShippingPage() {
                 </ul>
               </div>
               <p className="text-content mb-6">
-                Don't see your country? Contact us at <a href="mailto:shipping@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">shipping@thegoodpalco.com</a> for shipping options.
+                Don&apos;t see your country? Contact us at <a href="mailto:shipping@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">shipping@thegoodpalco.com</a> for shipping options.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
@@ -239,7 +239,7 @@ export default function ShippingPage() {
                 <li><strong>Engraved items:</strong> 3-4 business days</li>
               </ul>
               <p className="text-content mb-4">
-                Processing times may be extended during peak periods (Christmas, Valentine's Day, Mother's Day). You'll receive a confirmation email once your order ships.
+                Processing times may be extended during peak periods (Christmas, Valentine&apos;s Day, Mother&apos;s Day). You&apos;ll receive a confirmation email once your order ships.
               </p>
             </section>
 
@@ -252,12 +252,12 @@ export default function ShippingPage() {
                 <ol className="list-decimal pl-6 space-y-2">
                   <li className="text-content">Check your email for shipping confirmation</li>
                   <li className="text-content">Click the tracking link in the email</li>
-                  <li className="text-content">Enter your tracking number on the carrier's website</li>
+                  <li className="text-content">Enter your tracking number on the carrier&apos;s website</li>
                   <li className="text-content">Sign up for delivery notifications</li>
                 </ol>
               </div>
               <p className="text-content mb-4">
-                If you haven't received tracking information within 3 business days of ordering, please check your spam folder or contact us.
+                If you haven&apos;t received tracking information within 3 business days of ordering, please check your spam folder or contact us.
               </p>
             </section>
 
@@ -279,7 +279,7 @@ export default function ShippingPage() {
                 Delivery Attempts
               </h3>
               <p className="text-content mb-4">
-                If you're not home during delivery:
+                If you&apos;re not home during delivery:
               </p>
               <ul className="list-disc pl-6 mb-6 space-y-2">
                 <li>The carrier will leave a delivery notice</li>
@@ -316,12 +316,12 @@ export default function ShippingPage() {
               </p>
               <ol className="list-decimal pl-6 mb-6 space-y-2">
                 <li>Contact us immediately at <a href="mailto:support@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodpalco.com</a></li>
-                <li>We'll file a claim with the carrier</li>
+                <li>We&apos;ll file a claim with the carrier</li>
                 <li>Investigation typically takes 5-10 business days</li>
-                <li>We'll send a replacement or full refund once resolved</li>
+                <li>We&apos;ll send a replacement or full refund once resolved</li>
               </ol>
               <p className="text-content mb-6">
-                All packages are fully insured, so you're protected against loss or damage.
+                All packages are fully insured, so you&apos;re protected against loss or damage.
               </p>
             </section>
 
@@ -348,7 +348,7 @@ export default function ShippingPage() {
                 Contact Us
               </h2>
               <p className="text-content mb-4">
-                Questions about shipping? We're here to help:
+                Questions about shipping? We&apos;re here to help:
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <div className="grid md:grid-cols-2 gap-6">

@@ -28,7 +28,7 @@ export default function ContactPage() {
             </h1>
             <p className="text-lg text-content-muted max-w-2xl mx-auto">
               Have a question about our Australian opals? Need help with an order?
-              We're here to help and would love to hear from you.
+              We&apos;re here to help and would love to hear from you.
             </p>
           </div>
 
@@ -52,7 +52,7 @@ export default function ContactPage() {
                       </a>
                     </p>
                     <p className="text-sm text-content-muted mt-1">
-                      We'll respond within 24 hours
+                      We&apos;ll respond within 24 hours
                     </p>
                   </div>
                 </div>

@@ -31,14 +31,14 @@ export function NewsletterForm({
     const formData = new FormData(e.currentTarget)
 
     startTransition(async () => {
-      const result = await subscribeToNewsletter(formData)
+      const result = await subscribeToNewsletter(null, formData)
 
       if (result.success) {
         setMessage({ type: 'success', text: result.message })
         // Reset form on success
         e.currentTarget?.reset()
       } else {
-        setMessage({ type: 'error', text: result.error ?? result.message })
+        setMessage({ type: 'error', text: result.message })
       }
 
       // Clear message after 5 seconds

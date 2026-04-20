@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
+import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import {

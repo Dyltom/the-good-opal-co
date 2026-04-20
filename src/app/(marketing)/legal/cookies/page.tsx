@@ -71,7 +71,7 @@ export default function CookiePolicyPage() {
                 2.2 Performance Cookies
               </h3>
               <p className="text-content mb-4">
-                These cookies collect information about how visitors use our website, such as which pages are visited most often. This helps us improve our website's performance.
+                These cookies collect information about how visitors use our website, such as which pages are visited most often. This helps us improve our website&apos;s performance.
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li><strong>Vercel Analytics:</strong> Website performance monitoring</li>
@@ -88,7 +88,7 @@ export default function CookiePolicyPage() {
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li><strong>Language Preferences:</strong> Remember your language choice</li>
                 <li><strong>Currency Settings:</strong> Display prices in your preferred currency</li>
-                <li><strong>Recently Viewed:</strong> Show products you've looked at</li>
+                <li><strong>Recently Viewed:</strong> Show products you&apos;ve looked at</li>
                 <li><strong>Wishlist:</strong> Save items for later</li>
               </ul>
 
@@ -206,7 +206,7 @@ export default function CookiePolicyPage() {
                 6.1 Cookie Settings
               </h3>
               <p className="text-content mb-4">
-                When you first visit our website, you'll see a cookie consent banner that allows you to accept or reject non-essential cookies. You can change your preferences at any time by clicking the "Cookie Settings" link in the footer.
+                When you first visit our website, you&apos;ll see a cookie consent banner that allows you to accept or reject non-essential cookies. You can change your preferences at any time by clicking the &quot;Cookie Settings&quot; link in the footer.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
@@ -231,7 +231,7 @@ export default function CookiePolicyPage() {
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>Shopping cart may not remember your items</li>
                 <li>You may need to log in repeatedly</li>
-                <li>Personalized recommendations won't be available</li>
+                <li>Personalized recommendations won&apos;t be available</li>
                 <li>Some pages may not display correctly</li>
               </ul>
             </section>
@@ -241,13 +241,13 @@ export default function CookiePolicyPage() {
                 7. Do Not Track
               </h2>
               <p className="text-content mb-4">
-                Some browsers have a "Do Not Track" feature that lets you tell websites you don't want your online activities tracked. Our website currently does not respond to Do Not Track signals, but you can manage tracking through our cookie settings.
+                Some browsers have a &quot;Do Not Track&quot; feature that lets you tell websites you don&apos;t want your online activities tracked. Our website currently does not respond to Do Not Track signals, but you can manage tracking through our cookie settings.
               </p>
             </section>
 
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-charcoal mb-4">
-                8. Children's Privacy
+                8. Children&apos;s Privacy
               </h2>
               <p className="text-content mb-4">
                 Our website is not intended for children under 16. We do not knowingly collect data from or market to children under 16 years of age.

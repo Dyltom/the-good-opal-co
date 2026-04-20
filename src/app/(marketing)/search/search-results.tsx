@@ -30,7 +30,7 @@ export async function SearchResults({ query, page }: SearchResultsProps) {
           No results found
         </h2>
         <p className="text-content mb-8 max-w-md mx-auto">
-          We couldn't find any products matching "{query}".
+          We couldn&apos;t find any products matching &quot;{query}&quot;.
           Try searching with different keywords or browse our collections.
         </p>
         <Button asChild>
@@ -49,7 +49,7 @@ export async function SearchResults({ query, page }: SearchResultsProps) {
       <div className="mb-6">
         <p className="text-content">
           Found <span className="font-semibold text-charcoal">{results.totalResults}</span>
-          {results.totalResults === 1 ? ' result' : ' results'} for "{query}"
+          {results.totalResults === 1 ? ' result' : ' results'} for &quot;{query}&quot;
         </p>
       </div>
 
@@ -58,7 +58,12 @@ export async function SearchResults({ query, page }: SearchResultsProps) {
         {results.products.map((product, index) => (
           <ProductCard
             key={product.id}
-            product={product}
+            product={{
+              ...product,
+              description: typeof product.description === 'string' ? product.description : undefined,
+              image: typeof product.image === 'string' ? product.image : undefined,
+              category: typeof product.category === 'string' ? product.category : undefined,
+            }}
             index={index}
             variant="default"
             animated

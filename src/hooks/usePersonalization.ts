@@ -116,7 +116,7 @@ export function usePersonalization(): [PersonalizationData, PersonalizationActio
 
       // Category preference score
       if (product.category && data.categoryPreferences[product.category]) {
-        score += data.categoryPreferences[product.category] * 10
+        score += (data.categoryPreferences[product.category] ?? 0) * 10
       }
 
       // Price range score

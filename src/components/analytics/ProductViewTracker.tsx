@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import type { Product } from '@/payload-types'
+import type { Product } from '@/types/payload-types'
 import { trackProductView } from '@/lib/analytics'
 
 interface ProductViewTrackerProps {

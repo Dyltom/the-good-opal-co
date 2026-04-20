@@ -34,7 +34,7 @@ export const NewsletterConfirmationEmail: React.FC<NewsletterConfirmationEmailPr
                     </h2>
 
                     <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666', margin: '0 0 30px 0' }}>
-                      Thanks for signing up for our newsletter! We're excited to share exclusive offers,
+                      Thanks for signing up for our newsletter! We&apos;re excited to share exclusive offers,
                       new opal collections, and jewelry care tips with you.
                     </p>
 
@@ -65,7 +65,7 @@ export const NewsletterConfirmationEmail: React.FC<NewsletterConfirmationEmailPr
                     </table>
 
                     <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#999999', margin: '30px 0 0 0', textAlign: 'center' }}>
-                      If you didn't sign up for our newsletter, you can safely ignore this email.
+                      If you didn&apos;t sign up for our newsletter, you can safely ignore this email.
                     </p>
 
                     <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#999999', margin: '10px 0 0 0', textAlign: 'center' }}>

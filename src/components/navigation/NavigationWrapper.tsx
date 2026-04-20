@@ -7,9 +7,11 @@ export async function NavigationWrapper(props: NavigationProps) {
   const session = await getSession()
 
   return (
-    <Navigation
-      {...props}
-      accountMenu={<AccountMenu user={session} />}
-    />
+    <div className="relative">
+      <Navigation {...props} />
+      <div className="absolute top-1/2 -translate-y-1/2 right-4 z-50 hidden md:block">
+        <AccountMenu user={session} />
+      </div>
+    </div>
   )
 }

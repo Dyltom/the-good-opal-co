@@ -19,9 +19,8 @@ export interface RelatedProductStrategy {
  */
 export class CategoryRelatedProductStrategy implements RelatedProductStrategy {
   async findRelated(product: Product, limit: number): Promise<Product[]> {
-    // Check if category is an object with value property
     const category = product.category
-    if (!category || typeof category === 'string' || !('value' in category) || !category.value?.id) {
+    if (!category) {
       return []
     }
 
@@ -32,8 +31,8 @@ export class CategoryRelatedProductStrategy implements RelatedProductStrategy {
       where: {
         and: [
           {
-            'category.value': {
-              equals: typeof category.value === 'string' ? category.value : category.value.id
+            category: {
+              equals: category
             }
           },
           {

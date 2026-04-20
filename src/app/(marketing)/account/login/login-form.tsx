@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 
 export function LoginForm() {
   const [isRegister, setIsRegister] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading] = useState(false)
   const [loginState, loginAction] = useFormState(login, null)
   const [registerState, registerAction] = useFormState(register, null)
 

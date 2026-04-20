@@ -66,7 +66,7 @@ export default function TermsOfServicePage() {
                 3.1 Product Information
               </h3>
               <p className="text-content mb-4">
-                We have made every effort to display as accurately as possible the colors and images of our products. We cannot guarantee that your computer monitor's display of any color will be accurate.
+                We have made every effort to display as accurately as possible the colors and images of our products. We cannot guarantee that your computer monitor&apos;s display of any color will be accurate.
               </p>
               <p className="text-content mb-4">
                 We reserve the right to limit the quantities of any products or services that we offer. All descriptions of products or product pricing are subject to change at any time without notice.
@@ -235,7 +235,7 @@ export default function TermsOfServicePage() {
                 11.1 Disclaimers
               </h3>
               <p className="text-content mb-4">
-                The information on this website is provided on an "as is" basis. To the fullest extent permitted by law, The Good Opal Co:
+                The information on this website is provided on an &quot;as is&quot; basis. To the fullest extent permitted by law, The Good Opal Co:
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>Excludes all representations and warranties relating to this website and its contents</li>

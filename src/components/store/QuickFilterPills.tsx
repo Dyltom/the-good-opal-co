@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
+
 import { Sparkles, TrendingUp, DollarSign, Gem } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
@@ -30,9 +30,9 @@ export interface QuickFilter {
 export function QuickFilterPills({
   onFilterSelect,
   activeFilter,
-  productCount
+  productCount: _productCount
 }: QuickFilterPillsProps) {
-  const [hoveredPill, setHoveredPill] = useState<string | null>(null)
+  const [, setHoveredPill] = useState<string | null>(null)
 
   const quickFilters: QuickFilter[] = [
     {

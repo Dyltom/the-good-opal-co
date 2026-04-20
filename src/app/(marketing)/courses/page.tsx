@@ -10,10 +10,7 @@ import {
   Clock,
   Users,
   Award,
-  BookOpen,
   Gem,
-  Microscope,
-  MapPin,
   Video,
   CheckCircle,
   Star
@@ -260,7 +257,7 @@ export default function CoursesPage() {
 
                       {/* Topics */}
                       <div className="mb-6">
-                        <h4 className="font-semibold text-charcoal mb-3">You'll Learn:</h4>
+                        <h4 className="font-semibold text-charcoal mb-3">You&apos;ll Learn:</h4>
                         <ul className="space-y-2">
                           {course.topics.slice(0, 4).map((topic, index) => (
                             <li key={index} className="flex items-start gap-2">
@@ -354,7 +351,7 @@ export default function CoursesPage() {
 
                 <div className="text-center mt-8">
                   <p className="text-charcoal/70 mb-4">
-                    Can't find a suitable date?
+                    Can&apos;t find a suitable date?
                   </p>
                   <Button asChild variant="outline">
                     <Link href="/contact?subject=course-inquiry">

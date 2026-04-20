@@ -39,7 +39,7 @@ export default function PrivacyPolicyPage() {
                 1. Introduction
               </h2>
               <p className="text-content mb-4">
-                The Good Opal Co ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or make a purchase from us.
+                The Good Opal Co (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or make a purchase from us.
               </p>
               <p className="text-content mb-4">
                 We comply with the Australian Privacy Principles (APPs) contained in the Privacy Act 1988 (Cth) and the General Data Protection Regulation (GDPR) for our international customers.
@@ -174,7 +174,7 @@ export default function PrivacyPolicyPage() {
 
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-charcoal mb-4">
-                9. Children's Privacy
+                9. Children&apos;s Privacy
               </h2>
               <p className="text-content mb-4">
                 Our website is not intended for children under 16 years of age. We do not knowingly collect personal information from children under 16.
@@ -223,7 +223,7 @@ export default function PrivacyPolicyPage() {
                 13. Changes to This Policy
               </h2>
               <p className="text-content mb-4">
-                We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the "Last updated" date.
+                We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the &quot;Last updated&quot; date.
               </p>
             </section>
 
@@ -247,7 +247,7 @@ export default function PrivacyPolicyPage() {
                 15. Australian Privacy Commissioner
               </h2>
               <p className="text-content">
-                If you're not satisfied with our response to your privacy concern, you may contact the Office of the Australian Information Commissioner:
+                If you&apos;re not satisfied with our response to your privacy concern, you may contact the Office of the Australian Information Commissioner:
               </p>
               <div className="bg-gray-50 p-6 rounded-lg mt-4">
                 <p className="text-content">Website: www.oaic.gov.au</p>

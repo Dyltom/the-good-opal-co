@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { EnhancedProductCard } from '@/components/product/EnhancedProductCard'
+
 import { Spinner } from '@/components/ui/LoadingStates'
 import type { Product } from '@/app/(marketing)/store/page'
 
@@ -28,7 +28,7 @@ export function MasonryProductGrid({
   const [items, setItems] = useState(products)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const [columnHeights, setColumnHeights] = useState<number[]>([])
+  const columnHeightsRef = useRef<number[]>([])
   const observerRef = useRef<HTMLDivElement>(null)
 
   // Calculate responsive columns
@@ -54,7 +54,7 @@ export function MasonryProductGrid({
 
   // Initialize column heights
   useEffect(() => {
-    setColumnHeights(new Array(actualColumns).fill(0))
+    columnHeightsRef.current = new Array(actualColumns).fill(0)
   }, [actualColumns])
 
   // Infinite scroll observer
@@ -63,7 +63,7 @@ export function MasonryProductGrid({
 
     const observer = new IntersectionObserver(
       async (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
+        if (entries[0]?.isIntersecting && hasMore && !isLoading) {
           setIsLoading(true)
           try {
             const newProducts = await onLoadMore()
@@ -98,7 +98,7 @@ export function MasonryProductGrid({
     // Calculate variable heights for visual interest
     const baseHeight = 320 // Base card height
     const heightVariations = [0, 40, 80, 20, 60, 100, 30, 90]
-    const extraHeight = heightVariations[index % heightVariations.length]
+    const extraHeight = heightVariations[index % heightVariations.length] ?? 0
     const totalHeight = baseHeight + extraHeight
 
     return {
@@ -163,7 +163,7 @@ export function MasonryProductGrid({
           className="text-center py-12"
         >
           <p className="text-muted-foreground">
-            You've reached the end of our collection
+            You&apos;ve reached the end of our collection
           </p>
         </motion.div>
       )}
@@ -180,7 +180,7 @@ function MasonryProductCard({ product, index }: { product: Product; index: numbe
 
   // Use different aspect ratios for visual variety
   const aspectRatios = ['4:5', '3:4', '1:1', '5:6']
-  const aspectRatio = aspectRatios[index % aspectRatios.length]
+  const aspectRatio = aspectRatios[index % aspectRatios.length] ?? '4:5'
 
   return (
     <div className="h-full bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 group cursor-pointer">

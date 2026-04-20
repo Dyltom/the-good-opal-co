@@ -10,7 +10,6 @@ import type {
   FixedDiscount,
   ShippingDiscount,
   DiscountCalculationResult,
-  DiscountApplication,
   CalculationContext
 } from './types'
 

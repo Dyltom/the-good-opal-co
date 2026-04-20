@@ -4,7 +4,6 @@ import { motion } from 'framer-motion'
 import { Sparkles, TrendingUp, Clock, Heart } from 'lucide-react'
 import { useRecommendations } from '@/hooks/usePersonalization'
 import { EnhancedProductCard } from '@/components/product/EnhancedProductCard'
-import { ProductCardSkeleton } from '@/components/ui/LoadingStates'
 import type { Product } from '@/app/(marketing)/store/page'
 
 interface ProductRecommendationsProps {
@@ -208,7 +207,7 @@ export function WishlistReminder({ products }: { products: Product[] }) {
         <div className="flex-1">
           <h3 className="font-semibold mb-2">Items in your wishlist are running low!</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Some of your saved items have limited stock. Don't miss out!
+            Some of your saved items have limited stock. Don&apos;t miss out!
           </p>
           <div className="grid grid-cols-3 gap-3">
             {wishlistItems.map((product) => (

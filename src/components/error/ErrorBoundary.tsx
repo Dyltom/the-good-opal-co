@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     this.props.onError?.(error, errorInfo)
 
@@ -40,7 +40,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     this.setState({ hasError: false, error: null })
   }
 
-  render() {
+  override render() {
     if (this.state.hasError && this.state.error) {
       if (this.props.fallback) {
         const FallbackComponent = this.props.fallback
@@ -69,7 +69,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
         </h2>
 
         <p className="text-content mb-6">
-          We encountered an unexpected error. Don't worry, your cart and preferences are safe.
+          We encountered an unexpected error. Don&apos;t worry, your cart and preferences are safe.
         </p>
 
         {process.env.NODE_ENV === 'development' && (
@@ -101,7 +101,7 @@ function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => voi
 }
 
 // Cart-specific error boundary
-export function CartErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+export function CartErrorFallback({ error: _error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="p-6 text-center">
       <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
@@ -109,7 +109,7 @@ export function CartErrorFallback({ error, reset }: { error: Error; reset: () =>
         Cart temporarily unavailable
       </h3>
       <p className="text-sm text-content mb-4">
-        We're having trouble loading your cart. Your items are safe.
+        We&apos;re having trouble loading your cart. Your items are safe.
       </p>
       <Button onClick={reset} size="sm">
         <RefreshCw className="h-3 w-3 mr-1" />
@@ -120,7 +120,7 @@ export function CartErrorFallback({ error, reset }: { error: Error; reset: () =>
 }
 
 // Checkout-specific error boundary
-export function CheckoutErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+export function CheckoutErrorFallback({ error: _error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="max-w-md mx-auto p-6 text-center">
       <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -147,7 +147,7 @@ export function CheckoutErrorFallback({ error, reset }: { error: Error; reset: (
 }
 
 // Product-specific error boundary
-export function ProductErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
+export function ProductErrorFallback({ error: _error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="p-6 bg-gray-50 rounded-lg text-center">
       <AlertTriangle className="h-8 w-8 text-gray-400 mx-auto mb-3" />

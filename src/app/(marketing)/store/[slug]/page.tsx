@@ -2,15 +2,14 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import type { Metadata } from 'next'
-import { Container, Section } from '@/components/layout'
+import type { Product } from '@/types/payload-types'
+import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductActions } from '@/components/product/ProductActions'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { formatCurrency } from '@/lib/utils'
 import { getPayload } from '@/lib/payload'
 import {
-  StockBadge,
-  NewBadge,
   AuthenticityChecklist,
   SocialProof,
   PaymentBadgesCompact,
@@ -118,7 +117,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     depth: 2, // Include related media
   })
 
-  const product = docs[0]
+  const product = docs[0] as Product | undefined
   if (!product) {
     notFound()
   }

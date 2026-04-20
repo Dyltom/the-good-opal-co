@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, Sparkles, Star } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
 
 interface Product {
   id: string
@@ -77,6 +76,8 @@ export function ProductHero({ products }: ProductHeroProps) {
   }
 
   const currentProduct = products[currentIndex]
+
+  if (!currentProduct) return null
 
   return (
     <section className="relative bg-black-rich overflow-hidden pt-[84px]">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import type { ReactElement } from 'react'
 import { getPayload } from '@/lib/payload'
 import { Resend } from 'resend'
 import { OrderConfirmationEmail } from '@/emails/order-confirmation'
@@ -19,7 +20,7 @@ import { OrderConfirmationEmail } from '@/emails/order-confirmation'
  */
 
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
-  apiVersion: '2025-09-30.clover',
+  apiVersion: '2025-10-29.clover',
 })
 
 const resend = new Resend(process.env['RESEND_API_KEY'] ?? '')
@@ -295,7 +296,7 @@ export async function POST(request: NextRequest) {
                 postalCode: shippingDetails?.address?.postal_code ?? '',
                 country: shippingDetails?.address?.country ?? 'AU',
               },
-            }),
+            }) as ReactElement,
           })
           console.log(`Order confirmation email sent to ${session.customer_email}`)
         } catch (emailError) {

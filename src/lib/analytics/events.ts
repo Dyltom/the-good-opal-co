@@ -3,8 +3,8 @@
  * Convenience functions for tracking common e-commerce events
  */
 
-import type { Product } from '@/payload-types'
-import type { CartItem } from '@/types'
+import type { Product } from '@/types/payload-types'
+import type { CartItem } from '@/lib/cart'
 import { getAnalyticsService } from './service'
 import type {
   ProductViewEvent,
@@ -31,12 +31,10 @@ function productToAnalyticsItem(
 ) {
   return {
     item_id: product.id,
-    item_name: product.title || 'Unknown Product',
-    item_category: typeof product.category === 'string'
-      ? product.category
-      : product.category?.title,
+    item_name: product.name || 'Unknown Product',
+    item_category: product.category,
     item_variant: variant,
-    price: (product.price || 0) / 100, // Convert cents to dollars
+    price: product.price || 0,
     quantity
   }
 }
@@ -46,13 +44,11 @@ function productToAnalyticsItem(
  */
 function cartItemToAnalyticsItem(item: CartItem) {
   return {
-    item_id: item.product.id,
-    item_name: item.product.title || 'Unknown Product',
-    item_category: typeof item.product.category === 'string'
-      ? item.product.category
-      : item.product.category?.title,
-    item_variant: item.variant?.title,
-    price: (item.product.price || 0) / 100,
+    item_id: item.productId,
+    item_name: item.name || 'Unknown Product',
+    item_category: undefined,
+    item_variant: undefined,
+    price: item.price || 0,
     quantity: item.quantity
   }
 }
@@ -107,7 +103,7 @@ export function trackRemoveFromCart(item: CartItem) {
     eventName: 'remove_from_cart',
     parameters: {
       currency: CURRENCY,
-      value: ((item.product.price || 0) * item.quantity) / 100,
+      value: (item.price || 0) * item.quantity,
       items: [cartItemToAnalyticsItem(item)]
     }
   }

@@ -152,7 +152,7 @@ export default async function StorePage() {
                   </h1>
                   <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
                     Discover our collection of authentic Australian opals, handpicked from Lightning Ridge,
-                    Coober Pedy, and Queensland's boulder opal fields.
+                    Coober Pedy, and Queensland&apos;s boulder opal fields.
                   </p>
                 </div>
               </Container>

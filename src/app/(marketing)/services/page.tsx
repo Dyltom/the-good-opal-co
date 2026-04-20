@@ -4,12 +4,10 @@ import { Container, Section } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { PageTransition } from '@/components/layout/PageTransition'
-import Image from 'next/image'
 import {
   Gem,
   Settings,
   Heart,
-  Award,
   Clock,
   Shield,
   Sparkles,
@@ -167,7 +165,7 @@ export default function ServicesPage() {
                 </h1>
                 <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
                   From concept to creation, we bring your vision to life with handcrafted
-                  Australian opal jewellery that's uniquely yours.
+                  Australian opal jewellery that&apos;s uniquely yours.
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Button asChild size="lg">
@@ -198,7 +196,7 @@ export default function ServicesPage() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {services.map((service, index) => (
+                {services.map((service) => (
                   <div
                     key={service.title}
                     className="group relative bg-gray-50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300"
@@ -310,7 +308,7 @@ export default function ServicesPage() {
                   >
                     {/* Quote mark */}
                     <div className="text-6xl text-opal-electric/20 font-serif absolute top-4 left-4">
-                      "
+                      &quot;
                     </div>
 
                     <div className="relative z-10">
@@ -322,7 +320,7 @@ export default function ServicesPage() {
                       </div>
 
                       <p className="text-charcoal/80 mb-6 italic">
-                        "{testimonial.text}"
+                        &quot;{testimonial.text}&quot;
                       </p>
 
                       <div>
@@ -349,8 +347,8 @@ export default function ServicesPage() {
                   Ready to Create Something Special?
                 </h2>
                 <p className="text-xl text-white/80 mb-8">
-                  Whether it's an engagement ring, anniversary gift, or personal treasure,
-                  we'll help you create a one-of-a-kind piece that tells your story.
+                  Whether it&apos;s an engagement ring, anniversary gift, or personal treasure,
+                  we&apos;ll help you create a one-of-a-kind piece that tells your story.
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Button asChild size="lg" variant="secondary">

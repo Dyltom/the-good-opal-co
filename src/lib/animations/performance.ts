@@ -36,12 +36,12 @@ export function isLowEndDevice(): boolean {
   if (cores <= 2) return true
 
   // Check for low memory (if available)
-  // @ts-ignore - deviceMemory is not in TypeScript types yet
+  // @ts-expect-error - deviceMemory is not in TypeScript types yet
   const memory = navigator.deviceMemory
   if (memory && memory <= 4) return true
 
   // Check connection speed
-  // @ts-ignore - connection is not in TypeScript types yet
+  // @ts-expect-error - connection is not in TypeScript types yet
   const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
   if (connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g') {
     return true
@@ -75,7 +75,7 @@ export function getSpringConfig(type: 'default' | 'gentle' | 'wobbly' | 'stiff' 
 
   // Simplified animations for low-end devices
   if (lowEnd) {
-    return { duration: 0.2, ease: 'easeOut' }
+    return { duration: 0.2, ease: 'easeOut' as const }
   }
 
   // Mobile-optimized springs

@@ -114,7 +114,7 @@ export function CookieConsent() {
                       </h3>
                       <p className="text-sm text-content mb-4">
                         We use cookies to enhance your browsing experience, analyze site traffic, and personalize content.
-                        By clicking "Accept All", you consent to our use of cookies.{' '}
+                        By clicking &quot;Accept All&quot;, you consent to our use of cookies.{' '}
                         <Link href="/legal/cookies" className="text-opal-electric-accessible hover:underline">
                           Read our Cookie Policy
                         </Link>

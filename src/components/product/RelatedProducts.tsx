@@ -49,7 +49,12 @@ export async function RelatedProducts({
         {relatedProducts.map((relatedProduct, index) => (
           <ProductCard
             key={relatedProduct.id}
-            product={relatedProduct}
+            product={{
+              ...relatedProduct,
+              description: typeof relatedProduct.description === 'string' ? relatedProduct.description : undefined,
+              image: typeof relatedProduct.image === 'string' ? relatedProduct.image : undefined,
+              category: typeof relatedProduct.category === 'string' ? relatedProduct.category : undefined,
+            }}
             index={index}
             variant="default"
             animated

@@ -8,7 +8,7 @@ const trackingSchema = z.object({
   email: z.string().email('Valid email is required')
 })
 
-export async function trackOrder(prevState: unknown, formData: FormData) {
+export async function trackOrder(_prevState: unknown, formData: FormData) {
   try {
     const data = trackingSchema.parse({
       orderNumber: formData.get('orderNumber'),
@@ -44,7 +44,7 @@ export async function trackOrder(prevState: unknown, formData: FormData) {
       }
     }
 
-    const order = orders.docs[0]
+    const order = orders.docs[0]!
 
     // Return sanitized order data
     return {

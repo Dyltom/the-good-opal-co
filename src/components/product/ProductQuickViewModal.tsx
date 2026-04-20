@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Gem, MapPin } from 'lucide-react'
-import { formatCurrency, cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 
 interface ProductQuickViewModalProps {
@@ -20,7 +20,7 @@ interface ProductQuickViewModalProps {
     stoneType?: string
     stoneOrigin?: string
     featured?: boolean
-    createdAt: string
+    createdAt?: string
   }
   isOpen: boolean
   onClose: () => void

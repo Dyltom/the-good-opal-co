@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ChevronLeft, ChevronRight, Heart, ShoppingBag, Truck, Shield } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Heart, Truck, Shield } from 'lucide-react'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { formatPrice } from '@/lib/utils'
@@ -30,8 +30,8 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
 
   const images = product.images || []
   const hasMultipleImages = images.length > 1
-  const isOnSale = product.compareAtPrice && product.compareAtPrice > product.price
-  const discountPercentage = isOnSale
+  const isOnSale = product.compareAtPrice != null && product.compareAtPrice > product.price
+  const discountPercentage = isOnSale && product.compareAtPrice != null
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
 
@@ -142,7 +142,7 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
                   {discountPercentage}% OFF
                 </Badge>
               )}
-              {product.stock < 3 && product.stock > 0 && (
+              {product.stock != null && product.stock < 3 && product.stock > 0 && (
                 <Badge variant="outline" className="bg-white/90">
                   Only {product.stock} left
                 </Badge>
@@ -156,13 +156,13 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
               <span className="text-3xl font-semibold">
                 {formatPrice(product.price)}
               </span>
-              {isOnSale && (
+              {isOnSale && product.compareAtPrice != null && (
                 <span className="text-lg text-muted-foreground line-through">
                   {formatPrice(product.compareAtPrice)}
                 </span>
               )}
             </div>
-            {product.stock > 0 ? (
+            {(product.stock ?? 0) > 0 ? (
               <p className="text-sm text-green-600">In stock</p>
             ) : (
               <p className="text-sm text-red-600">Sold out</p>
@@ -226,7 +226,13 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
           {/* Actions */}
           <div className="flex gap-3">
             <AddToCartButton
-              productId={product.id}
+              product={{
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                price: product.price,
+                image: product.images?.[0]?.image?.url,
+              }}
               disabled={product.stock === 0}
               className="flex-1"
               size="lg"

@@ -24,7 +24,7 @@ import { trackAddToCart } from '@/lib/analytics'
 import type { ReactNode } from 'react'
 
 // Lazy load confetti only when needed
-let confetti: typeof import('canvas-confetti').default | null = null
+let confetti: typeof import('canvas-confetti') | null = null
 
 interface AddToCartButtonProps {
   product: {
@@ -65,7 +65,8 @@ export function AddToCartButton({
 
     // Load confetti on demand if needed
     if (showConfetti && !confetti) {
-      confetti = (await import('canvas-confetti')).default
+      const mod = await import('canvas-confetti')
+      confetti = (mod.default ?? mod) as typeof import('canvas-confetti')
     }
 
     // Get button position for confetti origin

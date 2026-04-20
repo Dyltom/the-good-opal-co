@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Search, TrendingUp, Sparkles, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
@@ -65,7 +66,7 @@ export function EnhancedSearchEmptyState({
           Clear All Filters
         </Button>
         <Button variant="outline" size="lg" asChild>
-          <a href="/store">View All Products</a>
+          <Link href="/store">View All Products</Link>
         </Button>
       </div>
 
@@ -146,7 +147,7 @@ export function EnhancedSearchEmptyState({
             Get 10% off your first purchase with code FIRSTOPAL
           </p>
           <Button size="sm" variant="secondary" asChild>
-            <a href="/store">Shop Now</a>
+            <Link href="/store">Shop Now</Link>
           </Button>
         </motion.div>
       </div>

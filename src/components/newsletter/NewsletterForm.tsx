@@ -4,7 +4,7 @@ import { useActionState } from 'react'
 import { subscribeToNewsletter } from '@/app/(marketing)/newsletter/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Mail, CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface NewsletterFormProps {

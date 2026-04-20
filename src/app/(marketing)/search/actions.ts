@@ -135,15 +135,17 @@ export async function getSearchSuggestions(query: string): Promise<string[]> {
 
     // Add product names
     results.docs.forEach(product => {
-      if (product.name && !suggestions.includes(product.name)) {
-        suggestions.push(product.name)
+      const name = typeof product.name === 'string' ? product.name : ''
+      if (name && !suggestions.includes(name)) {
+        suggestions.push(name)
       }
     })
 
     // Add category names
     categories.docs.forEach(category => {
-      if (category.name && !suggestions.includes(category.name)) {
-        suggestions.push(category.name)
+      const name = typeof category.name === 'string' ? category.name : ''
+      if (name && !suggestions.includes(name)) {
+        suggestions.push(name)
       }
     })
 

@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
-import { ChevronDown, ChevronUp, MapPin, Gem } from 'lucide-react'
+import { ChevronDown, ChevronUp, Gem } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getStickyOffset, LAYOUT } from '@/lib/constants/layout'
 import type { Product } from '@/app/(marketing)/store/page'
@@ -93,7 +93,7 @@ export function EnhancedFilterSidebar({
   const categoryOptions = getFilterOptions('category')
   const stoneTypeOptions = getFilterOptions('stoneType')
   const originOptions = getFilterOptions('stoneOrigin')
-  const materialOptions = getFilterOptions('material')
+
 
   // Calculate price distribution for histogram
   const priceDistribution = () => {
@@ -157,7 +157,7 @@ export function EnhancedFilterSidebar({
           {/* Categories */}
           <FilterSection
             title="Category"
-            expanded={expandedSections.categories}
+            expanded={expandedSections.categories ?? false}
             onToggle={() => toggleSection('categories')}
           >
             <div className="space-y-1">
@@ -193,7 +193,7 @@ export function EnhancedFilterSidebar({
           {/* Stone Types with Visual Swatches */}
           <FilterSection
             title="Stone Type"
-            expanded={expandedSections.stoneTypes}
+            expanded={expandedSections.stoneTypes ?? false}
             onToggle={() => toggleSection('stoneTypes')}
           >
             <div className="grid grid-cols-2 gap-3">
@@ -232,7 +232,7 @@ export function EnhancedFilterSidebar({
           {/* Origins with Map */}
           <FilterSection
             title="Origin"
-            expanded={expandedSections.origins}
+            expanded={expandedSections.origins ?? false}
             onToggle={() => toggleSection('origins')}
           >
             {/* Mini Australia map */}
@@ -318,16 +318,17 @@ export function EnhancedFilterSidebar({
           {/* Price Range with Histogram */}
           <FilterSection
             title="Price Range"
-            expanded={expandedSections.price}
+            expanded={expandedSections.price ?? false}
             onToggle={() => toggleSection('price')}
           >
             {/* Price histogram */}
             <div className="mb-4">
               <div className="flex items-end gap-1 h-16">
                 {priceDistribution().map((bucket, index) => {
+                  const [bucketMin = 0, bucketMax = 0] = bucket.range
                   const isInRange =
-                    bucket.range[0] >= filters.priceRange[0] &&
-                    bucket.range[1] <= filters.priceRange[1]
+                    bucketMin >= filters.priceRange[0] &&
+                    bucketMax <= filters.priceRange[1]
 
                   return (
                     <div

@@ -75,7 +75,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                       Dear {customerName},
                     </h2>
                     <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666' }}>
-                      Thank you for your order! We're excited to prepare your beautiful Australian opals for shipment.
+                      Thank you for your order! We&apos;re excited to prepare your beautiful Australian opals for shipment.
                       Your order has been received and is being processed.
                     </p>
                   </td>
@@ -192,7 +192,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                             Order Processing
                           </p>
                           <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>
-                            We're carefully preparing your opals for shipment (1-2 business days)
+                            We&apos;re carefully preparing your opals for shipment (1-2 business days)
                           </p>
                         </td>
                       </tr>
@@ -207,7 +207,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                             Shipping Notification
                           </p>
                           <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>
-                            You'll receive tracking information once your order ships
+                            You&apos;ll receive tracking information once your order ships
                           </p>
                         </td>
                       </tr>

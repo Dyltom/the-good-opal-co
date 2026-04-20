@@ -73,6 +73,7 @@ export function RecentPurchaseNotification({ products, enabled = true }: RecentP
     const randomProduct = availableProducts[Math.floor(Math.random() * availableProducts.length)]
     const randomCustomer = mockCustomers[Math.floor(Math.random() * mockCustomers.length)]
 
+    if (!randomProduct || !randomCustomer) return
     setCurrentNotification({ product: randomProduct, customer: randomCustomer })
     setIsVisible(true)
   }

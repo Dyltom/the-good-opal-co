@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Container, Grid, Section } from '@/components/layout'
+import { Container, Grid } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { BlogCard } from '@/components/blog/BlogCard'
 import { Pagination } from '@/components/ui/pagination'

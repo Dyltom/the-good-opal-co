@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, StarHalf } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ProductRatingProps {

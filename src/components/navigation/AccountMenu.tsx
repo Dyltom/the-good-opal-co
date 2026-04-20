@@ -28,6 +28,7 @@ export function AccountMenu({ user, className }: AccountMenuProps) {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
+    return undefined
   }, [isOpen])
 
   if (!user) {

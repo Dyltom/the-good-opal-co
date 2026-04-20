@@ -27,7 +27,7 @@ interface MobileProductCardProps {
   onQuickAdd?: (productId: string) => void
 }
 
-export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProductCardProps) {
+export function MobileProductCard({ product, index = 0, onQuickAdd: _onQuickAdd }: MobileProductCardProps) {
   const [liked, setLiked] = useState(false)
   const isAvailable = product.stock > 0
   const discount = product.compareAtPrice
@@ -43,15 +43,6 @@ export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProd
 
   // Animations
   const controls = useAnimation()
-  const scaleAnimation = useAnimation()
-
-  const handleTap = () => {
-    // Haptic feedback simulation with scale
-    scaleAnimation.start({
-      scale: [1, 0.95, 1.05, 1],
-      transition: { duration: 0.3 }
-    })
-  }
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -76,6 +67,7 @@ export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProd
       ref={cardRef}
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
+      whileTap={{ scale: 0.97 }}
       transition={{
         duration: 0.5,
         delay: index * 0.1,
@@ -85,8 +77,6 @@ export function MobileProductCard({ product, index = 0, onQuickAdd }: MobileProd
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.2}
-      onTap={handleTap}
-      animate={scaleAnimation}
       className="relative touch-manipulation"
     >
       <Link href={`/store/${product.slug}`} className="block">

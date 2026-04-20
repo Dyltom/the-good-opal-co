@@ -5,10 +5,10 @@ import { trackOrder } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Package, Mail, Loader2, CheckCircle, Truck, Clock } from 'lucide-react'
+import { Package, Mail, CheckCircle, Truck, Clock } from 'lucide-react'
 
 export function OrderTrackingForm() {
-  const [state, formAction] = useFormState(trackOrder, { error: null, order: null })
+  const [state, formAction] = useFormState(trackOrder, { error: '' as string, order: null })
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -155,7 +155,7 @@ export function OrderTrackingForm() {
           <div>
             <h3 className="font-medium text-charcoal mb-4">Items Ordered</h3>
             <div className="space-y-3">
-              {state.order.items.map((item, index) => (
+              {state.order.items.map((item: { name: string; price: number; quantity: number }, index: number) => (
                 <div key={index} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
                   <div>
                     <p className="font-medium text-charcoal">{item.name}</p>

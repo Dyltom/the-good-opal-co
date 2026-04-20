@@ -91,11 +91,14 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
 
         recognition.onresult = (event: SpeechRecognitionEvent) => {
           const current = event.resultIndex
-          const transcript = event.results[current][0].transcript.toLowerCase()
+          const result = event.results[current]
+          const alternative = result?.[0]
+          if (!alternative) return
+          const transcript = alternative.transcript.toLowerCase()
           setTranscript(transcript)
 
           // If the result is final, process it
-          if (event.results[current].isFinal) {
+          if (result?.isFinal) {
             handleVoiceCommand(transcript)
           }
         }
@@ -110,6 +113,7 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
         }
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- handleVoiceCommand is defined after this effect; re-running on every render would re-initialise the recognition instance
   }, [])
 
   const getErrorMessage = (error: string): string => {
@@ -127,7 +131,7 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
 
   const handleVoiceCommand = (command: string) => {
     // Check for exact command matches
-    for (const [phrase, action] of Object.entries(voiceCommands)) {
+    for (const [phrase] of Object.entries(voiceCommands)) {
       if (command.includes(phrase)) {
         // Execute the appropriate action
         onSearch(phrase)
@@ -257,13 +261,13 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
                 {/* Transcript or error */}
                 {transcript ? (
                   <p className="text-lg text-gray-700 mb-6 min-h-[60px]">
-                    "{transcript}"
+                    &quot;{transcript}&quot;
                   </p>
                 ) : error ? (
                   <p className="text-red-600 mb-6">{error}</p>
                 ) : (
                   <p className="text-gray-500 mb-6">
-                    Try saying "Show me black opals" or "Find rings under $500"
+                    Try saying &quot;Show me black opals&quot; or &quot;Find rings under $500&quot;
                   </p>
                 )}
 
@@ -273,10 +277,10 @@ export function VoiceSearch({ onSearch, className }: VoiceSearchProps) {
                     Example commands:
                   </p>
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                    <div className="text-left">• "Show black opals"</div>
-                    <div className="text-left">• "Find rings"</div>
-                    <div className="text-left">• "Under $500"</div>
-                    <div className="text-left">• "From Lightning Ridge"</div>
+                    <div className="text-left">• &quot;Show black opals&quot;</div>
+                    <div className="text-left">• &quot;Find rings&quot;</div>
+                    <div className="text-left">• &quot;Under $500&quot;</div>
+                    <div className="text-left">• &quot;From Lightning Ridge&quot;</div>
                   </div>
                 </div>
 

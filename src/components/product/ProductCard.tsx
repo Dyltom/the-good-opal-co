@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { formatCurrency, cn } from '@/lib/utils'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
-import { Heart, ShoppingBag, Eye, Sparkles } from 'lucide-react'
+import { Heart, Eye } from 'lucide-react'
 import { ProductQuickViewModal } from './ProductQuickViewModal'
 
 /**

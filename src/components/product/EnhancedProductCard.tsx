@@ -176,9 +176,9 @@ export function EnhancedProductCard({
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentImageIndex}
-                initial={animated && isHovering ? { opacity: 0 } : false}
+                initial={animated && isHovering ? { opacity: 0 } : undefined}
                 animate={{ opacity: 1 }}
-                exit={animated && isHovering ? { opacity: 0 } : false}
+                exit={animated && isHovering ? { opacity: 0 } : undefined}
                 transition={{ duration: 0.2 }}
                 className="relative w-full h-full"
                 whileHover={animated ? { scale: 1.05 } : {}}
@@ -254,7 +254,13 @@ export function EnhancedProductCard({
               >
                 <div className="flex gap-2">
                   <AddToCartButton
-                    productId={product.id}
+                    product={{
+                      id: product.id,
+                      slug: product.slug,
+                      name: product.name,
+                      price: product.price,
+                      image: product.images?.[0]?.image?.url,
+                    }}
                     className="flex-1 bg-white text-charcoal hover:bg-opal-electric hover:text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all duration-200"
                   >
                     <ShoppingBag className="w-4 h-4" />

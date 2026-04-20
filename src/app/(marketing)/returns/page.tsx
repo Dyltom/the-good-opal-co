@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
-import Link from 'next/link'
 import { Package, Shield, Clock, CreditCard } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -26,7 +25,7 @@ export default function ReturnsPage() {
             Returns & Refunds
           </h1>
           <p className="text-lg text-content-muted mb-12">
-            We want you to love your opal jewelry. If you're not completely satisfied, we're here to help.
+            We want you to love your opal jewelry. If you&apos;re not completely satisfied, we&apos;re here to help.
           </p>
 
           {/* Key Points */}
@@ -135,7 +134,7 @@ export default function ReturnsPage() {
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Initiate Your Return</h4>
                     <p className="text-content">
-                      Email us at <a href="mailto:returns@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodpalco.com</a> with your order number and reason for return. We'll respond within 24 hours.
+                      Email us at <a href="mailto:returns@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodpalco.com</a> with your order number and reason for return. We&apos;ll respond within 24 hours.
                     </p>
                   </div>
                 </div>
@@ -147,7 +146,7 @@ export default function ReturnsPage() {
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Receive Return Authorization</h4>
                     <p className="text-content">
-                      We'll email you a Return Authorization (RA) number and prepaid shipping label for Australian orders. International customers are responsible for return shipping.
+                      We&apos;ll email you a Return Authorization (RA) number and prepaid shipping label for Australian orders. International customers are responsible for return shipping.
                     </p>
                   </div>
                 </div>
@@ -187,7 +186,7 @@ export default function ReturnsPage() {
                 Inspection and Processing
               </h3>
               <p className="text-content mb-4">
-                Once we receive your return, we'll inspect it within 2-3 business days. You'll receive an email confirming:
+                Once we receive your return, we&apos;ll inspect it within 2-3 business days. You&apos;ll receive an email confirming:
               </p>
               <ul className="list-disc pl-6 mb-6 space-y-2">
                 <li>Your return has been received</li>
@@ -247,7 +246,7 @@ export default function ReturnsPage() {
               <ol className="list-decimal pl-6 mb-6 space-y-2">
                 <li>Contact us immediately at <a href="mailto:support@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodpalco.com</a></li>
                 <li>Include photos of the damage and packaging</li>
-                <li>We'll arrange for a replacement or full refund</li>
+                <li>We&apos;ll arrange for a replacement or full refund</li>
                 <li>Return shipping will be provided at no cost to you</li>
               </ol>
             </section>
@@ -263,7 +262,7 @@ export default function ReturnsPage() {
                 <li>Customers are responsible for return shipping costs</li>
                 <li>We recommend using a trackable shipping service</li>
                 <li>Any customs fees or duties are non-refundable</li>
-                <li>Returns must be marked as "Returned Goods" to avoid additional charges</li>
+                <li>Returns must be marked as &quot;Returned Goods&quot; to avoid additional charges</li>
               </ul>
               <p className="text-content mb-4">
                 International return address:
@@ -301,7 +300,7 @@ export default function ReturnsPage() {
                 <div>
                   <h4 className="font-medium text-charcoal mb-2">Can I return sale items?</h4>
                   <p className="text-content">
-                    Yes, sale items can be returned following our standard return policy unless marked as "Final Sale."
+                    Yes, sale items can be returned following our standard return policy unless marked as &quot;Final Sale.&quot;
                   </p>
                 </div>
 
@@ -320,9 +319,9 @@ export default function ReturnsPage() {
                 </div>
 
                 <div>
-                  <h4 className="font-medium text-charcoal mb-2">What if my refund hasn't appeared?</h4>
+                  <h4 className="font-medium text-charcoal mb-2">What if my refund hasn&apos;t appeared?</h4>
                   <p className="text-content">
-                    First, check with your bank as processing times vary. If it's been more than 10 business days, contact us with your order details.
+                    First, check with your bank as processing times vary. If it&apos;s been more than 10 business days, contact us with your order details.
                   </p>
                 </div>
               </div>
@@ -333,7 +332,7 @@ export default function ReturnsPage() {
                 Contact Us
               </h2>
               <p className="text-content mb-4">
-                Have questions about returns? We're here to help:
+                Have questions about returns? We&apos;re here to help:
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <div className="grid md:grid-cols-2 gap-6">

@@ -56,16 +56,27 @@ export interface Product {
   id: string
   name: string
   slug: string
-  description?: any // RichText field
+  description?: unknown // RichText field
   price: number
   compareAtPrice?: number
   stock: number
   image?: string | Media
-  images?: (string | Media)[]
-  category?: string | Category
+  images?: { id?: string; image?: string | Media }[]
+  category?: string
   tags?: string[]
   status: 'published' | 'draft' | 'archived'
   featured?: boolean
+  sku?: string
+  material?: string
+  stoneType?: string
+  stoneOrigin?: string
+  dimensions?: { id?: string; length?: number; width?: number; depth?: number }
+  weight?: number
+  ringSize?: string
+  careInstructions?: unknown
+  certified?: boolean
+  certificateNumber?: string
+  tenantId?: string
   createdAt: string
   updatedAt: string
 }

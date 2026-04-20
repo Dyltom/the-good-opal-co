@@ -45,7 +45,7 @@ export default function NewsletterSuccessPage() {
           {/* What to Expect */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <h2 className="text-2xl font-display font-bold text-charcoal mb-6 text-center">
-              What's Coming Your Way
+              What&apos;s Coming Your Way
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6">

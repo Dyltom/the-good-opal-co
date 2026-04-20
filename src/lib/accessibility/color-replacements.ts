@@ -128,11 +128,11 @@ export const accessibleColorCombos = {
 export function ensureContrast(
   foreground: string,
   background: string,
-  minRatio = 4.5 // WCAG AA for normal text
+  // minRatio: 4.5 = WCAG AA for normal text (reserved for future contrast calculation)
 ): boolean {
   // This would normally calculate actual contrast ratio
   // For now, return true for known good combinations
-  const goodCombos = [
+  const goodCombos: [string, string][] = [
     ['white', 'black'],
     ['black', 'white'],
     ['opal-electric-accessible', 'white'],
