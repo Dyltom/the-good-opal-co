@@ -204,7 +204,7 @@ export default async function BlogPostPage({
                               <h3 className="font-serif text-xl text-charcoal mb-2 group-hover:text-opal-electric transition-colors">
                                 {product.name}
                               </h3>
-                              <p className="font-accent text-2xl font-semibold text-gradient-prismatic">
+                              <p className="font-accent text-2xl font-semibold text-opal-electric">
                                 {formatCurrency(product.price, 'AUD')}
                               </p>
                             </div>
@@ -221,7 +221,7 @@ export default async function BlogPostPage({
                 <div className="max-w-4xl mx-auto px-4 text-center">
                   <Link
                     href="/blog"
-                    className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-opal-electric to-fire-pink text-white font-medium hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+                    className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-opal-electric to-fire-pink text-white font-medium hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   >
                     <svg
                       className="w-5 h-5"

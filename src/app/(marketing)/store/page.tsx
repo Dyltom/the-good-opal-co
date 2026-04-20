@@ -126,7 +126,7 @@ export default async function StorePage() {
 
           <main className="flex-1">
             {/* Header - Premium opal-inspired design matching blog and FAQ pages */}
-            <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+            <section className="relative py-24 lg:py-32 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
               {/* Enhanced background effects */}
               <div className="absolute inset-0">
                 <div className="absolute -top-40 left-1/3 w-[400px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />

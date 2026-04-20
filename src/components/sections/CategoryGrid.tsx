@@ -27,7 +27,7 @@ export function CategoryGrid({
   className = '',
 }: CategoryGridProps) {
   return (
-    <section className={`py-20 md:py-24 ${className}`}>
+    <section className={`py-16 lg:py-24 ${className}`}>
       <Container>
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
@@ -43,7 +43,7 @@ export function CategoryGrid({
             <Link
               key={category.slug}
               href={`/store?category=${category.slug}`}
-              className="group relative overflow-hidden rounded-2xl aspect-[3/4] shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              className="group relative overflow-hidden rounded-2xl aspect-[3/4] shadow-lg hover:shadow-2xl transition-all duration-200 hover:-translate-y-1"
             >
               <div className={`absolute inset-0 ${category.gradient}`} />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />

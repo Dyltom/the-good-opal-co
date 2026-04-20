@@ -184,7 +184,7 @@ export default function ServicesPage() {
           </section>
 
           {/* Services Grid */}
-          <Section className="py-20 bg-white">
+          <Section className="py-16 lg:py-24 bg-white">
             <Container>
               <div className="text-center mb-16">
                 <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-4">
@@ -228,7 +228,7 @@ export default function ServicesPage() {
           </Section>
 
           {/* Process Timeline */}
-          <Section id="process" className="py-20 bg-gray-50">
+          <Section id="process" className="py-16 lg:py-24 bg-gray-50">
             <Container>
               <div className="text-center mb-16">
                 <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-4">
@@ -289,7 +289,7 @@ export default function ServicesPage() {
           </Section>
 
           {/* Testimonials */}
-          <Section className="py-20 bg-white">
+          <Section className="py-16 lg:py-24 bg-white">
             <Container>
               <div className="text-center mb-16">
                 <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-4">
@@ -339,7 +339,7 @@ export default function ServicesPage() {
           </Section>
 
           {/* CTA Section */}
-          <Section className="py-20 bg-gradient-to-br from-black-rich to-charcoal text-white">
+          <Section className="py-16 lg:py-24 bg-gradient-to-br from-black-rich to-charcoal text-white">
             <Container>
               <div className="text-center max-w-3xl mx-auto">
                 <Heart className="w-16 h-16 mx-auto mb-6 text-fire-pink" />

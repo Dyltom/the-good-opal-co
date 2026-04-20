@@ -220,24 +220,26 @@ const config: Config = {
   		},
   		fontFamily: {
   			sans: [
-  				'Inter',
   				'var(--font-sans)',
-  				'-apple-system',
-  				'BlinkMacSystemFont',
-  				'Segoe UI',
+  				'Montserrat',
+  				'ui-sans-serif',
+  				'system-ui',
   				'sans-serif'
   			],
   			serif: [
+  				'var(--font-serif)',
   				'Playfair Display',
   				'Georgia',
   				'serif'
   			],
   			accent: [
+  				'var(--font-sans)',
   				'Montserrat',
   				'sans-serif'
   			],
   			heading: [
   				'var(--font-heading)',
+  				'var(--font-serif)',
   				'Playfair Display',
   				'Georgia',
   				'serif'

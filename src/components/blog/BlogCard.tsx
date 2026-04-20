@@ -72,7 +72,7 @@ export function BlogCard({
             )}
 
             {/* Title */}
-            <h3 className="font-serif text-xl md:text-2xl font-bold mb-3 line-clamp-2 text-charcoal group-hover:text-gradient-prismatic transition-all duration-300">
+            <h3 className="font-serif text-xl md:text-2xl font-bold mb-3 line-clamp-2 text-charcoal group-hover:text-opal-electric transition-all duration-300">
               {post.title}
             </h3>
 

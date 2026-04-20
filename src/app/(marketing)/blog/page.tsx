@@ -80,7 +80,7 @@ export default async function BlogPage({
 
       <main className="flex-1">
         {/* Header - Premium opal-inspired design */}
-        <section className="relative py-20 md:py-28 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+        <section className="relative py-24 lg:py-32 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
           {/* Enhanced background effects */}
           <div className="absolute inset-0">
             <div className="absolute -top-40 left-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
@@ -132,7 +132,7 @@ export default async function BlogPage({
         </section>
 
         {/* Posts Grid */}
-        <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50">
+        <section className="py-16 lg:py-24 bg-gradient-to-b from-gray-50 via-white to-gray-50">
           <Container>
             {transformedPosts.length > 0 ? (
               <>

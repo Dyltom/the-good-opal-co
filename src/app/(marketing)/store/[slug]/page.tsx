@@ -369,7 +369,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {(product.stoneOrigin || product.stoneType || product.material || product.weight) && (
               <div className="mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12">
                 <h2 className="font-serif text-3xl md:text-4xl font-bold text-charcoal mb-8 text-center">
-                  Gemstone <span className="text-gradient-prismatic">Specifications</span>
+                  Gemstone <span className="text-opal-electric">Specifications</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
                   {product.stoneType && (

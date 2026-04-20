@@ -40,10 +40,12 @@ export function ProductHero({ products }: ProductHeroProps) {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
-  // Parallax effect for background
+  // Optimized parallax effect for background
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY)
+      requestAnimationFrame(() => {
+        setScrollY(window.scrollY)
+      })
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })

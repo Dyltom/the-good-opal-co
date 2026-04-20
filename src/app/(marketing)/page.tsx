@@ -58,7 +58,7 @@ export default function HomePage() {
           <HomeHero />
 
           {/* Shop by Category - Beautiful grid immediately after hero */}
-          <section className="relative bg-gradient-to-b from-white to-gray-50 py-20 md:py-24 overflow-hidden">
+          <section className="relative bg-gradient-to-b from-white to-gray-50 py-16 lg:py-24 overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-opal-electric/5 blur-3xl" />
             <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-fire-pink/5 blur-3xl" />
@@ -71,7 +71,7 @@ export default function HomePage() {
                   <span className="h-px w-12 bg-opal-electric"></span>
                 </span>
                 <h2 className="mb-6 font-serif text-4xl font-bold leading-tight text-charcoal md:text-5xl lg:text-6xl">
-                  Shop by <span className="text-gradient-prismatic">Category</span>
+                  Shop by <span className="text-opal-electric">Category</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-charcoal/70">
                   Explore our curated collection of Australian opals, from raw stones to exquisite jewellery pieces
@@ -81,7 +81,7 @@ export default function HomePage() {
                 {/* Raw Opals */}
                 <Link
                   href="/store?category=raw-opals"
-                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">
                     <OptimizedImage
@@ -102,7 +102,7 @@ export default function HomePage() {
                 {/* Earrings */}
                 <Link
                   href="/store"
-                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">
                     <OptimizedImage
@@ -123,7 +123,7 @@ export default function HomePage() {
                 {/* Rings */}
                 <Link
                   href="/store?category=opal-rings"
-                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">
                     <OptimizedImage
@@ -144,7 +144,7 @@ export default function HomePage() {
                 {/* Services */}
                 <Link
                   href="/services"
-                  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-opal-electric to-opal-deep shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-opal-electric to-opal-deep shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   <div className="relative flex aspect-square flex-col items-center justify-center p-6">
                     <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform duration-300 group-hover:scale-110">
@@ -172,7 +172,7 @@ export default function HomePage() {
                 {/* Courses */}
                 <Link
                   href="/courses"
-                  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-fire-pink to-fire-coral shadow-xl transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-fire-pink to-fire-coral shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   <div className="relative flex aspect-square flex-col items-center justify-center p-6">
                     <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform duration-300 group-hover:scale-110">
@@ -204,7 +204,7 @@ export default function HomePage() {
           <TrustMarquee />
 
           {/* Latest Arrivals - Premium dark section */}
-          <section className="relative overflow-hidden bg-gradient-to-br from-black-rich via-gray-900 to-black-rich py-20 md:py-24">
+          <section className="relative overflow-hidden bg-gradient-to-br from-black-rich via-gray-900 to-black-rich py-24 lg:py-32">
             {/* Enhanced background effects */}
             <div className="absolute inset-0">
               <div className="absolute left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-opal-electric/20 to-opal-deep/10 blur-3xl" />
@@ -259,7 +259,7 @@ export default function HomePage() {
           </section>
 
           {/* Handmade in Australia */}
-          <section className="overflow-hidden bg-white py-16 md:py-20">
+          <section className="overflow-hidden bg-white py-16 lg:py-24">
             <div className="mx-auto max-w-screen-2xl">
               <div className="grid items-center gap-12 lg:grid-cols-2">
                 {/* Content */}
@@ -268,7 +268,7 @@ export default function HomePage() {
                     Our Craft
                   </span>
                   <h2 className="mb-6 font-serif text-4xl font-bold leading-tight text-charcoal md:text-5xl lg:text-6xl">
-                    Handmade in <span className="text-gradient-prismatic">Australia</span>
+                    Handmade in <span className="text-opal-electric">Australia</span>
                   </h2>
                   <p className="mb-8 text-lg leading-relaxed text-charcoal/70 md:text-xl">
                     We source all our materials directly from Australian opal miners and handcraft
@@ -318,7 +318,7 @@ export default function HomePage() {
                   Testimonials
                 </span>
                 <h2 className="mb-4 font-serif text-3xl font-bold text-charcoal md:text-4xl lg:text-5xl">
-                  Customer <span className="text-gradient-prismatic">Reviews</span>
+                  Customer <span className="text-opal-electric">Reviews</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-lg text-charcoal/70">
                   Trusted by thousands of opal lovers worldwide
@@ -433,7 +433,7 @@ export default function HomePage() {
                   <span className="h-0.5 w-16 bg-gradient-to-l from-transparent to-opal-deep rounded-full"></span>
                 </span>
                 <h2 className="mb-6 font-serif text-5xl font-extrabold text-charcoal md:text-6xl lg:text-7xl">
-                  The Good Opal <span className="text-gradient-prismatic">Promise</span>
+                  The Good Opal <span className="text-opal-electric">Promise</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-charcoal/70 font-light">
                   Every purchase comes with our guarantee of excellence
@@ -444,7 +444,7 @@ export default function HomePage() {
                 {/* Express Delivery */}
                 <div className="group relative">
                   <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-electric to-opal-deep opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-opal-electric/20">
+                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-opal-electric/20">
                     <div className="relative mb-6">
                       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-opal-electric to-opal-deep shadow-xl transform group-hover:scale-110 transition-transform duration-300">
                         <svg
@@ -482,7 +482,7 @@ export default function HomePage() {
                 {/* Warranty */}
                 <div className="group relative">
                   <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-fire-pink to-fire-coral opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-fire-pink/20">
+                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-fire-pink/20">
                     <div className="relative mb-6">
                       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-fire-pink to-fire-coral shadow-xl transform group-hover:scale-110 transition-transform duration-300">
                         <svg
@@ -520,7 +520,7 @@ export default function HomePage() {
                 {/* Premium Packaging */}
                 <div className="group relative">
                   <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-emerald to-opal-teal opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-opal-emerald/20">
+                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-opal-emerald/20">
                     <div className="relative mb-6">
                       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-opal-emerald to-opal-teal shadow-xl transform group-hover:scale-110 transition-transform duration-300">
                         <svg
@@ -558,7 +558,7 @@ export default function HomePage() {
                 {/* Authenticity */}
                 <div className="group relative">
                   <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-fire-orange to-fire-gold opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-3 hover:shadow-2xl hover:border-fire-gold/20">
+                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-fire-gold/20">
                     <div className="relative mb-6">
                       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-fire-orange to-fire-gold shadow-xl transform group-hover:scale-110 transition-transform duration-300">
                         <svg
