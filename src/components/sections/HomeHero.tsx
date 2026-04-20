@@ -30,12 +30,12 @@ export async function HomeHero() {
     originalPrice: product.compareAtPrice ? formatCurrency(product.compareAtPrice, 'AUD') : null,
     image: product.images?.[0]?.image?.url ?? '/placeholder.jpg',
     badge: product.featured
-      ? "FEATURED"
+      ? { text: "FEATURED", type: "featured" }
       : product.compareAtPrice && product.compareAtPrice > product.price
-        ? `${Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF`
+        ? { text: `${Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}% OFF`, type: "sale" }
         : product.stock <= 5
-          ? "LOW STOCK"
-          : "HOT",
+          ? { text: "LIMITED", type: "limited" }
+          : { text: "NEW", type: "new" },
     rating: undefined, // Removed fake rating to comply with ACL
     sold: undefined, // Removed fake sold count to comply with ACL
     description: typeof product.description === 'string'

@@ -14,7 +14,7 @@ interface Product {
   price: string
   originalPrice?: string | null
   image: string
-  badge: string
+  badge: { text: string; type: 'featured' | 'sale' | 'limited' | 'new' }
   rating?: number // Made optional to handle removal of fake ratings
   sold?: number // Made optional to handle removal of fake sold counts
   description?: string
@@ -109,8 +109,8 @@ export function ProductHero({ products }: ProductHeroProps) {
         />
       </div>
 
-      <div className="container relative z-10 py-8 sm:py-12 md:py-16 lg:py-20">
-        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center w-full">
+      <div className="container relative z-10 py-12 sm:py-16 md:py-20 lg:py-24">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center w-full">
           {/* Left Content */}
           <div className="order-2 lg:order-1 text-center lg:text-left">
             {/* Limited Time Badge */}
@@ -128,7 +128,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 leading-tight"
+              className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight"
             >
               Authentic Australian
               <span className="block text-gradient-prismatic">Opal Jewellery</span>
@@ -138,7 +138,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg md:text-xl text-white/80 max-w-xl mb-8"
+              className="text-lg md:text-xl lg:text-2xl text-white/80 max-w-2xl mb-10 leading-relaxed"
             >
               From Lightning Ridge to your jewellery box. Each piece handcrafted, ethically sourced, and
               absolutely breathtaking.
@@ -211,8 +211,16 @@ export function ProductHero({ products }: ProductHeroProps) {
                     <div className="relative w-full h-full bg-white rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(0,180,216,0.3)] transition-all duration-300 group">
                       {/* Badge */}
                       <div className="absolute top-4 left-4 z-20">
-                        <div className="px-4 py-2 bg-gradient-to-r from-fire-pink to-fire-coral text-white text-sm font-bold rounded-full shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
-                          {currentProduct.badge}
+                        <div className={`px-4 py-2 text-white text-sm font-bold rounded-full shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 ${
+                          currentProduct.badge.type === 'featured'
+                            ? 'bg-gradient-to-r from-opal-electric to-opal-deep'
+                            : currentProduct.badge.type === 'sale'
+                            ? 'bg-gradient-to-r from-fire-gold to-fire-orange'
+                            : currentProduct.badge.type === 'limited'
+                            ? 'bg-gradient-to-r from-fire-coral to-fire-pink opacity-90'
+                            : 'bg-gradient-to-r from-opal-emerald to-opal-teal'
+                        }`}>
+                          {currentProduct.badge.text}
                         </div>
                       </div>
 
