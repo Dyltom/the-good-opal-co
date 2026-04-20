@@ -183,8 +183,8 @@ export function StoreContent({ products }: StoreContentProps) {
             onPriceRangeChange={setPriceRange}
             onClearAll={handleClearFilters}
           />
-        </div>
-      </aside>
+          </div>
+        </aside>
 
       {/* Products Area */}
       <div className="flex-1">
@@ -296,5 +296,6 @@ export function StoreContent({ products }: StoreContentProps) {
         )}
       </div>
     </div>
+  </div>
   )
 }
