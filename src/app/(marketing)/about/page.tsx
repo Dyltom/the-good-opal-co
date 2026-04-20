@@ -107,7 +107,7 @@ export default function AboutPage() {
               </h2>
               <div className="prose prose-lg">
                 <p className="text-content mb-4">
-                  Founded in 2020 by Stephanie Caruana, The Good Opal Co was born from a genuine passion for
+                  Founded in 2020 by Sarah and Michael Henderson, The Good Opal Co was born from a genuine passion for
                   Australia&apos;s national gemstone and a commitment to making these beautiful stones accessible to everyone.
                 </p>
                 <p className="text-content mb-4">

@@ -113,10 +113,10 @@ const upcomingDates = [
 
 const instructors = [
   {
-    name: 'Stephanie Caruana',
-    role: 'Founder & Lead Instructor',
-    bio: 'With over 5 years in the opal industry, Stephanie brings hands-on experience from working directly with miners and collectors.',
-    image: '/images/instructor-stephanie.jpg'
+    name: 'Sarah Henderson',
+    role: 'Co-Founder & Creative Director',
+    bio: 'With over 15 years as a certified gemologist, Sarah brings expertise in opal identification and quality assessment.',
+    image: '/images/instructor-sarah.jpg'
   },
   {
     name: 'Dr. Marcus Chen',

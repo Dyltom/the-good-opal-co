@@ -747,7 +747,7 @@ async function seedBlogPosts() {
         data: {
           ...post,
           categories: categoryIds,
-          author: 'Stephanie Caruana',
+          author: 'Sarah Henderson',
           featuredImage: undefined, // Add image IDs if you have them
           relatedProducts: [], // Add product IDs if you want to link products
           _status: 'published' // Ensure posts are published when drafts are enabled
