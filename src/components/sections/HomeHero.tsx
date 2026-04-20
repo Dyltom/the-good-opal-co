@@ -36,8 +36,8 @@ export async function HomeHero() {
         : product.stock <= 5
           ? "LOW STOCK"
           : "HOT",
-    rating: 4.5 + Math.random() * 0.5, // Simulated for now
-    sold: Math.floor(Math.random() * 200) + 50, // Simulated for now
+    rating: undefined, // Removed fake rating to comply with ACL
+    sold: undefined, // Removed fake sold count to comply with ACL
     description: typeof product.description === 'string'
       ? product.description
       : product.description?.root?.children?.map((node: any) =>

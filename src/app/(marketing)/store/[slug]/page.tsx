@@ -129,9 +129,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   // Get description as plain text
   const descriptionText = extractPlainText(product.description)
 
-  // Simulated social proof (would come from analytics in production)
-  const viewCount = Math.floor(Math.random() * 20) + 5
-  const lastSoldDaysAgo = product.stock < 5 ? Math.floor(Math.random() * 3) : undefined
+  // Social proof removed to comply with Australian Consumer Law
+  // Real analytics would be implemented here in production
+  const viewCount = undefined // Removed fake metrics
+  const lastSoldDaysAgo = undefined // Removed fake metrics
 
   // Format category name
   const categoryName = product.category

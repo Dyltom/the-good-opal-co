@@ -15,8 +15,8 @@ interface Product {
   originalPrice?: string | null
   image: string
   badge: string
-  rating: number
-  sold: number
+  rating?: number // Made optional to handle removal of fake ratings
+  sold?: number // Made optional to handle removal of fake sold counts
   description?: string
 }
 
@@ -242,15 +242,23 @@ export function ProductHero({ products }: ProductHeroProps) {
                           {currentProduct.name}
                         </h3>
 
-                        {/* Rating & Sold */}
-                        <div className="flex items-center gap-3 mb-3 text-sm">
-                          <div className="flex items-center gap-1">
-                            <Star className="w-4 h-4 fill-current text-opal-gold" />
-                            <span className="text-charcoal/70">{currentProduct.rating.toFixed(1)}</span>
+                        {/* Rating & Sold - Only show if real data exists */}
+                        {(currentProduct.rating !== undefined || currentProduct.sold !== undefined) && (
+                          <div className="flex items-center gap-3 mb-3 text-sm">
+                            {currentProduct.rating !== undefined && (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <Star className="w-4 h-4 fill-current text-opal-gold" />
+                                  <span className="text-charcoal/70">{currentProduct.rating.toFixed(1)}</span>
+                                </div>
+                                {currentProduct.sold !== undefined && <span className="text-charcoal/50">•</span>}
+                              </>
+                            )}
+                            {currentProduct.sold !== undefined && (
+                              <span className="text-charcoal/70">{currentProduct.sold} sold</span>
+                            )}
                           </div>
-                          <span className="text-charcoal/50">•</span>
-                          <span className="text-charcoal/70">{currentProduct.sold} sold</span>
-                        </div>
+                        )}
 
                         {/* Price */}
                         <div className="flex items-baseline gap-3">
