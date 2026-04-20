@@ -131,7 +131,7 @@ export function ProductCard({
         >
           {/* Image Container */}
           <div className={cn(
-          "relative aspect-[4/5] overflow-hidden transition-all duration-500",
+          "relative aspect-[3/4] overflow-hidden transition-all duration-500",
           variant === 'default' && !darkBackground && "bg-gradient-to-br from-gray-50 to-white",
           variant === 'default' && darkBackground && "bg-black-rich shadow-lg group-hover:shadow-glow rounded-2xl",
           variant === 'museum' && "bg-gray-50 group-hover:bg-gray-100",
@@ -307,9 +307,9 @@ export function ProductCard({
           </div>
         ) : (
           // Default style info
-          <div className="p-4">
+          <div className="p-3">
             <h3 className={cn(
-              "font-serif text-lg mb-2 leading-tight",
+              "font-serif text-base mb-2 leading-tight",
               isAvailable
                 ? darkBackground
                   ? "text-white group-hover:text-opal-deep"
@@ -323,7 +323,7 @@ export function ProductCard({
               {isAvailable ? (
                 <div>
                   <span className={cn(
-                    "font-sans text-xl font-semibold",
+                    "font-sans text-lg font-semibold",
                     darkBackground ? "text-white" : "text-charcoal"
                   )}>
                     {formatCurrency(product.price, 'AUD')}

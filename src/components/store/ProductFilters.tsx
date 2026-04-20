@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { X } from 'lucide-react'
+import { X, Star, Crown, Sparkles, Moon, Gem, Flower2 } from 'lucide-react'
 
 interface FilterOptions {
   categories: string[]
@@ -30,14 +30,14 @@ interface ProductFiltersProps {
   onClearAll: () => void
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  'all': '⭐ All Treasures',
-  'opal-rings': '👑 Enchanted Rings',
-  'opal-necklaces': '✦ Necklaces & Pendants',
-  'opal-earrings': '✧ Magical Earrings',
-  'opal-bracelets': '☽ Mystical Bracelets',
-  'raw-opals': '💠 Raw Wonders',
-  'custom-commissions': '⚜ Custom Creations',
+const CATEGORY_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
+  'all': { label: 'All Treasures', icon: <Star size={16} className="text-opal-electric" /> },
+  'opal-rings': { label: 'Enchanted Rings', icon: <Crown size={16} className="text-fire-pink" /> },
+  'opal-necklaces': { label: 'Necklaces & Pendants', icon: <Sparkles size={16} className="text-opal-turquoise" /> },
+  'opal-earrings': { label: 'Magical Earrings', icon: <Sparkles size={16} className="text-opal-electric" /> },
+  'opal-bracelets': { label: 'Mystical Bracelets', icon: <Moon size={16} className="text-charcoal/60" /> },
+  'raw-opals': { label: 'Raw Wonders', icon: <Gem size={16} className="text-fire-pink" /> },
+  'custom-commissions': { label: 'Custom Creations', icon: <Flower2 size={16} className="text-opal-electric" /> },
 }
 
 const STONE_TYPE_LABELS: Record<string, string> = {
@@ -114,6 +114,53 @@ export function ProductFilters({
         <div className="pb-6 border-b border-warm-grey/50">
           <h3 className="text-sm font-semibold mb-4 text-charcoal">Price Range</h3>
           <div className="space-y-4">
+            {/* Price Input Fields */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <label htmlFor="min-price" className="block text-xs font-medium text-charcoal/70 mb-1">
+                  Min
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-charcoal/60">$</span>
+                  <input
+                    id="min-price"
+                    type="number"
+                    min={0}
+                    max={filters.maxPrice}
+                    value={priceRange[0]}
+                    onChange={(e) => {
+                      const value = Math.max(0, Math.min(Number(e.target.value) || 0, priceRange[1]))
+                      onPriceRangeChange([value, priceRange[1]])
+                    }}
+                    className="w-full pl-6 pr-3 py-2 text-sm rounded-lg border border-warm-grey/30 focus:border-opal-electric focus:outline-none focus:ring-2 focus:ring-opal-electric/20 transition-all"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              <div className="text-charcoal/40 mt-5">to</div>
+              <div className="flex-1">
+                <label htmlFor="max-price" className="block text-xs font-medium text-charcoal/70 mb-1">
+                  Max
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-charcoal/60">$</span>
+                  <input
+                    id="max-price"
+                    type="number"
+                    min={priceRange[0]}
+                    max={filters.maxPrice}
+                    value={priceRange[1]}
+                    onChange={(e) => {
+                      const value = Math.min(filters.maxPrice, Math.max(Number(e.target.value) || filters.maxPrice, priceRange[0]))
+                      onPriceRangeChange([priceRange[0], value])
+                    }}
+                    className="w-full pl-6 pr-3 py-2 text-sm rounded-lg border border-warm-grey/30 focus:border-opal-electric focus:outline-none focus:ring-2 focus:ring-opal-electric/20 transition-all"
+                    placeholder={filters.maxPrice.toString()}
+                  />
+                </div>
+              </div>
+            </div>
+            {/* Slider */}
             <div className="px-1">
               <Slider
                 min={0}
@@ -123,10 +170,6 @@ export function ProductFilters({
                 onValueChange={(value) => onPriceRangeChange(value as [number, number])}
                 className="w-full"
               />
-            </div>
-            <div className="flex items-center justify-between text-sm font-medium text-charcoal">
-              <span>${priceRange[0]}</span>
-              <span>${priceRange[1]}</span>
             </div>
           </div>
         </div>
@@ -146,9 +189,10 @@ export function ProductFilters({
                   />
                   <Label
                     htmlFor={`category-${category}`}
-                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors"
+                    className="text-sm font-normal cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex items-center gap-2"
                   >
-                    {CATEGORY_LABELS[category] || category}
+                    {CATEGORY_LABELS[category]?.icon}
+                    <span>{CATEGORY_LABELS[category]?.label || category}</span>
                   </Label>
                 </div>
               ))}

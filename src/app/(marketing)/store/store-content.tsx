@@ -147,12 +147,12 @@ export function StoreContent({ products }: StoreContentProps) {
   }
 
   return (
-    <div className="py-6 px-6 max-w-7xl mx-auto">
-      <div className="flex flex-col lg:flex-row gap-8">
+    <div className="py-4 px-4 max-w-7xl mx-auto">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Filters Sidebar */}
-        <aside className="lg:w-80 flex-shrink-0">
+        <aside className="lg:w-72 flex-shrink-0">
           <div
-            className="lg:sticky lg:top-20 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-6 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto scrollbar-thin"
+            className="lg:sticky lg:top-24 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin"
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#E8E6E3 #FFFFFF',
@@ -183,7 +183,7 @@ export function StoreContent({ products }: StoreContentProps) {
           <div className="relative">
             <input
               type="text"
-              placeholder="🔮 Search for your magical opal..."
+              placeholder="Search for your magical opal..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-6 py-3 pr-12 text-base rounded-2xl border border-warm-grey/30 bg-white/80 backdrop-blur-sm focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-lg font-sans"
@@ -252,7 +252,7 @@ export function StoreContent({ products }: StoreContentProps) {
 
         {/* Products Grid */}
         {sortedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {sortedProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -273,7 +273,14 @@ export function StoreContent({ products }: StoreContentProps) {
           </div>
         ) : (
           <div className="text-center py-24 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-warm-grey/30">
-            <div className="text-8xl mb-6">🔮</div>
+            <div className="flex justify-center mb-6">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-opal-electric/60">
+                <path d="M6 3h12l4 6-10 13L2 9l4-6z"/>
+                <path d="m11 3 1 9"/>
+                <path d="m12 3 1 9"/>
+                <path d="m13 3 1 9"/>
+              </svg>
+            </div>
             <h3 className="font-serif text-2xl text-charcoal mb-4">No treasures found</h3>
             <p className="font-accent text-lg text-opal-electric/70 mb-8">The opals are hiding from these filters</p>
             <button
