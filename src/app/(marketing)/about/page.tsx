@@ -10,7 +10,7 @@ import { Award, Shield, Heart, Sparkles, Users, Globe } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'About Us | The Good Opal Co',
-  description: 'Learn about our journey bringing authentic Australian opals to the world. Family-owned since 2015, committed to quality and ethical sourcing.',
+  description: 'Learn about Stephanie\'s journey bringing authentic Australian opals to the world. Founded in 2020, committed to quality and ethical sourcing.',
 }
 
 export default function AboutPage() {
@@ -77,9 +77,10 @@ export default function AboutPage() {
               Treasures from the Australian <span className="font-accent text-opal-electric">Outback</span>
             </h2>
             <p className="font-sans text-lg text-content leading-relaxed mb-4">
-              The Good Opal Co is more than just a jewellery company—we&apos;re custodians of nature&apos;s most captivating gemstones.
-              Our mission is to share the extraordinary beauty of Australian opals with collectors and jewellery lovers worldwide,
-              while maintaining the highest standards of quality, authenticity, and ethical sourcing.
+              The Good Opal Co is more than just a jewellery business—it&apos;s a passion project dedicated to revealing
+              the true beauty of Australian opal from the rough earth to one-of-a-kind pieces. Our mission is to source
+              the highest quality opals directly from Australian miners and transform them into extraordinary jewellery
+              that doesn&apos;t cost the Earth.
             </p>
             <p className="font-accent text-base text-opal-electric/70">
               ~ Sharing Australia's treasures with the world ~
@@ -134,37 +135,40 @@ export default function AboutPage() {
               </h2>
               <div className="prose prose-lg">
                 <p className="font-sans text-content mb-4 leading-relaxed">
-                  Founded in 2020 by Sarah and Michael Henderson, The Good Opal Co was born from a genuine passion for
-                  Australia&apos;s national gemstone and a commitment to making these beautiful stones accessible to everyone.
+                  Founded in 2020 by Stephanie Caruana, The Good Opal Co was born from a serendipitous encounter with
+                  Australia&apos;s national gemstone. It all started in 2014 when Steph&apos;s neighbour—a part-time miner
+                  at Grawin near Lightning Ridge—gifted her a jar of Lightning Ridge white opal chips.
                 </p>
                 <p className="font-sans text-content mb-4 leading-relaxed">
-                  Our mission is simple: to source authentic Australian opals directly from ethical miners and
-                  handcraft each piece from start to finish, ensuring quality and affordability go hand in hand.
+                  That first glimpse of opal&apos;s magical play of color sparked an obsession. After university, Steph
+                  deprioritized her career path and spent a summer hand-sanding opal on a knife block, followed by
+                  months researching equipment and a full year perfecting her cutting technique.
                 </p>
                 <p className="font-sans text-content mb-4 leading-relaxed">
-                  What sets us apart is our dedication to transparency and ethical sourcing. We believe everyone
-                  should be able to own a piece of Australia&apos;s natural beauty without compromising on quality or ethics.
+                  What sets The Good Opal Co apart is Steph&apos;s hands-on approach—she personally hand-selects rough opal
+                  directly from Australian miners, cuts and finishes every stone herself, and creates each piece of
+                  jewellery using only solid gold and silver.
                 </p>
                 <p className="font-sans text-content leading-relaxed">
-                  Today, we work directly with ethical miners across Australia&apos;s opal fields, ensuring fair prices
-                  for miners and exceptional value for our customers. Every piece in our collection is hand-selected
-                  for its beauty, quality, and that special something that makes Australian opals truly magical.
+                  Today, working with select miners featured on Discovery&apos;s &quot;Outback Opal Hunters,&quot; every piece
+                  in our collection is personally chosen for its beauty, quality, and that special something that makes
+                  Australian opals truly magical.
                 </p>
                 <p className="font-accent text-base text-opal-electric/70 mt-4">
-                  ~ Where tradition meets passion ~
+                  ~ Where passion meets perfection ~
                 </p>
               </div>
             </div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden">
               <Image
-                src="/images/founders.jpg"
-                alt="Sarah and Michael Henderson, founders of The Good Opal Co"
+                src="/images/stephanie-founder.jpg"
+                alt="Stephanie Caruana, founder of The Good Opal Co, at the Lightning Ridge opal fields"
                 fill
                 className="object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
                 <p className="text-white text-sm">
-                  Sarah and Michael Henderson at the Lightning Ridge opal fields
+                  Stephanie Caruana at the Lightning Ridge opal fields, hand-selecting stones
                 </p>
               </div>
             </div>
@@ -269,92 +273,31 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team Section */}
+        {/* Meet the Founder */}
         <section className="mb-20">
           <div className="text-center mb-12">
             <span className="font-accent text-lg text-opal-electric mb-4 block">
-              ✨ The Artists Behind the Magic ✨
+              ✨ The Artist Behind the Magic ✨
             </span>
             <h2 className="font-serif text-3xl font-bold text-charcoal">
-              Meet Our <span className="font-accent text-opal-electric">Team</span>
+              Meet <span className="font-accent text-opal-electric">Stephanie</span>
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden relative">
+              <div className="w-48 h-48 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden relative">
                 <Image
-                  src="/images/team-sarah.jpg"
-                  alt="Sarah Henderson"
+                  src="/images/stephanie-founder.jpg"
+                  alt="Stephanie Caruana, Founder of The Good Opal Co"
                   fill
                   className="object-cover"
                 />
               </div>
-              <h3 className="font-serif font-semibold text-charcoal text-lg">Sarah Henderson</h3>
-              <p className="font-sans text-content-muted mb-2">Co-Founder & Creative Director</p>
-              <p className="font-sans text-sm text-content">
-                Gemologist with 15+ years experience. Oversees design and quality control.
+              <h3 className="font-serif font-semibold text-charcoal text-xl mb-2">Stephanie Caruana</h3>
+              <p className="font-sans text-content-muted mb-4 text-lg">Founder & Creative Director</p>
+              <p className="font-sans text-content leading-relaxed max-w-2xl mx-auto">
+                From receiving her first jar of Lightning Ridge opal chips as a gift to building Australia's most trusted boutique opal business, Stephanie's journey has been guided by genuine passion for these magical gemstones. Her keen eye for quality and dedication to sharing the wonder of Australian opals has made The Good Opal Co a beloved destination for collectors worldwide.
               </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden relative">
-                <Image
-                  src="/images/team-michael.jpg"
-                  alt="Michael Henderson"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="font-serif font-semibold text-charcoal text-lg">Michael Henderson</h3>
-              <p className="font-sans text-content-muted mb-2">Co-Founder & Operations Director</p>
-              <p className="font-sans text-sm text-content">
-                Third-generation opal expert. Manages sourcing and miner relationships.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden relative">
-                <Image
-                  src="/images/team-emma.jpg"
-                  alt="Emma Chen"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="font-serif font-semibold text-charcoal text-lg">Emma Chen</h3>
-              <p className="font-sans text-content-muted mb-2">Head Jeweler</p>
-              <p className="font-sans text-sm text-content">
-                Award-winning jeweler specializing in custom opal settings.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Press & Awards */}
-        <section className="mb-20">
-          <div className="text-center mb-12">
-            <span className="font-accent text-lg text-opal-electric mb-4 block">
-              ✨ In the Spotlight ✨
-            </span>
-            <h2 className="font-serif text-3xl font-bold text-charcoal mb-4">
-              Recognition & <span className="font-accent text-opal-electric">Press</span>
-            </h2>
-            <p className="font-sans text-content">
-              Proud to be recognized by industry leaders and media
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center opacity-60 grayscale">
-            <div className="flex items-center justify-center">
-              <p className="text-2xl font-bold text-gray-400">Vogue AU</p>
-            </div>
-            <div className="flex items-center justify-center">
-              <p className="text-2xl font-bold text-gray-400">Harper&apos;s</p>
-            </div>
-            <div className="flex items-center justify-center">
-              <p className="text-2xl font-bold text-gray-400">The Australian</p>
-            </div>
-            <div className="flex items-center justify-center">
-              <p className="text-2xl font-bold text-gray-400">Jeweller Mag</p>
             </div>
           </div>
         </section>
