@@ -11,6 +11,7 @@ const merriweather = Merriweather({
   weight: ['300', '400', '700'],
   variable: '--font-sans',
   display: 'swap',
+  preload: true,
 })
 
 const ebGaramond = EB_Garamond({
@@ -18,6 +19,7 @@ const ebGaramond = EB_Garamond({
   weight: ['400', '500', '600', '700'],
   variable: '--font-serif',
   display: 'swap',
+  preload: true,
 })
 
 const dancingScript = Dancing_Script({
@@ -25,6 +27,7 @@ const dancingScript = Dancing_Script({
   weight: ['400', '500', '600', '700'],
   variable: '--font-accent',
   display: 'swap',
+  preload: false, // Only preload critical fonts
 })
 
 

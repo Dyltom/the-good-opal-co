@@ -29,6 +29,7 @@ export default function AboutPage() {
             src="/images/about-hero.jpg"
             alt="Australian opal mines"
             fill
+            sizes="100vw"
             className="object-cover"
             priority
           />
@@ -157,6 +158,7 @@ export default function AboutPage() {
                 src="/images/stephanie-founder.jpg"
                 alt="Stephanie Caruana, founder of The Good Opal Co, at the Lightning Ridge opal fields"
                 fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
@@ -283,6 +285,7 @@ export default function AboutPage() {
                   src="/images/stephanie-founder.jpg"
                   alt="Stephanie Caruana, Founder of The Good Opal Co"
                   fill
+                  sizes="192px"
                   className="object-cover"
                 />
               </div>

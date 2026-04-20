@@ -48,10 +48,11 @@ function calculateCartTotals(items: CartItem[]): { total: number; itemCount: num
 }
 
 /**
- * Get the current cart from cookies
+ * Get the current cart from cookies with price validation
  * Safe to call from Server Components and Server Actions
+ * Validates current prices against database to prevent stale pricing
  *
- * @returns Promise<Cart> - The current cart state
+ * @returns Promise<Cart> - The current cart state with updated prices
  */
 export async function getCart(): Promise<Cart> {
   const cookieStore = await cookies()
@@ -62,15 +63,49 @@ export async function getCart(): Promise<Cart> {
   }
 
   try {
-    const items: CartItem[] = JSON.parse(cartCookie.value)
+    const storedItems: CartItem[] = JSON.parse(cartCookie.value)
 
     // Validate that items is an array
-    if (!Array.isArray(items)) {
+    if (!Array.isArray(storedItems)) {
       return { items: [], total: 0, itemCount: 0 }
     }
 
-    const { total, itemCount } = calculateCartTotals(items)
-    return { items, total, itemCount }
+    // Validate prices against current database values to prevent stale pricing
+    const validatedItems: CartItem[] = []
+    const payload = await getPayload()
+
+    for (const item of storedItems) {
+      try {
+        const { docs: [product] } = await payload.find({
+          collection: 'products',
+          where: { id: { equals: item.productId } }
+        })
+
+        if (product && product.status === 'published' && product.stock > 0) {
+          // Update item with current price from database
+          validatedItems.push({
+            ...item,
+            price: product.price,
+            name: product.name, // Also update name in case it changed
+          })
+        }
+        // Skip items that are no longer available or out of stock
+      } catch (error) {
+        // Skip items that couldn't be validated
+        console.warn(`Failed to validate cart item ${item.productId}:`, error)
+      }
+    }
+
+    // Update cart cookie if any items were removed or prices changed
+    if (validatedItems.length !== storedItems.length ||
+        validatedItems.some((item, i) =>
+          !storedItems[i] || item.price !== storedItems[i].price || item.name !== storedItems[i].name
+        )) {
+      await setCart(validatedItems)
+    }
+
+    const { total, itemCount } = calculateCartTotals(validatedItems)
+    return { items: validatedItems, total, itemCount }
   } catch {
     // Invalid JSON in cookie, return empty cart
     return { items: [], total: 0, itemCount: 0 }

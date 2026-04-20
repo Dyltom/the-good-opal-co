@@ -3,6 +3,7 @@
  * Reusable feature definitions for why-choose-us sections
  */
 import React from 'react'
+import { SHIPPING_MESSAGES } from '@/lib/constants/shipping'
 
 export interface Feature {
   icon: string | React.ReactNode
@@ -34,7 +35,7 @@ export const WHY_CHOOSE_FEATURES: Feature[] = [
   {
     icon: '📦',
     title: 'Secure Shipping',
-    description: 'Fully insured express shipping worldwide with elegant gift packaging',
+    description: SHIPPING_MESSAGES.FEATURE_DESCRIPTION,
   },
   {
     icon: '💯',

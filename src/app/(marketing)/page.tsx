@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
-import { HomeHero, TrustMarquee } from '@/components/sections'
+import { HomeHero } from '@/components/sections'
 import { Navigation, Footer } from '@/components/navigation'
 import { Container, Section } from '@/components/layout'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,14 @@ const FeaturedProducts = dynamic(
       </div>
     ),
     ssr: true,
+  }
+)
+
+const TrustMarquee = dynamic(
+  () => import('@/components/sections').then((mod) => mod.TrustMarquee),
+  {
+    loading: () => <div className="h-20 animate-pulse bg-gray-50" />,
+    ssr: false, // Not critical for SEO
   }
 )
 

@@ -99,7 +99,6 @@ export function ProductFilters({
             variant="outline"
             size="sm"
             onClick={onClearAll}
-            className="h-10 px-4 rounded-xl border-warm-grey/30 bg-white/50 hover:bg-gradient-to-r hover:from-fire-pink/10 hover:to-opal-electric/10 hover:border-opal-electric/50 transition-all font-sans shadow-sm"
           >
             <X className="w-4 h-4 mr-2 text-fire-pink" />
             <span className="font-accent">✨</span> Clear All Filters <span className="font-accent">✨</span>
