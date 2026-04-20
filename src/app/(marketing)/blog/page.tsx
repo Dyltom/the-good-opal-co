@@ -167,12 +167,20 @@ export default async function BlogPage({
                 <p className="text-charcoal/60 max-w-md mx-auto mb-6">
                   We&apos;re crafting fascinating content about Australian opals. Check back soon!
                 </p>
-                <Link
-                  href="/admin/collections/posts"
-                  className="text-sm text-opal-electric-accessible hover:underline"
-                >
-                  Admin: Add blog posts →
-                </Link>
+                <div className="flex gap-4 justify-center">
+                  <Link
+                    href="/store"
+                    className="text-sm text-opal-electric-accessible hover:underline font-medium"
+                  >
+                    Browse Our Collection →
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="text-sm text-charcoal/60 hover:text-charcoal hover:underline"
+                  >
+                    Get Notified of New Posts →
+                  </Link>
+                </div>
               </div>
             )}
           </Container>
