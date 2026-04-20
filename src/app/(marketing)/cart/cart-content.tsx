@@ -16,6 +16,7 @@ import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { formatCurrency } from '@/lib/utils'
 import { removeFromCart, updateQuantity, clearCart } from './actions'
+import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
 import type { Cart, CartItem } from '@/lib/cart'
 
 interface CartPageContentProps {
@@ -25,6 +26,7 @@ interface CartPageContentProps {
 export function CartPageContent({ initialCart }: CartPageContentProps) {
   const [cart, setCart] = useState<Cart>(initialCart)
   const [isPending, startTransition] = useTransition()
+  const [showClearDialog, setShowClearDialog] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
 
@@ -66,7 +68,11 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
     })
   }
 
-  const handleClearCart = () => {
+  const handleClearCartClick = () => {
+    setShowClearDialog(true)
+  }
+
+  const handleConfirmClearCart = () => {
     startTransition(async () => {
       const result = await clearCart()
       if (result.success) {
@@ -87,7 +93,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
         <p className="text-charcoal/60">
           {cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'} in your cart
         </p>
-        <Button variant="ghost" size="sm" onClick={handleClearCart} disabled={isPending} className="text-charcoal/60 hover:text-fire-coral">
+        <Button variant="ghost" size="sm" onClick={handleClearCartClick} disabled={isPending} className="text-charcoal/60 hover:text-fire-coral">
           Clear Cart
         </Button>
       </div>
@@ -125,6 +131,13 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
           </div>
         </div>
       </Card>
+
+      <CartClearConfirmDialog
+        open={showClearDialog}
+        onOpenChange={setShowClearDialog}
+        onConfirm={handleConfirmClearCart}
+        itemCount={cart.itemCount}
+      />
     </>
   )
 }
