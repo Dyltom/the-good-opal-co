@@ -1,5 +1,4 @@
 import { getPayload } from '@/lib/payload'
-import type { Post } from '@/types/payload-types'
 
 /**
  * Seed blog posts for The Good Opal Co
@@ -725,7 +724,7 @@ async function seedBlogPosts() {
             slug: categoryName
           }
         })
-        categoryMap[categoryName] = category.id
+        categoryMap[categoryName] = String(category.id)
       } catch (error) {
         // Category might already exist
         const existing = await payload.find({
@@ -734,7 +733,7 @@ async function seedBlogPosts() {
           limit: 1
         })
         if (existing.docs[0]) {
-          categoryMap[categoryName] = existing.docs[0].id
+          categoryMap[categoryName] = String(existing.docs[0].id)
         }
       }
     }

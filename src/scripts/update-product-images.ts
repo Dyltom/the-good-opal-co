@@ -212,7 +212,7 @@ async function updateProductImages() {
       })
 
       if (existingMedia.docs.length > 0) {
-        uploadedMedia[imageUrl] = existingMedia.docs[0].id
+        uploadedMedia[imageUrl] = String(existingMedia.docs[0]!.id)
       } else {
         // Create new media entry
         const media = await payload.create({
@@ -227,7 +227,7 @@ async function updateProductImages() {
             height: 800
           }
         })
-        uploadedMedia[imageUrl] = media.id
+        uploadedMedia[imageUrl] = String(media.id)
       }
     }
 
@@ -251,7 +251,7 @@ async function updateProductImages() {
 
       // Use default images if no match found
       if (matchedImages.length === 0) {
-        const defaultImages = imageUrls.default
+        const defaultImages = imageUrls.default ?? []
         matchedImages = defaultImages.slice(0, 3)
       }
 

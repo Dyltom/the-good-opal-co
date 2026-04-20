@@ -117,7 +117,7 @@ async function linkProductImages() {
             let mediaId: string
 
             if (existingMedia.docs.length > 0) {
-              mediaId = existingMedia.docs[0].id
+              mediaId = String(existingMedia.docs[0]!.id)
             } else {
               // Create new media entry
               const media = await payload.create({
@@ -132,7 +132,7 @@ async function linkProductImages() {
                   height: 800
                 }
               })
-              mediaId = media.id
+              mediaId = String(media.id)
             }
 
             mediaIds.push(mediaId)

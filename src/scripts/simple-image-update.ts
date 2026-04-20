@@ -66,7 +66,7 @@ async function simpleImageUpdate() {
 
       for (let i = 0; i < numImages; i++) {
         // Create a mock media entry
-        const image = opalImages[imageIndex % opalImages.length]
+        const image = opalImages[imageIndex % opalImages.length]!
 
         // Create media entry
         const media = await payload.create({
