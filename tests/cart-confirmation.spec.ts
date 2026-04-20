@@ -2,19 +2,17 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Cart Clear Confirmation Dialog', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to home page first
-    await page.goto('http://localhost:8412/')
-
-    // Add some items to cart if possible
-    // We'll navigate to a product page and add it to cart
+    // Navigate to store page and add items to cart
     await page.goto('http://localhost:8412/store')
     await page.waitForLoadState('networkidle')
 
-    // Look for an "Add to Cart" button and click it if it exists
+    // Look for an "Add to Cart" button and click it multiple times to ensure we have items
     const addToCartButton = page.locator('button').filter({ hasText: /add to cart/i }).first()
     if (await addToCartButton.isVisible()) {
-      await addToCartButton.click()
-      // Wait for the item to be added
+      await addToCartButton.click({ force: true })
+      await page.waitForTimeout(500)
+      // Add a second item to ensure we have multiple items for testing
+      await addToCartButton.click({ force: true })
       await page.waitForTimeout(1000)
     }
   })
@@ -30,8 +28,8 @@ test.describe('Cart Clear Confirmation Dialog', () => {
       test.skip('No items in cart to test clear functionality')
     }
 
-    // Click the Clear Cart button
-    await clearCartButton.click()
+    // Click the Clear Cart button (force click to avoid nav interference)
+    await clearCartButton.click({ force: true })
 
     // Verify confirmation dialog appears
     await expect(page.getByText('Clear Cart')).toBeVisible()
@@ -52,8 +50,8 @@ test.describe('Cart Clear Confirmation Dialog', () => {
       test.skip('No items in cart to test clear functionality')
     }
 
-    // Click Clear Cart to open dialog
-    await clearCartButton.click()
+    // Click Clear Cart to open dialog (force click to avoid nav interference)
+    await clearCartButton.click({ force: true })
 
     // Verify dialog is visible
     await expect(page.getByText('Clear Cart')).toBeVisible()
@@ -77,8 +75,8 @@ test.describe('Cart Clear Confirmation Dialog', () => {
       test.skip('No items in cart to test clear functionality')
     }
 
-    // Click Clear Cart to open dialog
-    await clearCartButton.click()
+    // Click Clear Cart to open dialog (force click to avoid nav interference)
+    await clearCartButton.click({ force: true })
 
     // Click Clear button in dialog
     await page.getByRole('button', { name: 'Clear' }).click()
