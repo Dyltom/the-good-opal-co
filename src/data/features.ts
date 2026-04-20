@@ -11,7 +11,7 @@ export interface Feature {
 
 export const WHY_CHOOSE_FEATURES: Feature[] = [
   {
-    icon: '💎',
+    icon: '💠',
     title: 'Authentic Australian',
     description: 'Every opal sourced directly from Australian miners, certified for authenticity',
   },
@@ -21,7 +21,7 @@ export const WHY_CHOOSE_FEATURES: Feature[] = [
     description: 'Hand-selected for exceptional fire and color - blues, greens, pinks, and more',
   },
   {
-    icon: '✨',
+    icon: '⭐',
     title: 'Expert Craftsmanship',
     description: 'Each piece carefully designed to showcase the opal\'s natural beauty',
   },

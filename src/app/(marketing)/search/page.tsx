@@ -49,7 +49,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <Container>
               <div className="text-center max-w-4xl mx-auto">
                 <span className="font-accent text-lg text-opal-electric mb-4 block">
-                  🔍 Discover Your Treasure 🔍
+                  🔮 Discover Your Treasure 🔮
                 </span>
                 <h1 className="font-serif text-4xl md:text-5xl font-bold mb-6 text-charcoal leading-tight">
                   {query ? (

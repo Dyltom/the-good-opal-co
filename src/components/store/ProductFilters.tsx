@@ -31,13 +31,13 @@ interface ProductFiltersProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  'all': '✨ All Treasures',
-  'opal-rings': '💍 Enchanted Rings',
-  'opal-necklaces': '🌟 Necklaces & Pendants',
-  'opal-earrings': '💫 Magical Earrings',
-  'opal-bracelets': '🌙 Mystical Bracelets',
-  'raw-opals': '💎 Raw Wonders',
-  'custom-commissions': '🎨 Custom Creations',
+  'all': '⭐ All Treasures',
+  'opal-rings': '👑 Enchanted Rings',
+  'opal-necklaces': '✦ Necklaces & Pendants',
+  'opal-earrings': '✧ Magical Earrings',
+  'opal-bracelets': '☽ Mystical Bracelets',
+  'raw-opals': '💠 Raw Wonders',
+  'custom-commissions': '⚜ Custom Creations',
 }
 
 const STONE_TYPE_LABELS: Record<string, string> = {

@@ -158,7 +158,7 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending }: CartDra
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-3xl">💎</span>
+          <span className="text-3xl">🔮</span>
         )}
       </div>
 

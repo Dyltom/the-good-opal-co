@@ -183,7 +183,7 @@ export function StoreContent({ products }: StoreContentProps) {
           <div className="relative">
             <input
               type="text"
-              placeholder="🔍 Search for your magical opal..."
+              placeholder="🔮 Search for your magical opal..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-6 py-3 pr-12 text-base rounded-2xl border border-warm-grey/30 bg-white/80 backdrop-blur-sm focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-lg font-sans"
@@ -273,7 +273,7 @@ export function StoreContent({ products }: StoreContentProps) {
           </div>
         ) : (
           <div className="text-center py-24 bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-warm-grey/30">
-            <div className="text-8xl mb-6">💎</div>
+            <div className="text-8xl mb-6">🔮</div>
             <h3 className="font-serif text-2xl text-charcoal mb-4">No treasures found</h3>
             <p className="font-accent text-lg text-opal-electric/70 mb-8">The opals are hiding from these filters</p>
             <button
