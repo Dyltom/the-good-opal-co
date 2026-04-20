@@ -25,7 +25,7 @@ test.describe('Cart Clear Confirmation Dialog', () => {
     // Check if cart has items, if not, skip this test
     const clearCartButton = page.getByRole('button', { name: 'Clear Cart' })
     if (!(await clearCartButton.isVisible())) {
-      test.skip('No items in cart to test clear functionality')
+      test.skip()
     }
 
     // Click the Clear Cart button (force click to avoid nav interference)
@@ -47,7 +47,7 @@ test.describe('Cart Clear Confirmation Dialog', () => {
 
     const clearCartButton = page.getByRole('button', { name: 'Clear Cart' })
     if (!(await clearCartButton.isVisible())) {
-      test.skip('No items in cart to test clear functionality')
+      test.skip()
     }
 
     // Click Clear Cart to open dialog (force click to avoid nav interference)
@@ -72,7 +72,7 @@ test.describe('Cart Clear Confirmation Dialog', () => {
 
     const clearCartButton = page.getByRole('button', { name: 'Clear Cart' })
     if (!(await clearCartButton.isVisible())) {
-      test.skip('No items in cart to test clear functionality')
+      test.skip()
     }
 
     // Click Clear Cart to open dialog (force click to avoid nav interference)

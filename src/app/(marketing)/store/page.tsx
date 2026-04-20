@@ -115,10 +115,13 @@ export default async function StorePage() {
       <PageTransition>
         <div className="min-h-screen flex flex-col bg-white">
           <Navigation
-            logoText="The Good Opal Co"
+            logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
             items={[
               { href: '/store', label: 'Shop' },
               { href: '/blog', label: 'Blog' },
+              { href: '/courses', label: 'Courses' },
+              { href: '/about', label: 'About' },
+              { href: '/contact', label: 'Contact' },
               { href: '/faq', label: 'FAQ' },
             ]}
             transparent

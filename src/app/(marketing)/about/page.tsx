@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
-import { Navigation } from '@/components/navigation'
+import { Navigation, Footer } from '@/components/navigation'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Award, Shield, Heart, Sparkles, Users, Globe } from 'lucide-react'
@@ -21,6 +21,8 @@ export default function AboutPage() {
           { href: '/store', label: 'Shop' },
           { href: '/blog', label: 'Blog' },
           { href: '/courses', label: 'Courses' },
+          { href: '/about', label: 'About' },
+          { href: '/contact', label: 'Contact' },
           { href: '/faq', label: 'FAQ' },
         ]}
       />
@@ -340,6 +342,7 @@ export default function AboutPage() {
           </div>
         </section>
       </Container>
+      <Footer />
     </div>
   )
 }

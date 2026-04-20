@@ -140,6 +140,9 @@ export default function CoursesPage() {
         items={[
           { href: '/store', label: 'Shop' },
           { href: '/blog', label: 'Blog' },
+          { href: '/courses', label: 'Courses' },
+          { href: '/about', label: 'About' },
+          { href: '/contact', label: 'Contact' },
           { href: '/faq', label: 'FAQ' },
         ]}
       />
