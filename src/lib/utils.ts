@@ -101,6 +101,31 @@ export function formatRelativeTime(
 }
 
 /**
+ * Format price in AUD cents to display string
+ * @param cents - Price in cents (integer)
+ * @returns Formatted price string (e.g., "$45.99")
+ */
+export function formatPrice(cents: number): string {
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD',
+  }).format(cents / 100)
+}
+
+/**
+ * Format currency value
+ * @param amount - Amount in dollars
+ * @param currency - Currency code (default: AUD)
+ * @returns Formatted currency string
+ */
+export function formatCurrency(amount: number, currency = 'AUD'): string {
+  return new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency,
+  }).format(amount)
+}
+
+/**
  * Generate a slug from a string
  * @param text - Text to slugify
  * @returns URL-safe slug
