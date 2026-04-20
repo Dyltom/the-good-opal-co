@@ -105,10 +105,10 @@ const courses = [
 ]
 
 const upcomingDates = [
-  { course: 'Introduction to Australian Opals', date: 'March 3, 2024', spots: 8 },
-  { course: 'Opal Grading & Valuation', date: 'March 17, 2024', spots: 5 },
-  { course: 'Introduction to Australian Opals', date: 'April 7, 2024', spots: 15 },
-  { course: 'Opal Trading Masterclass', date: 'April 21, 2024', spots: 3 }
+  { course: 'Introduction to Australian Opals', date: 'May 15, 2026', spots: 8 },
+  { course: 'Opal Grading & Valuation', date: 'May 29, 2026', spots: 5 },
+  { course: 'Introduction to Australian Opals', date: 'June 12, 2026', spots: 15 },
+  { course: 'Opal Trading Masterclass', date: 'June 26, 2026', spots: 3 }
 ]
 
 const instructors = [
