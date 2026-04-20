@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
 import { Container } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductActions } from '@/components/product/ProductActions'
+import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { formatCurrency } from '@/lib/utils'
 import { getPayload } from '@/lib/payload'
@@ -139,13 +139,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     ?.replace(/-/g, ' ')
     .replace(/\b\w/g, (c: string) => c.toUpperCase())
 
-  // Collect all product images
+  // Collect all product images with alt text
   const productImages = product.images
-    ?.map((img: { image?: { url?: string } | string | null }) => {
+    ?.map((img: { image?: { url?: string; alt?: string } | string | null }, index: number) => {
       const imgObj = typeof img.image === 'object' && img.image ? img.image : null
-      return imgObj?.url
+      if (!imgObj?.url) return null
+      return {
+        url: imgObj.url,
+        alt: imgObj.alt || `${product.name} view ${index + 1}`
+      }
     })
-    .filter((url: string | undefined): url is string => Boolean(url)) ?? []
+    .filter((img): img is { url: string; alt: string } => Boolean(img)) ?? []
 
   return (
     <>
@@ -156,7 +160,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           slug: product.slug,
           description: descriptionText,
           price: product.price,
-          images: productImages,
+          images: productImages.map(img => img.url),
           category: categoryName,
           stock: product.stock,
           sku: String(product.id),
@@ -214,71 +218,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <div className="grid lg:grid-cols-2 gap-12">
               {/* Product Image Gallery */}
               <div className="space-y-4">
-                {/* Main Image */}
-                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl group">
-                  {/* Premium border */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[1px] opacity-50">
-                    <div className="absolute inset-[1px] rounded-2xl bg-white" />
-                  </div>
-
-                  {imageUrl ? (
-                    <Image
-                      src={imageUrl}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      priority
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/20 to-fire-pink/20">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-opal-electric to-fire-pink opacity-30" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
-                    <div className="flex flex-col gap-2">
-                      {product.featured && (
-                        <span className="px-3 py-1.5 bg-gradient-to-r from-fire-gold to-fire-orange text-white text-xs font-bold rounded-full shadow-lg">
-                          FEATURED
-                        </span>
-                      )}
-                    </div>
-                    {product.stock <= 10 && product.stock > 0 && (
-                      <span className="px-3 py-1.5 bg-fire-pink text-white text-xs font-bold rounded-full shadow-lg">
-                        Only {product.stock} left
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Image Gallery Thumbnails */}
-                {product.images && product.images.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                    {product.images.map((img: { image?: { url?: string } | string | null }, index: number) => {
-                      const thumbUrl =
-                        typeof img.image === 'object' && img.image ? img.image.url : undefined
-                      if (!thumbUrl) return null
-                      return (
-                        <div
-                          key={index}
-                          className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 border-transparent hover:border-opal-electric-accessible transition-colors cursor-pointer"
-                        >
-                          <Image
-                            src={thumbUrl}
-                            alt={`${product.name} view ${index + 1}`}
-                            width={80}
-                            height={80}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+                <ProductImageGallery
+                  productName={product.name}
+                  images={productImages}
+                  featured={product.featured}
+                  stock={product.stock}
+                />
 
                 {/* Social Proof */}
                 <div className="flex items-center justify-center">

@@ -15,7 +15,15 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
+      <Navigation
+        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        items={[
+          { href: '/store', label: 'Shop' },
+          { href: '/blog', label: 'Blog' },
+          { href: '/courses', label: 'Courses' },
+          { href: '/faq', label: 'FAQ' },
+        ]}
+      />
       {/* Hero Section */}
       <section className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 z-10" />

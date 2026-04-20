@@ -14,7 +14,15 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
+      <Navigation
+        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+        items={[
+          { href: '/store', label: 'Shop' },
+          { href: '/blog', label: 'Blog' },
+          { href: '/courses', label: 'Courses' },
+          { href: '/faq', label: 'FAQ' },
+        ]}
+      />
       <Container className="py-12">
         <Breadcrumb
           items={[
