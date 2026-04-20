@@ -147,17 +147,7 @@ export function StoreContent({ products }: StoreContentProps) {
   }
 
   return (
-    <div className="py-8 px-6 max-w-7xl mx-auto">
-      {/* Magical intro */}
-      <div className="text-center mb-8">
-        <p className="font-accent text-lg text-opal-electric mb-4">
-          ✨ Each piece holds ancient magic ✨
-        </p>
-        <p className="text-charcoal/70 max-w-2xl mx-auto leading-relaxed">
-          Browse our carefully curated collection of Australian opals. Each gemstone has been lovingly selected for its unique character and fire.
-        </p>
-      </div>
-
+    <div className="py-6 px-6 max-w-7xl mx-auto">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Filters Sidebar */}
         <aside className="lg:w-80 flex-shrink-0">
@@ -189,14 +179,14 @@ export function StoreContent({ products }: StoreContentProps) {
       {/* Products Area */}
       <div className="flex-1">
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="relative">
             <input
               type="text"
               placeholder="🔍 Search for your magical opal..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-8 py-4 pr-14 text-lg rounded-2xl border border-warm-grey/30 bg-white/80 backdrop-blur-sm focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-lg font-sans"
+              className="w-full px-6 py-3 pr-12 text-base rounded-2xl border border-warm-grey/30 bg-white/80 backdrop-blur-sm focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-lg font-sans"
             />
             <svg
               className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-charcoal/50"
@@ -215,7 +205,7 @@ export function StoreContent({ products }: StoreContentProps) {
         </div>
 
         {/* Sort Bar */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-6">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-5">
           <div className="flex items-center gap-4">
             <p className="text-sm text-charcoal font-semibold">
               {sortedProducts.length} {sortedProducts.length === 1 ? 'piece' : 'pieces'} available
