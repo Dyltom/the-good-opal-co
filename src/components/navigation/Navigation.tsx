@@ -207,7 +207,9 @@ export function Navigation({
                     : 'text-charcoal hover:bg-gray-whisper'
                 )}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-menu"
+                aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? (
                   <svg
@@ -244,6 +246,7 @@ export function Navigation({
 
       {/* Mobile Menu with Opal Styling */}
       <div
+        id="mobile-menu"
         className={cn(
           'md:hidden transition-all duration-300 ease-out transform origin-top',
           mobileMenuOpen

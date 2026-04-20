@@ -7,7 +7,8 @@
  * Receives products from server component via props.
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ProductCard } from '@/components/product/ProductCard'
 import { ProductFilters } from '@/components/store/ProductFilters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -38,17 +39,59 @@ function sortProducts(products: Product[], sortBy: SortOption): Product[] {
 }
 
 export function StoreContent({ products, searchQuery: initialSearchQuery }: StoreContentProps) {
-  // Sorting and display state
-  const [sort, setSort] = useState<SortOption>('featured')
-  const [showOutOfStock, setShowOutOfStock] = useState(false)
-  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || '')
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Filter states
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [selectedStoneTypes, setSelectedStoneTypes] = useState<string[]>([])
-  const [selectedOrigins, setSelectedOrigins] = useState<string[]>([])
-  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
+  // Initialize state from URL parameters
+  const [sort, setSort] = useState<SortOption>(() => {
+    const sortParam = searchParams?.get('sort') as SortOption
+    return ['featured', 'price-low', 'price-high', 'newest'].includes(sortParam) ? sortParam : 'featured'
+  })
+  const [showOutOfStock, setShowOutOfStock] = useState(() => searchParams?.get('showOutOfStock') === 'true')
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery || searchParams?.get('search') || '')
+
+  // Filter states - initialize from URL
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const categoryParam = searchParams?.get('category')
+    return categoryParam ? [categoryParam] : (searchParams?.get('categories')?.split(',').filter(Boolean) || [])
+  })
+  const [selectedStoneTypes, setSelectedStoneTypes] = useState<string[]>(() =>
+    searchParams?.get('stoneTypes')?.split(',').filter(Boolean) || []
+  )
+  const [selectedOrigins, setSelectedOrigins] = useState<string[]>(() =>
+    searchParams?.get('origins')?.split(',').filter(Boolean) || []
+  )
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>(() =>
+    searchParams?.get('materials')?.split(',').filter(Boolean) || []
+  )
+  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
+    const minPrice = Number(searchParams?.get('minPrice')) || 0
+    const maxPrice = Number(searchParams?.get('maxPrice')) || 10000
+    return [minPrice, maxPrice]
+  })
+
+  // Sync state to URL parameters
+  useEffect(() => {
+    const params = new URLSearchParams()
+
+    if (sort !== 'featured') params.set('sort', sort)
+    if (showOutOfStock) params.set('showOutOfStock', 'true')
+    if (searchQuery) params.set('search', searchQuery)
+    if (selectedCategories.length > 0) params.set('categories', selectedCategories.join(','))
+    if (selectedStoneTypes.length > 0) params.set('stoneTypes', selectedStoneTypes.join(','))
+    if (selectedOrigins.length > 0) params.set('origins', selectedOrigins.join(','))
+    if (selectedMaterials.length > 0) params.set('materials', selectedMaterials.join(','))
+    if (priceRange[0] > 0) params.set('minPrice', priceRange[0].toString())
+    if (priceRange[1] < 10000) params.set('maxPrice', priceRange[1].toString())
+
+    const queryString = params.toString()
+    const newUrl = queryString ? `/store?${queryString}` : '/store'
+
+    // Only update URL if it's different to avoid infinite loops
+    if (window.location.pathname + window.location.search !== newUrl) {
+      router.push(newUrl, { scroll: false })
+    }
+  }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, router])
 
   // Extract unique filter options from products
   const filterOptions = useMemo(() => {

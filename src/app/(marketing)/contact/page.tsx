@@ -33,7 +33,7 @@ export default function ContactPage() {
           <Container>
             <div className="text-center max-w-4xl mx-auto">
               <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
-                ✨ Let&apos;s Connect ✨
+                <span aria-hidden="true">✨</span> Let&apos;s Connect <span aria-hidden="true">✨</span>
               </span>
               <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mb-4">
                 Contact <span className="font-accent text-opal-electric">Us</span>

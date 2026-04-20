@@ -97,11 +97,11 @@
     --sidebar-border: oklch(0.9067 0 0);
     --sidebar-ring: oklch(0.6531 0.1347 242.6867);
 
-    /* Typography */
-    --font-sans: 'Merriweather', serif;
-    --font-serif: 'EB Garamond', serif;
-    --font-accent: 'Dancing Script', cursive;
-    --font-inter: 'EB Garamond', serif;
+    /* Typography - Semantic font naming for fairytale theme */
+    --font-sans: 'Merriweather', serif; /* Warm readable body text */
+    --font-serif: 'EB Garamond', serif; /* Elegant display headings */
+    --font-accent: 'Dancing Script', cursive; /* Magical handwritten moments */
+    --font-inter: 'EB Garamond', serif; /* Legacy compatibility */
     --font-mono: 'Fira Code', monospace;
     --font-heading: var(--font-serif);
 
