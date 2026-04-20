@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
+import { Navigation } from '@/components/navigation'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
 import { Award, Shield, Heart, Sparkles, Users, Globe } from 'lucide-react'
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
+      <Navigation />
       {/* Hero Section */}
       <section className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 z-10" />

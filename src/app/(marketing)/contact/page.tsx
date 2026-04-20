@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
+import { Navigation } from '@/components/navigation'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { ContactForm } from './contact-form'
 import { Mail, Phone, MapPin, Clock } from 'lucide-react'
@@ -12,6 +13,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-white">
+      <Navigation />
       <Container className="py-12">
         <Breadcrumb
           items={[
