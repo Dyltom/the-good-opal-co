@@ -6,6 +6,7 @@ import { Navigation, Footer } from '@/components/navigation'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
+import { getNavigationProps } from '@/lib/constants/navigation'
 import { Award, Shield, Heart, Sparkles, Users, Globe } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -18,17 +19,8 @@ export default function AboutPage() {
     <PageTransition>
       <div className="min-h-screen flex flex-col bg-white">
         <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/courses', label: 'Courses' },
-          { href: '/about', label: 'About' },
-          { href: '/contact', label: 'Contact' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-        transparent
-      />
+          {...getNavigationProps({ transparent: true })}
+        />
       {/* Hero Section */}
       <section className="relative pt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 z-10" />

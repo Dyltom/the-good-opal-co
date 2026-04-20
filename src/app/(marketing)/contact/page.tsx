@@ -4,6 +4,7 @@ import { Navigation, Footer } from '@/components/navigation'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { ContactForm } from './contact-form'
 import { CONTACT_INFO } from '@/lib/constants/contact'
+import { getNavigationProps } from '@/lib/constants/navigation'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Mail, Phone, MapPin, Clock } from 'lucide-react'
 
@@ -17,15 +18,7 @@ export default function ContactPage() {
     <PageTransition>
       <div className="min-h-screen flex flex-col bg-white">
         <Navigation
-          logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-          items={[
-            { href: '/store', label: 'Shop' },
-            { href: '/blog', label: 'Blog' },
-            { href: '/courses', label: 'Courses' },
-            { href: '/about', label: 'About' },
-            { href: '/contact', label: 'Contact' },
-            { href: '/faq', label: 'FAQ' },
-          ]}
+          {...getNavigationProps()}
         />
 
         {/* Hero Section */}
@@ -161,7 +154,7 @@ export default function ContactPage() {
                     </a>
                   </li>
                   <li>
-                    <a href="/care-guide" className="font-sans text-content hover:text-opal-electric-accessible transition-colors">
+                    <a href="/faq#care" className="font-sans text-content hover:text-opal-electric-accessible transition-colors">
                       Opal Care Guide
                     </a>
                   </li>

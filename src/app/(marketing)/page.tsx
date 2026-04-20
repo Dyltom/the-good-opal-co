@@ -117,7 +117,7 @@ export default function HomePage() {
 
                 {/* Earrings */}
                 <Link
-                  href="/store"
+                  href="/store?category=earrings"
                   className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">

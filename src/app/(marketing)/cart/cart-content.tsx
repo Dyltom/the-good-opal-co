@@ -188,7 +188,6 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
           </div>
         </div>
       </Card>
-    </Container>
 
       <CartClearConfirmDialog
         open={showClearDialog}

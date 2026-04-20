@@ -4,10 +4,15 @@
  */
 
 export const CONTACT_INFO = {
-  email: 'hello@thegoodopalco.com', // Fixed domain (was missing 'o')
-  phone: '+61 2 9555 1234', // Real phone number (was fake placeholder)
-  supportEmail: 'support@thegoodopalco.com',
-  salesEmail: 'sales@thegoodopalco.com',
+  email: 'thegoodopalco@gmail.com', // Main contact email
+  phone: '+61 2 9555 1234', // Business phone number
+  supportEmail: 'thegoodopalco@gmail.com', // Unified support email
+  salesEmail: 'thegoodopalco@gmail.com', // Sales inquiries
+  returnsEmail: 'thegoodopalco@gmail.com', // Returns and refunds
+  shippingEmail: 'thegoodopalco@gmail.com', // Shipping inquiries
+  ordersEmail: 'thegoodopalco@gmail.com', // Order inquiries
+  legalEmail: 'thegoodopalco@gmail.com', // Legal matters
+  privacyEmail: 'thegoodopalco@gmail.com', // Privacy concerns
   address: 'Sydney, NSW, Australia',
   businessHours: {
     weekdays: '9:00 AM - 5:00 PM (AEST)',

@@ -189,12 +189,15 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
       <div className="flex-1">
         {/* Magical Search Bar */}
         <div className="mb-6">
+          <label htmlFor="store-search" className="sr-only">Search products</label>
           <div className="relative">
             <input
+              id="store-search"
               type="text"
               placeholder="Search for your magical opal... ✨"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search products"
               className="w-full px-6 py-4 pr-16 text-base rounded-2xl border border-warm-grey/20 bg-white/90 backdrop-blur-sm focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-lg font-sans placeholder:text-charcoal/40 placeholder:font-accent"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">

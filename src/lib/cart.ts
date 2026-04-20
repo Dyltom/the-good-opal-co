@@ -12,6 +12,7 @@
  */
 
 import { cookies } from 'next/headers'
+import { getPayload } from '@/lib/payload'
 
 /**
  * Represents an item in the shopping cart
@@ -109,12 +110,32 @@ export async function addItemToCart(item: Omit<CartItem, 'quantity'>): Promise<C
  * @param item - Cart item to add (without quantity)
  * @param quantity - Number of items to add
  * @returns Promise<Cart> - Updated cart state
+ * @throws Error if insufficient stock available
  */
 export async function addItemToCartWithQuantity(
   item: Omit<CartItem, 'quantity'>,
   quantity: number
 ): Promise<Cart> {
+  // Validate stock before adding to cart
+  const payload = await getPayload()
+  const { docs: [product] } = await payload.find({
+    collection: 'products',
+    where: { id: { equals: item.productId } }
+  })
+
+  if (!product) {
+    throw new Error('Product not found')
+  }
+
   const cart = await getCart()
+  const existingItem = cart.items.find(i => i.productId === item.productId)
+  const currentCartQuantity = existingItem?.quantity || 0
+  const requestedTotalQuantity = currentCartQuantity + quantity
+
+  if (product.stock < requestedTotalQuantity) {
+    throw new Error(`Insufficient stock available. Only ${product.stock} items in stock, but ${requestedTotalQuantity} requested.`)
+  }
+
   const existingIndex = cart.items.findIndex((i) => i.productId === item.productId)
 
   if (existingIndex >= 0) {
@@ -153,12 +174,28 @@ export async function removeItemFromCart(productId: string): Promise<Cart> {
  * @param productId - ID of the product to update
  * @param quantity - New quantity (0 or less removes the item)
  * @returns Promise<Cart> - Updated cart state
+ * @throws Error if insufficient stock available
  */
 export async function updateCartItemQuantity(productId: string, quantity: number): Promise<Cart> {
   const cart = await getCart()
 
   if (quantity <= 0) {
     return removeItemFromCart(productId)
+  }
+
+  // Validate stock before updating quantity
+  const payload = await getPayload()
+  const { docs: [product] } = await payload.find({
+    collection: 'products',
+    where: { id: { equals: productId } }
+  })
+
+  if (!product) {
+    throw new Error('Product not found')
+  }
+
+  if (product.stock < quantity) {
+    throw new Error(`Insufficient stock available. Only ${product.stock} items in stock.`)
   }
 
   const item = cart.items.find((i) => i.productId === productId)

@@ -152,13 +152,13 @@ export function ProductHero({ products }: ProductHeroProps) {
               className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 mb-8"
             >
               <div className="text-center lg:text-left">
-                <p className="font-accent text-2xl font-bold text-white">15K+</p>
-                <p className="font-sans text-xs text-white/60">Happy Customers</p>
+                <p className="font-accent text-2xl font-bold text-white">EST.</p>
+                <p className="font-sans text-xs text-white/60">Family Business</p>
               </div>
               <div className="hidden sm:block h-10 w-px bg-white/20" />
               <div className="text-center lg:text-left">
-                <p className="font-accent text-2xl font-bold text-white">4.9★</p>
-                <p className="font-sans text-xs text-white/60">Average Rating</p>
+                <p className="font-accent text-2xl font-bold text-white">AU</p>
+                <p className="font-sans text-xs text-white/60">Sourced Opals</p>
               </div>
               <div className="hidden sm:block h-10 w-px bg-white/20" />
               <div className="text-center lg:text-left">
