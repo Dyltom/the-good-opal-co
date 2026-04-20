@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <PageTransition>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen flex flex-col bg-white">
         <Navigation
         logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
         items={[
@@ -27,9 +27,10 @@ export default function AboutPage() {
           { href: '/contact', label: 'Contact' },
           { href: '/faq', label: 'FAQ' },
         ]}
+        transparent
       />
       {/* Hero Section */}
-      <section className="relative">
+      <section className="relative pt-32">
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/20 z-10" />
         <div className="relative h-[500px] w-full overflow-hidden">
           <Image

@@ -3,8 +3,9 @@ import { Container, Grid } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { BlogCard } from '@/components/blog/BlogCard'
 import { Pagination } from '@/components/ui/pagination'
+import { PageTransition } from '@/components/layout/PageTransition'
 import { getPayload } from '@/lib/payload'
-import type { BlogPost, Category } from '@/types'
+import type { Post } from '@/types/payload-types'
 
 const POSTS_PER_PAGE = 9
 
@@ -12,34 +13,23 @@ const POSTS_PER_PAGE = 9
  * Blog Listing Page
  * Fetches posts from Payload CMS and displays them with pagination
  */
-export default async function BlogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string; category?: string }>
-}) {
-  const params = await searchParams
-  const currentPage = Number(params.page) || 1
-  const categorySlug = params.category
+export default async function BlogPage() {
 
   // Fetch posts from Payload CMS
   const payload = await getPayload()
 
-  const { docs: posts, totalPages } = await payload.find({
+  const { docs: posts } = await payload.find({
     collection: 'posts',
     where: {
-      _status: { equals: 'published' },
-      ...(categorySlug && {
-        'categories.slug': { equals: categorySlug },
-      }),
+      status: { equals: 'published' },
     },
     limit: POSTS_PER_PAGE,
-    page: currentPage,
     sort: '-publishedAt',
-    depth: 2, // Include related media and categories
+    depth: 2, // Include related media
   })
 
-  // Transform posts to match BlogPost type
-  const transformedPosts: Pick<BlogPost, 'slug' | 'title' | 'excerpt' | 'featuredImage' | 'publishedAt' | 'categories'>[] = posts.map((post) => ({
+  // Transform posts for display
+  const transformedPosts = posts.map((post) => ({
     slug: post.slug,
     title: post.title,
     excerpt: typeof post.excerpt === 'string' ? post.excerpt : undefined,
@@ -51,39 +41,27 @@ export default async function BlogPage({
       height: post.featuredImage.height ?? 600,
     } : undefined,
     publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
-    categories: Array.isArray(post.categories)
-      ? post.categories.map((cat): Category => {
-          if (typeof cat === 'object' && cat !== null) {
-            return {
-              id: String(cat.id),
-              tenantId: 'default',
-              name: cat.name ?? '',
-              slug: cat.slug ?? '',
-            }
-          }
-          return { id: String(cat), tenantId: 'default', name: '', slug: '' }
-        })
-      : undefined,
   }))
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/courses', label: 'Courses' },
-          { href: '/about', label: 'About' },
-          { href: '/contact', label: 'Contact' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-        transparent
-      />
+    <PageTransition>
+      <div className="min-h-screen flex flex-col bg-white">
+        <Navigation
+          logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
+          items={[
+            { href: '/store', label: 'Shop' },
+            { href: '/blog', label: 'Blog' },
+            { href: '/courses', label: 'Courses' },
+            { href: '/about', label: 'About' },
+            { href: '/contact', label: 'Contact' },
+            { href: '/faq', label: 'FAQ' },
+          ]}
+          transparent
+        />
 
       <main className="flex-1">
-        {/* Header - Premium opal-inspired design */}
-        <section className="relative py-24 lg:py-32 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden pt-32">
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-24 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden">
           {/* Enhanced background effects */}
           <div className="absolute inset-0">
             <div className="absolute -top-40 left-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
@@ -100,34 +78,35 @@ export default async function BlogPage({
 
           <Container>
             <div className="relative z-10 text-center max-w-4xl mx-auto">
-              <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-electric via-fire-gold to-fire-pink">
-                <span className="h-px w-16 bg-gradient-to-r from-transparent to-opal-electric"></span>
-                Insights & Stories
-                <span className="h-px w-16 bg-gradient-to-l from-transparent to-fire-pink"></span>
+              <span className="font-accent text-xl md:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
+                ✨ Stories & Wisdom ✨
               </span>
               <h1 className="font-serif text-6xl md:text-7xl lg:text-8xl font-extrabold mb-8 text-white leading-tight">
                 The Opal <span className="text-gradient-prismatic">Journal</span>
               </h1>
-              <p className="text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto">
+              <p className="font-sans text-xl md:text-2xl text-white/80 font-light max-w-3xl mx-auto leading-relaxed">
                 Discover the magic of Australian opals through our stories, expert guides,
                 and behind-the-scenes glimpses into the world of precious gemstones.
+              </p>
+              <p className="font-accent text-lg text-white/60 mt-4">
+                ~ Where knowledge meets wonder ~
               </p>
 
               {/* Quick stats */}
               <div className="flex justify-center gap-8 mt-12">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-white">{posts.length}</p>
-                  <p className="text-sm text-white/60 mt-1">Articles</p>
+                  <p className="font-serif text-3xl font-bold text-white">{posts.length}</p>
+                  <p className="font-sans text-sm text-white/60 mt-1">Articles</p>
                 </div>
                 <div className="h-12 w-px bg-white/20" />
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-white">Expert</p>
-                  <p className="text-sm text-white/60 mt-1">Insights</p>
+                  <p className="font-serif text-3xl font-bold text-white">Expert</p>
+                  <p className="font-sans text-sm text-white/60 mt-1">Insights</p>
                 </div>
                 <div className="h-12 w-px bg-white/20" />
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-white">Weekly</p>
-                  <p className="text-sm text-white/60 mt-1">Updates</p>
+                  <p className="font-serif text-3xl font-bold text-white">Weekly</p>
+                  <p className="font-sans text-sm text-white/60 mt-1">Updates</p>
                 </div>
               </div>
             </div>
@@ -148,16 +127,6 @@ export default async function BlogPage({
                   ))}
                 </Grid>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-12">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      baseUrl={categorySlug ? `/blog?category=${categorySlug}` : '/blog'}
-                    />
-                  </div>
-                )}
               </>
             ) : (
               <div className="text-center py-16">
@@ -166,9 +135,12 @@ export default async function BlogPage({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-charcoal mb-2">Stories Coming Soon</h2>
-                <p className="text-charcoal/60 max-w-md mx-auto mb-6">
+                <h2 className="font-serif text-2xl font-bold text-charcoal mb-2">Stories Coming Soon</h2>
+                <p className="font-sans text-charcoal/60 max-w-md mx-auto mb-4">
                   We&apos;re crafting fascinating content about Australian opals. Check back soon!
+                </p>
+                <p className="font-accent text-sm text-opal-electric/70">
+                  ~ Magical tales in the making ~
                 </p>
                 <div className="flex gap-4 justify-center">
                   <Link
@@ -190,7 +162,8 @@ export default async function BlogPage({
         </section>
       </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </PageTransition>
   )
 }

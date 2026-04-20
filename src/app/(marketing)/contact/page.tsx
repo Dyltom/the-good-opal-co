@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
-import { Navigation } from '@/components/navigation'
+import { Navigation, Footer } from '@/components/navigation'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { ContactForm } from './contact-form'
 import { CONTACT_INFO } from '@/lib/constants/contact'
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <PageTransition>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen flex flex-col bg-white">
         <Navigation
           logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
           items={[
@@ -26,8 +26,38 @@ export default function ContactPage() {
             { href: '/contact', label: 'Contact' },
             { href: '/faq', label: 'FAQ' },
           ]}
+          transparent
         />
-        <Container className="py-12">
+
+        {/* Hero Section */}
+        <section className="relative py-24 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden">
+          {/* Magical sparkle effects */}
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
+            <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
+            <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
+          </div>
+
+          <Container>
+            <div className="text-center max-w-4xl mx-auto">
+              <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
+                ✨ Let&apos;s Connect ✨
+              </span>
+              <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mb-4">
+                Contact <span className="font-accent text-opal-electric">Us</span>
+              </h1>
+              <p className="font-sans text-lg text-content-muted max-w-2xl mx-auto mb-4">
+                Have a question about our Australian opals? Need help with an order?
+                We&apos;re here to help and would love to hear from you.
+              </p>
+              <p className="font-accent text-base text-opal-electric/70">
+                ~ Where questions become conversations ~
+              </p>
+            </div>
+          </Container>
+        </section>
+
+        <Container className="py-16">
         <Breadcrumb
           items={[
             { label: 'Home', href: '/' },
@@ -37,21 +67,6 @@ export default function ContactPage() {
         />
 
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
-              ✨ Let&apos;s Connect ✨
-            </span>
-            <h1 className="font-serif text-4xl font-bold text-charcoal mb-4">
-              Contact <span className="font-accent text-opal-electric">Us</span>
-            </h1>
-            <p className="font-sans text-lg text-content-muted max-w-2xl mx-auto">
-              Have a question about our Australian opals? Need help with an order?
-              We&apos;re here to help and would love to hear from you.
-            </p>
-            <p className="font-accent text-base text-opal-electric/70 mt-2">
-              ~ Where questions become conversations ~
-            </p>
-          </div>
 
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Contact Information */}
@@ -246,6 +261,8 @@ export default function ContactPage() {
           </div>
         </div>
       </Container>
+
+        <Footer />
       </div>
     </PageTransition>
   )

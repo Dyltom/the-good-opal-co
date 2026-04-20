@@ -53,17 +53,41 @@ export interface Product {
  * Server Component that fetches products from Payload and renders the store.
  * Uses direct Payload Local API queries for optimal performance.
  */
-export default async function StorePage() {
+
+interface StorePageProps {
+  searchParams: Promise<{ search?: string }>
+}
+
+export default async function StorePage({ searchParams }: StorePageProps) {
+  const params = await searchParams
+  const searchQuery = params.search
+
   // Fetch all published products using Payload Local API
   const payload = await getPayload()
 
+  const whereCondition = searchQuery
+    ? {
+        and: [
+          { status: { equals: 'published' } },
+          {
+            or: [
+              { name: { contains: searchQuery } },
+              { category: { contains: searchQuery } },
+              { material: { contains: searchQuery } },
+              { stoneType: { contains: searchQuery } },
+              { stoneOrigin: { contains: searchQuery } },
+              { sku: { contains: searchQuery } },
+            ]
+          }
+        ]
+      }
+    : { status: { equals: 'published' } }
+
   const { docs: products } = await payload.find({
     collection: 'products',
-    where: {
-      status: { equals: 'published' },
-    },
+    where: whereCondition,
     limit: 200, // Reasonable limit for product catalog
-    sort: '-createdAt',
+    sort: searchQuery ? '-featured,-createdAt' : '-createdAt',
     depth: 2, // Include related media
   })
 
@@ -128,8 +152,8 @@ export default async function StorePage() {
           />
 
           <main className="flex-1">
-            {/* Fairytale Header */}
-            <section className="relative py-8 lg:py-12 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden pt-36">
+            {/* Hero Section */}
+            <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden">
               {/* Magical sparkle effects */}
               <div className="absolute inset-0">
                 <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
@@ -143,11 +167,19 @@ export default async function StorePage() {
                     ⭐ Handcrafted Treasures ⭐
                   </span>
                   <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-charcoal leading-tight">
-                    Australian <span className="font-accent text-opal-electric">Opals</span>
+                    {searchQuery ? (
+                      <>Results for <span className="font-accent text-opal-electric">&ldquo;{searchQuery}&rdquo;</span></>
+                    ) : (
+                      <>Australian <span className="font-accent text-opal-electric">Opals</span></>
+                    )}
                   </h1>
                   <p className="text-base md:text-lg text-charcoal/70 leading-relaxed max-w-3xl mx-auto mb-4">
-                    Each opal in our collection tells a story millions of years in the making.
-                    Discover these magical gemstones, lovingly handpicked from Australia&apos;s most treasured mines.
+                    {searchQuery ? (
+                      <>Found {transformedProducts.length} opal{transformedProducts.length !== 1 ? 's' : ''} matching your search.</>
+                    ) : (
+                      <>Each opal in our collection tells a story millions of years in the making.
+                      Discover these magical gemstones, lovingly handpicked from Australia&apos;s most treasured mines.</>
+                    )}
                   </p>
                   <p className="font-accent text-lg text-opal-electric/80">
                     ~ Where magic meets craftsmanship ~
@@ -159,13 +191,13 @@ export default async function StorePage() {
             {/* Products Section */}
             <section id="products" className="bg-white">
               <Suspense fallback={<ProductGridSkeleton count={12} />}>
-                <StoreContent products={transformedProducts} />
+                <StoreContent products={transformedProducts} searchQuery={searchQuery} />
               </Suspense>
             </section>
 
           </main>
 
-          <Footer logoText="The Good Opal Co" />
+          <Footer />
         </div>
       </PageTransition>
     </>  )
