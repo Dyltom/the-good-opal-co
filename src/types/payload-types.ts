@@ -39,7 +39,7 @@ export interface Post {
   id: string
   title: string
   slug: string
-  content: any // Rich text content
+  content: Record<string, unknown> // Rich text content - compatible with Lexical SerializedEditorState
   excerpt?: string
   featuredImage?: string | Media
   author?: string | User
@@ -47,7 +47,17 @@ export interface Post {
   status: 'draft' | 'published'
   publishedDate?: string
   publishedAt?: string
-  relatedProducts?: any[]
+  relatedProducts?: Array<{
+    id: string
+    slug: string
+    name: string
+    price: number
+    images?: Array<{
+      url?: string
+      [key: string]: unknown
+    }>
+    [key: string]: unknown
+  }>
   createdAt: string
   updatedAt: string
 }

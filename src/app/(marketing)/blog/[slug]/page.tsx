@@ -162,7 +162,7 @@ export default async function BlogPostPage({
                   prose-img:rounded-lg prose-img:shadow-xl">
                   {post.content && (
                     <RichText
-                      data={post.content as SerializedEditorState}
+                      data={post.content as unknown as SerializedEditorState}
                     />
                   )}
                 </div>
