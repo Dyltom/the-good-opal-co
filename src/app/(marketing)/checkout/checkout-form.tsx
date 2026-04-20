@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast'
 import { formatCurrency, cn } from '@/lib/utils'
 import { getStickyOffset } from '@/lib/constants/layout'
 import { createCheckoutSession } from './actions'
+import type { DiscountApplication, DiscountCalculationResult } from '@/lib/discounts/types'
 import type { Cart } from '@/lib/cart'
 import { AlertCircle, Lock, CheckCircle, Truck, CreditCard, ShoppingBag } from 'lucide-react'
 import { DiscountCodeInput } from '@/components/checkout/DiscountCodeInput'
@@ -50,12 +51,12 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   })
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
   const [errors, setErrors] = useState<FormErrors>({})
-  const [appliedDiscount, setAppliedDiscount] = useState<any>(null)
-  const [discountedTotals, setDiscountedTotals] = useState<any>(null)
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountApplication | null>(null)
+  const [discountedTotals, setDiscountedTotals] = useState<DiscountCalculationResult | null>(null)
   const { toast } = useToast()
 
   // Handle discount application
-  const handleDiscountApplied = (discount: any, totals: any) => {
+  const handleDiscountApplied = (discount: DiscountApplication, totals: DiscountCalculationResult) => {
     setAppliedDiscount(discount)
     setDiscountedTotals(totals)
     if (discount) {
