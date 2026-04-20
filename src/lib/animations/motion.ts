@@ -49,7 +49,7 @@ export function usePrefersReducedMotion() {
  * Get motion-safe animation variants
  * Returns reduced variants if user prefers reduced motion
  */
-export function getMotionSafeVariants<T extends Record<string, any>>(
+export function getMotionSafeVariants<T extends Record<string, unknown>>(
   variants: T,
   reducedVariants: Partial<T>
 ): T {
@@ -63,7 +63,7 @@ export function getMotionSafeVariants<T extends Record<string, any>>(
  * Motion-safe animation props for Framer Motion
  * Disables animations if user prefers reduced motion
  */
-export function motionSafeProps(props: any = {}) {
+export function motionSafeProps(props: Record<string, unknown> = {}) {
   if (prefersReducedMotion()) {
     return {
       ...props,

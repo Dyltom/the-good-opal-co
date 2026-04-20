@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 
 import { Spinner } from '@/components/ui/LoadingStates'
 import type { Product } from '@/app/(marketing)/store/page'
@@ -203,10 +204,12 @@ function MasonryProductCard({ product, index }: { product: Product; index: numbe
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
               )}
 
-              <img
+              <Image
                 src={product.images[0].image.url}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover"
                 onLoad={() => setImageLoaded(true)}
                 style={{
                   opacity: imageLoaded ? 1 : 0,

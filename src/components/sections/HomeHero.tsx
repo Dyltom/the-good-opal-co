@@ -40,8 +40,8 @@ export async function HomeHero() {
     sold: undefined, // Removed fake sold count to comply with ACL
     description: typeof product.description === 'string'
       ? product.description
-      : product.description?.root?.children?.map((node: any) =>
-          node.children?.map((child: any) => child.text ?? '').join('')
+      : product.description?.root?.children?.map((node: { children?: Array<{ text?: string }> }) =>
+          node.children?.map((child: { text?: string }) => child.text ?? '').join('')
         ).join(' ') ?? ''
   }))
 

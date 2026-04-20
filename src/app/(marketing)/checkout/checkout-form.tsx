@@ -56,9 +56,15 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   const { toast } = useToast()
 
   // Handle discount application
-  const handleDiscountApplied = (discount: DiscountApplication | null, totals: DiscountCalculationResult | null) => {
+  const handleDiscountApplied = (discount: DiscountApplication | null, totals: { subtotal: number; shipping: number; discount: number; tax: number; total: number } | null) => {
     setAppliedDiscount(discount)
-    setDiscountedTotals(totals)
+    setDiscountedTotals(totals ? {
+      discountAmount: totals.discount,
+      shippingDiscount: 0,
+      finalSubtotal: totals.subtotal,
+      finalShipping: totals.shipping,
+      finalTotal: totals.total
+    } : null)
     if (discount) {
       setFormData(prev => ({ ...prev, discountCode: discount.code }))
     } else {

@@ -18,16 +18,18 @@ interface FilterOption {
   count: number
 }
 
+interface FilterState {
+  categories: string[]
+  stoneTypes: string[]
+  origins: string[]
+  materials: string[]
+  priceRange: [number, number]
+}
+
 interface EnhancedFilterSidebarProps {
   products: Product[]
-  filters: {
-    categories: string[]
-    stoneTypes: string[]
-    origins: string[]
-    materials: string[]
-    priceRange: [number, number]
-  }
-  onFilterChange: (filters: any) => void
+  filters: FilterState
+  onFilterChange: (filters: Partial<FilterState>) => void
   activeFilterCount: number
   onClearAll: () => void
 }
@@ -365,7 +367,7 @@ export function EnhancedFilterSidebar({
             <div className="space-y-4">
               <Slider
                 value={filters.priceRange}
-                onValueChange={(value) => onFilterChange({ priceRange: value })}
+                onValueChange={(value) => onFilterChange({ priceRange: value as [number, number] })}
                 min={0}
                 max={Math.max(...products.map(p => p.price))}
                 step={50}

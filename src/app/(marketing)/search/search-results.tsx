@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ProductCard } from '@/components/product/ProductCard'
 import { Button } from '@/components/ui/button'
 import { Calendar, FileText, Package, ArrowRight } from 'lucide-react'
@@ -176,11 +177,13 @@ export async function SearchResults({ query, page }: SearchResultsProps) {
             {results.posts.map((post) => (
               <article key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                 {post.featuredImage && typeof post.featuredImage === 'object' && post.featuredImage.url && (
-                  <div className="aspect-video bg-gray-100">
-                    <img
+                  <div className="aspect-video bg-gray-100 relative">
+                    <Image
                       src={post.featuredImage.url}
                       alt={post.title || ''}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover"
                     />
                   </div>
                 )}

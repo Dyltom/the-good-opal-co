@@ -160,7 +160,7 @@ export const mobileTab: Variants = {
  * Get optimized animation props
  */
 export function getMobileAnimationProps(enableGPU = true) {
-  const props: Record<string, any> = {
+  const props: Record<string, string | boolean | Record<string, string>> = {
     initial: 'hidden',
     animate: 'visible',
     exit: 'exit',

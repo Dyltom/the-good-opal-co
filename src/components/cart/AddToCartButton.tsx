@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast'
 import { addToCart, addToCartWithQuantity } from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
 import { trackAddToCart } from '@/lib/analytics'
+import type { Product } from '@/types/payload-types'
 import type { ReactNode } from 'react'
 
 // Lazy load confetti only when needed
@@ -98,10 +99,11 @@ export function AddToCartButton({
         // Create a minimal product object that satisfies the analytics tracking
         trackAddToCart({
           id: product.id,
-          title: product.name,
+          name: product.name,
           price: product.price,
-          slug: product.slug
-        } as any, quantity)
+          slug: product.slug,
+          image: product.image
+        } as Product, quantity)
 
         // Trigger confetti if enabled
         if (showConfetti && confetti) {
@@ -138,7 +140,7 @@ export function AddToCartButton({
         })
       }
     })
-  }, [product, showConfetti, toast])
+  }, [product, showConfetti, toast, quantity])
 
   const sizeClasses = {
     sm: 'h-8 px-3 text-sm',
@@ -361,10 +363,11 @@ export function useAddToCart() {
           // Track add to cart event
           trackAddToCart({
             id: product.id,
-            title: product.name,
+            name: product.name,
             price: product.price,
-            slug: product.slug
-          } as any, 1) // TODO: Support quantity in future
+            slug: product.slug,
+            image: product.image
+          } as Product, 1) // TODO: Support quantity in future
 
           setTimeout(() => setIsSuccess(false), 2000)
           window.dispatchEvent(new CustomEvent('cart-updated'))

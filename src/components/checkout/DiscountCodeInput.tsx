@@ -8,8 +8,16 @@ import { cn } from '@/lib/utils'
 import { applyDiscountCode, validateDiscountCode } from '@/app/(marketing)/checkout/discount-actions'
 import type { DiscountApplication } from '@/lib/discounts/types'
 
+interface CheckoutTotals {
+  subtotal: number
+  shipping: number
+  discount: number
+  tax: number
+  total: number
+}
+
 interface DiscountCodeInputProps {
-  onDiscountApplied?: (discount: DiscountApplication | null, totals: any) => void
+  onDiscountApplied?: (discount: DiscountApplication | null, totals: CheckoutTotals | null) => void
   className?: string
 }
 

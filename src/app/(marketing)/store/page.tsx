@@ -65,7 +65,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   // Fetch all published products using Payload Local API
   const payload = await getPayload()
 
-  const whereCondition: any = searchQuery
+  const whereCondition = searchQuery
     ? {
         and: [
           { status: { equals: 'published' } },
@@ -85,7 +85,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
 
   const { docs: products } = await payload.find({
     collection: 'products',
-    where: whereCondition,
+    where: whereCondition as any,
     limit: 200, // Reasonable limit for product catalog
     sort: searchQuery ? '-featured,-createdAt' : '-createdAt',
     depth: 2, // Include related media

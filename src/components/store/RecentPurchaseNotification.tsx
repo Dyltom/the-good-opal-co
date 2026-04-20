@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MapPin, Clock } from 'lucide-react'
 import { OptimizedImage } from '@/components/ui/OptimizedImage'
@@ -33,6 +33,19 @@ export function RecentPurchaseNotification({ products, enabled = true }: RecentP
   } | null>(null)
   const [hasInteracted, setHasInteracted] = useState(false)
 
+  const showRandomNotification = useCallback(() => {
+    // Only show for available products
+    const availableProducts = products.filter(p => p.stock > 0)
+    if (availableProducts.length === 0) return
+
+    const randomProduct = availableProducts[Math.floor(Math.random() * availableProducts.length)]
+    const randomCustomer = mockCustomers[Math.floor(Math.random() * mockCustomers.length)]
+
+    if (!randomProduct || !randomCustomer) return
+    setCurrentNotification({ product: randomProduct, customer: randomCustomer })
+    setIsVisible(true)
+  }, [products])
+
   useEffect(() => {
     if (!enabled || products.length === 0 || hasInteracted) return
 
@@ -42,7 +55,7 @@ export function RecentPurchaseNotification({ products, enabled = true }: RecentP
     }, 8000) // 8 seconds after page load
 
     return () => clearTimeout(initialTimer)
-  }, [enabled, products, hasInteracted])
+  }, [enabled, products, hasInteracted, showRandomNotification])
 
   useEffect(() => {
     if (!isVisible || !enabled || hasInteracted) return
@@ -63,20 +76,7 @@ export function RecentPurchaseNotification({ products, enabled = true }: RecentP
       clearTimeout(hideTimer)
       clearTimeout(nextTimer)
     }
-  }, [isVisible, enabled, hasInteracted])
-
-  const showRandomNotification = () => {
-    // Only show for available products
-    const availableProducts = products.filter(p => p.stock > 0)
-    if (availableProducts.length === 0) return
-
-    const randomProduct = availableProducts[Math.floor(Math.random() * availableProducts.length)]
-    const randomCustomer = mockCustomers[Math.floor(Math.random() * mockCustomers.length)]
-
-    if (!randomProduct || !randomCustomer) return
-    setCurrentNotification({ product: randomProduct, customer: randomCustomer })
-    setIsVisible(true)
-  }
+  }, [isVisible, enabled, hasInteracted, showRandomNotification])
 
   const handleClose = () => {
     setIsVisible(false)

@@ -7,7 +7,6 @@ import { describe, test, expect } from 'vitest'
 describe('Typography Configuration', () => {
   test('font-display class should be defined in Tailwind', () => {
     // Test that our configuration defines font-display properly
-    const expectedFontFamily = 'Playfair Display, serif'
     const actualFontFamily = 'var(--font-serif), Playfair Display, Georgia, serif'
 
     // This test should PASS now that font-display is defined
