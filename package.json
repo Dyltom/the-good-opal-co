@@ -23,7 +23,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "validate": "pnpm type-check && pnpm lint",
-    "validate:all": "pnpm type-check && pnpm lint && pnpm test:e2e",
+    "validate:build": "pnpm type-check && pnpm lint && pnpm build",
     "prepare": "husky",
     "docker:up": "export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock && docker compose up -d",
     "docker:down": "export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock && docker compose down",
