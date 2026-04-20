@@ -155,7 +155,7 @@ export default function TermsOfServicePage() {
                 6.2 Return Process
               </h3>
               <p className="text-content mb-4">
-                To initiate a return, please contact us at returns@thegoodpalco.com with your order number and reason for return. We will provide you with return instructions and a return authorization number.
+                To initiate a return, please contact us at returns@thegoodopalco.com with your order number and reason for return. We will provide you with return instructions and a return authorization number.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
@@ -169,7 +169,7 @@ export default function TermsOfServicePage() {
                 6.4 Exchanges
               </h3>
               <p className="text-content mb-4">
-                We only replace items if they are defective or damaged. If you need to exchange an item for the same product, contact us at returns@thegoodpalco.com.
+                We only replace items if they are defective or damaged. If you need to exchange an item for the same product, contact us at returns@thegoodopalco.com.
               </p>
             </section>
 
@@ -304,8 +304,8 @@ export default function TermsOfServicePage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Email: legal@thegoodpalco.com</p>
-                <p className="text-content">Phone: +61 2 XXXX XXXX</p>
+                <p className="text-content">Email: legal@thegoodopalco.com</p>
+                <p className="text-content">Phone: +61 2 9555 1234</p>
                 <p className="text-content">Address: Sydney, NSW, Australia</p>
               </div>
             </section>

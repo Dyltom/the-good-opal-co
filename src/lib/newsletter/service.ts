@@ -33,7 +33,7 @@ export class ResendNewsletterService implements NewsletterService {
 
   constructor() {
     this.resend = new Resend(process.env.RESEND_API_KEY || '')
-    this.fromEmail = 'The Good Opal Co <newsletter@thegoodpalco.com>'
+    this.fromEmail = 'The Good Opal Co <newsletter@thegoodopalco.com>'
     this.baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:8412'
   }
 

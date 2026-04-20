@@ -247,7 +247,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                           </a>
                         </td>
                         <td>
-                          <a href="https://thegoodpalco.com/contact" style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#ffffff', color: '#1a1a1a', textDecoration: 'none', borderRadius: '4px', fontSize: '14px', border: '1px solid #1a1a1a' }}>
+                          <a href="https://thegoodopalco.com/contact" style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#ffffff', color: '#1a1a1a', textDecoration: 'none', borderRadius: '4px', fontSize: '14px', border: '1px solid #1a1a1a' }}>
                             Contact Us
                           </a>
                         </td>
@@ -263,16 +263,16 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                       © {new Date().getFullYear()} The Good Opal Co. All rights reserved.
                     </p>
                     <p style={{ margin: 0, fontSize: '12px', color: '#999999' }}>
-                      Sydney, NSW, Australia | +61 2 XXXX XXXX
+                      Sydney, NSW, Australia | +61 2 9555 1234
                     </p>
                     <div style={{ marginTop: '20px' }}>
-                      <a href="https://thegoodpalco.com/shipping" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
+                      <a href="https://thegoodopalco.com/shipping" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
                         Shipping Info
                       </a>
-                      <a href="https://thegoodpalco.com/returns" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
+                      <a href="https://thegoodopalco.com/returns" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
                         Returns
                       </a>
-                      <a href="https://thegoodpalco.com/legal/privacy" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px' }}>
+                      <a href="https://thegoodopalco.com/legal/privacy" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px' }}>
                         Privacy
                       </a>
                     </div>

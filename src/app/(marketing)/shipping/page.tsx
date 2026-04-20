@@ -207,7 +207,7 @@ export default function ShippingPage() {
                 </ul>
               </div>
               <p className="text-content mb-6">
-                Don&apos;t see your country? Contact us at <a href="mailto:shipping@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">shipping@thegoodpalco.com</a> for shipping options.
+                Don&apos;t see your country? Contact us at <a href="mailto:shipping@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">shipping@thegoodopalco.com</a> for shipping options.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
@@ -315,7 +315,7 @@ export default function ShippingPage() {
                 In the rare event of loss or damage:
               </p>
               <ol className="list-decimal pl-6 mb-6 space-y-2">
-                <li>Contact us immediately at <a href="mailto:support@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodpalco.com</a></li>
+                <li>Contact us immediately at <a href="mailto:support@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodopalco.com</a></li>
                 <li>We&apos;ll file a claim with the carrier</li>
                 <li>Investigation typically takes 5-10 business days</li>
                 <li>We&apos;ll send a replacement or full refund once resolved</li>
@@ -354,12 +354,12 @@ export default function ShippingPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Shipping Inquiries</h4>
-                    <p className="text-content">Email: <a href="mailto:shipping@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">shipping@thegoodpalco.com</a></p>
+                    <p className="text-content">Email: <a href="mailto:shipping@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">shipping@thegoodopalco.com</a></p>
                     <p className="text-content">Response time: Within 24 hours</p>
                   </div>
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Order Tracking</h4>
-                    <p className="text-content">Email: <a href="mailto:orders@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">orders@thegoodpalco.com</a></p>
+                    <p className="text-content">Email: <a href="mailto:orders@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">orders@thegoodopalco.com</a></p>
                     <p className="text-content">Include your order number</p>
                   </div>
                 </div>

@@ -134,7 +134,7 @@ export default function ReturnsPage() {
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Initiate Your Return</h4>
                     <p className="text-content">
-                      Email us at <a href="mailto:returns@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodpalco.com</a> with your order number and reason for return. We&apos;ll respond within 24 hours.
+                      Email us at <a href="mailto:returns@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodopalco.com</a> with your order number and reason for return. We&apos;ll respond within 24 hours.
                     </p>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export default function ReturnsPage() {
                 If you receive a damaged or defective item:
               </p>
               <ol className="list-decimal pl-6 mb-6 space-y-2">
-                <li>Contact us immediately at <a href="mailto:support@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodpalco.com</a></li>
+                <li>Contact us immediately at <a href="mailto:support@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodopalco.com</a></li>
                 <li>Include photos of the damage and packaging</li>
                 <li>We&apos;ll arrange for a replacement or full refund</li>
                 <li>Return shipping will be provided at no cost to you</li>
@@ -307,7 +307,7 @@ export default function ReturnsPage() {
                 <div>
                   <h4 className="font-medium text-charcoal mb-2">What if I lost my receipt?</h4>
                   <p className="text-content">
-                    We can look up your order with your email address or order number. Contact us at <a href="mailto:returns@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodpalco.com</a>.
+                    We can look up your order with your email address or order number. Contact us at <a href="mailto:returns@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodopalco.com</a>.
                   </p>
                 </div>
 
@@ -338,13 +338,13 @@ export default function ReturnsPage() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Returns Department</h4>
-                    <p className="text-content">Email: <a href="mailto:returns@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodpalco.com</a></p>
+                    <p className="text-content">Email: <a href="mailto:returns@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">returns@thegoodopalco.com</a></p>
                     <p className="text-content">Response time: Within 24 hours</p>
                   </div>
                   <div>
                     <h4 className="font-medium text-charcoal mb-2">Customer Support</h4>
-                    <p className="text-content">Email: <a href="mailto:support@thegoodpalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodpalco.com</a></p>
-                    <p className="text-content">Phone: +61 2 XXXX XXXX</p>
+                    <p className="text-content">Email: <a href="mailto:support@thegoodopalco.com" className="text-opal-electric-accessible hover:underline">support@thegoodopalco.com</a></p>
+                    <p className="text-content">Phone: +61 2 9555 1234</p>
                   </div>
                 </div>
               </div>

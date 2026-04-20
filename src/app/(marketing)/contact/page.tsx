@@ -3,6 +3,7 @@ import { Container } from '@/components/layout'
 import { Navigation } from '@/components/navigation'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { ContactForm } from './contact-form'
+import { CONTACT_INFO } from '@/lib/constants/contact'
 import { Mail, Phone, MapPin, Clock } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -49,8 +50,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium text-charcoal mb-1">Email</h3>
                     <p className="text-content">
-                      <a href="mailto:hello@thegoodpalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        hello@thegoodpalco.com
+                      <a href={`mailto:${CONTACT_INFO.email}`} className="hover:text-opal-electric-accessible transition-colors">
+                        {CONTACT_INFO.email}
                       </a>
                     </p>
                     <p className="text-sm text-content-muted mt-1">
@@ -65,9 +66,9 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-charcoal mb-1">Phone</h3>
-                    <p className="text-content">+61 2 XXXX XXXX</p>
+                    <p className="text-content">{CONTACT_INFO.phone}</p>
                     <p className="text-sm text-content-muted mt-1">
-                      Monday - Friday, 9am - 5pm AEST
+                      {CONTACT_INFO.businessHours.weekdays}
                     </p>
                   </div>
                 </div>
@@ -144,8 +145,8 @@ export default function ContactPage() {
                   <div className="border border-gray-200 rounded-lg p-4">
                     <h4 className="font-medium text-charcoal mb-1">Customer Support</h4>
                     <p className="text-sm text-content">
-                      <a href="mailto:support@thegoodpalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        support@thegoodpalco.com
+                      <a href="mailto:support@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
+                        support@thegoodopalco.com
                       </a>
                     </p>
                     <p className="text-xs text-content-muted mt-1">
@@ -156,8 +157,8 @@ export default function ContactPage() {
                   <div className="border border-gray-200 rounded-lg p-4">
                     <h4 className="font-medium text-charcoal mb-1">Custom Orders</h4>
                     <p className="text-sm text-content">
-                      <a href="mailto:custom@thegoodpalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        custom@thegoodpalco.com
+                      <a href="mailto:custom@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
+                        custom@thegoodopalco.com
                       </a>
                     </p>
                     <p className="text-xs text-content-muted mt-1">
@@ -168,8 +169,8 @@ export default function ContactPage() {
                   <div className="border border-gray-200 rounded-lg p-4">
                     <h4 className="font-medium text-charcoal mb-1">Wholesale Inquiries</h4>
                     <p className="text-sm text-content">
-                      <a href="mailto:wholesale@thegoodpalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        wholesale@thegoodpalco.com
+                      <a href="mailto:wholesale@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
+                        wholesale@thegoodopalco.com
                       </a>
                     </p>
                     <p className="text-xs text-content-muted mt-1">
@@ -180,8 +181,8 @@ export default function ContactPage() {
                   <div className="border border-gray-200 rounded-lg p-4">
                     <h4 className="font-medium text-charcoal mb-1">Press & Media</h4>
                     <p className="text-sm text-content">
-                      <a href="mailto:press@thegoodpalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        press@thegoodpalco.com
+                      <a href="mailto:press@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
+                        press@thegoodopalco.com
                       </a>
                     </p>
                     <p className="text-xs text-content-muted mt-1">

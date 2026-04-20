@@ -190,7 +190,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>Clicking the unsubscribe link in any marketing email</li>
-                <li>Contacting us at privacy@thegoodpalco.com</li>
+                <li>Contacting us at privacy@thegoodopalco.com</li>
                 <li>Updating your preferences in your account settings</li>
               </ul>
             </section>
@@ -236,8 +236,8 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Email: privacy@thegoodpalco.com</p>
-                <p className="text-content">Phone: +61 2 XXXX XXXX</p>
+                <p className="text-content">Email: privacy@thegoodopalco.com</p>
+                <p className="text-content">Phone: +61 2 9555 1234</p>
                 <p className="text-content">Address: Sydney, NSW, Australia</p>
               </div>
             </section>

@@ -119,7 +119,7 @@ export async function sendContactEmail(data: ContactFormData) {
               © ${new Date().getFullYear()} The Good Opal Co. All rights reserved.
             </p>
             <p style="margin: 0;">
-              Sydney, NSW, Australia | +61 2 XXXX XXXX
+              Sydney, NSW, Australia | +61 2 9555 1234
             </p>
           </div>
         </div>

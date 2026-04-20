@@ -272,8 +272,8 @@ export default function CookiePolicyPage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Email: privacy@thegoodpalco.com</p>
-                <p className="text-content">Phone: +61 2 XXXX XXXX</p>
+                <p className="text-content">Email: privacy@thegoodopalco.com</p>
+                <p className="text-content">Phone: +61 2 9555 1234</p>
                 <p className="text-content">Address: Sydney, NSW, Australia</p>
               </div>
             </section>

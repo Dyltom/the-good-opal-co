@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
       if (session.customer_email) {
         try {
           await resend.emails.send({
-            from: 'The Good Opal Co <noreply@thegoodpalco.com>',
+            from: 'The Good Opal Co <noreply@thegoodopalco.com>',
             to: session.customer_email,
             subject: `Order Confirmation - ${order.orderNumber}`,
             react: OrderConfirmationEmail({
