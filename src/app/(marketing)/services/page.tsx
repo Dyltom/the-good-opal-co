@@ -105,26 +105,8 @@ const process = [
   }
 ]
 
-const testimonials = [
-  {
-    name: 'Sarah M.',
-    location: 'Sydney, NSW',
-    text: 'The team helped me design the perfect engagement ring with a stunning black opal. The process was seamless and the result exceeded our expectations!',
-    rating: 5
-  },
-  {
-    name: 'David L.',
-    location: 'Melbourne, VIC',
-    text: 'I wanted to create a unique anniversary gift. The designers understood my vision perfectly and the craftsmanship is exceptional.',
-    rating: 5
-  },
-  {
-    name: 'Emma K.',
-    location: 'Brisbane, QLD',
-    text: 'From opal selection to final delivery, the entire experience was professional and personal. My custom necklace is absolutely breathtaking.',
-    rating: 5
-  }
-]
+// Testimonials removed to comply with Australian Consumer Law
+// Real testimonials should be fetched from Payload CMS when available
 
 export default function ServicesPage() {
   return (
@@ -288,55 +270,11 @@ export default function ServicesPage() {
             </Container>
           </Section>
 
-          {/* Testimonials */}
-          <Section className="py-16 lg:py-24 bg-white">
-            <Container>
-              <div className="text-center mb-16">
-                <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-4">
-                  Happy Customers
-                </h2>
-                <p className="text-xl text-charcoal/70">
-                  See what our clients say about their custom design experience
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                {testimonials.map((testimonial, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 rounded-2xl p-8 relative"
-                  >
-                    {/* Quote mark */}
-                    <div className="text-6xl text-opal-electric/20 font-serif absolute top-4 left-4">
-                      &quot;
-                    </div>
-
-                    <div className="relative z-10">
-                      {/* Stars */}
-                      <div className="flex gap-1 mb-4">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Sparkles key={i} className="w-5 h-5 text-fire-gold fill-current" />
-                        ))}
-                      </div>
-
-                      <p className="text-charcoal/80 mb-6 italic">
-                        &quot;{testimonial.text}&quot;
-                      </p>
-
-                      <div>
-                        <p className="font-semibold text-charcoal">
-                          {testimonial.name}
-                        </p>
-                        <p className="text-sm text-charcoal/60">
-                          {testimonial.location}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Container>
-          </Section>
+          {/* Customer Testimonials Section - Temporarily Disabled */}
+          {/*
+            Testimonials section removed to comply with Australian Consumer Law.
+            Replace with genuine customer reviews from Payload CMS when available.
+          */}
 
           {/* CTA Section */}
           <Section className="py-16 lg:py-24 bg-gradient-to-br from-black-rich to-charcoal text-white">

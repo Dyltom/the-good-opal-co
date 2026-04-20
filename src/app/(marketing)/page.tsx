@@ -310,112 +310,12 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Customer Reviews - Streamlined */}
-          <section className="bg-gradient-to-b from-gray-50 to-white py-16 md:py-20">
-            <div className="mx-auto max-w-screen-xl px-6">
-              <div className="mb-10 text-center">
-                <span className="mb-4 block text-sm font-semibold uppercase tracking-wider text-opal-electric">
-                  Testimonials
-                </span>
-                <h2 className="mb-4 font-serif text-3xl font-bold text-charcoal md:text-4xl lg:text-5xl">
-                  Customer <span className="text-opal-electric">Reviews</span>
-                </h2>
-                <p className="mx-auto max-w-3xl text-lg text-charcoal/70">
-                  Trusted by thousands of opal lovers worldwide
-                </p>
-              </div>
-
-              {/* Reviews Grid - Show only top 3 */}
-              <div className="mb-10 grid gap-6 md:grid-cols-3">
-                {/* Review 1 */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-xl">
-                  <div className="mb-4 flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className="h-5 w-5 fill-current text-opal-gold"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="mb-6 leading-relaxed text-charcoal/70">
-                    &ldquo;Absolutely stunning! The opal ring I ordered has the most incredible play
-                    of color - blues, greens, and flashes of red. It&apos;s even more beautiful in
-                    person than the photos. The craftsmanship is exceptional!&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-opal-electric to-fire-pink text-lg font-bold text-white">
-                      E
-                    </div>
-                    <div>
-                      <p className="font-bold text-charcoal">Emma Thompson</p>
-                      <p className="text-sm text-charcoal/60">Melbourne, VIC</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Review 2 */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-xl">
-                  <div className="mb-4 flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className="h-5 w-5 fill-current text-opal-gold"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="mb-6 leading-relaxed text-charcoal/70">
-                    &ldquo;The custom engagement ring exceeded all expectations! They helped me
-                    design the perfect piece featuring a Lightning Ridge black opal. My fiancée
-                    cries every time she looks at it. Worth every cent!&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-opal-turquoise to-opal-electric text-lg font-bold text-white">
-                      M
-                    </div>
-                    <div>
-                      <p className="font-bold text-charcoal">Marcus Chen</p>
-                      <p className="text-sm text-charcoal/60">Brisbane, QLD</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Review 3 */}
-                <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all duration-200 hover:shadow-xl">
-                  <div className="mb-4 flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg
-                        key={i}
-                        className="h-5 w-5 fill-current text-opal-gold"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                      </svg>
-                    ))}
-                  </div>
-                  <p className="mb-6 leading-relaxed text-charcoal/70">
-                    &ldquo;Fast shipping, beautiful packaging, and the opal earrings are gorgeous!
-                    The colors shift as I move - it&apos;s like wearing little rainbows. Great value
-                    for authentic Australian opals.&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-opal-pink to-opal-gold text-lg font-bold text-white">
-                      S
-                    </div>
-                    <div>
-                      <p className="font-bold text-charcoal">Sophie Martin</p>
-                      <p className="text-sm text-charcoal/60">Perth, WA</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+          {/* Customer Testimonials Section - Temporarily Disabled */}
+          {/*
+            Testimonials section removed to comply with Australian Consumer Law.
+            Fake customer reviews are illegal and can result in significant penalties.
+            Replace with genuine customer reviews from Payload CMS when available.
+          */}
 
           {/* Trust Badges / Promise Section - Premium design */}
           <section className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 py-20 md:py-24 overflow-hidden">
