@@ -242,7 +242,7 @@ export function SearchInput({
                 <span>No results found</span>
               </div>
               <p className="text-xs text-gray-400">
-                Try searching for "black opal" or "rings"
+                Try searching for &quot;black opal&quot; or &quot;rings&quot;
               </p>
             </div>
           )}

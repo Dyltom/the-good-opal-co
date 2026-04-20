@@ -76,7 +76,7 @@ export default function AboutPage() {
               that doesn&apos;t cost the Earth.
             </p>
             <p className="font-accent text-base text-opal-electric/70">
-              ~ Sharing Australia's treasures with the world ~
+              ~ Sharing Australia&apos;s treasures with the world ~
             </p>
           </div>
         </section>
@@ -289,7 +289,7 @@ export default function AboutPage() {
               <h3 className="font-serif font-semibold text-charcoal text-xl mb-2">Stephanie Caruana</h3>
               <p className="font-sans text-content-muted mb-4 text-lg">Founder & Creative Director</p>
               <p className="font-sans text-content leading-relaxed max-w-2xl mx-auto">
-                From receiving her first jar of Lightning Ridge opal chips as a gift to building Australia's most trusted boutique opal business, Stephanie's journey has been guided by genuine passion for these magical gemstones. Her keen eye for quality and dedication to sharing the wonder of Australian opals has made The Good Opal Co a beloved destination for collectors worldwide.
+                From receiving her first jar of Lightning Ridge opal chips as a gift to building Australia&apos;s most trusted boutique opal business, Stephanie&apos;s journey has been guided by genuine passion for these magical gemstones. Her keen eye for quality and dedication to sharing the wonder of Australian opals has made The Good Opal Co a beloved destination for collectors worldwide.
               </p>
             </div>
           </div>

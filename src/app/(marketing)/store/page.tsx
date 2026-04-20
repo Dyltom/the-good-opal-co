@@ -65,7 +65,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   // Fetch all published products using Payload Local API
   const payload = await getPayload()
 
-  const whereCondition = searchQuery
+  const whereCondition: any = searchQuery
     ? {
         and: [
           { status: { equals: 'published' } },

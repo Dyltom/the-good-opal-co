@@ -2,10 +2,8 @@ import Link from 'next/link'
 import { Container, Grid } from '@/components/layout'
 import { Navigation, Footer } from '@/components/navigation'
 import { BlogCard } from '@/components/blog/BlogCard'
-import { Pagination } from '@/components/ui/pagination'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { getPayload } from '@/lib/payload'
-import type { Post } from '@/types/payload-types'
 
 const POSTS_PER_PAGE = 9
 

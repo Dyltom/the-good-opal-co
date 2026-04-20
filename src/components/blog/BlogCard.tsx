@@ -24,7 +24,6 @@ interface BlogCardProps {
   showImage?: boolean
   showExcerpt?: boolean
   showDate?: boolean
-  showCategories?: boolean
 }
 
 /**
@@ -36,7 +35,6 @@ export function BlogCard({
   showImage = true,
   showExcerpt = true,
   showDate = true,
-  showCategories = true,
 }: BlogCardProps) {
   return (
     <motion.article
