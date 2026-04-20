@@ -102,14 +102,14 @@ export function Navigation({
         )}
       >
         <Container>
-          <div className="flex h-20 items-center justify-between">
+          <div className="flex h-16 sm:h-20 items-center justify-between gap-2 sm:gap-4">
             {/* Logo with Opal Glow on Hover */}
             <Link
               href="/"
-              className="flex items-center gap-3 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2"
+              className="flex items-center gap-2 sm:gap-3 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 min-w-0 flex-shrink-0"
             >
               {logo ? (
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   {/* Glow effect behind logo */}
                   <div className="absolute inset-0 bg-gradient-to-r from-opal-electric to-fire-pink opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500 rounded-full scale-150" />
                   <Image
@@ -117,19 +117,19 @@ export function Navigation({
                     alt={logo.alt}
                     width={logo.width || 48}
                     height={logo.height || 48}
-                    className="relative h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+                    className="relative h-10 w-auto sm:h-12 transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
               ) : null}
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <span className={cn(
-                  'font-serif text-lg font-semibold tracking-tight transition-colors duration-300',
+                  'font-serif text-base sm:text-lg font-semibold tracking-tight transition-colors duration-300 truncate',
                   onDarkBackground ? 'text-white' : 'text-charcoal'
                 )}>
                   {brandName}
                 </span>
                 <span className={cn(
-                  'font-accent text-xs tracking-wider uppercase transition-colors duration-300',
+                  'font-accent text-xs tracking-wider uppercase transition-colors duration-300 truncate hidden sm:block',
                   onDarkBackground ? 'text-white/60' : 'text-charcoal-light'
                 )}>
                   Australian Opals
@@ -138,7 +138,7 @@ export function Navigation({
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex md:items-center md:gap-1">
+            <div className="hidden md:flex md:items-center md:gap-1 lg:gap-2 flex-1 justify-end">
               {/* Home Link */}
               <Link
                 href="/"
@@ -265,7 +265,7 @@ export function Navigation({
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-1 sm:gap-2 md:hidden flex-shrink-0">
               <div className={cn(
                 'transition-colors duration-300',
                 onDarkBackground && '[&_button]:text-white [&_button]:hover:bg-white/10'
