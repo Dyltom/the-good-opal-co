@@ -147,9 +147,9 @@ export function StoreContent({ products }: StoreContentProps) {
   }
 
   return (
-    <div className="py-16 px-6 max-w-7xl mx-auto">
+    <div className="py-8 px-6 max-w-7xl mx-auto">
       {/* Magical intro */}
-      <div className="text-center mb-16">
+      <div className="text-center mb-8">
         <p className="font-accent text-lg text-opal-electric mb-4">
           ✨ Each piece holds ancient magic ✨
         </p>
@@ -158,11 +158,11 @@ export function StoreContent({ products }: StoreContentProps) {
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Filters Sidebar */}
         <aside className="lg:w-80 flex-shrink-0">
           <div
-            className="lg:sticky lg:top-24 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-8 pr-6 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto scrollbar-thin"
+            className="lg:sticky lg:top-20 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-6 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto scrollbar-thin"
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#E8E6E3 #FFFFFF',
@@ -189,7 +189,7 @@ export function StoreContent({ products }: StoreContentProps) {
       {/* Products Area */}
       <div className="flex-1">
         {/* Search Bar */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="relative">
             <input
               type="text"
@@ -215,7 +215,7 @@ export function StoreContent({ products }: StoreContentProps) {
         </div>
 
         {/* Sort Bar */}
-        <div className="mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-8">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-sm rounded-2xl border border-warm-grey/30 shadow-lg p-6">
           <div className="flex items-center gap-4">
             <p className="text-sm text-charcoal font-semibold">
               {sortedProducts.length} {sortedProducts.length === 1 ? 'piece' : 'pieces'} available
@@ -262,7 +262,7 @@ export function StoreContent({ products }: StoreContentProps) {
 
         {/* Products Grid */}
         {sortedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {sortedProducts.map((product) => (
               <ProductCard
                 key={product.id}

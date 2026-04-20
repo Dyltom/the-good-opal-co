@@ -129,7 +129,7 @@ export default async function StorePage() {
 
           <main className="flex-1">
             {/* Fairytale Header */}
-            <section className="relative py-24 lg:py-32 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden pt-32">
+            <section className="relative py-12 lg:py-16 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden pt-28">
               {/* Magical sparkle effects */}
               <div className="absolute inset-0">
                 <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
@@ -142,10 +142,10 @@ export default async function StorePage() {
                   <span className="font-accent text-lg text-opal-electric mb-4 block">
                     ✨ Handcrafted Treasures ✨
                   </span>
-                  <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold mb-8 text-charcoal leading-relaxed">
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-charcoal leading-tight">
                     Australian <span className="font-accent text-opal-electric">Opals</span>
                   </h1>
-                  <p className="text-xl md:text-2xl text-charcoal/70 leading-relaxed max-w-4xl mx-auto mb-8">
+                  <p className="text-lg md:text-xl text-charcoal/70 leading-relaxed max-w-3xl mx-auto mb-6">
                     Each opal in our collection tells a story millions of years in the making.
                     Discover these magical gemstones, lovingly handpicked from Australia&apos;s most treasured mines.
                   </p>
