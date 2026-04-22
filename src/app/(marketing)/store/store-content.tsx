@@ -14,7 +14,10 @@ import { ProductFilters } from '@/components/store/ProductFilters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { clampPage, paginate, totalPages } from '@/lib/pagination'
 import type { Product } from './page'
+
+const PRODUCTS_PER_PAGE = 24
 
 interface StoreContentProps {
   products: Product[]
@@ -69,6 +72,16 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
     const maxPrice = Number(searchParams?.get('maxPrice')) || 10000
     return [minPrice, maxPrice]
   })
+  const [page, setPage] = useState<number>(() => {
+    const parsed = Number(searchParams?.get('page'))
+    return Number.isFinite(parsed) && parsed > 1 ? Math.floor(parsed) : 1
+  })
+
+  // Reset to page 1 whenever filters or sort change — stale page numbers
+  // after narrowing filters would otherwise land on an empty view.
+  useEffect(() => {
+    setPage(1)
+  }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange])
 
   // Sync state to URL parameters
   useEffect(() => {
@@ -83,6 +96,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
     if (selectedMaterials.length > 0) params.set('materials', selectedMaterials.join(','))
     if (priceRange[0] > 0) params.set('minPrice', priceRange[0].toString())
     if (priceRange[1] < 10000) params.set('maxPrice', priceRange[1].toString())
+    if (page > 1) params.set('page', page.toString())
 
     const queryString = params.toString()
     const newUrl = queryString ? `/store?${queryString}` : '/store'
@@ -91,7 +105,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
     if (window.location.pathname + window.location.search !== newUrl) {
       router.push(newUrl, { scroll: false })
     }
-  }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, router])
+  }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, page, router])
 
   // Extract unique filter options from products
   const filterOptions = useMemo(() => {
@@ -153,6 +167,10 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
 
   const sortedProducts = sortProducts(filteredProducts, sort)
   const outOfStockCount = products.filter(p => p.stock === 0).length
+
+  const pageCount = totalPages(sortedProducts.length, PRODUCTS_PER_PAGE)
+  const currentPage = clampPage(page, pageCount)
+  const pagedProducts = paginate(sortedProducts, currentPage, PRODUCTS_PER_PAGE)
 
   // Filter handlers
   const handleCategoryChange = (category: string) => {
@@ -325,25 +343,41 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
 
         {/* Products Grid */}
         {sortedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-            {sortedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={{
-                  id: product.id,
-                  slug: product.slug,
-                  name: product.name,
-                  description: product.description,
-                  price: product.price,
-                  compareAtPrice: product.compareAtPrice,
-                  image: product.images?.[0]?.image?.url,
-                  category: product.category,
-                  featured: product.featured,
-                  stock: product.stock,
+          <>
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
+              data-testid="product-grid"
+            >
+              {pagedProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    description: product.description,
+                    price: product.price,
+                    compareAtPrice: product.compareAtPrice,
+                    image: product.images?.[0]?.image?.url,
+                    category: product.category,
+                    featured: product.featured,
+                    stock: product.stock,
+                  }}
+                />
+              ))}
+            </div>
+
+            {pageCount > 1 && (
+              <StorePagination
+                currentPage={currentPage}
+                totalPages={pageCount}
+                onPageChange={(nextPage) => {
+                  setPage(nextPage)
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
               />
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-24 bg-gradient-to-br from-white/90 via-opal-electric/5 to-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-warm-grey/20 relative overflow-hidden">
             {/* Magical sparkle effects */}
@@ -385,4 +419,85 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
     </div>
   </div>
   )
+}
+
+interface StorePaginationProps {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}
+
+function StorePagination({ currentPage, totalPages, onPageChange }: StorePaginationProps) {
+  const pages = buildPageRange(currentPage, totalPages)
+
+  return (
+    <nav
+      className="mt-12 flex flex-wrap items-center justify-center gap-2"
+      aria-label="Store pagination"
+      data-testid="store-pagination"
+    >
+      <button
+        type="button"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="rounded-xl border border-warm-grey/30 bg-white/90 px-4 py-2 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Previous
+      </button>
+
+      {pages.map((entry, index) =>
+        entry === '…' ? (
+          <span key={`gap-${index}`} className="px-2 font-sans text-sm text-charcoal/50">
+            …
+          </span>
+        ) : (
+          <button
+            key={entry}
+            type="button"
+            onClick={() => onPageChange(entry)}
+            aria-current={entry === currentPage ? 'page' : undefined}
+            className={
+              entry === currentPage
+                ? 'rounded-xl bg-opal-electric px-4 py-2 font-sans text-sm font-semibold text-white shadow-md'
+                : 'rounded-xl border border-warm-grey/30 bg-white/90 px-4 py-2 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible'
+            }
+          >
+            {entry}
+          </button>
+        )
+      )}
+
+      <button
+        type="button"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="rounded-xl border border-warm-grey/30 bg-white/90 px-4 py-2 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        Next
+      </button>
+    </nav>
+  )
+}
+
+function buildPageRange(current: number, total: number): Array<number | '…'> {
+  const delta = 1
+  const entries: Array<number | '…'> = []
+  const pushed = new Set<number>()
+
+  const push = (page: number) => {
+    if (page >= 1 && page <= total && !pushed.has(page)) {
+      entries.push(page)
+      pushed.add(page)
+    }
+  }
+
+  push(1)
+  if (current - delta > 2) entries.push('…')
+  for (let p = Math.max(2, current - delta); p <= Math.min(total - 1, current + delta); p++) {
+    push(p)
+  }
+  if (current + delta < total - 1) entries.push('…')
+  if (total > 1) push(total)
+
+  return entries
 }

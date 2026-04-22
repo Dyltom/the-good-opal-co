@@ -36,7 +36,6 @@ const TrustMarquee = dynamic(
   () => import('@/components/sections').then((mod) => mod.TrustMarquee),
   {
     loading: () => <div className="h-20 animate-pulse bg-gray-50" />,
-    ssr: false, // Not critical for SEO
   }
 )
 
