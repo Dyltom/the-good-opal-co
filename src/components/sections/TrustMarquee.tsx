@@ -20,7 +20,7 @@ const TRUST_ITEMS = [
 
 export function TrustMarquee() {
   return (
-    <div className="bg-opal-electric py-3 overflow-hidden">
+    <div className="bg-opal-electric-accessible py-3 overflow-hidden">
       <div className="flex animate-marquee whitespace-nowrap">
         {/* Duplicate items for seamless loop */}
         {[...TRUST_ITEMS, ...TRUST_ITEMS].map((item, i) => (

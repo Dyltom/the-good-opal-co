@@ -4,6 +4,16 @@ Visible bugs and WCAG AA failures. All small, focused fixes — ideally one PR.
 
 ---
 
+## ✅ Status — 2026-04-22 (dyltom)
+
+All six items (#4–#9) fixed in TDD style. Regression tests in `src/test/a11y-audit-02.test.ts` (7 tests, all passing) pin each source-level change.
+
+- Pre-wrote failing regression tests for every item before touching source.
+- `pnpm type-check` + `pnpm lint` clean.
+- Implementation notes live under each item below.
+
+---
+
 ## 4. PDP "You May Also Like" shows empty tiles
 
 **Severity:** Visible bug on every product page.
@@ -20,6 +30,17 @@ Visible bugs and WCAG AA failures. All small, focused fixes — ideally one PR.
 **Verification:** open `/store/coober-pedy-white-opal-marquise-cut-parcel-6-cts`, scroll to "You May Also Like", compare with the same product card rendered on `/store`.
 
 **Screenshot:** [`screenshots/03-pdp-desktop.png`](./screenshots/03-pdp-desktop.png).
+
+### ✅ Fixed — 2026-04-22 (dyltom)
+
+Root cause was the second hypothesis: `RelatedProducts.tsx` read `relatedProduct.image` (no such field) instead of resolving `images[0].image.url` from the Payload `Product` type. Rewrote the `.map()` to derive the URL via a type-narrow:
+
+```tsx
+const firstImage = relatedProduct.images?.[0]?.image
+const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage?.url
+```
+
+Also narrowed `description` and `category` (same union: `string | Media` / `string | Category`). Regression: `#7 RelatedProducts — image resolution` in `a11y-audit-02.test.ts` asserts `images?.[0]?.image` stays in source.
 
 ---
 
@@ -38,6 +59,10 @@ Visible bugs and WCAG AA failures. All small, focused fixes — ideally one PR.
 - Darken `--opal-electric` (or use `opal-electric-700`) as the marquee background, or
 - Switch text to `text-charcoal` / `text-slate-900`, or
 - Bump font to `font-semibold` AND size ≥ 18px (AA for large text is 3:1, so 3.0+).
+
+### ✅ Fixed — 2026-04-22 (dyltom)
+
+Swapped `bg-opal-electric` (#00B4D8, 2.46:1 against white) → `bg-opal-electric-accessible` (#005A87, 7.14:1 against white). This token already existed in `tailwind.config.ts` for the same reason elsewhere. Regression: `#4 TrustMarquee — WCAG AA contrast` fails if the non-accessible token reappears.
 
 ---
 
@@ -60,6 +85,10 @@ Visible bugs and WCAG AA failures. All small, focused fixes — ideally one PR.
 </button>
 ```
 
+### ✅ Fixed — 2026-04-22 (dyltom)
+
+Applied in `ProductHero.tsx`: button now carries `p-3` (24px padding → 48×48 hit area) with the visual dot as a nested `<span>` that keeps the original 8×8 / 32×8 visuals. Regression: `#8 ProductHero carousel dots — target size` pins `p-3` / `p-4` (or explicit `min-w/h-[24`) near the `Go to product` aria-label.
+
 ---
 
 ## 7. Invalid ARIA on search input
@@ -74,6 +103,10 @@ Visible bugs and WCAG AA failures. All small, focused fixes — ideally one PR.
 
 - If the search doesn't open a listbox of suggestions, **remove `aria-expanded`**.
 - If it does, implement the full combobox pattern: `role="combobox"`, `aria-controls`, `aria-autocomplete`, `aria-activedescendant`.
+
+### ✅ Fixed — 2026-04-22 (dyltom)
+
+The input *does* drop a suggestion listbox, so we kept `aria-expanded` and completed the combobox pattern by adding `role="combobox"` to the `<input>` in `SearchInput.tsx`. `aria-controls`, `aria-autocomplete="list"`, and `aria-expanded` were already present. Regression: `#5 SearchInput — aria-allowed-attr`.
 
 ---
 
@@ -101,6 +134,10 @@ Visible bugs and WCAG AA failures. All small, focused fixes — ideally one PR.
 
 Expect LCP to drop 300–800ms on cold loads.
 
+### ✅ Fixed — 2026-04-22 (dyltom)
+
+The actual LCP on the homepage is the first category tile ("Raw Australian Opals"), not `HomeHero` — the hero on `/` is a text block with animated orbs, no foreground image. Marked the Raw Opals `OptimizedImage` in `src/app/(marketing)/page.tsx` with `priority` and `loading="eager"`. Regression: `#6 Home hero/category LCP image — priority` scopes the assertion to the Raw Opals block.
+
 ---
 
 ## 9. Heading order skips levels (WCAG 1.3.1)
@@ -116,3 +153,9 @@ Expect LCP to drop 300–800ms on cold loads.
 - Change product-card title to `<h3>` only when inside a labelled `<section><h2>…</h2></section>`, or
 - Drop the card title to a generic element and make the section heading the only `<h2>`/`<h3>` depending on nesting, or
 - Expose a `headingLevel` prop on `ProductCard`.
+
+### ✅ Fixed — 2026-04-22 (dyltom)
+
+Smallest-possible fix: added a screen-reader-only `<h2 className="sr-only">Products</h2>` immediately above the product grid in `src/app/(marketing)/store/store-content.tsx`. This satisfies axe's `heading-order` (h1 → h2 → h3) without altering the visible layout. The visible "Our Opal Treasures" text in the page hero is wrapped in a heading one level up, so the grid now has a proper ancestor. Regression: `#9 Store listing — heading order`.
+
+**Flagged follow-up:** related-products and other grid consumers of `ProductCard` (`RelatedProducts.tsx` uses `<h2>` already — fine) should be audited separately. Longer-term, exposing a `headingLevel` prop on `ProductCard` would remove the need for the `sr-only` workaround.

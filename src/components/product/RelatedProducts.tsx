@@ -46,20 +46,33 @@ export async function RelatedProducts({
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {relatedProducts.map((relatedProduct, index) => (
-          <ProductCard
-            key={relatedProduct.id}
-            product={{
-              ...relatedProduct,
-              description: typeof relatedProduct.description === 'string' ? relatedProduct.description : undefined,
-              image: typeof relatedProduct.image === 'string' ? relatedProduct.image : undefined,
-              category: typeof relatedProduct.category === 'string' ? relatedProduct.category : undefined,
-            }}
-            index={index}
-            variant="default"
-            animated
-          />
-        ))}
+        {relatedProducts.map((relatedProduct, index) => {
+          const firstImage = relatedProduct.images?.[0]?.image
+          const imageUrl =
+            typeof firstImage === 'string'
+              ? firstImage
+              : firstImage?.url
+          return (
+            <ProductCard
+              key={relatedProduct.id}
+              product={{
+                ...relatedProduct,
+                description:
+                  typeof relatedProduct.description === 'string'
+                    ? relatedProduct.description
+                    : undefined,
+                image: imageUrl,
+                category:
+                  typeof relatedProduct.category === 'string'
+                    ? relatedProduct.category
+                    : undefined,
+              }}
+              index={index}
+              variant="default"
+              animated
+            />
+          )
+        })}
       </div>
     </section>
   )

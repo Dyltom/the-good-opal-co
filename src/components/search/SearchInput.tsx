@@ -167,6 +167,7 @@ export function SearchInput({
             variant === 'default' && 'pl-9 pr-9 text-sm',
             variant === 'mobile' && 'pl-11 pr-11 text-base'
           )}
+          role="combobox"
           aria-label="Search products"
           aria-autocomplete="list"
           aria-controls="search-suggestions"

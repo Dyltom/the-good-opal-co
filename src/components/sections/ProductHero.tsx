@@ -305,18 +305,23 @@ export function ProductHero({ products }: ProductHeroProps) {
 
               {/* Product Indicators */}
               {products.length > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
+                <div className="flex justify-center gap-1 mt-6">
                   {products.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className={`transition-all duration-300 ${
-                        index === currentIndex
-                          ? 'w-8 h-2 bg-white'
-                          : 'w-2 h-2 bg-white/40 hover:bg-white/60'
-                      } rounded-full`}
+                      className="group p-3 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich"
                       aria-label={`Go to product ${index + 1}`}
-                    />
+                      aria-current={index === currentIndex ? 'true' : undefined}
+                    >
+                      <span
+                        className={`block transition-all duration-300 rounded-full ${
+                          index === currentIndex
+                            ? 'w-8 h-2 bg-white'
+                            : 'w-2 h-2 bg-white/40 group-hover:bg-white/60'
+                        }`}
+                      />
+                    </button>
                   ))}
                 </div>
               )}

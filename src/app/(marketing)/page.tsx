@@ -110,6 +110,8 @@ export default function HomePage() {
                       className="opacity-90 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100"
                       aspectRatio="1:1"
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+                      priority
+                      loading="eager"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                     <div className="absolute top-4 left-4">
