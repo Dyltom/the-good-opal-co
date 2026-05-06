@@ -78,22 +78,11 @@ const defaultSocial: SocialLink[] = [
 
 /**
  * Footer Component
- *
- * Opal-inspired footer with:
- * - Dark background with prismatic accent
- * - Newsletter signup
- * - Quick links organized by category
- * - Social media links
- * - Trust badges
- *
- * Follows SOLID principles:
- * - Single Responsibility: Footer display and newsletter interaction
- * - Open/Closed: Extendable via props with sensible defaults
  */
 export function Footer({
   logo,
   logoText = 'The Good Opal Co',
-  description = 'Handcrafted Australian opals, ethically sourced and transformed into wearable art. Each piece is one-of-a-kind, just like you.',
+  description = 'Authentic Australian opals, hand finished and selected with care.',
   links = defaultLinks,
   social = defaultSocial,
   copyright,
@@ -103,33 +92,24 @@ export function Footer({
 
   return (
     <footer className={cn('relative', className)}>
-      {/* Prismatic Top Border */}
-      <div className="h-1 w-full bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald" />
-
-      {/* Main Footer - Dark Background */}
-      <div className="bg-black-rich text-white">
+      <div className="border-t border-warm-grey/20 bg-charcoal-dark text-white">
         <Container>
           <div className="py-16 md:py-20">
-            {/* Top Section - Brand + Newsletter */}
             <div className="grid gap-12 lg:grid-cols-2 mb-16">
-              {/* Brand Column */}
               <div>
-                <Link href="/" className="flex items-center gap-3 mb-6 group rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich">
+                <Link href="/" className="mb-6 flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-dark">
                   {logo ? (
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-opal-electric to-fire-pink opacity-0 group-hover:opacity-40 blur-xl transition-opacity duration-500 rounded-full scale-150" />
-                      <Image
-                        src={logo.url}
-                        alt={logo.alt}
-                        width={logo.width || 48}
-                        height={logo.height || 48}
-                        className="relative h-12 w-auto"
-                      />
-                    </div>
+                    <Image
+                      src={logo.url}
+                      alt={logo.alt}
+                      width={logo.width || 48}
+                      height={logo.height || 48}
+                      className="h-12 w-auto"
+                    />
                   ) : null}
                   <div>
-                    <span className="font-serif text-2xl font-semibold tracking-tight">{logoText}</span>
-                    <span className="font-accent block text-xs tracking-wider uppercase text-white/50">Australian Opals</span>
+                    <span className="font-serif text-2xl font-semibold">{logoText}</span>
+                    <span className="block font-sans text-xs uppercase text-white/50">Australian Opals</span>
                   </div>
                 </Link>
                 <p className="text-white/60 mb-8 max-w-md leading-relaxed">{description}</p>
@@ -143,7 +123,7 @@ export function Footer({
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-gradient-to-r hover:from-opal-electric hover:to-fire-pink hover:text-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich"
+                        className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/70 transition-colors duration-300 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-dark"
                         aria-label={link.label || link.platform}
                       >
                         <SocialIcon platform={link.platform} className="h-5 w-5" />
@@ -155,9 +135,9 @@ export function Footer({
 
               {/* Newsletter Column */}
               <div className="lg:text-right">
-                <h3 className="font-serif text-lg font-semibold mb-2">Stay in the Loop</h3>
+                <h3 className="font-serif text-lg font-semibold mb-2">From the gallery</h3>
                 <p className="text-white/60 mb-6">
-                  Subscribe for new arrivals, exclusive offers, and opal care tips.
+                  New pieces, care notes, and workshop updates, sent occasionally.
                 </p>
                 <NewsletterForm variant="compact" source="footer" className="lg:max-w-md lg:ml-auto" />
               </div>
@@ -167,13 +147,13 @@ export function Footer({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
               {links.map((group) => (
                 <div key={group.title}>
-                  <h3 className="font-semibold text-sm uppercase tracking-wider text-white/80 mb-4">{group.title}</h3>
+                  <h3 className="mb-4 text-sm font-semibold uppercase text-white/80">{group.title}</h3>
                   <ul className="space-y-3">
                     {group.links.map((link) => (
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="text-sm text-white/50 hover:text-opal-electric transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded"
+                          className="rounded text-sm text-white/55 transition-colors duration-200 hover:text-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
                           target={link.external ? '_blank' : undefined}
                           rel={link.external ? 'noopener noreferrer' : undefined}
                         >
@@ -187,7 +167,7 @@ export function Footer({
 
               {/* Trust Badges Column */}
               <div>
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-white/80 mb-4">Why Choose Us</h3>
+                <h3 className="mb-4 text-sm font-semibold uppercase text-white/80">Why Choose Us</h3>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-2 text-sm text-white/50">
                     <span className="w-1.5 h-1.5 rounded-full bg-opal-electric" />
@@ -215,11 +195,11 @@ export function Footer({
                 {copyright || `© ${currentYear} ${logoText}. All rights reserved.`}
               </div>
               <div className="flex gap-6 text-sm text-white/40">
-                <Link href="/privacy" className="hover:text-white/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded px-1">Privacy Policy</Link>
-                <Link href="/terms" className="hover:text-white/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-black-rich rounded px-1">Terms of Service</Link>
+                <Link href="/privacy" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Privacy Policy</Link>
+                <Link href="/terms" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Terms of Service</Link>
               </div>
-              <div className="text-xs text-white/30 tracking-wider uppercase">
-                Australian Opal That Doesn&apos;t Cost The Earth
+              <div className="text-xs text-white/35">
+                Australian opal that doesn&apos;t cost the earth.
               </div>
             </div>
           </div>

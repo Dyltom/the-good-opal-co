@@ -28,13 +28,10 @@ export function ProductImageGallery({
     return (
       <div className="space-y-4">
         {/* Fallback for no images */}
-        <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[1px] opacity-50">
-            <div className="absolute inset-[1px] rounded-2xl bg-white" />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/20 to-fire-pink/20">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-warm-grey/40 bg-white shadow-sm">
+          <div className="absolute inset-0 bg-cream">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-opal-electric to-fire-pink opacity-30" />
+              <div className="h-32 w-32 rounded-full border border-warm-grey/50 bg-white" />
             </div>
           </div>
         </div>
@@ -48,13 +45,10 @@ export function ProductImageGallery({
     return (
       <div className="space-y-4">
         {/* Fallback for invalid selection */}
-        <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[1px] opacity-50">
-            <div className="absolute inset-[1px] rounded-2xl bg-white" />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/20 to-fire-pink/20">
+        <div className="relative aspect-square w-full overflow-hidden rounded-xl border border-warm-grey/40 bg-white shadow-sm">
+          <div className="absolute inset-0 bg-cream">
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-opal-electric to-fire-pink opacity-30" />
+              <div className="h-32 w-32 rounded-full border border-warm-grey/50 bg-white" />
             </div>
           </div>
         </div>
@@ -65,17 +59,12 @@ export function ProductImageGallery({
   return (
     <div className="space-y-4">
       {/* Main Image */}
-      <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl group">
-        {/* Premium border */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep p-[1px] opacity-50">
-          <div className="absolute inset-[1px] rounded-2xl bg-white" />
-        </div>
-
+      <div className="group relative aspect-square w-full overflow-hidden rounded-xl border border-warm-grey/40 bg-white shadow-sm">
         <Image
           src={mainImage.url}
           alt={mainImage.alt}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          className="object-cover transition-opacity duration-500 group-hover:opacity-95"
           priority={selectedImageIndex === 0}
           sizes="(max-width: 768px) 100vw, 50vw"
         />
@@ -84,13 +73,13 @@ export function ProductImageGallery({
         <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
           <div className="flex flex-col gap-2">
             {featured && (
-              <span className="px-3 py-1.5 bg-gradient-to-r from-fire-gold to-fire-orange text-white text-xs font-bold rounded-full shadow-lg">
-                FEATURED
+              <span className="rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-charcoal shadow-sm">
+                Featured
               </span>
             )}
           </div>
           {stock !== undefined && stock <= 10 && stock > 0 && (
-            <span className="px-3 py-1.5 bg-fire-pink text-white text-xs font-bold rounded-full shadow-lg">
+            <span className="rounded-full bg-fire-pink-dark px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
               Only {stock} left
             </span>
           )}
@@ -107,7 +96,7 @@ export function ProductImageGallery({
               className={cn(
                 "w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all duration-200",
                 selectedImageIndex === index
-                  ? "border-opal-electric scale-105"
+                  ? "border-opal-electric-accessible ring-2 ring-opal-electric-accessible ring-offset-2 ring-offset-white"
                   : "border-transparent hover:border-opal-electric/50"
               )}
               aria-label={`View image ${index + 1} of ${productName}`}

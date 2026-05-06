@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Sparkles, X, Loader2 } from 'lucide-react'
+import { Search, X, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getSearchSuggestions } from '@/app/(marketing)/search/actions'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -139,7 +139,7 @@ export function SearchInput({
           className?.includes('w-full') && 'w-full'
         )}
       >
-        <Sparkles
+        <Search
           className={cn(
             'absolute left-3 text-opal-electric/60',
             variant === 'default' && 'h-4 w-4',
@@ -161,7 +161,7 @@ export function SearchInput({
             setTimeout(() => setShowSuggestions(false), 200)
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search for your magical opal..."
+          placeholder="Search opals, rings, parcels"
           className={cn(
             'h-full w-full bg-transparent outline-none placeholder:text-gray-400',
             variant === 'default' && 'pl-9 pr-9 text-sm',
@@ -229,7 +229,7 @@ export function SearchInput({
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-opal-electric/60 shrink-0" />
+                  <Search className="h-3.5 w-3.5 text-opal-electric/60 shrink-0" />
                   <span className="truncate">{suggestion}</span>
                 </div>
               </button>

@@ -48,17 +48,23 @@ export function FeaturedProducts({
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/products')
+    const controller = new AbortController()
+
+    fetch('/api/products', { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
         const filtered = featured ? data.filter((p: Product) => p.featured) : data
         setProducts(filtered.slice(0, limit))
         setLoading(false)
       })
-      .catch(err => {
-        console.error('Failed to fetch products:', err)
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+
+        console.error('Failed to fetch products:', error)
         setLoading(false)
       })
+
+    return () => controller.abort()
   }, [limit, featured])
 
   const isDark = variant === 'dark'

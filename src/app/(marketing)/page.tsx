@@ -8,7 +8,7 @@ import { OptimizedImage } from '@/components/ui/OptimizedImage'
 import { PageTransition } from '@/components/layout/PageTransition'
 import Link from 'next/link'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
-import { Gem, Crown, Sparkles, Wrench, GraduationCap } from 'lucide-react'
+import { Gem, Crown, Wrench, GraduationCap } from 'lucide-react'
 
 // Lazy load heavy components
 const FeaturedProducts = dynamic(
@@ -71,17 +71,8 @@ export default function HomePage() {
           {/* Hero Section */}
           <HomeHero />
 
-          {/* Shop by Category - Beautiful grid immediately after hero */}
+          {/* Shop by Category */}
           <Section className="relative bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden py-16 lg:py-24">
-            {/* Magical sparkle effects */}
-            <div className="absolute inset-0">
-              <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
-              <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
-              <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
-              <div className="hidden sm:block absolute top-0 left-1/4 w-96 h-96 rounded-full bg-opal-electric/5 blur-3xl" />
-              <div className="hidden sm:block absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-fire-pink/5 blur-3xl" />
-            </div>
-
             <Container>
               <div className="mb-14 text-center max-w-5xl mx-auto">
                 <span className="mb-4 block font-serif text-base font-semibold text-opal-electric">
@@ -101,24 +92,24 @@ export default function HomePage() {
                 {/* Raw Opals */}
                 <Link
                   href="/store?category=raw-opals"
-                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-xl border border-warm-grey/30 bg-white shadow-sm transition-colors duration-200 hover:border-opal-electric-accessible/30"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">
                     <OptimizedImage
                       src="/api/media/file/20210627_202327-3.jpg"
                       alt="Raw Australian Opals"
-                      className="opacity-90 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100"
+                      className="opacity-90 transition-opacity duration-300 group-hover:opacity-95"
                       aspectRatio="1:1"
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                       priority
                       loading="eager"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/40 to-transparent" />
                     <div className="absolute top-4 left-4">
                       <Gem className="w-6 h-6 text-white/80" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h3 className="mb-1.5 font-serif text-xl font-bold tracking-wide text-white">RAW OPALS</h3>
+                      <h3 className="mb-1.5 font-serif text-xl font-semibold text-white">Raw Opals</h3>
                       <span className="text-sm font-medium text-white/90">Uncut Gems</span>
                     </div>
                   </div>
@@ -127,22 +118,22 @@ export default function HomePage() {
                 {/* Earrings */}
                 <Link
                   href="/store?category=earrings"
-                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-xl border border-warm-grey/30 bg-white shadow-sm transition-colors duration-200 hover:border-opal-electric-accessible/30"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">
                     <OptimizedImage
                       src="/api/media/file/IMG_5903-3.jpg"
                       alt="Opal Earrings"
-                      className="opacity-90 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100"
+                      className="opacity-90 transition-opacity duration-300 group-hover:opacity-95"
                       aspectRatio="1:1"
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/40 to-transparent" />
                     <div className="absolute top-4 left-4">
-                      <Sparkles className="w-6 h-6 text-white/80" />
+                      <Gem className="w-6 h-6 text-white/80" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h3 className="mb-1.5 font-serif text-xl font-bold tracking-wide text-white">EARRINGS</h3>
+                      <h3 className="mb-1.5 font-serif text-xl font-semibold text-white">Earrings</h3>
                       <span className="text-sm font-medium text-white/90">Handcrafted</span>
                     </div>
                   </div>
@@ -151,22 +142,22 @@ export default function HomePage() {
                 {/* Rings */}
                 <Link
                   href="/store?category=opal-rings"
-                  className="group relative overflow-hidden rounded-3xl shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-xl border border-warm-grey/30 bg-white shadow-sm transition-colors duration-200 hover:border-opal-electric-accessible/30"
                 >
                   <div className="relative aspect-square bg-gradient-to-br from-charcoal to-gray-800">
                     <OptimizedImage
                       src="/api/media/file/20210819_102625-4.jpg"
                       alt="Opal Rings"
-                      className="opacity-90 transition-all duration-300 group-hover:scale-110 group-hover:opacity-100"
+                      className="opacity-90 transition-opacity duration-300 group-hover:opacity-95"
                       aspectRatio="1:1"
                       sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/40 to-transparent" />
                     <div className="absolute top-4 left-4">
                       <Crown className="w-6 h-6 text-white/80" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
-                      <h3 className="mb-1.5 font-serif text-xl font-bold tracking-wide text-white">RINGS</h3>
+                      <h3 className="mb-1.5 font-serif text-xl font-semibold text-white">Rings</h3>
                       <span className="text-sm font-medium text-white/90">Unique Designs</span>
                     </div>
                   </div>
@@ -175,14 +166,14 @@ export default function HomePage() {
                 {/* Services */}
                 <Link
                   href="/services"
-                  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-opal-electric to-opal-deep shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-xl border border-warm-grey/30 bg-opal-electric-accessible shadow-sm transition-colors duration-200 hover:bg-opal-deep"
                 >
                   <div className="relative flex aspect-square flex-col items-center justify-center p-6">
-                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform duration-300 group-hover:scale-110">
+                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/15 transition-colors duration-300 group-hover:bg-white/20">
                       <Wrench className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="mb-1.5 text-center font-serif text-xl font-bold tracking-wide text-white">
-                      SERVICES
+                    <h3 className="mb-1.5 text-center font-serif text-xl font-semibold text-white">
+                      Services
                     </h3>
                     <span className="text-sm font-medium text-white/90">Repairs & Custom</span>
                   </div>
@@ -191,14 +182,14 @@ export default function HomePage() {
                 {/* Courses */}
                 <Link
                   href="/courses"
-                  className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-fire-pink to-fire-coral shadow-xl transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                  className="group relative overflow-hidden rounded-xl border border-warm-grey/30 bg-fire-pink-dark shadow-sm transition-colors duration-200 hover:bg-fire-coral"
                 >
                   <div className="relative flex aspect-square flex-col items-center justify-center p-6">
-                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-transform duration-300 group-hover:scale-110">
+                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/15 transition-colors duration-300 group-hover:bg-white/20">
                       <GraduationCap className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="mb-1.5 text-center font-serif text-xl font-bold tracking-wide text-white">
-                      COURSES
+                    <h3 className="mb-1.5 text-center font-serif text-xl font-semibold text-white">
+                      Courses
                     </h3>
                     <span className="text-sm font-medium text-white/90">Learn Opal Cutting</span>
                   </div>
@@ -210,35 +201,18 @@ export default function HomePage() {
           {/* Trust Marquee */}
           <TrustMarquee />
 
-          {/* Latest Arrivals - Premium dark section */}
-          <Section className="relative overflow-hidden bg-gradient-to-br from-black-rich via-gray-900 to-black-rich py-24 lg:py-32">
-            {/* Enhanced background effects */}
-            <div className="absolute inset-0">
-              <div className="hidden sm:block absolute left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-opal-electric/20 to-opal-deep/10 blur-3xl" />
-              <div className="hidden sm:block absolute bottom-0 right-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-fire-pink/15 to-fire-coral/10 blur-3xl" />
-              <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[800px] rounded-full bg-gradient-to-r from-opal-turquoise/10 to-opal-emerald/10 blur-3xl" />
-            </div>
-
-            {/* Decorative pattern overlay */}
-            <div className="absolute inset-0 opacity-5">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.05) 35px, rgba(255,255,255,.05) 70px)`
-              }} />
-            </div>
-
+          {/* Latest Arrivals */}
+          <Section className="relative overflow-hidden bg-charcoal-dark py-24 lg:py-32">
             <Container className="relative z-10">
               <div className="mb-14 text-center max-w-5xl mx-auto">
-                <span className="mb-4 block bg-gradient-to-r from-opal-electric to-fire-pink bg-clip-text font-serif text-base font-semibold text-transparent">
-                  Fresh from our workshop
+                <span className="mb-4 block font-serif text-base font-semibold text-opal-light">
+                  Newly finished pieces from the workshop.
                 </span>
                 <h2 className="mb-6 font-serif text-4xl font-semibold text-white md:text-5xl lg:text-6xl">
-                  Latest <span className="text-gradient-prismatic">Arrivals</span>
+                  Latest <span className="text-opal-light">Arrivals</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-white/80 font-light leading-relaxed">
-                  Fresh from our workshop - discover new masterpieces crafted with passion
-                </p>
-                <p className="mt-3 font-serif text-base italic text-white/65">
-                  Where dreams become reality.
+                  Discover new pieces with colour, provenance, and everyday wearability.
                 </p>
               </div>
 
@@ -252,7 +226,7 @@ export default function HomePage() {
               <div className="mt-12 text-center">
                 <Button
                   size="xl"
-                  className="group px-10 py-6 text-lg bg-gradient-to-r from-white to-gray-100 text-black-rich hover:from-gray-100 hover:to-white shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                  className="group px-10 py-6 text-lg bg-white text-charcoal shadow-sm transition-colors duration-300 hover:bg-cream"
                   asChild
                 >
                   <Link href="/store">
@@ -303,7 +277,7 @@ export default function HomePage() {
                       src="/api/media/file/20211104_234659-1-4.jpg"
                       alt="Vibrant Australian Opal"
                       aspectRatio="4:3"
-                      className="hover:shadow-glow rounded-2xl shadow-xl transition-shadow duration-300"
+                      className="rounded-xl border border-warm-grey/30 shadow-sm transition-opacity duration-300 hover:opacity-95"
                       sizes="(max-width: 1024px) 50vw, 33vw"
                     />
                     <div className="mt-12">
@@ -311,7 +285,7 @@ export default function HomePage() {
                         src="/api/media/file/20220109_133519-3.jpg"
                         alt="Colorful Handcrafted Opals"
                         aspectRatio="4:3"
-                        className="hover:shadow-glow rounded-2xl shadow-xl transition-shadow duration-300"
+                        className="rounded-xl border border-warm-grey/30 shadow-sm transition-opacity duration-300 hover:opacity-95"
                         sizes="(max-width: 1024px) 50vw, 33vw"
                       />
                     </div>
@@ -328,36 +302,29 @@ export default function HomePage() {
             Replace with genuine customer reviews from Payload CMS when available.
           */}
 
-          {/* Trust Badges / Promise Section - Premium design */}
+          {/* Trust Badges / Promise Section */}
           <section className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 py-20 md:py-24 overflow-hidden">
-            {/* Subtle decorative elements */}
-            <div className="absolute inset-0">
-              <div className="hidden sm:block absolute -top-40 -right-40 w-80 h-80 rounded-full bg-opal-electric/5 blur-3xl" />
-              <div className="hidden sm:block absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-fire-pink/5 blur-3xl" />
-            </div>
-
             <div className="relative mx-auto max-w-screen-xl px-6">
               <div className="mb-16 text-center">
-                <span className="mb-6 inline-flex items-center gap-3 bg-gradient-to-r from-opal-electric via-fire-pink to-opal-deep bg-clip-text text-sm font-semibold uppercase text-transparent">
-                  <span className="h-0.5 w-16 bg-gradient-to-r from-transparent to-opal-electric rounded-full"></span>
+                <span className="mb-6 inline-flex items-center gap-3 text-sm font-semibold uppercase text-opal-electric-accessible">
+                  <span className="h-0.5 w-16 rounded-full bg-opal-electric-accessible/35"></span>
                   Our Commitment
-                  <span className="h-0.5 w-16 bg-gradient-to-l from-transparent to-opal-deep rounded-full"></span>
+                  <span className="h-0.5 w-16 rounded-full bg-opal-electric-accessible/35"></span>
                 </span>
                 <h2 className="mb-6 font-serif text-4xl font-semibold text-charcoal md:text-5xl lg:text-6xl">
                   The Good Opal <span className="text-opal-electric">Promise</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-charcoal/70 font-light">
-                  Every purchase comes with our guarantee of excellence
+                  Every order includes practical support before and after purchase.
                 </p>
               </div>
 
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
                 {/* Express Delivery */}
                 <div className="group relative">
-                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-electric to-opal-deep opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-opal-electric/20">
+                  <div className="relative h-full rounded-xl border border-warm-grey/30 bg-white p-8 text-center shadow-sm transition-colors duration-200 hover:border-opal-electric-accessible/25">
                     <div className="relative mb-6">
-                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-opal-electric to-opal-deep shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-opal-electric-accessible shadow-sm transition-colors duration-300 group-hover:bg-opal-deep">
                         <svg
                           className="h-10 w-10 text-white"
                           fill="none"
@@ -372,7 +339,7 @@ export default function HomePage() {
                           />
                         </svg>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-fire-pink to-fire-coral flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-fire-pink-dark shadow-sm">
                         <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -384,7 +351,7 @@ export default function HomePage() {
                     <p className="text-base leading-relaxed text-charcoal/60 font-light">
                       Free express shipping on all Australian orders
                     </p>
-                    <div className="mt-4 text-xs font-semibold tracking-wider text-opal-electric uppercase">
+                    <div className="mt-4 text-xs font-semibold uppercase text-opal-electric-accessible">
                       2-3 Business Days
                     </div>
                   </div>
@@ -392,10 +359,9 @@ export default function HomePage() {
 
                 {/* Warranty */}
                 <div className="group relative">
-                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-fire-pink to-fire-coral opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-fire-pink/20">
+                  <div className="relative h-full rounded-xl border border-warm-grey/30 bg-white p-8 text-center shadow-sm transition-colors duration-200 hover:border-fire-pink/25">
                     <div className="relative mb-6">
-                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-fire-pink to-fire-coral shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-fire-pink-dark shadow-sm transition-colors duration-300 group-hover:bg-fire-coral">
                         <svg
                           className="h-10 w-10 text-white"
                           fill="none"
@@ -410,7 +376,7 @@ export default function HomePage() {
                           />
                         </svg>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-opal-electric to-opal-deep flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-opal-electric-accessible shadow-sm">
                         <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -422,7 +388,7 @@ export default function HomePage() {
                     <p className="text-base leading-relaxed text-charcoal/60 font-light">
                       Comprehensive warranty & professional cleaning service
                     </p>
-                    <div className="mt-4 text-xs font-semibold tracking-wider text-fire-pink uppercase">
+                    <div className="mt-4 text-xs font-semibold uppercase text-fire-pink-dark">
                       Peace of Mind
                     </div>
                   </div>
@@ -430,10 +396,9 @@ export default function HomePage() {
 
                 {/* Premium Packaging */}
                 <div className="group relative">
-                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-opal-emerald to-opal-teal opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-opal-emerald/20">
+                  <div className="relative h-full rounded-xl border border-warm-grey/30 bg-white p-8 text-center shadow-sm transition-colors duration-200 hover:border-opal-emerald/25">
                     <div className="relative mb-6">
-                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-opal-emerald to-opal-teal shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-opal-emerald-dark shadow-sm transition-colors duration-300 group-hover:bg-opal-emerald">
                         <svg
                           className="h-10 w-10 text-white"
                           fill="none"
@@ -448,7 +413,7 @@ export default function HomePage() {
                           />
                         </svg>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-fire-gold to-fire-orange flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-fire-orange shadow-sm">
                         <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -460,7 +425,7 @@ export default function HomePage() {
                     <p className="text-base leading-relaxed text-charcoal/60 font-light">
                       Luxury gift box with opal care kit included
                     </p>
-                    <div className="mt-4 text-xs font-semibold tracking-wider text-opal-emerald uppercase">
+                    <div className="mt-4 text-xs font-semibold uppercase text-opal-emerald-dark">
                       Gift Ready
                     </div>
                   </div>
@@ -468,10 +433,9 @@ export default function HomePage() {
 
                 {/* Authenticity */}
                 <div className="group relative">
-                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-fire-orange to-fire-gold opacity-0 blur-xl transition-all duration-300 group-hover:opacity-75"></div>
-                  <div className="relative h-full transform rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl hover:border-fire-gold/20">
+                  <div className="relative h-full rounded-xl border border-warm-grey/30 bg-white p-8 text-center shadow-sm transition-colors duration-200 hover:border-fire-gold/30">
                     <div className="relative mb-6">
-                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-fire-orange to-fire-gold shadow-xl transform group-hover:scale-110 transition-transform duration-300">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-fire-orange shadow-sm transition-colors duration-300 group-hover:bg-fire-gold">
                         <svg
                           className="h-10 w-10 text-white"
                           fill="none"
@@ -486,7 +450,7 @@ export default function HomePage() {
                           />
                         </svg>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-br from-opal-deep to-opal-electric flex items-center justify-center shadow-lg">
+                      <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-opal-electric-accessible shadow-sm">
                         <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -498,7 +462,7 @@ export default function HomePage() {
                     <p className="text-base leading-relaxed text-charcoal/60 font-light">
                       Certificate of authenticity with every purchase
                     </p>
-                    <div className="mt-4 text-xs font-semibold tracking-wider text-fire-gold uppercase">
+                    <div className="mt-4 text-xs font-semibold uppercase text-fire-orange">
                       Guaranteed
                     </div>
                   </div>

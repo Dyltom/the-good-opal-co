@@ -199,15 +199,168 @@ describe('buying flow UI/UX safeguards', () => {
     expect(productHeroSource).toContain('max-w-screen-xl px-4')
     expect(productHeroSource).toContain('max-w-[calc(100vw-2rem)]')
     expect(productHeroSource).toContain('flex flex-wrap justify-center gap-1')
-    expect(homeSource).toContain('hidden sm:block absolute top-0 left-1/4 w-96')
-    expect(homeSource).toContain('hidden sm:block absolute bottom-0 right-1/4 w-96')
-    expect(homeSource).toContain('hidden sm:block absolute left-1/4 top-0')
-    expect(homeSource).toContain('hidden sm:block absolute bottom-0 right-1/4')
-    expect(homeSource).toContain('hidden sm:block absolute top-1/2')
-    expect(homeSource).toContain('hidden sm:block absolute -top-40 -right-40')
-    expect(homeSource).toContain('hidden sm:block absolute -bottom-40 -left-40')
+    expect(homeSource).toContain('bg-charcoal-dark py-24')
+    expect(homeSource).toContain('rounded-xl border border-warm-grey/30 bg-white shadow-sm')
+    expect(homeSource).not.toContain('hidden sm:block absolute left-1/4 top-0')
+    expect(homeSource).not.toContain('hidden sm:block absolute top-1/2')
+    expect(homeSource).not.toContain('hidden sm:block absolute -top-40 -right-40')
+    expect(homeSource).not.toContain('hidden sm:block absolute -bottom-40 -left-40')
     expect(blogSource).toContain('hidden sm:block absolute -top-40')
     expect(blogSource).toContain('hidden sm:block absolute -bottom-40')
     expect(blogSource).toContain('hidden sm:block absolute top-1/2')
+  })
+
+  test('homepage hero keeps the fairytale tone without sales-template chrome', () => {
+    const source = read('src/components/sections/ProductHero.tsx')
+
+    expect(source).toContain('Handmade Australian opals')
+    expect(source).toContain('storybook')
+    expect(source).toContain('formatBadgeText(currentProduct.badge.text)')
+    expect(source).not.toContain('Limited Time: Up to')
+    expect(source).not.toContain('Sparkles')
+    expect(source).not.toContain('text-gradient-prismatic')
+    expect(source).not.toContain('hover:scale-[1.02]')
+  })
+
+  test('product gallery uses editorial framing instead of gradient glow chrome', () => {
+    const source = read('src/components/product/ProductImageGallery.tsx')
+
+    expect(source).toContain('border border-warm-grey/40 bg-white shadow-sm')
+    expect(source).toContain('Featured')
+    expect(source).not.toContain('FEATURED')
+    expect(source).not.toContain('shadow-2xl')
+    expect(source).not.toContain('bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep')
+  })
+
+  test('mobile product sticky purchase bar waits until inline actions scroll away', () => {
+    const source = read('src/components/product/ProductActions.tsx')
+
+    expect(source).toContain('showStickyPurchaseBar')
+    expect(source).toContain('IntersectionObserver')
+    expect(source).toContain('entry.boundingClientRect.top < 0')
+    expect(source).toContain('data-testid="inline-product-actions"')
+    expect(source).not.toContain('fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden')
+  })
+
+  test('cart and search language stays warm without magical treasure wording', () => {
+    const searchSource = read('src/components/search/SearchInput.tsx')
+    const emptyStateSource = read('src/components/ui/EmptyStates.tsx')
+
+    expect(searchSource).toContain("import { Search, X, Loader2 } from 'lucide-react'")
+    expect(searchSource).toContain('placeholder="Search opals, rings, parcels"')
+    expect(searchSource).not.toContain('Sparkles')
+    expect(searchSource).not.toContain('magical')
+    expect(emptyStateSource).toContain("description=\"Looks like you haven't added any pieces yet. Explore our collection of unique Australian opals.\"")
+    expect(emptyStateSource).not.toContain('treasures')
+  })
+
+  test('product cards read as gallery pieces instead of generated action cards', () => {
+    const source = read('src/components/product/ProductCard.tsx')
+
+    expect(source).toContain('border border-warm-grey/30 bg-white shadow-sm')
+    expect(source).toContain('Quick view')
+    expect(source).not.toContain('group-hover:scale-105')
+    expect(source).not.toContain('hover:shadow-glow')
+  })
+
+  test('featured product fetches do not log errors for route-change aborts', () => {
+    const source = read('src/components/sections/FeaturedProducts.tsx')
+
+    expect(source).toContain('new AbortController()')
+    expect(source).toContain("error instanceof DOMException && error.name === 'AbortError'")
+    expect(source).toContain('return () => controller.abort()')
+  })
+
+  test('homepage collection sections use gallery restraint instead of template glow', () => {
+    const source = read('src/app/(marketing)/page.tsx')
+
+    expect(source).toContain('rounded-xl border border-warm-grey/30 bg-white shadow-sm')
+    expect(source).toContain('group-hover:opacity-95')
+    expect(source).toContain('Every order includes practical support before and after purchase.')
+    expect(source).not.toContain('text-gradient-prismatic')
+    expect(source).not.toContain('bg-clip-text')
+    expect(source).not.toContain('Sparkles')
+    expect(source).not.toContain('shadow-2xl')
+    expect(source).not.toContain('group-hover:scale-110')
+    expect(source).not.toContain('absolute -inset-1 rounded-3xl bg-gradient-to-r')
+  })
+
+  test('product detail page keeps commerce hierarchy solid and mobile-friendly', () => {
+    const source = read('src/app/(marketing)/store/[slug]/page.tsx')
+
+    expect(source).toContain('text-opal-electric-accessible')
+    expect(source).toContain('flex flex-col gap-3 text-sm sm:flex-row sm:items-center')
+    expect(source).toContain('mt-20 border-t border-warm-grey/40 pt-12')
+    expect(source).not.toContain('bg-clip-text')
+    expect(source).not.toContain('text-transparent')
+    expect(source).not.toContain('mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12')
+  })
+
+  test('core UI controls use motion restraint without hover scaling', () => {
+    const buttonSource = read('src/components/ui/button.tsx')
+    const gallerySource = read('src/components/product/ProductImageGallery.tsx')
+
+    expect(buttonSource).toContain('hover:shadow-opal-electric/30')
+    expect(buttonSource).not.toContain('hover:scale')
+    expect(buttonSource).not.toContain('active:scale')
+    expect(gallerySource).toContain('ring-2 ring-opal-electric-accessible ring-offset-2')
+    expect(gallerySource).not.toContain('scale-105')
+  })
+
+  test('footer closes the site like a quiet gallery note', () => {
+    const source = read('src/components/navigation/Footer.tsx')
+
+    expect(source).toContain('bg-charcoal-dark text-white')
+    expect(source).toContain('border-t border-warm-grey/20')
+    expect(source).toContain('From the gallery')
+    expect(source).toContain('Australian opal that doesn&apos;t cost the earth.')
+    expect(source).not.toContain('Prismatic Top Border')
+    expect(source).not.toContain('bg-gradient-to-r from-opal-electric via-fire-pink')
+    expect(source).not.toContain('hover:bg-gradient-to-r')
+    expect(source).not.toContain('blur-xl')
+    expect(source).not.toContain('font-accent')
+    expect(source).not.toContain('tracking-wider')
+  })
+
+  test('hero relies on product-led editorial cues instead of generated atmosphere', () => {
+    const source = read('src/components/sections/ProductHero.tsx')
+
+    expect(source).toContain('bg-charcoal-dark')
+    expect(source).toContain('Trusted details, clear care, and one-of-a-kind stones.')
+    expect(source).toContain('Authenticity, express shipping, returns, and care guidance are kept close to the buying decision.')
+    expect(source).not.toContain('scrollY')
+    expect(source).not.toContain('blur-3xl')
+    expect(source).not.toContain('Quick Stats')
+    expect(source).not.toContain('shadow-luxury-lg')
+    expect(source).not.toContain('bg-black-rich')
+    expect(source).not.toContain('backdrop-blur')
+    expect(source).not.toContain('scale:')
+  })
+
+  test('product cards share one gallery vocabulary without blur overlays or scale entrances', () => {
+    const source = read('src/components/product/ProductCard.tsx')
+
+    expect(source).toContain('Gallery Product Card Component')
+    expect(source).toContain('rounded-lg border border-warm-grey/30 bg-white shadow-sm')
+    expect(source).toContain('bg-charcoal/85 px-4 py-2 text-center')
+    expect(source).not.toContain('SOLID')
+    expect(source).not.toContain('Multiple variants')
+    expect(source).not.toContain('Museum style info')
+    expect(source).not.toContain('backdrop-blur')
+    expect(source).not.toContain('bg-black')
+    expect(source).not.toContain('scale:')
+  })
+
+  test('homepage language avoids leftover template phrases in feature sections', () => {
+    const source = read('src/app/(marketing)/page.tsx')
+
+    expect(source).toContain('bg-charcoal-dark py-24')
+    expect(source).toContain('Newly finished pieces from the workshop.')
+    expect(source).not.toContain('Where dreams become reality.')
+    expect(source).not.toContain('Fresh from our workshop - discover new masterpieces crafted with passion')
+    expect(source).not.toContain('bg-black-rich')
+    expect(source).not.toContain('blur-3xl')
+    expect(source).not.toContain('Magical sparkle effects')
+    expect(source).not.toContain('from-black/80')
   })
 })

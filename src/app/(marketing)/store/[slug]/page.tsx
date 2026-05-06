@@ -237,8 +237,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="space-y-6">
                 {/* Title */}
                 <div>
-                  <span className="mb-4 inline-flex items-center gap-3 bg-gradient-to-r from-opal-electric to-fire-gold bg-clip-text text-sm font-semibold uppercase tracking-normal text-transparent">
-                    <span className="h-px w-12 bg-gradient-to-r from-transparent to-opal-electric"></span>
+                  <span className="mb-4 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-normal text-opal-electric-accessible">
+                    <span className="h-px w-12 bg-opal-electric-accessible/35"></span>
                     {categoryName}
                   </span>
                   <h1 className="mt-2 font-serif text-4xl font-semibold leading-tight text-charcoal md:text-5xl lg:text-6xl">
@@ -249,7 +249,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 {/* Price */}
                 <div className="flex items-start gap-4 pb-8 border-b border-gray-200">
                   <div>
-                    <span className="text-5xl font-light text-charcoal">
+                    <span className="font-serif text-4xl font-semibold leading-none text-charcoal md:text-5xl">
                       {formatCurrency(product.price, 'AUD')}
                     </span>
                     {product.compareAtPrice && product.compareAtPrice > product.price && (
@@ -257,7 +257,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         <span className="text-lg text-gray-400 line-through">
                           {formatCurrency(product.compareAtPrice, 'AUD')}
                         </span>
-                        <span className="px-3 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold">
+                        <span className="rounded-full bg-opal-emerald-dark px-3 py-1 text-sm font-semibold text-white">
                           Save {Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)}%
                         </span>
                       </div>
@@ -314,15 +314,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {/* Shipping Info */}
-                <div className="p-6 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100">
-                  <div className="flex items-center gap-6 text-sm">
+                <div className="rounded-xl border border-warm-grey/30 bg-white p-5">
+                  <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-opal-electric-accessible" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                       </svg>
                       <span className="font-medium">Free shipping over $500</span>
                     </div>
-                    <div className="h-4 w-px bg-gray-200" />
+                    <div className="hidden h-4 w-px bg-gray-200 sm:block" />
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-opal-electric-accessible" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
@@ -336,13 +336,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
             {/* Product Specifications */}
             {(product.stoneOrigin || product.stoneType || product.material || product.weight) && (
-              <div className="mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12">
-                <h2 className="mb-8 text-center font-serif text-3xl font-semibold text-charcoal md:text-4xl">
+              <div className="mt-20 border-t border-warm-grey/40 pt-12">
+                <h2 className="mb-8 font-serif text-3xl font-semibold text-charcoal md:text-4xl">
                   Gemstone <span className="text-opal-electric">Specifications</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
                   {product.stoneType && (
-                    <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-charcoal/60">Stone Type</span>
                       <span className="font-semibold text-charcoal">
                         {product.stoneType.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
@@ -350,7 +350,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     </div>
                   )}
                   {product.stoneOrigin && (
-                    <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-charcoal/60">Origin</span>
                       <span className="font-semibold text-charcoal">
                         {product.stoneOrigin.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
@@ -358,7 +358,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     </div>
                   )}
                   {product.material && (
-                    <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-charcoal/60">Metal</span>
                       <span className="font-semibold text-charcoal">
                         {product.material.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
@@ -366,19 +366,19 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     </div>
                   )}
                   {product.weight && (
-                    <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-charcoal/60">Weight</span>
                       <span className="font-semibold text-charcoal">{product.weight} carats</span>
                     </div>
                   )}
                   {product.ringSize && (
-                    <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-charcoal/60">Ring Size</span>
                       <span className="font-semibold text-charcoal">{product.ringSize}</span>
                     </div>
                   )}
                   {product.certified && (
-                    <div className="flex justify-between items-center py-3 border-b border-warm-grey-light">
+                    <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-charcoal/60">Certificate</span>
                       <span className="font-semibold text-charcoal">
                         {product.certificateNumber ?? 'Included'}
