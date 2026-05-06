@@ -21,6 +21,21 @@ describe('Typography Configuration', () => {
     expect(source).toContain("--font-accent: 'Dancing Script'")
   })
 
+  test('typography documentation matches the shipped font families', () => {
+    const designSystem = read('docs/DESIGN_SYSTEM.md')
+    const typographyGuide = read('docs/TYPOGRAPHY_GUIDE.md')
+
+    expect(designSystem).toContain("EB Garamond")
+    expect(designSystem).toContain("Merriweather")
+    expect(designSystem).toContain("Dancing Script")
+    expect(typographyGuide).toContain("EB Garamond")
+    expect(typographyGuide).toContain("Merriweather")
+    expect(typographyGuide).toContain("Dancing Script")
+    expect(`${designSystem}\n${typographyGuide}`).not.toContain("Playfair Display")
+    expect(`${designSystem}\n${typographyGuide}`).not.toContain("Inter")
+    expect(`${designSystem}\n${typographyGuide}`).not.toContain("Montserrat")
+  })
+
   test('Tailwind font-display resolves through the serif heading family', () => {
     const source = read('tailwind.config.ts')
 

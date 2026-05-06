@@ -150,7 +150,7 @@
 
 #### Serif - Headlines & Luxury
 ```css
---font-serif: 'Playfair Display', 'Georgia', serif;
+--font-serif: 'EB Garamond', 'Georgia', serif;
 ```
 **Usage:** H1, H2, featured quotes, luxury emphasis
 
@@ -162,9 +162,9 @@
 
 #### Sans-Serif - Body & UI
 ```css
---font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+--font-sans: 'Merriweather', 'Georgia', serif;
 ```
-**Usage:** Body text, navigation, buttons, forms
+**Usage:** Body text, editorial copy, navigation, buttons, forms
 
 **Weights:**
 - Regular (400)
@@ -174,14 +174,14 @@
 
 #### Accent - Special Elements
 ```css
---font-accent: 'Montserrat', sans-serif;
+--font-accent: 'Dancing Script', cursive;
 ```
-**Usage:** Badges, labels, stats, micro-copy
+**Usage:** Emotional moments such as success pages, taglines, and celebrations
 
 **Weights:**
+- Regular (400)
 - Medium (500)
 - SemiBold (600)
-- Bold (700)
 
 ### Type Scale
 

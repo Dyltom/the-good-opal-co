@@ -3,9 +3,9 @@
 ## Design System Typography
 
 ### Font Families
-- **Display/Headings**: Playfair Display (serif) - for elegance and luxury feel
-- **Body Text**: Inter (sans-serif) - for readability
-- **Accent**: Montserrat (sans-serif) - for special elements
+- **Display/Headings**: EB Garamond (serif) - for elegance, softness, and luxury feel
+- **Body Text**: Merriweather (serif) - for warm editorial readability
+- **Accent**: Dancing Script (script) - reserved for emotional moments such as success pages, taglines, and celebrations
 
 ### Typography Scale (8px baseline)
 

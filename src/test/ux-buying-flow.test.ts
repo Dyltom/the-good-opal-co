@@ -37,6 +37,41 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('index={index}')
   })
 
+  test('store discovery controls are compact and scan-friendly on mobile', () => {
+    const source = read('src/app/(marketing)/store/store-content.tsx')
+
+    expect(source).toContain('aria-label="Store search and refinement"')
+    expect(source).toContain('type="search"')
+    expect(source).toContain('inputMode="search"')
+    expect(source).toContain('Showing {resultRangeStart}-{resultRangeEnd} of {sortedProducts.length}')
+    expect(source).toContain('grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]')
+    expect(source).toContain('w-full sm:w-[190px]')
+    expect(source).toContain('min-h-[44px] min-w-[44px]')
+    expect(source).toContain('min-h-[44px] rounded-full')
+  })
+
+  test('store search URL sync does not remount controls while typing', () => {
+    const source = read('src/app/(marketing)/store/store-content.tsx')
+
+    expect(source).toContain('window.history.replaceState(null')
+    expect(source).not.toContain('router.push(newUrl')
+  })
+
+  test('quick view modal behaves as a mobile safe-area purchase sheet', () => {
+    const source = read('src/components/product/ProductQuickViewModal.tsx')
+
+    expect(source).toContain('aria-modal="true"')
+    expect(source).toContain('aria-labelledby="quick-view-title"')
+    expect(source).toContain('items-end justify-center sm:items-center')
+    expect(source).toContain('max-h-[92dvh]')
+    expect(source).toContain('sticky bottom-0')
+    expect(source).toContain('env(safe-area-inset-bottom)')
+    expect(source).toContain('min-h-[44px] min-w-[44px]')
+    expect(source).toContain('h-11 w-11 min-h-[44px] min-w-[44px]')
+    expect(source).toContain('flex flex-col gap-3 sm:flex-row')
+    expect(source).not.toContain('scale:')
+  })
+
   test('cart drawer uses plain checkout language and free-shipping progress', () => {
     const source = read('src/components/cart/AnimatedCartDrawer.tsx')
 
@@ -104,6 +139,14 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('idPrefix="mobile"')
     expect(source).toContain('idPrefix="desktop"')
     expect(source).toContain('Show {sortedProducts.length}')
+  })
+
+  test('mobile filter drawer has distinct close targets and a 44px icon close', () => {
+    const source = read('src/app/(marketing)/store/store-content.tsx')
+
+    expect(source).toContain('aria-label="Dismiss filter panel"')
+    expect(source).toContain('aria-label="Close filters"')
+    expect(source).toContain('flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-warm-grey/30')
   })
 
   test('product filters support prefixed ids for mobile and desktop instances', () => {

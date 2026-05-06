@@ -8,7 +8,7 @@
  */
 
 import { useState, useMemo, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { ProductCard } from '@/components/product/ProductCard'
 import { ProductFilters } from '@/components/store/ProductFilters'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -49,7 +49,6 @@ function sortProducts(products: Product[], sortBy: SortOption): Product[] {
 }
 
 export function StoreContent({ products, searchQuery: initialSearchQuery }: StoreContentProps) {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   // Initialize state from URL parameters
@@ -128,9 +127,9 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
 
     // Only update URL if it's different to avoid infinite loops
     if (window.location.pathname + window.location.search !== newUrl) {
-      router.push(newUrl, { scroll: false })
+      window.history.replaceState(null, '', newUrl)
     }
-  }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, page, router])
+  }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange, page])
 
   // Extract unique filter options from products
   const filterOptions = useMemo(() => {
@@ -196,6 +195,8 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
   const pageCount = totalPages(sortedProducts.length, PRODUCTS_PER_PAGE)
   const currentPage = clampPage(page, pageCount)
   const pagedProducts = paginate(sortedProducts, currentPage, PRODUCTS_PER_PAGE)
+  const resultRangeStart = sortedProducts.length === 0 ? 0 : (currentPage - 1) * PRODUCTS_PER_PAGE + 1
+  const resultRangeEnd = Math.min(currentPage * PRODUCTS_PER_PAGE, sortedProducts.length)
   const hasCustomPriceRange = priceRange[0] > 0 || priceRange[1] < filterOptions.maxPrice
   const activeFilterCount =
     (searchQuery ? 1 : 0) +
@@ -319,72 +320,131 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
 
       {/* Products Area */}
       <div className="flex-1">
-        {/* Search Bar */}
-        <div className="mb-6">
-          <label htmlFor="store-search" className="sr-only">Search products</label>
-          <div className="relative">
-            <input
-              id="store-search"
-              type="text"
-              placeholder="Search products"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search products"
-              className="w-full px-6 py-4 pr-16 text-base rounded-xl border border-warm-grey/30 bg-white focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-sm font-sans placeholder:text-charcoal/40"
-            />
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="w-5 h-5 text-charcoal/40 hover:text-charcoal/70 transition-colors"
-                  aria-label="Clear search"
-                >
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-              <svg
-                className="w-5 h-5 text-opal-electric/60"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        <section
+          aria-label="Store search and refinement"
+          className="mb-8 rounded-2xl border border-warm-grey/30 bg-white p-4 shadow-sm sm:p-5"
+        >
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div>
+              <label htmlFor="store-search" className="sr-only">Search products</label>
+              <div className="relative">
+                <input
+                  id="store-search"
+                  type="search"
+                  inputMode="search"
+                  placeholder="Search products"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search products"
+                  className="h-12 w-full rounded-xl border border-warm-grey/30 bg-white px-5 pr-14 font-sans text-base shadow-sm transition-all placeholder:text-charcoal/40 focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20"
                 />
-              </svg>
+                <div className="absolute right-1 top-1/2 flex -translate-y-1/2 items-center">
+                  {searchQuery ? (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-charcoal/45 transition-colors hover:text-charcoal/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <div
+                      className="flex min-h-[44px] min-w-[44px] items-center justify-center text-opal-electric-accessible/65"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileFiltersOpen(true)}
+              className="flex min-h-12 w-full items-center justify-between rounded-xl border border-warm-grey/30 bg-cream px-4 py-3 font-sans text-sm font-semibold text-charcoal transition-colors hover:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30 lg:hidden"
+              aria-label="Open filters"
+            >
+              <span className="inline-flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-opal-electric-accessible" aria-hidden="true" />
+                Filter & refine
+              </span>
+              {activeFilterCount > 0 ? (
+                <span className="rounded-full bg-opal-electric-accessible px-2.5 py-1 text-xs font-semibold text-white">
+                  {activeFilterCount}
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-charcoal/55">
+                  Optional
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-4 border-t border-warm-grey/30 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="font-sans text-sm text-charcoal" aria-live="polite">
+                <span className="font-semibold">
+                  Showing {resultRangeStart}-{resultRangeEnd} of {sortedProducts.length}
+                </span>
+                <span className="ml-1 text-charcoal/70">{sortedProducts.length === 1 ? 'product' : 'products'}</span>
+                {!showOutOfStock && outOfStockCount > 0 && (
+                  <span className="ml-2 text-charcoal/50">
+                    ({outOfStockCount} sold)
+                  </span>
+                )}
+              </p>
+              {activeFilterCount > 0 && (
+                <span className="rounded-full bg-opal-electric-accessible/10 px-3 py-1 font-sans text-xs font-semibold text-opal-electric-accessible">
+                  {activeFilterCount} active
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+              <div className="flex min-h-[44px] items-center gap-3">
+                <Checkbox
+                  id="show-sold"
+                  checked={showOutOfStock}
+                  onCheckedChange={(checked) => setShowOutOfStock(!!checked)}
+                  className="data-[state=checked]:bg-opal-electric-accessible data-[state=checked]:border-opal-electric-accessible"
+                />
+                <Label htmlFor="show-sold" className="font-sans text-sm cursor-pointer font-medium text-charcoal/80">
+                  Include sold items
+                </Label>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <Label htmlFor="sort" className="font-sans text-sm font-medium text-charcoal/80">
+                  Sort by
+                </Label>
+                <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
+                  <SelectTrigger className="h-11 w-full sm:w-[190px] rounded-xl border border-warm-grey/30 bg-white font-sans shadow-sm hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border-warm-grey/30 rounded-xl shadow-lg">
+                    <SelectItem value="featured" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Featured</SelectItem>
+                    <SelectItem value="price-low" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Price: High to Low</SelectItem>
+                    <SelectItem value="newest" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Newest</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Mobile Filter Trigger */}
-        <div className="mb-4 lg:hidden">
-          <button
-            type="button"
-            onClick={() => setIsMobileFiltersOpen(true)}
-            className="flex min-h-12 w-full items-center justify-between rounded-xl border border-warm-grey/30 bg-white px-4 py-3 font-sans text-sm font-semibold text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
-            aria-label="Open filters"
-          >
-            <span className="inline-flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-opal-electric-accessible" aria-hidden="true" />
-              Filter & refine
-            </span>
-            {activeFilterCount > 0 ? (
-              <span className="rounded-full bg-opal-electric-accessible px-2.5 py-1 text-xs font-semibold text-white">
-                {activeFilterCount}
-              </span>
-            ) : (
-              <span className="text-xs font-medium text-charcoal/55">
-                Optional
-              </span>
-            )}
-          </button>
-        </div>
+        </section>
 
         {isMobileFiltersOpen && (
           <div
@@ -397,7 +457,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
             <button
               type="button"
               className="absolute inset-0 bg-black/45"
-              aria-label="Close filters"
+              aria-label="Dismiss filter panel"
               onClick={() => setIsMobileFiltersOpen(false)}
             />
             <div className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl">
@@ -413,7 +473,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
                 <button
                   type="button"
                   onClick={() => setIsMobileFiltersOpen(false)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-grey/30 text-charcoal transition-colors hover:bg-warm-grey/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
+                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-warm-grey/30 text-charcoal transition-colors hover:bg-warm-grey/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
                   aria-label="Close filters"
                 >
                   <X className="h-5 w-5" aria-hidden="true" />
@@ -449,56 +509,6 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
           </div>
         )}
 
-        {/* Sort Bar */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-4 sm:p-6">
-          <div className="flex items-center gap-4">
-            <p className="font-sans text-charcoal font-medium" aria-live="polite">
-              <span className="font-semibold">{sortedProducts.length}</span>
-              <span className="ml-1 text-charcoal/70">{sortedProducts.length === 1 ? 'product' : 'products'}</span>
-              {!showOutOfStock && outOfStockCount > 0 && (
-                <span className="text-charcoal/50 ml-2 font-normal">
-                  ({outOfStockCount} sold)
-                </span>
-              )}
-            </p>
-            {activeFilterCount > 0 && (
-              <span className="rounded-full bg-opal-electric-accessible/10 px-3 py-1 font-sans text-xs font-semibold text-opal-electric-accessible">
-                {activeFilterCount} active
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-6 flex-wrap">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="show-sold"
-                checked={showOutOfStock}
-                onCheckedChange={(checked) => setShowOutOfStock(!!checked)}
-                className="data-[state=checked]:bg-opal-electric-accessible data-[state=checked]:border-opal-electric-accessible"
-              />
-              <Label htmlFor="show-sold" className="font-sans text-sm cursor-pointer font-medium text-charcoal/80">
-                Include sold items
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Label htmlFor="sort" className="font-sans text-sm font-medium text-charcoal/80">
-                Sort by
-              </Label>
-              <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
-                <SelectTrigger className="w-[190px] rounded-xl border border-warm-grey/30 hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20 shadow-sm bg-white font-sans">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-warm-grey/30 rounded-xl shadow-lg">
-                  <SelectItem value="featured" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Featured</SelectItem>
-                  <SelectItem value="price-low" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Price: High to Low</SelectItem>
-                  <SelectItem value="newest" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Newest</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
         {selectedFilters.length > 0 && (
           <div className="mb-8 rounded-xl border border-opal-electric-accessible/20 bg-opal-electric-accessible/5 p-4">
             <div className="mb-3 flex items-center justify-between gap-4">
@@ -506,7 +516,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="font-sans text-sm font-semibold text-opal-electric-accessible hover:text-opal-deep"
+                className="flex min-h-[44px] items-center rounded-full font-sans text-sm font-semibold text-opal-electric-accessible hover:text-opal-deep"
               >
                 Clear all
               </button>
@@ -517,7 +527,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
                   key={filter.key}
                   type="button"
                   onClick={filter.onRemove}
-                  className="inline-flex items-center gap-2 rounded-full border border-opal-electric-accessible/25 bg-white px-3 py-1.5 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible"
+                  className="inline-flex min-h-[44px] rounded-full items-center gap-2 border border-opal-electric-accessible/25 bg-white px-3 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible"
                   aria-label={`Remove filter ${filter.label}`}
                 >
                   <span>{filter.label}</span>
