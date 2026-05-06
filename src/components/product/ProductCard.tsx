@@ -234,7 +234,7 @@ export function ProductCard({
                     setShowQuickView(true)
                   }}
                   className={cn(
-                    "p-2 rounded-full transition-colors",
+                    "min-h-[44px] min-w-[44px] rounded-full p-3 transition-colors sm:min-h-9 sm:min-w-9 sm:p-2",
                     variant === 'museum'
                       ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
                       : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
@@ -253,7 +253,7 @@ export function ProductCard({
                       setIsWishlisted(!isWishlisted)
                     }}
                     className={cn(
-                      "p-2 rounded-full transition-all",
+                      "min-h-[44px] min-w-[44px] rounded-full p-3 transition-all sm:min-h-9 sm:min-w-9 sm:p-2",
                       isWishlisted
                         ? "bg-fire-coral text-white"
                       : variant === 'museum'

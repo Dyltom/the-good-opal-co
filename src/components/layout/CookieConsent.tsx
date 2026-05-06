@@ -148,7 +148,7 @@ export function CookieConsent() {
                   </div>
                   <button
                     onClick={() => setShowBanner(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="-mr-3 -mt-3 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
                     aria-label="Close cookie banner"
                   >
                     <X className="w-5 h-5" />

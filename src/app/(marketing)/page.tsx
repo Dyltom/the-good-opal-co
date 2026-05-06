@@ -78,8 +78,8 @@ export default function HomePage() {
               <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
               <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
               <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
-              <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-opal-electric/5 blur-3xl" />
-              <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-fire-pink/5 blur-3xl" />
+              <div className="hidden sm:block absolute top-0 left-1/4 w-96 h-96 rounded-full bg-opal-electric/5 blur-3xl" />
+              <div className="hidden sm:block absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-fire-pink/5 blur-3xl" />
             </div>
 
             <Container>
@@ -214,9 +214,9 @@ export default function HomePage() {
           <Section className="relative overflow-hidden bg-gradient-to-br from-black-rich via-gray-900 to-black-rich py-24 lg:py-32">
             {/* Enhanced background effects */}
             <div className="absolute inset-0">
-              <div className="absolute left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-opal-electric/20 to-opal-deep/10 blur-3xl" />
-              <div className="absolute bottom-0 right-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-fire-pink/15 to-fire-coral/10 blur-3xl" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[800px] rounded-full bg-gradient-to-r from-opal-turquoise/10 to-opal-emerald/10 blur-3xl" />
+              <div className="hidden sm:block absolute left-1/4 top-0 h-[600px] w-[600px] rounded-full bg-gradient-to-br from-opal-electric/20 to-opal-deep/10 blur-3xl" />
+              <div className="hidden sm:block absolute bottom-0 right-1/4 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-fire-pink/15 to-fire-coral/10 blur-3xl" />
+              <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[800px] rounded-full bg-gradient-to-r from-opal-turquoise/10 to-opal-emerald/10 blur-3xl" />
             </div>
 
             {/* Decorative pattern overlay */}
@@ -332,8 +332,8 @@ export default function HomePage() {
           <section className="relative bg-gradient-to-b from-gray-50 via-white to-gray-50 py-20 md:py-24 overflow-hidden">
             {/* Subtle decorative elements */}
             <div className="absolute inset-0">
-              <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-opal-electric/5 blur-3xl" />
-              <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-fire-pink/5 blur-3xl" />
+              <div className="hidden sm:block absolute -top-40 -right-40 w-80 h-80 rounded-full bg-opal-electric/5 blur-3xl" />
+              <div className="hidden sm:block absolute -bottom-40 -left-40 w-80 h-80 rounded-full bg-fire-pink/5 blur-3xl" />
             </div>
 
             <div className="relative mx-auto max-w-screen-xl px-6">

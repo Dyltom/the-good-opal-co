@@ -109,7 +109,7 @@ export function ProductHero({ products }: ProductHeroProps) {
         />
       </div>
 
-      <div className="container relative z-10 py-12 sm:py-16 md:py-20 lg:py-24">
+      <div className="relative z-10 mx-auto w-full max-w-screen-xl px-4 py-12 sm:px-6 sm:py-16 md:py-20 lg:px-8 lg:py-24">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center w-full">
           {/* Left Content */}
           <div className="order-2 lg:order-1 text-center lg:text-left">
@@ -193,7 +193,7 @@ export function ProductHero({ products }: ProductHeroProps) {
 
           {/* Right Product Showcase */}
           <div className="order-1 lg:order-2 relative">
-            <div className="relative aspect-[4/5] max-w-sm mx-auto">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-[calc(100vw-2rem)] sm:max-w-sm">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentProduct.id}
@@ -288,14 +288,14 @@ export function ProductHero({ products }: ProductHeroProps) {
                 <>
                   <button
                     onClick={goToPrevious}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich transition-all duration-300 group"
+                    className="absolute left-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich group"
                     aria-label="Previous product"
                   >
                     <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                   </button>
                   <button
                     onClick={goToNext}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich transition-all duration-300 group"
+                    className="absolute right-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich group"
                     aria-label="Next product"
                   >
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
@@ -305,12 +305,12 @@ export function ProductHero({ products }: ProductHeroProps) {
 
               {/* Product Indicators */}
               {products.length > 1 && (
-                <div className="flex justify-center gap-1 mt-6">
+                <div className="flex flex-wrap justify-center gap-1 mt-6">
                   {products.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className="group p-3 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich"
+                      className="group flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich"
                       aria-label={`Go to product ${index + 1}`}
                       aria-current={index === currentIndex ? 'true' : undefined}
                     >
@@ -332,7 +332,7 @@ export function ProductHero({ products }: ProductHeroProps) {
 
       {/* Bottom Trust Badges */}
       <div className="relative pb-8 pt-6">
-        <div className="container">
+        <div className="mx-auto w-full max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">

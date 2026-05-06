@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { QuantitySelector } from '@/components/ui/quantity-selector'
+import { formatCurrency } from '@/lib/utils'
 
 interface ProductActionsProps {
   product: {
@@ -51,9 +52,9 @@ export function ProductActions({ product }: ProductActionsProps) {
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         {isOutOfStock ? (
-          <Button size="lg" className="flex-1" disabled>
+          <Button size="lg" className="w-full sm:flex-1" disabled>
             Out of Stock
           </Button>
         ) : (
@@ -66,11 +67,52 @@ export function ProductActions({ product }: ProductActionsProps) {
               image: product.image,
             }}
             quantity={quantity}
+            size="lg"
+            animated={false}
+            className="w-full sm:flex-1"
           />
         )}
-        <Button size="lg" variant="outline" asChild>
+        <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
           <Link href="/store">Back to Store</Link>
         </Button>
+      </div>
+
+      <div className="h-24 lg:hidden" aria-hidden="true" />
+
+      {/* Mobile sticky purchase bar */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="mx-auto flex max-w-screen-sm items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-sans text-xs font-medium text-charcoal/55">
+              {isOutOfStock ? 'Currently unavailable' : 'Ready to add'}
+            </p>
+            <p className="truncate font-serif text-lg font-semibold text-charcoal">
+              {formatCurrency(product.price, 'AUD')}
+            </p>
+          </div>
+          {isOutOfStock ? (
+            <Button size="lg" className="h-12 flex-1 rounded-xl" disabled>
+              Out of Stock
+            </Button>
+          ) : (
+            <AddToCartButton
+              product={{
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                price: product.price,
+                image: product.image,
+              }}
+              quantity={quantity}
+              size="lg"
+              animated={false}
+              className="h-12 flex-1 rounded-xl"
+            />
+          )}
+        </div>
       </div>
     </div>
   )

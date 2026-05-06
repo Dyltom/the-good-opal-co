@@ -163,7 +163,7 @@ export function SearchInput({
           onKeyDown={handleKeyDown}
           placeholder="Search for your magical opal..."
           className={cn(
-            'w-full bg-transparent outline-none placeholder:text-gray-400',
+            'h-full w-full bg-transparent outline-none placeholder:text-gray-400',
             variant === 'default' && 'pl-9 pr-9 text-sm',
             variant === 'mobile' && 'pl-11 pr-11 text-base'
           )}
@@ -182,9 +182,9 @@ export function SearchInput({
               inputRef.current?.focus()
             }}
             className={cn(
-              'absolute right-3 text-gray-400 hover:text-gray-600 transition-colors',
-              variant === 'default' && 'h-4 w-4',
-              variant === 'mobile' && 'h-5 w-5'
+              'absolute right-0 flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400 transition-colors hover:text-gray-600',
+              variant === 'default' && 'h-10 w-10 sm:min-h-8 sm:min-w-8',
+              variant === 'mobile' && 'h-12 w-12'
             )}
             aria-label="Clear search"
           >

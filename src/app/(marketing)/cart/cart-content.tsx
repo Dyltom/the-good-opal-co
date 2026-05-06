@@ -91,103 +91,125 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
 
   return (
     <Container className="py-8">
-      <Breadcrumb
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Your Magical Cart' },
-        ]}
-        className="mb-8"
-      />
+      <div className="pb-28 lg:pb-0">
+        <Breadcrumb
+          items={[
+            { label: 'Home', href: '/' },
+            { label: 'Your Magical Cart' },
+          ]}
+          className="mb-8"
+        />
 
-      {/* Magical Cart Header */}
-      <div className="text-center mb-12">
-        <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
-          ✨ Your Collection ✨
-        </span>
-        <h1 className="font-serif text-4xl font-bold text-charcoal mb-4">
-          Magical <span className="font-accent text-opal-electric">Treasures</span>
-        </h1>
-        <p className="font-accent text-base text-opal-electric/70">
-          ~ {cart.itemCount} {cart.itemCount === 1 ? 'treasure awaits' : 'treasures await'} your decision ~
-        </p>
+        {/* Magical Cart Header */}
+        <div className="text-center mb-12">
+          <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
+            ✨ Your Collection ✨
+          </span>
+          <h1 className="font-serif text-4xl font-bold text-charcoal mb-4">
+            Magical <span className="font-accent text-opal-electric">Treasures</span>
+          </h1>
+          <p className="font-accent text-base text-opal-electric/70">
+            ~ {cart.itemCount} {cart.itemCount === 1 ? 'treasure awaits' : 'treasures await'} your decision ~
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between mb-8">
+          <p className="font-sans text-charcoal/60">
+            <span className="font-semibold text-opal-electric">{cart.itemCount}</span> {cart.itemCount === 1 ? 'item' : 'items'} in your magical collection
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearCartClick}
+            disabled={isPending}
+            className="text-charcoal/60 hover:text-fire-pink hover:bg-fire-pink/10 transition-all rounded-xl"
+          >
+            <span className="font-accent mr-1">🗑️</span>
+            Clear Cart
+          </Button>
+        </div>
+
+        {/* Cart Items */}
+        <div className="space-y-4 mb-8">
+          {cart.items.map((item) => (
+            <CartItemRow
+              key={item.productId}
+              item={item}
+              onRemove={() => handleRemoveItem(item.productId, item.name)}
+              onUpdateQuantity={(qty) => handleUpdateQuantity(item.productId, qty, item.name)}
+              isPending={isPending}
+            />
+          ))}
+        </div>
+
+        {/* Magical Cart Summary */}
+        <Card className="p-6 sm:p-8 bg-gradient-to-br from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm border border-warm-grey/20 shadow-2xl rounded-3xl">
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <h2 className="font-serif text-2xl font-bold text-charcoal mb-2 flex items-center justify-center gap-2">
+                <span className="font-accent text-opal-electric">💎</span>
+                Order Summary
+                <span className="font-accent text-opal-electric">💎</span>
+              </h2>
+              <p className="font-accent text-sm text-opal-electric/70">
+                ~ Your magical collection total ~
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center text-lg border-b border-warm-grey/20 pb-4">
+              <span className="font-serif text-charcoal">Subtotal ({cart.itemCount} {cart.itemCount === 1 ? 'treasure' : 'treasures'}):</span>
+              <span className="font-serif font-bold text-2xl text-charcoal">{formatCurrency(cart.total, 'AUD')}</span>
+            </div>
+            <p className="font-sans text-sm text-charcoal/60 text-center">
+              ✨ Shipping calculated at checkout. Free shipping on orders over $500 AUD ✨
+            </p>
+            <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:gap-4">
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="flex-1 h-12 rounded-xl border-warm-grey/30 bg-white/50 hover:bg-opal-electric/10 hover:border-opal-electric/50 transition-all font-serif"
+              >
+                <Link href="/store">
+                  <span className="font-accent mr-2">🛍️</span>
+                  Continue Shopping
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                asChild
+                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-opal-electric to-opal-deep text-white hover:from-opal-deep hover:to-opal-electric shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 font-serif"
+              >
+                <Link href="/checkout">
+                  <span className="font-accent mr-2">✨</span>
+                  Claim Your Treasures
+                  <span className="font-accent ml-2">✨</span>
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      <div className="flex items-center justify-between mb-8">
-        <p className="font-sans text-charcoal/60">
-          <span className="font-semibold text-opal-electric">{cart.itemCount}</span> {cart.itemCount === 1 ? 'item' : 'items'} in your magical collection
-        </p>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClearCartClick}
-          disabled={isPending}
-          className="text-charcoal/60 hover:text-fire-pink hover:bg-fire-pink/10 transition-all rounded-xl"
-        >
-          <span className="font-accent mr-1">🗑️</span>
-          Clear Cart
-        </Button>
-      </div>
-
-      {/* Cart Items */}
-      <div className="space-y-4 mb-8">
-        {cart.items.map((item) => (
-          <CartItemRow
-            key={item.productId}
-            item={item}
-            onRemove={() => handleRemoveItem(item.productId, item.name)}
-            onUpdateQuantity={(qty) => handleUpdateQuantity(item.productId, qty, item.name)}
-            isPending={isPending}
-          />
-        ))}
-      </div>
-
-      {/* Magical Cart Summary */}
-      <Card className="p-8 bg-gradient-to-br from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm border border-warm-grey/20 shadow-2xl rounded-3xl">
-        <div className="space-y-6">
-          <div className="text-center mb-6">
-            <h2 className="font-serif text-2xl font-bold text-charcoal mb-2 flex items-center justify-center gap-2">
-              <span className="font-accent text-opal-electric">💎</span>
-              Order Summary
-              <span className="font-accent text-opal-electric">💎</span>
-            </h2>
-            <p className="font-accent text-sm text-opal-electric/70">
-              ~ Your magical collection total ~
+      {/* Mobile checkout summary */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
+        <div className="mx-auto flex max-w-screen-sm items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-sans text-xs font-medium text-charcoal/55">
+              Mobile checkout total
+            </p>
+            <p className="font-serif text-lg font-semibold text-charcoal">
+              {formatCurrency(cart.total, 'AUD')}
             </p>
           </div>
-
-          <div className="flex justify-between items-center text-lg border-b border-warm-grey/20 pb-4">
-            <span className="font-serif text-charcoal">Subtotal ({cart.itemCount} {cart.itemCount === 1 ? 'treasure' : 'treasures'}):</span>
-            <span className="font-serif font-bold text-2xl text-charcoal">{formatCurrency(cart.total, 'AUD')}</span>
-          </div>
-          <p className="font-sans text-sm text-charcoal/60 text-center">
-            ✨ Shipping calculated at checkout. Free shipping on orders over $500 AUD ✨
-          </p>
-          <div className="flex gap-4 pt-4">
-            <Button
-              size="lg"
-              variant="outline"
-              asChild
-              className="flex-1 h-12 rounded-xl border-warm-grey/30 bg-white/50 hover:bg-opal-electric/10 hover:border-opal-electric/50 transition-all font-serif"
-            >
-              <Link href="/store">
-                <span className="font-accent mr-2">🛍️</span>
-                Continue Shopping
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              asChild
-              className="flex-1 h-12 rounded-xl bg-gradient-to-r from-opal-electric to-opal-deep text-white hover:from-opal-deep hover:to-opal-electric shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 font-serif"
-            >
-              <Link href="/checkout">
-                <span className="font-accent mr-2">✨</span>
-                Claim Your Treasures
-                <span className="font-accent ml-2">✨</span>
-              </Link>
-            </Button>
-          </div>
+          <Button size="lg" asChild className="h-12 flex-1 rounded-xl">
+            <Link href="/checkout">Checkout</Link>
+          </Button>
         </div>
-      </Card>
+      </div>
 
       <CartClearConfirmDialog
         open={showClearDialog}
@@ -211,83 +233,86 @@ interface CartItemRowProps {
 
 function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRowProps) {
   return (
-    <Card className="p-6 bg-gradient-to-br from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm border border-warm-grey/20 rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]">
-      <div className="flex gap-6">
-        {/* Magical Product Image */}
-        <Link href={`/store/${item.slug}`} className="flex-shrink-0 group">
-          <div className="w-28 h-28 rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric/20 to-fire-pink/20 flex items-center justify-center shadow-lg border border-warm-grey/30">
-            {item.image ? (
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={112}
-                height={112}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-opal-electric/30 to-fire-pink/30 flex items-center justify-center">
-                <svg className="w-12 h-12 text-opal-electric/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-            )}
-          </div>
-        </Link>
-
-        {/* Magical Product Info */}
-        <div className="flex-1">
-          <Link href={`/store/${item.slug}`} className="hover:text-opal-electric transition-colors">
-            <h3 className="font-serif text-xl font-semibold mb-2 text-charcoal">{item.name}</h3>
+    <Card className="p-4 sm:p-6 bg-gradient-to-br from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm border border-warm-grey/20 rounded-3xl shadow-lg transition-all duration-300 sm:hover:scale-[1.02] sm:hover:shadow-2xl">
+      <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
+        <div className="flex min-w-0 gap-4 sm:flex-1 sm:gap-6">
+          {/* Magical Product Image */}
+          <Link href={`/store/${item.slug}`} className="flex-shrink-0 group">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-gradient-to-br from-opal-electric/20 to-fire-pink/20 flex items-center justify-center shadow-lg border border-warm-grey/30">
+              {item.image ? (
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={112}
+                  height={112}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 rounded-2xl"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-opal-electric/30 to-fire-pink/30 flex items-center justify-center">
+                  <svg className="w-12 h-12 text-opal-electric/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+              )}
+            </div>
           </Link>
-          <p className="font-sans text-charcoal/60 text-sm mb-4">
-            <span className="font-accent text-opal-electric">💎</span> {formatCurrency(item.price, 'AUD')} each
-          </p>
 
-          <div className="flex items-center gap-4">
-            {/* Magical Quantity Controls */}
-            <div className="flex items-center gap-2 bg-white/50 rounded-xl p-1 border border-warm-grey/20">
+          {/* Magical Product Info */}
+          <div className="min-w-0 flex-1">
+            <Link href={`/store/${item.slug}`} className="hover:text-opal-electric transition-colors">
+              <h3 className="font-serif text-lg sm:text-xl font-semibold mb-2 text-charcoal">{item.name}</h3>
+            </Link>
+            <p className="font-sans text-charcoal/60 text-sm mb-4">
+              <span className="font-accent text-opal-electric">💎</span> {formatCurrency(item.price, 'AUD')} each
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+              {/* Magical Quantity Controls */}
+              <div className="flex items-center gap-2 bg-white/50 rounded-xl p-1 border border-warm-grey/20">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onUpdateQuantity(item.quantity - 1)}
+                  disabled={isPending}
+                  aria-label={`Decrease quantity of ${item.name}`}
+                  className="h-10 w-10 rounded-lg hover:bg-opal-electric/10 hover:text-opal-electric text-base transition-colors sm:h-8 sm:w-8"
+                >
+                  −
+                </Button>
+                <span className="w-10 sm:w-12 text-center font-serif font-semibold text-charcoal">{item.quantity}</span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onUpdateQuantity(item.quantity + 1)}
+                  disabled={isPending}
+                  aria-label={`Increase quantity of ${item.name}`}
+                  className="h-10 w-10 rounded-lg hover:bg-opal-electric/10 hover:text-opal-electric text-base transition-colors sm:h-8 sm:w-8"
+                >
+                  +
+                </Button>
+              </div>
+
+              {/* Magical Remove Button */}
               <Button
-                size="icon"
+                size="sm"
                 variant="ghost"
-                onClick={() => onUpdateQuantity(item.quantity - 1)}
+                onClick={onRemove}
                 disabled={isPending}
-                aria-label={`Decrease quantity of ${item.name}`}
-                className="h-8 w-8 rounded-lg hover:bg-opal-electric/10 hover:text-opal-electric text-base transition-colors"
+                aria-label={`Remove ${item.name} from cart`}
+                className="text-charcoal/60 hover:text-fire-pink hover:bg-fire-pink/10 transition-all rounded-xl font-sans"
               >
-                −
-              </Button>
-              <span className="w-12 text-center font-serif font-semibold text-charcoal">{item.quantity}</span>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => onUpdateQuantity(item.quantity + 1)}
-                disabled={isPending}
-                aria-label={`Increase quantity of ${item.name}`}
-                className="h-8 w-8 rounded-lg hover:bg-opal-electric/10 hover:text-opal-electric text-base transition-colors"
-              >
-                +
+                <span className="font-accent mr-1">🗑️</span>
+                Remove
               </Button>
             </div>
-
-            {/* Magical Remove Button */}
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onRemove}
-              disabled={isPending}
-              aria-label={`Remove ${item.name} from cart`}
-              className="text-charcoal/60 hover:text-fire-pink hover:bg-fire-pink/10 transition-all rounded-xl font-sans"
-            >
-              <span className="font-accent mr-1">🗑️</span>
-              Remove
-            </Button>
           </div>
         </div>
 
         {/* Magical Item Total */}
-        <div className="text-right">
+        <div className="flex items-center justify-between border-t border-warm-grey/20 pt-3 sm:block sm:border-t-0 sm:pt-0 sm:text-right">
+          <p className="font-sans text-sm text-charcoal/60 sm:hidden">Item total</p>
           <p className="font-serif text-xl font-bold text-charcoal mb-1">{formatCurrency(item.price * item.quantity, 'AUD')}</p>
-          <p className="font-sans text-sm text-charcoal/60">
+          <p className="hidden font-sans text-sm text-charcoal/60 sm:block">
             {item.quantity} × {formatCurrency(item.price, 'AUD')}
           </p>
         </div>

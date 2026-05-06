@@ -91,3 +91,21 @@ describe('#9 Store listing — heading order', () => {
     expect(hasSrOnlyH2 || hasVisibleGridH2).toBe(true)
   })
 })
+
+describe('mobile touch target safeguards', () => {
+  test('interactive mobile commerce controls provide 44px hit areas', () => {
+    const addToCartSource = read('src/components/cart/AddToCartButton.tsx')
+    const productCardSource = read('src/components/product/ProductCard.tsx')
+    const productHeroSource = read('src/components/sections/ProductHero.tsx')
+    const cookieSource = read('src/components/layout/CookieConsent.tsx')
+    const searchSource = read('src/components/search/SearchInput.tsx')
+
+    expect(addToCartSource).toContain("sm: 'min-h-[44px]")
+    expect(addToCartSource).toContain("md: 'min-h-[44px]")
+    expect(addToCartSource).toContain("sm: 'h-11 w-11")
+    expect(productCardSource).toContain('min-h-[44px] min-w-[44px]')
+    expect(productHeroSource).toContain('min-h-[44px] min-w-[44px]')
+    expect(cookieSource).toContain('min-h-[44px] min-w-[44px]')
+    expect(searchSource).toContain('min-h-[44px] min-w-[44px]')
+  })
+})

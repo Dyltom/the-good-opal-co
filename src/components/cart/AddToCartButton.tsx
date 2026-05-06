@@ -105,14 +105,14 @@ export function AddToCartButton({
   }, [product, toast, quantity])
 
   const sizeClasses = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-4 text-sm',
+    sm: 'min-h-[44px] h-11 px-4 text-sm sm:min-h-9 sm:h-9 sm:px-3',
+    md: 'min-h-[44px] h-11 px-4 text-sm sm:min-h-10 sm:h-10',
     lg: 'h-12 px-6 text-base',
   }
 
   const iconSizeClasses = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
+    sm: 'h-11 w-11 min-h-[44px] min-w-[44px] sm:h-9 sm:w-9 sm:min-h-9 sm:min-w-9',
+    md: 'h-11 w-11 min-h-[44px] min-w-[44px] sm:h-10 sm:w-10 sm:min-h-10 sm:min-w-10',
     lg: 'h-12 w-12',
   }
 
@@ -128,6 +128,7 @@ export function AddToCartButton({
       <button
         onClick={handleClick}
         disabled={disabled || isPending}
+        aria-label={`Add ${product.name} to cart`}
         className={cn(
           "relative flex items-center justify-center rounded-full bg-white text-charcoal shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
           iconSizeClasses[size],

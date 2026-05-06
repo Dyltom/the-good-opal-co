@@ -124,4 +124,47 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('max-h-0')
     expect(source).toContain('max-h-[calc(100vh-5rem)]')
   })
+
+  test('product detail exposes a safe-area mobile purchase bar', () => {
+    const source = read('src/components/product/ProductActions.tsx')
+
+    expect(source).toContain('Mobile sticky purchase bar')
+    expect(source).toContain('fixed inset-x-0 bottom-0')
+    expect(source).toContain('lg:hidden')
+    expect(source).toContain('env(safe-area-inset-bottom)')
+    expect(source).toContain("formatCurrency(product.price, 'AUD')")
+    expect(source).toContain('className="w-full sm:flex-1"')
+  })
+
+  test('cart page exposes a mobile sticky checkout summary and stacks rows', () => {
+    const source = read('src/app/(marketing)/cart/cart-content.tsx')
+
+    expect(source).toContain('Mobile checkout summary')
+    expect(source).toContain('fixed inset-x-0 bottom-0')
+    expect(source).toContain('lg:hidden')
+    expect(source).toContain('env(safe-area-inset-bottom)')
+    expect(source).toContain('Mobile checkout total')
+    expect(source).toContain('pb-28 lg:pb-0')
+    expect(source).toContain('flex-col gap-4 sm:flex-row')
+  })
+
+  test('mobile decorative hero content stays bounded within the viewport', () => {
+    const productHeroSource = read('src/components/sections/ProductHero.tsx')
+    const homeSource = read('src/app/(marketing)/page.tsx')
+    const blogSource = read('src/app/(marketing)/blog/page.tsx')
+
+    expect(productHeroSource).toContain('max-w-screen-xl px-4')
+    expect(productHeroSource).toContain('max-w-[calc(100vw-2rem)]')
+    expect(productHeroSource).toContain('flex flex-wrap justify-center gap-1')
+    expect(homeSource).toContain('hidden sm:block absolute top-0 left-1/4 w-96')
+    expect(homeSource).toContain('hidden sm:block absolute bottom-0 right-1/4 w-96')
+    expect(homeSource).toContain('hidden sm:block absolute left-1/4 top-0')
+    expect(homeSource).toContain('hidden sm:block absolute bottom-0 right-1/4')
+    expect(homeSource).toContain('hidden sm:block absolute top-1/2')
+    expect(homeSource).toContain('hidden sm:block absolute -top-40 -right-40')
+    expect(homeSource).toContain('hidden sm:block absolute -bottom-40 -left-40')
+    expect(blogSource).toContain('hidden sm:block absolute -top-40')
+    expect(blogSource).toContain('hidden sm:block absolute -bottom-40')
+    expect(blogSource).toContain('hidden sm:block absolute top-1/2')
+  })
 })
