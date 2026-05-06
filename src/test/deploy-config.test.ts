@@ -30,4 +30,10 @@ describe('deployment config', () => {
     expect(read('.env.example')).toContain('JWT_SECRET=')
     expect(read('docs/DEPLOYMENT_CHECKLIST.md')).toContain('JWT_SECRET')
   })
+
+  test('ESLint ignores agent tooling outside the deployable app', () => {
+    const source = read('eslint.config.mjs')
+
+    expect(source).toContain("'**/.agents/**'")
+  })
 })

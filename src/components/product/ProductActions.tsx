@@ -7,7 +7,7 @@
  * Works with the new cookie-based cart system.
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
@@ -27,7 +27,24 @@ interface ProductActionsProps {
 
 export function ProductActions({ product }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1)
+  const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false)
+  const inlineActionsRef = useRef<HTMLDivElement>(null)
   const isOutOfStock = product.stock === 0
+
+  useEffect(() => {
+    const actions = inlineActionsRef.current
+    if (!actions || typeof IntersectionObserver === 'undefined') return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyPurchaseBar(Boolean(entry && !entry.isIntersecting && entry.boundingClientRect.top < 0))
+      },
+      { rootMargin: '0px 0px -96px 0px', threshold: 0.1 }
+    )
+
+    observer.observe(actions)
+    return () => observer.disconnect()
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -52,7 +69,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+      <div ref={inlineActionsRef} data-testid="inline-product-actions" className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         {isOutOfStock ? (
           <Button size="lg" className="w-full sm:flex-1" disabled>
             Out of Stock
@@ -80,40 +97,42 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div className="h-24 lg:hidden" aria-hidden="true" />
 
       {/* Mobile sticky purchase bar */}
-      <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden"
-        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
-      >
-        <div className="mx-auto flex max-w-screen-sm items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="font-sans text-xs font-medium text-charcoal/55">
-              {isOutOfStock ? 'Currently unavailable' : 'Ready to add'}
-            </p>
-            <p className="truncate font-serif text-lg font-semibold text-charcoal">
-              {formatCurrency(product.price, 'AUD')}
-            </p>
+      {showStickyPurchaseBar && (
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-lg backdrop-blur lg:hidden"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        >
+          <div className="mx-auto flex max-w-screen-sm items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="font-sans text-xs font-medium text-charcoal/55">
+                {isOutOfStock ? 'Currently unavailable' : 'Ready to add'}
+              </p>
+              <p className="truncate font-serif text-lg font-semibold text-charcoal">
+                {formatCurrency(product.price, 'AUD')}
+              </p>
+            </div>
+            {isOutOfStock ? (
+              <Button size="lg" className="h-12 flex-1 rounded-xl" disabled>
+                Out of Stock
+              </Button>
+            ) : (
+              <AddToCartButton
+                product={{
+                  id: product.id,
+                  slug: product.slug,
+                  name: product.name,
+                  price: product.price,
+                  image: product.image,
+                }}
+                quantity={quantity}
+                size="lg"
+                animated={false}
+                className="h-12 flex-1 rounded-xl"
+              />
+            )}
           </div>
-          {isOutOfStock ? (
-            <Button size="lg" className="h-12 flex-1 rounded-xl" disabled>
-              Out of Stock
-            </Button>
-          ) : (
-            <AddToCartButton
-              product={{
-                id: product.id,
-                slug: product.slug,
-                name: product.name,
-                price: product.price,
-                image: product.image,
-              }}
-              quantity={quantity}
-              size="lg"
-              animated={false}
-              className="h-12 flex-1 rounded-xl"
-            />
-          )}
         </div>
-      </div>
+      )}
     </div>
   )
 }

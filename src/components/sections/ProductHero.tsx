@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Sparkles, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 
 interface Product {
   id: string
@@ -24,33 +24,15 @@ interface ProductHeroProps {
   products: Product[]
 }
 
+function formatBadgeText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\b[a-z]/g, (char) => char.toUpperCase())
+}
+
 export function ProductHero({ products }: ProductHeroProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [scrollY, setScrollY] = useState(0)
   const [imageLoading, setImageLoading] = useState(true)
-  const [reducedMotion, setReducedMotion] = useState(false)
-
-  // Check for reduced motion preference
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReducedMotion(mediaQuery.matches)
-
-    const handleChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
-
-  // Optimized parallax effect for background
-  useEffect(() => {
-    const handleScroll = () => {
-      requestAnimationFrame(() => {
-        setScrollY(window.scrollY)
-      })
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -82,46 +64,25 @@ export function ProductHero({ products }: ProductHeroProps) {
   if (!currentProduct) return null
 
   return (
-    <section className="relative bg-black-rich overflow-hidden pt-[84px]">
+    <section className="relative overflow-hidden bg-charcoal-dark pt-[84px]">
       {/* Screen reader announcement for slide changes */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {currentProduct && `Now showing ${currentProduct.name}, ${currentIndex + 1} of ${products.length}`}
       </div>
-      {/* Background texture - subtle opal pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300B4D8' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}
-        />
-      </div>
-
-      {/* Gradient overlay with parallax */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-br from-opal-electric/20 to-transparent blur-3xl transition-transform duration-0"
-          style={{ transform: reducedMotion ? 'none' : `translateY(${scrollY * 0.3}px)` }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-fire-pink/20 to-transparent blur-3xl transition-transform duration-0"
-          style={{ transform: reducedMotion ? 'none' : `translateY(${scrollY * -0.2}px)` }}
-        />
-      </div>
+      <div className="absolute inset-x-0 top-0 h-px bg-opal-light/35" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(144,224,239,0.12),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_48%)]" />
 
       <div className="relative z-10 mx-auto w-full max-w-screen-xl px-4 py-12 sm:px-6 sm:py-16 md:py-20 lg:px-8 lg:py-24">
         <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center w-full">
           {/* Left Content */}
           <div className="order-2 lg:order-1 text-center lg:text-left">
-            {/* Limited Time Badge */}
+            {/* Editorial badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-fire-pink to-fire-coral text-white rounded-full mb-6 text-sm shadow-lg"
+              className="mb-6 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/85"
             >
-              <Sparkles className="w-4 h-4" />
-              <span className="font-medium">Limited Time: Up to 25% OFF</span>
-              <Sparkles className="w-4 h-4" />
+              <span className="font-medium">Handmade Australian opals</span>
             </motion.div>
 
             <motion.h1
@@ -131,7 +92,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               className="mb-6 font-serif text-4xl font-semibold leading-[1.05] text-balance text-white sm:text-5xl md:text-6xl"
             >
               Authentic Australian
-              <span className="block text-gradient-prismatic">Opal Jewellery</span>
+              <span className="block text-opal-light">Opal Jewellery</span>
             </motion.h1>
 
             <motion.p
@@ -140,31 +101,17 @@ export function ProductHero({ products }: ProductHeroProps) {
               transition={{ delay: 0.2 }}
               className="text-lg md:text-xl lg:text-2xl text-white/80 max-w-2xl mb-10 leading-relaxed"
             >
-              From Lightning Ridge to your jewellery box. Each piece handcrafted, ethically sourced, and
-              absolutely breathtaking.
+              From Lightning Ridge to your jewellery box. A storybook colour palette, hand-shaped settings,
+              and one-of-a-kind stones with a quieter kind of magic.
             </motion.p>
 
-            {/* Quick Stats */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 mb-8"
+              className="mb-8 max-w-xl border-y border-white/15 py-4 text-sm leading-relaxed text-white/70"
             >
-              <div className="text-center lg:text-left">
-                <p className="font-serif text-xl font-semibold italic text-white">EST.</p>
-                <p className="font-sans text-xs text-white/60">Family Business</p>
-              </div>
-              <div className="hidden sm:block h-10 w-px bg-white/20" />
-              <div className="text-center lg:text-left">
-                <p className="font-serif text-xl font-semibold italic text-white">AU</p>
-                <p className="font-sans text-xs text-white/60">Sourced Opals</p>
-              </div>
-              <div className="hidden sm:block h-10 w-px bg-white/20" />
-              <div className="text-center lg:text-left">
-                <p className="font-serif text-xl font-semibold italic text-white">100%</p>
-                <p className="font-sans text-xs text-white/60">Authentic</p>
-              </div>
+              Trusted details, clear care, and one-of-a-kind stones. Authenticity, express shipping, returns, and care guidance are kept close to the buying decision.
             </motion.div>
 
             <motion.div
@@ -175,7 +122,7 @@ export function ProductHero({ products }: ProductHeroProps) {
             >
               <Button
                 size="lg"
-                className="px-8 py-3 shadow-2xl hover:shadow-3xl"
+                className="px-8 py-3 shadow-sm"
                 asChild
               >
                 <Link href="/store">Shop Collection</Link>
@@ -197,9 +144,9 @@ export function ProductHero({ products }: ProductHeroProps) {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentProduct.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.05 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.5 }}
                   className="relative w-full h-full"
                 >
@@ -208,19 +155,19 @@ export function ProductHero({ products }: ProductHeroProps) {
                     className="block relative w-full h-full group"
                   >
                     {/* Product Card */}
-                    <div className="relative w-full h-full bg-white rounded-2xl overflow-hidden shadow-2xl transform hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(0,180,216,0.3)] transition-all duration-300 group">
+                    <div className="relative h-full w-full overflow-hidden rounded-xl border border-white/15 bg-white shadow-md transition-colors duration-300 group-hover:border-opal-light/45">
                       {/* Badge */}
                       <div className="absolute top-4 left-4 z-20">
-                        <div className={`px-4 py-2 text-white text-sm font-bold rounded-full shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 ${
+                        <div className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
                           currentProduct.badge.type === 'featured'
-                            ? 'bg-gradient-to-r from-opal-electric to-opal-deep'
+                            ? 'bg-charcoal-dark/85 text-white'
                             : currentProduct.badge.type === 'sale'
-                            ? 'bg-gradient-to-r from-fire-gold to-fire-orange'
+                            ? 'bg-fire-gold text-charcoal'
                             : currentProduct.badge.type === 'limited'
-                            ? 'bg-gradient-to-r from-fire-coral to-fire-pink opacity-90'
-                            : 'bg-gradient-to-r from-opal-emerald to-opal-teal'
+                            ? 'bg-fire-pink-dark text-white'
+                            : 'bg-opal-emerald-dark text-white'
                         }`}>
-                          {currentProduct.badge.text}
+                          {formatBadgeText(currentProduct.badge.text)}
                         </div>
                       </div>
 
@@ -233,7 +180,7 @@ export function ProductHero({ products }: ProductHeroProps) {
                           src={currentProduct.image}
                           alt={currentProduct.name}
                           fill
-                          className={`object-cover group-hover:scale-110 transition-transform duration-500 ${
+                          className={`object-cover transition-opacity duration-500 ${
                             imageLoading ? 'opacity-0' : 'opacity-100'
                           }`}
                           sizes="(max-width: 768px) 100vw, 50vw"
@@ -288,14 +235,14 @@ export function ProductHero({ products }: ProductHeroProps) {
                 <>
                   <button
                     onClick={goToPrevious}
-                    className="absolute left-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich group"
+                    className="absolute left-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-charcoal-dark group"
                     aria-label="Previous product"
                   >
                     <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                   </button>
                   <button
                     onClick={goToNext}
-                    className="absolute right-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-black-rich group"
+                    className="absolute right-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-charcoal-dark group"
                     aria-label="Next product"
                   >
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
@@ -310,7 +257,7 @@ export function ProductHero({ products }: ProductHeroProps) {
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className="group flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black-rich"
+                      className="group flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-dark"
                       aria-label={`Go to product ${index + 1}`}
                       aria-current={index === currentIndex ? 'true' : undefined}
                     >
@@ -335,7 +282,7 @@ export function ProductHero({ products }: ProductHeroProps) {
         <div className="mx-auto w-full max-w-screen-xl px-4 sm:px-6 lg:px-8">
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -348,7 +295,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               <p className="text-sm text-white/80">100% Authentic</p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -361,7 +308,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               <p className="text-sm text-white/80">Free Express Shipping</p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -374,7 +321,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               <p className="text-sm text-white/80">30-Day Returns</p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 bg-white/10 backdrop-blur rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"

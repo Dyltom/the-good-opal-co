@@ -16,6 +16,7 @@ const config = [
       '**/dist/**',
       '**/build/**',
       '**/.payload/**',
+      '**/.agents/**',
       'next-env.d.ts',
       'scripts/**',
       'src/scripts/**',

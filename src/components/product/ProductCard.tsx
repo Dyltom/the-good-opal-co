@@ -10,19 +10,9 @@ import { Heart, Eye } from 'lucide-react'
 import { ProductQuickViewModal } from './ProductQuickViewModal'
 
 /**
- * Unified Product Card Component
+ * Gallery Product Card Component
  *
- * Consolidates all product card variations into a single, flexible component.
- * Supports multiple display variants while following SOLID principles.
- *
- * Features:
- * - Multiple variants: default (dark bg), museum (clean white), minimal
- * - Framer Motion animations with performance optimization
- * - Smart badge logic (discount thresholds, new arrivals)
- * - Optional metadata display (stone origin/type)
- * - Wishlist functionality
- * - Accessible with proper focus management
- * - Performance optimized with lazy loading
+ * Image-first commerce surface for Australian opals.
  */
 
 interface ProductCardProduct {
@@ -59,13 +49,9 @@ interface ProductCardProps {
 
 // Animation variants
 const cardAnimations = {
-  initial: { opacity: 0, y: 30, scale: 0.95 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -20, scale: 0.95 },
-}
-
-const hoverLift = {
-  // Removed hover lift animation for performance
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -12 },
 }
 
 export function ProductCard({
@@ -99,7 +85,6 @@ export function ProductCard({
   const Container = animated ? motion.div : 'div'
   const containerProps = animated ? {
     ...cardAnimations,
-    ...(variant === 'default' && darkBackground ? hoverLift : {}),
     transition: {
       duration: 0.6,
       delay: index * 0.1,
@@ -112,13 +97,15 @@ export function ProductCard({
       <Container {...containerProps} className="group">
         <div className={cn(
           "relative h-full",
-          variant === 'museum' && "bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md transition-all duration-300"
+          variant === 'default' && !darkBackground && "overflow-hidden rounded-lg border border-warm-grey/30 bg-white shadow-sm transition-colors duration-300 hover:border-opal-electric-accessible/30",
+          variant === 'default' && darkBackground && "overflow-hidden rounded-lg border border-white/10 bg-charcoal-dark transition-colors duration-300 hover:border-white/25",
+          variant === 'museum' && "overflow-hidden rounded-lg border border-warm-grey/30 bg-white shadow-sm transition-colors duration-300 hover:border-opal-electric-accessible/25"
         )}>
           {/* Badges */}
           {isAvailable && (
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             {isNew && (
-              <span className="px-3 py-1 bg-black-rich text-white text-xs font-medium rounded-full">
+              <span className="px-3 py-1 bg-charcoal text-white text-xs font-medium rounded-full">
                 New
               </span>
             )}
@@ -137,8 +124,8 @@ export function ProductCard({
           {/* Image Container */}
           <div className={cn(
           "relative aspect-[3/4] overflow-hidden transition-all duration-500",
-          variant === 'default' && !darkBackground && "bg-gradient-to-br from-gray-50 to-white",
-          variant === 'default' && darkBackground && "bg-black-rich shadow-lg group-hover:shadow-glow rounded-2xl",
+          variant === 'default' && !darkBackground && "bg-cream",
+          variant === 'default' && darkBackground && "bg-charcoal-dark",
           variant === 'museum' && "bg-gray-50 group-hover:bg-gray-100",
           variant === 'minimal' && "bg-gray-100"
         )}>
@@ -154,7 +141,7 @@ export function ProductCard({
                 priority={index < 4}
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                 className={cn(
-                  "object-cover transition-transform duration-700 group-hover:scale-105",
+                  "object-cover transition-opacity duration-500 group-hover:opacity-95",
                   !isAvailable && "grayscale opacity-60"
                 )}
                 style={variant === 'museum' && isAvailable ? {
@@ -162,9 +149,9 @@ export function ProductCard({
                 } : undefined}
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <div className="w-full h-full bg-cream flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-20 h-20 rounded-full bg-gray-300 mx-auto mb-2" />
+                  <div className="w-20 h-20 rounded-full bg-warm-grey/50 mx-auto mb-2" />
                   <p className="text-xs text-gray-400">No image</p>
                 </div>
               </div>
@@ -174,15 +161,11 @@ export function ProductCard({
           {/* Sold Overlay */}
           {!isAvailable && (
             <motion.div
-              initial={animated ? { opacity: 0, scale: 0.8 } : {}}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={animated ? { opacity: 0 } : {}}
+              animate={{ opacity: 1 }}
               className="absolute inset-0 flex items-center justify-center z-10"
             >
-              <div className={cn(
-                variant === 'museum'
-                  ? "bg-black/70 backdrop-blur-sm text-center"
-                  : "bg-black-rich/90 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10"
-              )}>
+              <div className="bg-charcoal/85 px-4 py-2 text-center">
                 <span className={cn(
                   "text-white font-medium",
                   variant === 'museum' ? "text-sm uppercase" : "text-sm"
@@ -200,7 +183,7 @@ export function ProductCard({
             <div
               className={cn(
                 "absolute bottom-0 left-0 right-0 p-3 opacity-100 sm:opacity-0 sm:translate-y-2 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 transition-all duration-300",
-                variant === 'museum' ? "bg-gradient-to-t from-white/95 to-transparent" : "bg-gradient-to-t from-black/80 to-transparent"
+                variant === 'museum' ? "bg-white/95" : "bg-charcoal/80"
               )}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             >
@@ -217,27 +200,28 @@ export function ProductCard({
                   size="sm"
                   disabled={product.stock === 0}
                   className={cn(
-                    "flex-1 rounded-full",
+                    "flex-1 rounded-lg",
                     variant === 'museum'
-                      ? "bg-black-rich text-white hover:bg-black-rich/90"
-                      : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-900"
+                      ? "bg-charcoal text-white hover:bg-charcoal/90"
+                      : "bg-white/95 hover:bg-white text-gray-900"
                   )}
                 >
                   Quick add
                 </AddToCartButton>
 
-                {/* Quick View */}
+                {/* Quick view */}
                 <button
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     setShowQuickView(true)
                   }}
+                  title="Quick view"
                   className={cn(
-                    "min-h-[44px] min-w-[44px] rounded-full p-3 transition-colors sm:min-h-9 sm:min-w-9 sm:p-2",
+                    "min-h-[44px] min-w-[44px] rounded-lg p-3 transition-colors sm:min-h-9 sm:min-w-9 sm:p-2",
                     variant === 'museum'
                       ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                      : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
+                      : "bg-white/95 hover:bg-white text-gray-700"
                   )}
                   aria-label={`Open quick view for ${product.name}`}
                 >
@@ -258,7 +242,7 @@ export function ProductCard({
                         ? "bg-fire-coral text-white"
                       : variant === 'museum'
                           ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                          : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
+                          : "bg-white/95 hover:bg-white text-gray-700"
                     )}
                     aria-label={`${isWishlisted ? 'Remove' : 'Add'} ${product.name} ${isWishlisted ? 'from' : 'to'} wishlist`}
                     aria-pressed={isWishlisted}
@@ -274,7 +258,6 @@ export function ProductCard({
 
         {/* Product Info */}
         {variant === 'museum' ? (
-          // Museum style info - Refined luxury
           <div className="p-4">
             <Link href={`/store/${product.slug}`}>
               <h3 className={cn(
@@ -326,7 +309,7 @@ export function ProductCard({
               "font-serif text-base mb-2 leading-tight",
               isAvailable
                 ? darkBackground
-                  ? "text-white group-hover:text-opal-deep"
+                  ? "text-white group-hover:text-opal-light"
                   : "text-charcoal"
                 : darkBackground ? "text-content-secondary" : "text-gray-400"
             )}>

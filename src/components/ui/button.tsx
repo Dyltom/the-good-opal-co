@@ -13,7 +13,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-opal-electric to-opal-deep text-white shadow-lg shadow-opal-electric/25 hover:shadow-xl hover:shadow-opal-electric/35 hover:scale-[1.02] active:scale-[0.98]',
+          'bg-gradient-to-r from-opal-electric to-opal-deep text-white shadow-sm shadow-opal-electric/20 hover:shadow-md hover:shadow-opal-electric/30 active:shadow-sm',
         destructive:
           'bg-fire-coral text-white shadow-sm hover:bg-fire-coral/90',
         outline:
@@ -27,7 +27,7 @@ const buttonVariants = cva(
         glass:
           'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
         shimmer:
-          'bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald bg-[length:200%_100%] animate-shimmer-slide text-white font-semibold shadow-xl hover:shadow-2xl',
+          'bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald bg-[length:200%_100%] animate-shimmer-slide text-white font-semibold shadow-sm shadow-opal-electric/20 hover:shadow-md',
       },
       size: {
         default: 'min-h-[44px] h-11 px-6 py-2.5 sm:min-h-[40px] sm:py-2',

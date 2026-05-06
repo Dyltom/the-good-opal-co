@@ -82,7 +82,7 @@ export function CartEmptyState() {
     <EmptyState
       icon={<ShoppingBag className="w-12 h-12 text-content-muted" />}
       title="Your cart is empty"
-      description="Looks like you haven't added any treasures yet. Explore our collection of unique Australian opals."
+      description="Looks like you haven't added any pieces yet. Explore our collection of unique Australian opals."
       action={{
         label: "Start Shopping",
         href: "/store"
