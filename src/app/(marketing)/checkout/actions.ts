@@ -11,6 +11,13 @@ import { redirect } from 'next/navigation'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { getCart } from '@/lib/cart'
+import {
+  calculateCheckoutPricing,
+  calculateCheckoutSubtotal,
+  calculateStripeCheckoutAmounts,
+  dollarsToCents,
+  toDiscountContext,
+} from '@/lib/checkout-pricing'
 import { getDiscountManager } from '@/lib/discounts'
 import { trackBeginCheckout } from '@/lib/analytics'
 
@@ -77,34 +84,25 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
   }
 
   try {
-    // Calculate subtotal for discount purposes
-    const subtotal = cart.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    )
-
-    // Free shipping over $500
-    const shipping = subtotal >= 50000 ? 0 : 1500
-    const tax = Math.floor(subtotal * 0.1) // 10% GST
+    const subtotal = calculateCheckoutSubtotal(cart.items)
+    const pricing = calculateCheckoutPricing(subtotal)
 
     // Handle discount code if provided
-    let discountAmount = 0
-    let shippingDiscount = 0
+    let discountAmountCents = 0
+    let shippingDiscountCents = 0
     let discountDescription = ''
 
     if (discountCode) {
       const discountManager = getDiscountManager()
       const discountResult = await discountManager.applyDiscount(discountCode, {
-        subtotal,
-        shipping,
-        tax,
+        ...toDiscountContext(pricing),
         customerId: undefined,
         currentDate: new Date()
       })
 
       if (!discountResult.error && discountResult.application) {
-        discountAmount = discountResult.discountAmount
-        shippingDiscount = discountResult.shippingDiscount
+        discountAmountCents = discountResult.discountAmount
+        shippingDiscountCents = discountResult.shippingDiscount
         discountDescription = discountResult.application.description
       }
     }
@@ -112,12 +110,17 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
     // Create dynamic coupon in Stripe if discount is applied
     let couponId: string | undefined
 
-    if (discountAmount > 0 || shippingDiscount > 0) {
-      const totalDiscount = discountAmount + shippingDiscount
+    const { couponAmountOffCents, adjustedShippingCents } = calculateStripeCheckoutAmounts({
+      shippingCents: pricing.shippingCents,
+      discountAmountCents,
+      shippingDiscountCents,
+    })
+
+    if (couponAmountOffCents) {
 
       // Create a one-time use coupon for this specific discount
       const coupon = await stripe.coupons.create({
-        amount_off: totalDiscount,
+        amount_off: couponAmountOffCents,
         currency: 'aud',
         duration: 'once',
         name: discountCode || 'Discount',
@@ -129,9 +132,6 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
 
       couponId = coupon.id
     }
-
-    // Build line items with adjusted shipping
-    const adjustedShipping = shipping - shippingDiscount
 
     // Track begin checkout event
     trackBeginCheckout(cart.items, cart.total)
@@ -151,7 +151,7 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
               slug: item.slug,
             },
           },
-          unit_amount: Math.round(item.price * 100), // Convert to cents
+          unit_amount: dollarsToCents(item.price),
         },
         quantity: item.quantity,
       })),
@@ -163,10 +163,10 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
           shipping_rate_data: {
             type: 'fixed_amount',
             fixed_amount: {
-              amount: adjustedShipping, // Use adjusted shipping after discount
+              amount: adjustedShippingCents,
               currency: 'aud',
             },
-            display_name: adjustedShipping === 0 ? 'Free Express Shipping' : 'Express Shipping',
+            display_name: adjustedShippingCents === 0 ? 'Free Express Shipping' : 'Express Shipping',
             delivery_estimate: {
               minimum: { unit: 'business_day', value: 3 },
               maximum: { unit: 'business_day', value: 7 },
@@ -179,8 +179,8 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
         cartItems: JSON.stringify(cart.items),
         customerName: name,
         discountCode: discountCode || '',
-        discountAmount: discountAmount.toString(),
-        shippingDiscount: shippingDiscount.toString(),
+        discountAmount: discountAmountCents.toString(),
+        shippingDiscount: shippingDiscountCents.toString(),
       },
       success_url: `${process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'}/cart`,

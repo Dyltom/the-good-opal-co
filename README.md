@@ -135,6 +135,9 @@ DATABASE_URL=postgresql://user:password@localhost:5432/goodopale
 PAYLOAD_SECRET=your-secret-key-minimum-32-characters
 PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
 
+# Session signing
+JWT_SECRET=your-jwt-secret-minimum-32-characters
+
 # Next.js
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_BASE_DOMAIN=localhost:3000

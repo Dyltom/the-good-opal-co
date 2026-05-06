@@ -221,19 +221,19 @@ const config: Config = {
   		fontFamily: {
   			sans: [
   				'var(--font-sans)',
-  				'Plus Jakarta Sans',
-  				'system-ui',
-  				'sans-serif'
+  				'Merriweather',
+  				'Georgia',
+  				'serif'
   			],
   			serif: [
   				'var(--font-serif)',
-  				'Fraunces',
+  				'EB Garamond',
   				'Georgia',
   				'serif'
   			],
   			display: [
   				'var(--font-serif)',
-  				'Fraunces',
+  				'EB Garamond',
   				'Georgia',
   				'serif'
   			],
@@ -245,13 +245,14 @@ const config: Config = {
   			heading: [
   				'var(--font-heading)',
   				'var(--font-serif)',
-  				'Fraunces',
+  				'EB Garamond',
   				'Georgia',
   				'serif'
   			],
   			inter: [
   				'var(--font-inter)',
-  				'Fraunces',
+  				'EB Garamond',
+  				'Georgia',
   				'serif'
   			]
   		},
@@ -267,6 +268,14 @@ const config: Config = {
   		},
   		lineHeight: designTokens.typography.lineHeight,
   		fontWeight: designTokens.typography.fontWeight,
+  		letterSpacing: {
+  			tighter: '0',
+  			tight: '0',
+  			normal: '0',
+  			wide: '0',
+  			wider: '0',
+  			widest: '0'
+  		},
   		spacing: {
   			...designTokens.spacing,
   			// Additional custom spacing

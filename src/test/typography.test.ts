@@ -1,32 +1,86 @@
-/**
- * Test to verify font-display class is working
- * This should FAIL initially because font-display is not defined
- */
 import { describe, test, expect } from 'vitest'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+
+const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
 
 describe('Typography Configuration', () => {
-  test('font-display class should be defined in Tailwind', () => {
-    // Test that our configuration defines font-display properly
-    const actualFontFamily = 'var(--font-serif), Playfair Display, Georgia, serif'
+  test('marketing layout loads the project font families', () => {
+    const source = read('src/app/(marketing)/layout.tsx')
 
-    // This test should PASS now that font-display is defined
-    expect(actualFontFamily).not.toBe('')
-    expect(actualFontFamily).toContain('Playfair Display')
+    expect(source).toContain('Merriweather')
+    expect(source).toContain('EB_Garamond')
+    expect(source).toContain('Dancing_Script')
   })
 
-  test('affected pages should use proper display font', () => {
-    // Test that simulates the pages using font-display class
-    const pagesUsingFontDisplay = [
-      'about', 'contact', 'shipping', 'returns', 'order-tracking',
-      'account', 'search', 'terms', 'privacy', 'cookies'
-    ]
+  test('global CSS maps semantic font variables to the project fonts', () => {
+    const source = read('src/app/globals.css')
 
-    // All these pages currently use font-display which is undefined
-    // This test documents the issue
-    expect(pagesUsingFontDisplay.length).toBeGreaterThan(0)
+    expect(source).toContain("--font-sans: 'Merriweather'")
+    expect(source).toContain("--font-serif: 'EB Garamond'")
+    expect(source).toContain("--font-accent: 'Dancing Script'")
+  })
 
-    // This should pass once we fix the font-display issue
-    const hasFontDisplayDefined = true // Fixed: font-display now defined
-    expect(hasFontDisplayDefined).toBe(true) // This will PASS
+  test('Tailwind font-display resolves through the serif heading family', () => {
+    const source = read('tailwind.config.ts')
+
+    expect(source).toMatch(/display:\s*\[[\s\S]*'var\(--font-serif\)'/)
+    expect(source).not.toContain('Playfair Display')
+    expect(source).not.toContain('Fraunces')
+  })
+
+  test('global headings do not compress letter spacing', () => {
+    const source = read('src/app/globals.css')
+
+    expect(source).not.toMatch(/letter-spacing:\s*-/)
+    expect(source.match(/letter-spacing:\s*0;/g)?.length).toBeGreaterThanOrEqual(3)
+  })
+
+  test('Tailwind tracking utilities resolve to neutral spacing', () => {
+    const source = read('tailwind.config.ts')
+
+    expect(source).toMatch(/letterSpacing:\s*{[\s\S]*tighter:\s*'0'/)
+    expect(source).toMatch(/letterSpacing:\s*{[\s\S]*tight:\s*'0'/)
+    expect(source).toMatch(/letterSpacing:\s*{[\s\S]*wider:\s*'0'/)
+  })
+
+  test('typography presets keep display type relaxed and readable', () => {
+    const source = read('src/lib/constants/typography.ts')
+    const displayBlock = source.match(/display:\s*{([\s\S]*?)\n  },/)?.[1] ?? ''
+    const bodyBlock = source.match(/body:\s*{([\s\S]*?)\n  },/)?.[1] ?? ''
+
+    expect(source).not.toMatch(/tracking-tight(?:er)?/)
+    expect(displayBlock).not.toContain('font-bold')
+    expect(displayBlock).toContain('font-semibold')
+    expect(bodyBlock).toContain("base: 'text-base leading-relaxed'")
+    expect(source).toContain("overline: 'text-xs font-semibold uppercase tracking-normal'")
+  })
+
+  test('navigation brand typography stays compact without script or tight tracking', () => {
+    const source = read('src/components/navigation/Navigation.tsx')
+    const brandBlock = source.match(/<div className="flex flex-col min-w-0">([\s\S]*?)<\/div>/)?.[1] ?? ''
+
+    expect(brandBlock).not.toContain('tracking-tight')
+    expect(brandBlock).not.toContain('font-accent')
+  })
+
+  test('homepage section headings avoid oversized or script-heavy display type', () => {
+    const source = read('src/app/(marketing)/page.tsx')
+
+    expect(source).not.toContain('lg:text-7xl')
+    expect(source).not.toContain('font-extrabold')
+    expect(source).not.toMatch(/Shop by <span className="font-accent/)
+    expect(source).not.toMatch(/Latest <span className="font-accent/)
+    expect(source).not.toMatch(/Handmade in <span className="font-accent/)
+  })
+
+  test('hero display type uses the restrained heading system', () => {
+    const source = read('src/components/sections/ProductHero.tsx')
+    const heroHeading = source.match(/<motion\.h1[\s\S]*?<\/motion\.h1>/)?.[0] ?? ''
+
+    expect(heroHeading).not.toContain('xl:text-7xl')
+    expect(heroHeading).not.toContain('font-bold')
+    expect(heroHeading).toContain('font-semibold')
+    expect(source).not.toContain('font-accent text-2xl')
   })
 })

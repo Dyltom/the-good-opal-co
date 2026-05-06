@@ -19,6 +19,19 @@ import { Customers } from './payload/collections/Customers'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+function getPayloadSecret(): string {
+  const secret = process.env['PAYLOAD_SECRET']
+  if (secret && secret.trim().length > 0) {
+    return secret
+  }
+
+  if (process.env['NODE_ENV'] === 'production') {
+    throw new Error('PAYLOAD_SECRET environment variable is required in production')
+  }
+
+  return 'development-only-payload-secret'
+}
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -40,9 +53,9 @@ export default buildConfig({
     Customers,
   ],
   editor: lexicalEditor({}),
-  secret: process.env['PAYLOAD_SECRET'] || 'your-secret-key-here',
+  secret: getPayloadSecret(),
   typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
+    outputFile: path.resolve(dirname, 'types', 'payload-types.ts'),
   },
   db: postgresAdapter({
     pool: {

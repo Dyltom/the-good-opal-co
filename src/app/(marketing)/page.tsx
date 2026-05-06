@@ -84,17 +84,17 @@ export default function HomePage() {
 
             <Container>
               <div className="mb-14 text-center max-w-5xl mx-auto">
-                <span className="font-accent text-lg text-opal-electric mb-4 block">
-                  ✨ Discover Our Collection ✨
+                <span className="mb-4 block font-serif text-base font-semibold text-opal-electric">
+                  Discover Our Collection
                 </span>
-                <h2 className="mb-6 font-serif text-4xl font-bold leading-tight text-charcoal md:text-5xl lg:text-6xl">
-                  Shop by <span className="font-accent text-opal-electric">Category</span>
+                <h2 className="mb-6 font-serif text-4xl font-semibold leading-tight text-charcoal md:text-5xl lg:text-6xl">
+                  Shop by <span className="text-opal-electric">Category</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-charcoal/70 leading-relaxed">
                   Explore our curated collection of Australian opals, from raw stones to exquisite jewellery pieces
                 </p>
-                <p className="font-accent text-lg text-opal-electric/80 mt-2">
-                  ~ Each piece tells its own magical story ~
+                <p className="mt-3 font-serif text-base italic text-opal-electric/80">
+                  Each piece tells its own story.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-6 md:grid-cols-3 md:gap-8 lg:grid-cols-5">
@@ -228,17 +228,17 @@ export default function HomePage() {
 
             <Container className="relative z-10">
               <div className="mb-14 text-center max-w-5xl mx-auto">
-                <span className="font-accent text-lg text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block">
-                  🌟 Fresh from our workshop 🌟
+                <span className="mb-4 block bg-gradient-to-r from-opal-electric to-fire-pink bg-clip-text font-serif text-base font-semibold text-transparent">
+                  Fresh from our workshop
                 </span>
-                <h2 className="mb-6 font-serif text-5xl font-bold text-white md:text-6xl lg:text-7xl">
-                  Latest <span className="font-accent text-gradient-prismatic">Arrivals</span>
+                <h2 className="mb-6 font-serif text-4xl font-semibold text-white md:text-5xl lg:text-6xl">
+                  Latest <span className="text-gradient-prismatic">Arrivals</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-white/80 font-light leading-relaxed">
                   Fresh from our workshop - discover new masterpieces crafted with passion
                 </p>
-                <p className="font-accent text-lg text-white/60 mt-2">
-                  ~ Where dreams become reality ~
+                <p className="mt-3 font-serif text-base italic text-white/65">
+                  Where dreams become reality.
                 </p>
               </div>
 
@@ -272,19 +272,19 @@ export default function HomePage() {
               <div className="grid items-center gap-12 lg:grid-cols-2">
                 {/* Content */}
                 <div className="order-2 lg:order-1 lg:pl-12">
-                  <span className="font-accent text-lg text-opal-electric mb-4 block">
-                    ✨ Our Craft ✨
+                  <span className="mb-4 block font-serif text-base font-semibold text-opal-electric">
+                    Our Craft
                   </span>
-                  <h2 className="mb-6 font-serif text-4xl font-bold leading-tight text-charcoal md:text-5xl lg:text-6xl">
-                    Handmade in <span className="font-accent text-opal-electric">Australia</span>
+                  <h2 className="mb-6 font-serif text-4xl font-semibold leading-tight text-charcoal md:text-5xl lg:text-6xl">
+                    Handmade in <span className="text-opal-electric">Australia</span>
                   </h2>
                   <p className="mb-6 text-lg leading-relaxed text-charcoal/70 md:text-xl">
                     We source all our materials directly from Australian opal miners and handcraft
                     each piece from start to finish, offering our customers ethically sourced,
                     eco-conscious Australian opals at an exceptional price.
                   </p>
-                  <p className="font-accent text-lg text-opal-electric/80 mb-8">
-                    ~ From the earth to your heart ~
+                  <p className="mb-8 font-serif text-base italic text-opal-electric/80">
+                    From the earth to your heart.
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button size="lg" asChild>
@@ -338,12 +338,12 @@ export default function HomePage() {
 
             <div className="relative mx-auto max-w-screen-xl px-6">
               <div className="mb-16 text-center">
-                <span className="mb-6 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-electric via-fire-pink to-opal-deep">
+                <span className="mb-6 inline-flex items-center gap-3 bg-gradient-to-r from-opal-electric via-fire-pink to-opal-deep bg-clip-text text-sm font-semibold uppercase text-transparent">
                   <span className="h-0.5 w-16 bg-gradient-to-r from-transparent to-opal-electric rounded-full"></span>
                   Our Commitment
                   <span className="h-0.5 w-16 bg-gradient-to-l from-transparent to-opal-deep rounded-full"></span>
                 </span>
-                <h2 className="mb-6 font-serif text-5xl font-extrabold text-charcoal md:text-6xl lg:text-7xl">
+                <h2 className="mb-6 font-serif text-4xl font-semibold text-charcoal md:text-5xl lg:text-6xl">
                   The Good Opal <span className="text-opal-electric">Promise</span>
                 </h2>
                 <p className="mx-auto max-w-3xl text-xl text-charcoal/70 font-light">

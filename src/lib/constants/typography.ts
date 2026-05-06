@@ -7,9 +7,9 @@
 export const TYPOGRAPHY = {
   // Font families
   fontFamily: {
-    display: 'font-serif',   // Fraunces (soft variant)
-    sans: 'font-sans',       // Plus Jakarta Sans
-    serif: 'font-serif',     // Fraunces (soft variant)
+    display: 'font-serif',   // EB Garamond
+    sans: 'font-sans',       // Merriweather
+    serif: 'font-serif',     // EB Garamond
     accent: 'font-accent',   // Dancing Script
   },
 
@@ -88,12 +88,12 @@ export const TYPOGRAPHY = {
 
   // Letter spacing
   letterSpacing: {
-    tighter: 'tracking-tighter', // -0.05em
-    tight: 'tracking-tight',     // -0.025em
-    normal: 'tracking-normal',   // 0
-    wide: 'tracking-wide',       // 0.025em
-    wider: 'tracking-wider',     // 0.05em
-    widest: 'tracking-widest',   // 0.1em
+    tighter: 'tracking-normal', // 0
+    tight: 'tracking-normal',   // 0
+    normal: 'tracking-normal',  // 0
+    wide: 'tracking-normal',    // 0
+    wider: 'tracking-normal',   // 0
+    widest: 'tracking-normal',  // 0
   },
 } as const
 
@@ -103,14 +103,14 @@ export const TYPOGRAPHY = {
 export const TYPOGRAPHY_PRESETS = {
   // Display headings (marketing pages)
   display: {
-    h1: 'text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight tracking-tight',
-    h2: 'text-3xl md:text-4xl lg:text-5xl font-serif font-bold leading-tight',
+    h1: 'text-4xl md:text-5xl lg:text-6xl font-serif font-semibold leading-tight',
+    h2: 'text-3xl md:text-4xl lg:text-5xl font-serif font-semibold leading-tight',
     h3: 'text-2xl md:text-3xl font-serif font-semibold leading-snug',
   },
 
   // Regular headings (content pages)
   heading: {
-    h1: 'text-3xl md:text-4xl font-serif font-bold leading-tight',
+    h1: 'text-3xl md:text-4xl font-serif font-semibold leading-tight',
     h2: 'text-2xl md:text-3xl font-serif font-semibold leading-snug',
     h3: 'text-xl md:text-2xl font-serif font-semibold leading-snug',
     h4: 'text-lg md:text-xl font-sans font-semibold leading-snug',
@@ -121,15 +121,15 @@ export const TYPOGRAPHY_PRESETS = {
   // Body text
   body: {
     large: 'text-lg leading-relaxed',
-    base: 'text-base leading-normal',
-    small: 'text-sm leading-normal',
+    base: 'text-base leading-relaxed',
+    small: 'text-sm leading-relaxed',
     tiny: 'text-xs leading-normal',
   },
 
   // Special text
   label: 'text-sm font-medium',
   caption: 'text-xs text-content-muted',
-  overline: 'text-xs font-semibold uppercase tracking-wider',
+  overline: 'text-xs font-semibold uppercase tracking-normal',
   quote: 'text-xl font-serif italic leading-relaxed',
 
   // Interactive text

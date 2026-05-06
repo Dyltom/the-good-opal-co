@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { formatCurrency, cn } from '@/lib/utils'
 import { getStickyOffset } from '@/lib/constants/layout'
+import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import { createCheckoutSession } from './actions'
 import type { DiscountApplication, DiscountCalculationResult } from '@/lib/discounts/types'
 import type { Cart } from '@/lib/cart'
@@ -179,9 +180,9 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     })
   }
 
-  // Calculate shipping
-  const shippingCost = cart.total >= 50000 ? 0 : 1500 // Fixed: Use cents consistently
-  const orderTotal = cart.total + shippingCost
+  const checkoutPricing = useMemo(() => calculateCheckoutPricing(cart.total), [cart.total])
+  const shippingCost = checkoutPricing.shipping
+  const orderTotal = checkoutPricing.total
 
   return (
     <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
@@ -431,13 +432,13 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                 </motion.span>
               </AnimatePresence>
             </div>
-            {cart.total < 50000 && ( // Fixed: Use cents
+            {checkoutPricing.freeShippingRemaining > 0 && (
               <motion.p
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 className="text-xs text-muted-foreground"
               >
-                Add {formatCurrency(50000 - cart.total, 'AUD')} more for free shipping
+                Add {formatCurrency(checkoutPricing.freeShippingRemaining, 'AUD')} more for free shipping
               </motion.p>
             )}
             <div className="flex justify-between text-lg font-bold pt-2 border-t">

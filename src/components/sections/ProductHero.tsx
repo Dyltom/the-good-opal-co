@@ -128,7 +128,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight"
+              className="mb-6 font-serif text-4xl font-semibold leading-[1.05] text-balance text-white sm:text-5xl md:text-6xl"
             >
               Authentic Australian
               <span className="block text-gradient-prismatic">Opal Jewellery</span>
@@ -152,17 +152,17 @@ export function ProductHero({ products }: ProductHeroProps) {
               className="flex flex-wrap justify-center lg:justify-start gap-4 sm:gap-6 mb-8"
             >
               <div className="text-center lg:text-left">
-                <p className="font-accent text-2xl font-bold text-white">EST.</p>
+                <p className="font-serif text-xl font-semibold italic text-white">EST.</p>
                 <p className="font-sans text-xs text-white/60">Family Business</p>
               </div>
               <div className="hidden sm:block h-10 w-px bg-white/20" />
               <div className="text-center lg:text-left">
-                <p className="font-accent text-2xl font-bold text-white">AU</p>
+                <p className="font-serif text-xl font-semibold italic text-white">AU</p>
                 <p className="font-sans text-xs text-white/60">Sourced Opals</p>
               </div>
               <div className="hidden sm:block h-10 w-px bg-white/20" />
               <div className="text-center lg:text-left">
-                <p className="font-accent text-2xl font-bold text-white">100%</p>
+                <p className="font-serif text-xl font-semibold italic text-white">100%</p>
                 <p className="font-sans text-xs text-white/60">Authentic</p>
               </div>
             </motion.div>

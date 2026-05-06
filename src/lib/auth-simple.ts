@@ -4,19 +4,27 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import type { User } from '@/types/payload-types'
 
-const JWT_SECRET = process.env.JWT_SECRET
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required but not set')
-}
-// TypeScript narrowing: JWT_SECRET is guaranteed non-undefined after the throw above
-const JWT_SECRET_VALUE: string = JWT_SECRET
 const COOKIE_NAME = 'opal-auth'
+const JWT_SECRET_ERROR = 'JWT_SECRET environment variable is required but not set'
 
 export interface AuthUser {
   id: string
   email: string
   name?: string
   role?: string
+}
+
+function getJwtSecret(): string | null {
+  const secret = process.env.JWT_SECRET
+  return secret && secret.trim().length > 0 ? secret : null
+}
+
+function requireJwtSecret(): string {
+  const secret = getJwtSecret()
+  if (!secret) {
+    throw new Error(JWT_SECRET_ERROR)
+  }
+  return secret
 }
 
 /**
@@ -40,15 +48,16 @@ export function createToken(user: AuthUser): string {
       name: user.name,
       role: user.role
     },
-    JWT_SECRET_VALUE,
+    requireJwtSecret(),
     { expiresIn: '7d' }
   )
 }
 
 export function verifyToken(token: string): AuthUser | null {
-  if (!JWT_SECRET) return null
+  const secret = getJwtSecret()
+  if (!secret) return null
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthUser
+    const decoded = jwt.verify(token, secret) as AuthUser
     return decoded
   } catch {
     return null

@@ -1,6 +1,6 @@
 # Deployment Checklist
 
-Complete checklist for deploying Rapid Sites to production.
+Complete checklist for deploying The Good Opal Co to production.
 
 ## ✅ **Pre-Deployment Validation** (MUST PASS)
 
@@ -52,6 +52,11 @@ DATABASE_URL=postgresql://user:pass@host:5432/dbname
 ```bash
 PAYLOAD_SECRET=minimum-32-characters-long-secret-key
 PAYLOAD_PUBLIC_SERVER_URL=https://yourdomain.com
+```
+
+### Session Signing (REQUIRED for account login)
+```bash
+JWT_SECRET=minimum-32-characters-long-secret-key
 ```
 
 ### Email - Resend (REQUIRED for contact/newsletter)

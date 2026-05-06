@@ -1,6 +1,12 @@
 'use server'
 
 import { getDiscountManager } from '@/lib/discounts'
+import {
+  calculateCheckoutPricing,
+  calculateCheckoutSubtotal,
+  centsToDollars,
+  toDiscountContext,
+} from '@/lib/checkout-pricing'
 import { fetchCart } from '../cart/actions'
 
 export async function applyDiscountCode(code: string) {
@@ -16,20 +22,11 @@ export async function applyDiscountCode(code: string) {
     const cart = cartResult.data
     const discountManager = getDiscountManager()
 
-    // Calculate current totals
-    const subtotal = cart.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    )
-
-    // Free shipping over $500
-    const shipping = subtotal >= 50000 ? 0 : 1500
-    const tax = Math.floor(subtotal * 0.1) // 10% GST
+    const subtotal = calculateCheckoutSubtotal(cart.items)
+    const pricing = calculateCheckoutPricing(subtotal)
 
     const result = await discountManager.applyDiscount(code, {
-      subtotal,
-      shipping,
-      tax,
+      ...toDiscountContext(pricing),
       customerId: undefined, // Could pass authenticated user ID here
       currentDate: new Date()
     })
@@ -45,11 +42,11 @@ export async function applyDiscountCode(code: string) {
       success: true,
       discount: result.application,
       totals: {
-        subtotal: result.finalSubtotal,
-        shipping: result.finalShipping,
-        discount: result.discountAmount + result.shippingDiscount,
-        tax,
-        total: result.finalTotal
+        subtotal: centsToDollars(result.finalSubtotal),
+        shipping: centsToDollars(result.finalShipping),
+        discount: centsToDollars(result.discountAmount + result.shippingDiscount),
+        tax: 0,
+        total: centsToDollars(result.finalTotal)
       }
     }
   } catch (error) {

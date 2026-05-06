@@ -98,10 +98,10 @@
     --sidebar-ring: oklch(0.6531 0.1347 242.6867);
 
     /* Typography - Semantic font naming for fairytale theme */
-    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif; /* Soft, smooth body text */
-    --font-serif: 'Fraunces', Georgia, serif; /* Pillowy display headings (SOFT axis=100) */
+    --font-sans: 'Merriweather', Georgia, serif; /* Warm body text */
+    --font-serif: 'EB Garamond', Georgia, serif; /* Elegant display headings */
     --font-accent: 'Dancing Script', cursive; /* Magical handwritten moments */
-    --font-inter: 'Fraunces', serif; /* Legacy compatibility */
+    --font-inter: 'EB Garamond', Georgia, serif; /* Legacy compatibility */
     --font-mono: 'Fira Code', monospace;
     --font-heading: var(--font-serif);
 
@@ -242,32 +242,30 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
     font-weight: 600;
-    /* Fraunces variable-font axes: max SOFT (rounded terminals), neutral WONK. */
-    font-variation-settings: "SOFT" 100, "WONK" 0;
+    font-optical-sizing: auto;
   }
 
-  /* Apply the same soft axis anywhere the serif family is used explicitly. */
   .font-serif,
   .font-display {
-    font-variation-settings: "SOFT" 100, "WONK" 0;
+    font-optical-sizing: auto;
   }
 
   h1 {
     @apply text-4xl md:text-6xl;
     line-height: 1.1;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
 
   h2 {
     @apply text-3xl md:text-5xl;
     line-height: 1.2;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
 
   h3 {
     @apply text-2xl md:text-4xl;
     line-height: 1.3;
-    letter-spacing: -0.005em;
+    letter-spacing: 0;
   }
 }
 
