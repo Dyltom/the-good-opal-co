@@ -9,7 +9,7 @@
  * Features:
  * - Server Action integration with optimistic UI
  * - Multiple variants (default, icon, minimal)
- * - Optional animations and confetti
+ * - Optional animations
  * - Customizable sizes
  * - Success feedback states
  */
@@ -21,11 +21,7 @@ import { useToast } from '@/hooks/use-toast'
 import { addToCart, addToCartWithQuantity } from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
 import { trackAddToCart } from '@/lib/analytics'
-import type { Product } from '@/types/payload-types'
 import type { ReactNode } from 'react'
-
-// Lazy load confetti only when needed
-let confetti: typeof import('canvas-confetti') | null = null
 
 interface AddToCartButtonProps {
   product: {
@@ -41,7 +37,6 @@ interface AddToCartButtonProps {
   children?: ReactNode
   variant?: 'default' | 'icon' | 'minimal'
   size?: 'sm' | 'md' | 'lg'
-  showConfetti?: boolean
   animated?: boolean
 }
 
@@ -53,7 +48,6 @@ export function AddToCartButton({
   children,
   variant = 'default',
   size = 'md',
-  showConfetti = false,
   animated = true,
 }: AddToCartButtonProps) {
   const [isPending, startTransition] = useTransition()
@@ -63,17 +57,6 @@ export function AddToCartButton({
   const handleClick = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-
-    // Load confetti on demand if needed
-    if (showConfetti && !confetti) {
-      const mod = await import('canvas-confetti')
-      confetti = (mod.default ?? mod) as typeof import('canvas-confetti')
-    }
-
-    // Get button position for confetti origin
-    const rect = (e.target as HTMLElement).getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
 
     startTransition(async () => {
       const result = quantity > 1
@@ -95,32 +78,11 @@ export function AddToCartButton({
       if (result.success) {
         setIsSuccess(true)
 
-        // Track add to cart event
-        // Create a minimal product object that satisfies the analytics tracking
         trackAddToCart({
           id: product.id,
           name: product.name,
           price: product.price,
-          slug: product.slug,
-          image: product.image
-        } as Product, quantity)
-
-        // Trigger confetti if enabled
-        if (showConfetti && confetti) {
-          confetti({
-            particleCount: 30,
-            spread: 60,
-            origin: {
-              x: x / window.innerWidth,
-              y: y / window.innerHeight
-            },
-            colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1'],
-            disableForReducedMotion: true,
-            startVelocity: 20,
-            gravity: 0.5,
-            ticks: 50
-          })
-        }
+        }, quantity)
 
         // Dispatch custom event to update other cart components
         window.dispatchEvent(new CustomEvent('cart-updated'))
@@ -140,7 +102,7 @@ export function AddToCartButton({
         })
       }
     })
-  }, [product, showConfetti, toast, quantity])
+  }, [product, toast, quantity])
 
   const sizeClasses = {
     sm: 'h-8 px-3 text-sm',
@@ -360,14 +322,11 @@ export function useAddToCart() {
         if (result.success) {
           setIsSuccess(true)
 
-          // Track add to cart event
           trackAddToCart({
             id: product.id,
             name: product.name,
             price: product.price,
-            slug: product.slug,
-            image: product.image
-          } as Product, 1) // TODO: Support quantity in future
+          }, 1)
 
           setTimeout(() => setIsSuccess(false), 2000)
           window.dispatchEvent(new CustomEvent('cart-updated'))

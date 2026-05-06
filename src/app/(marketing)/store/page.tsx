@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import type { Where } from 'payload'
 import { Navigation, Footer } from '@/components/navigation'
 import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
 import { getPayload } from '@/lib/payload'
@@ -65,7 +66,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   // Fetch all published products using Payload Local API
   const payload = await getPayload()
 
-  const whereCondition = searchQuery
+  const whereCondition: Where = searchQuery
     ? {
         and: [
           { status: { equals: 'published' } },
@@ -85,7 +86,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
 
   const { docs: products } = await payload.find({
     collection: 'products',
-    where: whereCondition as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    where: whereCondition,
     limit: 200, // Reasonable limit for product catalog
     sort: searchQuery ? '-featured,-createdAt' : '-createdAt',
     depth: 2, // Include related media
@@ -156,10 +157,10 @@ export default async function StorePage({ searchParams }: StorePageProps) {
             <section className="pt-32 pb-12 bg-white">
               <Container>
                 <div className="max-w-3xl mx-auto text-center">
-                  <p className="font-sans text-xs uppercase tracking-[0.2em] text-opal-electric-accessible mb-4">
+                  <p className="font-sans text-xs uppercase text-opal-electric-accessible mb-4">
                     The Collection
                   </p>
-                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-charcoal leading-[1.1] tracking-tight mb-5">
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-charcoal leading-[1.1] mb-5">
                     {searchQuery ? (
                       <>Results for &ldquo;{searchQuery}&rdquo;</>
                     ) : (

@@ -41,7 +41,7 @@ export const SHIPPING_MESSAGES = {
   FREE_SHIPPING_BANNER: `Free express shipping on orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}`,
 
   // Cart page messages
-  FREE_SHIPPING_ACHIEVED: 'Your order qualifies for free express shipping! 🎉',
+  FREE_SHIPPING_ACHIEVED: 'Your order qualifies for free express shipping!',
   FREE_SHIPPING_PROGRESS: (remaining: number) =>
     `Add $${remaining.toFixed(2)} more for free express shipping`,
 
@@ -56,6 +56,14 @@ export const SHIPPING_MESSAGES = {
   // Feature descriptions (for consistency)
   FEATURE_DESCRIPTION: 'Fully insured express shipping worldwide with elegant gift packaging'
 } as const
+
+export interface FreeShippingProgress {
+  threshold: number
+  remaining: number
+  percent: number
+  qualifies: boolean
+  message: string
+}
 
 /**
  * Calculate shipping cost based on cart total and destination
@@ -85,6 +93,21 @@ export function getShippingMessage(cartTotal: number): string {
 
   const remaining = SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD - cartTotal
   return SHIPPING_MESSAGES.FREE_SHIPPING_PROGRESS(remaining)
+}
+
+export function getFreeShippingProgress(cartTotal: number): FreeShippingProgress {
+  const threshold = SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD
+  const subtotal = Math.max(0, cartTotal)
+  const remaining = Math.max(0, threshold - subtotal)
+  const percent = Math.min(100, Math.round((subtotal / threshold) * 100))
+
+  return {
+    threshold,
+    remaining,
+    percent,
+    qualifies: remaining === 0,
+    message: getShippingMessage(subtotal),
+  }
 }
 
 /**

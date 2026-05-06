@@ -26,6 +26,12 @@ interface StoreContentProps {
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'newest'
 
+function formatFilterLabel(value: string): string {
+  return value
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 function sortProducts(products: Product[], sortBy: SortOption): Product[] {
   const sorted = [...products]
   switch (sortBy) {
@@ -171,6 +177,14 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
   const pageCount = totalPages(sortedProducts.length, PRODUCTS_PER_PAGE)
   const currentPage = clampPage(page, pageCount)
   const pagedProducts = paginate(sortedProducts, currentPage, PRODUCTS_PER_PAGE)
+  const hasCustomPriceRange = priceRange[0] > 0 || priceRange[1] < filterOptions.maxPrice
+  const activeFilterCount =
+    (searchQuery ? 1 : 0) +
+    selectedCategories.filter((category) => category !== 'all').length +
+    selectedStoneTypes.length +
+    selectedOrigins.length +
+    selectedMaterials.length +
+    (hasCustomPriceRange ? 1 : 0)
 
   // Filter handlers
   const handleCategoryChange = (category: string) => {
@@ -207,6 +221,45 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
     setSelectedMaterials([])
     setPriceRange([0, filterOptions.maxPrice])
   }
+
+  const selectedFilters: Array<{ key: string; label: string; onRemove: () => void }> = [
+    ...(searchQuery
+      ? [{
+          key: 'search',
+          label: `Search: ${searchQuery}`,
+          onRemove: () => setSearchQuery(''),
+        }]
+      : []),
+    ...selectedCategories
+      .filter((category) => category !== 'all')
+      .map((category) => ({
+        key: `category-${category}`,
+        label: formatFilterLabel(category),
+        onRemove: () => handleCategoryChange(category),
+      })),
+    ...selectedStoneTypes.map((type) => ({
+      key: `stone-${type}`,
+      label: formatFilterLabel(type),
+      onRemove: () => handleStoneTypeChange(type),
+    })),
+    ...selectedOrigins.map((origin) => ({
+      key: `origin-${origin}`,
+      label: formatFilterLabel(origin),
+      onRemove: () => handleOriginChange(origin),
+    })),
+    ...selectedMaterials.map((material) => ({
+      key: `material-${material}`,
+      label: formatFilterLabel(material),
+      onRemove: () => handleMaterialChange(material),
+    })),
+    ...(hasCustomPriceRange
+      ? [{
+          key: 'price',
+          label: `$${priceRange[0]}-$${priceRange[1]}`,
+          onRemove: () => setPriceRange([0, filterOptions.maxPrice]),
+        }]
+      : []),
+  ]
 
   return (
     <div className="py-4 px-4 max-w-[90rem] mx-auto">
@@ -292,7 +345,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
         {/* Sort Bar */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-6">
           <div className="flex items-center gap-4">
-            <p className="font-sans text-charcoal font-medium">
+            <p className="font-sans text-charcoal font-medium" aria-live="polite">
               <span className="font-semibold">{sortedProducts.length}</span>
               <span className="ml-1 text-charcoal/70">{sortedProducts.length === 1 ? 'product' : 'products'}</span>
               {!showOutOfStock && outOfStockCount > 0 && (
@@ -301,6 +354,11 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
                 </span>
               )}
             </p>
+            {activeFilterCount > 0 && (
+              <span className="rounded-full bg-opal-electric-accessible/10 px-3 py-1 font-sans text-xs font-semibold text-opal-electric-accessible">
+                {activeFilterCount} active
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-6 flex-wrap">
             <div className="flex items-center gap-3">
@@ -334,6 +392,35 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
           </div>
         </div>
 
+        {selectedFilters.length > 0 && (
+          <div className="mb-8 rounded-xl border border-opal-electric-accessible/20 bg-opal-electric-accessible/5 p-4">
+            <div className="mb-3 flex items-center justify-between gap-4">
+              <h2 className="font-sans text-sm font-semibold text-charcoal">Selected filters</h2>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="font-sans text-sm font-semibold text-opal-electric-accessible hover:text-opal-deep"
+              >
+                Clear all
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedFilters.map((filter) => (
+                <button
+                  key={filter.key}
+                  type="button"
+                  onClick={filter.onRemove}
+                  className="inline-flex items-center gap-2 rounded-full border border-opal-electric-accessible/25 bg-white px-3 py-1.5 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible"
+                  aria-label={`Remove filter ${filter.label}`}
+                >
+                  <span>{filter.label}</span>
+                  <span aria-hidden="true">×</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Products Grid */}
         {sortedProducts.length > 0 ? (
           <>
@@ -342,9 +429,10 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4"
               data-testid="product-grid"
             >
-              {pagedProducts.map((product) => (
+              {pagedProducts.map((product, index) => (
                 <ProductCard
                   key={product.id}
+                  index={index}
                   product={{
                     id: product.id,
                     slug: product.slug,

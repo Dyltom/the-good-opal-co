@@ -236,7 +236,6 @@ export function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewP
               disabled={product.stock === 0}
               className="flex-1"
               size="lg"
-              showConfetti
             />
             <Button
               variant="outline"

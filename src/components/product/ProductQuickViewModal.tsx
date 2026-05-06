@@ -176,7 +176,6 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                         variant="default"
                         size="lg"
                         className="flex-1"
-                        showConfetti
                       >
                         Add to Cart
                       </AddToCartButton>

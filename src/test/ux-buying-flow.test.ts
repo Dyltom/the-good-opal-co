@@ -1,0 +1,93 @@
+import { describe, expect, test } from 'vitest'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+import { getShippingMessage } from '@/lib/constants/shipping'
+
+const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
+
+describe('buying flow UI/UX safeguards', () => {
+  test('shipping feedback is calm and exposes progress data', () => {
+    const source = read('src/lib/constants/shipping.ts')
+
+    expect(getShippingMessage(500)).toBe('Your order qualifies for free express shipping!')
+    expect(source).toContain('export function getFreeShippingProgress')
+  })
+
+  test('product cards expose purchase actions on touch and keyboard focus', () => {
+    const source = read('src/components/product/ProductCard.tsx')
+
+    expect(source).toContain('opacity-100 sm:opacity-0')
+    expect(source).toContain('sm:group-focus-within:opacity-100')
+    expect(source).toContain('Quick add')
+    expect(source).toContain('aria-pressed={isWishlisted}')
+    expect(source).toContain('priority={index < 4}')
+    expect(source).toContain('disabled={product.stock === 0}')
+    expect(source).not.toContain('tracking-[0.3em]')
+    expect(source).not.toContain('tracking-wide')
+  })
+
+  test('store results show active filter state and live result count', () => {
+    const source = read('src/app/(marketing)/store/store-content.tsx')
+
+    expect(source).toContain('activeFilterCount')
+    expect(source).toContain('aria-live="polite"')
+    expect(source).toContain('Selected filters')
+    expect(source).toContain('Remove filter')
+    expect(source).toContain('pagedProducts.map((product, index)')
+    expect(source).toContain('index={index}')
+  })
+
+  test('cart drawer uses plain checkout language and free-shipping progress', () => {
+    const source = read('src/components/cart/AnimatedCartDrawer.tsx')
+
+    expect(source).toContain('FreeShippingProgress')
+    expect(source).toContain('SheetDescription')
+    expect(source).toContain('Checkout securely')
+    expect(source).not.toContain('Treasure Chest')
+    expect(source).not.toContain('Secure Your Treasures')
+    expect(source).not.toContain('Sparkles')
+  })
+
+  test('product detail page presents purchase confidence without overtracked labels', () => {
+    const source = read('src/app/(marketing)/store/[slug]/page.tsx')
+
+    expect(source).toContain('Purchase confidence')
+    expect(source).toContain('This piece qualifies for free express shipping')
+    expect(source).not.toContain('tracking-[0.2em]')
+  })
+
+  test('cart actions avoid celebratory dependencies and narrow analytics types', () => {
+    const buttonSource = read('src/components/cart/AddToCartButton.tsx')
+    const packageSource = read('package.json')
+    const quickAddSources = [
+      read('src/components/product/ProductCard.tsx'),
+      read('src/components/product/ProductQuickView.tsx'),
+      read('src/components/product/ProductQuickViewModal.tsx'),
+      read('src/components/mobile/MobileProductCard.tsx'),
+    ].join('\n')
+
+    expect(buttonSource).not.toContain('canvas-confetti')
+    expect(buttonSource).not.toContain('showConfetti')
+    expect(buttonSource).not.toContain('as Product')
+    expect(quickAddSources).not.toContain('showConfetti')
+    expect(packageSource).not.toContain('canvas-confetti')
+  })
+
+  test('store page query and typography stay deploy-safe', () => {
+    const source = read('src/app/(marketing)/store/page.tsx')
+
+    expect(source).toContain("import type { Where } from 'payload'")
+    expect(source).not.toContain('as any')
+    expect(source).not.toContain('tracking-[0.2em]')
+    expect(source).not.toContain('tracking-tight')
+  })
+
+  test('mobile store does not keep placeholder quick-add logging', () => {
+    const mobileStoreSource = read('src/components/mobile/MobileStoreContent.tsx')
+    const mobileCardSource = read('src/components/mobile/MobileProductCard.tsx')
+
+    expect(mobileStoreSource).not.toContain('console.log')
+    expect(mobileStoreSource).not.toContain('onQuickAdd')
+    expect(mobileCardSource).not.toContain('onQuickAdd')
+  })
+})

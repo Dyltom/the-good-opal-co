@@ -113,10 +113,6 @@ export function MobileStoreContent({ products }: MobileStoreContentProps) {
                   createdAt: product.createdAt,
                 }}
                 index={index}
-                onQuickAdd={(id) => {
-                  // Handle quick add to cart
-                  console.log('Quick add:', id)
-                }}
               />
             ))}
           </AnimatePresence>

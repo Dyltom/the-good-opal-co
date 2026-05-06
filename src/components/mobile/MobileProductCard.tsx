@@ -24,10 +24,9 @@ interface MobileProductCardProduct {
 interface MobileProductCardProps {
   product: MobileProductCardProduct
   index?: number
-  onQuickAdd?: (productId: string) => void
 }
 
-export function MobileProductCard({ product, index = 0, onQuickAdd: _onQuickAdd }: MobileProductCardProps) {
+export function MobileProductCard({ product, index = 0 }: MobileProductCardProps) {
   const [liked, setLiked] = useState(false)
   const isAvailable = product.stock > 0
   const discount = product.compareAtPrice
@@ -195,7 +194,6 @@ export function MobileProductCard({ product, index = 0, onQuickAdd: _onQuickAdd 
                     product={product}
                     variant="icon"
                     animated={true}
-                    showConfetti={true}
                   />
                 )}
               </div>

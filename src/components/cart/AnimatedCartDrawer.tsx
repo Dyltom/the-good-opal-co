@@ -11,14 +11,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
+import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { formatCurrency } from '@/lib/utils'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
-import { Trash2, Plus, Minus, ShoppingBag, Sparkles } from 'lucide-react'
-import confetti from 'canvas-confetti'
+import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import type { Cart, CartItem } from '@/lib/cart'
 
 interface AnimatedCartDrawerProps {
@@ -89,17 +89,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
     })
   }
 
-  const handleCheckout = () => {
-    // Celebration animation
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1'],
-      disableForReducedMotion: true
-    })
-  }
-
   const items = cart?.items ?? []
   const itemCount = cart?.itemCount ?? 0
   const total = cart?.total ?? 0
@@ -119,7 +108,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
             >
               <ShoppingBag className="w-5 h-5" />
             </motion.div>
-            <span>Your Treasure Chest</span>
+            <span>Your Cart</span>
             <AnimatePresence mode="wait">
               <motion.span
                 key={itemCount}
@@ -128,10 +117,13 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                 exit={{ scale: 0, opacity: 0 }}
                 className="ml-auto text-sm font-normal text-gray-500"
               >
-                {itemCount} {itemCount === 1 ? 'opal' : 'opals'}
+                {itemCount} {itemCount === 1 ? 'item' : 'items'}
               </motion.span>
             </AnimatePresence>
           </SheetTitle>
+          <SheetDescription className="sr-only">
+            Review your cart items, update quantities, track free shipping progress, and continue to secure checkout.
+          </SheetDescription>
         </SheetHeader>
 
         {isLoading ? (
@@ -162,22 +154,13 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
               </AnimatePresence>
             </ScrollArea>
 
-            {/* Cart Summary with gradient background */}
+            {/* Cart Summary */}
             <div className="border-t bg-gradient-to-b from-gray-50 to-white p-6 space-y-4">
-              {/* Subtle pattern overlay */}
-              <div
-                className="absolute inset-0 opacity-5"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                }}
-              />
-
               {/* Total with animation */}
               <div className="relative">
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-light flex items-center gap-2">
-                    Total Value
-                    <Sparkles className="w-4 h-4 text-yellow-500" />
+                  <span className="text-base font-semibold text-charcoal">
+                    Subtotal
                   </span>
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -185,13 +168,15 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                       initial={{ y: 20, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ y: -20, opacity: 0 }}
-                      className="text-2xl font-bold bg-gradient-to-r from-black to-gray-800 bg-clip-text text-transparent"
+                      className="text-2xl font-semibold text-charcoal"
                     >
                       {formatCurrency(total, 'AUD')}
                     </motion.span>
                   </AnimatePresence>
                 </div>
               </div>
+
+              <FreeShippingProgress total={total} />
 
               {/* Actions with hover effects */}
               <div className="space-y-2 relative z-10">
@@ -202,11 +187,10 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                     asChild
                     onClick={() => {
                       setIsOpen(false)
-                      handleCheckout()
                     }}
                   >
                     <Link href="/checkout">
-                      Secure Your Treasures
+                      Checkout securely
                     </Link>
                   </Button>
                 </motion.div>
@@ -218,7 +202,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                     asChild
                     onClick={() => setIsOpen(false)}
                   >
-                    <Link href="/cart">View Collection</Link>
+                    <Link href="/cart">View cart</Link>
                   </Button>
                 </motion.div>
               </div>

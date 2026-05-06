@@ -8,6 +8,7 @@ import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { formatCurrency } from '@/lib/utils'
+import { getFreeShippingProgress } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import {
   AuthenticityChecklist,
@@ -138,6 +139,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const categoryName = product.category
     ?.replace(/-/g, ' ')
     .replace(/\b\w/g, (c: string) => c.toUpperCase())
+  const productShippingProgress = getFreeShippingProgress(product.price)
 
   // Collect all product images with alt text
   const productImages = product.images
@@ -193,9 +195,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           {/* Gradient background */}
           <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50 -z-10" />
 
-          {/* Decorative orbs */}
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-gradient-to-r from-opal-electric/5 to-fire-gold/5 rounded-full blur-3xl -z-10" />
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-gradient-to-r from-opal-deep/5 to-fire-pink/5 rounded-full blur-3xl -z-10" />
         </div>
 
         {/* Breadcrumb */}
@@ -238,11 +237,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="space-y-6">
                 {/* Title */}
                 <div>
-                  <span className="mb-4 inline-flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-gold">
+                  <span className="mb-4 inline-flex items-center gap-3 bg-gradient-to-r from-opal-electric to-fire-gold bg-clip-text text-sm font-semibold uppercase tracking-normal text-transparent">
                     <span className="h-px w-12 bg-gradient-to-r from-transparent to-opal-electric"></span>
                     {categoryName}
                   </span>
-                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal leading-tight mt-2">
+                  <h1 className="mt-2 font-serif text-4xl font-semibold leading-tight text-charcoal md:text-5xl lg:text-6xl">
                     {product.name}
                   </h1>
                 </div>
@@ -288,6 +287,27 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   }}
                 />
 
+                {/* Purchase Confidence */}
+                <div className="rounded-2xl border border-opal-electric-accessible/15 bg-opal-electric-accessible/5 p-5">
+                  <h2 className="mb-4 font-serif text-2xl font-semibold text-charcoal">
+                    Purchase confidence
+                  </h2>
+                  <div className="grid gap-3 text-sm text-charcoal/75 sm:grid-cols-2">
+                    <div>
+                      <p className="font-sans font-semibold text-charcoal">Shipping</p>
+                      <p className="mt-1">
+                        {productShippingProgress.qualifies
+                          ? 'This piece qualifies for free express shipping.'
+                          : `${formatCurrency(productShippingProgress.remaining, 'AUD')} away from free express shipping.`}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-sans font-semibold text-charcoal">Care</p>
+                      <p className="mt-1">Insured delivery, elegant packaging, and clear care guidance included.</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Payment Security */}
                 <div className="pt-6 border-t border-warm-grey">
                   <PaymentBadgesCompact />
@@ -317,7 +337,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {/* Product Specifications */}
             {(product.stoneOrigin || product.stoneType || product.material || product.weight) && (
               <div className="mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12">
-                <h2 className="font-serif text-3xl md:text-4xl font-bold text-charcoal mb-8 text-center">
+                <h2 className="mb-8 text-center font-serif text-3xl font-semibold text-charcoal md:text-4xl">
                   Gemstone <span className="text-opal-electric">Specifications</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">

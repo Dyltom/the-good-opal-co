@@ -80,6 +80,11 @@ export function ProductCard({
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [showQuickView, setShowQuickView] = useState(false)
   const isAvailable = product.stock > 0
+  const stockStatus = isAvailable
+    ? product.stock <= 3
+      ? `Only ${product.stock} left`
+      : 'In stock'
+    : 'Sold out'
 
   // Calculate discount percentage
   const discount = product.compareAtPrice
@@ -146,6 +151,7 @@ export function ProductCard({
                 src={product.image}
                 alt={product.name}
                 fill
+                priority={index < 4}
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                 className={cn(
                   "object-cover transition-transform duration-700 group-hover:scale-105",
@@ -179,7 +185,7 @@ export function ProductCard({
               )}>
                 <span className={cn(
                   "text-white font-medium",
-                  variant === 'museum' ? "text-sm tracking-[0.3em] uppercase" : "tracking-wide text-sm"
+                  variant === 'museum' ? "text-sm uppercase" : "text-sm"
                 )}>
                   {variant === 'museum' ? 'Claimed' : 'Collected'}
                 </span>
@@ -189,11 +195,11 @@ export function ProductCard({
           )}
 
 
-          {/* Quick Actions on Hover */}
+          {/* Quick Actions */}
           {isAvailable && (
             <div
               className={cn(
-                "absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-300",
+                "absolute bottom-0 left-0 right-0 p-3 opacity-100 sm:opacity-0 sm:translate-y-2 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 transition-all duration-300",
                 variant === 'museum' ? "bg-gradient-to-t from-white/95 to-transparent" : "bg-gradient-to-t from-black/80 to-transparent"
               )}
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -209,14 +215,16 @@ export function ProductCard({
                   }}
                   variant="minimal"
                   size="sm"
+                  disabled={product.stock === 0}
                   className={cn(
                     "flex-1 rounded-full",
                     variant === 'museum'
                       ? "bg-black-rich text-white hover:bg-black-rich/90"
                       : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-900"
                   )}
-                  showConfetti
-                />
+                >
+                  Quick add
+                </AddToCartButton>
 
                 {/* Quick View */}
                 <button
@@ -231,7 +239,7 @@ export function ProductCard({
                       ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
                       : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
                   )}
-                  aria-label="Quick view"
+                  aria-label={`Open quick view for ${product.name}`}
                 >
                   <Eye size={18} />
                 </button>
@@ -248,11 +256,12 @@ export function ProductCard({
                       "p-2 rounded-full transition-all",
                       isWishlisted
                         ? "bg-fire-coral text-white"
-                        : variant === 'museum'
+                      : variant === 'museum'
                           ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
                           : "bg-white/95 backdrop-blur-sm hover:bg-white text-gray-700"
                     )}
-                    aria-label="Add to wishlist"
+                    aria-label={`${isWishlisted ? 'Remove' : 'Add'} ${product.name} ${isWishlisted ? 'from' : 'to'} wishlist`}
+                    aria-pressed={isWishlisted}
                   >
                     <Heart size={18} className={cn(isWishlisted && "fill-current")} />
                   </button>
@@ -302,8 +311,13 @@ export function ProductCard({
                   Sold
                 </span>
               )}
-
             </div>
+            <p className={cn(
+              "mt-2 font-sans text-xs font-medium",
+              isAvailable ? "text-opal-emerald-dark" : "text-gray-500"
+            )}>
+              {stockStatus}
+            </p>
           </div>
         ) : (
           // Default style info
@@ -351,6 +365,14 @@ export function ProductCard({
                 </span>
               )}
             </div>
+            <p className={cn(
+              "font-sans text-xs font-medium",
+              isAvailable
+                ? darkBackground ? "text-opal-light" : "text-opal-emerald-dark"
+                : darkBackground ? "text-white/50" : "text-gray-500"
+            )}>
+              {stockStatus}
+            </p>
 
             {/* Metadata for default variant */}
             {showMetadata && (product.stoneOrigin || product.stoneType) && (

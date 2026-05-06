@@ -3,7 +3,6 @@
  * Convenience functions for tracking common e-commerce events
  */
 
-import type { Product } from '@/types/payload-types'
 import type { CartItem } from '@/lib/cart'
 import { getAnalyticsService } from './service'
 import type {
@@ -20,12 +19,19 @@ import type {
 
 const CURRENCY = 'AUD'
 
+interface AnalyticsProduct {
+  id: string
+  name?: string
+  category?: string
+  price?: number
+}
+
 /**
  * Convert product to analytics item format
  * Single Responsibility: Only handles data transformation
  */
 function productToAnalyticsItem(
-  product: Product,
+  product: AnalyticsProduct,
   quantity = 1,
   variant?: string
 ) {
@@ -56,7 +62,7 @@ function cartItemToAnalyticsItem(item: CartItem) {
 /**
  * Track product view
  */
-export function trackProductView(product: Product) {
+export function trackProductView(product: AnalyticsProduct) {
   const analytics = getAnalyticsService()
 
   const event: ProductViewEvent = {
@@ -75,7 +81,7 @@ export function trackProductView(product: Product) {
  * Track add to cart
  */
 export function trackAddToCart(
-  product: Product,
+  product: AnalyticsProduct,
   quantity: number,
   variant?: string
 ) {
