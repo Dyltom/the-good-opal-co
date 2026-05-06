@@ -114,6 +114,11 @@ pnpm seed                # Seed local data
 
 - Use `$nextjs-ecommerce` for store, cart, checkout, Stripe, Payload product,
   order, pricing, inventory, or webhook work.
+- Use `$impeccable` for frontend design, redesign, UI critique, layout,
+  typography, motion, accessibility polish, edge-case hardening, and visual
+  quality review. For substantial visible UI work, read `PRODUCT.md` and
+  `DESIGN.md` first, then use the relevant Impeccable route: `shape`, `layout`,
+  `typeset`, `critique`, `audit`, `harden`, or `polish`.
 - Use repo skills in `.agents/skills/` for repeated workflows such as component
   creation, Server Actions, Payload collections, tests, reviews, debugging, and
   deployment checks.
@@ -125,6 +130,7 @@ pnpm seed                # Seed local data
 
 ## Documentation
 
+- Product/design AI context: `PRODUCT.md` and `DESIGN.md`.
 - Architecture: `docs/ARCHITECTURE.md`.
 - Testing: `docs/TESTING.md` and `docs/VERIFICATION.md`.
 - Design system: `docs/DESIGN_SYSTEM.md`.
