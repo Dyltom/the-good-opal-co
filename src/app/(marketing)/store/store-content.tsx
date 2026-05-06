@@ -211,22 +211,20 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
   return (
     <div className="py-4 px-4 max-w-[90rem] mx-auto">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Enchanted Filters Sidebar */}
+        {/* Filters Sidebar */}
         <aside className="lg:w-80 flex-shrink-0">
           <div
-            className="lg:sticky lg:top-24 bg-gradient-to-br from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm rounded-3xl border border-warm-grey/20 shadow-2xl p-6 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin"
+            className="lg:sticky lg:top-24 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-6 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin"
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#E8E6E3 transparent',
               scrollbarGutter: 'stable'
             }}
           >
-          {/* Magical Header */}
-          <div className="text-center mb-6 pb-4 border-b border-warm-grey/20">
-            <h2 className="font-serif text-xl font-bold text-charcoal mb-2">
-              <span className="font-accent text-opal-electric">✨</span> Filter Treasures <span className="font-accent text-opal-electric">✨</span>
+          <div className="mb-6 pb-4 border-b border-warm-grey/30">
+            <h2 className="font-serif text-xl font-semibold text-charcoal">
+              Filters
             </h2>
-            <p className="font-accent text-sm text-opal-electric/70">~ Discover your perfect gem ~</p>
           </div>
 
           <ProductFilters
@@ -248,18 +246,18 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
 
       {/* Products Area */}
       <div className="flex-1">
-        {/* Magical Search Bar */}
+        {/* Search Bar */}
         <div className="mb-6">
           <label htmlFor="store-search" className="sr-only">Search products</label>
           <div className="relative">
             <input
               id="store-search"
               type="text"
-              placeholder="Search for your magical opal... ✨"
+              placeholder="Search products"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search products"
-              className="w-full px-6 py-4 pr-16 text-base rounded-2xl border border-warm-grey/20 bg-white/90 backdrop-blur-sm focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-lg font-sans placeholder:text-charcoal/40 placeholder:font-accent"
+              className="w-full px-6 py-4 pr-16 text-base rounded-xl border border-warm-grey/30 bg-white focus:border-opal-electric-accessible focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible/20 transition-all shadow-sm font-sans placeholder:text-charcoal/40"
             />
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {searchQuery && (
@@ -291,50 +289,45 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
           </div>
         </div>
 
-        {/* Enchanted Sort Bar */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-gradient-to-r from-white/95 via-white/90 to-opal-electric/5 backdrop-blur-sm rounded-2xl border border-warm-grey/20 shadow-xl p-6">
+        {/* Sort Bar */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-6">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-opal-electric rounded-full animate-pulse"></span>
-              <p className="font-sans text-charcoal font-medium">
-                <span className="font-serif text-lg font-semibold text-opal-electric">{sortedProducts.length}</span>
-                <span className="ml-1">{sortedProducts.length === 1 ? 'magical treasure' : 'magical treasures'} discovered</span>
-                {!showOutOfStock && outOfStockCount > 0 && (
-                  <span className="text-charcoal/50 ml-2 font-normal">
-                    <span className="font-accent">({outOfStockCount} claimed by collectors)</span>
-                  </span>
-                )}
-              </p>
-            </div>
+            <p className="font-sans text-charcoal font-medium">
+              <span className="font-semibold">{sortedProducts.length}</span>
+              <span className="ml-1 text-charcoal/70">{sortedProducts.length === 1 ? 'product' : 'products'}</span>
+              {!showOutOfStock && outOfStockCount > 0 && (
+                <span className="text-charcoal/50 ml-2 font-normal">
+                  ({outOfStockCount} sold)
+                </span>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-6 flex-wrap">
-            {/* Enchanted Out of Stock Toggle */}
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/50">
+            <div className="flex items-center gap-3">
               <Checkbox
                 id="show-sold"
                 checked={showOutOfStock}
                 onCheckedChange={(checked) => setShowOutOfStock(!!checked)}
-                className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible"
+                className="data-[state=checked]:bg-opal-electric-accessible data-[state=checked]:border-opal-electric-accessible"
               />
               <Label htmlFor="show-sold" className="font-sans text-sm cursor-pointer font-medium text-charcoal/80">
-                <span className="font-accent">✨</span> Show claimed treasures
+                Include sold items
               </Label>
             </div>
 
-            {/* Magical Sort */}
             <div className="flex items-center gap-3">
-              <Label htmlFor="sort" className="font-serif text-sm font-semibold text-charcoal">
-                <span className="font-accent text-opal-electric">⚡</span> Arrange by:
+              <Label htmlFor="sort" className="font-sans text-sm font-medium text-charcoal/80">
+                Sort by
               </Label>
               <Select value={sort} onValueChange={(value) => setSort(value as SortOption)}>
-                <SelectTrigger className="w-[190px] rounded-xl border border-warm-grey/30 hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20 shadow-md bg-white/90 backdrop-blur-sm font-sans">
+                <SelectTrigger className="w-[190px] rounded-xl border border-warm-grey/30 hover:border-opal-electric-accessible focus:border-opal-electric-accessible focus:ring-2 focus:ring-opal-electric-accessible/20 shadow-sm bg-white font-sans">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-white/95 backdrop-blur-sm border-warm-grey/30 rounded-xl shadow-xl">
-                  <SelectItem value="featured" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">✨ Featured Finds</SelectItem>
-                  <SelectItem value="price-low" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">💰 Price: Low to High</SelectItem>
-                  <SelectItem value="price-high" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">💎 Price: High to Low</SelectItem>
-                  <SelectItem value="newest" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">🌟 Newest First</SelectItem>
+                <SelectContent className="bg-white border-warm-grey/30 rounded-xl shadow-lg">
+                  <SelectItem value="featured" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Featured</SelectItem>
+                  <SelectItem value="price-low" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Price: Low to High</SelectItem>
+                  <SelectItem value="price-high" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Price: High to Low</SelectItem>
+                  <SelectItem value="newest" className="font-sans focus:bg-opal-electric/10 focus:text-charcoal rounded-lg">Newest</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -380,40 +373,32 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
             )}
           </>
         ) : (
-          <div className="text-center py-24 bg-gradient-to-br from-white/90 via-opal-electric/5 to-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-warm-grey/20 relative overflow-hidden">
-            {/* Magical sparkle effects */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-8 left-1/4 w-2 h-2 bg-opal-electric/30 rounded-full animate-pulse" />
-              <div className="absolute bottom-12 right-1/3 w-1.5 h-1.5 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
-              <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
-            </div>
-
-            <div className="relative z-10">
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-opal-electric/60 drop-shadow-lg">
-                    <path d="M6 3h12l4 6-10 13L2 9l4-6z"/>
-                    <path d="m11 3 1 9"/>
-                    <path d="m12 3 1 9"/>
-                    <path d="m13 3 1 9"/>
-                  </svg>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-opal-electric to-fire-pink rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white font-accent">✨</span>
-                  </div>
-                </div>
-              </div>
-              <h3 className="font-serif text-3xl font-bold text-charcoal mb-3">No magical treasures found</h3>
-              <p className="font-accent text-xl text-opal-electric/70 mb-2">~ The opals are hiding from these filters ~</p>
-              <p className="font-sans text-sm text-charcoal/60 mb-10">Try adjusting your search or clearing the filters to discover more gems</p>
-              <button
-                onClick={handleClearFilters}
-                className="inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-2xl text-base font-medium transition-all h-12 px-8 bg-gradient-to-r from-opal-electric to-opal-deep text-white hover:from-opal-deep hover:to-opal-electric shadow-xl hover:shadow-2xl hover:scale-105 transform font-sans"
-              >
-                <span className="font-accent text-lg">✨</span>
-                Clear All Filters
-                <span className="font-accent text-lg">✨</span>
-              </button>
-            </div>
+          <div className="text-center py-24 bg-white rounded-xl border border-warm-grey/30">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mx-auto mb-6 text-charcoal/40"
+              aria-hidden="true"
+            >
+              <path d="M6 3h12l4 6-10 13L2 9l4-6z" />
+              <path d="m11 3 1 9" />
+              <path d="m12 3 1 9" />
+              <path d="m13 3 1 9" />
+            </svg>
+            <h3 className="font-serif text-2xl font-semibold text-charcoal mb-2">No products found</h3>
+            <p className="font-sans text-sm text-charcoal/60 mb-8">Try adjusting your search or clearing the filters.</p>
+            <button
+              onClick={handleClearFilters}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-colors h-11 px-6 bg-charcoal text-white hover:bg-charcoal-dark font-sans"
+            >
+              Clear filters
+            </button>
           </div>
         )}
       </div>
@@ -441,7 +426,7 @@ function StorePagination({ currentPage, totalPages, onPageChange }: StorePaginat
         type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="rounded-xl border border-warm-grey/30 bg-white/90 px-4 py-2 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-xl border border-warm-grey/30 bg-white px-4 py-2 font-sans text-sm text-charcoal transition-colors hover:border-charcoal hover:text-charcoal disabled:cursor-not-allowed disabled:opacity-40"
       >
         Previous
       </button>
@@ -459,8 +444,8 @@ function StorePagination({ currentPage, totalPages, onPageChange }: StorePaginat
             aria-current={entry === currentPage ? 'page' : undefined}
             className={
               entry === currentPage
-                ? 'rounded-xl bg-opal-electric px-4 py-2 font-sans text-sm font-semibold text-white shadow-md'
-                : 'rounded-xl border border-warm-grey/30 bg-white/90 px-4 py-2 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible'
+                ? 'rounded-xl bg-charcoal px-4 py-2 font-sans text-sm font-semibold text-white'
+                : 'rounded-xl border border-warm-grey/30 bg-white px-4 py-2 font-sans text-sm text-charcoal transition-colors hover:border-charcoal hover:text-charcoal'
             }
           >
             {entry}
@@ -472,7 +457,7 @@ function StorePagination({ currentPage, totalPages, onPageChange }: StorePaginat
         type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="rounded-xl border border-warm-grey/30 bg-white/90 px-4 py-2 font-sans text-sm text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible hover:text-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-xl border border-warm-grey/30 bg-white px-4 py-2 font-sans text-sm text-charcoal transition-colors hover:border-charcoal hover:text-charcoal disabled:cursor-not-allowed disabled:opacity-40"
       >
         Next
       </button>

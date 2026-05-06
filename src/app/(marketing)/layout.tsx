@@ -1,25 +1,27 @@
 import '../globals.css'
-import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
+import { Plus_Jakarta_Sans, Fraunces, Dancing_Script } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { GoogleAnalyticsProvider } from '@/components/analytics/GoogleAnalytics'
 
 // Self-hosted via next/font — no external CDN request, optimal loading
-const merriweather = Merriweather({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['300', '400', '700'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-sans',
   display: 'swap',
   preload: true,
 })
 
-const ebGaramond = EB_Garamond({
+// Fraunces is a variable font with a SOFT axis (0–100); we include it so
+// globals.css can apply font-variation-settings: "SOFT" 100 for pillowy serifs.
+const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
   variable: '--font-serif',
   display: 'swap',
   preload: true,
+  axes: ['SOFT'],
 })
 
 const dancingScript = Dancing_Script({
@@ -55,7 +57,7 @@ export default function MarketingLayout({
   return (
     <html
       lang="en"
-      className={`${merriweather.variable} ${ebGaramond.variable} ${dancingScript.variable}`}
+      className={`${plusJakartaSans.variable} ${fraunces.variable} ${dancingScript.variable}`}
     >
       <head>
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />

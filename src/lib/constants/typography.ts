@@ -7,9 +7,9 @@
 export const TYPOGRAPHY = {
   // Font families
   fontFamily: {
-    display: 'font-serif',   // EB Garamond
-    sans: 'font-sans',       // Merriweather
-    serif: 'font-serif',     // EB Garamond
+    display: 'font-serif',   // Fraunces (soft variant)
+    sans: 'font-sans',       // Plus Jakarta Sans
+    serif: 'font-serif',     // Fraunces (soft variant)
     accent: 'font-accent',   // Dancing Script
   },
 

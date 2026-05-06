@@ -31,13 +31,13 @@ interface ProductFiltersProps {
 }
 
 const CATEGORY_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
-  'all': { label: 'All Treasures', icon: <Star size={16} className="text-opal-electric" /> },
-  'opal-rings': { label: 'Enchanted Rings', icon: <Crown size={16} className="text-fire-pink" /> },
-  'opal-necklaces': { label: 'Necklaces & Pendants', icon: <Sparkles size={16} className="text-opal-turquoise" /> },
-  'opal-earrings': { label: 'Magical Earrings', icon: <Sparkles size={16} className="text-opal-electric" /> },
-  'opal-bracelets': { label: 'Mystical Bracelets', icon: <Moon size={16} className="text-charcoal/60" /> },
-  'raw-opals': { label: 'Raw Wonders', icon: <Gem size={16} className="text-fire-pink" /> },
-  'custom-commissions': { label: 'Custom Creations', icon: <Flower2 size={16} className="text-opal-electric" /> },
+  'all': { label: 'All', icon: <Star size={16} className="text-charcoal/50" /> },
+  'opal-rings': { label: 'Rings', icon: <Crown size={16} className="text-charcoal/50" /> },
+  'opal-necklaces': { label: 'Necklaces & Pendants', icon: <Sparkles size={16} className="text-charcoal/50" /> },
+  'opal-earrings': { label: 'Earrings', icon: <Sparkles size={16} className="text-charcoal/50" /> },
+  'opal-bracelets': { label: 'Bracelets', icon: <Moon size={16} className="text-charcoal/50" /> },
+  'raw-opals': { label: 'Raw Opals', icon: <Gem size={16} className="text-charcoal/50" /> },
+  'custom-commissions': { label: 'Custom Commissions', icon: <Flower2 size={16} className="text-charcoal/50" /> },
 }
 
 const STONE_TYPE_LABELS: Record<string, string> = {
@@ -92,26 +92,22 @@ export function ProductFilters({
 
   return (
     <div className="w-full space-y-8">
-      {/* Magical Clear All Button */}
       {hasActiveFilters && (
-        <div className="text-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onClearAll}
-          >
-            <X className="w-4 h-4 mr-2 text-fire-pink" />
-            <span className="font-accent">✨</span> Clear All Filters <span className="font-accent">✨</span>
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onClearAll}
+          className="w-full"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Clear all
+        </Button>
       )}
 
-      {/* Filters - Always Expanded */}
       <div className="w-full space-y-6">
-        {/* Magical Price Range Filter */}
         <div className="pb-6 border-b border-warm-grey/30">
-          <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
-            <span className="font-accent text-fire-pink">💎</span> Price Range
+          <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+            Price
           </h3>
           <div className="space-y-4">
             {/* Price Input Fields */}
@@ -174,15 +170,14 @@ export function ProductFilters({
           </div>
         </div>
 
-        {/* Magical Category Filter */}
         {filters.categories.length > 0 && (
           <div className="pb-6 border-b border-warm-grey/30">
-            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
-              <span className="font-accent text-opal-electric">⭐</span> Category
+            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+              Category
             </h3>
             <div className="space-y-3">
               {filters.categories.map((category) => (
-                <div key={category} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-opal-electric/5 transition-all">
+                <div key={category} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
                     id={`category-${category}`}
                     checked={selectedCategories.includes(category)}
@@ -202,15 +197,14 @@ export function ProductFilters({
           </div>
         )}
 
-        {/* Magical Stone Type Filter */}
         {filters.stoneTypes.length > 0 && (
           <div className="pb-6 border-b border-warm-grey/30">
-            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
-              <span className="font-accent text-opal-turquoise">💠</span> Stone Type
+            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+              Stone Type
             </h3>
             <div className="space-y-3">
               {filters.stoneTypes.map((type) => (
-                <div key={type} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-opal-turquoise/5 transition-all">
+                <div key={type} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
                     id={`stone-${type}`}
                     checked={selectedStoneTypes.includes(type)}
@@ -229,15 +223,14 @@ export function ProductFilters({
           </div>
         )}
 
-        {/* Magical Origin Filter */}
         {filters.origins.length > 0 && (
           <div className="pb-6 border-b border-warm-grey/30">
-            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
-              <span className="font-accent text-fire-pink">🌍</span> Origin
+            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+              Origin
             </h3>
             <div className="space-y-3">
               {filters.origins.map((origin) => (
-                <div key={origin} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-fire-pink/5 transition-all">
+                <div key={origin} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
                     id={`origin-${origin}`}
                     checked={selectedOrigins.includes(origin)}
@@ -256,15 +249,14 @@ export function ProductFilters({
           </div>
         )}
 
-        {/* Magical Material Filter */}
         {filters.materials.length > 0 && (
           <div className="pb-6">
-            <h3 className="font-serif text-lg font-semibold mb-4 text-charcoal flex items-center gap-2">
-              <span className="font-accent text-fire-gold">⚡</span> Material
+            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+              Material
             </h3>
             <div className="space-y-3">
               {filters.materials.map((material) => (
-                <div key={material} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-fire-gold/5 transition-all">
+                <div key={material} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
                     id={`material-${material}`}
                     checked={selectedMaterials.includes(material)}

@@ -153,36 +153,25 @@ export default async function StorePage({ searchParams }: StorePageProps) {
 
           <main className="flex-1">
             {/* Hero Section */}
-            <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden">
-              {/* Magical sparkle effects */}
-              <div className="absolute inset-0">
-                <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
-                <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
-                <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
-              </div>
-
+            <section className="pt-32 pb-12 bg-white">
               <Container>
-                <div className="text-center max-w-5xl mx-auto">
-                  <span className="font-accent text-lg text-opal-electric mb-4 block">
-                    ⭐ Handcrafted Treasures ⭐
-                  </span>
-                  <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-charcoal leading-tight">
+                <div className="max-w-3xl mx-auto text-center">
+                  <p className="font-sans text-xs uppercase tracking-[0.2em] text-opal-electric-accessible mb-4">
+                    The Collection
+                  </p>
+                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-charcoal leading-[1.1] tracking-tight mb-5">
                     {searchQuery ? (
-                      <>Results for <span className="font-accent text-opal-electric">&ldquo;{searchQuery}&rdquo;</span></>
+                      <>Results for &ldquo;{searchQuery}&rdquo;</>
                     ) : (
-                      <>Australian <span className="font-accent text-opal-electric">Opals</span></>
+                      <>Australian Opals</>
                     )}
                   </h1>
-                  <p className="text-base md:text-lg text-charcoal/70 leading-relaxed max-w-3xl mx-auto mb-4">
+                  <p className="text-base md:text-lg text-charcoal/70 leading-relaxed">
                     {searchQuery ? (
                       <>Found {transformedProducts.length} opal{transformedProducts.length !== 1 ? 's' : ''} matching your search.</>
                     ) : (
-                      <>Each opal in our collection tells a story millions of years in the making.
-                      Discover these magical gemstones, lovingly handpicked from Australia&apos;s most treasured mines.</>
+                      <>Each stone in the collection is handpicked from Lightning Ridge, Coober Pedy and Queensland, cut and set in our Australian studio.</>
                     )}
-                  </p>
-                  <p className="font-accent text-lg text-opal-electric/80">
-                    ~ Where magic meets craftsmanship ~
                   </p>
                 </div>
               </Container>

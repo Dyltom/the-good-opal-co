@@ -98,10 +98,10 @@
     --sidebar-ring: oklch(0.6531 0.1347 242.6867);
 
     /* Typography - Semantic font naming for fairytale theme */
-    --font-sans: 'Merriweather', serif; /* Warm readable body text */
-    --font-serif: 'EB Garamond', serif; /* Elegant display headings */
+    --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif; /* Soft, smooth body text */
+    --font-serif: 'Fraunces', Georgia, serif; /* Pillowy display headings (SOFT axis=100) */
     --font-accent: 'Dancing Script', cursive; /* Magical handwritten moments */
-    --font-inter: 'EB Garamond', serif; /* Legacy compatibility */
+    --font-inter: 'Fraunces', serif; /* Legacy compatibility */
     --font-mono: 'Fira Code', monospace;
     --font-heading: var(--font-serif);
 
@@ -242,6 +242,14 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading;
     font-weight: 600;
+    /* Fraunces variable-font axes: max SOFT (rounded terminals), neutral WONK. */
+    font-variation-settings: "SOFT" 100, "WONK" 0;
+  }
+
+  /* Apply the same soft axis anywhere the serif family is used explicitly. */
+  .font-serif,
+  .font-display {
+    font-variation-settings: "SOFT" 100, "WONK" 0;
   }
 
   h1 {

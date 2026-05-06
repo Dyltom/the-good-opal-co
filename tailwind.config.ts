@@ -221,19 +221,19 @@ const config: Config = {
   		fontFamily: {
   			sans: [
   				'var(--font-sans)',
-  				'Merriweather',
-  				'Georgia',
-  				'serif'
+  				'Plus Jakarta Sans',
+  				'system-ui',
+  				'sans-serif'
   			],
   			serif: [
   				'var(--font-serif)',
-  				'EB Garamond',
+  				'Fraunces',
   				'Georgia',
   				'serif'
   			],
   			display: [
   				'var(--font-serif)',
-  				'EB Garamond',
+  				'Fraunces',
   				'Georgia',
   				'serif'
   			],
@@ -245,13 +245,13 @@ const config: Config = {
   			heading: [
   				'var(--font-heading)',
   				'var(--font-serif)',
-  				'EB Garamond',
+  				'Fraunces',
   				'Georgia',
   				'serif'
   			],
   			inter: [
   				'var(--font-inter)',
-  				'EB Garamond',
+  				'Fraunces',
   				'serif'
   			]
   		},
