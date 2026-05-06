@@ -1,0 +1,18 @@
+# Project-scoped Codex configuration.
+# Keep personal model, sandbox, approval, and credential choices in
+# ~/.codex/config.toml. This file should remain safe to trust and commit.
+
+project_doc_max_bytes = 32768
+project_doc_fallback_filenames = []
+
+[agents]
+max_threads = 6
+max_depth = 1
+job_max_runtime_seconds = 1800
+
+[mcp_servers.openaiDeveloperDocs]
+enabled = true
+required = false
+url = "https://developers.openai.com/mcp"
+startup_timeout_sec = 10.0
+tool_timeout_sec = 60.0
