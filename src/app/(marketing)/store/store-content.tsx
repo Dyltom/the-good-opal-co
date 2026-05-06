@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { clampPage, paginate, totalPages } from '@/lib/pagination'
+import { SlidersHorizontal, X } from 'lucide-react'
 import type { Product } from './page'
 
 const PRODUCTS_PER_PAGE = 24
@@ -58,6 +59,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
   })
   const [showOutOfStock, setShowOutOfStock] = useState(() => searchParams?.get('showOutOfStock') === 'true')
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery || searchParams?.get('search') || '')
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
 
   // Filter states - initialize from URL
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
@@ -88,6 +90,23 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
   useEffect(() => {
     setPage(1)
   }, [sort, showOutOfStock, searchQuery, selectedCategories, selectedStoneTypes, selectedOrigins, selectedMaterials, priceRange])
+
+  useEffect(() => {
+    if (!isMobileFiltersOpen) return
+
+    const previousOverflow = document.body.style.overflow
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMobileFiltersOpen(false)
+    }
+
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isMobileFiltersOpen])
 
   // Sync state to URL parameters
   useEffect(() => {
@@ -265,7 +284,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
     <div className="py-4 px-4 max-w-[90rem] mx-auto">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Filters Sidebar */}
-        <aside className="lg:w-80 flex-shrink-0">
+        <aside className="hidden lg:block lg:w-80 flex-shrink-0">
           <div
             className="lg:sticky lg:top-24 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-6 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto scrollbar-thin"
             style={{
@@ -281,6 +300,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
           </div>
 
           <ProductFilters
+            idPrefix="desktop"
             filters={filterOptions}
             selectedCategories={selectedCategories}
             selectedStoneTypes={selectedStoneTypes}
@@ -342,8 +362,95 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
           </div>
         </div>
 
+        {/* Mobile Filter Trigger */}
+        <div className="mb-4 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileFiltersOpen(true)}
+            className="flex min-h-12 w-full items-center justify-between rounded-xl border border-warm-grey/30 bg-white px-4 py-3 font-sans text-sm font-semibold text-charcoal shadow-sm transition-colors hover:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
+            aria-label="Open filters"
+          >
+            <span className="inline-flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4 text-opal-electric-accessible" aria-hidden="true" />
+              Filter & refine
+            </span>
+            {activeFilterCount > 0 ? (
+              <span className="rounded-full bg-opal-electric-accessible px-2.5 py-1 text-xs font-semibold text-white">
+                {activeFilterCount}
+              </span>
+            ) : (
+              <span className="text-xs font-medium text-charcoal/55">
+                Optional
+              </span>
+            )}
+          </button>
+        </div>
+
+        {isMobileFiltersOpen && (
+          <div
+            className="fixed inset-0 z-50 lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filter & refine"
+            aria-labelledby="mobile-filters-title"
+          >
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/45"
+              aria-label="Close filters"
+              onClick={() => setIsMobileFiltersOpen(false)}
+            />
+            <div className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl">
+              <div className="flex items-center justify-between gap-4 border-b border-warm-grey/30 px-5 py-4">
+                <div>
+                  <h2 id="mobile-filters-title" className="font-serif text-xl font-semibold text-charcoal">
+                    Filter & refine
+                  </h2>
+                  <p className="font-sans text-xs text-charcoal/60">
+                    {sortedProducts.length} {sortedProducts.length === 1 ? 'product' : 'products'} available
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-grey/30 text-charcoal transition-colors hover:bg-warm-grey/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
+                  aria-label="Close filters"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-5 py-5">
+                <ProductFilters
+                  idPrefix="mobile"
+                  filters={filterOptions}
+                  selectedCategories={selectedCategories}
+                  selectedStoneTypes={selectedStoneTypes}
+                  selectedOrigins={selectedOrigins}
+                  selectedMaterials={selectedMaterials}
+                  priceRange={priceRange}
+                  onCategoryChange={handleCategoryChange}
+                  onStoneTypeChange={handleStoneTypeChange}
+                  onOriginChange={handleOriginChange}
+                  onMaterialChange={handleMaterialChange}
+                  onPriceRangeChange={setPriceRange}
+                  onClearAll={handleClearFilters}
+                />
+              </div>
+              <div className="border-t border-warm-grey/30 bg-white p-4">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFiltersOpen(false)}
+                  className="flex h-12 w-full items-center justify-center rounded-xl bg-charcoal px-5 font-sans text-sm font-semibold text-white transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
+                >
+                  Show {sortedProducts.length} {sortedProducts.length === 1 ? 'product' : 'products'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Sort Bar */}
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-6">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 bg-white rounded-xl border border-warm-grey/30 shadow-sm p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <p className="font-sans text-charcoal font-medium" aria-live="polite">
               <span className="font-semibold">{sortedProducts.length}</span>

@@ -16,6 +16,7 @@ interface FilterOptions {
 }
 
 interface ProductFiltersProps {
+  idPrefix?: string
   filters: FilterOptions
   selectedCategories: string[]
   selectedStoneTypes: string[]
@@ -69,6 +70,7 @@ const MATERIAL_LABELS: Record<string, string> = {
 }
 
 export function ProductFilters({
+  idPrefix,
   filters,
   selectedCategories,
   selectedStoneTypes,
@@ -82,6 +84,8 @@ export function ProductFilters({
   onPriceRangeChange,
   onClearAll,
 }: ProductFiltersProps) {
+  const fieldId = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id)
+
   const hasActiveFilters =
     selectedCategories.length > 0 ||
     selectedStoneTypes.length > 0 ||
@@ -106,20 +110,20 @@ export function ProductFilters({
 
       <div className="w-full space-y-6">
         <div className="pb-6 border-b border-warm-grey/30">
-          <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+          <h3 className="font-sans text-xs uppercase font-semibold mb-4 text-charcoal/70">
             Price
           </h3>
           <div className="space-y-4">
             {/* Price Input Fields */}
             <div className="flex items-center gap-3">
               <div className="flex-1">
-                <label htmlFor="min-price" className="block text-xs font-medium text-charcoal/70 mb-1">
+                <label htmlFor={fieldId('min-price')} className="block text-xs font-medium text-charcoal/70 mb-1">
                   Min
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-charcoal/60">$</span>
                   <input
-                    id="min-price"
+                    id={fieldId('min-price')}
                     type="number"
                     min={0}
                     max={filters.maxPrice}
@@ -135,13 +139,13 @@ export function ProductFilters({
               </div>
               <div className="text-charcoal/40 mt-5">to</div>
               <div className="flex-1">
-                <label htmlFor="max-price" className="block text-xs font-medium text-charcoal/70 mb-1">
+                <label htmlFor={fieldId('max-price')} className="block text-xs font-medium text-charcoal/70 mb-1">
                   Max
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-charcoal/60">$</span>
                   <input
-                    id="max-price"
+                    id={fieldId('max-price')}
                     type="number"
                     min={priceRange[0]}
                     max={filters.maxPrice}
@@ -172,20 +176,20 @@ export function ProductFilters({
 
         {filters.categories.length > 0 && (
           <div className="pb-6 border-b border-warm-grey/30">
-            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+            <h3 className="font-sans text-xs uppercase font-semibold mb-4 text-charcoal/70">
               Category
             </h3>
             <div className="space-y-3">
               {filters.categories.map((category) => (
                 <div key={category} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
-                    id={`category-${category}`}
+                    id={fieldId(`category-${category}`)}
                     checked={selectedCategories.includes(category)}
                     onCheckedChange={() => onCategoryChange(category)}
                     className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
-                    htmlFor={`category-${category}`}
+                    htmlFor={fieldId(`category-${category}`)}
                     className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex items-center gap-2 flex-1"
                   >
                     {CATEGORY_LABELS[category]?.icon}
@@ -199,20 +203,20 @@ export function ProductFilters({
 
         {filters.stoneTypes.length > 0 && (
           <div className="pb-6 border-b border-warm-grey/30">
-            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+            <h3 className="font-sans text-xs uppercase font-semibold mb-4 text-charcoal/70">
               Stone Type
             </h3>
             <div className="space-y-3">
               {filters.stoneTypes.map((type) => (
                 <div key={type} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
-                    id={`stone-${type}`}
+                    id={fieldId(`stone-${type}`)}
                     checked={selectedStoneTypes.includes(type)}
                     onCheckedChange={() => onStoneTypeChange(type)}
                     className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
-                    htmlFor={`stone-${type}`}
+                    htmlFor={fieldId(`stone-${type}`)}
                     className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex-1"
                   >
                     {STONE_TYPE_LABELS[type] || type}
@@ -225,20 +229,20 @@ export function ProductFilters({
 
         {filters.origins.length > 0 && (
           <div className="pb-6 border-b border-warm-grey/30">
-            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+            <h3 className="font-sans text-xs uppercase font-semibold mb-4 text-charcoal/70">
               Origin
             </h3>
             <div className="space-y-3">
               {filters.origins.map((origin) => (
                 <div key={origin} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
-                    id={`origin-${origin}`}
+                    id={fieldId(`origin-${origin}`)}
                     checked={selectedOrigins.includes(origin)}
                     onCheckedChange={() => onOriginChange(origin)}
                     className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
-                    htmlFor={`origin-${origin}`}
+                    htmlFor={fieldId(`origin-${origin}`)}
                     className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex-1"
                   >
                     {ORIGIN_LABELS[origin] || origin}
@@ -251,20 +255,20 @@ export function ProductFilters({
 
         {filters.materials.length > 0 && (
           <div className="pb-6">
-            <h3 className="font-sans text-xs uppercase tracking-[0.15em] font-semibold mb-4 text-charcoal/70">
+            <h3 className="font-sans text-xs uppercase font-semibold mb-4 text-charcoal/70">
               Material
             </h3>
             <div className="space-y-3">
               {filters.materials.map((material) => (
                 <div key={material} className="flex items-center space-x-3 p-2 rounded-xl hover:bg-warm-grey/20 transition-all">
                   <Checkbox
-                    id={`material-${material}`}
+                    id={fieldId(`material-${material}`)}
                     checked={selectedMaterials.includes(material)}
                     onCheckedChange={() => onMaterialChange(material)}
                     className="data-[state=checked]:bg-opal-electric data-[state=checked]:border-opal-electric-accessible shadow-sm"
                   />
                   <Label
-                    htmlFor={`material-${material}`}
+                    htmlFor={fieldId(`material-${material}`)}
                     className="font-sans text-sm font-medium cursor-pointer leading-none text-charcoal/80 hover:text-opal-electric transition-colors flex-1"
                   >
                     {MATERIAL_LABELS[material] || material}

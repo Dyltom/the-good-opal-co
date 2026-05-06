@@ -90,4 +90,38 @@ describe('buying flow UI/UX safeguards', () => {
     expect(mobileStoreSource).not.toContain('onQuickAdd')
     expect(mobileCardSource).not.toContain('onQuickAdd')
   })
+
+  test('mobile store uses a compact filter drawer before the desktop sidebar', () => {
+    const source = read('src/app/(marketing)/store/store-content.tsx')
+
+    expect(source).toContain('isMobileFiltersOpen')
+    expect(source).toContain('Filter & refine')
+    expect(source).toContain('role="dialog"')
+    expect(source).toContain('aria-modal="true"')
+    expect(source).toContain('aria-label="Filter & refine"')
+    expect(source).toContain('hidden lg:block')
+    expect(source).toContain('lg:hidden')
+    expect(source).toContain('idPrefix="mobile"')
+    expect(source).toContain('idPrefix="desktop"')
+    expect(source).toContain('Show {sortedProducts.length}')
+  })
+
+  test('product filters support prefixed ids for mobile and desktop instances', () => {
+    const source = read('src/components/store/ProductFilters.tsx')
+
+    expect(source).toContain('idPrefix?: string')
+    expect(source).toContain('const fieldId')
+    expect(source).toContain('id={fieldId(')
+    expect(source).toContain('htmlFor={fieldId(')
+    expect(source).not.toContain('tracking-[0.15em]')
+  })
+
+  test('closed mobile navigation does not reserve page-height hit area', () => {
+    const source = read('src/components/navigation/Navigation.tsx')
+
+    expect(source).toContain('aria-hidden={!mobileMenuOpen}')
+    expect(source).toContain('overflow-hidden')
+    expect(source).toContain('max-h-0')
+    expect(source).toContain('max-h-[calc(100vh-5rem)]')
+  })
 })

@@ -247,11 +247,12 @@ export function Navigation({
       {/* Mobile Menu with Opal Styling */}
       <div
         id="mobile-menu"
+        aria-hidden={!mobileMenuOpen}
         className={cn(
-          'md:hidden transition-all duration-300 ease-out transform origin-top',
+          'md:hidden overflow-hidden transition-all duration-300 ease-out transform origin-top',
           mobileMenuOpen
-            ? 'opacity-100 scale-y-100 translate-y-0'
-            : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none'
+            ? 'max-h-[calc(100vh-5rem)] overflow-y-auto opacity-100 scale-y-100 translate-y-0'
+            : 'max-h-0 opacity-0 scale-y-95 -translate-y-2 pointer-events-none'
         )}
       >
         <div className="bg-white/95 backdrop-blur-xl border-t border-gray-soft shadow-xl">
