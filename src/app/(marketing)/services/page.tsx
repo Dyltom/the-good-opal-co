@@ -126,14 +126,14 @@ export default function ServicesPage() {
       <PageTransition>
         <main className="min-h-screen">
           {/* Hero Section */}
-          <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+          <section className="relative flex min-h-[620px] items-center justify-center overflow-hidden py-20 sm:min-h-[560px] lg:h-[60vh] lg:min-h-[500px] lg:py-0">
             {/* Background with gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-black-rich via-charcoal to-black-rich" />
             <div className="absolute inset-0 bg-gradient-to-t from-black-rich/50 to-transparent" />
 
             {/* Animated gradient orbs */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-opal-electric/20 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fire-pink/20 rounded-full blur-3xl animate-pulse delay-1000" />
+            <div className="absolute top-1/4 left-1/4 h-56 w-56 rounded-full bg-opal-electric/20 blur-3xl animate-pulse sm:h-96 sm:w-96" />
+            <div className="absolute bottom-1/4 right-1/4 h-56 w-56 rounded-full bg-fire-pink/20 blur-3xl animate-pulse delay-1000 sm:h-96 sm:w-96" />
 
             <Container className="relative z-10">
               <div className="text-center text-white max-w-4xl mx-auto">
@@ -152,13 +152,13 @@ export default function ServicesPage() {
                   From concept to creation, we bring your vision to life with handcrafted
                   Australian opal jewellery that&apos;s uniquely yours.
                 </p>
-                <div className="flex gap-4 justify-center">
-                  <Button asChild size="lg">
+                <div className="mx-auto flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+                  <Button asChild size="lg" className="w-full sm:w-auto">
                     <Link href="/contact?subject=custom-design">
                       Start Your Design
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg" className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20">
+                  <Button asChild variant="outline" size="lg" className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 sm:w-auto">
                     <Link href="#process">
                       Learn More
                     </Link>
@@ -291,8 +291,8 @@ export default function ServicesPage() {
                   Whether it&apos;s an engagement ring, anniversary gift, or personal treasure,
                   we&apos;ll help you create a one-of-a-kind piece that tells your story.
                 </p>
-                <div className="flex gap-4 justify-center">
-                  <Button asChild size="lg" variant="secondary">
+                <div className="mx-auto flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+                  <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                     <Link href="/contact?subject=custom-design">
                       Start Your Design Journey
                     </Link>
@@ -301,7 +301,7 @@ export default function ServicesPage() {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+                    className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 sm:w-auto"
                   >
                     <Link href="/store">
                       Browse Our Collection

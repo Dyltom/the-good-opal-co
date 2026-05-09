@@ -96,6 +96,7 @@ export function Navigation({
                     width={logo.width || 48}
                     height={logo.height || 48}
                     className="relative h-10 w-auto sm:h-12 transition-transform duration-300 group-hover:scale-105"
+                    priority
                   />
                 </div>
               ) : null}
@@ -116,7 +117,7 @@ export function Navigation({
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex md:items-center md:gap-1 lg:gap-2 flex-1 justify-end">
+            <div className="hidden xl:flex xl:items-center xl:gap-2 flex-1 justify-end">
               {/* Home Link */}
               <Link
                 href="/"
@@ -191,7 +192,7 @@ export function Navigation({
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="flex items-center gap-1 sm:gap-2 md:hidden flex-shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 xl:hidden flex-shrink-0">
               <div className={cn(
                 'transition-colors duration-300',
                 onDarkBackground && '[&_button]:text-white [&_button]:hover:bg-white/10'
@@ -249,7 +250,7 @@ export function Navigation({
         id="mobile-menu"
         aria-hidden={!mobileMenuOpen}
         className={cn(
-          'md:hidden overflow-hidden transition-all duration-300 ease-out transform origin-top',
+          'xl:hidden overflow-hidden transition-all duration-300 ease-out transform origin-top',
           mobileMenuOpen
             ? 'max-h-[calc(100vh-5rem)] overflow-y-auto opacity-100 scale-y-100 translate-y-0'
             : 'max-h-0 opacity-0 scale-y-95 -translate-y-2 pointer-events-none'

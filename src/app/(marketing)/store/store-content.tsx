@@ -324,7 +324,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
           aria-label="Store search and refinement"
           className="mb-8 rounded-2xl border border-warm-grey/30 bg-white p-4 shadow-sm sm:p-5"
         >
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(13.5rem,auto)] sm:items-center">
             <div>
               <label htmlFor="store-search" className="sr-only">Search products</label>
               <div className="relative">
@@ -375,7 +375,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
             <button
               type="button"
               onClick={() => setIsMobileFiltersOpen(true)}
-              className="flex min-h-12 w-full items-center justify-between rounded-xl border border-warm-grey/30 bg-cream px-4 py-3 font-sans text-sm font-semibold text-charcoal transition-colors hover:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30 lg:hidden"
+              className="flex min-h-12 w-full items-center justify-between gap-4 rounded-xl border border-warm-grey/30 bg-cream px-4 py-3 font-sans text-sm font-semibold text-charcoal transition-colors hover:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30 lg:hidden"
               aria-label="Open filters"
             >
               <span className="inline-flex items-center gap-2">
@@ -387,7 +387,7 @@ export function StoreContent({ products, searchQuery: initialSearchQuery }: Stor
                   {activeFilterCount}
                 </span>
               ) : (
-                <span className="text-xs font-medium text-charcoal/55">
+                <span className="shrink-0 text-xs font-medium text-charcoal/55">
                   Optional
                 </span>
               )}

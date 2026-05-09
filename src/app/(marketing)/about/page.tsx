@@ -155,15 +155,15 @@ export default function AboutPage() {
             </div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden">
               <Image
-                src="/images/stephanie-founder.jpg"
-                alt="Stephanie Caruana, founder of The Good Opal Co, at the Lightning Ridge opal fields"
+                src="/images/founders.jpg"
+                alt="A polished Australian opal in a display case"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
                 <p className="text-white text-sm">
-                  Stephanie Caruana at the Lightning Ridge opal fields, hand-selecting stones
+                  A hand-selected Australian opal ready for cutting and setting
                 </p>
               </div>
             </div>
@@ -280,14 +280,9 @@ export default function AboutPage() {
           </div>
           <div className="max-w-3xl mx-auto">
             <div className="text-center">
-              <div className="w-48 h-48 bg-gray-200 rounded-full mx-auto mb-6 overflow-hidden relative">
-                <Image
-                  src="/images/stephanie-founder.jpg"
-                  alt="Stephanie Caruana, Founder of The Good Opal Co"
-                  fill
-                  sizes="192px"
-                  className="object-cover"
-                />
+              <div className="mx-auto mb-6 flex h-48 w-48 items-center justify-center rounded-full bg-gradient-to-br from-opal-electric/15 via-white to-fire-pink/15 ring-1 ring-opal-electric/20">
+                <Sparkles className="h-16 w-16 text-opal-electric" aria-hidden="true" />
+                <span className="sr-only">Stephanie Caruana, Founder of The Good Opal Co</span>
               </div>
               <h3 className="font-serif font-semibold text-charcoal text-xl mb-2">Stephanie Caruana</h3>
               <p className="font-sans text-content-muted mb-4 text-lg">Founder & Creative Director</p>

@@ -149,7 +149,6 @@ export default async function StorePage({ searchParams }: StorePageProps) {
               { href: '/contact', label: 'Contact' },
               { href: '/faq', label: 'FAQ' },
             ]}
-            transparent
           />
 
           <main className="flex-1">

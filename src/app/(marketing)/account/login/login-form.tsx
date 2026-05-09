@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useActionState, useState } from 'react'
 import Link from 'next/link'
-import { useFormState } from 'react-dom'
 import { login, register } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,11 +11,11 @@ import { cn } from '@/lib/utils'
 
 export function LoginForm() {
   const [isRegister, setIsRegister] = useState(false)
-  const [isLoading] = useState(false)
-  const [loginState, loginAction] = useFormState(login, null)
-  const [registerState, registerAction] = useFormState(register, null)
+  const [loginState, loginAction, isLoginPending] = useActionState(login, null)
+  const [registerState, registerAction, isRegisterPending] = useActionState(register, null)
 
   const action = isRegister ? registerAction : loginAction
+  const isLoading = isRegister ? isRegisterPending : isLoginPending
 
   const error = isRegister ? registerState?.error : loginState?.error
 

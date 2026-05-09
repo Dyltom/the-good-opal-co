@@ -62,9 +62,9 @@ export default async function BlogPage() {
         <section className="relative pt-32 pb-24 bg-gradient-to-b from-black-rich via-gray-900 to-black-rich overflow-hidden">
           {/* Enhanced background effects */}
           <div className="absolute inset-0">
-            <div className="hidden sm:block absolute -top-40 left-1/4 w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-br from-opal-electric to-opal-deep" />
-            <div className="hidden sm:block absolute -bottom-40 right-1/4 w-[600px] h-[600px] rounded-full opacity-15 blur-3xl bg-gradient-to-tr from-fire-pink to-fire-orange" />
-            <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[400px] rounded-full opacity-10 blur-3xl bg-gradient-to-r from-opal-turquoise to-opal-emerald" />
+            <div className="absolute -top-40 left-1/2 hidden h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-gradient-to-br from-opal-electric to-opal-deep opacity-20 blur-3xl sm:block lg:h-[800px] lg:w-[800px]" />
+            <div className="absolute -bottom-40 right-1/2 hidden h-[420px] w-[420px] translate-x-1/2 rounded-full bg-gradient-to-tr from-fire-pink to-fire-orange opacity-15 blur-3xl sm:block lg:h-[600px] lg:w-[600px]" />
+            <div className="absolute left-1/2 top-1/2 hidden h-[320px] w-[720px] max-w-[calc(100vw-3rem)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-r from-opal-turquoise to-opal-emerald opacity-10 blur-3xl sm:block lg:h-[400px] lg:w-[1000px]" />
           </div>
 
           {/* Decorative pattern overlay */}

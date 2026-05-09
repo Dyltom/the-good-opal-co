@@ -1,14 +1,14 @@
 'use client'
 
-import { useFormState } from 'react-dom'
+import { useActionState } from 'react'
 import { trackOrder } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Package, Mail, CheckCircle, Truck, Clock } from 'lucide-react'
+import { Package, Mail, CheckCircle, Truck, Clock, Loader2 } from 'lucide-react'
 
 export function OrderTrackingForm() {
-  const [state, formAction] = useFormState(trackOrder, { error: '' as string, order: null })
+  const [state, formAction, isPending] = useActionState(trackOrder, { error: '' as string, order: null })
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -88,8 +88,15 @@ export function OrderTrackingForm() {
           )}
 
           {/* Submit Button */}
-          <Button type="submit" size="lg" className="w-full">
-            Track Order
+          <Button type="submit" size="lg" className="w-full" disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Tracking...
+              </>
+            ) : (
+              'Track Order'
+            )}
           </Button>
         </form>
       </div>

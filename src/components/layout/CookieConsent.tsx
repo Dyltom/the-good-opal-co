@@ -92,24 +92,24 @@ export function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          className="fixed bottom-0 left-0 right-0 z-50 p-4 sm:p-6"
+          className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-6"
         >
-          <div className="max-w-7xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl sm:rounded-2xl">
               {/* Main Banner */}
               <div className={cn(
-                "p-6 sm:p-8",
+                "p-4 sm:p-6 lg:p-8",
                 showSettings && "border-b border-gray-200"
               )}>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                <div className="flex items-start justify-between gap-3 sm:gap-4">
+                  <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
                     <div className="hidden sm:block">
                       <div className="w-12 h-12 bg-opal-electric/10 rounded-full flex items-center justify-center">
                         <Cookie className="w-6 h-6 text-opal-electric" />
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-charcoal mb-2">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="mb-2 text-base font-semibold text-charcoal sm:text-lg">
                         We value your privacy 🍪
                       </h3>
                       <p className="text-sm text-content mb-4">
@@ -119,11 +119,11 @@ export function CookieConsent() {
                           Read our Cookie Policy
                         </Link>
                       </p>
-                      <div className="flex flex-wrap gap-3">
+                      <div className="grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
                         <Button
                           onClick={acceptAll}
                           size="sm"
-                          className="bg-opal-electric hover:bg-opal-electric/90"
+                          className="w-full bg-opal-electric hover:bg-opal-electric/90 sm:w-auto"
                         >
                           Accept All
                         </Button>
@@ -131,6 +131,7 @@ export function CookieConsent() {
                           onClick={acceptNecessary}
                           size="sm"
                           variant="outline"
+                          className="w-full sm:w-auto"
                         >
                           Necessary Only
                         </Button>
@@ -138,7 +139,7 @@ export function CookieConsent() {
                           onClick={toggleSettings}
                           size="sm"
                           variant="ghost"
-                          className="gap-2"
+                          className="w-full gap-2 sm:w-auto"
                         >
                           <Settings className="w-4 h-4" />
                           Cookie Settings
@@ -148,7 +149,7 @@ export function CookieConsent() {
                   </div>
                   <button
                     onClick={() => setShowBanner(false)}
-                    className="-mr-3 -mt-3 flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30"
+                    className="-mr-2 -mt-2 flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30 sm:-mr-3 sm:-mt-3"
                     aria-label="Close cookie banner"
                   >
                     <X className="w-5 h-5" />
@@ -256,10 +257,11 @@ export function CookieConsent() {
                         </div>
                       </div>
 
-                      <div className="mt-6 flex gap-3">
+                      <div className="mt-6 grid gap-2 sm:flex sm:gap-3">
                         <Button
                           onClick={() => savePreferences(preferences)}
                           size="sm"
+                          className="w-full sm:w-auto"
                         >
                           Save Preferences
                         </Button>
@@ -274,6 +276,7 @@ export function CookieConsent() {
                           }}
                           size="sm"
                           variant="ghost"
+                          className="w-full sm:w-auto"
                         >
                           Select All
                         </Button>

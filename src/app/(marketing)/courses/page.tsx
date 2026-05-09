@@ -174,8 +174,8 @@ export default function CoursesPage() {
                   From beginner to expert, learn everything about Australian opals with our
                   comprehensive courses led by industry professionals.
                 </p>
-                <div className="flex gap-4 justify-center">
-                  <Button asChild size="lg" className="bg-white text-opal-electric hover:bg-white/90">
+                <div className="mx-auto flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+                  <Button asChild size="lg" className="w-full bg-white text-opal-electric hover:bg-white/90 sm:w-auto">
                     <Link href="#courses">
                       Explore Courses
                     </Link>
@@ -184,7 +184,7 @@ export default function CoursesPage() {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="bg-transparent border-white/30 text-white hover:bg-white/10"
+                    className="w-full bg-transparent border-white/30 text-white hover:bg-white/10 sm:w-auto"
                   >
                     <Link href="#upcoming">
                       Upcoming Sessions
@@ -414,8 +414,8 @@ export default function CoursesPage() {
                   Join hundreds of students who have deepened their appreciation and
                   understanding of Australian opals through our expert-led courses.
                 </p>
-                <div className="flex gap-4 justify-center">
-                  <Button asChild size="lg" variant="secondary">
+                <div className="mx-auto flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+                  <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                     <Link href="#courses">
                       Browse All Courses
                     </Link>
@@ -424,7 +424,7 @@ export default function CoursesPage() {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+                    className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 sm:w-auto"
                   >
                     <Link href="/contact">
                       Contact Us
