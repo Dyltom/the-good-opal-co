@@ -781,7 +781,7 @@ function RingShank({
   const solderedRadius = (tubeRadius + shoulderRadius) / 2
 
   return (
-    <mesh scale={[1, 1, 1.18]}>
+    <mesh>
       <tubeGeometry args={[curve, 160, solderedRadius, 16, false]} />
       <MetalMaterial metal={metal} roughness={0.25} />
     </mesh>

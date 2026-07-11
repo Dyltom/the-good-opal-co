@@ -77,8 +77,8 @@ describe('custom ring geometry contract', () => {
     )
 
     for (const [style, profile] of profiles) {
-      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.075)
-      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.09)
+      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.065)
+      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.08)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(0.95)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.05)
 
@@ -128,7 +128,7 @@ describe('custom ring geometry contract', () => {
       haloOffset: 0.043,
       beadRadius: 0.029,
       beadCount: 40,
-      shankRadius: 0.09,
+      shankRadius: 0.078,
     })
     expect(ringStyleGeometryProfiles.aurora).toMatchObject({
       haloOffset: 0.042,

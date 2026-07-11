@@ -101,8 +101,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloSupportRadius: 0,
     beadRadius: 0,
     beadCount: 0,
-    shankRadius: 0.078,
-    shoulderRadius: 0.078,
+    shankRadius: 0.068,
+    shoulderRadius: 0.068,
   },
   coral: {
     bezelWallOffset: 0.018,
@@ -114,8 +114,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloSupportRadius: 0,
     beadRadius: 0,
     beadCount: 0,
-    shankRadius: 0.086,
-    shoulderRadius: 0.088,
+    shankRadius: 0.074,
+    shoulderRadius: 0.075,
   },
   'sun-moon': {
     bezelWallOffset: 0.016,
@@ -127,8 +127,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloSupportRadius: 0.007,
     beadRadius: 0.029,
     beadCount: 40,
-    shankRadius: 0.09,
-    shoulderRadius: 0.09,
+    shankRadius: 0.078,
+    shoulderRadius: 0.078,
   },
   aurora: {
     bezelWallOffset: 0.016,
@@ -140,8 +140,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloSupportRadius: 0.007,
     beadRadius: 0.028,
     beadCount: 36,
-    shankRadius: 0.078,
-    shoulderRadius: 0.078,
+    shankRadius: 0.07,
+    shoulderRadius: 0.07,
   },
 }
 
