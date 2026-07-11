@@ -15,6 +15,7 @@ import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
 import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { extractPlainText } from '@/lib/rich-text'
+import { mergeProductGallery } from '@/lib/product-gallery'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -97,7 +98,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const productShippingProgress = getFreeShippingProgress(product.price)
 
   // Collect all product images with alt text
-  const productImages =
+  const productImages = mergeProductGallery(
+    product.slug,
+    product.name,
     product.images
       ?.map((img, index: number) => {
         const imgObj = typeof img.image === 'object' && img.image ? img.image : null
@@ -108,6 +111,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         }
       })
       .filter((img): img is { url: string; alt: string } => Boolean(img)) ?? []
+  )
 
   return (
     <>
