@@ -212,8 +212,8 @@ export default function HomePage() {
           <section className="grid bg-charcoal text-cream lg:grid-cols-2">
             <div className="relative min-h-[28rem] lg:min-h-[42rem]">
               <Image
-                src="/api/media/file/20211104_234659-1-4.jpg"
-                alt="Australian opals being prepared for jewellery"
+                src="/images/customs/custom-2.jpg"
+                alt="Australian opals selected for a custom jewellery piece"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"

@@ -44,7 +44,6 @@ const nextConfig: NextConfig = {
       ['/blog-the-good-opal-co-blogs-on-opal', '/blog'],
       ['/about-the-good-opal-co', '/about'],
       ['/my-account', '/order-tracking'],
-      ['/checkout', '/cart'],
       ['/good-opal-co-shopping-cart', '/cart'],
       ['/shop', '/store'],
       ['/terms-of-sale', '/legal/terms'],

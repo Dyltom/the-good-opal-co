@@ -129,5 +129,6 @@ describe('deployment config', () => {
     expect(config).toContain("['/shop', '/store']")
     expect(config).toContain("source: '/product/:slug'")
     expect(config).toContain("['/privacy-policy', '/legal/privacy']")
+    expect(config).not.toContain("['/checkout', '/cart']")
   })
 })
