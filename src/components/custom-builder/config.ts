@@ -53,6 +53,11 @@ export interface BuilderOpal {
       focalY: number
       zoom: number
     }
+    dimensionsMm?: {
+      width: number
+      length: number
+      depth: number
+    }
   }
 }
 
@@ -87,10 +92,10 @@ export interface RingStyleGeometryProfile {
 
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
-    bezelWallOffset: 0.02,
-    bezelWallThickness: 0.026,
-    bezelLipOffset: 0.012,
-    bezelLipRadius: 0.021,
+    bezelWallOffset: 0.015,
+    bezelWallThickness: 0.018,
+    bezelLipOffset: 0.008,
+    bezelLipRadius: 0.013,
     haloOffset: 0,
     haloSupportOffset: 0,
     haloSupportRadius: 0,
@@ -100,10 +105,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderRadius: 0.078,
   },
   coral: {
-    bezelWallOffset: 0.024,
-    bezelWallThickness: 0.03,
-    bezelLipOffset: 0.015,
-    bezelLipRadius: 0.022,
+    bezelWallOffset: 0.018,
+    bezelWallThickness: 0.02,
+    bezelLipOffset: 0.01,
+    bezelLipRadius: 0.014,
     haloOffset: 0,
     haloSupportOffset: 0,
     haloSupportRadius: 0,
@@ -113,28 +118,28 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderRadius: 0.088,
   },
   'sun-moon': {
-    bezelWallOffset: 0.021,
-    bezelWallThickness: 0.026,
-    bezelLipOffset: 0.013,
-    bezelLipRadius: 0.021,
-    haloOffset: 0.064,
-    haloSupportOffset: 0.047,
-    haloSupportRadius: 0.01,
-    beadRadius: 0.043,
-    beadCount: 30,
+    bezelWallOffset: 0.016,
+    bezelWallThickness: 0.018,
+    bezelLipOffset: 0.009,
+    bezelLipRadius: 0.013,
+    haloOffset: 0.043,
+    haloSupportOffset: 0.032,
+    haloSupportRadius: 0.007,
+    beadRadius: 0.029,
+    beadCount: 40,
     shankRadius: 0.09,
     shoulderRadius: 0.09,
   },
   aurora: {
-    bezelWallOffset: 0.022,
-    bezelWallThickness: 0.026,
-    bezelLipOffset: 0.014,
-    bezelLipRadius: 0.022,
-    haloOffset: 0.059,
-    haloSupportOffset: 0.043,
-    haloSupportRadius: 0.01,
-    beadRadius: 0.043,
-    beadCount: 27,
+    bezelWallOffset: 0.016,
+    bezelWallThickness: 0.018,
+    bezelLipOffset: 0.009,
+    bezelLipRadius: 0.013,
+    haloOffset: 0.042,
+    haloSupportOffset: 0.031,
+    haloSupportRadius: 0.007,
+    beadRadius: 0.028,
+    beadCount: 36,
     shankRadius: 0.078,
     shoulderRadius: 0.078,
   },

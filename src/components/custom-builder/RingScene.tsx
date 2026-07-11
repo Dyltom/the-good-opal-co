@@ -39,7 +39,7 @@ interface RingSceneProps {
 type StoneDimensions = readonly [width: number, height: number]
 
 const metalColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#c9cac7',
+  'sterling-silver': '#d2d3cf',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -127,11 +127,11 @@ function MetalMaterial({
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
-      metalness={isSterlingSilver ? 1 : 0.98}
-      roughness={isSterlingSilver ? Math.max(0.34, roughness) : roughness}
-      clearcoat={isSterlingSilver ? 0 : 0.26}
-      clearcoatRoughness={isSterlingSilver ? 0.32 : 0.16}
-      envMapIntensity={isSterlingSilver ? 0.9 : 1.2}
+      metalness={isSterlingSilver ? 0.9 : 0.98}
+      roughness={isSterlingSilver ? Math.max(0.32, roughness) : roughness}
+      clearcoat={isSterlingSilver ? 0.08 : 0.26}
+      clearcoatRoughness={isSterlingSilver ? 0.26 : 0.16}
+      envMapIntensity={1.2}
     />
   )
 }
@@ -149,6 +149,12 @@ function getStoneDimensions(config: RingConfig, selectedOpal?: BuilderOpal): Sto
     selectedOpal.visual.silhouette === config.shape ||
     (selectedOpal.visual.silhouette === 'elongated' && config.shape === 'oval')
   if (!compatibleShape) return [width, defaultHeight]
+  if (selectedOpal.visual.dimensionsMm) {
+    return [
+      selectedOpal.visual.dimensionsMm.width * 0.05,
+      selectedOpal.visual.dimensionsMm.length * 0.05,
+    ]
+  }
   return [width, Math.min(0.72, Math.max(width, width * selectedOpal.visual.aspectRatio))]
 }
 
@@ -168,6 +174,15 @@ function outlinePoint(
     return [
       Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.5) * adjustedWidth,
       Math.sign(sine) * Math.pow(Math.abs(sine), 0.5) * adjustedHeight,
+    ]
+  }
+  if (shape === 'elongated') {
+    // The reviewed Queensland pipe opal is a long rounded capsule, not an
+    // ellipse. A softer superellipse preserves its parallel sides and curved
+    // ends while remaining smooth enough for the bezel and photo UVs.
+    return [
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.62) * adjustedWidth,
+      Math.sign(sine) * Math.pow(Math.abs(sine), 0.62) * adjustedHeight,
     ]
   }
   if (shape === 'pear') {
@@ -278,7 +293,8 @@ function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpa
 function createCabochonGeometry(
   shape: RingConfig['shape'],
   width: number,
-  height: number
+  height: number,
+  depthMm?: number
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const radialSegments = 18
@@ -287,7 +303,10 @@ function createCabochonGeometry(
   const girdleZ = 0.035
   // The sold collection uses low cabochons. A shallow dome keeps the photographed
   // face legible and avoids ballooning its colour pattern around the shoulders.
-  const domeHeight = Math.min(width, height) * 0.25
+  const baseThickness = girdleZ - baseZ
+  const domeHeight = depthMm
+    ? Math.max(0.025, depthMm * 0.05 - baseThickness)
+    : Math.min(width, height) * 0.19
   const positions: number[] = [0, 0, girdleZ + domeHeight]
   const uvs: number[] = [0.5, 0.5]
   const indices: number[] = []
@@ -384,8 +403,8 @@ function OpalCabochon({
     [config.stone, selectedOpal]
   )
   const geometry = useMemo(
-    () => createCabochonGeometry(config.shape, width, height),
-    [config.shape, height, width]
+    () => createCabochonGeometry(config.shape, width, height, selectedOpal?.visual.dimensionsMm?.depth),
+    [config.shape, height, selectedOpal?.visual.dimensionsMm?.depth, width]
   )
   const palette = opalPalettes[config.stone]
   const photoSources: string[] =
@@ -632,7 +651,7 @@ function Setting({
         config={config}
         dimensions={dimensions}
         offset={Math.max(0.004, profile.bezelLipOffset - profile.bezelLipRadius * 0.55)}
-        radius={0.009}
+        radius={Math.max(0.005, profile.bezelLipRadius * 0.42)}
         z={0.052}
         finish="patina"
       />
@@ -654,12 +673,24 @@ function Setting({
             z={0.055}
             finish="patina"
           />
-          {beads.map(({ key, x, y }) => (
-            <mesh key={key} position={[x, y, 0.06]} scale={[1, 1, 0.72]}>
-              <sphereGeometry args={[profile.beadRadius, 14, 14]} />
-              <MetalMaterial metal={config.metal} roughness={0.42} />
-            </mesh>
-          ))}
+          {beads.map(({ key, x, y }) => {
+            // Sold Sun & Moon and Aurora rings use individually soldered beads.
+            // Deterministic variation keeps the halo handmade without animating
+            // or changing between renders.
+            const size = 0.94 + ((key * 7) % 7) * 0.022
+            const flattening = 0.64 + ((key * 5) % 5) * 0.025
+            const heightVariation = (((key * 11) % 5) - 2) * 0.0015
+            return (
+              <mesh
+                key={key}
+                position={[x, y, 0.058 + heightVariation]}
+                scale={[size, size, flattening]}
+              >
+                <sphereGeometry args={[profile.beadRadius, 14, 14]} />
+                <MetalMaterial metal={config.metal} roughness={0.46} />
+              </mesh>
+            )
+          })}
         </>
       )}
 
@@ -693,12 +724,6 @@ function Shoulder({
         <tubeGeometry args={[curve, 40, radius, 14, false]} />
         <MetalMaterial metal={metal} roughness={0.2} />
       </mesh>
-      {[points[0]!, points.at(-1)!].map((point, index) => (
-        <mesh key={index} position={point}>
-          <sphereGeometry args={[radius, 14, 14]} />
-          <MetalMaterial metal={metal} roughness={0.2} />
-        </mesh>
-      ))}
     </group>
   )
 }
@@ -805,9 +830,9 @@ export function RingScene({
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >
-      <ambientLight intensity={0.92} />
-      <directionalLight position={[4, 5, 6]} intensity={3.1} color="#fffaf0" />
-      <directionalLight position={[-4, 1, 3]} intensity={2.1} color="#eef4f2" />
+      <ambientLight intensity={0.82} />
+      <directionalLight position={[4, 5, 6]} intensity={2.5} color="#fffaf0" />
+      <directionalLight position={[-4, 1, 3]} intensity={1.5} color="#eef4f2" />
       <pointLight position={[0, -2, 3]} intensity={0.8} color="#fff7eb" />
 
       <CameraPreset view={view} />

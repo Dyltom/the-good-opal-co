@@ -113,8 +113,9 @@ function OpalPicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">2. Choose an available opal</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        These are live, one-of-a-kind stones from the store. The photograph is authoritative; the 3D
-        stone approximates placement and body tone.
+        These are live, one-of-a-kind stones from the store, photographed under white light. The 3D
+        face uses that source photograph; a single still cannot reproduce changing play-of-colour as
+        the stone moves.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {opals.map((opal) => {
@@ -153,6 +154,12 @@ function OpalPicker({
                 <span className="mt-1 block text-xs text-charcoal-light">
                   {opal.stoneTypeLabel} · {formatCurrency(opal.price)} loose
                 </span>
+                {opal.visual.dimensionsMm && (
+                  <span className="mt-1 block text-xs text-charcoal-light">
+                    {opal.visual.dimensionsMm.width} × {opal.visual.dimensionsMm.length} ×{' '}
+                    {opal.visual.dimensionsMm.depth} mm
+                  </span>
+                )}
               </span>
             </button>
           )

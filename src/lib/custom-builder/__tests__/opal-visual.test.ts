@@ -49,7 +49,8 @@ describe('custom builder opal visual profiles', () => {
       recommendedStyle: 'gemini',
       evidence: 'catalogue',
       transmission: 0.26,
-      bodyColour: '#79b7d1',
+      bodyColour: '#78c5df',
+      dimensionsMm: { width: 5.3, length: 9.5, depth: 2.5 },
       textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.74 },
     })
   })
@@ -67,11 +68,13 @@ describe('custom builder opal visual profiles', () => {
     )
 
     expect(white.visual.textureCrop).toEqual({ focalX: 0.507, focalY: 0.495, zoom: 3.08 })
+    expect(white.visual.dimensionsMm).toEqual({ width: 6, length: 7, depth: 3 })
     expect(semiBlack.visual.textureCrop).toEqual({
       focalX: 0.501,
       focalY: 0.493,
       zoom: 3.61,
     })
+    expect(semiBlack.visual.dimensionsMm).toEqual({ width: 7, length: 8, depth: 3.5 })
   })
 
   test('rejects product photos that cannot provide a clean isolated stone face', () => {

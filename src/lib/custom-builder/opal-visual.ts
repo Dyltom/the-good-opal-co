@@ -6,7 +6,13 @@ const reviewedProfiles: Record<
   string,
   Pick<
     VisualProfile,
-    'silhouette' | 'aspectRatio' | 'evidence' | 'recommendedStyle' | 'textureCrop' | 'bodyColour'
+    | 'silhouette'
+    | 'aspectRatio'
+    | 'evidence'
+    | 'recommendedStyle'
+    | 'textureCrop'
+    | 'bodyColour'
+    | 'dimensionsMm'
   >
 > = {
   'lightning-ridge-white-opal-1-05-cts': {
@@ -15,7 +21,8 @@ const reviewedProfiles: Record<
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
     textureCrop: { focalX: 0.507, focalY: 0.495, zoom: 3.08 },
-    bodyColour: '#a1a694',
+    bodyColour: '#d7dcc9',
+    dimensionsMm: { width: 6, length: 7, depth: 3 },
   },
   'mintabie-semi-black-opal-1-05-cts': {
     silhouette: 'cushion',
@@ -23,7 +30,8 @@ const reviewedProfiles: Record<
     evidence: 'catalogue',
     recommendedStyle: 'coral',
     textureCrop: { focalX: 0.504, focalY: 0.487, zoom: 4.81 },
-    bodyColour: '#8da392',
+    bodyColour: '#a8c4b8',
+    dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
   },
   'mintabie-semi-black-opal-1-35-cts': {
     silhouette: 'oval',
@@ -31,7 +39,8 @@ const reviewedProfiles: Record<
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
     textureCrop: { focalX: 0.501, focalY: 0.493, zoom: 3.61 },
-    bodyColour: '#acb1a1',
+    bodyColour: '#cbd5c7',
+    dimensionsMm: { width: 7, length: 8, depth: 3.5 },
   },
   'queensland-crystal-pipe-opal-1-45-cts': {
     silhouette: 'elongated',
@@ -39,7 +48,8 @@ const reviewedProfiles: Record<
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
     textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.74 },
-    bodyColour: '#79b7d1',
+    bodyColour: '#78c5df',
+    dimensionsMm: { width: 5.3, length: 9.5, depth: 2.5 },
   },
 }
 

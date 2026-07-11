@@ -132,6 +132,13 @@ export function RingPreview({ config, description, opals, selectedOpal }: RingPr
                   {selectedOpal.stoneTypeLabel}
                   {selectedOpal.weight ? ` · ${selectedOpal.weight} ct` : ''}
                 </p>
+                {selectedOpal.visual.dimensionsMm && (
+                  <p className="mt-1 text-[0.65rem] text-cream/70">
+                    {selectedOpal.visual.dimensionsMm.width} ×{' '}
+                    {selectedOpal.visual.dimensionsMm.length} ×{' '}
+                    {selectedOpal.visual.dimensionsMm.depth} mm
+                  </p>
+                )}
                 <p className="mt-1 text-[0.65rem] leading-4 text-cream/60">
                   {selectedOpal.visual.textureCrop
                     ? `Reviewed ${selectedOpal.visual.silhouette} profile · actual product photo on stone`

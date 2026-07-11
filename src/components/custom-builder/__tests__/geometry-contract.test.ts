@@ -69,7 +69,10 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('elongated: [0.35, 0.62]')
     expect(sceneSource).toContain('cushion: [0.5, 0.5]')
     expect(sceneSource).toContain('pear: [0.4, 0.5]')
-    expect(sceneSource).toContain('const domeHeight = Math.min(width, height) * 0.25')
+    expect(sceneSource).toContain('depthMm * 0.05 - baseThickness')
+    expect(sceneSource).toContain(': Math.min(width, height) * 0.19')
+    expect(sceneSource).toContain("if (shape === 'elongated')")
+    expect(sceneSource).toContain('Math.pow(Math.abs(cosine), 0.62)')
   })
 
   test('gives each named design meaningful geometry consumed by the scene', () => {
@@ -122,17 +125,19 @@ describe('custom ring geometry contract', () => {
   })
 
   test('uses handmade sterling and soldered halo proportions from sold pieces', () => {
-    expect(sceneSource).toContain("'sterling-silver': '#c9cac7'")
-    expect(sceneSource).toContain('envMapIntensity={isSterlingSilver ? 0.9 : 1.2}')
-    expect(sceneSource).toContain('position={[x, y, 0.06]} scale={[1, 1, 0.72]}')
+    expect(sceneSource).toContain("'sterling-silver': '#d2d3cf'")
+    expect(sceneSource).toContain('envMapIntensity={1.2}')
+    expect(sceneSource).toContain('const size = 0.94 + ((key * 7) % 7) * 0.022')
     expect(ringStyleGeometryProfiles['sun-moon']).toMatchObject({
-      haloOffset: 0.064,
-      beadRadius: 0.043,
+      haloOffset: 0.043,
+      beadRadius: 0.029,
+      beadCount: 40,
       shankRadius: 0.09,
     })
     expect(ringStyleGeometryProfiles.aurora).toMatchObject({
-      haloOffset: 0.059,
-      beadRadius: 0.043,
+      haloOffset: 0.042,
+      beadRadius: 0.028,
+      beadCount: 36,
     })
   })
 })
