@@ -54,7 +54,7 @@ export function RingPreview({ config, description, opals, selectedOpal }: RingPr
   }, [])
 
   return (
-    <div className="relative aspect-[4/5] min-h-[28rem] overflow-hidden bg-[#171714] text-cream sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0 [&_canvas]:touch-pan-y">
+    <div className="relative aspect-[4/5] min-h-[28rem] w-full min-w-0 overflow-hidden bg-[#171714] text-cream sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0 [&_canvas]:touch-pan-y">
       {webGlAvailable ? (
         <RingScene
           config={config}

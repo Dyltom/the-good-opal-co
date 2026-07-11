@@ -295,7 +295,7 @@ export function RingConfigurator({
   return (
     <section aria-labelledby="builder-heading" className="border-y border-warm-grey/60 bg-cream">
       <div className="grid lg:grid-cols-[minmax(0,1.12fr)_minmax(25rem,0.88fr)]">
-        <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:self-start">
+        <div className="min-w-0 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:self-start">
           <ViewerErrorBoundary>
             <RingPreview
               config={config}

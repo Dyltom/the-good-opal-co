@@ -5,6 +5,8 @@ import { ringStyleGeometryProfiles, ringStyles } from '../config'
 
 const sceneSource = readFileSync(resolve(__dirname, '../RingScene.tsx'), 'utf8')
 const configSource = readFileSync(resolve(__dirname, '../config.ts'), 'utf8')
+const previewSource = readFileSync(resolve(__dirname, '../RingPreview.tsx'), 'utf8')
+const configuratorSource = readFileSync(resolve(__dirname, '../RingConfigurator.tsx'), 'utf8')
 
 function capturedNumber(pattern: RegExp, label: string): number {
   const value = sceneSource.match(pattern)?.[1]
@@ -40,6 +42,8 @@ describe('custom ring geometry contract', () => {
     )
     expect(sceneSource).toContain('x * portraitFramingScale')
     expect(sceneSource).toContain('size.height, size.width, view')
+    expect(previewSource).toContain('w-full min-w-0 overflow-hidden')
+    expect(configuratorSource).toContain('min-w-0 lg:sticky')
   })
 
   test('seats the bezel on the band while keeping the stone base clear', () => {
