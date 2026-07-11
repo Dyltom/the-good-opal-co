@@ -26,10 +26,11 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   const styles = page.getByRole('group', { name: '3. Choose a collection design' })
   await expect(styles).toBeVisible()
   await expect(styles.getByRole('button', { name: 'Aurora Requires a pear opal' })).toBeDisabled()
+  await expect(styles.getByRole('button', { name: 'Coral Requires a cushion opal' })).toBeDisabled()
   await styles
-    .getByRole('button', { name: 'Coral Cushion opal, clean bezel, dainty shank' })
+    .getByRole('button', { name: 'Sun & Moon Oval opal with handmade beaded trim' })
     .click()
-  await expect(page).toHaveURL(/[?&]y=coral/)
+  await expect(page).toHaveURL(/[?&]y=sun-moon/)
 
   const canvas = page.locator('canvas')
   const fallback = page.getByText('Interactive 3D is unavailable on this device.')
