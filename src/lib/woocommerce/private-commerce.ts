@@ -70,8 +70,8 @@ export const wooCustomerSchema = z.object({
   billing: addressSchema,
   shipping: addressSchema,
   is_paying_customer: z.boolean(),
-  orders_count: z.number().int().nonnegative(),
-  total_spent: z.string(),
+  orders_count: z.number().int().nonnegative().optional().default(0),
+  total_spent: z.string().optional().default('0'),
 })
 
 const productTaxonomySchema = z.object({

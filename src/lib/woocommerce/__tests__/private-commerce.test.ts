@@ -5,6 +5,7 @@ import {
   mapWooOrder,
   mapWooPrivateProduct,
   payloadStatusForWoo,
+  wooCustomerSchema,
   type WooCustomer,
   type WooOrder,
   type WooPrivateProduct,
@@ -159,6 +160,22 @@ describe('WooCommerce import mapping', () => {
       totalOrders: 4,
       totalSpent: 825.5,
     })
+  })
+
+  it('accepts WooCommerce customer responses that omit aggregate statistics', () => {
+    const customer = wooCustomerSchema.parse({
+      id: 7,
+      date_created_gmt: '2022-06-01T00:00:00',
+      email: 'ada@example.com',
+      first_name: 'Ada',
+      last_name: 'Lovelace',
+      billing: address,
+      shipping: address,
+      is_paying_customer: true,
+    })
+
+    expect(customer.orders_count).toBe(0)
+    expect(customer.total_spent).toBe('0')
   })
 
   it('preserves private product visibility and exact managed stock', () => {

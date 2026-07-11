@@ -295,7 +295,7 @@ async function importCommerce(): Promise<void> {
     touchedCustomerEmails.add(mapped.email)
   }
 
-  const guestMetrics = new Map<
+  const orderMetrics = new Map<
     string,
     {
       name: string
@@ -314,20 +314,19 @@ async function importCommerce(): Promise<void> {
     }
   >()
   for (const sourceOrder of snapshot.orders) {
-    if (sourceOrder.customer_id !== 0) continue
     const mappedOrder = mapWooOrder(
       sourceOrder,
       snapshot.refundsByOrderId.get(sourceOrder.id) ?? [],
       productReferences
     )
-    const previous = guestMetrics.get(mappedOrder.customer.email)
+    const previous = orderMetrics.get(mappedOrder.customer.email)
     const paidAmount = sourceOrder.date_paid_gmt ? mappedOrder.total : 0
     const refundedAmount = mappedOrder.legacyRefunds.reduce((sum, refund) => sum + refund.amount, 0)
     const lastOrderDate =
       !previous || mappedOrder.orderPlacedAt > previous.lastOrderDate
         ? mappedOrder.orderPlacedAt
         : previous.lastOrderDate
-    guestMetrics.set(mappedOrder.customer.email, {
+    orderMetrics.set(mappedOrder.customer.email, {
       name: mappedOrder.customer.name,
       ...(mappedOrder.customer.phone ? { phone: mappedOrder.customer.phone } : {}),
       totalOrders: (previous?.totalOrders ?? 0) + 1,
@@ -336,7 +335,7 @@ async function importCommerce(): Promise<void> {
       defaultAddress: mappedOrder.shippingAddress,
     })
   }
-  for (const [email, guest] of guestMetrics) {
+  for (const [email, guest] of orderMetrics) {
     const existing = customersByEmail.get(email)
     const registered = registeredCustomerStats.get(email)
     const guestData = {
