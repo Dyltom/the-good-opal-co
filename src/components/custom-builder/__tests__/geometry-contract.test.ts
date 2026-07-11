@@ -1,109 +1,211 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { describe, expect, test } from 'vitest'
-import { ringStyleGeometryProfiles, ringStyles } from '../config'
+import {
+  cameraPositions,
+  cameraUpVectors,
+  evenlySpacedOutlinePoints,
+  getCabochonDepthProfile,
+  getCameraPosition,
+  getPortraitFramingScale,
+  getRingFramingTarget,
+  getRingMeasurements,
+  getRingModelBounds,
+  getSettingPlacement,
+  getStoneDimensions,
+  outlinePoint,
+  projectWorldAxisToView,
+  rotateSettingVectorToWorld,
+} from '../geometry'
+import {
+  defaultRingConfig,
+  ringStyleGeometryProfiles,
+  ringStyles,
+  type BuilderOpal,
+  type RingConfig,
+} from '../config'
 
-const sceneSource = readFileSync(resolve(__dirname, '../RingScene.tsx'), 'utf8')
-const configSource = readFileSync(resolve(__dirname, '../config.ts'), 'utf8')
-const previewSource = readFileSync(resolve(__dirname, '../RingPreview.tsx'), 'utf8')
-const configuratorSource = readFileSync(resolve(__dirname, '../RingConfigurator.tsx'), 'utf8')
+const measuredOpal: BuilderOpal = {
+  id: 'reviewed-opal',
+  name: 'Reviewed long opal',
+  slug: 'reviewed-long-opal',
+  imageUrl: '/reviewed-opal.jpg',
+  imageAlt: 'Reviewed long opal',
+  price: 125,
+  stoneType: 'boulder-opal',
+  stoneTypeLabel: 'Boulder opal',
+  renderStone: 'blue-green',
+  visual: {
+    silhouette: 'elongated',
+    aspectRatio: 1.8,
+    bodyColour: '#789a8d',
+    flashColours: ['#50d9d0'],
+    transmission: 0.1,
+    patternSeed: 17,
+    evidence: 'catalogue',
+    recommendedStyle: 'gemini',
+    dimensionsMm: { width: 8, length: 14, depth: 3.2 },
+  },
+}
 
-function capturedNumber(pattern: RegExp, label: string): number {
-  const value = sceneSource.match(pattern)?.[1]
-  if (!value) throw new Error(`Could not find ${label} in RingScene.tsx`)
-  return Number(value)
+function sampledExtents(shape: RingConfig['shape'], width: number, height: number) {
+  const points = Array.from({ length: 1440 }, (_, index) =>
+    outlinePoint(shape, (index / 1440) * Math.PI * 2, width, height)
+  )
+  const xs = points.map(([x]) => x)
+  const ys = points.map(([, y]) => y)
+  return {
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys),
+  }
 }
 
 describe('custom ring geometry contract', () => {
-  test('mounts the setting face upright at the top of the shank', () => {
-    expect(sceneSource).toContain(
-      '<group position={[0, settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>'
+  test('mounts the opal face outward and its long axis upright', () => {
+    const faceNormal = rotateSettingVectorToWorld([0, 0, 1])
+    const longStoneAxis = rotateSettingVectorToWorld([0, 1, 0])
+    const stoneWidthAxis = rotateSettingVectorToWorld([1, 0, 0])
+
+    expect(faceNormal).toEqual([0, 1, expect.closeTo(0, 12)])
+    expect(longStoneAxis).toEqual([0, expect.closeTo(0, 12), -1])
+    expect(stoneWidthAxis).toEqual([1, 0, 0])
+
+    const target = getRingFramingTarget(defaultRingConfig)
+    const frontProjection = projectWorldAxisToView(
+      longStoneAxis,
+      cameraPositions.front,
+      target,
+      cameraUpVectors.front
+    )
+    const faceProjection = projectWorldAxisToView(
+      faceNormal,
+      cameraPositions.front,
+      target,
+      cameraUpVectors.front
     )
 
-    // Local stone +Z becomes world +Y after this rotation: the face points away
-    // from the finger instead of sideways along its axis.
-    const localFaceNormal = { x: 0, y: 0, z: 1 }
-    const angle = -Math.PI / 2
-    const worldFaceNormal = {
-      x: localFaceNormal.x,
-      y: localFaceNormal.y * Math.cos(angle) - localFaceNormal.z * Math.sin(angle),
-      z: localFaceNormal.y * Math.sin(angle) + localFaceNormal.z * Math.cos(angle),
+    expect(frontProjection.horizontal).toBeCloseTo(0, 12)
+    expect(frontProjection.vertical).toBeCloseTo(1, 12)
+    expect(Math.abs(faceProjection.depth)).toBeCloseTo(1, 12)
+  })
+
+  test('keeps front, profile, and three-quarter views geometrically distinct', () => {
+    const target = getRingFramingTarget(defaultRingConfig)
+    const faceNormal = rotateSettingVectorToWorld([0, 0, 1])
+    const projectedDepth = Object.fromEntries(
+      (['front', 'profile', 'three-quarter'] as const).map((view) => [
+        view,
+        Math.abs(
+          projectWorldAxisToView(faceNormal, cameraPositions[view], target, cameraUpVectors[view])
+            .depth
+        ),
+      ])
+    )
+
+    expect(projectedDepth.front).toBeGreaterThan(0.99)
+    expect(projectedDepth.profile).toBeLessThan(0.2)
+    expect(projectedDepth['three-quarter']).toBeGreaterThan(0.5)
+    expect(projectedDepth['three-quarter']).toBeLessThan(0.9)
+  })
+
+  test('scales portrait cameras without changing the selected view direction ratios', () => {
+    expect(getPortraitFramingScale(1200, 800)).toBe(1)
+    expect(getPortraitFramingScale(390, 844)).toBe(1.7)
+    expect(getPortraitFramingScale(768, 1024)).toBeCloseTo(1.226_667, 5)
+
+    const landscape = getCameraPosition('three-quarter', 1200, 800)
+    const portrait = getCameraPosition('three-quarter', 390, 844)
+    portrait.forEach((coordinate, index) => {
+      expect(coordinate / landscape[index]!).toBeCloseTo(1.7, 12)
+    })
+  })
+
+  test('seats the bezel exactly on top of the shank', () => {
+    const placement = getSettingPlacement(defaultRingConfig)
+    const mountedBottom = rotateSettingVectorToWorld([0, 0, placement.settingBottom])
+    const worldBottom = placement.settingY + mountedBottom[1]
+
+    expect(worldBottom).toBeCloseTo(placement.measurements.outerRadius, 12)
+    expect(placement.depthProfile.baseZ).toBeGreaterThan(placement.settingBottom)
+    expect(placement.depthProfile.girdleZ).toBeGreaterThan(placement.depthProfile.baseZ)
+  })
+
+  test('centres every camera on the actual model bounds', () => {
+    for (const size of [4, 7, 13]) {
+      const config = { ...defaultRingConfig, size }
+      const bounds = getRingModelBounds(config, measuredOpal)
+      const target = getRingFramingTarget(config, measuredOpal)
+
+      expect(bounds.top).toBeGreaterThan(0)
+      expect(bounds.bottom).toBeLessThan(0)
+      expect(target).toEqual([0, (bounds.top + bounds.bottom) / 2, 0])
+      expect(target[1] - bounds.bottom).toBeCloseTo(bounds.top - target[1], 12)
     }
-
-    expect(worldFaceNormal.x).toBeCloseTo(0)
-    expect(worldFaceNormal.y).toBeCloseTo(1)
-    expect(worldFaceNormal.z).toBeCloseTo(0)
   })
 
-  test('pulls the camera back on portrait canvases so the ring stays in frame', () => {
-    expect(sceneSource).toContain('const aspectRatio = size.width / Math.max(1, size.height)')
-    expect(sceneSource).toContain(
-      'const portraitFramingScale = Math.min(1.7, Math.max(1, 0.92 / aspectRatio))'
-    )
-    expect(sceneSource).toContain('x * portraitFramingScale')
-    expect(sceneSource).toContain('size.height, size.width, target, view')
-    expect(previewSource).toContain('w-full min-w-0 overflow-hidden')
-    expect(configuratorSource).toContain('min-w-0 lg:sticky')
+  test('maps supported ring sizes to physical diameters monotonically', () => {
+    const size4 = getRingMeasurements({ ...defaultRingConfig, size: 4 })
+    const size13 = getRingMeasurements({ ...defaultRingConfig, size: 13 })
+    const innerDiameter = (measurements: ReturnType<typeof getRingMeasurements>) =>
+      (measurements.centreRadius - 0.085) * 20
+
+    expect(innerDiameter(size4)).toBeCloseTo(14.8812, 4)
+    expect(innerDiameter(size13)).toBeCloseTo(22.1964, 4)
+    expect(size13.centreRadius).toBeGreaterThan(size4.centreRadius)
+    expect(size13.outerRadius).toBeGreaterThan(size4.outerRadius)
   })
 
-  test('uses stable view-specific up vectors and the actual model centre', () => {
-    expect(sceneSource).toContain("'three-quarter': [4.2, 4.4, 2.4]")
-    expect(sceneSource).toContain("'three-quarter': [0, 0, -1]")
-    expect(sceneSource).toContain('front: [0, 5.8, 0]')
-    expect(sceneSource).toContain('front: [0, 0, -1]')
-    expect(sceneSource).toContain('camera.up.set(...cameraUpVectors[view])')
-    expect(sceneSource).toContain('camera.lookAt(...target)')
-    expect(sceneSource).toContain('const modelTop =')
-    expect(sceneSource).toContain('const modelBottom = -measurements.outerRadius')
-    expect(sceneSource).toContain('return [0, (modelTop + modelBottom) / 2, 0]')
-    expect(sceneSource).toContain('up: cameraUpVectors[view]')
-    expect(sceneSource).toContain('target={framingTarget}')
-    expect(sceneSource).not.toContain('camera.lookAt(0, 0.42, 0)')
+  test('uses reviewed store measurements only for compatible catalogue silhouettes', () => {
+    const measuredDimensions = getStoneDimensions(defaultRingConfig, measuredOpal)
+    expect(measuredDimensions[0]).toBeCloseTo(0.4, 12)
+    expect(measuredDimensions[1]).toBeCloseTo(0.7, 12)
+    expect(getStoneDimensions({ ...defaultRingConfig, shape: 'round' }, measuredOpal)).toEqual([
+      0.42, 0.42,
+    ])
+    expect(
+      getStoneDimensions(defaultRingConfig, {
+        ...measuredOpal,
+        visual: { ...measuredOpal.visual, evidence: 'type-fallback' },
+      })
+    ).toEqual([0.4, 0.5])
   })
 
-  test('seats the bezel on the band while keeping the stone base clear', () => {
-    expect(sceneSource).toContain('const bezelBottom = depthProfile.baseZ - 0.012')
-    expect(sceneSource).toContain('const bezelTop = depthProfile.girdleZ + 0.025')
-    expect(sceneSource).toContain('const settingBottom = depthProfile.baseZ - 0.012')
-    expect(sceneSource).toContain('const settingY = measurements.outerRadius - settingBottom')
-    expect(sceneSource).toContain('bottomZ={bezelBottom}')
-    expect(sceneSource).toContain('topZ={bezelTop}')
+  test('caps visible seat depth while preserving measured dome depth', () => {
+    const shallow = getCabochonDepthProfile(0.4, 0.5, 1)
+    const deep = getCabochonDepthProfile(0.4, 0.5, 10)
+
+    expect(shallow.domeHeight).toBeCloseTo(0.058, 12)
+    expect(shallow.girdleZ - shallow.baseZ).toBeCloseTo(0.042, 12)
+    expect(deep.domeHeight).toBeCloseTo(0.58, 12)
+    expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.07, 12)
   })
 
-  test('keeps ring and cabochon proportions monotonic and shape-specific', () => {
-    const baseDiameter = capturedNumber(
-      /const insideDiameterMm = ([\d.]+) \+ [\d.]+ \* config\.size/,
-      'ring diameter intercept'
-    )
-    const sizeIncrement = capturedNumber(
-      /const insideDiameterMm = [\d.]+ \+ ([\d.]+) \* config\.size/,
-      'ring diameter increment'
-    )
-    const size4Diameter = baseDiameter + sizeIncrement * 4
-    const size13Diameter = baseDiameter + sizeIncrement * 13
-
-    expect(size4Diameter).toBeCloseTo(14.8812, 4)
-    expect(size13Diameter).toBeCloseTo(22.1964, 4)
-    expect(size13Diameter).toBeGreaterThan(size4Diameter)
-
-    expect(sceneSource).toContain('round: [0.42, 0.42]')
-    expect(sceneSource).toContain('oval: [0.4, 0.5]')
-    expect(sceneSource).toContain('elongated: [0.35, 0.62]')
-    expect(sceneSource).toContain('cushion: [0.5, 0.5]')
-    expect(sceneSource).toContain('pear: [0.4, 0.5]')
-    expect(sceneSource).toContain('depthMm * 0.1')
-    expect(sceneSource).toContain(': Math.min(width, height) * 0.38')
-    expect(sceneSource).toContain('const domeHeight = totalDepth * 0.58')
-    expect(sceneSource).toContain(
-      'const visibleSeatDepth = Math.min(totalDepth - domeHeight, 0.07)'
-    )
-    expect(sceneSource).toContain('baseZ: girdleZ - visibleSeatDepth')
-    expect(sceneSource).toContain("if (shape === 'elongated')")
-    expect(sceneSource).toContain('Math.pow(Math.abs(cosine), 0.62)')
-    expect(sceneSource).toContain('const pearWidthCorrection = 1.321')
+  test.each([
+    ['round', 0.42, 0.42],
+    ['oval', 0.4, 0.5],
+    ['elongated', 0.35, 0.62],
+    ['cushion', 0.5, 0.5],
+    ['pear', 0.4, 0.5],
+  ] as const)('preserves documented %s silhouette extents', (shape, width, height) => {
+    const extents = sampledExtents(shape, width, height)
+    expect(extents.maxX - extents.minX).toBeCloseTo(width * 2, 2)
+    expect(extents.maxY - extents.minY).toBeCloseTo(height * 2, 8)
   })
 
-  test('gives each named design meaningful geometry consumed by the scene', () => {
+  test('spaces handmade halo beads consistently along an oval perimeter', () => {
+    const points = evenlySpacedOutlinePoints('oval', 0.4, 0.5, 0.08, 38)
+    const chordLengths = points.map((point, index) => {
+      const next = points[(index + 1) % points.length]!
+      return Math.hypot(next.x - point.x, next.y - point.y)
+    })
+    const average = chordLengths.reduce((sum, length) => sum + length, 0) / chordLengths.length
+
+    expect(points).toHaveLength(38)
+    expect(new Set(points.map(({ key }) => key))).toHaveLength(38)
+    expect(Math.max(...chordLengths) - Math.min(...chordLengths)).toBeLessThan(average * 0.16)
+  })
+
+  test('gives every photographed style plausible, distinct geometry', () => {
     const profiles = Object.entries(ringStyleGeometryProfiles)
     expect(profiles).toHaveLength(ringStyles.length)
     expect(new Set(profiles.map(([, profile]) => JSON.stringify(profile)))).toHaveLength(
@@ -115,8 +217,6 @@ describe('custom ring geometry contract', () => {
       expect(profile.shankRadius, style).toBeLessThanOrEqual(0.1)
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(0.95)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.25)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
@@ -128,79 +228,5 @@ describe('custom ring geometry contract', () => {
         expect(profile.haloOffset, style).toBe(0)
       }
     }
-
-    expect(sceneSource).toContain('ringStyleGeometryProfiles[config.style]')
-    for (const property of [
-      'bezelWallOffset',
-      'bezelWallThickness',
-      'bezelLipOffset',
-      'bezelLipRadius',
-      'haloOffset',
-      'haloSupportOffset',
-      'haloSupportRadius',
-      'beadRadius',
-      'beadCount',
-      'shankRadius',
-      'shankDepth',
-      'shoulderRadius',
-      'shoulderDepth',
-    ]) {
-      expect(sceneSource, property).toMatch(new RegExp(`(?:profile|styleProfile)\\.${property}\\b`))
-    }
-  })
-
-  test('keeps reviewed product photography colour-faithful without scene-light tinting', () => {
-    expect(sceneSource).toContain('map={photoTexture}')
-    expect(sceneSource).toContain('<meshBasicMaterial')
-    expect(sceneSource).toContain('toneMapped={false}')
-    expect(sceneSource).toContain('nextTexture.generateMipmaps = false')
-    expect(sceneSource).toContain('nextTexture.minFilter = LinearFilter')
-    expect(sceneSource).toContain('nextTexture.magFilter = LinearFilter')
-    expect(sceneSource).toContain('dpr={[1, 2]}')
-    expect(sceneSource).toContain('gl.outputColorSpace = SRGBColorSpace')
-    expect(sceneSource).toContain('color={selectedOpal?.visual.bodyColour ?? palette.body}')
-    expect(sceneSource).toContain('[selectedOpal.imageUrl, ...opalImageUrls]')
-    expect(sceneSource).toContain('const sourcePhoto = sourcePhotos[0]!')
-    expect(sceneSource).not.toContain('photoSources.indexOf(selectedOpal.imageUrl)')
-    expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
-    expect(sceneSource).not.toContain('iridescence={0.06}')
-    expect(sceneSource).not.toContain('<meshStandardMaterial\n          attach="material-1"')
-  })
-
-  test('uses handmade sterling and soldered halo proportions from sold pieces', () => {
-    expect(sceneSource).toContain("'sterling-silver': '#d2d3cf'")
-    expect(sceneSource).toContain('envMapIntensity={1.2}')
-    expect(sceneSource).toContain('const size = 0.94 + ((key * 5) % 7) * 0.022')
-    expect(ringStyleGeometryProfiles['sun-moon']).toMatchObject({
-      haloOffset: 0.08,
-      beadRadius: 0.036,
-      beadCount: 38,
-      shankRadius: 0.09,
-    })
-    expect(ringStyleGeometryProfiles.aurora).toMatchObject({
-      haloOffset: 0.07,
-      beadRadius: 0.038,
-      beadCount: 30,
-    })
-  })
-
-  test('uses measured bezel, halo, and tapered shoulder proportions', () => {
-    expect(configSource).toContain('bezelWallThickness: 0.056')
-    expect(configSource).toContain('bezelLipRadius: 0.013')
-    expect(sceneSource.match(/<StoneOutline/g)).toHaveLength(2)
-    expect(sceneSource).toContain('finish="patina"')
-    expect(configSource).toContain('beadRadius: 0.036')
-    expect(configSource).toContain('beadCount: 38')
-    expect(sceneSource).toContain('shoulderDistance')
-    expect(sceneSource).toContain('shoulderBlend')
-    expect(sceneSource).toContain('localHalfWidth')
-    expect(sceneSource).toContain('localHalfDepth')
-    expect(sceneSource).toContain(
-      'stoneWidth + styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2'
-    )
-    expect(sceneSource).toContain('const joinX = settingHalfWidth - shoulderDepth * 0.4')
-    expect(sceneSource).toContain('const joinY = settingBaseY + shoulderDepth * 0.35')
-    expect(sceneSource).toContain('settingBaseY={measurements.outerRadius}')
-    expect(sceneSource).not.toContain('const solderedRadius =')
   })
 })

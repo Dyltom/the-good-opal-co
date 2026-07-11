@@ -82,14 +82,28 @@ export interface RingStyleGeometryProfile {
   bezelLipOffset: number
   bezelLipRadius: number
   haloOffset: number
-  haloSupportOffset: number
-  haloSupportRadius: number
   beadRadius: number
   beadCount: number
   shankRadius: number
   shankDepth: number
   shoulderRadius: number
   shoulderDepth: number
+}
+
+export function getHaloSupportGeometry(
+  profile: Pick<
+    RingStyleGeometryProfile,
+    'beadRadius' | 'bezelWallOffset' | 'bezelWallThickness' | 'haloOffset'
+  >
+): { offset: number; thickness: number } {
+  const bezelOuterOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+  const haloOuterOffset = profile.haloOffset + profile.beadRadius
+  const thickness = Math.max(0, haloOuterOffset - bezelOuterOffset)
+
+  return {
+    offset: bezelOuterOffset + thickness / 2,
+    thickness,
+  }
 }
 
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
@@ -99,8 +113,6 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipOffset: 0.014,
     bezelLipRadius: 0.013,
     haloOffset: 0,
-    haloSupportOffset: 0,
-    haloSupportRadius: 0,
     beadRadius: 0,
     beadCount: 0,
     shankRadius: 0.088,
@@ -114,8 +126,6 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipOffset: 0.016,
     bezelLipRadius: 0.014,
     haloOffset: 0,
-    haloSupportOffset: 0,
-    haloSupportRadius: 0,
     beadRadius: 0,
     beadCount: 0,
     shankRadius: 0.095,
@@ -129,10 +139,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipOffset: 0.014,
     bezelLipRadius: 0.013,
     haloOffset: 0.08,
-    haloSupportOffset: 0.055,
-    haloSupportRadius: 0.01,
     beadRadius: 0.036,
-    beadCount: 38,
+    beadCount: 34,
     shankRadius: 0.09,
     shankDepth: 0.055,
     shoulderRadius: 0.102,
@@ -144,10 +152,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipOffset: 0.014,
     bezelLipRadius: 0.013,
     haloOffset: 0.07,
-    haloSupportOffset: 0.05,
-    haloSupportRadius: 0.01,
     beadRadius: 0.038,
-    beadCount: 30,
+    beadCount: 28,
     shankRadius: 0.09,
     shankDepth: 0.055,
     shoulderRadius: 0.1,

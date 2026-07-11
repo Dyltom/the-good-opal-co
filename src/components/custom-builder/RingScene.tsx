@@ -12,6 +12,7 @@ import {
 } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import {
+  AdditiveBlending,
   BufferGeometry,
   CanvasTexture,
   CatmullRomCurve3,
@@ -24,7 +25,27 @@ import {
   Vector3,
 } from 'three'
 import { computePhotoCrop } from '@/lib/custom-builder/photo-crop'
-import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
+import {
+  getHaloSupportGeometry,
+  ringStyleGeometryProfiles,
+  type BuilderOpal,
+  type RingConfig,
+} from './config'
+import {
+  cameraPositions,
+  cameraUpVectors,
+  evenlySpacedOutlinePoints,
+  getCabochonDepthProfile,
+  getCameraPosition,
+  getRingFramingTarget,
+  getRingMeasurements,
+  getSettingPlacement,
+  getStoneDimensions,
+  outlinePoint,
+  settingRotationX,
+  type CameraVector,
+  type StoneDimensions,
+} from './geometry'
 
 export type RingView = 'three-quarter' | 'front' | 'profile'
 
@@ -37,15 +58,6 @@ interface RingSceneProps {
   view: RingView
 }
 
-type StoneDimensions = readonly [width: number, height: number]
-type CameraVector = readonly [x: number, y: number, z: number]
-
-interface CabochonDepthProfile {
-  baseZ: number
-  domeHeight: number
-  girdleZ: number
-}
-
 const metalColours: Record<RingConfig['metal'], string> = {
   'sterling-silver': '#d2d3cf',
   '14k-gold': '#cda84d',
@@ -53,14 +65,6 @@ const metalColours: Record<RingConfig['metal'], string> = {
   'white-gold': '#dfddd5',
   'rose-gold': '#bd806e',
   platinum: '#e4e3df',
-}
-
-const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
-  round: [0.42, 0.42],
-  oval: [0.4, 0.5],
-  elongated: [0.35, 0.62],
-  cushion: [0.5, 0.5],
-  pear: [0.4, 0.5],
 }
 
 const opalPalettes: Record<
@@ -89,52 +93,19 @@ const opalPalettes: Record<
   },
 }
 
-const cameraPositions: Record<RingView, CameraVector> = {
-  'three-quarter': [4.2, 4.4, 2.4],
-  front: [0, 5.8, 0],
-  profile: [0, 0.8, 5.8],
-}
-
-const cameraUpVectors: Record<RingView, CameraVector> = {
-  'three-quarter': [0, 0, -1],
-  // The stone's local +Y maps to world -Z when mounted on top of the shank.
-  // Using -Z as screen-up keeps the long stone axis upright. Default Y-up is
-  // parallel to this view direction and makes lookAt roll unpredictably.
-  front: [0, 0, -1],
-  profile: [0, 1, 0],
-}
-
 function CameraPreset({ target, view }: { target: CameraVector; view: RingView }) {
   const { camera, invalidate, size } = useThree()
 
   useEffect(() => {
-    const aspectRatio = size.width / Math.max(1, size.height)
-    const portraitFramingScale = Math.min(1.7, Math.max(1, 0.92 / aspectRatio))
-    const [x, y, z] = cameraPositions[view]
+    const [x, y, z] = getCameraPosition(view, size.width, size.height)
     camera.up.set(...cameraUpVectors[view])
-    camera.position.set(
-      x * portraitFramingScale,
-      y * portraitFramingScale,
-      z * portraitFramingScale
-    )
+    camera.position.set(x, y, z)
     camera.lookAt(...target)
     camera.updateProjectionMatrix()
     invalidate()
   }, [camera, invalidate, size.height, size.width, target, view])
 
   return null
-}
-
-function getRingMeasurements(config: RingConfig) {
-  const insideDiameterMm = 11.63 + 0.8128 * config.size
-  const innerRadius = insideDiameterMm / 20
-  const radialThickness = 0.085
-  const centreRadius = innerRadius + radialThickness
-  const outerRadius = centreRadius + radialThickness
-  return {
-    centreRadius,
-    outerRadius,
-  }
 }
 
 function MetalMaterial({
@@ -159,91 +130,6 @@ function MetalMaterial({
 
 function PatinaMaterial() {
   return <meshStandardMaterial color="#454641" metalness={0.65} roughness={0.55} />
-}
-
-function getStoneDimensions(config: RingConfig, selectedOpal?: BuilderOpal): StoneDimensions {
-  const [width, defaultHeight] = stoneDimensions[config.shape]
-  if (!selectedOpal || selectedOpal.visual.evidence !== 'catalogue') {
-    return [width, defaultHeight]
-  }
-  const compatibleShape =
-    selectedOpal.visual.silhouette === config.shape ||
-    (selectedOpal.visual.silhouette === 'elongated' && config.shape === 'oval')
-  if (!compatibleShape) return [width, defaultHeight]
-  if (selectedOpal.visual.dimensionsMm) {
-    return [
-      selectedOpal.visual.dimensionsMm.width * 0.05,
-      selectedOpal.visual.dimensionsMm.length * 0.05,
-    ]
-  }
-  return [width, Math.min(0.72, Math.max(width, width * selectedOpal.visual.aspectRatio))]
-}
-
-function outlinePoint(
-  shape: RingConfig['shape'],
-  angle: number,
-  width: number,
-  height: number,
-  offset = 0
-): readonly [number, number] {
-  const cosine = Math.cos(angle)
-  const sine = Math.sin(angle)
-  const adjustedWidth = width + offset
-  const adjustedHeight = height + offset
-
-  if (shape === 'cushion') {
-    return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.5) * adjustedWidth,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.5) * adjustedHeight,
-    ]
-  }
-  if (shape === 'elongated') {
-    // The reviewed Queensland pipe opal is a long rounded capsule, not an
-    // ellipse. A softer superellipse preserves its parallel sides and curved
-    // ends while remaining smooth enough for the bezel and photo UVs.
-    return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.62) * adjustedWidth,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.62) * adjustedHeight,
-    ]
-  }
-  if (shape === 'pear') {
-    const taper = 0.15 + 0.85 * Math.pow((sine + 1) / 2, 0.65)
-    // The taper's widest sampled point reaches only ~75.7% of the requested
-    // width. Normalise it so a documented 10 x 8 mm Aurora stone remains 8 mm
-    // wide instead of rendering as an unnaturally narrow 6 mm teardrop.
-    const pearWidthCorrection = 1.321
-    return [cosine * adjustedWidth * taper * pearWidthCorrection, sine * adjustedHeight]
-  }
-  return [cosine * adjustedWidth, sine * adjustedHeight]
-}
-
-function evenlySpacedOutlinePoints(
-  shape: RingConfig['shape'],
-  width: number,
-  height: number,
-  offset: number,
-  count: number
-): readonly { key: number; x: number; y: number }[] {
-  const samples = Array.from({ length: 361 }, (_, index) => {
-    const angle = (index / 360) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, width, height, offset)
-    return { x, y }
-  })
-  const distances = [0]
-  for (let index = 1; index < samples.length; index += 1) {
-    const previous = samples[index - 1]!
-    const current = samples[index]!
-    distances.push(
-      (distances[index - 1] ?? 0) + Math.hypot(current.x - previous.x, current.y - previous.y)
-    )
-  }
-  const perimeter = distances.at(-1) ?? 0
-  return Array.from({ length: count }, (_, index) => {
-    const target = (index / count) * perimeter
-    const sampleIndex = distances.findIndex((distance) => distance >= target)
-    const point = samples[Math.max(0, sampleIndex)] ?? samples[0]!
-    return { key: index, ...point }
-  })
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -313,43 +199,6 @@ function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpa
   texture.repeat.set(1.15, 1.15)
   texture.needsUpdate = true
   return texture
-}
-
-function getCabochonDepthProfile(
-  width: number,
-  height: number,
-  depthMm?: number
-): CabochonDepthProfile {
-  const girdleZ = 0.028
-  const totalDepth = depthMm ? depthMm * 0.1 : Math.min(width, height) * 0.38
-  const domeHeight = totalDepth * 0.58
-  // A loose stone's full depth disappears into the bezel cup once set. Showing
-  // all of it makes the finished ring look like a deep cylindrical pendant.
-  // Keep enough seated edge to read as secure while matching the low-profile
-  // handmade cups visible in the sold Aurora and Sun & Moon photographs.
-  const visibleSeatDepth = Math.min(totalDepth - domeHeight, 0.07)
-
-  return {
-    baseZ: girdleZ - visibleSeatDepth,
-    domeHeight,
-    girdleZ,
-  }
-}
-
-function getRingFramingTarget(config: RingConfig, selectedOpal?: BuilderOpal): CameraVector {
-  const [stoneWidth, stoneHeight] = getStoneDimensions(config, selectedOpal)
-  const measurements = getRingMeasurements(config)
-  const depthProfile = getCabochonDepthProfile(
-    stoneWidth,
-    stoneHeight,
-    selectedOpal?.visual.dimensionsMm?.depth
-  )
-  const settingBottom = depthProfile.baseZ - 0.012
-  const settingY = measurements.outerRadius - settingBottom
-  const modelTop = settingY + depthProfile.girdleZ + depthProfile.domeHeight
-  const modelBottom = -measurements.outerRadius
-
-  return [0, (modelTop + modelBottom) / 2, 0]
 }
 
 function createCabochonGeometry(
@@ -440,6 +289,52 @@ function createCabochonGeometry(
   return geometry
 }
 
+const photoGlossVertexShader = /* glsl */ `
+  varying vec3 vViewDirection;
+  varying vec3 vViewNormal;
+
+  void main() {
+    vec3 shellPosition = position + normal * 0.0015;
+    vec4 viewPosition = modelViewMatrix * vec4(shellPosition, 1.0);
+    vViewDirection = normalize(-viewPosition.xyz);
+    vViewNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * viewPosition;
+  }
+`
+
+const photoGlossFragmentShader = /* glsl */ `
+  varying vec3 vViewDirection;
+  varying vec3 vViewNormal;
+
+  void main() {
+    vec3 normal = normalize(vViewNormal);
+    vec3 viewDirection = normalize(vViewDirection);
+    vec3 galleryLight = normalize(vec3(-0.42, 0.68, 0.61));
+    vec3 halfDirection = normalize(galleryLight + viewDirection);
+    float highlight = pow(max(dot(normal, halfDirection), 0.0), 54.0);
+    float edgeSheen = pow(1.0 - max(dot(normal, viewDirection), 0.0), 5.0);
+    float alpha = min(0.2, highlight * 0.18 + edgeSheen * 0.035);
+    gl_FragColor = vec4(vec3(1.0), alpha);
+  }
+`
+
+function ProductPhotoGloss({ geometry }: { geometry: BufferGeometry }) {
+  return (
+    <mesh geometry={geometry} renderOrder={2}>
+      <shaderMaterial
+        attach="material-0"
+        blending={AdditiveBlending}
+        depthWrite={false}
+        fragmentShader={photoGlossFragmentShader}
+        toneMapped={false}
+        transparent
+        vertexShader={photoGlossVertexShader}
+      />
+      <meshBasicMaterial attach="material-1" depthWrite={false} visible={false} />
+    </mesh>
+  )
+}
+
 function OpalCabochon({
   config,
   dimensions,
@@ -506,14 +401,17 @@ function OpalCabochon({
 
   if (usesProductPhoto) {
     return (
-      <mesh geometry={geometry}>
-        <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
-        <meshBasicMaterial
-          attach="material-1"
-          color={selectedOpal?.visual.bodyColour ?? palette.body}
-          toneMapped={false}
-        />
-      </mesh>
+      <group>
+        <mesh geometry={geometry}>
+          <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
+          <meshBasicMaterial
+            attach="material-1"
+            color={selectedOpal?.visual.bodyColour ?? palette.body}
+            toneMapped={false}
+          />
+        </mesh>
+        <ProductPhotoGloss geometry={geometry} />
+      </group>
     )
   }
 
@@ -628,6 +526,7 @@ function BezelWall({
   config,
   dimensions,
   bottomZ,
+  finish = 'metal',
   offset,
   thickness,
   topZ,
@@ -635,6 +534,7 @@ function BezelWall({
   config: RingConfig
   dimensions: StoneDimensions
   bottomZ: number
+  finish?: 'metal' | 'patina'
   offset: number
   thickness: number
   topZ: number
@@ -648,7 +548,11 @@ function BezelWall({
 
   return (
     <mesh geometry={geometry}>
-      <MetalMaterial metal={config.metal} roughness={0.3} />
+      {finish === 'patina' ? (
+        <PatinaMaterial />
+      ) : (
+        <MetalMaterial metal={config.metal} roughness={0.3} />
+      )}
     </mesh>
   )
 }
@@ -718,6 +622,7 @@ function Setting({
   )
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025
+  const haloSupport = getHaloSupportGeometry(profile)
   const beadCount = profile.beadCount
   const beads = useMemo(
     () => evenlySpacedOutlinePoints(config.shape, width, height, profile.haloOffset, beadCount),
@@ -746,14 +651,14 @@ function Setting({
 
       {config.setting === 'beaded' && (
         <>
-          <StoneOutline
+          <BezelWall
             config={config}
             dimensions={dimensions}
-            offset={profile.haloSupportOffset}
-            radius={profile.haloSupportRadius}
-            z={0.045}
+            bottomZ={bezelBottom}
             finish="patina"
-            edgeVariation={0.002}
+            offset={haloSupport.offset}
+            thickness={haloSupport.thickness}
+            topZ={0.03}
           />
           {beads.map(({ key, x, y }) => {
             // Sold Sun & Moon and Aurora rings use individually soldered beads.
@@ -902,15 +807,12 @@ function RingModel({
 }) {
   const metal = config.metal
   const styleProfile = ringStyleGeometryProfiles[config.style]
-  const [stoneWidth, stoneHeight] = getStoneDimensions(config, selectedOpal)
-  const measurements = getRingMeasurements(config)
-  const depthProfile = getCabochonDepthProfile(
-    stoneWidth,
-    stoneHeight,
-    selectedOpal?.visual.dimensionsMm?.depth
-  )
-  const settingBottom = depthProfile.baseZ - 0.012
-  const settingY = measurements.outerRadius - settingBottom
+  const {
+    measurements,
+    settingY,
+    stoneDimensions: dimensions,
+  } = getSettingPlacement(config, selectedOpal)
+  const [stoneWidth] = dimensions
   const settingHalfWidth =
     stoneWidth + styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
 
@@ -927,7 +829,7 @@ function RingModel({
         tubeRadius={styleProfile.shankRadius}
       />
 
-      <group position={[0, settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <group position={[0, settingY, 0]} rotation={[settingRotationX, 0, 0]}>
         <Setting config={config} opalImageUrls={opalImageUrls} selectedOpal={selectedOpal} />
       </group>
     </group>
