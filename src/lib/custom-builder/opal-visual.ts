@@ -14,7 +14,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.17,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.422, focalY: 0.413, zoom: 3.62 },
+    textureCrop: { focalX: 0.5, focalY: 0.51, zoom: 3.4 },
     bodyColour: '#dce4d6',
   },
   'mintabie-semi-black-opal-1-05-cts': {
@@ -22,7 +22,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.3,
     evidence: 'catalogue',
     recommendedStyle: 'coral',
-    textureCrop: { focalX: 0.425, focalY: 0.421, zoom: 5.65 },
+    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 5.65 },
     bodyColour: '#c5ded1',
   },
   'mintabie-semi-black-opal-1-35-cts': {
@@ -30,7 +30,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.18,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.419, focalY: 0.422, zoom: 4.42 },
+    textureCrop: { focalX: 0.48, focalY: 0.44, zoom: 5.2 },
     bodyColour: '#d9dccd',
   },
   'queensland-crystal-pipe-opal-1-45-cts': {
@@ -38,7 +38,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.79,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.437, focalY: 0.414, zoom: 5.35 },
+    textureCrop: { focalX: 0.515, focalY: 0.49, zoom: 5.35 },
     bodyColour: '#a8d9d8',
   },
 }
