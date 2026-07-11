@@ -5,6 +5,7 @@ import * as migration_20260711_005753_inventory_alert_delivery from './20260711_
 import * as migration_20260711_005845_newsletter_delivery_state from './20260711_005845_newsletter_delivery_state';
 import * as migration_20260711_052518_woocommerce_legacy_commerce from './20260711_052518_woocommerce_legacy_commerce';
 import * as migration_20260711_061701 from './20260711_061701';
+import * as migration_20260711_063824_wordpress_content from './20260711_063824_wordpress_content';
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260711_061701.up,
     down: migration_20260711_061701.down,
     name: '20260711_061701'
+  },
+  {
+    up: migration_20260711_063824_wordpress_content.up,
+    down: migration_20260711_063824_wordpress_content.down,
+    name: '20260711_063824_wordpress_content',
   },
 ];

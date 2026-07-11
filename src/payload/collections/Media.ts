@@ -40,6 +40,26 @@ export const Media: CollectionConfig = {
   },
   fields: [
     {
+      name: 'legacyWordPressId',
+      type: 'number',
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Stable attachment ID imported from the legacy WordPress site',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'legacySourceUrl',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Original URL for a safely imported legacy asset',
+        readOnly: true,
+      },
+    },
+    {
       name: 'alt',
       type: 'text',
       required: true,

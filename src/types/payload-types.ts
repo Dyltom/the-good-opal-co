@@ -164,6 +164,14 @@ export interface User {
  */
 export interface Media {
   id: number;
+  /**
+   * Stable attachment ID imported from the legacy WordPress site
+   */
+  legacyWordPressId?: number | null;
+  /**
+   * Original URL for a safely imported legacy asset
+   */
+  legacySourceUrl?: string | null;
   alt: string;
   caption?: string | null;
   /**
@@ -214,6 +222,10 @@ export interface Media {
  */
 export interface Post {
   id: number;
+  /**
+   * Stable post ID imported from the legacy WordPress site
+   */
+  legacyWordPressId?: number | null;
   title: string;
   /**
    * URL-friendly identifier
@@ -740,6 +752,8 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  legacyWordPressId?: T;
+  legacySourceUrl?: T;
   alt?: T;
   caption?: T;
   tenantId?: T;
@@ -794,6 +808,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
+  legacyWordPressId?: T;
   title?: T;
   slug?: T;
   excerpt?: T;

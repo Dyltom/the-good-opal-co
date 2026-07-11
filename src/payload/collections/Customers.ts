@@ -10,6 +10,7 @@ import { isAdmin } from '../../lib/payload-access.ts'
 
 export const Customers: CollectionConfig = {
   slug: 'customers',
+  defaultSort: '-lastOrderDate',
   access: {
     read: isAdmin,
     create: isAdmin,
@@ -18,7 +19,7 @@ export const Customers: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'email',
-    defaultColumns: ['email', 'name', 'subscribedToNewsletter', 'totalOrders', 'createdAt'],
+    defaultColumns: ['email', 'name', 'totalOrders', 'totalSpent', 'lastOrderDate'],
     group: 'CRM',
     description: 'Customer database for CRM and marketing',
   },

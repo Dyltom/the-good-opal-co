@@ -67,7 +67,7 @@ describe('deployment config', () => {
     const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
 
     expect(config.buildCommand).toBe(
-      'pnpm payload generate:importmap && pnpm payload migrate && pnpm import:woocommerce && pnpm build'
+      'pnpm payload generate:importmap && pnpm payload migrate && WORDPRESS_CONTENT_APPLY=true node --import tsx src/scripts/import-wordpress-content.ts && pnpm build'
     )
     expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
   })

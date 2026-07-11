@@ -18,6 +18,16 @@ export const Posts: CollectionConfig = {
   },
   fields: [
     {
+      name: 'legacyWordPressId',
+      type: 'number',
+      unique: true,
+      index: true,
+      admin: {
+        description: 'Stable post ID imported from the legacy WordPress site',
+        readOnly: true,
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,
