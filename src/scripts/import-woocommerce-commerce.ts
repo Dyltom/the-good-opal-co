@@ -191,22 +191,54 @@ async function importCommerce(): Promise<void> {
   const productCounts: ImportCounts = { created: 0, updated: 0, archived: 0, skipped: 0 }
   const productPlans = snapshot.products.map((sourceProduct) => {
     const mapped = mapWooPrivateProduct(sourceProduct)
-    const candidates = [
+    const identityCandidates = [
       productsByLegacyId.get(sourceProduct.id),
       productsBySku.get(`WP-${sourceProduct.id}`),
       productsBySku.get(mapped.sku),
-      productsBySlug.get(mapped.slug),
-      productsByUniqueName.get(productNameKey(mapped.name)),
     ].filter((product): product is Product => product !== undefined)
-    const candidateIds = new Set(candidates.map((product) => String(product.id)))
-    if (candidateIds.size > 1) {
-      throw new Error(`WooCommerce product ${sourceProduct.id} matches multiple historical records`)
+    const identityIds = new Set(identityCandidates.map((product) => String(product.id)))
+    if (identityIds.size > 1) {
+      throw new Error(`WooCommerce product ${sourceProduct.id} has conflicting legacy identities`)
     }
-    return { sourceProduct, mapped, existing: candidates[0] }
+    const existing =
+      identityCandidates[0] ??
+      productsByUniqueName.get(productNameKey(mapped.name)) ??
+      productsBySlug.get(mapped.slug)
+    return { sourceProduct, mapped, existing }
   })
   const matchedExistingProductIds = new Set(
     productPlans.flatMap(({ existing }) => (existing ? [String(existing.id)] : []))
   )
+  if (matchedExistingProductIds.size !== productPlans.filter(({ existing }) => existing).length) {
+    throw new Error('Multiple WooCommerce products resolve to the same historical product')
+  }
+  const displacedSlugOwners = new Map<string, Product>()
+  for (const { sourceProduct, mapped, existing } of productPlans) {
+    const slugOwner = productsBySlug.get(mapped.slug)
+    if (!slugOwner || slugOwner.id === existing?.id) continue
+    if (matchedExistingProductIds.has(String(slugOwner.id))) {
+      throw new Error(`WooCommerce product ${sourceProduct.id} conflicts with another current slug`)
+    }
+    if (!slugOwner.sku?.startsWith('WP-') && typeof slugOwner.legacyWooId !== 'number') {
+      throw new Error(`WooCommerce product ${sourceProduct.id} conflicts with a local product slug`)
+    }
+    displacedSlugOwners.set(String(slugOwner.id), slugOwner)
+  }
+
+  if (apply) {
+    for (const displaced of displacedSlugOwners.values()) {
+      await payload.update({
+        collection: 'products',
+        id: displaced.id,
+        data: {
+          slug: `${displaced.slug}-legacy-${displaced.id}`,
+          status: 'archived',
+          stock: 0,
+        },
+        overrideAccess: true,
+      })
+    }
+  }
 
   for (const { sourceProduct, mapped, existing } of productPlans) {
     if (existing) {
