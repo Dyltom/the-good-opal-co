@@ -6,6 +6,7 @@ import { MarketingShell } from '@/components/marketing'
 export const metadata: Metadata = {
   title: 'Privacy Policy | The Good Opal Co',
   description: 'Learn how The Good Opal Co collects, uses, and protects your personal information when you shop for Australian opals.',
+  alternates: { canonical: '/legal/privacy' },
 }
 
 export default function PrivacyPolicyPage() {

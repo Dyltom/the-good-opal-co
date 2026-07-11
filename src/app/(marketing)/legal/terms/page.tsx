@@ -6,6 +6,7 @@ import { MarketingShell } from '@/components/marketing'
 export const metadata: Metadata = {
   title: 'Terms of Service | The Good Opal Co',
   description: 'Terms and conditions for purchasing Australian opals and jewelry from The Good Opal Co.',
+  alternates: { canonical: '/legal/terms' },
 }
 
 export default function TermsOfServicePage() {

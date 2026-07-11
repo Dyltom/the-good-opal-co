@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: 'Frequently Asked Questions | The Good Opal Co',
   description:
     'Clear answers about Australian opals, product details, delivery, eligible returns, payment, care, and custom work.',
+  alternates: { canonical: '/faq' },
 }
 
 const faqCategories = [

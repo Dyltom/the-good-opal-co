@@ -49,7 +49,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID
 
 ## Database migrations and catalog
 
-`vercel.json` runs committed Payload migrations before `next build`. Because builds mutate their connected database, every environment must have an isolated database. Do not run concurrent production deployments. Use a preview database, verify the artifact, then schedule the production deployment.
+`vercel.json` delegates to `scripts/vercel-build.mjs`. Production builds run committed Payload migrations before `next build`; Preview and Development builds never run migrations. Every environment still needs an isolated database because the running application can write through Payload. Do not run concurrent production deployments. Use a preview database, verify the artifact, then schedule the production deployment.
 
 For later schema changes:
 
@@ -112,7 +112,11 @@ pnpm test:e2e
 
 Then verify on a Vercel Preview:
 
-- `/api/health` reports `database: connected`.
+- `/api/health` reports `database: connected`. Its `status` and HTTP status are
+  liveness signals; `readiness.status` may be `degraded` while the storefront is
+  online. Do not launch payments until `readiness.revenueReady` is `true`, and do
+  not call the release complete until `readiness.ready` is `true`. Readiness
+  issue codes are deliberately sanitized and never contain environment values.
 - First-admin creation and product/post/media CRUD work.
 - An uploaded image is served from Blob after a new deployment.
 - Desktop and mobile home, store, product, cart, checkout, contact, newsletter, order tracking, legal, and error routes work without console errors.

@@ -25,7 +25,6 @@ export default function robots(): MetadataRoute.Robots {
           '/account',
           '/account/*',
           '/order-tracking',
-          '/_next/*',
         ],
       },
     ],

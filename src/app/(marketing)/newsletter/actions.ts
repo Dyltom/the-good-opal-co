@@ -10,7 +10,6 @@
 import { z } from 'zod'
 import { getNewsletterService } from '@/lib/newsletter/service'
 import { redirect } from 'next/navigation'
-import { trackNewsletterSignup } from '@/lib/analytics'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
 /**
@@ -81,9 +80,6 @@ export async function confirmNewsletterSubscription(token: string) {
   const result = await service.confirm(token)
 
   if (result.success) {
-    // Track newsletter signup event
-    trackNewsletterSignup('email-confirmation')
-
     redirect('/newsletter/success')
   }
 

@@ -8,6 +8,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Order Tracking | The Good Opal Co',
   description: 'Track your order status with your order number and email',
+  robots: { index: false, follow: false },
 }
 
 export default function OrderTrackingPage() {

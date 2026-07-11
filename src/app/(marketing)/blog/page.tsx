@@ -9,6 +9,7 @@ import { resolveMediaUrl } from '@/lib/media-url'
 export const metadata = {
   title: 'Opal notes | The Good Opal Co',
   description: 'Practical notes about Australian opals, jewellery, buying, and care.',
+  alternates: { canonical: '/blog' },
 }
 
 export const dynamic = 'force-dynamic'

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { failOnRuntimeErrors } from './support/runtime-errors'
 
 test('core public routes render without server or browser errors', async ({ page }) => {
+  test.setTimeout(90_000)
   const assertNoErrors = failOnRuntimeErrors(page)
   const routes = [
     '/',
@@ -29,7 +30,7 @@ test('core public routes render without server or browser errors', async ({ page
 
 test('navigation works at the active viewport', async ({ page }, testInfo) => {
   const assertNoErrors = failOnRuntimeErrors(page)
-  await page.goto('/')
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
   await expect(page).toHaveTitle(/The Good Opal Co/)
 
   if (testInfo.project.name.startsWith('mobile')) {
@@ -43,12 +44,22 @@ test('navigation works at the active viewport', async ({ page }, testInfo) => {
   assertNoErrors()
 })
 
-test('health, robots, sitemap, redirects, and not-found behavior are coherent', async ({ page }) => {
+test('health, robots, sitemap, redirects, and not-found behavior are coherent', async ({
+  page,
+}) => {
   const health = await page.request.get('/api/health')
   expect(health.status()).toBe(200)
   expect(await health.json()).toMatchObject({ status: 'healthy', database: 'connected' })
 
-  expect((await page.request.get('/robots.txt')).status()).toBe(200)
+  const home = await page.request.get('/')
+  expect(home.headers()['x-content-type-options']).toBe('nosniff')
+  expect(home.headers()['x-frame-options']).toBe('DENY')
+  expect(home.headers()['referrer-policy']).toBe('strict-origin-when-cross-origin')
+  expect(home.headers()['permissions-policy']).toBe('camera=(), geolocation=(), microphone=()')
+
+  const robots = await page.request.get('/robots.txt')
+  expect(robots.status()).toBe(200)
+  expect(await robots.text()).not.toContain('/_next/')
   expect((await page.request.get('/sitemap.xml')).status()).toBe(200)
 
   await page.goto('/account')

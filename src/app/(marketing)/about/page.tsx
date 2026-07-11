@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Our Story | The Good Opal Co',
   description:
     'Meet The Good Opal Co, an Australian opal studio focused on clear product details, thoughtful selection, and personal guidance.',
+  alternates: { canonical: '/about' },
 }
 
 const principles = [

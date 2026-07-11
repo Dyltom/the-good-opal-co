@@ -7,6 +7,7 @@ import { CONTACT_INFO } from '@/lib/constants/contact'
 export const metadata: Metadata = {
   title: 'Cookie Policy | The Good Opal Co',
   description: 'Learn about how The Good Opal Co uses cookies and similar technologies on our website.',
+  alternates: { canonical: '/legal/cookies' },
 }
 
 export default function CookiePolicyPage() {

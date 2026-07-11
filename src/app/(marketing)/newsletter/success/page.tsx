@@ -3,15 +3,18 @@ import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
+import { NewsletterConversion } from '@/components/newsletter/NewsletterConversion'
 
 export const metadata: Metadata = {
   title: 'Subscription Confirmed | The Good Opal Co',
   description: 'Your gallery notes subscription is confirmed.',
+  robots: { index: false, follow: false },
 }
 
 export default function NewsletterSuccessPage() {
   return (
     <MarketingShell>
+      <NewsletterConversion />
       <Container className="flex min-h-[34rem] items-center justify-center py-16">
           <div className="max-w-xl text-center">
             <CheckCircle className="mx-auto h-9 w-9 text-opal-electric-accessible" aria-hidden="true" />

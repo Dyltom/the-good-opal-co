@@ -4,7 +4,7 @@ import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
-import { APP_URL } from '@/lib/constants'
+import { APP_DESCRIPTION, APP_NAME, APP_URL } from '@/lib/constants'
 
 // Self-hosted via next/font — no external CDN request, optimal loading
 const merriweather = Merriweather({
@@ -33,6 +33,16 @@ const dancingScript = Dancing_Script({
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
+  applicationName: APP_NAME,
+  description: APP_DESCRIPTION,
+  openGraph: {
+    siteName: APP_NAME,
+    type: 'website',
+    locale: 'en_AU',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 }
 
 /**

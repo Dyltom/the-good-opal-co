@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: 'Australian Opals, Chosen by Hand | The Good Opal Co',
   description:
     'Shop one-of-a-kind Australian opals and handcrafted jewellery with clear origin, authenticity, delivery, and care details.',
+  alternates: { canonical: '/' },
 }
 
 export const dynamic = 'force-dynamic'

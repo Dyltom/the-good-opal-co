@@ -11,6 +11,7 @@ import { cleanContactContext, inquiryLabels, resolveInquiryType } from './contac
 export const metadata: Metadata = {
   title: 'Contact | The Good Opal Co',
   description: 'Ask about an Australian opal, a custom piece, an order, or a private product viewing.',
+  alternates: { canonical: '/contact' },
 }
 
 interface ContactPageProps {

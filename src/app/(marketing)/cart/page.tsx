@@ -13,6 +13,7 @@ import Link from 'next/link'
 export const metadata = {
   title: 'Shopping Cart | The Good Opal Co',
   description: 'Review your shopping cart and proceed to checkout.',
+  robots: { index: false, follow: false },
 }
 
 /**

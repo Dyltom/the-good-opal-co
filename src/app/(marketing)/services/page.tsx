@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: 'Custom Opal Jewellery | The Good Opal Co',
   description:
     'Start with an Australian opal, an idea, or an occasion. Enquire about a one-of-a-kind custom jewellery piece.',
+  alternates: { canonical: '/services' },
 }
 
 const process = [

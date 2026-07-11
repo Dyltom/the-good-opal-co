@@ -520,6 +520,10 @@ export interface Order {
    * Stripe Payment Intent ID
    */
   stripePaymentIntentId?: string | null;
+  /**
+   * Cumulative Stripe refund in currency minor units (cents for AUD)
+   */
+  stripeRefundedAmount?: number | null;
   paymentMethod?: string | null;
   legacyTransactionId?: string | null;
   /**
@@ -972,6 +976,7 @@ export interface OrdersSelect<T extends boolean = true> {
   currency?: T;
   stripeSessionId?: T;
   stripePaymentIntentId?: T;
+  stripeRefundedAmount?: T;
   paymentMethod?: T;
   legacyTransactionId?: T;
   legacyRefunds?: T;

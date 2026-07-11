@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { trackBeginCheckout } from '@/lib/analytics'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import type { Cart } from '@/lib/cart'
 import { cn, formatCurrency } from '@/lib/utils'
@@ -96,6 +97,8 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     }
 
     startTransition(async () => {
+      trackBeginCheckout(cart.items, pricing.total)
+
       const form = new FormData()
       form.set('name', formData.name.trim())
       form.set('email', formData.email.trim())

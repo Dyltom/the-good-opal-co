@@ -6,6 +6,8 @@ import { getPayload } from '@/lib/payload'
 import { Resend } from 'resend'
 import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 import type { Order } from '@/types/payload-types'
+import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
+import { calculateRefundAdjustment } from '@/lib/stripe-refunds'
 
 /**
  * Stripe Webhook Handler
@@ -21,13 +23,13 @@ import type { Order } from '@/types/payload-types'
  * - Uses idempotency check to prevent duplicate orders
  */
 
-const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
+const stripe = new Stripe(getConfiguredStripeSecretKey() ?? 'sk_test_unconfigured_webhook', {
   apiVersion: '2026-06-24.dahlia',
 })
 
 const resend = new Resend(process.env['RESEND_API_KEY'] ?? '')
 
-const webhookSecret = process.env['STRIPE_WEBHOOK_SECRET'] ?? ''
+const webhookSecret = getConfiguredStripeWebhookSecret()
 
 /**
  * Cart item type from checkout metadata
@@ -110,36 +112,39 @@ function generateOrderNumber(): string {
 async function sendOrderConfirmation(order: Order): Promise<void> {
   if (order.confirmationEmailSentAt) return
 
-  const { error } = await resend.emails.send({
-    from: process.env['EMAIL_FROM'] ?? '',
-    to: order.customer.email,
-    subject: `Order confirmation - ${order.orderNumber}`,
-    react: OrderConfirmationEmail({
-      orderNumber: order.orderNumber,
-      customerName: order.customer.name,
-      items: order.items.map((item) => ({
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.image ?? undefined,
-      })),
-      subtotal: order.subtotal,
-      shipping: order.shipping ?? 0,
-      tax: order.tax ?? 0,
-      total: order.total,
-      shippingAddress: {
-        line1: order.shippingAddress.line1,
-        line2: order.shippingAddress.line2 ?? undefined,
-        city: order.shippingAddress.city,
-        state: order.shippingAddress.state,
-        postalCode: order.shippingAddress.postalCode,
-        country: order.shippingAddress.country,
-      },
-      baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
-      supportEmail: process.env['CONTACT_EMAIL'] ?? '',
-      requiresInventoryReview: order.status === 'pending',
-    }) as ReactElement,
-  })
+  const { error } = await resend.emails.send(
+    {
+      from: process.env['EMAIL_FROM'] ?? '',
+      to: order.customer.email,
+      subject: `Order confirmation - ${order.orderNumber}`,
+      react: OrderConfirmationEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customer.name,
+        items: order.items.map((item) => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image ?? undefined,
+        })),
+        subtotal: order.subtotal,
+        shipping: order.shipping ?? 0,
+        tax: order.tax ?? 0,
+        total: order.total,
+        shippingAddress: {
+          line1: order.shippingAddress.line1,
+          line2: order.shippingAddress.line2 ?? undefined,
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state,
+          postalCode: order.shippingAddress.postalCode,
+          country: order.shippingAddress.country,
+        },
+        baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
+        supportEmail: process.env['CONTACT_EMAIL'] ?? '',
+        requiresInventoryReview: order.status === 'pending',
+      }) as ReactElement,
+    },
+    { idempotencyKey: `order-confirmation/${order.id}` }
+  )
 
   const payload = await getPayload()
   if (error) {
@@ -164,17 +169,20 @@ async function sendOrderConfirmation(order: Order): Promise<void> {
 async function sendInventoryReviewAlert(order: Order): Promise<void> {
   if (order.status !== 'pending' || order.inventoryAlertSentAt) return
 
-  const { error } = await resend.emails.send({
-    from: process.env['EMAIL_FROM'] ?? '',
-    to: process.env['CONTACT_EMAIL'] ?? '',
-    subject: `Inventory review required - ${order.orderNumber}`,
-    text: [
-      `Paid order ${order.orderNumber} requires inventory review before fulfilment.`,
-      `Customer: ${order.customer.email}`,
-      ...order.items.map((item) => `${item.quantity} × ${item.name} (${item.productId})`),
-      `Open the Payload admin order record: ${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders/${order.id}`,
-    ].join('\n'),
-  })
+  const { error } = await resend.emails.send(
+    {
+      from: process.env['EMAIL_FROM'] ?? '',
+      to: process.env['CONTACT_EMAIL'] ?? '',
+      subject: `Inventory review required - ${order.orderNumber}`,
+      text: [
+        `Paid order ${order.orderNumber} requires inventory review before fulfilment.`,
+        `Customer: ${order.customer.email}`,
+        ...order.items.map((item) => `${item.quantity} × ${item.name} (${item.productId})`),
+        `Open the Payload admin order record: ${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders/${order.id}`,
+      ].join('\n'),
+    },
+    { idempotencyKey: `inventory-review/${order.id}` }
+  )
 
   const payload = await getPayload()
   if (error) {
@@ -216,35 +224,55 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
   if (!paymentIntentId) return
 
   const payload = await getPayload()
-  const order = await findOrderByPaymentIntent(paymentIntentId)
-  if (!order || order.status === 'refunded') return
-
   const isFullyRefunded = charge.refunded && charge.amount_refunded >= charge.amount
-  if (!isFullyRefunded) {
-    const marker = `Stripe partial refund ${charge.id}:${charge.amount_refunded}`
-    if (!order.notes?.includes(marker)) {
-      await payload.update({
-        collection: 'orders',
-        id: order.id,
-        data: {
-          notes: [
-            order.notes,
-            `${marker} (${(charge.amount_refunded / 100).toFixed(2)} ${charge.currency.toUpperCase()}). Inventory unchanged.`,
-          ]
-            .filter(Boolean)
-            .join('\n'),
-        },
-      })
-    }
-    return
-  }
-
   const transactionID = await payload.db.beginTransaction()
   if (transactionID === null) throw new Error('Database transactions are required for refunds')
   const req = { transactionID }
 
   try {
-    if (order.inventoryDecrementedAt && !order.inventoryRestockedAt) {
+    // Re-read inside the serializable transaction. Concurrent Stripe retries then
+    // either observe the committed cumulative amount or fail for Stripe to retry.
+    const orderResult = await payload.find({
+      collection: 'orders',
+      where: { stripePaymentIntentId: { equals: paymentIntentId } },
+      limit: 1,
+      req,
+    })
+    const order = orderResult.docs[0]
+    if (!order) {
+      await payload.db.commitTransaction(transactionID)
+      return
+    }
+
+    const adjustment = calculateRefundAdjustment({
+      orderTotal: Math.round(order.total * 100),
+      previousRefundedAmount: order.stripeRefundedAmount ?? 0,
+      stripeRefundedAmount: charge.amount_refunded,
+    })
+
+    if (adjustment.refundDelta > 0) {
+      const customerResult = await payload.find({
+        collection: 'customers',
+        where: { email: { equals: order.customer.email.toLowerCase() } },
+        limit: 1,
+        req,
+      })
+      const customer = customerResult.docs[0]
+      if (!customer) {
+        throw new Error(`Customer record missing for Stripe order ${order.orderNumber}`)
+      }
+
+      await payload.update({
+        collection: 'customers',
+        id: customer.id,
+        req,
+        data: {
+          totalSpent: Math.max(0, (customer.totalSpent ?? 0) - adjustment.refundDelta / 100),
+        },
+      })
+    }
+
+    if (isFullyRefunded && order.inventoryDecrementedAt && !order.inventoryRestockedAt) {
       for (const item of order.items) {
         const product = await payload.findByID({
           collection: 'products',
@@ -265,12 +293,21 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
       id: order.id,
       req,
       data: {
-        status: 'refunded',
+        status: isFullyRefunded ? 'refunded' : order.status,
+        stripeRefundedAmount: adjustment.refundedAmount,
         inventoryRestockedAt:
-          order.inventoryDecrementedAt && !order.inventoryRestockedAt
+          isFullyRefunded && order.inventoryDecrementedAt && !order.inventoryRestockedAt
             ? new Date().toISOString()
             : order.inventoryRestockedAt,
-        notes: [order.notes, `Stripe charge ${charge.id} was refunded.`].filter(Boolean).join('\n'),
+        notes:
+          adjustment.refundDelta > 0
+            ? [
+                order.notes,
+                `Stripe charge ${charge.id} cumulative refund: ${(adjustment.refundedAmount / 100).toFixed(2)} ${charge.currency.toUpperCase()}.${isFullyRefunded ? '' : ' Inventory unchanged.'}`,
+              ]
+                .filter(Boolean)
+                .join('\n')
+            : order.notes,
       },
     })
     await payload.db.commitTransaction(transactionID)
@@ -312,7 +349,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!webhookSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET not configured')
+    console.error('STRIPE_WEBHOOK_SECRET not configured or invalid')
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 })
   }
 

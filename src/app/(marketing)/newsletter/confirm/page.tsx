@@ -2,6 +2,11 @@ import { Suspense } from 'react'
 import { Container } from '@/components/layout'
 import { ConfirmationHandler } from './confirmation-handler'
 
+export const metadata = {
+  title: 'Confirm subscription | The Good Opal Co',
+  robots: { index: false, follow: false },
+}
+
 export default function NewsletterConfirmPage({
   searchParams
 }: {

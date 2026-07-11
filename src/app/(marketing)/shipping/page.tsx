@@ -7,6 +7,7 @@ import { SHIPPING_CONFIG } from '@/lib/constants/shipping'
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
   description: 'Clear Australian and international delivery information for The Good Opal Co orders.',
+  alternates: { canonical: '/shipping' },
 }
 
 export default function ShippingPage() {

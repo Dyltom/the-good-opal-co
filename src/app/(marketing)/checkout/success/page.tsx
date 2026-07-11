@@ -6,13 +6,17 @@ import { Footer, SiteNavigation } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ClearCartOnSuccess } from './clear-cart'
+import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
+import { getPayload } from '@/lib/payload'
+import type { CartItem } from '@/lib/cart'
 
 /**
  * Checkout Success Page Metadata
  */
 export const metadata = {
-  title: 'Order Confirmed | The Good Opal Co',
-  description: 'Thank you for your order. Your opals are being prepared for shipping.',
+  title: 'Checkout Status | The Good Opal Co',
+  description: 'Verify the status of your Good Opal Co checkout.',
+  robots: { index: false, follow: false },
 }
 
 interface Props {
@@ -36,18 +40,39 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   // Verify the session with Stripe
   let session: Stripe.Checkout.Session | null = null
   let error: string | null = null
+  let orderConfirmed = false
 
-  if (process.env['STRIPE_SECRET_KEY']) {
-    const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'], {
+  const stripeSecretKey = getConfiguredStripeSecretKey()
+  if (!stripeSecretKey) {
+    error =
+      'Payment verification is temporarily unavailable. Your cart has not been cleared. Please contact support if you were charged.'
+  } else {
+    const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2026-06-24.dahlia',
     })
 
     try {
-      session = await stripe.checkout.sessions.retrieve(session_id)
+      session = await stripe.checkout.sessions.retrieve(session_id, {
+        expand: ['line_items.data.price.product'],
+      })
 
       // Verify payment was successful
       if (session.payment_status !== 'paid') {
         error = 'Payment was not completed. Please try again.'
+      } else {
+        try {
+          const payload = await getPayload()
+          const orderResult = await payload.find({
+            collection: 'orders',
+            where: { stripeSessionId: { equals: session.id } },
+            limit: 1,
+          })
+          orderConfirmed = orderResult.docs.length > 0
+        } catch (err) {
+          // Payment remains authoritative. Avoid claiming order confirmation until
+          // the webhook-created backend record can actually be verified.
+          console.error('Failed to verify backend order:', err)
+        }
       }
     } catch (err) {
       console.error('Failed to verify Stripe session:', err)
@@ -56,19 +81,27 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col">
       <SiteNavigation />
 
       <main className="flex-1">
         <Section padding="lg">
           <Container>
-            <div className="max-w-2xl mx-auto text-center">
-              {error ? (
-                <ErrorState error={error} />
+            <div className="mx-auto max-w-2xl text-center">
+              {error || !session ? (
+                <ErrorState
+                  error={
+                    error ??
+                    'Payment verification is temporarily unavailable. Please contact support if you were charged.'
+                  }
+                />
               ) : (
                 <>
-                  <ClearCartOnSuccess />
-                  <SuccessState email={session?.customer_email ?? undefined} />
+                  <ClearCartOnSuccess purchase={getPurchaseAnalytics(session)} />
+                  <SuccessState
+                    email={session?.customer_email ?? undefined}
+                    orderConfirmed={orderConfirmed}
+                  />
                 </>
               )}
             </div>
@@ -81,16 +114,43 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   )
 }
 
+function getPurchaseAnalytics(session: Stripe.Checkout.Session) {
+  const items: CartItem[] = (session.line_items?.data ?? []).map((lineItem) => {
+    const quantity = lineItem.quantity ?? 1
+    const product = lineItem.price?.product
+    const metadata =
+      product && typeof product === 'object' && !product.deleted ? product.metadata : null
+    const unitAmount =
+      lineItem.price?.unit_amount ?? Math.round(lineItem.amount_subtotal / quantity)
+
+    return {
+      productId: metadata?.productId || lineItem.price?.id || lineItem.id,
+      slug: metadata?.slug || '',
+      name: lineItem.description || 'Opal jewellery',
+      price: unitAmount / 100,
+      quantity,
+    }
+  })
+
+  return {
+    transactionId: session.id,
+    items,
+    total: (session.amount_total ?? 0) / 100,
+    shipping: (session.total_details?.amount_shipping ?? 0) / 100,
+    tax: (session.total_details?.amount_tax ?? 0) / 100,
+  }
+}
+
 /**
  * Success state component
  */
-function SuccessState({ email }: { email?: string }) {
+function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirmed: boolean }) {
   return (
     <Card className="p-12">
       {/* Success Icon */}
-      <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
         <svg
-          className="w-10 h-10 text-green-600"
+          className="h-10 w-10 text-green-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -100,22 +160,26 @@ function SuccessState({ email }: { email?: string }) {
       </div>
 
       {/* Success Message */}
-      <h1 className="text-3xl font-accent font-bold mb-4">Order Confirmed!</h1>
-      <p className="text-lg text-muted-foreground mb-2">Thank you for your order</p>
+      <h1 className="mb-4 font-accent text-3xl font-bold">
+        {orderConfirmed ? 'Order Confirmed!' : 'Payment Received'}
+      </h1>
+      <p className="mb-2 text-lg text-muted-foreground">
+        {orderConfirmed ? 'Thank you for your order' : 'We are finalizing your order now'}
+      </p>
 
-      {email && (
-        <p className="text-sm text-muted-foreground mb-8">
+      {email && orderConfirmed && (
+        <p className="mb-8 text-sm text-muted-foreground">
           Confirmation sent to: <span className="font-medium">{email}</span>
         </p>
       )}
 
       {/* What's Next */}
-      <div className="bg-muted rounded-lg p-6 mb-8 text-left">
-        <h2 className="font-semibold mb-3">What happens next?</h2>
+      <div className="mb-8 rounded-lg bg-muted p-6 text-left">
+        <h2 className="mb-3 font-semibold">What happens next?</h2>
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li className="flex items-center gap-2">
             <span className="text-green-600">✓</span>
-            Order confirmation is being emailed
+            {orderConfirmed ? 'Order confirmation is being emailed' : 'Payment received securely'}
           </li>
           <li className="flex items-center gap-2">
             <span className="text-green-600">✓</span>
@@ -123,7 +187,7 @@ function SuccessState({ email }: { email?: string }) {
           </li>
           <li className="flex items-center gap-2">
             <span className="text-opal-electric-accessible">→</span>
-            Your order is being prepared
+            {orderConfirmed ? 'Your order is being prepared' : 'Order confirmation is processing'}
           </li>
           <li className="flex items-center gap-2">
             <span className="text-muted-foreground">○</span>
@@ -133,7 +197,7 @@ function SuccessState({ email }: { email?: string }) {
       </div>
 
       {/* Shipping Info */}
-      <div className="bg-opal-light/20 rounded-lg p-4 mb-8">
+      <div className="mb-8 rounded-lg bg-opal-light/20 p-4">
         <p className="text-sm text-charcoal/80">
           We will email tracking after dispatch. Delivery timing depends on the destination and
           shipping estimate selected during checkout.
@@ -141,7 +205,7 @@ function SuccessState({ email }: { email?: string }) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex flex-col justify-center gap-3 sm:flex-row">
         <Button size="lg" asChild>
           <Link href="/store">Continue Shopping</Link>
         </Button>
@@ -161,9 +225,9 @@ function ErrorState({ error }: { error: string }) {
   return (
     <Card className="p-12">
       {/* Error Icon */}
-      <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-6">
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
         <svg
-          className="w-10 h-10 text-amber-600"
+          className="h-10 w-10 text-amber-600"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -178,11 +242,11 @@ function ErrorState({ error }: { error: string }) {
       </div>
 
       {/* Error Message */}
-      <h1 className="text-3xl font-bold mb-4">Verification Issue</h1>
-      <p className="text-muted-foreground mb-8">{error}</p>
+      <h1 className="mb-4 text-3xl font-bold">Verification Issue</h1>
+      <p className="mb-8 text-muted-foreground">{error}</p>
 
       {/* Contact Info */}
-      <div className="bg-muted rounded-lg p-4 mb-8">
+      <div className="mb-8 rounded-lg bg-muted p-4">
         <p className="text-sm text-muted-foreground">
           If you believe this is an error, please contact our support team at{' '}
           <a href={`mailto:${supportEmail}`} className="text-opal-blue hover:underline">
@@ -192,7 +256,7 @@ function ErrorState({ error }: { error: string }) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      <div className="flex flex-col justify-center gap-3 sm:flex-row">
         <Button size="lg" asChild>
           <Link href="/checkout">Try Again</Link>
         </Button>

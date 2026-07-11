@@ -12,6 +12,7 @@ import { CheckoutForm } from './checkout-form'
 export const metadata = {
   title: 'Checkout | The Good Opal Co',
   description: 'Complete your purchase of authentic Australian opals.',
+  robots: { index: false, follow: false },
 }
 
 /**

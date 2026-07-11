@@ -32,6 +32,13 @@ describe('deployment config', () => {
     expect(read('.env.example')).toContain('BLOB_READ_WRITE_TOKEN=')
   })
 
+  test('image optimization avoids the legacy AVIF conversion stall', () => {
+    const config = read('next.config.ts')
+
+    expect(config).toContain("formats: ['image/webp']")
+    expect(config).not.toContain("formats: ['image/avif'")
+  })
+
   test('demo discounts are not connected to checkout', () => {
     const action = read('src/app/(marketing)/checkout/actions.ts')
     const form = read('src/app/(marketing)/checkout/checkout-form.tsx')
@@ -46,6 +53,33 @@ describe('deployment config', () => {
 
     expect(source).toContain('metadataBase')
     expect(source).toContain('new URL(APP_URL)')
+  })
+
+  test('public marketing pages declare canonicals and private flows are noindex', () => {
+    const publicPages = [
+      ['src/app/(marketing)/page.tsx', '/'],
+      ['src/app/(marketing)/store/page.tsx', '/store'],
+      ['src/app/(marketing)/services/page.tsx', '/services'],
+      ['src/app/(marketing)/about/page.tsx', '/about'],
+      ['src/app/(marketing)/contact/page.tsx', '/contact'],
+      ['src/app/(marketing)/blog/page.tsx', '/blog'],
+      ['src/app/(marketing)/returns/page.tsx', '/returns'],
+    ] as const
+
+    for (const [file, canonical] of publicPages) {
+      expect(read(file), file).toContain(`alternates: { canonical: '${canonical}' }`)
+    }
+
+    for (const file of [
+      'src/app/(marketing)/cart/page.tsx',
+      'src/app/(marketing)/checkout/page.tsx',
+      'src/app/(marketing)/checkout/success/page.tsx',
+      'src/app/(marketing)/order-tracking/page.tsx',
+      'src/app/(marketing)/newsletter/confirm/page.tsx',
+      'src/app/(marketing)/newsletter/success/page.tsx',
+    ]) {
+      expect(read(file), file).toContain('robots: { index: false, follow: false }')
+    }
   })
 
   test('admin email and distributed rate limiting are production-configured', () => {
@@ -63,14 +97,35 @@ describe('deployment config', () => {
     expect(source).toContain("'**/.agents/**'")
   })
 
-  test('Vercel runs committed migrations before the production build', () => {
+  test('Vercel runs committed migrations only for production builds', () => {
     const config = JSON.parse(read('vercel.json')) as { buildCommand?: string }
+    const buildScript = read('scripts/vercel-build.mjs')
     const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
 
-    expect(config.buildCommand).toBe(
-      'pnpm payload generate:importmap && pnpm payload migrate && pnpm build'
+    expect(config.buildCommand).toBe('node scripts/vercel-build.mjs')
+    expect(buildScript).toContain("process.env.VERCEL_ENV === 'production'")
+    expect(buildScript).toContain("run('pnpm', ['payload', 'migrate'])")
+    expect(buildScript.indexOf("['payload', 'migrate']")).toBeLessThan(
+      buildScript.indexOf("['build']")
     )
     expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
+  })
+
+  test('commerce conversion analytics run in the browser', () => {
+    const checkoutAction = read('src/app/(marketing)/checkout/actions.ts')
+    const checkoutForm = read('src/app/(marketing)/checkout/checkout-form.tsx')
+    const newsletterAction = read('src/app/(marketing)/newsletter/actions.ts')
+    const newsletterConversion = read('src/components/newsletter/NewsletterConversion.tsx')
+    const checkoutSuccess = read('src/app/(marketing)/checkout/success/page.tsx')
+    const purchaseConversion = read('src/app/(marketing)/checkout/success/clear-cart.tsx')
+
+    expect(checkoutAction).not.toContain('trackBeginCheckout')
+    expect(checkoutForm).toContain('trackBeginCheckout(cart.items, pricing.total)')
+    expect(newsletterAction).not.toContain('trackNewsletterSignup')
+    expect(newsletterConversion).toContain("'use client'")
+    expect(newsletterConversion).toContain("trackNewsletterSignup('email-confirmation')")
+    expect(checkoutSuccess).toContain("expand: ['line_items.data.price.product']")
+    expect(purchaseConversion).toContain('trackPurchase(')
   })
 
   test('Payload admin uses the generated import map without a shadowing TypeScript stub', () => {
@@ -108,6 +163,8 @@ describe('deployment config', () => {
     expect(webhook).toContain('beginTransaction')
     expect(webhook).toContain('commitTransaction')
     expect(webhook).toContain('rollbackTransaction')
+    expect(webhook).toContain('idempotencyKey: `order-confirmation/${order.id}`')
+    expect(webhook).toContain('idempotencyKey: `inventory-review/${order.id}`')
     expect(checkout).not.toContain('cartItems: JSON.stringify')
   })
 
@@ -126,7 +183,7 @@ describe('deployment config', () => {
   test('legacy commerce and editorial URLs retain permanent destinations', () => {
     const config = read('next.config.ts')
 
-    expect(config).toContain("destination: `/blog/${slug}`")
+    expect(config).toContain('destination: `/blog/${slug}`')
     expect(config).toContain("['/shop', '/store']")
     expect(config).toContain("source: '/product/:slug'")
     expect(config).toContain("['/privacy-policy', '/legal/privacy']")

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/lib/payload'
+import { assessDeploymentReadiness } from '@/lib/deployment-readiness'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,6 +9,8 @@ export const dynamic = 'force-dynamic'
  * Used by Docker healthcheck and monitoring
  */
 export async function GET() {
+  const readiness = assessDeploymentReadiness()
+
   try {
     const payload = await getPayload()
     await Promise.race([
@@ -22,6 +25,7 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       environment: process.env['NODE_ENV'] || 'development',
       database: 'connected',
+      readiness,
     }
 
     return NextResponse.json(health, { status: 200 })
@@ -31,9 +35,13 @@ export async function GET() {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         database: 'unavailable',
-        error: process.env.NODE_ENV === 'production'
-          ? 'A required dependency is unavailable'
-          : error instanceof Error ? error.message : 'Unknown error',
+        readiness,
+        error:
+          process.env.NODE_ENV === 'production'
+            ? 'A required dependency is unavailable'
+            : error instanceof Error
+              ? error.message
+              : 'Unknown error',
       },
       { status: 503 }
     )

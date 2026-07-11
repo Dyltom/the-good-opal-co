@@ -6,6 +6,7 @@ import * as migration_20260711_005845_newsletter_delivery_state from './20260711
 import * as migration_20260711_052518_woocommerce_legacy_commerce from './20260711_052518_woocommerce_legacy_commerce';
 import * as migration_20260711_061701 from './20260711_061701';
 import * as migration_20260711_063824_wordpress_content from './20260711_063824_wordpress_content';
+import * as migration_20260711_080000_stripe_refund_accounting from './20260711_080000_stripe_refund_accounting';
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20260711_063824_wordpress_content.up,
     down: migration_20260711_063824_wordpress_content.down,
     name: '20260711_063824_wordpress_content',
+  },
+  {
+    up: migration_20260711_080000_stripe_refund_accounting.up,
+    down: migration_20260711_080000_stripe_refund_accounting.down,
+    name: '20260711_080000_stripe_refund_accounting',
   },
 ];

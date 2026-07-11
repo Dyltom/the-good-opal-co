@@ -16,7 +16,6 @@ import {
   calculateCheckoutSubtotal,
   dollarsToCents,
 } from '@/lib/checkout-pricing'
-import { trackBeginCheckout } from '@/lib/analytics'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
 import { CHECKOUT_COUNTRIES } from './validation'
@@ -101,9 +100,6 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
     const subtotal = calculateCheckoutSubtotal(cart.items)
     const destination = country === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
     const pricing = calculateCheckoutPricing(subtotal, destination)
-
-    // Track begin checkout event
-    trackBeginCheckout(cart.items, cart.total)
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({

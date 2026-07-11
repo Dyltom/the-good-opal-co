@@ -16,6 +16,7 @@ export const metadata = {
   title: 'Shop Australian Opals | The Good Opal Co',
   description:
     'Browse one-of-a-kind Australian opals, finished jewellery, loose stones, and pieces for gifting. Every listing includes its known origin and details.',
+  alternates: { canonical: '/store' },
 }
 export const dynamic = 'force-dynamic'
 

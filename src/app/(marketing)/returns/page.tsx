@@ -6,6 +6,7 @@ import { MarketingShell, PageHeader } from '@/components/marketing'
 export const metadata: Metadata = {
   title: 'Returns & Refunds | The Good Opal Co',
   description: 'Returns, change-of-mind, and faulty-item information for The Good Opal Co purchases.',
+  alternates: { canonical: '/returns' },
 }
 
 export default function ReturnsPage() {

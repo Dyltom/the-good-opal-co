@@ -7,6 +7,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
+import { assertValidCoreProductionConfiguration } from './lib/deployment-readiness.ts'
 
 // Import collections
 import { Users } from './payload/collections/Users.ts'
@@ -19,6 +20,8 @@ import { Customers } from './payload/collections/Customers.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
+assertValidCoreProductionConfiguration()
 
 function getPayloadSecret(): string {
   const secret = process.env['PAYLOAD_SECRET']
@@ -93,8 +96,6 @@ const blobToken = getRequiredEnvironmentValue('BLOB_READ_WRITE_TOKEN')
 const emailSender = getEmailSender()
 
 for (const name of [
-  'STRIPE_SECRET_KEY',
-  'STRIPE_WEBHOOK_SECRET',
   'CONTACT_EMAIL',
   'ADMIN_EMAIL',
 ]) {

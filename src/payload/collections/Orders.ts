@@ -291,6 +291,17 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'stripeRefundedAmount',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Cumulative Stripe refund in currency minor units (cents for AUD)',
+      },
+    },
+    {
       name: 'paymentMethod',
       type: 'text',
       admin: {
