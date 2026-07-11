@@ -52,3 +52,13 @@ export const publishedOrAdmin: Access = ({ req }) => {
     },
   }
 }
+
+export const publishedVersionOrAdmin: Access = ({ req }) => {
+  if (requestUser(req.user)?.role === 'admin') return true
+
+  return {
+    _status: {
+      equals: 'published',
+    },
+  }
+}

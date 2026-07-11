@@ -18,10 +18,11 @@ export default async function BlogPage() {
   const payload = await getPayload()
   const { docs: posts } = await payload.find({
     collection: 'posts',
-    where: { status: { equals: 'published' } },
+    where: { _status: { equals: 'published' } },
     limit: 24,
     sort: '-publishedAt',
     depth: 2,
+    overrideAccess: false,
   })
 
   const cards = posts.map((post) => {

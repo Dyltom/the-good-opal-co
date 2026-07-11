@@ -23,9 +23,10 @@ const getPublishedPost = cache(async (slug: string): Promise<Post | undefined> =
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'posts',
-    where: { and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }] },
+    where: { and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }] },
     limit: 1,
     depth: 2,
+    overrideAccess: false,
   })
 
   return docs[0]

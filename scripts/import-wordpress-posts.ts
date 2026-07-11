@@ -239,7 +239,7 @@ async function importPosts() {
         slug: post.slug,
         excerpt: post.excerpt,
         content: richTextContent,
-        status: 'published' as const,
+        _status: 'published' as const,
         publishedAt: post.publishedAt,
         tenantId: 'goodopalco',
       }
@@ -247,6 +247,7 @@ async function importPosts() {
       await payload.create({
         collection: 'posts',
         data: postData,
+        draft: false,
       })
 
       createdPosts++

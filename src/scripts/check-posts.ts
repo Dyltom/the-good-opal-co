@@ -20,7 +20,6 @@ async function checkPosts() {
       allPosts.docs.forEach((post, index) => {
         console.log(`\n${index + 1}. ${post.title}`)
         console.log(`   Slug: ${post.slug}`)
-        console.log(`   Status: ${post.status}`)
         console.log(`   _status: ${post._status}`)
         console.log(`   Published At: ${post.publishedAt}`)
         console.log(`   Created: ${post.createdAt}`)
@@ -37,17 +36,6 @@ async function checkPosts() {
       limit: 100
     })
     console.log(`Published posts found: ${publishedPosts.docs.length}`)
-
-    // Try querying with status
-    console.log('\n🔍 Checking posts with status = published...')
-    const statusPosts = await payload.find({
-      collection: 'posts',
-      where: {
-        status: { equals: 'published' }
-      },
-      limit: 100
-    })
-    console.log(`Posts with status=published: ${statusPosts.docs.length}`)
 
   } catch (error) {
     console.error('❌ Error checking posts:', error)

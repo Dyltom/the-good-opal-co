@@ -107,7 +107,7 @@ async function importContent(): Promise<void> {
       excerpt: post.excerpt,
       content: post.content,
       ...(featuredImage ? { featuredImage } : {}),
-      status: 'published' as const,
+      _status: 'published' as const,
       publishedAt: post.publishedAt,
       tenantId: TENANT_ID,
     }
@@ -117,11 +117,12 @@ async function importContent(): Promise<void> {
         collection: 'posts',
         id: existing.id,
         data,
+        draft: false,
         overrideAccess: true,
       })
       updated += 1
     } else {
-      await payload.create({ collection: 'posts', data, overrideAccess: true })
+      await payload.create({ collection: 'posts', data, draft: false, overrideAccess: true })
       created += 1
     }
   }

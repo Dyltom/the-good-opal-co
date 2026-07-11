@@ -255,7 +255,6 @@ export interface Post {
     [k: string]: unknown;
   };
   featuredImage?: (number | null) | Media;
-  status: 'draft' | 'published' | 'archived';
   /**
    * When this post was published
    */
@@ -970,7 +969,6 @@ export interface PostsSelect<T extends boolean = true> {
   excerpt?: T;
   content?: T;
   featuredImage?: T;
-  status?: T;
   publishedAt?: T;
   author?: T;
   categories?: T;

@@ -21,7 +21,7 @@ function postFixture(overrides: Partial<Post> = {}): Post {
         version: 1,
       },
     },
-    status: 'published',
+    _status: 'published',
     publishedAt: '2025-04-10T00:00:00.000Z',
     tenantId: 'default',
     updatedAt: '2025-04-12T00:00:00.000Z',
@@ -66,6 +66,17 @@ describe('blog post metadata', () => {
       publishedTime: '2025-04-10T00:00:00.000Z',
       modifiedTime: '2025-04-12T00:00:00.000Z',
     })
+    expect(find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        overrideAccess: false,
+        where: {
+          and: [
+            { slug: { equals: 'choose-an-australian-opal' } },
+            { _status: { equals: 'published' } },
+          ],
+        },
+      })
+    )
   })
 
   test('prevents indexing when no published post matches', async () => {

@@ -25,7 +25,8 @@ async function publishPosts() {
           id: post.id,
           data: {
             _status: 'published'
-          }
+          },
+          draft: false,
         })
 
         console.log(`✅ Published: ${post.title}`)

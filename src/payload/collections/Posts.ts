@@ -1,17 +1,17 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
+import { isAdmin, publishedVersionOrAdmin } from '../../lib/payload-access.ts'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
   access: {
-    read: publishedOrAdmin,
+    read: publishedVersionOrAdmin,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'slug', 'status', 'publishedAt', 'updatedAt'],
+    defaultColumns: ['title', 'slug', '_status', 'publishedAt', 'updatedAt'],
   },
   versions: {
     drafts: true,
@@ -58,26 +58,6 @@ export const Posts: CollectionConfig = {
       name: 'featuredImage',
       type: 'upload',
       relationTo: 'media',
-    },
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      defaultValue: 'draft',
-      options: [
-        {
-          label: 'Draft',
-          value: 'draft',
-        },
-        {
-          label: 'Published',
-          value: 'published',
-        },
-        {
-          label: 'Archived',
-          value: 'archived',
-        },
-      ],
     },
     {
       name: 'publishedAt',

@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import type { Access, PayloadRequest } from 'payload'
-import { isAdmin, isAdminOrFirstUser, isAdminOrSelf, publishedOrAdmin } from '@/lib/payload-access'
+import {
+  isAdmin,
+  isAdminOrFirstUser,
+  isAdminOrSelf,
+  publishedOrAdmin,
+  publishedVersionOrAdmin,
+} from '@/lib/payload-access'
 
 function args(user: PayloadRequest['user']): Parameters<Access>[0] {
   return { req: { user } } as Parameters<Access>[0]
@@ -23,12 +29,19 @@ describe('Payload access rules', () => {
     })
   })
 
+  test('public draft-enabled content access uses Payload publication state', async () => {
+    expect(await publishedVersionOrAdmin(args(null))).toEqual({
+      _status: { equals: 'published' },
+    })
+  })
+
   test('admins retain full access', async () => {
     const request = args({ id: 1, role: 'admin' } as PayloadRequest['user'])
 
     expect(await isAdmin(request)).toBe(true)
     expect(await isAdminOrSelf(request)).toBe(true)
     expect(await publishedOrAdmin(request)).toBe(true)
+    expect(await publishedVersionOrAdmin(request)).toBe(true)
   })
 
   test('only the first anonymous user can bootstrap Payload admin', async () => {

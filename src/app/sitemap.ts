@@ -33,13 +33,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { docs } = await payload.find({
       collection: 'posts',
       where: {
-        status: { equals: 'published' },
+        _status: { equals: 'published' },
       },
       limit: 1000,
       select: {
         slug: true,
         updatedAt: true,
       },
+      overrideAccess: false,
     })
     posts = docs as Array<{ slug: string; updatedAt: string }>
   } catch {

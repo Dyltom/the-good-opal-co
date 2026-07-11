@@ -177,7 +177,7 @@ const blogPosts = [
         ]
       }
     },
-    status: 'published',
+    _status: 'published',
     publishedAt: new Date('2024-01-15').toISOString(),
     categories: ['education', 'opal-types'],
     meta: {
@@ -321,7 +321,7 @@ const blogPosts = [
         ]
       }
     },
-    status: 'published',
+    _status: 'published',
     publishedAt: new Date('2024-02-01').toISOString(),
     categories: ['care-guide', 'education'],
     meta: {
@@ -430,7 +430,7 @@ const blogPosts = [
         ]
       }
     },
-    status: 'published',
+    _status: 'published',
     publishedAt: new Date('2024-02-15').toISOString(),
     categories: ['history', 'mining'],
     meta: {
@@ -574,7 +574,7 @@ const blogPosts = [
         ]
       }
     },
-    status: 'published',
+    _status: 'published',
     publishedAt: new Date('2024-03-01').toISOString(),
     categories: ['buying-guide', 'education'],
     meta: {
@@ -683,7 +683,7 @@ const blogPosts = [
         ]
       }
     },
-    status: 'published',
+    _status: 'published',
     publishedAt: new Date('2024-03-15').toISOString(),
     categories: ['history', 'famous-opals'],
     meta: {
@@ -711,7 +711,7 @@ async function seedBlogPosts() {
 
     // Create categories first
     const categories = ['education', 'opal-types', 'care-guide', 'history', 'mining', 'buying-guide', 'famous-opals']
-    const categoryMap: Record<string, string> = {}
+    const categoryMap: Record<string, number> = {}
 
     for (const categoryName of categories) {
       try {
@@ -721,10 +721,11 @@ async function seedBlogPosts() {
             name: categoryName.split('-').map(word =>
               word.charAt(0).toUpperCase() + word.slice(1)
             ).join(' '),
-            slug: categoryName
+            slug: categoryName,
+            tenantId: 'good-opal-co',
           }
         })
-        categoryMap[categoryName] = String(category.id)
+        categoryMap[categoryName] = category.id
       } catch (error) {
         // Category might already exist
         const existing = await payload.find({
@@ -733,25 +734,30 @@ async function seedBlogPosts() {
           limit: 1
         })
         if (existing.docs[0]) {
-          categoryMap[categoryName] = String(existing.docs[0].id)
+          categoryMap[categoryName] = existing.docs[0].id
         }
       }
     }
 
     // Create blog posts
     for (const post of blogPosts) {
-      const categoryIds = post.categories.map(cat => categoryMap[cat]).filter(Boolean)
+      const { categories: categorySlugs, meta, ...postData } = post
+      const categoryIds = categorySlugs.map(cat => categoryMap[cat]).filter(Boolean)
 
       await payload.create({
         collection: 'posts',
         data: {
-          ...post,
+          ...postData,
           categories: categoryIds,
-          author: 'Stephanie Caruana',
           featuredImage: undefined, // Add image IDs if you have them
-          relatedProducts: [], // Add product IDs if you want to link products
-          _status: 'published' // Ensure posts are published when drafts are enabled
-        }
+          seo: {
+            title: meta.title,
+            description: meta.description,
+          },
+          tenantId: 'good-opal-co',
+          _status: 'published',
+        },
+        draft: false,
       })
 
       console.log(`✅ Created post: ${post.title}`)
