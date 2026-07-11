@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "pnpm payload generate:importmap && pnpm payload migrate && WORDPRESS_CONTENT_APPLY=true node --import tsx src/scripts/import-wordpress-content.ts && pnpm build",
+  "buildCommand": "pnpm payload generate:importmap && pnpm payload migrate && WORDPRESS_PRODUCT_IMAGES_APPLY=true node --import tsx src/scripts/import-wordpress-product-images.ts && pnpm build",
   "regions": ["syd1"],
   "functions": {
     "src/app/api/webhooks/stripe/route.ts": {

@@ -131,7 +131,10 @@ async function importContent(): Promise<void> {
   )
 }
 
-importContent().catch((error: unknown) => {
-  console.error(error)
-  process.exitCode = 1
-})
+importContent()
+  .then(() => process.exit(0))
+  .catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : 'Unknown import error'
+    console.error(`WordPress content import failed: ${message}`)
+    process.exit(1)
+  })
