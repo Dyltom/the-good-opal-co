@@ -640,7 +640,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
   const [stoneWidth] = getStoneDimensions(config, selectedOpal)
   const measurements = getRingMeasurements(config)
   const shoulderRadius = styleProfile.shoulderRadius
-  const endX = stoneWidth + 0.025
+  const endX = stoneWidth - 0.02
   const gapAngle = (115 * Math.PI) / 180
   const gapX = measurements.centreRadius * Math.cos(gapAngle)
   const gapY = measurements.centreRadius * Math.sin(gapAngle)
@@ -648,13 +648,13 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
     () => ({
       left: [
         [gapX, gapY, 0],
-        [-endX - 0.02, measurements.settingY - 0.14, 0],
-        [-endX, measurements.settingY - 0.06, 0],
+        [-endX - 0.035, measurements.settingY - 0.14, 0],
+        [-endX, measurements.settingY - 0.035, 0],
       ] as const,
       right: [
         [-gapX, gapY, 0],
-        [endX + 0.02, measurements.settingY - 0.14, 0],
-        [endX, measurements.settingY - 0.06, 0],
+        [endX + 0.035, measurements.settingY - 0.14, 0],
+        [endX, measurements.settingY - 0.035, 0],
       ] as const,
     }),
     [endX, gapX, gapY, measurements]
