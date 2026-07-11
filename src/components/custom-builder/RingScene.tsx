@@ -704,57 +704,44 @@ function Setting({
   )
 }
 
-function Shoulder({
-  points,
-  radius,
+function RingShank({
   metal,
-}: {
-  points: readonly (readonly [number, number, number])[]
-  radius: number
-  metal: RingConfig['metal']
-}) {
-  const curve = useMemo(
-    () => new CatmullRomCurve3(points.map(([x, y, z]) => new Vector3(x, y, z))),
-    [points]
-  )
-
-  return (
-    <group>
-      <mesh>
-        <tubeGeometry args={[curve, 40, radius, 14, false]} />
-        <MetalMaterial metal={metal} roughness={0.2} />
-      </mesh>
-      <mesh position={points[0]}>
-        <sphereGeometry args={[radius, 14, 14]} />
-        <MetalMaterial metal={metal} roughness={0.2} />
-      </mesh>
-    </group>
-  )
-}
-
-function Shank({
   radius,
+  settingY,
+  shoulderRadius,
+  stoneWidth,
   tubeRadius,
-  metal,
 }: {
-  radius: number
-  tubeRadius: number
   metal: RingConfig['metal']
+  radius: number
+  settingY: number
+  shoulderRadius: number
+  stoneWidth: number
+  tubeRadius: number
 }) {
-  const curve = useMemo(
-    () =>
-      new CatmullRomCurve3(
-        Array.from({ length: 97 }, (_, index) => {
+  const curve = useMemo(() => {
+    const endX = stoneWidth - 0.02
+    const ringPoints = Array.from({ length: 97 }, (_, index) => {
           const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
           return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
         })
-      ),
-    [radius]
-  )
+    return new CatmullRomCurve3(
+      [
+        new Vector3(-endX, settingY - 0.02, 0),
+        new Vector3(-endX - 0.025, settingY - 0.09, 0),
+        ...ringPoints,
+        new Vector3(endX + 0.025, settingY - 0.09, 0),
+        new Vector3(endX, settingY - 0.02, 0),
+      ],
+      false,
+      'centripetal'
+    )
+  }, [radius, settingY, stoneWidth])
+  const solderedRadius = (tubeRadius + shoulderRadius) / 2
 
   return (
     <mesh scale={[1, 1, 1.18]}>
-      <tubeGeometry args={[curve, 128, tubeRadius, 16, false]} />
+      <tubeGeometry args={[curve, 160, solderedRadius, 16, false]} />
       <MetalMaterial metal={metal} roughness={0.25} />
     </mesh>
   )
@@ -773,37 +760,17 @@ function RingModel({
   const styleProfile = ringStyleGeometryProfiles[config.style]
   const [stoneWidth] = getStoneDimensions(config, selectedOpal)
   const measurements = getRingMeasurements(config)
-  const shoulderRadius = styleProfile.shoulderRadius
-  const endX = stoneWidth - 0.02
-  const gapAngle = (115 * Math.PI) / 180
-  const gapX = measurements.centreRadius * Math.cos(gapAngle)
-  const gapY = measurements.centreRadius * Math.sin(gapAngle)
-  const shoulderPoints = useMemo(
-    () => ({
-      left: [
-        [gapX, gapY, 0],
-        [-endX - 0.025, measurements.settingY - 0.09, 0],
-        [-endX, measurements.settingY - 0.02, 0],
-      ] as const,
-      right: [
-        [-gapX, gapY, 0],
-        [endX + 0.025, measurements.settingY - 0.09, 0],
-        [endX, measurements.settingY - 0.02, 0],
-      ] as const,
-    }),
-    [endX, gapX, gapY, measurements]
-  )
 
   return (
     <group>
-      <Shank
-        radius={measurements.centreRadius}
-        tubeRadius={styleProfile.shankRadius}
+      <RingShank
         metal={metal}
+        radius={measurements.centreRadius}
+        settingY={measurements.settingY}
+        shoulderRadius={styleProfile.shoulderRadius}
+        stoneWidth={stoneWidth}
+        tubeRadius={styleProfile.shankRadius}
       />
-
-      <Shoulder points={shoulderPoints.left} radius={shoulderRadius} metal={metal} />
-      <Shoulder points={shoulderPoints.right} radius={shoulderRadius} metal={metal} />
 
       <group position={[0, measurements.settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <Setting config={config} opalImageUrls={opalImageUrls} selectedOpal={selectedOpal} />
