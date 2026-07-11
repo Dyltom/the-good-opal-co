@@ -34,6 +34,7 @@ STRIPE_WEBHOOK_SECRET
 RESEND_API_KEY
 EMAIL_FROM
 CONTACT_EMAIL
+EMAIL_DELIVERY_VERIFIED
 BLOB_READ_WRITE_TOKEN
 UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
@@ -45,7 +46,7 @@ Optional:
 NEXT_PUBLIC_GA_MEASUREMENT_ID
 ```
 
-`NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate `PAYLOAD_SECRET` from at least 32 random bytes. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox.
+`NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate `PAYLOAD_SECRET` from at least 32 random bytes. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret.
 
 ## Database migrations and catalog
 

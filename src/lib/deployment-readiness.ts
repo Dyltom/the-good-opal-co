@@ -5,8 +5,10 @@ export type ReadinessIssueCode =
   | 'app_url_invalid'
   | 'email_from_invalid'
   | 'stripe_secret_key_invalid'
+  | 'stripe_live_mode_required'
   | 'stripe_webhook_secret_invalid'
   | 'resend_api_key_invalid'
+  | 'email_delivery_unverified'
   | 'blob_storage_unavailable'
   | 'redis_url_invalid'
   | 'redis_token_missing'
@@ -111,14 +113,20 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
   if (!hasValidPayloadSecret(env)) issues.push('payload_secret_invalid')
   if (!hasValidAppUrl(env, production)) issues.push('app_url_invalid')
   if (!hasValidEmailFrom(env)) issues.push('email_from_invalid')
-  if (!getConfiguredStripeSecretKey(value(env, 'STRIPE_SECRET_KEY'))) {
+  const stripeSecretKey = getConfiguredStripeSecretKey(value(env, 'STRIPE_SECRET_KEY'))
+  if (!stripeSecretKey) {
     issues.push('stripe_secret_key_invalid')
+  } else if (production && !/^(?:sk|rk)_live_/.test(stripeSecretKey)) {
+    issues.push('stripe_live_mode_required')
   }
   if (!getConfiguredStripeWebhookSecret(value(env, 'STRIPE_WEBHOOK_SECRET'))) {
     issues.push('stripe_webhook_secret_invalid')
   }
   if (!hasValidProviderSecret(env, 'RESEND_API_KEY', /^re_[A-Za-z0-9_-]{10,}$/)) {
     issues.push('resend_api_key_invalid')
+  }
+  if (production && value(env, 'EMAIL_DELIVERY_VERIFIED') !== 'true') {
+    issues.push('email_delivery_unverified')
   }
 
   const blobToken = value(env, 'BLOB_READ_WRITE_TOKEN')
@@ -132,10 +140,16 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
     (issue) => issue === 'payload_secret_invalid' || issue === 'app_url_invalid'
   )
   const payments = !issues.some(
-    (issue) => issue === 'stripe_secret_key_invalid' || issue === 'stripe_webhook_secret_invalid'
+    (issue) =>
+      issue === 'stripe_secret_key_invalid' ||
+      issue === 'stripe_live_mode_required' ||
+      issue === 'stripe_webhook_secret_invalid'
   )
   const email = !issues.some(
-    (issue) => issue === 'email_from_invalid' || issue === 'resend_api_key_invalid'
+    (issue) =>
+      issue === 'email_from_invalid' ||
+      issue === 'resend_api_key_invalid' ||
+      issue === 'email_delivery_unverified'
   )
   const storage = !issues.includes('blob_storage_unavailable')
   const rateLimiting = !issues.some(

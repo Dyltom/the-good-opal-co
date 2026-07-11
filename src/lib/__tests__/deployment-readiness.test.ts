@@ -12,6 +12,7 @@ const validEnvironment = {
   STRIPE_SECRET_KEY: `sk_live_${'a'.repeat(24)}`,
   STRIPE_WEBHOOK_SECRET: `whsec_${'b'.repeat(24)}`,
   RESEND_API_KEY: `re_${'c'.repeat(24)}`,
+  EMAIL_DELIVERY_VERIFIED: 'true',
   BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_real-token-value',
   UPSTASH_REDIS_REST_URL: 'https://helpful-falcon.upstash.io',
   UPSTASH_REDIS_REST_TOKEN: 'real-redis-token-value',
@@ -88,6 +89,19 @@ describe('deployment readiness', () => {
     expect(readiness.ready).toBe(false)
   })
 
+  test('requires live payments and verified real-recipient email in production', () => {
+    const readiness = assessDeploymentReadiness({
+      ...validEnvironment,
+      STRIPE_SECRET_KEY: `sk_test_${'a'.repeat(24)}`,
+      EMAIL_DELIVERY_VERIFIED: 'false',
+    })
+
+    expect(readiness.checks.payments).toBe(false)
+    expect(readiness.checks.email).toBe(false)
+    expect(readiness.issues).toContain('stripe_live_mode_required')
+    expect(readiness.issues).toContain('email_delivery_unverified')
+  })
+
   test('accepts Upstash Marketplace alias variable names', () => {
     const {
       UPSTASH_REDIS_REST_URL: _url,
@@ -105,16 +119,20 @@ describe('deployment readiness', () => {
   })
 
   test('only security-critical core defects stop production configuration', () => {
-    expect(() => assertValidCoreProductionConfiguration({
-      ...validEnvironment,
-      STRIPE_SECRET_KEY: 'sk_test_xxxxxxxxxxxx',
-      STRIPE_WEBHOOK_SECRET: 'whsec_xxxxxxxxxxxx',
-    })).not.toThrow()
+    expect(() =>
+      assertValidCoreProductionConfiguration({
+        ...validEnvironment,
+        STRIPE_SECRET_KEY: 'sk_test_xxxxxxxxxxxx',
+        STRIPE_WEBHOOK_SECRET: 'whsec_xxxxxxxxxxxx',
+      })
+    ).not.toThrow()
 
-    expect(() => assertValidCoreProductionConfiguration({
-      ...validEnvironment,
-      PAYLOAD_SECRET: 'short',
-    })).toThrow('payload_secret_invalid')
+    expect(() =>
+      assertValidCoreProductionConfiguration({
+        ...validEnvironment,
+        PAYLOAD_SECRET: 'short',
+      })
+    ).toThrow('payload_secret_invalid')
   })
 
   test('allows local HTTP app URLs outside production', () => {
