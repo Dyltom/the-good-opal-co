@@ -36,7 +36,9 @@ export async function POST(request: Request) {
 
   const access = await getCustomerQuoteAccess(body.data.token)
   if (!access) {
-    return NextResponse.json({ error: 'This secure quote link is unavailable.' }, { status: 404 })
+    // Keep valid-shaped but unusable bearer links non-enumerating and avoid a
+    // noisy browser resource error on the customer-facing redemption screen.
+    return NextResponse.json({ error: 'This secure quote link is unavailable.' })
   }
 
   const response = NextResponse.json({
