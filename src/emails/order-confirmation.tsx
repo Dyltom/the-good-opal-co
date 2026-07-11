@@ -24,6 +24,9 @@ interface OrderConfirmationEmailProps {
     postalCode: string
     country: string
   }
+  baseUrl: string
+  supportEmail: string
+  requiresInventoryReview?: boolean
 }
 
 export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
@@ -35,6 +38,9 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
   tax,
   total,
   shippingAddress,
+  baseUrl,
+  supportEmail,
+  requiresInventoryReview = false,
 }) => {
   return (
     <html>
@@ -76,8 +82,9 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                       Dear {customerName},
                     </h2>
                     <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666' }}>
-                      Thank you for your order! We&apos;re excited to prepare your beautiful Australian opals for shipment.
-                      Your order has been received and is being processed.
+                      {requiresInventoryReview
+                        ? 'Thank you for your order. Payment was received, and we are reviewing item availability before dispatch. We will contact you if anything needs attention.'
+                        : 'Thank you for your order. Your order has been received and is being prepared for dispatch.'}
                     </p>
                   </td>
                 </tr>
@@ -224,7 +231,7 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                             Delivery
                           </p>
                           <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>
-                            Your treasures will arrive within 5-7 business days
+                            Delivery timing depends on the destination shown at checkout.
                           </p>
                         </td>
                       </tr>
@@ -244,12 +251,12 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                     <table cellPadding="0" cellSpacing="0" style={{ margin: '0 auto' }}>
                       <tr>
                         <td style={{ paddingRight: '15px' }}>
-                          <a href="mailto:thegoodopalco@gmail.com" style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#1a1a1a', color: '#ffffff', textDecoration: 'none', borderRadius: '4px', fontSize: '14px' }}>
+                          <a href={`mailto:${supportEmail}`} style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#1a1a1a', color: '#ffffff', textDecoration: 'none', borderRadius: '4px', fontSize: '14px' }}>
                             Email Support
                           </a>
                         </td>
                         <td>
-                          <a href="https://thegoodopalco.com/contact" style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#ffffff', color: '#1a1a1a', textDecoration: 'none', borderRadius: '4px', fontSize: '14px', border: '1px solid #1a1a1a' }}>
+                          <a href={`${baseUrl}/contact`} style={{ display: 'inline-block', padding: '12px 24px', backgroundColor: '#ffffff', color: '#1a1a1a', textDecoration: 'none', borderRadius: '4px', fontSize: '14px', border: '1px solid #1a1a1a' }}>
                             Contact Us
                           </a>
                         </td>
@@ -265,16 +272,16 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
                       © {new Date().getFullYear()} The Good Opal Co. All rights reserved.
                     </p>
                     <p style={{ margin: 0, fontSize: '12px', color: '#999999' }}>
-                      Sydney, NSW, Australia | +61 2 9555 1234
+                      Australia
                     </p>
                     <div style={{ marginTop: '20px' }}>
-                      <a href="https://thegoodopalco.com/shipping" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
+                      <a href={`${baseUrl}/shipping`} style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
                         Shipping Info
                       </a>
-                      <a href="https://thegoodopalco.com/returns" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
+                      <a href={`${baseUrl}/returns`} style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px', marginRight: '15px' }}>
                         Returns
                       </a>
-                      <a href="https://thegoodopalco.com/legal/privacy" style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px' }}>
+                      <a href={`${baseUrl}/legal/privacy`} style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px' }}>
                         Privacy
                       </a>
                     </div>

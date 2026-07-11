@@ -111,7 +111,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               transition={{ delay: 0.3 }}
               className="mb-8 max-w-xl border-y border-white/15 py-4 text-sm leading-relaxed text-white/70"
             >
-              Trusted details, clear care, and one-of-a-kind stones. Authenticity, express shipping, returns, and care guidance are kept close to the buying decision.
+              Trusted details, clear care, and one-of-a-kind stones. Product details, shipping, returns, and care guidance stay close to the buying decision.
             </motion.div>
 
             <motion.div

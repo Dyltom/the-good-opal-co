@@ -13,6 +13,7 @@
 
 import { cookies } from 'next/headers'
 import { getPayload } from '@/lib/payload'
+import { resolveMediaUrl } from '@/lib/media-url'
 
 /**
  * Represents an item in the shopping cart
@@ -37,6 +38,7 @@ export interface Cart {
 
 const CART_COOKIE_NAME = 'cart'
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
+const MAX_CART_LINES = 20
 
 /**
  * Calculate cart totals from items
@@ -75,18 +77,43 @@ export async function getCart(): Promise<Cart> {
     const payload = await getPayload()
 
     for (const item of storedItems) {
+      if (
+        !item ||
+        typeof item.productId !== 'string' ||
+        !Number.isInteger(item.quantity) ||
+        item.quantity < 1
+      ) {
+        continue
+      }
+
       try {
         const { docs: [product] } = await payload.find({
           collection: 'products',
-          where: { id: { equals: item.productId } }
+          where: {
+            and: [
+              { id: { equals: item.productId } },
+              { status: { equals: 'published' } },
+            ],
+          },
+          limit: 1,
+          depth: 1,
         })
 
-        if (product && product.status === 'published' && product.stock > 0) {
-          // Update item with current price from database
+        const availableStock = product?.stock ?? 0
+        if (product && availableStock > 0) {
+          const primaryImage = product.images?.[0]?.image
+          const image =
+            primaryImage && typeof primaryImage === 'object'
+              ? resolveMediaUrl(primaryImage.url)
+              : undefined
+
           validatedItems.push({
-            ...item,
+            productId: String(product.id),
+            slug: product.slug,
             price: product.price,
-            name: product.name, // Also update name in case it changed
+            name: product.name,
+            quantity: Math.min(item.quantity, availableStock),
+            image,
           })
         }
         // Skip items that are no longer available or out of stock
@@ -94,14 +121,6 @@ export async function getCart(): Promise<Cart> {
         // Skip items that couldn't be validated
         console.warn(`Failed to validate cart item ${item.productId}:`, error)
       }
-    }
-
-    // Update cart cookie if any items were removed or prices changed
-    if (validatedItems.length !== storedItems.length ||
-        validatedItems.some((item, i) =>
-          !storedItems[i] || item.price !== storedItems[i].price || item.name !== storedItems[i].name
-        )) {
-      await setCart(validatedItems)
     }
 
     const { total, itemCount } = calculateCartTotals(validatedItems)
@@ -120,7 +139,12 @@ export async function getCart(): Promise<Cart> {
  */
 export async function setCart(items: CartItem[]): Promise<void> {
   const cookieStore = await cookies()
-  cookieStore.set(CART_COOKIE_NAME, JSON.stringify(items), {
+  const storedItems = items.slice(0, MAX_CART_LINES).map(({ productId, quantity }) => ({
+    productId,
+    quantity,
+  }))
+
+  cookieStore.set(CART_COOKIE_NAME, JSON.stringify(storedItems), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -155,7 +179,12 @@ export async function addItemToCartWithQuantity(
   const payload = await getPayload()
   const { docs: [product] } = await payload.find({
     collection: 'products',
-    where: { id: { equals: item.productId } }
+    where: {
+      and: [
+        { id: { equals: item.productId } },
+        { status: { equals: 'published' } },
+      ],
+    },
   })
 
   if (!product) {
@@ -167,8 +196,9 @@ export async function addItemToCartWithQuantity(
   const currentCartQuantity = existingItem?.quantity || 0
   const requestedTotalQuantity = currentCartQuantity + quantity
 
-  if (product.stock < requestedTotalQuantity) {
-    throw new Error(`Insufficient stock available. Only ${product.stock} items in stock, but ${requestedTotalQuantity} requested.`)
+  const availableStock = product.stock ?? 0
+  if (availableStock < requestedTotalQuantity) {
+    throw new Error(`Insufficient stock available. Only ${availableStock} items in stock, but ${requestedTotalQuantity} requested.`)
   }
 
   const existingIndex = cart.items.findIndex((i) => i.productId === item.productId)
@@ -181,7 +211,22 @@ export async function addItemToCartWithQuantity(
     }
   } else {
     // Add new item with specified quantity
-    cart.items.push({ ...item, quantity })
+    const primaryImage = product.images?.[0]?.image
+    const image =
+      primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined
+
+    if (cart.items.length >= MAX_CART_LINES) {
+      throw new Error(`Your cart can contain up to ${MAX_CART_LINES} different items`)
+    }
+
+    cart.items.push({
+      productId: String(product.id),
+      slug: product.slug,
+      name: product.name,
+      price: product.price,
+      quantity,
+      image,
+    })
   }
 
   await setCart(cart.items)
@@ -222,15 +267,18 @@ export async function updateCartItemQuantity(productId: string, quantity: number
   const payload = await getPayload()
   const { docs: [product] } = await payload.find({
     collection: 'products',
-    where: { id: { equals: productId } }
+    where: {
+      and: [{ id: { equals: productId } }, { status: { equals: 'published' } }],
+    },
   })
 
   if (!product) {
     throw new Error('Product not found')
   }
 
-  if (product.stock < quantity) {
-    throw new Error(`Insufficient stock available. Only ${product.stock} items in stock.`)
+  const availableStock = product.stock ?? 0
+  if (availableStock < quantity) {
+    throw new Error(`Insufficient stock available. Only ${availableStock} items in stock.`)
   }
 
   const item = cart.items.find((i) => i.productId === productId)

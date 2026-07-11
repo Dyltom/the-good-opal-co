@@ -1,4 +1,16 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
+import { isAdmin, isAdminOrFirstUser, isAdminOrSelf } from '../../lib/payload-access.ts'
+
+export const promoteFirstUser: CollectionBeforeChangeHook = async ({ data, operation, req }) => {
+  if (operation !== 'create') return data
+
+  const { totalDocs } = await req.payload.count({
+    collection: 'users',
+    overrideAccess: true,
+  })
+
+  return totalDocs === 0 ? { ...data, role: 'admin' } : data
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -8,21 +20,10 @@ export const Users: CollectionConfig = {
     defaultColumns: ['email', 'name', 'role'],
   },
   access: {
-    read: () => true,
-    create: () => true,
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      if (user?.['role'] === 'admin') return true
-      return {
-        id: {
-          equals: user.id,
-        },
-      }
-    },
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      return user?.['role'] === 'admin'
-    },
+    read: isAdminOrSelf,
+    create: isAdminOrFirstUser,
+    update: isAdminOrSelf,
+    delete: isAdmin,
   },
   fields: [
     {
@@ -59,5 +60,8 @@ export const Users: CollectionConfig = {
       index: true,
     },
   ],
+  hooks: {
+    beforeChange: [promoteFirstUser],
+  },
   timestamps: true,
 }

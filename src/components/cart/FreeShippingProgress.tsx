@@ -13,7 +13,7 @@ export function FreeShippingProgress({ total, className }: FreeShippingProgressP
     <div className={cn('space-y-2 rounded-xl border border-warm-grey/40 bg-white p-4', className)}>
       <div className="flex items-center justify-between gap-4">
         <p className="font-sans text-sm font-semibold text-charcoal">
-          Free express shipping
+          Free shipping
         </p>
         <p className="font-sans text-xs text-charcoal/60">
           {progress.qualifies ? 'Unlocked' : `${formatCurrency(progress.remaining, 'AUD')} away`}

@@ -69,7 +69,7 @@ export function trackProductView(product: AnalyticsProduct) {
     eventName: 'view_item',
     parameters: {
       currency: CURRENCY,
-      value: (product.price || 0) / 100,
+      value: product.price || 0,
       items: [productToAnalyticsItem(product)]
     }
   }
@@ -91,7 +91,7 @@ export function trackAddToCart(
     eventName: 'add_to_cart',
     parameters: {
       currency: CURRENCY,
-      value: ((product.price || 0) * quantity) / 100,
+      value: (product.price || 0) * quantity,
       items: [productToAnalyticsItem(product, quantity, variant)]
     }
   }
@@ -127,7 +127,7 @@ export function trackBeginCheckout(items: CartItem[], total: number) {
     eventName: 'begin_checkout',
     parameters: {
       currency: CURRENCY,
-      value: total / 100,
+      value: total,
       items: items.map(cartItemToAnalyticsItem)
     }
   }
@@ -151,10 +151,10 @@ export function trackPurchase(
     eventName: 'purchase',
     parameters: {
       currency: CURRENCY,
-      value: total / 100,
+      value: total,
       transaction_id: transactionId,
-      shipping: shipping / 100,
-      tax: tax / 100,
+      shipping,
+      tax,
       items: items.map(cartItemToAnalyticsItem)
     }
   }

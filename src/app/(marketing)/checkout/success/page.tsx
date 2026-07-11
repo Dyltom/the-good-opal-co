@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Stripe from 'stripe'
 import { Container, Section } from '@/components/layout'
-import { Navigation, Footer } from '@/components/navigation'
+import { Footer, SiteNavigation } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { clearCart } from '@/lib/cart'
+import { ClearCartOnSuccess } from './clear-cart'
 
 /**
  * Checkout Success Page Metadata
@@ -39,7 +39,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
 
   if (process.env['STRIPE_SECRET_KEY']) {
     const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'], {
-      apiVersion: '2025-10-29.clover',
+      apiVersion: '2026-06-24.dahlia',
     })
 
     try {
@@ -48,32 +48,16 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
       // Verify payment was successful
       if (session.payment_status !== 'paid') {
         error = 'Payment was not completed. Please try again.'
-      } else {
-        // Clear the cart after successful payment
-        await clearCart()
       }
     } catch (err) {
       console.error('Failed to verify Stripe session:', err)
       error = 'Failed to verify payment. Please contact support if you were charged.'
     }
-  } else {
-    // Development mode - clear cart anyway
-    await clearCart()
   }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/courses', label: 'Courses' },
-          { href: '/about', label: 'About' },
-          { href: '/contact', label: 'Contact' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-      />
+      <SiteNavigation />
 
       <main className="flex-1">
         <Section padding="lg">
@@ -82,7 +66,10 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
               {error ? (
                 <ErrorState error={error} />
               ) : (
-                <SuccessState email={session?.customer_email ?? undefined} />
+                <>
+                  <ClearCartOnSuccess />
+                  <SuccessState email={session?.customer_email ?? undefined} />
+                </>
               )}
             </div>
           </Container>
@@ -128,7 +115,7 @@ function SuccessState({ email }: { email?: string }) {
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li className="flex items-center gap-2">
             <span className="text-green-600">✓</span>
-            Order confirmation email sent
+            Order confirmation is being emailed
           </li>
           <li className="flex items-center gap-2">
             <span className="text-green-600">✓</span>
@@ -148,9 +135,8 @@ function SuccessState({ email }: { email?: string }) {
       {/* Shipping Info */}
       <div className="bg-opal-light/20 rounded-lg p-4 mb-8">
         <p className="text-sm text-charcoal/80">
-          Your opal will be carefully packaged and shipped within{' '}
-          <span className="font-semibold">1-2 business days</span>. Expect delivery in{' '}
-          <span className="font-semibold">3-7 business days</span> depending on your location.
+          We will email tracking after dispatch. Delivery timing depends on the destination and
+          shipping estimate selected during checkout.
         </p>
       </div>
 
@@ -171,6 +157,7 @@ function SuccessState({ email }: { email?: string }) {
  * Error state component
  */
 function ErrorState({ error }: { error: string }) {
+  const supportEmail = process.env.CONTACT_EMAIL ?? ''
   return (
     <Card className="p-12">
       {/* Error Icon */}
@@ -198,8 +185,8 @@ function ErrorState({ error }: { error: string }) {
       <div className="bg-muted rounded-lg p-4 mb-8">
         <p className="text-sm text-muted-foreground">
           If you believe this is an error, please contact our support team at{' '}
-          <a href="mailto:support@thegoodopal.co" className="text-opal-blue hover:underline">
-            support@thegoodopal.co
+          <a href={`mailto:${supportEmail}`} className="text-opal-blue hover:underline">
+            {supportEmail}
           </a>
         </p>
       </div>

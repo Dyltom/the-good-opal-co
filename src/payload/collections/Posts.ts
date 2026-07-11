@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
   access: {
-    read: () => true,
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => !!user,
-    delete: ({ req: { user } }) => user?.['role'] === 'admin',
+    read: publishedOrAdmin,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   admin: {
     useAsTitle: 'title',

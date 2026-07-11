@@ -1,320 +1,170 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
-import { Navigation, Footer } from '@/components/navigation'
+import { ArrowRight, Check } from 'lucide-react'
+import { Container } from '@/components/layout'
+import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
-import { PageTransition } from '@/components/layout/PageTransition'
-import {
-  Gem,
-  Settings,
-  Heart,
-  Clock,
-  Shield,
-  Sparkles,
-  Palette
-} from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Custom Design Services | The Good Opal Co',
-  description: 'Create your dream opal jewellery with our custom design services. From engagement rings to statement pieces, we bring your vision to life.',
+  title: 'Custom Opal Jewellery | The Good Opal Co',
+  description:
+    'Start with an Australian opal, an idea, or an occasion. Enquire about a one-of-a-kind custom jewellery piece.',
 }
-
-const services = [
-  {
-    icon: Gem,
-    title: 'Custom Opal Selection',
-    description: 'Choose from our extensive collection or let us source the perfect opal based on your preferences for colour, size, and budget.',
-    features: [
-      'Personal consultation',
-      'Video viewing sessions',
-      'Expert recommendations',
-      'Multiple options presented'
-    ]
-  },
-  {
-    icon: Palette,
-    title: 'Bespoke Design Process',
-    description: 'Work with our designers to create a unique piece that reflects your personal style and the opal\'s natural beauty.',
-    features: [
-      'Initial concept sketches',
-      'CAD renderings',
-      'Design revisions',
-      'Final approval before crafting'
-    ]
-  },
-  {
-    icon: Settings,
-    title: 'Expert Craftsmanship',
-    description: 'Our skilled jewellers handcraft each piece with meticulous attention to detail, ensuring your opal is perfectly showcased.',
-    features: [
-      'Handcrafted in Australia',
-      'Premium metals only',
-      'Secure stone settings',
-      'Quality inspections'
-    ]
-  },
-  {
-    icon: Shield,
-    title: 'Lifetime Support',
-    description: 'Your custom piece comes with our full support, including cleaning, maintenance, and any future modifications.',
-    features: [
-      'Lifetime authenticity guarantee',
-      'Annual cleaning service',
-      'Resize and repair options',
-      'Insurance documentation'
-    ]
-  }
-]
 
 const process = [
   {
-    step: 1,
-    title: 'Initial Consultation',
-    description: 'Share your vision, preferences, and budget with our design team via email or video call.',
-    duration: '1-2 days'
+    number: '01',
+    title: 'Tell us what matters',
+    copy: 'Share the occasion, style, metal preference, budget, and any date you are working toward. A rough idea is enough.',
   },
   {
-    step: 2,
-    title: 'Opal Selection',
-    description: 'We present opal options that match your criteria, with detailed photos and videos.',
-    duration: '3-5 days'
+    number: '02',
+    title: 'Choose the opal',
+    copy: 'We discuss suitable stones and can share closer photos or video where available. You can also enquire about a stone already in the store.',
   },
   {
-    step: 3,
-    title: 'Design Development',
-    description: 'Our designers create sketches and CAD renderings of your custom piece.',
-    duration: '1 week'
+    number: '03',
+    title: 'Agree on the piece',
+    copy: 'We confirm the design direction, quote, expected timing, and what is included before work begins.',
   },
   {
-    step: 4,
-    title: 'Approval & Refinement',
-    description: 'Review designs, request changes, and give final approval before production.',
-    duration: '3-5 days'
+    number: '04',
+    title: 'Make and deliver',
+    copy: 'Your piece is made to the agreed brief. Delivery details and care guidance are provided when it is ready.',
   },
-  {
-    step: 5,
-    title: 'Crafting',
-    description: 'Our jewellers handcraft your piece with precision and care.',
-    duration: '4-6 weeks'
-  },
-  {
-    step: 6,
-    title: 'Delivery',
-    description: 'Your custom piece is delivered in beautiful packaging with all certificates.',
-    duration: '2-5 days'
-  }
 ]
 
-// Testimonials removed to comply with Australian Consumer Law
-// Real testimonials should be fetched from Payload CMS when available
+const goodStartingPoints = [
+  'A particular opal, colour, or shape',
+  'A ring, pendant, earrings, or another piece',
+  'Your approximate budget in AUD',
+  'A date or occasion, if timing matters',
+]
 
 export default function ServicesPage() {
   return (
-    <>
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/courses', label: 'Courses' },
-          { href: '/about', label: 'About' },
-          { href: '/contact', label: 'Contact' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-      />
-
-      <PageTransition>
-        <main className="min-h-screen">
-          {/* Hero Section */}
-          <section className="relative flex min-h-[620px] items-center justify-center overflow-hidden py-20 sm:min-h-[560px] lg:h-[60vh] lg:min-h-[500px] lg:py-0">
-            {/* Background with gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-black-rich via-charcoal to-black-rich" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black-rich/50 to-transparent" />
-
-            {/* Animated gradient orbs */}
-            <div className="absolute top-1/4 left-1/4 h-56 w-56 rounded-full bg-opal-electric/20 blur-3xl animate-pulse sm:h-96 sm:w-96" />
-            <div className="absolute bottom-1/4 right-1/4 h-56 w-56 rounded-full bg-fire-pink/20 blur-3xl animate-pulse delay-1000 sm:h-96 sm:w-96" />
-
-            <Container className="relative z-10">
-              <div className="text-center text-white max-w-4xl mx-auto">
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  <span className="h-px w-12 bg-gradient-to-r from-transparent to-opal-electric"></span>
-                  <span className="text-sm font-medium uppercase tracking-wider text-opal-electric">
-                    Custom Design Services
-                  </span>
-                  <span className="h-px w-12 bg-gradient-to-l from-transparent to-opal-electric"></span>
-                </div>
-                <h1 className="font-serif text-5xl md:text-7xl font-normal mb-6">
-                  Create Your Dream
-                  <span className="block text-gradient-prismatic">Opal Jewellery</span>
-                </h1>
-                <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                  From concept to creation, we bring your vision to life with handcrafted
-                  Australian opal jewellery that&apos;s uniquely yours.
-                </p>
-                <div className="mx-auto flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
-                  <Button asChild size="lg" className="w-full sm:w-auto">
-                    <Link href="/contact?subject=custom-design">
-                      Start Your Design
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline" size="lg" className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 sm:w-auto">
-                    <Link href="#process">
-                      Learn More
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </Container>
-          </section>
-
-          {/* Services Grid */}
-          <Section className="py-16 lg:py-24 bg-white">
-            <Container>
-              <div className="text-center mb-16">
-                <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-4">
-                  What We Offer
-                </h2>
-                <p className="text-xl text-charcoal/70 max-w-2xl mx-auto">
-                  Comprehensive custom design services to create your perfect opal jewellery piece
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8">
-                {services.map((service) => (
-                  <div
-                    key={service.title}
-                    className="group relative bg-gray-50 rounded-2xl p-8 hover:shadow-xl transition-all duration-300"
-                  >
-                    {/* Icon */}
-                    <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-fire-pink rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <service.icon className="w-8 h-8 text-white" />
-                    </div>
-
-                    <h3 className="font-serif text-2xl text-charcoal mb-3">
-                      {service.title}
-                    </h3>
-                    <p className="text-charcoal/70 mb-6">
-                      {service.description}
-                    </p>
-
-                    <ul className="space-y-2">
-                      {service.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Sparkles className="w-4 h-4 text-opal-electric mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-charcoal/80">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </Container>
-          </Section>
-
-          {/* Process Timeline */}
-          <Section id="process" className="py-16 lg:py-24 bg-gray-50">
-            <Container>
-              <div className="text-center mb-16">
-                <h2 className="font-serif text-4xl md:text-5xl text-charcoal mb-4">
-                  Our Design Process
-                </h2>
-                <p className="text-xl text-charcoal/70 max-w-2xl mx-auto">
-                  A collaborative journey from initial concept to finished masterpiece
-                </p>
-              </div>
-
-              <div className="max-w-4xl mx-auto">
-                {process.map((step, index) => (
-                  <div key={step.step} className="relative">
-                    {/* Connection line */}
-                    {index < process.length - 1 && (
-                      <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-gradient-to-b from-opal-electric to-fire-pink" />
-                    )}
-
-                    <div className="flex gap-8 mb-12">
-                      {/* Step number */}
-                      <div className="relative flex-shrink-0">
-                        <div className="w-16 h-16 bg-gradient-to-br from-opal-electric to-fire-pink rounded-full flex items-center justify-center text-white font-bold text-xl">
-                          {step.step}
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 pb-8">
-                        <div className="flex items-baseline justify-between mb-2">
-                          <h3 className="font-serif text-2xl text-charcoal">
-                            {step.title}
-                          </h3>
-                          <span className="text-sm text-opal-electric font-medium">
-                            <Clock className="inline w-4 h-4 mr-1" />
-                            {step.duration}
-                          </span>
-                        </div>
-                        <p className="text-charcoal/70">
-                          {step.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-12">
-                <p className="text-lg text-charcoal/80 mb-6">
-                  Total timeline: 6-8 weeks from consultation to delivery
-                </p>
-                <Button asChild size="lg">
-                  <Link href="/contact?subject=custom-design">
-                    Start Your Custom Design
-                  </Link>
+    <MarketingShell>
+        <section className="grid min-h-[calc(100vh-5rem)] lg:grid-cols-[0.92fr_1.08fr]">
+          <div className="flex items-center px-5 py-16 sm:px-10 lg:px-[clamp(3rem,7vw,8rem)] lg:py-24">
+            <div className="max-w-xl">
+              <p className="mb-5 text-sm font-medium text-opal-electric-accessible">
+                Custom opal jewellery
+              </p>
+              <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-medium leading-[0.94]">
+                Begin with the stone.
+              </h1>
+              <p className="mt-7 max-w-[58ch] text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
+                Bring an idea, a meaningful occasion, or simply a colour you love. We&apos;ll help shape a one-of-a-kind piece around an Australian opal.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Button asChild size="lg" className="w-full bg-charcoal bg-none text-cream hover:bg-charcoal-dark sm:w-auto">
+                  <Link href="/contact?subject=custom-design">Start a custom enquiry</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+                  <Link href="#how-it-works">See how it works</Link>
                 </Button>
               </div>
-            </Container>
-          </Section>
+              <p className="mt-5 text-sm leading-6 text-charcoal-light">
+                No finished brief required. We&apos;ll ask the practical questions.
+              </p>
+            </div>
+          </div>
 
-          {/* Customer Testimonials Section - Temporarily Disabled */}
-          {/*
-            Testimonials section removed to comply with Australian Consumer Law.
-            Replace with genuine customer reviews from Payload CMS when available.
-          */}
+          <div className="relative min-h-[30rem] overflow-hidden bg-black-rich lg:min-h-full">
+            <Image
+              src="/images/customs/custom-2.jpg"
+              alt="Four Australian opals viewed together in natural light"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 54vw"
+            />
+            <div className="absolute bottom-0 left-0 max-w-xs bg-cream p-5 sm:p-7">
+              <p className="font-serif text-2xl leading-tight">Every design starts differently.</p>
+              <p className="mt-2 text-sm leading-6 text-charcoal-light">Stone first, story first, or budget first. All are useful starting points.</p>
+            </div>
+          </div>
+        </section>
 
-          {/* CTA Section */}
-          <Section className="py-16 lg:py-24 bg-gradient-to-br from-black-rich to-charcoal text-white">
-            <Container>
-              <div className="text-center max-w-3xl mx-auto">
-                <Heart className="w-16 h-16 mx-auto mb-6 text-fire-pink" />
-                <h2 className="font-serif text-4xl md:text-5xl mb-6">
-                  Ready to Create Something Special?
+        <section className="border-y border-warm-grey/50 bg-white py-20 sm:py-28" id="how-it-works">
+          <Container>
+            <div className="grid gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
+              <div>
+                <p className="text-sm font-medium text-opal-electric-accessible">The process</p>
+                <h2 className="mt-3 max-w-[10ch] font-serif text-4xl leading-tight sm:text-5xl">
+                  Clear decisions, one at a time.
                 </h2>
-                <p className="text-xl text-white/80 mb-8">
-                  Whether it&apos;s an engagement ring, anniversary gift, or personal treasure,
-                  we&apos;ll help you create a one-of-a-kind piece that tells your story.
+                <p className="mt-5 max-w-md leading-7 text-charcoal-light">
+                  Custom work is quoted after we understand the stone, design, material, and timing. Nothing moves ahead until the scope is clear.
                 </p>
-                <div className="mx-auto flex max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
-                  <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                    <Link href="/contact?subject=custom-design">
-                      Start Your Design Journey
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="w-full bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 sm:w-auto"
-                  >
-                    <Link href="/store">
-                      Browse Our Collection
-                    </Link>
-                  </Button>
-                </div>
               </div>
-            </Container>
-          </Section>
-        </main>
-      </PageTransition>
 
-      <Footer />
-    </>
+              <ol className="divide-y divide-warm-grey/60 border-y border-warm-grey/60">
+                {process.map((step) => (
+                  <li key={step.number} className="grid gap-3 py-7 sm:grid-cols-[4rem_0.7fr_1.3fr] sm:gap-6 sm:py-9">
+                    <span className="text-sm font-medium text-opal-electric-accessible">{step.number}</span>
+                    <h3 className="font-serif text-2xl leading-tight">{step.title}</h3>
+                    <p className="max-w-[58ch] text-sm leading-6 text-charcoal-light sm:text-base sm:leading-7">{step.copy}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Container>
+        </section>
+
+        <section className="py-20 sm:py-28">
+          <Container>
+            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+              <div className="relative aspect-[4/3] overflow-hidden bg-warm-grey/30">
+                <Image
+                  src="/images/customs/custom-1.jpg"
+                  alt="Three heart-shaped Australian opals considered for a personal piece"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 52vw"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-opal-electric-accessible">Before you enquire</p>
+                <h2 className="mt-3 font-serif text-4xl leading-tight sm:text-5xl">What helps us guide you</h2>
+                <ul className="mt-8 space-y-4">
+                  {goodStartingPoints.map((item) => (
+                    <li key={item} className="flex gap-3 leading-7 text-charcoal-light">
+                      <Check aria-hidden="true" className="mt-1 h-5 w-5 shrink-0 text-opal-electric-accessible" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-7 text-sm leading-6 text-charcoal-light">
+                  Unsure about any of these? Leave the field blank. An enquiry is a conversation, not a commitment.
+                </p>
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        <section className="bg-charcoal py-20 text-cream sm:py-24">
+          <Container>
+            <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
+              <div>
+                <p className="text-sm text-opal-light">Ready when you are</p>
+                <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight sm:text-6xl">
+                  Tell us what you have in mind.
+                </h2>
+                <p className="mt-5 max-w-xl leading-7 text-cream/70">
+                  The enquiry form keeps your stone, budget, and timing details together so we can give a useful first reply.
+                </p>
+              </div>
+              <Link
+                href="/contact?subject=custom-design"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cream px-7 font-medium text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+              >
+                Start an enquiry <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+            </div>
+          </Container>
+        </section>
+    </MarketingShell>
   )
 }

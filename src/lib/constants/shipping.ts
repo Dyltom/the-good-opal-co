@@ -38,23 +38,23 @@ export const SHIPPING_CONFIG = {
 
 export const SHIPPING_MESSAGES = {
   // Free shipping banner message
-  FREE_SHIPPING_BANNER: `Free express shipping on orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}`,
+  FREE_SHIPPING_BANNER: `Free shipping on orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}`,
 
   // Cart page messages
-  FREE_SHIPPING_ACHIEVED: 'Your order qualifies for free express shipping!',
+  FREE_SHIPPING_ACHIEVED: 'Your order qualifies for free shipping!',
   FREE_SHIPPING_PROGRESS: (remaining: number) =>
-    `Add $${remaining.toFixed(2)} more for free express shipping`,
+    `Add $${remaining.toFixed(2)} more for free shipping`,
 
   // Product page messages
-  FREE_SHIPPING_ELIGIBLE: `Free express shipping (orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD})`,
-  EXPRESS_SHIPPING_INFO: 'Fully insured express shipping worldwide',
+  FREE_SHIPPING_ELIGIBLE: `Free shipping (orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD})`,
+  EXPRESS_SHIPPING_INFO: 'Tracked delivery to available destinations',
 
   // Checkout messages
-  SHIPPING_INSURANCE: 'All orders fully insured during transit',
-  GIFT_PACKAGING: 'Elegant gift packaging included',
+  SHIPPING_INSURANCE: 'Tracking provided after dispatch',
+  GIFT_PACKAGING: 'Packed carefully for delivery',
 
   // Feature descriptions (for consistency)
-  FEATURE_DESCRIPTION: 'Fully insured express shipping worldwide with elegant gift packaging'
+  FEATURE_DESCRIPTION: 'Tracked delivery to available destinations with careful packaging'
 } as const
 
 export interface FreeShippingProgress {

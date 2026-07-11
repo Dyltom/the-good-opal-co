@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { MarketingShell } from '@/components/marketing'
+import { CONTACT_INFO } from '@/lib/constants/contact'
 
 export const metadata: Metadata = {
   title: 'Cookie Policy | The Good Opal Co',
@@ -8,14 +10,14 @@ export const metadata: Metadata = {
 }
 
 export default function CookiePolicyPage() {
-  const lastUpdated = new Date('2024-01-15').toLocaleDateString('en-AU', {
+  const lastUpdated = new Date('2026-07-11').toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <MarketingShell mainClassName="bg-white">
       <Container className="py-12">
         <Breadcrumb
           items={[
@@ -272,7 +274,7 @@ export default function CookiePolicyPage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Email: privacy@thegoodopalco.com</p>
+                <p className="text-content">Email: {CONTACT_INFO.privacyEmail}</p>
                 <p className="text-content">Phone: +61 2 9555 1234</p>
                 <p className="text-content">Address: Sydney, NSW, Australia</p>
               </div>
@@ -294,6 +296,6 @@ export default function CookiePolicyPage() {
           </div>
         </div>
       </Container>
-    </div>
+    </MarketingShell>
   )
 }

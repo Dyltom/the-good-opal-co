@@ -10,7 +10,6 @@ import config from '@/payload.config'
 
 async function initDb() {
   console.log('🔧 Initializing Payload database...\n')
-  console.log(`📍 DATABASE_URL: ${process.env['DATABASE_URL']}\n`)
 
   try {
     await getPayload({ config })

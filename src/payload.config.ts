@@ -2,19 +2,21 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { searchPlugin } from '@payloadcms/plugin-search'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
+import { resendAdapter } from '@payloadcms/email-resend'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 // Import collections
-import { Users } from './payload/collections/Users'
-import { Media } from './payload/collections/Media'
-import { Posts } from './payload/collections/Posts'
-import { Categories } from './payload/collections/Categories'
-import { Products } from './payload/collections/Products'
-import { Orders } from './payload/collections/Orders'
-import { Customers } from './payload/collections/Customers'
+import { Users } from './payload/collections/Users.ts'
+import { Media } from './payload/collections/Media.ts'
+import { Posts } from './payload/collections/Posts.ts'
+import { Categories } from './payload/collections/Categories.ts'
+import { Products } from './payload/collections/Products.ts'
+import { Orders } from './payload/collections/Orders.ts'
+import { Customers } from './payload/collections/Customers.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -32,7 +34,58 @@ function getPayloadSecret(): string {
   return 'development-only-payload-secret'
 }
 
+function getDatabaseUrl(): string {
+  const databaseUrl = process.env['DATABASE_URL']
+  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl
+
+  if (process.env['NODE_ENV'] === 'production') {
+    throw new Error('DATABASE_URL environment variable is required in production')
+  }
+
+  return 'postgresql://goodopalco:goodopalcopass@localhost:5432/goodopalco'
+}
+
+function getRequiredEnvironmentValue(name: string): string {
+  const value = process.env[name]?.trim()
+  if (value) return value
+
+  if (process.env['NODE_ENV'] === 'production') {
+    throw new Error(`${name} environment variable is required in production`)
+  }
+
+  return ''
+}
+
+function getEmailSender(): { address: string; name: string } {
+  const configured = getRequiredEnvironmentValue('EMAIL_FROM')
+  const match = configured.match(/^\s*(.*?)\s*<([^>]+)>\s*$/)
+
+  if (match?.[1] && match[2]) {
+    return { name: match[1], address: match[2] }
+  }
+
+  return {
+    name: 'The Good Opal Co',
+    address: configured || 'dev@localhost.invalid',
+  }
+}
+
+const blobToken = getRequiredEnvironmentValue('BLOB_READ_WRITE_TOKEN')
+const emailSender = getEmailSender()
+
+for (const name of [
+  'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'CONTACT_EMAIL',
+  'ADMIN_EMAIL',
+  'UPSTASH_REDIS_REST_URL',
+  'UPSTASH_REDIS_REST_TOKEN',
+]) {
+  getRequiredEnvironmentValue(name)
+}
+
 export default buildConfig({
+  serverURL: getRequiredEnvironmentValue('NEXT_PUBLIC_APP_URL') || 'http://localhost:8412',
   admin: {
     user: Users.slug,
     importMap: {
@@ -43,34 +96,37 @@ export default buildConfig({
       beforeNavLinks: [],
     },
   },
-  collections: [
-    Users,
-    Media,
-    Posts,
-    Categories,
-    Products,
-    Orders,
-    Customers,
-  ],
+  collections: [Users, Media, Posts, Categories, Products, Orders, Customers],
   editor: lexicalEditor({}),
+  email: resendAdapter({
+    defaultFromAddress: emailSender.address,
+    defaultFromName: emailSender.name,
+    apiKey: getRequiredEnvironmentValue('RESEND_API_KEY'),
+  }),
   secret: getPayloadSecret(),
   typescript: {
     outputFile: path.resolve(dirname, 'types', 'payload-types.ts'),
   },
   db: postgresAdapter({
-    pool: {
-      host: process.env.POSTGRES_HOST || 'localhost',
-      port: parseInt(process.env.POSTGRES_PORT || '5432'),
-      database: process.env.POSTGRES_DB || 'goodopalco',
-      user: process.env.POSTGRES_USER || 'goodopalco',
-      password: process.env.POSTGRES_PASSWORD || 'goodopalcopass',
+    transactionOptions: {
+      isolationLevel: 'serializable',
     },
-    // Auto-run migrations without prompts
+    pool: {
+      connectionString: getDatabaseUrl(),
+    },
     migrationDir: path.resolve(dirname, 'migrations'),
-    push: true, // Auto-create tables on init
+    push: process.env['NODE_ENV'] !== 'production',
   }),
   sharp,
   plugins: [
+    vercelBlobStorage({
+      enabled: Boolean(blobToken),
+      collections: {
+        media: true,
+      },
+      token: blobToken,
+      clientUploads: true,
+    }),
     // SEO plugin - adds meta fields to collections
     seoPlugin({
       collections: ['posts', 'products'],

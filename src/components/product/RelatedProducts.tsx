@@ -5,6 +5,7 @@ import { ProductCard } from './ProductCard'
 import { getRelatedProductService } from '@/lib/products/related-products'
 import type { Product } from '@/types/payload-types'
 import { cn } from '@/lib/utils'
+import { resolveMediaUrl } from '@/lib/media-url'
 
 interface RelatedProductsProps {
   product: Product
@@ -51,21 +52,25 @@ export async function RelatedProducts({
           const imageUrl =
             typeof firstImage === 'string'
               ? firstImage
-              : firstImage?.url
+              : typeof firstImage === 'object' && firstImage !== null
+                ? resolveMediaUrl(firstImage.url)
+                : undefined
           return (
             <ProductCard
               key={relatedProduct.id}
               product={{
-                ...relatedProduct,
-                description:
-                  typeof relatedProduct.description === 'string'
-                    ? relatedProduct.description
-                    : undefined,
+                id: String(relatedProduct.id),
+                slug: relatedProduct.slug,
+                name: relatedProduct.name,
+                price: relatedProduct.price,
+                compareAtPrice: relatedProduct.compareAtPrice ?? undefined,
+                stock: relatedProduct.stock ?? 0,
+                featured: relatedProduct.featured ?? undefined,
                 image: imageUrl,
-                category:
-                  typeof relatedProduct.category === 'string'
-                    ? relatedProduct.category
-                    : undefined,
+                category: relatedProduct.category,
+                stoneOrigin: relatedProduct.stoneOrigin ?? undefined,
+                stoneType: relatedProduct.stoneType ?? undefined,
+                createdAt: relatedProduct.createdAt,
               }}
               index={index}
               variant="default"

@@ -1,10 +1,9 @@
 import '../globals.css'
 import type { Metadata } from 'next'
 import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/react'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
-import { GoogleAnalyticsProvider } from '@/components/analytics/GoogleAnalytics'
+import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
 import { APP_URL } from '@/lib/constants'
 
 // Self-hosted via next/font — no external CDN request, optimal loading
@@ -71,8 +70,7 @@ export default function MarketingLayout({
       <body suppressHydrationWarning>
         {children}
         <Toaster />
-        <Analytics />
-        <GoogleAnalyticsProvider />
+        <AnalyticsConsentGate />
         <CookieConsent />
       </body>
     </html>

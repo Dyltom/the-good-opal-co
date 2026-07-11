@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useId } from 'react'
 import { subscribeToNewsletter } from '@/app/(marketing)/newsletter/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,7 +20,9 @@ export function NewsletterForm({
   className,
   showName = false
 }: NewsletterFormProps) {
-  const [state, formAction] = useActionState(subscribeToNewsletter, null)
+  const [state, formAction, isPending] = useActionState(subscribeToNewsletter, null)
+  const emailId = useId()
+  const nameId = useId()
 
   return (
     <form action={formAction} className={cn('w-full', className)}>
@@ -42,13 +44,18 @@ export function NewsletterForm({
         variant === 'compact' && 'space-y-3'
       )}>
         {showName && (
-          <Input
-            name="name"
-            type="text"
-            placeholder="Your name (optional)"
-            className="h-12"
-            autoComplete="name"
-          />
+          <div>
+            <label htmlFor={nameId} className="sr-only">Name (optional)</label>
+            <Input
+              id={nameId}
+              name="name"
+              type="text"
+              placeholder="Your name (optional)"
+              className="h-12"
+              autoComplete="name"
+              disabled={isPending}
+            />
+          </div>
         )}
 
         <div className={cn(
@@ -57,25 +64,29 @@ export function NewsletterForm({
           variant === 'compact' && 'flex-row'
         )}>
           <div className="relative flex-1">
+            <label htmlFor={emailId} className="sr-only">Email address</label>
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <Input
               name="email"
+              id={emailId}
               type="email"
               placeholder="Enter your email"
               required
               className="pl-10 h-12"
               autoComplete="email"
+              disabled={isPending}
             />
           </div>
           <Button
             type="submit"
+            disabled={isPending}
             size={variant === 'compact' ? 'default' : 'lg'}
             className={cn(
               variant === 'default' && 'sm:w-auto',
               variant === 'hero' && 'px-8'
             )}
           >
-            Subscribe
+            {isPending ? 'Subscribing…' : 'Subscribe'}
           </Button>
         </div>
 
@@ -86,6 +97,8 @@ export function NewsletterForm({
               'flex items-start gap-2 text-sm',
               state.success ? 'text-green-600' : 'text-red-600'
             )}
+            role="status"
+            aria-live="polite"
           >
             {state.success ? (
               <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />

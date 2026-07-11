@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Package, Mail, CheckCircle, Truck, Clock, Loader2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
 export function OrderTrackingForm() {
   const [state, formAction, isPending] = useActionState(trackOrder, { error: '' as string, order: null })
@@ -131,7 +132,7 @@ export function OrderTrackingForm() {
             <div>
               <p className="text-sm text-gray-600 mb-1">Total Amount</p>
               <p className="font-medium text-charcoal">
-                ${(state.order.total / 100).toFixed(2)} AUD
+                {formatCurrency(state.order.total, 'AUD')}
               </p>
             </div>
           </div>
@@ -145,16 +146,6 @@ export function OrderTrackingForm() {
               <p className="text-sm text-gray-600">
                 Tracking Number: <span className="font-mono">{state.order.trackingNumber}</span>
               </p>
-              {state.order.trackingUrl && (
-                <a
-                  href={state.order.trackingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-opal-electric-accessible hover:underline mt-1 inline-block"
-                >
-                  Track Package →
-                </a>
-              )}
             </div>
           )}
 
@@ -169,25 +160,21 @@ export function OrderTrackingForm() {
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
                   <p className="font-medium text-charcoal">
-                    ${((item.price * item.quantity) / 100).toFixed(2)}
+                    {formatCurrency(item.price * item.quantity, 'AUD')}
                   </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Shipping Address */}
+          {/* Shipping destination */}
           <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="font-medium text-charcoal mb-3">Shipping Address</h3>
+            <h3 className="font-medium text-charcoal mb-3">Shipping destination</h3>
             <div className="text-sm text-gray-600">
-              <p>{state.order.shippingAddress.line1}</p>
-              {state.order.shippingAddress.line2 && (
-                <p>{state.order.shippingAddress.line2}</p>
-              )}
               <p>
-                {state.order.shippingAddress.city}, {state.order.shippingAddress.state} {state.order.shippingAddress.postalCode}
+                {state.order.shippingDestination.city}, {state.order.shippingDestination.state}
               </p>
-              <p>{state.order.shippingAddress.country}</p>
+              <p>{state.order.shippingDestination.country}</p>
             </div>
           </div>
         </div>

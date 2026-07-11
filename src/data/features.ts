@@ -2,67 +2,67 @@
  * Features & Benefits Data
  * Reusable feature definitions for why-choose-us sections
  */
-import React from 'react'
+import type { ReactNode } from 'react'
 import { SHIPPING_MESSAGES } from '@/lib/constants/shipping'
 
 export interface Feature {
-  icon: string | React.ReactNode
+  icon: string | ReactNode
   title: string
   description: string
 }
 
 export const WHY_CHOOSE_FEATURES: Feature[] = [
   {
-    icon: '💠',
-    title: 'Authentic Australian',
-    description: 'Every opal sourced directly from Australian miners, certified for authenticity',
+    icon: 'AU',
+    title: 'Australian Opals',
+    description: 'Known origin and product details are disclosed on each listing',
   },
   {
-    icon: '🌈',
-    title: 'Vibrant Color Play',
-    description: 'Hand-selected for exceptional fire and color - blues, greens, pinks, and more',
+    icon: '01',
+    title: 'Individual Character',
+    description: 'Photography and measurements help you compare each one-of-a-kind piece',
   },
   {
-    icon: '⭐',
-    title: 'Expert Craftsmanship',
-    description: 'Each piece carefully designed to showcase the opal\'s natural beauty',
+    icon: 'Care',
+    title: 'Opal Care Guidance',
+    description: 'Practical advice helps you wear, clean, and store your piece safely',
   },
   {
-    icon: '♻️',
-    title: 'Ethically Sourced',
-    description: 'Supporting small-scale Australian miners with fair prices',
+    icon: 'Ask',
+    title: 'Personal Guidance',
+    description: 'Request more detail or a closer look before choosing a piece',
   },
   {
-    icon: '📦',
+    icon: 'Ship',
     title: 'Secure Shipping',
     description: SHIPPING_MESSAGES.FEATURE_DESCRIPTION,
   },
   {
-    icon: '💯',
-    title: 'Authenticity Guarantee',
-    description: 'Certificate of authenticity with every purchase',
+    icon: '30',
+    title: 'Eligible Returns',
+    description: '30-day change-of-mind returns for eligible standard, unused pieces',
   },
 ]
 
 export const TRUST_STATS: Feature[] = [
   {
-    icon: '100%',
-    title: 'Authentic Australian',
-    description: 'All opals certified',
+    icon: 'AU',
+    title: 'Australian Opals',
+    description: 'Details shown per piece',
   },
   {
-    icon: '✓',
-    title: 'Certified',
-    description: 'Every Purchase',
+    icon: '$15',
+    title: 'Standard Delivery',
+    description: 'Below AUD 500',
   },
   {
-    icon: '🌏',
-    title: 'Secure',
-    description: 'Shipping Worldwide',
+    icon: '$0',
+    title: 'Standard Delivery',
+    description: 'At AUD 500 or more',
   },
   {
-    icon: '♻️',
-    title: 'Ethical',
-    description: 'Sourcing Practices',
+    icon: '30',
+    title: 'Eligible Returns',
+    description: 'Days from delivery',
   },
 ]

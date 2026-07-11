@@ -2,10 +2,11 @@
 
 import { z } from 'zod'
 import { getPayload } from '@/lib/payload'
+import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
 const trackingSchema = z.object({
-  orderNumber: z.string().min(1, 'Order number is required'),
-  email: z.string().email('Valid email is required')
+  orderNumber: z.string().trim().min(12).max(80),
+  email: z.string().trim().email('Valid email is required').max(254)
 })
 
 export async function trackOrder(_prevState: unknown, formData: FormData) {
@@ -14,6 +15,16 @@ export async function trackOrder(_prevState: unknown, formData: FormData) {
       orderNumber: formData.get('orderNumber'),
       email: formData.get('email')
     })
+    const identifier = await getRequestIdentifier(data.email)
+    const allowed = await checkRateLimit({
+      scope: 'order-tracking',
+      identifier,
+      limit: 10,
+      windowSeconds: 15 * 60,
+    })
+    if (!allowed) {
+      return { error: 'Too many attempts. Please try again later.', order: null }
+    }
 
     const payload = await getPayload()
 
@@ -55,11 +66,12 @@ export async function trackOrder(_prevState: unknown, formData: FormData) {
         createdAt: order.createdAt,
         items: order.items,
         total: order.total,
-        shippingAddress: order.shippingAddress,
-        // Add tracking info if available
+        shippingDestination: {
+          city: order.shippingAddress.city,
+          state: order.shippingAddress.state,
+          country: order.shippingAddress.country,
+        },
         trackingNumber: order.trackingNumber || null,
-        trackingUrl: order.trackingUrl || null,
-        estimatedDelivery: order.estimatedDelivery || null
       }
     }
   } catch (error) {

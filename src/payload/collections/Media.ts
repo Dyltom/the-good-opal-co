@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin } from '../../lib/payload-access.ts'
 
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
     read: () => true,
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => !!user,
-    delete: ({ req: { user } }) => !!user,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   admin: {
     useAsTitle: 'alt',

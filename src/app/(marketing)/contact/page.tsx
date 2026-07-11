@@ -1,261 +1,92 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ArrowUpRight, Mail } from 'lucide-react'
 import { Container } from '@/components/layout'
-import { Navigation, Footer } from '@/components/navigation'
+import { MarketingShell } from '@/components/marketing'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
-import { ContactForm } from './contact-form'
 import { CONTACT_INFO } from '@/lib/constants/contact'
-import { getNavigationProps } from '@/lib/constants/navigation'
-import { PageTransition } from '@/components/layout/PageTransition'
-import { Mail, Phone, MapPin, Clock } from 'lucide-react'
+import { ContactForm } from './contact-form'
+import { cleanContactContext, inquiryLabels, resolveInquiryType } from './contact-intent'
 
 export const metadata: Metadata = {
-  title: 'Contact Us | The Good Opal Co',
-  description: 'Get in touch with The Good Opal Co for questions about Australian opals, custom orders, or support.',
+  title: 'Contact | The Good Opal Co',
+  description: 'Ask about an Australian opal, a custom piece, an order, or a private product viewing.',
 }
 
-export default function ContactPage() {
+interface ContactPageProps {
+  searchParams: Promise<{ subject?: string; product?: string }>
+}
+
+export default async function ContactPage({ searchParams }: ContactPageProps) {
+  const query = await searchParams
+  const initialInquiry = resolveInquiryType(query.subject)
+  const initialProduct = cleanContactContext(query.product)
+  const isCustomIntent = initialInquiry === 'custom-design'
+
   return (
-    <PageTransition>
-      <div className="min-h-screen flex flex-col bg-white">
-        <Navigation
-          {...getNavigationProps()}
-        />
-
-        {/* Hero Section */}
-        <section className="relative py-24 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden">
-          {/* Magical sparkle effects */}
-          <div className="absolute inset-0">
-            <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
-            <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
-            <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
-          </div>
-
-          <Container>
-            <div className="text-center max-w-4xl mx-auto">
-              <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
-                <span aria-hidden="true">✨</span> Let&apos;s Connect <span aria-hidden="true">✨</span>
-              </span>
-              <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mb-4">
-                Contact <span className="font-accent text-opal-electric">Us</span>
+    <MarketingShell>
+        <section className="border-b border-warm-grey/50 px-5 py-14 sm:px-10 sm:py-20 lg:px-[clamp(3rem,8vw,9rem)] lg:py-24">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+            <div>
+              <p className="text-sm font-medium text-opal-electric-accessible">{inquiryLabels[initialInquiry]}</p>
+              <h1 className="mt-4 max-w-[11ch] text-balance font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-medium leading-[0.95]">
+                Let&apos;s talk opals.
               </h1>
-              <p className="font-sans text-lg text-content-muted max-w-2xl mx-auto mb-4">
-                Have a question about our Australian opals? Need help with an order?
-                We&apos;re here to help and would love to hear from you.
-              </p>
-              <p className="font-accent text-base text-opal-electric/70">
-                ~ Where questions become conversations ~
-              </p>
             </div>
-          </Container>
+            <p className="max-w-xl text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
+              {isCustomIntent
+                ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
+                : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
+            </p>
+          </div>
         </section>
 
-        <Container className="py-16">
-        <Breadcrumb
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'Contact Us' },
-          ]}
-          className="mb-8"
-        />
+        <Container className="py-12 sm:py-16 lg:py-20">
+          <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]} className="mb-10" />
 
-        <div className="max-w-6xl mx-auto">
+          <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
+            <aside className="lg:sticky lg:top-28 lg:self-start">
+              <h2 className="font-serif text-3xl">A useful first message</h2>
+              <p className="mt-4 max-w-md leading-7 text-charcoal-light">
+                Include a product name or link, your approximate budget, and any date that matters. Leave anything unknown blank.
+              </p>
 
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Contact Information */}
-            <div>
-              <h2 className="font-serif text-2xl font-semibold text-charcoal mb-6">
-                Get in <span className="font-accent text-opal-electric">Touch</span>
-              </h2>
-
-              <div className="space-y-6 mb-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-opal-electric/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-opal-electric" />
-                  </div>
+              <div className="mt-9 border-y border-warm-grey/60 py-6">
+                <div className="flex gap-3">
+                  <Mail aria-hidden="true" className="mt-1 h-5 w-5 text-opal-electric-accessible" />
                   <div>
-                    <h3 className="font-serif font-medium text-charcoal mb-1">Email</h3>
-                    <p className="font-sans text-content">
-                      <a href={`mailto:${CONTACT_INFO.email}`} className="hover:text-opal-electric-accessible transition-colors">
-                        {CONTACT_INFO.email}
-                      </a>
-                    </p>
-                    <p className="font-sans text-sm text-content-muted mt-1">
-                      We&apos;ll respond within 24 hours
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-fire-pink/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Phone className="w-6 h-6 text-fire-pink" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-medium text-charcoal mb-1">Phone</h3>
-                    <p className="font-sans text-content">{CONTACT_INFO.phone}</p>
-                    <p className="font-sans text-sm text-content-muted mt-1">
-                      {CONTACT_INFO.businessHours.weekdays}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-opal-emerald/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-6 h-6 text-opal-emerald" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-medium text-charcoal mb-1">Visit Us</h3>
-                    <p className="font-sans text-content">
-                      By appointment only<br />
-                      Sydney, NSW, Australia
-                    </p>
-                    <p className="font-sans text-sm text-content-muted mt-1">
-                      Contact us to schedule a viewing
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-fire-gold/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-fire-gold" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-medium text-charcoal mb-1">Business Hours</h3>
-                    <div className="font-sans text-content space-y-1">
-                      <p>Monday - Friday: 9:00 AM - 5:00 PM</p>
-                      <p>Saturday: 10:00 AM - 2:00 PM</p>
-                      <p>Sunday: Closed</p>
-                    </div>
-                    <p className="font-sans text-sm text-content-muted mt-1">
-                      All times in AEST
-                    </p>
+                    <p className="text-sm text-charcoal-light">Prefer email?</p>
+                    <a className="mt-1 inline-block font-medium underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal" href={`mailto:${CONTACT_INFO.email}`}>
+                      {CONTACT_INFO.email}
+                    </a>
                   </div>
                 </div>
               </div>
 
-              {/* Quick Links */}
-              <div className="bg-gray-50 p-6 rounded-xl">
-                <h3 className="font-serif font-semibold text-charcoal mb-4">
-                  Quick <span className="font-accent text-opal-electric">Links</span>
-                </h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a href="/faq" className="font-sans text-content hover:text-opal-electric-accessible transition-colors">
-                      Frequently Asked Questions
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/shipping" className="font-sans text-content hover:text-opal-electric-accessible transition-colors">
-                      Shipping Information
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/returns" className="font-sans text-content hover:text-opal-electric-accessible transition-colors">
-                      Returns & Refunds
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/faq#care" className="font-sans text-content hover:text-opal-electric-accessible transition-colors">
-                      Opal Care Guide
-                    </a>
-                  </li>
-                </ul>
-              </div>
+              <nav aria-label="Helpful links" className="mt-7 space-y-3 text-sm">
+                <Link className="flex max-w-xs items-center justify-between border-b border-warm-grey/40 py-2 hover:text-opal-electric-accessible" href="/faq">
+                  Opal and order questions <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+                <Link className="flex max-w-xs items-center justify-between border-b border-warm-grey/40 py-2 hover:text-opal-electric-accessible" href="/shipping">
+                  Shipping information <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+                <Link className="flex max-w-xs items-center justify-between border-b border-warm-grey/40 py-2 hover:text-opal-electric-accessible" href="/returns">
+                  Returns information <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </nav>
+            </aside>
 
-              {/* Department Contacts */}
-              <div className="mt-8">
-                <h3 className="font-serif font-semibold text-charcoal mb-4">
-                  Department <span className="font-accent text-opal-electric">Contacts</span>
-                </h3>
-                <div className="space-y-3">
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-serif font-medium text-charcoal mb-1">Customer Support</h4>
-                    <p className="font-sans text-sm text-content">
-                      <a href="mailto:support@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        support@thegoodopalco.com
-                      </a>
-                    </p>
-                    <p className="font-sans text-xs text-content-muted mt-1">
-                      Order inquiries, product questions
-                    </p>
-                  </div>
-
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-serif font-medium text-charcoal mb-1">Custom Orders</h4>
-                    <p className="font-sans text-sm text-content">
-                      <a href="mailto:custom@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        custom@thegoodopalco.com
-                      </a>
-                    </p>
-                    <p className="font-sans text-xs text-content-muted mt-1">
-                      Bespoke jewelry, special requests
-                    </p>
-                  </div>
-
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-serif font-medium text-charcoal mb-1">Wholesale Inquiries</h4>
-                    <p className="font-sans text-sm text-content">
-                      <a href="mailto:wholesale@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        wholesale@thegoodopalco.com
-                      </a>
-                    </p>
-                    <p className="font-sans text-xs text-content-muted mt-1">
-                      Bulk orders, trade accounts
-                    </p>
-                  </div>
-
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h4 className="font-serif font-medium text-charcoal mb-1">Press & Media</h4>
-                    <p className="font-sans text-sm text-content">
-                      <a href="mailto:press@thegoodopalco.com" className="hover:text-opal-electric-accessible transition-colors">
-                        press@thegoodopalco.com
-                      </a>
-                    </p>
-                    <p className="font-sans text-xs text-content-muted mt-1">
-                      Media inquiries, collaborations
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div>
-              <div className="bg-gray-50 p-8 rounded-2xl">
-                <h2 className="font-serif text-2xl font-semibold text-charcoal mb-6">
-                  Send Us a <span className="font-accent text-opal-electric">Message</span>
-                </h2>
-                <ContactForm />
-              </div>
-
-              {/* Response Time Notice */}
-              <div className="mt-8 p-4 bg-opal-electric/5 rounded-lg">
-                <p className="font-sans text-sm text-content text-center">
-                  We typically respond to all inquiries within 24 hours during business days.
-                  For urgent matters, please call us during business hours.
+            <section aria-labelledby="contact-form-heading" className="bg-white p-5 shadow-sm sm:p-8 lg:p-10">
+              <div className="mb-8 border-b border-warm-grey/50 pb-6">
+                <h2 id="contact-form-heading" className="font-serif text-3xl sm:text-4xl">Send an enquiry</h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-charcoal-light">
+                  Fields marked with an asterisk are required. Your selected inquiry and product are already carried through from the previous page.
                 </p>
               </div>
-            </div>
+              <ContactForm initialInquiry={initialInquiry} initialProduct={initialProduct} />
+            </section>
           </div>
-
-          {/* Map Section (Optional) */}
-          <div className="mt-16">
-            <div className="bg-gray-100 rounded-2xl h-96 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="font-sans text-gray-500">
-                  Visit us by appointment in Sydney, Australia
-                </p>
-                <p className="font-sans text-sm text-gray-400 mt-2">
-                  Contact us to schedule a private viewing of our collection
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Container>
-
-        <Footer />
-      </div>
-    </PageTransition>
+        </Container>
+    </MarketingShell>
   )
 }

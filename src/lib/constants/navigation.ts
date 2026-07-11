@@ -23,11 +23,9 @@ export interface NavigationLogo {
  */
 export const NAVIGATION_ITEMS: NavigationItem[] = [
   { href: '/store', label: 'Shop' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/courses', label: 'Courses' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-  { href: '/faq', label: 'FAQ' },
+  { href: '/services', label: 'Custom' },
+  { href: '/blog', label: 'Learn' },
+  { href: '/about', label: 'Our story' },
 ]
 
 /**

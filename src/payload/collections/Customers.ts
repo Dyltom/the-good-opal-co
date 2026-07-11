@@ -6,9 +6,16 @@
  */
 
 import type { CollectionConfig } from 'payload'
+import { isAdmin } from '../../lib/payload-access.ts'
 
 export const Customers: CollectionConfig = {
   slug: 'customers',
+  access: {
+    read: isAdmin,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
+  },
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'subscribedToNewsletter', 'totalOrders', 'createdAt'],
@@ -60,6 +67,45 @@ export const Customers: CollectionConfig = {
       admin: {
         description: 'Date when customer subscribed to newsletter',
         condition: (data) => data?.subscribedToNewsletter === true,
+      },
+    },
+    {
+      name: 'confirmationTokenHash',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'confirmationExpiresAt',
+      type: 'date',
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'unsubscribeTokenHash',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: {
+        hidden: true,
+      },
+    },
+    {
+      name: 'newsletterWelcomeSentAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+      },
+    },
+    {
+      name: 'newsletterEmailError',
+      type: 'textarea',
+      admin: {
+        readOnly: true,
       },
     },
     {

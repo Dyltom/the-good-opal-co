@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { MarketingShell } from '@/components/marketing'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | The Good Opal Co',
@@ -8,14 +9,14 @@ export const metadata: Metadata = {
 }
 
 export default function TermsOfServicePage() {
-  const lastUpdated = new Date('2024-01-15').toLocaleDateString('en-AU', {
+  const lastUpdated = new Date('2026-07-11').toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <MarketingShell mainClassName="bg-white">
       <Container className="py-12">
         <Breadcrumb
           items={[
@@ -117,12 +118,12 @@ export default function TermsOfServicePage() {
                 5.1 Shipping Methods
               </h3>
               <p className="text-content mb-4">
-                We offer standard and express shipping options within Australia and internationally. Shipping costs are calculated at checkout based on your location and selected shipping method.
+                Shipping availability, the applicable charge, and the current delivery estimate are shown before payment.
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
-                <li>Free standard shipping on orders over $500 AUD within Australia</li>
-                <li>Express shipping available for an additional fee</li>
-                <li>International shipping rates vary by destination</li>
+                <li>Orders of $500 AUD or more qualify for free shipping</li>
+                <li>Orders below that threshold incur the charge shown at checkout</li>
+                <li>Available international destinations are shown at checkout</li>
               </ul>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
@@ -155,21 +156,21 @@ export default function TermsOfServicePage() {
                 6.2 Return Process
               </h3>
               <p className="text-content mb-4">
-                To initiate a return, please contact us at returns@thegoodopalco.com with your order number and reason for return. We will provide you with return instructions and a return authorization number.
+                To initiate a return, use our contact form with your order number and reason for return. We will provide the correct return instructions before you send the item.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
                 6.3 Refunds
               </h3>
               <p className="text-content mb-4">
-                Once your return is received and inspected, we will notify you of the approval or rejection of your refund. If approved, your refund will be processed to your original payment method within 10 business days.
+                Once your return is received and inspected, we will confirm the outcome. Any approved refund is sent to the original payment method; your bank or card issuer controls the time taken to display it.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
                 6.4 Exchanges
               </h3>
               <p className="text-content mb-4">
-                We only replace items if they are defective or damaged. If you need to exchange an item for the same product, contact us at returns@thegoodopalco.com.
+                One-of-a-kind pieces may not have an identical replacement. Contact us so we can assess the appropriate remedy.
               </p>
             </section>
 
@@ -178,10 +179,10 @@ export default function TermsOfServicePage() {
                 7. Product Authenticity
               </h2>
               <p className="text-content mb-4">
-                All opals and gemstones sold by The Good Opal Co are genuine and natural unless specifically described as synthetic or treated. We provide certificates of authenticity for high-value items upon request.
+                Product pages describe the stone and disclose origin, treatments, or certificate details where that information is available.
               </p>
               <p className="text-content mb-4">
-                We guarantee that all products are as described. Any treatments or enhancements will be fully disclosed in the product description.
+                We aim to describe products accurately and disclose known treatments or enhancements in the product listing.
               </p>
             </section>
 
@@ -304,14 +305,12 @@ export default function TermsOfServicePage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Email: legal@thegoodopalco.com</p>
-                <p className="text-content">Phone: +61 2 9555 1234</p>
-                <p className="text-content">Address: Sydney, NSW, Australia</p>
+                <p className="text-content">Use the contact form and select the topic that best matches your question.</p>
               </div>
             </section>
           </div>
         </div>
       </Container>
-    </div>
+    </MarketingShell>
   )
 }

@@ -5,7 +5,6 @@
  * Each icon matches the warm, mystical, artsy vibe.
  */
 
-import React from 'react'
 import { cn } from '@/lib/utils'
 
 interface IconProps {

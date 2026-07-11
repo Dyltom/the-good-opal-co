@@ -6,7 +6,7 @@ interface OptimizedImageProps {
   alt: string
   aspectRatio?: '1:1' | '4:3' | '16:9' | '21:9'
   priority?: boolean
-  quality?: number
+  quality?: 75 | 85 | 90 | 92 | 95
   className?: string
   sizes?: string
   fill?: boolean

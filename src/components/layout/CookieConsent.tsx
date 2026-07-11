@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Cookie, Settings } from 'lucide-react'
+import { X, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -30,6 +30,21 @@ export function CookieConsent() {
     if (!consent) {
       // Show banner after a small delay for better UX
       setTimeout(() => setShowBanner(true), 1000)
+      return
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(consent)
+      if (parsed && typeof parsed === 'object') {
+        setPreferences((current) => ({
+          ...current,
+          ...parsed,
+          necessary: true,
+        }))
+      }
+    } catch {
+      localStorage.removeItem('cookie-consent')
+      setShowBanner(true)
     }
   }, [])
 
@@ -57,13 +72,14 @@ export function CookieConsent() {
     // Save to localStorage
     localStorage.setItem('cookie-consent', JSON.stringify(prefs))
     localStorage.setItem('cookie-consent-date', new Date().toISOString())
+    window.dispatchEvent(new Event('cookie-consent-updated'))
 
     // Initialize analytics and marketing based on preferences
     if (prefs.analytics) {
       // Initialize Google Analytics
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('consent', 'update', {
-          analytics_storage: 'granted'
+          analytics_storage: 'granted',
         })
       }
     }
@@ -88,42 +104,37 @@ export function CookieConsent() {
     <AnimatePresence>
       {showBanner && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
+          initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          className="fixed bottom-0 left-0 right-0 z-50 p-3 sm:p-6"
+          exit={{ y: 16, opacity: 0 }}
+          transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+          className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-5"
         >
-          <div className="mx-auto max-w-7xl">
-            <div className="max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl sm:rounded-2xl">
+          <div className="mx-auto max-w-xl sm:ml-auto sm:mr-0">
+            <div className="max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-lg border border-warm-grey bg-cream shadow-lg">
               {/* Main Banner */}
-              <div className={cn(
-                "p-4 sm:p-6 lg:p-8",
-                showSettings && "border-b border-gray-200"
-              )}>
+              <div className={cn('p-3 sm:p-5', showSettings && 'border-b border-warm-grey')}>
                 <div className="flex items-start justify-between gap-3 sm:gap-4">
-                  <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
-                    <div className="hidden sm:block">
-                      <div className="w-12 h-12 bg-opal-electric/10 rounded-full flex items-center justify-center">
-                        <Cookie className="w-6 h-6 text-opal-electric" />
-                      </div>
-                    </div>
+                  <div className="flex min-w-0 flex-1 items-start">
                     <div className="min-w-0 flex-1">
-                      <h3 className="mb-2 text-base font-semibold text-charcoal sm:text-lg">
-                        We value your privacy 🍪
+                      <h3 className="mb-1 text-sm font-semibold text-charcoal sm:mb-2 sm:text-lg">
+                        Your privacy choices
                       </h3>
-                      <p className="text-sm text-content mb-4">
-                        We use cookies to enhance your browsing experience, analyze site traffic, and personalize content.
-                        By clicking &quot;Accept All&quot;, you consent to our use of cookies.{' '}
-                        <Link href="/legal/cookies" className="text-opal-electric-accessible hover:underline">
+                      <p className="mb-3 text-xs leading-5 text-charcoal/70 sm:mb-4 sm:text-sm sm:leading-6">
+                        Choose whether we may use analytics and marketing cookies. Necessary cookies
+                        keep the shop working.{' '}
+                        <Link
+                          href="/legal/cookies"
+                          className="text-opal-electric-accessible hover:underline"
+                        >
                           Read our Cookie Policy
                         </Link>
                       </p>
-                      <div className="grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
+                      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
                         <Button
                           onClick={acceptAll}
                           size="sm"
-                          className="w-full bg-opal-electric hover:bg-opal-electric/90 sm:w-auto"
+                          className="w-full bg-charcoal text-cream hover:bg-charcoal-dark sm:w-auto"
                         >
                           Accept All
                         </Button>
@@ -139,20 +150,20 @@ export function CookieConsent() {
                           onClick={toggleSettings}
                           size="sm"
                           variant="ghost"
-                          className="w-full gap-2 sm:w-auto"
+                          className="col-span-2 w-full gap-2 sm:w-auto"
                         >
-                          <Settings className="w-4 h-4" />
+                          <Settings className="h-4 w-4" />
                           Cookie Settings
                         </Button>
                       </div>
                     </div>
                   </div>
                   <button
-                    onClick={() => setShowBanner(false)}
+                    onClick={acceptNecessary}
                     className="-mr-2 -mt-2 flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible/30 sm:-mr-3 sm:-mt-3"
-                    aria-label="Close cookie banner"
+                    aria-label="Use necessary cookies only and close"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -167,15 +178,13 @@ export function CookieConsent() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="p-6 sm:p-8 bg-gray-50">
-                      <h4 className="font-medium text-charcoal mb-4">
-                        Manage Cookie Preferences
-                      </h4>
+                    <div className="bg-white p-5">
+                      <h4 className="mb-4 font-medium text-charcoal">Manage Cookie Preferences</h4>
                       <div className="space-y-4">
                         {/* Necessary Cookies */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h5 className="font-medium text-sm text-charcoal mb-1">
+                            <h5 className="mb-1 text-sm font-medium text-charcoal">
                               Necessary Cookies
                             </h5>
                             <p className="text-xs text-content-muted">
@@ -187,7 +196,7 @@ export function CookieConsent() {
                               type="checkbox"
                               checked={preferences.necessary}
                               disabled
-                              className="w-4 h-4 text-opal-electric rounded cursor-not-allowed"
+                              className="h-4 w-4 cursor-not-allowed rounded text-opal-electric"
                             />
                             <span className="ml-2 text-xs text-gray-500">Always On</span>
                           </div>
@@ -196,7 +205,7 @@ export function CookieConsent() {
                         {/* Analytics Cookies */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h5 className="font-medium text-sm text-charcoal mb-1">
+                            <h5 className="mb-1 text-sm font-medium text-charcoal">
                               Analytics Cookies
                             </h5>
                             <p className="text-xs text-content-muted">
@@ -206,18 +215,20 @@ export function CookieConsent() {
                           <input
                             type="checkbox"
                             checked={preferences.analytics}
-                            onChange={(e) => setPreferences({
-                              ...preferences,
-                              analytics: e.target.checked
-                            })}
-                            className="w-4 h-4 text-opal-electric rounded cursor-pointer"
+                            onChange={(e) =>
+                              setPreferences({
+                                ...preferences,
+                                analytics: e.target.checked,
+                              })
+                            }
+                            className="h-4 w-4 cursor-pointer rounded text-opal-electric"
                           />
                         </div>
 
                         {/* Marketing Cookies */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h5 className="font-medium text-sm text-charcoal mb-1">
+                            <h5 className="mb-1 text-sm font-medium text-charcoal">
                               Marketing Cookies
                             </h5>
                             <p className="text-xs text-content-muted">
@@ -227,18 +238,20 @@ export function CookieConsent() {
                           <input
                             type="checkbox"
                             checked={preferences.marketing}
-                            onChange={(e) => setPreferences({
-                              ...preferences,
-                              marketing: e.target.checked
-                            })}
-                            className="w-4 h-4 text-opal-electric rounded cursor-pointer"
+                            onChange={(e) =>
+                              setPreferences({
+                                ...preferences,
+                                marketing: e.target.checked,
+                              })
+                            }
+                            className="h-4 w-4 cursor-pointer rounded text-opal-electric"
                           />
                         </div>
 
                         {/* Preference Cookies */}
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h5 className="font-medium text-sm text-charcoal mb-1">
+                            <h5 className="mb-1 text-sm font-medium text-charcoal">
                               Preference Cookies
                             </h5>
                             <p className="text-xs text-content-muted">
@@ -248,11 +261,13 @@ export function CookieConsent() {
                           <input
                             type="checkbox"
                             checked={preferences.preferences}
-                            onChange={(e) => setPreferences({
-                              ...preferences,
-                              preferences: e.target.checked
-                            })}
-                            className="w-4 h-4 text-opal-electric rounded cursor-pointer"
+                            onChange={(e) =>
+                              setPreferences({
+                                ...preferences,
+                                preferences: e.target.checked,
+                              })
+                            }
+                            className="h-4 w-4 cursor-pointer rounded text-opal-electric"
                           />
                         </div>
                       </div>
@@ -294,7 +309,7 @@ export function CookieConsent() {
 }
 
 // Cookie Settings Link Component for Footer
-export function CookieSettingsLink() {
+export function CookieSettingsLink({ className }: { className?: string }) {
   const [hasConsent, setHasConsent] = useState(false)
 
   useEffect(() => {
@@ -313,7 +328,7 @@ export function CookieSettingsLink() {
   return hasConsent ? (
     <button
       onClick={openSettings}
-      className="text-sm text-content-muted hover:text-charcoal transition-colors"
+      className={cn('text-sm text-content-muted transition-colors hover:text-charcoal', className)}
     >
       Cookie Settings
     </button>

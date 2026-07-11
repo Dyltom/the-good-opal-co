@@ -18,11 +18,10 @@ describe('#4 TrustMarquee — WCAG AA contrast', () => {
     expect(source).not.toMatch(/bg-opal-electric\b(?!-accessible)/)
   })
 
-  test('uses a background with sufficient contrast against white text', () => {
-    // Accepted: opal-electric-accessible (#005A87) or any *-rich/charcoal/black-* token.
-    expect(source).toMatch(
-      /bg-(opal-electric-accessible|opal-deep|black-rich|charcoal|gray-900|slate-900)/,
-    )
+  test('uses an explicitly high-contrast foreground and background pairing', () => {
+    const usesDarkSurface = /bg-(opal-electric-accessible|opal-deep|black-rich|charcoal|gray-900|slate-900)/.test(source)
+    const usesLightSurface = source.includes('bg-cream') && source.includes('text-charcoal')
+    expect(usesDarkSurface || usesLightSurface).toBe(true)
   })
 })
 
@@ -40,14 +39,11 @@ describe('#5 SearchInput — aria-allowed-attr', () => {
 })
 
 describe('#6 Home hero/category LCP image — priority', () => {
-  const source = read('src/app/(marketing)/page.tsx')
+  const source = read('src/components/sections/HomeHero.tsx')
 
-  test('the first above-the-fold category tile is marked priority', () => {
-    // Raw Opals tile is the first OptimizedImage in the desktop viewport and
-    // is what Lighthouse detected as LCP.
-    const rawOpalsBlock = source.match(/Raw Australian Opals[\s\S]{0,500}/)?.[0]
-    expect(rawOpalsBlock, 'Raw Opals block not found').toBeTruthy()
-    expect(rawOpalsBlock!).toMatch(/priority/)
+  test('the product-led hero image is marked priority', () => {
+    expect(source).toContain('priority')
+    expect(source).toContain('sizes="(max-width: 1024px) 100vw, 56vw"')
   })
 })
 
@@ -82,10 +78,10 @@ describe('#9 Store listing — heading order', () => {
   test('the product grid is preceded by an <h2> in the main content area', () => {
     // Skipping h1 → h3 (ProductCard) trips axe heading-order. A visually
     // hidden h2 above the grid satisfies semantics without a design change.
-    expect(source).toMatch(/<h2[^>]*>[\s\S]*?(Products|Collection|Treasures)/)
+    expect(source).toMatch(/<h2[^>]*>[\s\S]*?(products|collection|pieces)/i)
     // And specifically a screen-reader-only h2 if no visible one is added.
     const hasSrOnlyH2 = /<h2[^>]*sr-only/.test(source)
-    const hasVisibleGridH2 = /<h2[^>]*>[\s\S]*?(Our Collection|All Products)/.test(
+    const hasVisibleGridH2 = /<h2[^>]*>[\s\S]*?(Current collection|All Products)/i.test(
       source,
     )
     expect(hasSrOnlyH2 || hasVisibleGridH2).toBe(true)

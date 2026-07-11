@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { getNewsletterService } from '@/lib/newsletter/service'
 import { redirect } from 'next/navigation'
 import { trackNewsletterSignup } from '@/lib/analytics'
+import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
 /**
  * Validation schema for newsletter subscription
@@ -34,6 +35,17 @@ export async function subscribeToNewsletter(
       name: formData.get('name') || undefined,
       source: formData.get('source') || 'footer'
     })
+
+    const identifier = await getRequestIdentifier(data.email)
+    const allowed = await checkRateLimit({
+      scope: 'newsletter',
+      identifier,
+      limit: 5,
+      windowSeconds: 60 * 60,
+    })
+    if (!allowed) {
+      return { success: false, message: 'Too many attempts. Please try again later.' }
+    }
 
     const service = getNewsletterService()
     const result = await service.subscribe(data.email, {
@@ -84,4 +96,10 @@ export async function confirmNewsletterSubscription(token: string) {
 export async function unsubscribeFromNewsletter(token: string) {
   const service = getNewsletterService()
   return await service.unsubscribe(token)
+}
+
+export async function submitNewsletterUnsubscribe(token: string, _formData: FormData) {
+  const result = await unsubscribeFromNewsletter(token)
+  const status = result.success ? 'success' : 'invalid'
+  redirect(`/newsletter/unsubscribe?status=${status}`)
 }

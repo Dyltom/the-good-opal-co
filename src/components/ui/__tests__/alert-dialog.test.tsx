@@ -13,9 +13,8 @@ describe('CartClearConfirmDialog', () => {
       />
     )
 
-    expect(screen.getByText('Clear Cart')).toBeDefined()
-    expect(screen.getByText('Are you sure you want to clear your cart?')).toBeDefined()
-    expect(screen.getByText('This action will remove 3 items from your cart and cannot be undone.')).toBeDefined()
+    expect(screen.getByText('Remove every item?')).toBeDefined()
+    expect(screen.getByText('This removes 3 items from your cart. This action cannot be undone.')).toBeDefined()
   })
 
   it('should call onConfirm when Clear button is clicked', () => {
@@ -29,7 +28,7 @@ describe('CartClearConfirmDialog', () => {
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Clear' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Clear cart' }))
     expect(mockOnConfirm).toHaveBeenCalledTimes(1)
   })
 
@@ -44,7 +43,7 @@ describe('CartClearConfirmDialog', () => {
       />
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Keep items' }))
     expect(mockOnOpenChange).toHaveBeenCalledWith(false)
   })
 
@@ -58,7 +57,7 @@ describe('CartClearConfirmDialog', () => {
       />
     )
 
-    expect(screen.queryByText('Clear Cart')).toBeNull()
+    expect(screen.queryByText('Remove every item?')).toBeNull()
   })
 
   it('should handle singular item count correctly', () => {
@@ -71,6 +70,6 @@ describe('CartClearConfirmDialog', () => {
       />
     )
 
-    expect(screen.getByText('This action will remove 1 item from your cart and cannot be undone.')).toBeDefined()
+    expect(screen.getByText('This removes 1 item from your cart. This action cannot be undone.')).toBeDefined()
   })
 })

@@ -1,38 +1,25 @@
-/**
- * TrustMarquee Component
- *
- * Infinite scrolling marquee displaying trust signals.
- * Uses pure CSS animation for performance.
- *
- * Follows SOLID principles:
- * - Single Responsibility: Only displays trust messaging
- * - Dependency Inversion: Uses configuration array for easy updates
- */
-
 const TRUST_ITEMS = [
-  'Handcrafted in Australia',
-  'Ethically Sourced',
-  'Free Express Shipping',
-  '1 Year Warranty',
-  'Certificate of Authenticity',
-  'Premium Packaging',
+  'Australian opals',
+  'Product details disclosed',
+  'Tracked delivery',
+  '30-day eligible returns',
+  'Care guidance',
+  'Secure Stripe checkout',
 ] as const
 
 export function TrustMarquee() {
   return (
-    <div className="bg-opal-electric-accessible py-3 overflow-hidden">
-      <div className="flex animate-marquee whitespace-nowrap">
-        {/* Duplicate items for seamless loop */}
-        {[...TRUST_ITEMS, ...TRUST_ITEMS].map((item, i) => (
-          <span
-            key={i}
-            className="mx-8 text-sm font-medium text-white tracking-normal flex items-center gap-3"
+    <section aria-label="Order information" className="border-y border-warm-grey/60 bg-cream">
+      <ul className="mx-auto flex max-w-7xl flex-wrap justify-center px-4 py-3 sm:px-6 lg:px-8">
+        {TRUST_ITEMS.map((item) => (
+          <li
+            key={item}
+            className="flex items-center font-sans text-xs font-semibold text-charcoal/75 after:mx-3 after:text-warm-grey after:content-['/'] last:after:hidden sm:text-sm sm:after:mx-5"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white/50" />
             {item}
-          </span>
+          </li>
         ))}
-      </div>
-    </div>
+      </ul>
+    </section>
   )
 }

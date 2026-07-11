@@ -1,24 +1,30 @@
-import { Suspense } from 'react'
+import { redirect } from 'next/navigation'
 import type { Where } from 'payload'
-import { Navigation, Footer } from '@/components/navigation'
-import { ProductGridSkeleton } from '@/components/ui/LoadingStates'
-import { getPayload } from '@/lib/payload'
+import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
-import { PageTransition } from '@/components/layout/PageTransition'
-import { Container } from '@/components/layout'
-import { StoreContent } from './store-content'
+import { getPayload } from '@/lib/payload'
+import { resolveMediaUrl } from '@/lib/media-url'
+import { StoreContent, type StoreProduct } from './store-content'
+import {
+  parseStoreQuery,
+  PRODUCTS_PER_PAGE,
+  storeUrl,
+  type StoreSearchParams,
+} from './store-query'
 
-/**
- * Store Page Metadata
- */
 export const metadata = {
   title: 'Shop Australian Opals | The Good Opal Co',
   description:
-    'Discover our collection of authentic Australian opals. Handpicked from Lightning Ridge, Coober Pedy, and Queensland mines. Free shipping on orders over $500.',
+    'Browse one-of-a-kind Australian opals, finished jewellery, loose stones, and pieces for gifting. Every listing includes its known origin and details.',
+}
+interface StorePageProps {
+  searchParams: Promise<StoreSearchParams>
 }
 
 /**
- * Product type derived from Payload collection
+ * Compatibility shape for legacy catalog helpers. New listing code uses the
+ * smaller StoreProduct view model, but these fields remain part of the public
+ * store module contract until those helpers are retired.
  */
 export interface Product {
   id: string
@@ -27,11 +33,7 @@ export interface Product {
   description: string
   price: number
   compareAtPrice?: number
-  images?: Array<{
-    image?: {
-      url?: string
-    }
-  }>
+  images?: Array<{ image?: { url?: string } }>
   category: string
   status: 'draft' | 'published' | 'archived'
   featured: boolean
@@ -44,150 +46,136 @@ export interface Product {
   updatedAt: string
 }
 
-/**
- * Loading skeleton for products
- */
+const sortMap = {
+  featured: '-featured,-createdAt',
+  newest: '-createdAt',
+  'price-low': 'price',
+  'price-high': '-price',
+} as const
 
-/**
- * Store Page
- *
- * Server Component that fetches products from Payload and renders the store.
- * Uses direct Payload Local API queries for optimal performance.
- */
+function objectRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null
+    ? value as Record<string, unknown>
+    : undefined
+}
 
-interface StorePageProps {
-  searchParams: Promise<{ search?: string }>
+function richTextToPlainText(value: unknown): string {
+  if (Array.isArray(value)) return value.map(richTextToPlainText).filter(Boolean).join(' ')
+
+  const record = objectRecord(value)
+  if (!record) return ''
+  if (typeof record.text === 'string') return record.text
+
+  return Object.values(record).map(richTextToPlainText).filter(Boolean).join(' ')
+}
+
+function firstImageUrl(value: unknown): string | undefined {
+  if (!Array.isArray(value)) return undefined
+  const first = objectRecord(value[0])
+  const image = objectRecord(first?.image)
+  return typeof image?.url === 'string' ? resolveMediaUrl(image.url) : undefined
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function toStoreProduct(value: unknown): StoreProduct | undefined {
+  const product = objectRecord(value)
+  if (
+    !product ||
+    (typeof product.id !== 'string' && typeof product.id !== 'number') ||
+    typeof product.slug !== 'string' ||
+    typeof product.name !== 'string' ||
+    typeof product.price !== 'number'
+  ) {
+    return undefined
+  }
+
+  return {
+    id: String(product.id),
+    slug: product.slug,
+    name: product.name,
+    description: richTextToPlainText(product.description),
+    price: product.price,
+    compareAtPrice: typeof product.compareAtPrice === 'number' ? product.compareAtPrice : undefined,
+    stock: typeof product.stock === 'number' ? product.stock : 0,
+    featured: product.featured === true,
+    category: optionalString(product.category),
+    image: firstImageUrl(product.images),
+    stoneOrigin: optionalString(product.stoneOrigin),
+    stoneType: optionalString(product.stoneType),
+    createdAt: optionalString(product.createdAt),
+  }
 }
 
 export default async function StorePage({ searchParams }: StorePageProps) {
-  const params = await searchParams
-  const searchQuery = params.search
+  const query = parseStoreQuery(await searchParams)
+  const conditions: Where[] = [{ status: { equals: 'published' } }]
 
-  // Fetch all published products using Payload Local API
+  if (query.availability === 'available') conditions.push({ stock: { greater_than: 0 } })
+  if (query.category) conditions.push({ category: { equals: query.category } })
+  if (query.stone) conditions.push({ stoneType: { equals: query.stone } })
+  if (query.origin) conditions.push({ stoneOrigin: { equals: query.origin } })
+  if (query.material) conditions.push({ material: { equals: query.material } })
+  if (query.price === 'under-250') conditions.push({ price: { less_than: 250 } })
+  if (query.price === '250-500') {
+    conditions.push({ price: { greater_than_equal: 250 } }, { price: { less_than: 500 } })
+  }
+  if (query.price === '500-1000') {
+    conditions.push({ price: { greater_than_equal: 500 } }, { price: { less_than: 1000 } })
+  }
+  if (query.price === '1000-plus') conditions.push({ price: { greater_than_equal: 1000 } })
+  if (query.search) {
+    conditions.push({
+      or: [
+        { name: { contains: query.search } },
+        { material: { contains: query.search } },
+        { stoneType: { contains: query.search } },
+        { stoneOrigin: { contains: query.search } },
+        { sku: { contains: query.search } },
+      ],
+    })
+  }
+
   const payload = await getPayload()
-
-  const whereCondition: Where = searchQuery
-    ? {
-        and: [
-          { status: { equals: 'published' } },
-          {
-            or: [
-              { name: { contains: searchQuery } },
-              { category: { contains: searchQuery } },
-              { material: { contains: searchQuery } },
-              { stoneType: { contains: searchQuery } },
-              { stoneOrigin: { contains: searchQuery } },
-              { sku: { contains: searchQuery } },
-            ]
-          }
-        ]
-      }
-    : { status: { equals: 'published' } }
-
-  const { docs: products } = await payload.find({
+  const result = await payload.find({
     collection: 'products',
-    where: whereCondition,
-    limit: 200, // Reasonable limit for product catalog
-    sort: searchQuery ? '-featured,-createdAt' : '-createdAt',
-    depth: 2, // Include related media
+    where: { and: conditions },
+    limit: PRODUCTS_PER_PAGE,
+    page: query.page,
+    sort: sortMap[query.sort],
+    depth: 1,
   })
 
-  // Transform products for client component
-  const transformedProducts: Product[] = products.map((product) => ({
-    id: String(product.id),
-    name: product.name,
-    slug: product.slug,
-    description:
-      typeof product.description === 'string'
-        ? product.description
-        : product.description?.root?.children
-            ?.map((node: { children?: Array<{ text?: string }> }) =>
-              node.children?.map((child: { text?: string }) => child.text ?? '').join('')
-            )
-            .join(' ') ?? '',
-    price: product.price,
-    compareAtPrice: product.compareAtPrice ?? undefined,
-    images: product.images as Product['images'],
-    category: product.category,
-    status: product.status as Product['status'],
-    featured: product.featured ?? false,
-    stock: product.stock ?? 0,
-    material: product.material ?? undefined,
-    stoneType: product.stoneType ?? undefined,
-    stoneOrigin: product.stoneOrigin ?? undefined,
-    weight: product.weight ?? undefined,
-    createdAt: product.createdAt,
-    updatedAt: product.updatedAt,
-  }))
+  if (result.totalPages > 0 && query.page > result.totalPages) {
+    redirect(storeUrl(query, result.totalPages))
+  }
 
-  // Prepare products for JSON-LD
-  const productsForJsonLd = transformedProducts.slice(0, 10).map((product) => ({
-    name: product.name,
-    slug: product.slug,
-    price: product.price,
-    image: product.images?.[0]?.image?.url,
-  }))
+  const products = result.docs
+    .map(toStoreProduct)
+    .filter((product): product is StoreProduct => product !== undefined)
 
   return (
-    <>
+    <MarketingShell>
       <CollectionJsonLd
-        name="Australian Opals Collection"
-        description="Discover our collection of authentic Australian opals. Handpicked from Lightning Ridge, Coober Pedy, and Queensland mines."
+        name="Australian opals"
+        description="One-of-a-kind Australian opals, loose stones, and finished jewellery."
         url="/store"
-        products={productsForJsonLd}
+        products={products.slice(0, 10).map((product) => ({
+          name: product.name,
+          slug: product.slug,
+          price: product.price,
+          image: product.image,
+        }))}
       />
 
-      <PageTransition>
-        <div className="min-h-screen flex flex-col bg-white">
-          <Navigation
-            logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-            items={[
-              { href: '/store', label: 'Shop' },
-              { href: '/blog', label: 'Blog' },
-              { href: '/courses', label: 'Courses' },
-              { href: '/about', label: 'About' },
-              { href: '/contact', label: 'Contact' },
-              { href: '/faq', label: 'FAQ' },
-            ]}
-          />
-
-          <main className="flex-1">
-            {/* Hero Section */}
-            <section className="pt-32 pb-12 bg-white">
-              <Container>
-                <div className="max-w-3xl mx-auto text-center">
-                  <p className="font-sans text-xs uppercase text-opal-electric-accessible mb-4">
-                    The Collection
-                  </p>
-                  <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-charcoal leading-[1.1] mb-5">
-                    {searchQuery ? (
-                      <>Results for &ldquo;{searchQuery}&rdquo;</>
-                    ) : (
-                      <>Australian Opals</>
-                    )}
-                  </h1>
-                  <p className="text-base md:text-lg text-charcoal/70 leading-relaxed">
-                    {searchQuery ? (
-                      <>Found {transformedProducts.length} opal{transformedProducts.length !== 1 ? 's' : ''} matching your search.</>
-                    ) : (
-                      <>Each stone in the collection is handpicked from Lightning Ridge, Coober Pedy and Queensland, cut and set in our Australian studio.</>
-                    )}
-                  </p>
-                </div>
-              </Container>
-            </section>
-
-            {/* Products Section */}
-            <section id="products" className="bg-white">
-              <Suspense fallback={<ProductGridSkeleton count={12} />}>
-                <StoreContent products={transformedProducts} searchQuery={searchQuery} />
-              </Suspense>
-            </section>
-
-          </main>
-
-          <Footer />
-        </div>
-      </PageTransition>
-    </>  )
+      <StoreContent
+        products={products}
+        query={query}
+        totalDocs={result.totalDocs}
+        totalPages={result.totalPages}
+      />
+    </MarketingShell>
+  )
 }

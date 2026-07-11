@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import type { FooterProps, SocialLink } from '@/types'
 import { Container } from '@/components/layout'
 import { NewsletterForm } from '@/components/newsletter/NewsletterForm'
+import { CookieSettingsLink } from '@/components/layout/CookieConsent'
 
 /**
  * Social Icon Component
@@ -65,16 +66,11 @@ const defaultLinks = [
       { href: '/blog', label: 'Blog' },
       { href: '/about', label: 'Our Story' },
       { href: '/services', label: 'Services' },
-      { href: '/courses', label: 'Courses' },
     ],
   },
 ]
 
-const defaultSocial: SocialLink[] = [
-  { platform: 'instagram', url: 'https://instagram.com/goodopalco', label: 'Instagram' },
-  { platform: 'facebook', url: 'https://facebook.com/goodopalco', label: 'Facebook' },
-  { platform: 'tiktok', url: 'https://tiktok.com/@goodopalco', label: 'TikTok' },
-]
+const defaultSocial: SocialLink[] = []
 
 /**
  * Footer Component
@@ -82,7 +78,7 @@ const defaultSocial: SocialLink[] = [
 export function Footer({
   logo,
   logoText = 'The Good Opal Co',
-  description = 'Authentic Australian opals, hand finished and selected with care.',
+  description = 'Australian opals and jewellery, selected and described with care.',
   links = defaultLinks,
   social = defaultSocial,
   copyright,
@@ -167,23 +163,23 @@ export function Footer({
 
               {/* Trust Badges Column */}
               <div>
-                <h3 className="mb-4 text-sm font-semibold uppercase text-white/80">Why Choose Us</h3>
+                <h3 className="mb-4 text-sm font-semibold uppercase text-white/80">What to expect</h3>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-2 text-sm text-white/50">
                     <span className="w-1.5 h-1.5 rounded-full bg-opal-electric" />
-                    100% Australian Opals
+                    Australian opals
                   </li>
                   <li className="flex items-center gap-2 text-sm text-white/50">
                     <span className="w-1.5 h-1.5 rounded-full bg-fire-pink" />
-                    Ethically Sourced
+                    Origin and product details
                   </li>
                   <li className="flex items-center gap-2 text-sm text-white/50">
                     <span className="w-1.5 h-1.5 rounded-full bg-opal-emerald" />
-                    1 Year Warranty
+                    Tracked delivery
                   </li>
                   <li className="flex items-center gap-2 text-sm text-white/50">
                     <span className="w-1.5 h-1.5 rounded-full bg-fire-orange" />
-                    Free Shipping $500+
+                    Care guidance
                   </li>
                 </ul>
               </div>
@@ -195,8 +191,9 @@ export function Footer({
                 {copyright || `© ${currentYear} ${logoText}. All rights reserved.`}
               </div>
               <div className="flex gap-6 text-sm text-white/40">
-                <Link href="/privacy" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Privacy Policy</Link>
-                <Link href="/terms" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Terms of Service</Link>
+                <Link href="/legal/privacy" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Privacy Policy</Link>
+                <Link href="/legal/terms" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Terms of Service</Link>
+                <CookieSettingsLink className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark" />
               </div>
               <div className="text-xs text-white/35">
                 Australian opal that doesn&apos;t cost the earth.

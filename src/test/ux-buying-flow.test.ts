@@ -9,7 +9,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('shipping feedback is calm and exposes progress data', () => {
     const source = read('src/lib/constants/shipping.ts')
 
-    expect(getShippingMessage(500)).toBe('Your order qualifies for free express shipping!')
+    expect(getShippingMessage(500)).toBe('Your order qualifies for free shipping!')
     expect(source).toContain('export function getFreeShippingProgress')
   })
 
@@ -26,35 +26,32 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).not.toContain('tracking-wide')
   })
 
-  test('store results show active filter state and live result count', () => {
+  test('store results expose server-filtered state and a live result count', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('activeFilterCount')
     expect(source).toContain('aria-live="polite"')
-    expect(source).toContain('Selected filters')
-    expect(source).toContain('Remove filter')
-    expect(source).toContain('pagedProducts.map((product, index)')
+    expect(source).toContain('Showing ${start}–${end} of ${totalDocs} pieces')
+    expect(source).toContain('products.map((product, index)')
     expect(source).toContain('index={index}')
   })
 
-  test('store discovery controls are compact and scan-friendly on mobile', () => {
+  test('store discovery controls use accessible GET forms and native mobile disclosure', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('aria-label="Store search and refinement"')
+    expect(source).toContain('role="search"')
     expect(source).toContain('type="search"')
-    expect(source).toContain('inputMode="search"')
-    expect(source).toContain('Showing {resultRangeStart}-{resultRangeEnd} of {sortedProducts.length}')
-    expect(source).toContain('grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto]')
-    expect(source).toContain('w-full sm:w-[190px]')
-    expect(source).toContain('min-h-[44px] min-w-[44px]')
-    expect(source).toContain('min-h-[44px] rounded-full')
+    expect(source).toContain('method="get"')
+    expect(source).toContain('<details className="group lg:hidden">')
+    expect(source).toContain('Refine collection')
+    expect(source).toContain('min-h-11')
   })
 
-  test('store search URL sync does not remount controls while typing', () => {
+  test('store filtering stays server-driven without router state synchronization', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('window.history.replaceState(null')
-    expect(source).not.toContain('router.push(newUrl')
+    expect(source).not.toContain("'use client'")
+    expect(source).not.toContain('useRouter')
+    expect(source).not.toContain('window.history')
   })
 
   test('quick view modal behaves as a mobile safe-area purchase sheet', () => {
@@ -86,8 +83,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page presents purchase confidence without overtracked labels', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('Purchase confidence')
-    expect(source).toContain('This piece qualifies for free express shipping')
+    expect(source).toContain('Delivery and decisions')
+    expect(source).toContain('This piece qualifies for free shipping')
     expect(source).not.toContain('tracking-[0.2em]')
   })
 
@@ -96,7 +93,6 @@ describe('buying flow UI/UX safeguards', () => {
     const packageSource = read('package.json')
     const quickAddSources = [
       read('src/components/product/ProductCard.tsx'),
-      read('src/components/product/ProductQuickView.tsx'),
       read('src/components/product/ProductQuickViewModal.tsx'),
       read('src/components/mobile/MobileProductCard.tsx'),
     ].join('\n')
@@ -126,27 +122,21 @@ describe('buying flow UI/UX safeguards', () => {
     expect(mobileCardSource).not.toContain('onQuickAdd')
   })
 
-  test('mobile store uses a compact filter drawer before the desktop sidebar', () => {
+  test('mobile store uses a compact native disclosure before the desktop sidebar', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('isMobileFiltersOpen')
-    expect(source).toContain('Filter & refine')
-    expect(source).toContain('role="dialog"')
-    expect(source).toContain('aria-modal="true"')
-    expect(source).toContain('aria-label="Filter & refine"')
+    expect(source).toContain('<details className="group lg:hidden">')
+    expect(source).toContain('Refine collection')
     expect(source).toContain('hidden lg:block')
     expect(source).toContain('lg:hidden')
-    expect(source).toContain('idPrefix="mobile"')
-    expect(source).toContain('idPrefix="desktop"')
-    expect(source).toContain('Show {sortedProducts.length}')
+    expect(source).toContain('<FilterForm query={query}')
   })
 
-  test('mobile filter drawer has distinct close targets and a 44px icon close', () => {
+  test('mobile filter disclosure and controls provide large targets', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('aria-label="Dismiss filter panel"')
-    expect(source).toContain('aria-label="Close filters"')
-    expect(source).toContain('flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-warm-grey/30')
+    expect(source).toContain('summary className="flex min-h-12')
+    expect(source).toContain('className="min-h-11 flex-1')
   })
 
   test('product filters support prefixed ids for mobile and desktop instances', () => {
@@ -162,10 +152,11 @@ describe('buying flow UI/UX safeguards', () => {
   test('closed mobile navigation does not reserve page-height hit area', () => {
     const source = read('src/components/navigation/Navigation.tsx')
 
-    expect(source).toContain('aria-hidden={!mobileMenuOpen}')
-    expect(source).toContain('overflow-hidden')
-    expect(source).toContain('max-h-0')
-    expect(source).toContain('max-h-[calc(100vh-5rem)]')
+    expect(source).toContain('{mobileMenuOpen ? (')
+    expect(source).toContain('useFocusTrap<HTMLDivElement>')
+    expect(source).toContain('role="dialog"')
+    expect(source).toContain('aria-modal="true"')
+    expect(source).toContain("document.body.style.overflow = 'hidden'")
   })
 
   test('product detail exposes a safe-area mobile purchase bar', () => {
@@ -186,40 +177,40 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('fixed inset-x-0 bottom-0')
     expect(source).toContain('lg:hidden')
     expect(source).toContain('env(safe-area-inset-bottom)')
-    expect(source).toContain('Mobile checkout total')
+    expect(source).toContain('Estimated total')
     expect(source).toContain('pb-28 lg:pb-0')
-    expect(source).toContain('flex-col gap-4 sm:flex-row')
+    expect(source).toContain('flex min-w-0 gap-4 py-6 sm:gap-6')
   })
 
   test('mobile decorative hero content stays bounded within the viewport', () => {
-    const productHeroSource = read('src/components/sections/ProductHero.tsx')
+    const productHeroSource = read('src/components/sections/HomeHero.tsx')
     const homeSource = read('src/app/(marketing)/page.tsx')
     const blogSource = read('src/app/(marketing)/blog/page.tsx')
 
-    expect(productHeroSource).toContain('max-w-screen-xl px-4')
-    expect(productHeroSource).toContain('max-w-[calc(100vw-2rem)]')
-    expect(productHeroSource).toContain('flex flex-wrap justify-center gap-1')
-    expect(homeSource).toContain('bg-charcoal-dark py-24')
-    expect(homeSource).toContain('rounded-xl border border-warm-grey/30 bg-white shadow-sm')
+    expect(productHeroSource).toContain('overflow-hidden bg-white')
+    expect(productHeroSource).toContain('sizes="(max-width: 1024px) 100vw, 56vw"')
+    expect(productHeroSource).toContain('grid-cols-2 lg:grid-cols-4')
+    expect(homeSource).toContain('grid gap-px overflow-hidden')
+    expect(homeSource).toContain('min-h-[32rem]')
     expect(homeSource).not.toContain('hidden sm:block absolute left-1/4 top-0')
     expect(homeSource).not.toContain('hidden sm:block absolute top-1/2')
     expect(homeSource).not.toContain('hidden sm:block absolute -top-40 -right-40')
     expect(homeSource).not.toContain('hidden sm:block absolute -bottom-40 -left-40')
-    expect(blogSource).toContain('hidden sm:block absolute -top-40')
-    expect(blogSource).toContain('hidden sm:block absolute -bottom-40')
-    expect(blogSource).toContain('hidden sm:block absolute top-1/2')
+    expect(blogSource).toContain('<MarketingShell>')
+    expect(blogSource).not.toContain('blur-3xl')
+    expect(blogSource).not.toContain('bg-gradient')
   })
 
   test('homepage hero keeps the fairytale tone without sales-template chrome', () => {
-    const source = read('src/components/sections/ProductHero.tsx')
+    const source = read('src/components/sections/HomeHero.tsx')
 
-    expect(source).toContain('Handmade Australian opals')
-    expect(source).toContain('storybook')
-    expect(source).toContain('formatBadgeText(currentProduct.badge.text)')
+    expect(source).toContain('Australian opals, chosen by hand.')
+    expect(source).toContain('Selected one stone at a time.')
+    expect(source).toContain('Shop one-of-a-kind pieces')
     expect(source).not.toContain('Limited Time: Up to')
     expect(source).not.toContain('Sparkles')
     expect(source).not.toContain('text-gradient-prismatic')
-    expect(source).not.toContain('hover:scale-[1.02]')
+    expect(source).not.toContain('setInterval')
   })
 
   test('product gallery uses editorial framing instead of gradient glow chrome', () => {
@@ -239,7 +230,9 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('IntersectionObserver')
     expect(source).toContain('entry.boundingClientRect.top < 0')
     expect(source).toContain('data-testid="inline-product-actions"')
-    expect(source).not.toContain('fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden')
+    expect(source).not.toContain(
+      'fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden'
+    )
   })
 
   test('cart and search language stays warm without magical treasure wording', () => {
@@ -250,7 +243,9 @@ describe('buying flow UI/UX safeguards', () => {
     expect(searchSource).toContain('placeholder="Search opals, rings, parcels"')
     expect(searchSource).not.toContain('Sparkles')
     expect(searchSource).not.toContain('magical')
-    expect(emptyStateSource).toContain("description=\"Looks like you haven't added any pieces yet. Explore our collection of unique Australian opals.\"")
+    expect(emptyStateSource).toContain(
+      'description="Looks like you haven\'t added any pieces yet. Explore our collection of unique Australian opals."'
+    )
     expect(emptyStateSource).not.toContain('treasures')
   })
 
@@ -274,9 +269,9 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage collection sections use gallery restraint instead of template glow', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('rounded-xl border border-warm-grey/30 bg-white shadow-sm')
-    expect(source).toContain('group-hover:opacity-95')
-    expect(source).toContain('Every order includes practical support before and after purchase.')
+    expect(source).toContain('grid gap-px overflow-hidden border border-warm-grey/55')
+    expect(source).toContain('Choose by what matters to you.')
+    expect(source).toContain('One stone, one piece.')
     expect(source).not.toContain('text-gradient-prismatic')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('Sparkles')
@@ -288,19 +283,24 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page keeps commerce hierarchy solid and mobile-friendly', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('text-opal-electric-accessible')
-    expect(source).toContain('flex flex-col gap-3 text-sm sm:flex-row sm:items-center')
+    expect(source).toContain('focus-visible:ring-opal-electric-accessible')
+    expect(source).toContain('flex flex-wrap gap-x-6 gap-y-2')
     expect(source).toContain('mt-20 border-t border-warm-grey/40 pt-12')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('text-transparent')
-    expect(source).not.toContain('mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12')
+    expect(source).not.toContain(
+      'mt-20 bg-gradient-to-b from-white via-gray-50 to-white rounded-3xl p-12'
+    )
   })
 
   test('core UI controls use motion restraint without hover scaling', () => {
     const buttonSource = read('src/components/ui/button.tsx')
     const gallerySource = read('src/components/product/ProductImageGallery.tsx')
 
-    expect(buttonSource).toContain('hover:shadow-opal-electric/30')
+    expect(buttonSource).toContain('transition-colors duration-150')
+    expect(buttonSource).toContain('bg-charcoal text-cream hover:bg-charcoal-dark')
+    expect(buttonSource).not.toContain('bg-gradient')
+    expect(buttonSource).not.toContain('backdrop-blur')
     expect(buttonSource).not.toContain('hover:scale')
     expect(buttonSource).not.toContain('active:scale')
     expect(gallerySource).toContain('ring-2 ring-opal-electric-accessible ring-offset-2')
@@ -323,11 +323,11 @@ describe('buying flow UI/UX safeguards', () => {
   })
 
   test('hero relies on product-led editorial cues instead of generated atmosphere', () => {
-    const source = read('src/components/sections/ProductHero.tsx')
+    const source = read('src/components/sections/HomeHero.tsx')
 
-    expect(source).toContain('bg-charcoal-dark')
-    expect(source).toContain('Trusted details, clear care, and one-of-a-kind stones.')
-    expect(source).toContain('Authenticity, express shipping, returns, and care guidance are kept close to the buying decision.')
+    expect(source).toContain("collection: 'products'")
+    expect(source).toContain('Origin disclosed')
+    expect(source).toContain('Authenticity details')
     expect(source).not.toContain('scrollY')
     expect(source).not.toContain('blur-3xl')
     expect(source).not.toContain('Quick Stats')
@@ -354,10 +354,12 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage language avoids leftover template phrases in feature sections', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('bg-charcoal-dark py-24')
-    expect(source).toContain('Newly finished pieces from the workshop.')
+    expect(source).toContain('Recently added')
+    expect(source).toContain('Begin with the stone, not a template.')
     expect(source).not.toContain('Where dreams become reality.')
-    expect(source).not.toContain('Fresh from our workshop - discover new masterpieces crafted with passion')
+    expect(source).not.toContain(
+      'Fresh from our workshop - discover new masterpieces crafted with passion'
+    )
     expect(source).not.toContain('bg-black-rich')
     expect(source).not.toContain('blur-3xl')
     expect(source).not.toContain('Magical sparkle effects')

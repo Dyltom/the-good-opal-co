@@ -9,23 +9,23 @@ export function AuthenticityBadges() {
   const guarantees = [
     {
       icon: BadgeCheck,
-      title: '100% Authentic Australian Opals',
-      description: 'Every stone sourced from Australian mines',
+      title: 'Australian opals',
+      description: 'Stone details shown on each product page',
     },
     {
       icon: FileText,
-      title: 'Certificate of Authenticity',
-      description: 'Included with every purchase',
+      title: 'Product documentation',
+      description: 'Certificate details shown when available',
     },
     {
       icon: ShieldCheck,
-      title: 'Lifetime Authenticity Guarantee',
-      description: 'We stand behind our opals forever',
+      title: 'Questions welcomed',
+      description: 'Ask for another image or a virtual viewing',
     },
     {
       icon: Award,
-      title: 'Ethically Sourced',
-      description: 'Direct from Australian miners',
+      title: 'Origin details',
+      description: 'Origin disclosed where known',
     },
   ]
 
@@ -61,10 +61,10 @@ export function AuthenticityBadges() {
  */
 export function AuthenticityChecklist() {
   const checks = [
-    '100% Authentic Australian Opal',
-    'Certificate of Authenticity Included',
-    'Ethically Sourced from Australian Mines',
-    'Lifetime Authenticity Guarantee',
+    'Australian opal',
+    'Origin disclosed where known',
+    'Certificate details shown when available',
+    'Closer images available on request',
   ]
 
   return (
@@ -86,7 +86,7 @@ export function AuthenticityBadge() {
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-success-light text-success rounded-full">
       <BadgeCheck className="w-3.5 h-3.5" strokeWidth={2.5} />
-      <span className="text-xs font-semibold">Certified Authentic</span>
+      <span className="text-xs font-semibold">Australian opal</span>
     </div>
   )
 }

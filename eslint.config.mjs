@@ -48,8 +48,8 @@ const config = [
     },
     rules: {
       // Next.js recommended + Core Web Vitals rules
-      ...nextPlugin.flatConfig.recommended.rules,
-      ...nextPlugin.flatConfig.coreWebVitals.rules,
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs['core-web-vitals'].rules,
 
       // React rules
       ...reactFlatConfigs.recommended.rules,

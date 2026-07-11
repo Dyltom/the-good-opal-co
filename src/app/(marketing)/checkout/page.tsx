@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
-import { Navigation, Footer } from '@/components/navigation'
+import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { getCart } from '@/lib/cart'
 import { CheckoutForm } from './checkout-form'
@@ -29,27 +29,19 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation
-        logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-        items={[
-          { href: '/store', label: 'Shop' },
-          { href: '/blog', label: 'Blog' },
-          { href: '/courses', label: 'Courses' },
-          { href: '/about', label: 'About' },
-          { href: '/contact', label: 'Contact' },
-          { href: '/faq', label: 'FAQ' },
-        ]}
-      />
-
-      <main className="flex-1">
+    <MarketingShell>
         <Section padding="lg">
           <Container>
-            <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h1 className="text-4xl font-serif font-bold">Checkout</h1>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/cart">Back to Cart</Link>
+            <div className="mx-auto max-w-6xl">
+              <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-opal-electric-accessible">Final step</p>
+                  <h1 className="mt-2 font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+                    Checkout
+                  </h1>
+                </div>
+                <Button variant="link" size="sm" asChild>
+                  <Link href="/cart">Return to cart</Link>
                 </Button>
               </div>
 
@@ -57,9 +49,6 @@ export default async function CheckoutPage() {
             </div>
           </Container>
         </Section>
-      </main>
-
-      <Footer />
-    </div>
+    </MarketingShell>
   )
 }

@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { randomBytes } from 'node:crypto'
+import { isAdmin } from '../../lib/payload-access.ts'
 
 /**
  * Orders Collection
@@ -22,14 +24,12 @@ export const Orders: CollectionConfig = {
     description: 'Customer orders with payment and shipping details',
   },
   access: {
-    // Only authenticated users can read orders
-    read: ({ req }) => !!req.user,
-    // Orders are created by webhook (no auth required)
-    create: () => true,
-    // Only authenticated users can update orders
-    update: ({ req }) => !!req.user,
-    // Only admins can delete orders
-    delete: ({ req }) => req.user?.['role'] === 'admin',
+    // Trusted server-side Local API calls bypass access control by default.
+    // REST and GraphQL order access stays admin-only.
+    read: isAdmin,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   fields: [
     // Order Identification
@@ -58,6 +58,7 @@ export const Orders: CollectionConfig = {
         { label: 'Delivered', value: 'delivered' },
         { label: 'Cancelled', value: 'cancelled' },
         { label: 'Refunded', value: 'refunded' },
+        { label: 'Disputed', value: 'disputed' },
       ],
       admin: {
         position: 'sidebar',
@@ -228,6 +229,52 @@ export const Orders: CollectionConfig = {
         description: 'Stripe Payment Intent ID',
       },
     },
+    {
+      name: 'confirmationEmailSentAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'confirmationEmailError',
+      type: 'textarea',
+      admin: {
+        readOnly: true,
+      },
+    },
+    {
+      name: 'inventoryRestockedAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'inventoryDecrementedAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'inventoryAlertSentAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'inventoryAlertError',
+      type: 'textarea',
+      admin: {
+        readOnly: true,
+      },
+    },
 
     // Shipping & Tracking
     {
@@ -265,7 +312,7 @@ export const Orders: CollectionConfig = {
         // Generate order number on create
         if (operation === 'create' && !data?.orderNumber) {
           const timestamp = Date.now().toString(36).toUpperCase()
-          const random = Math.random().toString(36).substring(2, 6).toUpperCase()
+          const random = randomBytes(8).toString('hex').toUpperCase()
           return {
             ...data,
             orderNumber: `OPAL-${timestamp}-${random}`,

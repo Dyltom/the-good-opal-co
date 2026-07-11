@@ -2,33 +2,57 @@
 
 import { Resend } from 'resend'
 import { z } from 'zod'
+import { inquiryLabels } from './contact-intent'
+import { contactSchema } from './schema'
+import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-// Contact form schema
-const contactSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  subject: z.string().min(5),
-  message: z.string().min(10),
-  orderNumber: z.string().optional(),
-})
+export type ContactActionResult =
+  | { success: true }
+  | { success: false; error: string }
 
-type ContactFormData = z.infer<typeof contactSchema>
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}
 
-export async function sendContactEmail(data: ContactFormData) {
+function optionalDetail(label: string, value?: string): string {
+  if (!value) return ''
+  return `<p style="margin: 0 0 10px 0;"><strong>${label}:</strong> ${escapeHtml(value)}</p>`
+}
+
+export async function sendContactEmail(data: unknown): Promise<ContactActionResult> {
   try {
-    // Validate input
     const validated = contactSchema.parse(data)
+    const identifier = await getRequestIdentifier(validated.email)
+    const allowed = await checkRateLimit({
+      scope: 'contact',
+      identifier,
+      limit: 5,
+      windowSeconds: 60 * 60,
+    })
+    if (!allowed) {
+      return { success: false, error: 'Too many messages. Please try again later.' }
+    }
+
+    const inquiryLabel = inquiryLabels[validated.inquiryType]
+    const safeName = escapeHtml(validated.name)
+    const safeEmail = escapeHtml(validated.email)
+    const safeMessage = escapeHtml(validated.message)
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
 
     // Send email to support team
     const { error: supportError } = await resend.emails.send({
-      from: 'The Good Opal Co <noreply@thegoodopalco.com>',
+      from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
       to: process.env.CONTACT_EMAIL || 'thegoodopalco@gmail.com',
       replyTo: validated.email,
-      subject: `[Contact Form] ${validated.subject}`,
+      subject: `[Website inquiry] ${inquiryLabel}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1a1a1a; border-bottom: 2px solid #e5e5e5; padding-bottom: 10px;">
@@ -36,20 +60,23 @@ export async function sendContactEmail(data: ContactFormData) {
           </h2>
 
           <div style="background-color: #f7f7f7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${validated.name}</p>
-            <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${validated.email}</p>
-            ${validated.phone ? `<p style="margin: 0 0 10px 0;"><strong>Phone:</strong> ${validated.phone}</p>` : ''}
-            ${validated.orderNumber ? `<p style="margin: 0 0 10px 0;"><strong>Order Number:</strong> ${validated.orderNumber}</p>` : ''}
-            <p style="margin: 0;"><strong>Subject:</strong> ${validated.subject}</p>
+            <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${safeName}</p>
+            <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${safeEmail}</p>
+            <p style="margin: 0 0 10px 0;"><strong>Inquiry:</strong> ${inquiryLabel}</p>
+            ${optionalDetail('Phone', validated.phone)}
+            ${optionalDetail('Order number', validated.orderNumber)}
+            ${optionalDetail('Product or piece', validated.product)}
+            ${optionalDetail('Budget', validated.budget)}
+            ${optionalDetail('Timeline', validated.timeline)}
           </div>
 
           <div style="background-color: #ffffff; border: 1px solid #e5e5e5; padding: 20px; border-radius: 8px;">
             <h3 style="color: #1a1a1a; margin-top: 0;">Message:</h3>
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${validated.message}</p>
+            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${safeMessage}</p>
           </div>
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e5e5; font-size: 12px; color: #888;">
-            <p>This email was sent from the contact form at thegoodopalco.com</p>
+            <p>This email was sent from the website contact form.</p>
             <p>Submitted on: ${new Date().toLocaleString('en-AU', { timeZone: 'Australia/Sydney' })}</p>
           </div>
         </div>
@@ -66,7 +93,7 @@ export async function sendContactEmail(data: ContactFormData) {
 
     // Send confirmation email to customer
     const { error: customerError } = await resend.emails.send({
-      from: 'The Good Opal Co <noreply@thegoodopalco.com>',
+      from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
       to: validated.email,
       subject: 'Thank you for contacting The Good Opal Co',
       html: `
@@ -80,20 +107,19 @@ export async function sendContactEmail(data: ContactFormData) {
             <h2 style="color: #1a1a1a; margin-top: 0;">Thank You for Contacting Us</h2>
 
             <p style="color: #666; line-height: 1.6;">
-              Dear ${validated.name},
+              Dear ${safeName},
             </p>
 
             <p style="color: #666; line-height: 1.6;">
-              We've received your message and appreciate you taking the time to contact us.
-              Our team will review your inquiry and get back to you within 24 hours during business days.
+              We&apos;ve received your ${inquiryLabel.toLowerCase()} inquiry. We&apos;ll review the details and reply by email.
             </p>
 
             <div style="background-color: #ffffff; border: 1px solid #e5e5e5; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #1a1a1a; margin-top: 0; font-size: 16px;">Your Message Details:</h3>
-              <p style="color: #666; margin: 0 0 5px 0;"><strong>Subject:</strong> ${validated.subject}</p>
+              <p style="color: #666; margin: 0 0 5px 0;"><strong>Inquiry:</strong> ${inquiryLabel}</p>
               <p style="color: #666; margin: 0;"><strong>Message:</strong></p>
               <p style="color: #666; margin: 10px 0 0 0; padding-left: 20px; border-left: 3px solid #e5e5e5;">
-                ${validated.message}
+                ${safeMessage}
               </p>
             </div>
 
@@ -102,10 +128,9 @@ export async function sendContactEmail(data: ContactFormData) {
             </p>
 
             <ul style="color: #666; line-height: 1.8;">
-              <li><a href="https://thegoodopalco.com/faq" style="color: #0066cc;">Frequently Asked Questions</a></li>
-              <li><a href="https://thegoodopalco.com/shipping" style="color: #0066cc;">Shipping Information</a></li>
-              <li><a href="https://thegoodopalco.com/returns" style="color: #0066cc;">Returns & Refunds</a></li>
-              <li><a href="https://thegoodopalco.com/care-guide" style="color: #0066cc;">Opal Care Guide</a></li>
+              <li><a href="${baseUrl}/faq" style="color: #0066cc;">Frequently Asked Questions</a></li>
+              <li><a href="${baseUrl}/shipping" style="color: #0066cc;">Shipping Information</a></li>
+              <li><a href="${baseUrl}/returns" style="color: #0066cc;">Returns & Refunds</a></li>
             </ul>
 
             <p style="color: #666; line-height: 1.6;">
@@ -119,7 +144,7 @@ export async function sendContactEmail(data: ContactFormData) {
               © ${new Date().getFullYear()} The Good Opal Co. All rights reserved.
             </p>
             <p style="margin: 0;">
-              Sydney, NSW, Australia | +61 2 9555 1234
+              Australia
             </p>
           </div>
         </div>

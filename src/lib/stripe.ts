@@ -17,7 +17,7 @@ function getStripeClient(): Stripe {
       throw new Error('STRIPE_SECRET_KEY environment variable is not set')
     }
     stripeClient = new Stripe(apiKey, {
-      apiVersion: '2025-10-29.clover',
+      apiVersion: '2026-06-24.dahlia',
       typescript: true,
     })
   }

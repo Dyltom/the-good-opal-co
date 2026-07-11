@@ -8,26 +8,22 @@ import { cn } from '@/lib/utils'
  * Follows SOLID principles with single responsibility and open/closed design
  */
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-sans text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          'bg-gradient-to-r from-opal-electric to-opal-deep text-white shadow-sm shadow-opal-electric/20 hover:shadow-md hover:shadow-opal-electric/30 active:shadow-sm',
+          'bg-charcoal text-cream hover:bg-charcoal-dark',
         destructive:
-          'bg-fire-coral text-white shadow-sm hover:bg-fire-coral/90',
+          'bg-fire-coral text-cream hover:bg-fire-coral/90',
         outline:
-          'border-2 border-charcoal bg-transparent text-charcoal hover:bg-charcoal hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-charcoal',
+          'border border-charcoal/45 bg-transparent text-charcoal hover:border-charcoal hover:bg-white/60',
         secondary:
           'bg-charcoal/5 text-charcoal hover:bg-charcoal/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20',
         ghost:
           'text-charcoal hover:bg-charcoal/5 dark:text-white dark:hover:bg-white/10',
         link:
           'text-opal-electric-accessible underline-offset-4 hover:underline',
-        glass:
-          'bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white/20',
-        shimmer:
-          'bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald bg-[length:200%_100%] animate-shimmer-slide text-white font-semibold shadow-sm shadow-opal-electric/20 hover:shadow-md',
       },
       size: {
         default: 'min-h-[44px] h-11 px-6 py-2.5 sm:min-h-[40px] sm:py-2',
@@ -51,14 +47,7 @@ export interface ButtonProps
 }
 
 /**
- * Enhanced Button Component
- *
- * Features:
- * - Opal-inspired gradient variants
- * - Glass morphism effect
- * - Shimmer animation for CTAs
- * - Smooth hover/active states
- * - Full accessibility support
+ * Shared shadcn/Radix button primitive for the editorial storefront.
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {

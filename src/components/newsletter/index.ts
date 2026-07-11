@@ -2,4 +2,4 @@
  * Newsletter Components
  */
 
-export { NewsletterForm } from './newsletter-form'
+export { NewsletterForm } from './NewsletterForm'

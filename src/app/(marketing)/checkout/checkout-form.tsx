@@ -1,42 +1,39 @@
 'use client'
 
-/**
- * Improved Checkout Form with Proper Validation
- *
- * Features:
- * - Proper email regex validation
- * - Real-time field validation with debouncing
- * - Accessible error messages
- * - Loading states with disabled form
- * - Better mobile layout
- */
-
-import { useState, useTransition, useMemo } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link'
+import { AlertCircle, LockKeyhole, PackageCheck, ShoppingBag, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { formatCurrency, cn } from '@/lib/utils'
-import { getStickyOffset } from '@/lib/constants/layout'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
-import { createCheckoutSession } from './actions'
-import type { DiscountApplication, DiscountCalculationResult } from '@/lib/discounts/types'
 import type { Cart } from '@/lib/cart'
-import { AlertCircle, Lock, CheckCircle, Truck, CreditCard, ShoppingBag } from 'lucide-react'
-import { DiscountCodeInput } from '@/components/checkout/DiscountCodeInput'
+import { cn, formatCurrency } from '@/lib/utils'
+import { createCheckoutSession } from './actions'
+import {
+  CHECKOUT_COUNTRIES,
+  CHECKOUT_NAME_MAX_LENGTH,
+  type CheckoutCountry,
+  validateCheckoutEmail,
+  validateCheckoutName,
+} from './validation'
+
+const countryLabels: Record<CheckoutCountry, string> = {
+  AU: 'Australia',
+  NZ: 'New Zealand',
+  US: 'United States',
+  GB: 'United Kingdom',
+  CA: 'Canada',
+  SG: 'Singapore',
+  HK: 'Hong Kong',
+  JP: 'Japan',
+}
 
 interface CheckoutFormProps {
   cart: Cart
 }
-
-// Email regex pattern for proper validation
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
-
-// Name validation pattern (letters, spaces, hyphens, apostrophes)
-const NAME_REGEX = /^[a-zA-Z\s'-]{2,50}$/
 
 interface FormErrors {
   name?: string
@@ -45,107 +42,56 @@ interface FormErrors {
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const [isPending, startTransition] = useTransition()
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{ name: string; email: string; country: CheckoutCountry }>({
     name: '',
     email: '',
-    discountCode: '',
+    country: 'AU',
   })
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
+  const [touchedFields, setTouchedFields] = useState<Set<keyof FormErrors>>(new Set())
   const [errors, setErrors] = useState<FormErrors>({})
-  const [appliedDiscount, setAppliedDiscount] = useState<DiscountApplication | null>(null)
-  const [discountedTotals, setDiscountedTotals] = useState<DiscountCalculationResult | null>(null)
+  const nameRef = useRef<HTMLInputElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  const pricing = calculateCheckoutPricing(
+    cart.total,
+    formData.country === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
+  )
 
-  // Handle discount application
-  const handleDiscountApplied = (discount: DiscountApplication | null, totals: { subtotal: number; shipping: number; discount: number; tax: number; total: number } | null) => {
-    setAppliedDiscount(discount)
-    setDiscountedTotals(totals ? {
-      discountAmount: totals.discount,
-      shippingDiscount: 0,
-      finalSubtotal: totals.subtotal,
-      finalShipping: totals.shipping,
-      finalTotal: totals.total
-    } : null)
-    if (discount) {
-      setFormData(prev => ({ ...prev, discountCode: discount.code }))
-    } else {
-      setFormData(prev => ({ ...prev, discountCode: '' }))
+  const validateField = (name: keyof FormErrors, value: string) =>
+    name === 'name' ? validateCheckoutName(value) : validateCheckoutEmail(value)
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const field = event.target.name as keyof FormErrors
+    const value = event.target.value
+    setFormData((current) => ({ ...current, [field]: value }))
+
+    if (touchedFields.has(field)) {
+      setErrors((current) => ({ ...current, [field]: validateField(field, value) }))
     }
   }
 
-  // Validate individual fields
-  const validateField = (name: string, value: string): string | undefined => {
-    switch (name) {
-      case 'name':
-        if (!value.trim()) return 'Name is required'
-        if (value.trim().length < 2) return 'Name must be at least 2 characters'
-        if (!NAME_REGEX.test(value)) return 'Name can only contain letters, spaces, hyphens and apostrophes'
-        return undefined
-
-      case 'email':
-        if (!value.trim()) return 'Email is required'
-        if (!EMAIL_REGEX.test(value)) return 'Please enter a valid email address'
-        return undefined
-
-      default:
-        return undefined
-    }
-  }
-
-  // Handle input changes with validation
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-
-    // Only show errors for touched fields
-    if (touchedFields.has(name)) {
-      const error = validateField(name, value)
-      setErrors(prev => ({
-        ...prev,
-        [name]: error,
-      }))
-    }
-  }
-
-  // Handle field blur to mark as touched
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setTouchedFields(prev => new Set(prev).add(name))
-
-    const error = validateField(name, value)
-    setErrors(prev => ({
-      ...prev,
-      [name]: error,
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const field = event.target.name as keyof FormErrors
+    setTouchedFields((current) => new Set(current).add(field))
+    setErrors((current) => ({
+      ...current,
+      [field]: validateField(field, event.target.value),
     }))
   }
 
-  // Check if form is valid
-  const isFormValid = useMemo(() => {
-    const nameValid = !validateField('name', formData.name)
-    const emailValid = !validateField('email', formData.email)
-    return nameValid && emailValid
-  }, [formData])
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    // Touch all fields to show errors
-    setTouchedFields(new Set(['name', 'email']))
-
-    // Validate all fields
-    const newErrors: FormErrors = {
-      name: validateField('name', formData.name),
-      email: validateField('email', formData.email),
+    const nextErrors: FormErrors = {
+      name: validateCheckoutName(formData.name),
+      email: validateCheckoutEmail(formData.email),
     }
-    setErrors(newErrors)
+    setTouchedFields(new Set(['name', 'email']))
+    setErrors(nextErrors)
 
-    // Check if there are any errors
-    if (Object.values(newErrors).some(error => error !== undefined)) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fix the errors in the form before proceeding.',
-        variant: 'destructive',
-      })
+    if (nextErrors.name || nextErrors.email) {
+      const firstInvalidField = nextErrors.name ? nameRef.current : emailRef.current
+      firstInvalidField?.focus()
       return
     }
 
@@ -153,372 +99,267 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
       const form = new FormData()
       form.set('name', formData.name.trim())
       form.set('email', formData.email.trim())
-      if (formData.discountCode) {
-        form.set('discountCode', formData.discountCode)
-      }
-
+      form.set('country', formData.country)
       const result = await createCheckoutSession(form)
 
       if (result.success && result.url) {
-        // Show success state briefly before redirect
-        toast({
-          title: 'Redirecting to payment...',
-          description: 'You will be redirected to Stripe Checkout.',
-        })
-
-        // Small delay for user feedback
-        setTimeout(() => {
-          window.location.href = result.url!
-        }, 500)
-      } else {
-        toast({
-          title: 'Checkout Error',
-          description: result.error ?? 'Failed to create checkout session. Please try again.',
-          variant: 'destructive',
-        })
+        window.location.assign(result.url)
+        return
       }
+
+      toast({
+        title: 'Payment could not be started',
+        description: result.error ?? 'Try again. If the problem continues, contact us for help.',
+        variant: 'destructive',
+      })
     })
   }
 
-  const checkoutPricing = useMemo(() => calculateCheckoutPricing(cart.total), [cart.total])
-  const shippingCost = checkoutPricing.shipping
-  const orderTotal = checkoutPricing.total
-
   return (
-    <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-      {/* Checkout Form - Responsive width */}
-      <div className="lg:col-span-2 space-y-4 md:space-y-6">
-        <Card className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-            <CreditCard className="w-5 h-5" />
-            Contact Information
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]"
+    >
+      <div className="min-w-0 space-y-8">
+        <section aria-labelledby="contact-heading" className="border-t border-warm-grey/50 pt-6">
+          <h2 id="contact-heading" className="font-serif text-2xl font-semibold text-charcoal">
+            Contact details
           </h2>
-          <form id="checkout-form" onSubmit={handleSubmit} noValidate>
-            <div className="space-y-4">
-              {/* Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-1">
-                  Full Name
-                  <span className="text-red-500 text-sm" aria-label="required">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    autoComplete="name"
-                    placeholder="John Smith"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    className={cn(
-                      "pr-10",
-                      touchedFields.has('name') && errors.name && "border-red-500 focus:ring-red-500"
-                    )}
-                    aria-invalid={touchedFields.has('name') && !!errors.name}
-                    aria-describedby={errors.name ? "name-error" : undefined}
-                    disabled={isPending}
-                    required
-                  />
-                  {/* Validation Icon */}
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {touchedFields.has('name') && (
-                      errors.name ? (
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                      ) : (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                      )
-                    )}
-                  </div>
-                </div>
-                <AnimatePresence mode="wait">
-                  {touchedFields.has('name') && errors.name && (
-                    <motion.p
-                      id="name-error"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-sm text-red-500 mt-1"
-                    >
-                      {errors.name}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
-              </div>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-charcoal/70">
+            We use these details for your receipt and order updates. Delivery details are entered on
+            the secure payment page.
+          </p>
 
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-1">
-                  Email Address
-                  <span className="text-red-500 text-sm" aria-label="required">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    className={cn(
-                      "pr-10",
-                      touchedFields.has('email') && errors.email && "border-red-500 focus:ring-red-500"
-                    )}
-                    aria-invalid={touchedFields.has('email') && !!errors.email}
-                    aria-describedby={errors.email ? "email-error" : "email-description"}
-                    disabled={isPending}
-                    required
-                  />
-                  {/* Validation Icon */}
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {touchedFields.has('email') && (
-                      errors.email ? (
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                      ) : (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                      )
-                    )}
-                  </div>
-                </div>
-                <AnimatePresence mode="wait">
-                  {touchedFields.has('email') && errors.email ? (
-                    <motion.p
-                      id="email-error"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="text-sm text-red-500 mt-1"
-                    >
-                      {errors.email}
-                    </motion.p>
-                  ) : (
-                    <p id="email-description" className="text-xs text-muted-foreground mt-1">
-                      Order confirmation will be sent to this email
-                    </p>
-                  )}
-                </AnimatePresence>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                ref={nameRef}
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                maxLength={CHECKOUT_NAME_MAX_LENGTH}
+                value={formData.name}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={cn(
+                  'h-12 bg-white text-base',
+                  touchedFields.has('name') && errors.name && 'border-fire-coral'
+                )}
+                aria-invalid={touchedFields.has('name') && Boolean(errors.name)}
+                aria-describedby={errors.name ? 'name-error' : undefined}
+                disabled={isPending}
+                required
+              />
+              {touchedFields.has('name') && errors.name && (
+                <p id="name-error" className="flex gap-2 text-sm text-fire-coral" role="alert">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {errors.name}
+                </p>
+              )}
+            </div>
+
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="email">Email address</Label>
+              <Input
+                ref={emailRef}
+                id="email"
+                name="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                className={cn(
+                  'h-12 bg-white text-base',
+                  touchedFields.has('email') && errors.email && 'border-fire-coral'
+                )}
+                aria-invalid={touchedFields.has('email') && Boolean(errors.email)}
+                aria-describedby={errors.email ? 'email-error' : 'email-help'}
+                disabled={isPending}
+                required
+              />
+              {touchedFields.has('email') && errors.email ? (
+                <p id="email-error" className="flex gap-2 text-sm text-fire-coral" role="alert">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  {errors.email}
+                </p>
+              ) : (
+                <p id="email-help" className="text-sm text-charcoal/60">
+                  Your receipt and tracking updates go here.
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="mt-5 max-w-md space-y-2">
+            <Label htmlFor="country">Delivery country or region</Label>
+            <select
+              id="country"
+              name="country"
+              value={formData.country}
+              onChange={(event) =>
+                setFormData((current) => ({
+                  ...current,
+                  country: event.target.value as CheckoutCountry,
+                }))
+              }
+              className="h-12 w-full rounded-md border border-warm-grey bg-white px-3 text-base text-charcoal outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              disabled={isPending}
+            >
+              {CHECKOUT_COUNTRIES.map((country) => (
+                <option key={country} value={country}>{countryLabels[country]}</option>
+              ))}
+            </select>
+            <p className="text-sm text-charcoal/60">Your full address is entered on Stripe next.</p>
+          </div>
+        </section>
+
+        <section aria-labelledby="payment-heading" className="border-t border-warm-grey/50 pt-6">
+          <h2 id="payment-heading" className="font-serif text-2xl font-semibold text-charcoal">
+            Delivery and payment
+          </h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            <div className="flex gap-3">
+              <LockKeyhole
+                className="mt-0.5 h-5 w-5 shrink-0 text-opal-electric-accessible"
+                aria-hidden="true"
+              />
+              <div>
+                <p className="text-sm font-semibold text-charcoal">Secure payment</p>
+                <p className="mt-1 text-sm leading-5 text-charcoal/65">Processed by Stripe.</p>
               </div>
             </div>
-          </form>
-        </Card>
-
-        <Card className="p-4 md:p-6">
-          <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-            <Lock className="w-5 h-5" />
-            Shipping & Payment
-          </h2>
-          <div className="p-4 md:p-6 bg-gradient-to-br from-gray-50 to-white rounded-lg text-center border border-gray-100">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <motion.div
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              >
-                <svg className="w-8 h-8 text-opal-electric-accessible" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z" />
-                </svg>
-              </motion.div>
-              <span className="text-base md:text-lg font-medium">Secure Stripe Checkout</span>
+            <div className="flex gap-3">
+              <Truck
+                className="mt-0.5 h-5 w-5 shrink-0 text-opal-electric-accessible"
+                aria-hidden="true"
+              />
+              <div>
+                <p className="text-sm font-semibold text-charcoal">Tracked delivery</p>
+                <p className="mt-1 text-sm leading-5 text-charcoal/65">Address collected next.</p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              You&apos;ll be redirected to Stripe to complete your payment securely.
-              Shipping address will be collected during checkout.
-            </p>
+            <div className="flex gap-3">
+              <PackageCheck
+                className="mt-0.5 h-5 w-5 shrink-0 text-opal-electric-accessible"
+                aria-hidden="true"
+              />
+              <div>
+                <p className="text-sm font-semibold text-charcoal">Order confirmation</p>
+                <p className="mt-1 text-sm leading-5 text-charcoal/65">
+                  Review details before paying.
+                </p>
+              </div>
+            </div>
           </div>
-
-          {/* Security Features with proper focus states */}
-          <div className="mt-6 space-y-3">
-            {[
-              { icon: CheckCircle, text: '256-bit SSL encryption' },
-              { icon: CheckCircle, text: 'PCI DSS compliant payment processing' },
-              { icon: CheckCircle, text: 'Visa, Mastercard, Amex, Apple Pay, Google Pay' },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <item.icon className="w-4 h-4 text-green-600 flex-shrink-0" />
-                <span>{item.text}</span>
-              </motion.div>
-            ))}
-          </div>
-        </Card>
+        </section>
       </div>
 
-      {/* Order Summary - Fixed on desktop, static on mobile */}
-      <div className="lg:col-span-1">
-        <Card className={cn(
-          "p-4 md:p-6",
-          "lg:sticky",
-          getStickyOffset() // Dynamic offset based on nav height
-        )}>
-          <h2 className="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5" />
-            Order Summary
+      <aside
+        className="min-w-0 lg:sticky lg:top-24 lg:self-start"
+        aria-labelledby="summary-heading"
+      >
+        <div className="border border-warm-grey/60 bg-cream p-5 sm:p-6">
+          <h2
+            id="summary-heading"
+            className="flex items-center gap-2 font-serif text-2xl font-semibold text-charcoal"
+          >
+            <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+            Order summary
           </h2>
 
-          {/* Cart Items - Responsive sizing */}
-          <div className="space-y-3 mb-6 max-h-64 lg:max-h-96 overflow-y-auto">
+          <div className="mt-5 max-h-72 space-y-4 overflow-y-auto border-y border-warm-grey/50 py-4">
             {cart.items.map((item) => (
-              <div key={item.productId} className="flex gap-3 pb-3 border-b last:border-0">
-                {/* Smaller thumbnails on mobile */}
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div key={item.productId} className="flex min-w-0 gap-3">
+                <div className="h-16 w-16 shrink-0 overflow-hidden bg-white">
                   {item.image ? (
                     <Image
                       src={item.image}
-                      alt={item.name}
+                      alt=""
                       width={64}
                       height={64}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <span className="text-xl md:text-2xl">💎</span>
+                    <div
+                      className="flex h-full w-full items-center justify-center text-charcoal/40"
+                      aria-hidden="true"
+                    >
+                      <ShoppingBag className="h-5 w-5" />
+                    </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-sm font-semibold leading-5 text-charcoal">
+                    {item.name}
+                  </p>
+                  <p className="mt-1 text-xs text-charcoal/60">Quantity {item.quantity}</p>
                 </div>
-                <p className="font-semibold text-sm whitespace-nowrap">
+                <p className="shrink-0 text-sm font-semibold text-charcoal">
                   {formatCurrency(item.price * item.quantity, 'AUD')}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* Discount Code Input */}
-          <div className="mb-4">
-            <DiscountCodeInput
-              onDiscountApplied={handleDiscountApplied}
-              className="w-full"
-            />
-          </div>
+          <dl className="mt-5 space-y-3 text-sm text-charcoal">
+            <div className="flex justify-between gap-4">
+              <dt>Subtotal</dt>
+              <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>Shipping</dt>
+              <dd>{pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-t border-warm-grey/50 pt-4 text-lg font-semibold">
+              <dt>Total</dt>
+              <dd>{formatCurrency(pricing.total, 'AUD')}</dd>
+            </div>
+          </dl>
 
-          {/* Totals with animations */}
-          <div className="space-y-2 mb-6">
-            <div className="flex justify-between text-sm">
-              <span>Subtotal ({cart.itemCount} items)</span>
-              <span>{formatCurrency(discountedTotals?.finalSubtotal || cart.total, 'AUD')}</span>
-            </div>
-            {appliedDiscount && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="flex justify-between text-sm text-green-600"
-              >
-                <span>Discount ({appliedDiscount.code})</span>
-                <span>-{formatCurrency(discountedTotals?.discountAmount || 0, 'AUD')}</span>
-              </motion.div>
-            )}
-            <div className="flex justify-between text-sm">
-              <span className="flex items-center gap-1">
-                <Truck className="w-3 h-3" />
-                Shipping
-              </span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={shippingCost}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className={shippingCost === 0 ? 'text-green-600 font-medium' : ''}
-                >
-                  {shippingCost === 0 ? 'FREE' : formatCurrency(discountedTotals?.finalShipping ?? shippingCost, 'AUD')}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-            {checkoutPricing.freeShippingRemaining > 0 && (
-              <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="text-xs text-muted-foreground"
-              >
-                Add {formatCurrency(checkoutPricing.freeShippingRemaining, 'AUD')} more for free shipping
-              </motion.p>
-            )}
-            <div className="flex justify-between text-lg font-bold pt-2 border-t">
-              <span>Total</span>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={orderTotal}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                >
-                  {formatCurrency(discountedTotals?.finalTotal || orderTotal, 'AUD')}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-          </div>
+          {pricing.freeShippingRemaining > 0 ? (
+            <p className="mt-3 text-xs leading-5 text-charcoal/65">
+              Add {formatCurrency(pricing.freeShippingRemaining, 'AUD')} to qualify for free
+              shipping.
+            </p>
+          ) : (
+            <p className="mt-3 text-xs leading-5 text-charcoal/65">
+              This order qualifies for free shipping.
+            </p>
+          )}
 
-          {/* Submit Button with enhanced states */}
           <Button
-            className={cn(
-              "w-full h-12 text-base font-semibold transition-all",
-              "focus:ring-2 focus:ring-offset-2 focus:ring-opal-electric-accessible",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
-            )}
-            size="lg"
+            className="mt-6 h-12 w-full bg-opal-electric-accessible bg-none text-base hover:bg-opal-deep"
             type="submit"
-            form="checkout-form"
-            disabled={!isFormValid || isPending}
+            disabled={isPending}
             aria-busy={isPending}
           >
-            <AnimatePresence mode="wait">
-              {isPending ? (
-                <motion.span
-                  key="loading"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center gap-2"
-                >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                  />
-                  Redirecting to Payment...
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="default"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex items-center gap-2"
-                >
-                  <Lock className="w-4 h-4" />
-                  Proceed to Secure Payment
-                </motion.span>
-              )}
-            </AnimatePresence>
+            <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+            {isPending ? 'Opening secure payment…' : 'Continue to secure payment'}
           </Button>
 
-          {/* Terms text with proper link focus states */}
-          <p className="text-xs text-center text-muted-foreground mt-4 px-2">
-            By completing your purchase, you agree to our{' '}
-            <a
+          <p className="mt-4 text-xs leading-5 text-charcoal/60">
+            By continuing, you agree to our{' '}
+            <Link
               href="/terms"
-              className="underline hover:text-foreground focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible focus:ring-offset-1 rounded"
+              className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
             >
-              Terms of Service
-            </a>{' '}
+              terms
+            </Link>{' '}
             and{' '}
-            <a
+            <Link
               href="/privacy"
-              className="underline hover:text-foreground focus:outline-none focus:ring-2 focus:ring-opal-electric-accessible focus:ring-offset-1 rounded"
+              className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
             >
-              Privacy Policy
-            </a>.
+              privacy policy
+            </Link>
+            .
           </p>
-        </Card>
-      </div>
-    </div>
+        </div>
+      </aside>
+    </form>
   )
 }

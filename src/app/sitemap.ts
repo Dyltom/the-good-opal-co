@@ -8,7 +8,7 @@
 import { MetadataRoute } from 'next'
 import { getPayload } from '@/lib/payload'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopalco.com'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayload()
@@ -83,6 +83,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/services`,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/shipping`,
+      changeFrequency: 'monthly',
+      priority: 0.4,
+    },
+    {
+      url: `${BASE_URL}/returns`,
+      changeFrequency: 'monthly',
+      priority: 0.4,
+    },
+    {
+      url: `${BASE_URL}/legal/privacy`,
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
+      url: `${BASE_URL}/legal/terms`,
+      changeFrequency: 'yearly',
+      priority: 0.2,
     },
   ]
 

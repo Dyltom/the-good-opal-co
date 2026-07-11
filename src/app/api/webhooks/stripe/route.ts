@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import type { ReactElement } from 'react'
+import { randomBytes } from 'node:crypto'
 import { getPayload } from '@/lib/payload'
 import { Resend } from 'resend'
 import { OrderConfirmationEmail } from '@/emails/order-confirmation'
+import type { Order } from '@/types/payload-types'
 
 /**
  * Stripe Webhook Handler
@@ -20,7 +22,7 @@ import { OrderConfirmationEmail } from '@/emails/order-confirmation'
  */
 
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
-  apiVersion: '2025-10-29.clover',
+  apiVersion: '2026-06-24.dahlia',
 })
 
 const resend = new Resend(process.env['RESEND_API_KEY'] ?? '')
@@ -37,6 +39,38 @@ interface CartItem {
   price: number
   quantity: number
   image?: string
+}
+
+async function getCheckoutItems(sessionId: string): Promise<CartItem[]> {
+  const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
+    limit: 100,
+    expand: ['data.price.product'],
+  })
+
+  return lineItems.data.map((lineItem) => {
+    const stripeProduct = lineItem.price?.product
+    if (!stripeProduct || typeof stripeProduct === 'string' || stripeProduct.deleted) {
+      throw new Error(`Missing Stripe product details for line item ${lineItem.id}`)
+    }
+
+    const productId = stripeProduct.metadata['productId']
+    const slug = stripeProduct.metadata['slug']
+    const quantity = lineItem.quantity
+    const unitAmount = lineItem.price?.unit_amount
+
+    if (!productId || !slug || !quantity || quantity < 1 || unitAmount === null || unitAmount === undefined) {
+      throw new Error(`Invalid Stripe line item ${lineItem.id}`)
+    }
+
+    return {
+      productId,
+      slug,
+      name: stripeProduct.name,
+      price: unitAmount / 100,
+      quantity,
+      image: stripeProduct.images[0],
+    }
+  })
 }
 
 /**
@@ -62,8 +96,183 @@ interface CheckoutSessionWithShipping extends Stripe.Checkout.Session {
  */
 function generateOrderNumber(): string {
   const timestamp = Date.now().toString(36).toUpperCase()
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase()
+  const random = randomBytes(8).toString('hex').toUpperCase()
   return `OPAL-${timestamp}-${random}`
+}
+
+async function sendOrderConfirmation(order: Order): Promise<void> {
+  if (order.confirmationEmailSentAt) return
+
+  const { error } = await resend.emails.send({
+    from: process.env['EMAIL_FROM'] ?? '',
+    to: order.customer.email,
+    subject: `Order confirmation - ${order.orderNumber}`,
+    react: OrderConfirmationEmail({
+      orderNumber: order.orderNumber,
+      customerName: order.customer.name,
+      items: order.items.map((item) => ({
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image ?? undefined,
+      })),
+      subtotal: order.subtotal,
+      shipping: order.shipping ?? 0,
+      tax: order.tax ?? 0,
+      total: order.total,
+      shippingAddress: {
+        line1: order.shippingAddress.line1,
+        line2: order.shippingAddress.line2 ?? undefined,
+        city: order.shippingAddress.city,
+        state: order.shippingAddress.state,
+        postalCode: order.shippingAddress.postalCode,
+        country: order.shippingAddress.country,
+      },
+      baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
+      supportEmail: process.env['CONTACT_EMAIL'] ?? '',
+      requiresInventoryReview: order.status === 'pending',
+    }) as ReactElement,
+  })
+
+  const payload = await getPayload()
+  if (error) {
+    await payload.update({
+      collection: 'orders',
+      id: order.id,
+      data: { confirmationEmailError: error.message.slice(0, 1000) },
+    })
+    throw new Error(`Resend rejected order confirmation: ${error.message}`)
+  }
+
+  await payload.update({
+    collection: 'orders',
+    id: order.id,
+    data: {
+      confirmationEmailSentAt: new Date().toISOString(),
+      confirmationEmailError: null,
+    },
+  })
+}
+
+async function sendInventoryReviewAlert(order: Order): Promise<void> {
+  if (order.status !== 'pending' || order.inventoryAlertSentAt) return
+
+  const { error } = await resend.emails.send({
+    from: process.env['EMAIL_FROM'] ?? '',
+    to: process.env['CONTACT_EMAIL'] ?? '',
+    subject: `Inventory review required - ${order.orderNumber}`,
+    text: [
+      `Paid order ${order.orderNumber} requires inventory review before fulfilment.`,
+      `Customer: ${order.customer.email}`,
+      ...order.items.map((item) => `${item.quantity} × ${item.name} (${item.productId})`),
+      `Open the Payload admin order record: ${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders/${order.id}`,
+    ].join('\n'),
+  })
+
+  const payload = await getPayload()
+  if (error) {
+    await payload.update({
+      collection: 'orders',
+      id: order.id,
+      data: { inventoryAlertError: error.message.slice(0, 1000) },
+    })
+    throw new Error(`Resend rejected inventory alert: ${error.message}`)
+  }
+
+  await payload.update({
+    collection: 'orders',
+    id: order.id,
+    data: {
+      inventoryAlertSentAt: new Date().toISOString(),
+      inventoryAlertError: null,
+    },
+  })
+}
+
+function paymentIntentIdFromCharge(charge: Stripe.Charge): string | null {
+  if (typeof charge.payment_intent === 'string') return charge.payment_intent
+  return charge.payment_intent?.id ?? null
+}
+
+async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Order | null> {
+  const payload = await getPayload()
+  const result = await payload.find({
+    collection: 'orders',
+    where: { stripePaymentIntentId: { equals: paymentIntentId } },
+    limit: 1,
+  })
+  return result.docs[0] ?? null
+}
+
+async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
+  const paymentIntentId = paymentIntentIdFromCharge(charge)
+  if (!paymentIntentId) return
+
+  const payload = await getPayload()
+  const order = await findOrderByPaymentIntent(paymentIntentId)
+  if (!order || order.status === 'refunded') return
+
+  const transactionID = await payload.db.beginTransaction()
+  if (transactionID === null) throw new Error('Database transactions are required for refunds')
+  const req = { transactionID }
+
+  try {
+    if (order.inventoryDecrementedAt && !order.inventoryRestockedAt) {
+      for (const item of order.items) {
+        const product = await payload.findByID({
+          collection: 'products',
+          id: item.productId,
+          req,
+        })
+        await payload.update({
+          collection: 'products',
+          id: product.id,
+          req,
+          data: { stock: (product.stock ?? 0) + item.quantity },
+        })
+      }
+    }
+
+    await payload.update({
+      collection: 'orders',
+      id: order.id,
+      req,
+      data: {
+        status: 'refunded',
+        inventoryRestockedAt:
+          order.inventoryDecrementedAt && !order.inventoryRestockedAt
+            ? new Date().toISOString()
+            : order.inventoryRestockedAt,
+        notes: [order.notes, `Stripe charge ${charge.id} was refunded.`].filter(Boolean).join('\n'),
+      },
+    })
+    await payload.db.commitTransaction(transactionID)
+  } catch (error) {
+    await payload.db.rollbackTransaction(transactionID)
+    throw error
+  }
+}
+
+async function markOrderDisputed(dispute: Stripe.Dispute): Promise<void> {
+  const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge.id
+  const charge = await stripe.charges.retrieve(chargeId)
+  const paymentIntentId = paymentIntentIdFromCharge(charge)
+  if (!paymentIntentId) return
+
+  const payload = await getPayload()
+  const order = await findOrderByPaymentIntent(paymentIntentId)
+  if (!order) return
+
+  await payload.update({
+    collection: 'orders',
+    id: order.id,
+    data: {
+      status: 'disputed',
+      notes: [order.notes, `Stripe dispute ${dispute.id}: ${dispute.status}.`]
+        .filter(Boolean)
+        .join('\n'),
+    },
+  })
 }
 
 export async function POST(request: NextRequest) {
@@ -91,8 +300,15 @@ export async function POST(request: NextRequest) {
   }
 
   // Handle the checkout.session.completed event
-  if (event.type === 'checkout.session.completed') {
+  if (
+    event.type === 'checkout.session.completed' ||
+    event.type === 'checkout.session.async_payment_succeeded'
+  ) {
     const session = event.data.object as CheckoutSessionWithShipping
+
+    if (session.payment_status !== 'paid') {
+      return NextResponse.json({ received: true, awaitingPayment: true })
+    }
 
     try {
       const payload = await getPayload()
@@ -105,18 +321,17 @@ export async function POST(request: NextRequest) {
       })
 
       if (existingOrder.docs.length > 0) {
-        console.log(`Order already exists for session ${session.id}`)
+        const existing = existingOrder.docs[0]
+        if (existing) {
+          await sendOrderConfirmation(existing)
+          await sendInventoryReviewAlert(existing)
+        }
         return NextResponse.json({ received: true, duplicate: true })
       }
 
-      // Parse cart items from metadata
-      const cartItemsJson = session.metadata?.cartItems
-      if (!cartItemsJson) {
-        console.error('No cart items in session metadata')
-        return NextResponse.json({ error: 'Missing cart items' }, { status: 400 })
-      }
-
-      const items: CartItem[] = JSON.parse(cartItemsJson)
+      // Stripe line items are the paid, server-authored source of truth.
+      // Avoids metadata size limits and never trusts browser cart values.
+      const items = await getCheckoutItems(session.id)
       const customerName = session.metadata?.customerName ?? ''
 
       // Get shipping details
@@ -125,12 +340,40 @@ export async function POST(request: NextRequest) {
       // Calculate subtotal from items
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-      // Create order in Payload
+      const transactionID = await payload.db.beginTransaction()
+      if (transactionID === null) {
+        throw new Error('Database transactions are required for order fulfilment')
+      }
+      const transactionReq = { transactionID }
+
+      try {
+      const inventory = await Promise.all(
+        items.map(async (item) => {
+          const product = await payload.findByID({
+            collection: 'products',
+            id: item.productId,
+            req: transactionReq,
+          })
+
+          return {
+            item,
+            product,
+            available:
+              product.status === 'published' &&
+              typeof product.stock === 'number' &&
+              product.stock >= item.quantity,
+          }
+        }),
+      )
+      const inventoryAvailable = inventory.every((entry) => entry.available)
+
+      // Order, customer totals, and stock changes share one serializable transaction.
       const order = await payload.create({
         collection: 'orders',
+        req: transactionReq,
         data: {
           orderNumber: generateOrderNumber(),
-          status: 'processing',
+          status: inventoryAvailable ? 'processing' : 'pending',
           customer: {
             email: session.customer_email ?? '',
             name: customerName || (shippingDetails?.name ?? ''),
@@ -162,6 +405,9 @@ export async function POST(request: NextRequest) {
           stripeSessionId: session.id,
           stripePaymentIntentId:
             typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
+          notes: inventoryAvailable
+            ? undefined
+            : 'Paid order requires inventory review before fulfilment.',
         },
       })
 
@@ -178,6 +424,7 @@ export async function POST(request: NextRequest) {
             collection: 'customers',
             where: { email: { equals: customerEmail } },
             limit: 1,
+            req: transactionReq,
           })
 
           if (existingCustomer.docs.length > 0) {
@@ -192,6 +439,7 @@ export async function POST(request: NextRequest) {
               await payload.update({
                 collection: 'customers',
                 id: customer['id'],
+                req: transactionReq,
                 data: {
                   name: customerName || (shippingDetails?.name ?? customer['name']),
                   phone: session.customer_details?.phone ?? customer['phone'],
@@ -208,12 +456,12 @@ export async function POST(request: NextRequest) {
                   },
                 },
               })
-              console.log(`Customer updated: ${customerEmail}`)
             }
           } else {
             // Create new customer
             await payload.create({
               collection: 'customers',
+              req: transactionReq,
               data: {
                 email: customerEmail,
                 name: customerName || (shippingDetails?.name ?? ''),
@@ -232,7 +480,6 @@ export async function POST(request: NextRequest) {
                 },
               },
             })
-            console.log(`Customer created: ${customerEmail}`)
           }
         } catch (customerError) {
           console.error('Failed to update/create customer:', customerError)
@@ -240,76 +487,37 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Decrement stock for each item
-      for (const item of items) {
-        try {
-          const product = await payload.findByID({
+      if (inventoryAvailable) {
+        for (const { item, product } of inventory) {
+          await payload.update({
             collection: 'products',
             id: item.productId,
+            req: transactionReq,
+            data: { stock: (product.stock ?? 0) - item.quantity },
           })
-
-          if (product && typeof product.stock === 'number') {
-            const newStock = Math.max(0, product.stock - item.quantity)
-            await payload.update({
-              collection: 'products',
-              id: item.productId,
-              data: { stock: newStock },
-            })
-          }
-        } catch (stockError) {
-          console.error(`Failed to update stock for product ${item.productId}:`, stockError)
-          // Don't fail the webhook for stock update errors
         }
+        await payload.update({
+          collection: 'orders',
+          id: order.id,
+          req: transactionReq,
+          data: { inventoryDecrementedAt: new Date().toISOString() },
+        })
       }
 
-      // Send order confirmation email
-      if (session.customer_email) {
-        try {
-          await resend.emails.send({
-            from: 'The Good Opal Co <noreply@thegoodopalco.com>',
-            to: session.customer_email,
-            subject: `Order Confirmation - ${order.orderNumber}`,
-            react: OrderConfirmationEmail({
-              orderNumber: order.orderNumber,
-              customerName: customerName || (shippingDetails?.name ?? ''),
-              items: items.map(item => ({
-                name: item.name,
-                price: item.price,
-                quantity: item.quantity,
-                image: item.image,
-              })),
-              subtotal,
-              shipping: session.shipping_cost?.amount_total
-                ? session.shipping_cost.amount_total / 100
-                : 0,
-              tax: session.total_details?.amount_tax
-                ? session.total_details.amount_tax / 100
-                : 0,
-              total: session.amount_total
-                ? session.amount_total / 100
-                : subtotal,
-              shippingAddress: {
-                line1: shippingDetails?.address?.line1 ?? '',
-                line2: shippingDetails?.address?.line2,
-                city: shippingDetails?.address?.city ?? '',
-                state: shippingDetails?.address?.state ?? '',
-                postalCode: shippingDetails?.address?.postal_code ?? '',
-                country: shippingDetails?.address?.country ?? 'AU',
-              },
-            }) as ReactElement,
-          })
-          console.log(`Order confirmation email sent to ${session.customer_email}`)
-        } catch (emailError) {
-          console.error('Failed to send order confirmation email:', emailError)
-          // Don't fail the webhook for email sending errors
-        }
-      }
+      await payload.db.commitTransaction(transactionID)
+
+      await sendOrderConfirmation(order)
+      await sendInventoryReviewAlert(order)
 
       return NextResponse.json({
         received: true,
         orderId: order.id,
         orderNumber: order.orderNumber,
       })
+      } catch (transactionError) {
+        await payload.db.rollbackTransaction(transactionID)
+        throw transactionError
+      }
     } catch (error) {
       console.error('Error processing checkout.session.completed:', error)
       return NextResponse.json(
@@ -323,19 +531,16 @@ export async function POST(request: NextRequest) {
   if (event.type === 'payment_intent.payment_failed') {
     const paymentIntent = event.data.object as Stripe.PaymentIntent
     console.log(`Payment failed for intent: ${paymentIntent.id}`)
-    // Could send notification or update order status
+  }
+
+  if (event.type === 'charge.refunded') {
+    await markOrderRefunded(event.data.object)
+  }
+
+  if (event.type === 'charge.dispute.created' || event.type === 'charge.dispute.closed') {
+    await markOrderDisputed(event.data.object)
   }
 
   // Return success for unhandled events
   return NextResponse.json({ received: true })
-}
-
-/**
- * Stripe requires the raw body for signature verification
- * This config ensures Next.js doesn't parse the body
- */
-export const config = {
-  api: {
-    bodyParser: false,
-  },
 }

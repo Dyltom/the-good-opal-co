@@ -35,18 +35,18 @@ export function CartClearConfirmDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Clear Cart</AlertDialogTitle>
+          <AlertDialogTitle>Remove every item?</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to clear your cart?
+            This removes {itemText} from your cart. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogDescription>
-          This action will remove {itemText} from your cart and cannot be undone.
-        </AlertDialogDescription>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm} className="bg-fire-coral hover:bg-fire-coral/90">
-            Clear
+          <AlertDialogCancel>Keep items</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            className="bg-fire-coral hover:bg-fire-coral/90"
+          >
+            Clear cart
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

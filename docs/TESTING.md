@@ -1,227 +1,69 @@
-# Testing Guide
+# Testing guide
 
-Comprehensive testing strategy for Rapid Sites.
+## Local gates
 
-## Test Coverage
+Use Node.js 22 or 24:
 
-### ✅ Unit Tests (Vitest)
-- **95 tests passing**
-- **Coverage**: All utility functions
-- **Location**: `src/__tests__/`
-
-**What's tested:**
-- `lib/utils.ts` - 33 tests (formatters, slugify, etc.)
-- `lib/validation.ts` - 32 tests (validators)
-- `lib/tenant.ts` - 17 tests (multi-tenancy)
-- `lib/db.ts` - 9 tests (database helpers)
-- `lib/theme.ts` - 4 tests (theming)
-
-### ✅ E2E Tests (Playwright)
-- **10 tests passing**
-- **Coverage**: Critical user flows
-- **Location**: `e2e/`
-
-**What's tested:**
-- Homepage loads and renders correctly
-- Navigation works (desktop + mobile)
-- Features section displays
-- Contact form renders
-- Blog listing page
-- Demo/PageBuilder page
-- Responsive design
-
-## Running Tests
-
-### Unit Tests
 ```bash
-# Run all unit tests
-pnpm test run
-
-# Watch mode
-pnpm test:watch
-
-# With UI
-pnpm test:ui
-
-# Coverage report
-pnpm test:coverage
-```
-
-### E2E Tests
-```bash
-# Run E2E tests (headless)
+pnpm audit --prod
+pnpm test:unit --run
+pnpm validate:build
 pnpm test:e2e
+```
 
-# With UI (interactive)
-pnpm test:e2e:ui
+`pnpm validate` runs TypeScript and ESLint. `pnpm validate:build` also creates the
+optimized Next.js production build. `pnpm test` is the non-watch unit suite.
 
-# Headed mode (see browser)
+## Unit and component tests
+
+Vitest tests live beside source in `__tests__` folders and in `src/test/`.
+
+```bash
+pnpm test:unit --run
+pnpm test:unit --run src/test/checkout-validation.test.ts
+pnpm test:unit:watch
+pnpm test:unit:coverage
+```
+
+Some source-regression tests guard accessibility and architecture conventions;
+they do not replace browser or integration acceptance.
+
+## Browser smoke tests
+
+Playwright tests live only in `e2e/`. The configuration starts port 8412 and runs
+desktop Chromium plus a 390 px mobile Chromium viewport.
+
+```bash
+pnpm test:e2e
 pnpm test:e2e:headed
-
-# Debug mode
 pnpm test:e2e:debug
-
-# View last test report
-pnpm exec playwright show-report
 ```
 
-### Full Validation
-```bash
-# Run ALL checks (TypeScript + ESLint + Unit tests)
-pnpm validate
+The suite checks canonical public routes, desktop/mobile navigation, catalog or
+empty state, available-product cart mutation, checkout validation, health,
+robots, sitemap, redirects, 404 behavior, accessible contact fields, browser
+exceptions, console errors, and same-origin HTTP failures including images.
 
-# Run EVERYTHING (includes E2E)
-pnpm validate:all
-```
+Catalog-dependent tests skip only when no published/available product exists.
+Launch acceptance therefore requires a reviewed catalog with at least one
+in-stock item.
 
-## Pre-Deployment Checklist
+## Database and integration acceptance
 
-**MUST pass before deploying:**
+CI starts PostgreSQL 16, applies every committed migration, runs unit/static/build
+gates, installs Chromium, and runs the browser suite.
 
-1. ✅ `pnpm validate:all` - All tests passing
-2. ✅ `docker build -t test .` - Docker build successful
-3. ✅ Manual browser testing of new features
-4. ✅ Check `/api/health` responds
-5. ✅ Verify forms submit correctly
-6. ✅ Test responsive design (mobile/tablet/desktop)
-7. ✅ Test all new integrations work
+Local tests cannot establish that provisioned external services work. Before
+launch, use a Vercel Preview with isolated resources to verify:
 
-## Test Types
+- Payload first-admin bootstrap and product/post/media CRUD.
+- Blob upload, retrieval, and persistence after redeploy.
+- Stripe test checkout, paid webhook replay, refund, dispute, and exact-once stock
+  behavior.
+- Resend contact, password reset, newsletter confirmation/unsubscribe, order
+  confirmation, rejection, and retry behavior.
+- Upstash limits across separate function instances.
+- Neon backup restore/PITR and deployment rollback.
 
-### Unit Tests
-- **Purpose**: Test individual functions in isolation
-- **Speed**: Fast (< 1s)
-- **When**: Test all utilities, helpers, validators
-- **Framework**: Vitest + Testing Library
-
-### E2E Tests
-- **Purpose**: Test real user flows in browser
-- **Speed**: Slower (~8s for 10 tests)
-- **When**: Test critical paths, navigation, forms
-- **Framework**: Playwright
-
-### Component Tests
-- **Purpose**: Test React components
-- **Speed**: Medium
-- **When**: Test complex interactive components
-- **Framework**: Vitest + Testing Library React
-
-## Writing Tests
-
-### Unit Test Example
-```typescript
-import { describe, it, expect } from 'vitest'
-import { slugify } from '@/lib/utils'
-
-describe('slugify', () => {
-  it('should create valid slugs', () => {
-    expect(slugify('Hello World')).toBe('hello-world')
-  })
-})
-```
-
-### E2E Test Example
-```typescript
-import { test, expect } from '@playwright/test'
-
-test('should load homepage', async ({ page }) => {
-  await page.goto('/')
-  await expect(page).toHaveTitle(/Rapid Sites/)
-})
-```
-
-## Current Test Results
-
-### Unit Tests: ✅ 95/95 passing
-```
-✓ lib/utils.test.ts (33 tests)
-✓ lib/validation.test.ts (32 tests)
-✓ lib/tenant.test.ts (17 tests)
-✓ lib/db.test.ts (9 tests)
-✓ lib/theme.test.ts (4 tests)
-```
-
-### E2E Tests: ✅ 10/10 passing
-```
-✓ Homepage loads successfully
-✓ Navigation works
-✓ Features display correctly
-✓ Responsive navigation (mobile menu)
-✓ Contact form renders
-✓ Demo page loads
-✓ Stats section displays
-✓ Features grid shows
-✓ Blog listing page
-✓ Blog navigation
-```
-
-## Testing Best Practices
-
-1. **Test behavior, not implementation**
-2. **Use descriptive test names**
-3. **One assertion per test (when possible)**
-4. **Arrange, Act, Assert pattern**
-5. **Mock external dependencies**
-6. **Test edge cases**
-7. **Keep tests fast and isolated**
-
-## CI/CD Integration
-
-Tests run automatically on:
-- Every commit (pre-commit hook)
-- Every push (GitHub Actions - when configured)
-- Before deployment (required)
-
-## Debugging Failed Tests
-
-### Unit Tests
-```bash
-# Run specific test file
-pnpm test src/__tests__/lib/utils.test.ts
-
-# Debug mode
-pnpm test:ui
-```
-
-### E2E Tests
-```bash
-# Run specific test
-pnpm test:e2e e2e/homepage.spec.ts
-
-# Debug with browser visible
-pnpm test:e2e:headed
-
-# Step through with debugger
-pnpm test:e2e:debug
-
-# View HTML report
-pnpm exec playwright show-report
-```
-
-## Test Coverage Goals
-
-- **Unit Tests**: 80%+ coverage for utilities
-- **E2E Tests**: All critical user paths
-- **Component Tests**: Complex interactive components
-- **Integration Tests**: API routes (when database connected)
-
-## Known Limitations
-
-- E2E tests run without database (test empty states)
-- Payload admin tests require DB connection
-- Payment/email tests require API keys (use mocks)
-
-## Next Steps
-
-- [ ] Add component tests for UI components
-- [ ] Add API integration tests
-- [ ] Add visual regression tests (optional)
-- [ ] Set up CI/CD pipeline
-- [ ] Add performance tests
-
----
-
-**Current Status**: ✅ FULLY TESTED
-- Unit Tests: 95/95 passing
-- E2E Tests: 10/10 passing
-- Total: **105/105 tests passing** 🎉
+See [VERIFICATION.md](./VERIFICATION.md) for current evidence and
+[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for the release checklist.

@@ -179,8 +179,9 @@ export class CompositeRelatedProductStrategy implements RelatedProductStrategy {
       const results = await strategy.findRelated(product, limit - allResults.length)
 
       for (const relatedProduct of results) {
-        if (!seenIds.has(relatedProduct.id)) {
-          seenIds.add(relatedProduct.id)
+        const relatedProductId = String(relatedProduct.id)
+        if (!seenIds.has(relatedProductId)) {
+          seenIds.add(relatedProductId)
           allResults.push(relatedProduct)
 
           if (allResults.length >= limit) {

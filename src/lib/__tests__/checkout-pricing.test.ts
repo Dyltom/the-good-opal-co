@@ -1,9 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import {
   calculateCheckoutPricing,
-  calculateStripeCheckoutAmounts,
   dollarsToCents,
-  toDiscountContext,
 } from '../checkout-pricing'
 
 describe('checkout pricing', () => {
@@ -25,42 +23,16 @@ describe('checkout pricing', () => {
     expect(pricing.freeShippingRemaining).toBe(0)
   })
 
+  test('uses the international rate for non-Australian destinations', () => {
+    const pricing = calculateCheckoutPricing(100, 'INTERNATIONAL')
+
+    expect(pricing.shipping).toBe(25)
+    expect(pricing.shippingCents).toBe(2500)
+    expect(pricing.total).toBe(125)
+  })
+
   test('converts dollar amounts to Stripe cents', () => {
     expect(dollarsToCents(15)).toBe(1500)
     expect(dollarsToCents(12.345)).toBe(1235)
-  })
-
-  test('passes cents to the discount engine without adding GST again', () => {
-    expect(toDiscountContext(calculateCheckoutPricing(120))).toEqual({
-      subtotal: 12000,
-      shipping: 1500,
-      tax: 0,
-    })
-  })
-
-  test('keeps shipping discounts out of Stripe coupons to avoid double-discounting', () => {
-    expect(
-      calculateStripeCheckoutAmounts({
-        shippingCents: 1500,
-        discountAmountCents: 2000,
-        shippingDiscountCents: 1500,
-      })
-    ).toEqual({
-      couponAmountOffCents: 2000,
-      adjustedShippingCents: 0,
-    })
-  })
-
-  test('does not create a Stripe coupon for free shipping only', () => {
-    expect(
-      calculateStripeCheckoutAmounts({
-        shippingCents: 1500,
-        discountAmountCents: 0,
-        shippingDiscountCents: 1500,
-      })
-    ).toEqual({
-      couponAmountOffCents: undefined,
-      adjustedShippingCents: 0,
-    })
   })
 })

@@ -4,6 +4,7 @@
  */
 
 import { Resend } from 'resend'
+import { createHash, randomBytes } from 'node:crypto'
 import { getPayload } from '@/lib/payload'
 import { NewsletterConfirmationEmail } from '@/emails/newsletter-confirmation'
 import { NewsletterWelcomeEmail } from '@/emails/newsletter-welcome'
@@ -19,7 +20,23 @@ import type {
  * Generate secure tokens
  */
 function generateToken(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+  return randomBytes(32).toString('base64url')
+}
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
+
+function requireEmailConfig(): { apiKey: string; fromEmail: string; baseUrl: string } {
+  const apiKey = process.env.RESEND_API_KEY?.trim()
+  const fromEmail = process.env.EMAIL_FROM?.trim()
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/$/, '')
+
+  if (!apiKey || !fromEmail || !baseUrl) {
+    throw new Error('RESEND_API_KEY, EMAIL_FROM, and NEXT_PUBLIC_APP_URL are required')
+  }
+
+  return { apiKey, fromEmail, baseUrl }
 }
 
 /**
@@ -32,9 +49,10 @@ export class ResendNewsletterService implements NewsletterService {
   private baseUrl: string
 
   constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY || '')
-    this.fromEmail = 'The Good Opal Co <newsletter@thegoodopalco.com>'
-    this.baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:8412'
+    const config = requireEmailConfig()
+    this.resend = new Resend(config.apiKey)
+    this.fromEmail = config.fromEmail
+    this.baseUrl = config.baseUrl
   }
 
   async subscribe(email: string, options?: SubscribeOptions): Promise<SubscriptionResult> {
@@ -64,9 +82,20 @@ export class ResendNewsletterService implements NewsletterService {
 
       const confirmationToken = generateToken()
       const unsubscribeToken = generateToken()
+      const confirmationTokenHash = hashToken(confirmationToken)
+      const confirmationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      const unsubscribeTokenHash = hashToken(unsubscribeToken)
+      const optionTags = options?.tags ?? []
 
       // Create or update customer record
       if (existingDoc) {
+        const tags = Array.from(
+          new Set([
+            ...(existingDoc.tags ?? []).map(({ tag }) => tag),
+            ...optionTags,
+          ].filter((tag): tag is string => Boolean(tag)))
+        ).map((tag) => ({ tag }))
+
         // Update existing customer
         await payload.update({
           collection: 'customers',
@@ -74,10 +103,10 @@ export class ResendNewsletterService implements NewsletterService {
           data: {
             subscribedToNewsletter: true,
             emailVerified: options?.skipConfirmation || false,
-            tags: [...(existingDoc.tags || []), ...(options?.tags || [])],
-            // Store tokens in metadata (would need to add these fields to schema)
-            // confirmationToken,
-            // unsubscribeToken
+            tags,
+            confirmationTokenHash: options?.skipConfirmation ? null : confirmationTokenHash,
+            confirmationExpiresAt: options?.skipConfirmation ? null : confirmationExpiresAt,
+            unsubscribeTokenHash,
           }
         })
       } else {
@@ -87,25 +116,58 @@ export class ResendNewsletterService implements NewsletterService {
           data: {
             email: email.toLowerCase(),
             name: options?.name || '',
-            source: options?.source || 'newsletter',
+            source: options?.source === 'checkout' ? 'checkout' : 'newsletter',
             subscribedToNewsletter: true,
             emailVerified: options?.skipConfirmation || false,
-            tags: options?.tags || []
-            // confirmationToken,
-            // unsubscribeToken
+            tags: optionTags.map((tag) => ({ tag })),
+            confirmationTokenHash: options?.skipConfirmation ? undefined : confirmationTokenHash,
+            confirmationExpiresAt: options?.skipConfirmation ? undefined : confirmationExpiresAt,
+            unsubscribeTokenHash,
           }
         })
       }
 
       // Skip confirmation if requested (e.g., during checkout)
       if (options?.skipConfirmation) {
-        await this.sendWelcomeEmail({
-          email,
-          name: options.name,
-          subscribedAt: new Date(),
-          confirmed: true,
-          unsubscribeToken
-        })
+        const customerId = existingDoc?.id ?? (
+          await payload.find({
+            collection: 'customers',
+            where: { email: { equals: email.toLowerCase() } },
+            limit: 1,
+          })
+        ).docs[0]?.id
+
+        try {
+          await this.sendWelcomeEmail({
+            email,
+            name: options.name,
+            subscribedAt: new Date(),
+            confirmed: true,
+            unsubscribeToken
+          })
+          if (customerId) {
+            await payload.update({
+              collection: 'customers',
+              id: customerId,
+              data: { newsletterWelcomeSentAt: new Date().toISOString(), newsletterEmailError: null },
+            })
+          }
+        } catch (error) {
+          if (customerId) {
+            await payload.update({
+              collection: 'customers',
+              id: customerId,
+              data: {
+                newsletterEmailError:
+                  error instanceof Error ? error.message.slice(0, 1000) : 'Welcome email failed',
+              },
+            })
+          }
+          return {
+            success: true,
+            message: 'Subscribed successfully. The welcome email may be delayed.',
+          }
+        }
 
         return {
           success: true,
@@ -116,7 +178,7 @@ export class ResendNewsletterService implements NewsletterService {
       // Send confirmation email
       const confirmationUrl = `${this.baseUrl}/newsletter/confirm?token=${confirmationToken}`
 
-      await this.resend.emails.send({
+      const { error } = await this.resend.emails.send({
         from: this.fromEmail,
         to: email,
         subject: 'Please confirm your newsletter subscription',
@@ -125,6 +187,22 @@ export class ResendNewsletterService implements NewsletterService {
           email
         })
       })
+
+      if (error) {
+        const failedCustomer = await payload.find({
+          collection: 'customers',
+          where: { email: { equals: email.toLowerCase() } },
+          limit: 1,
+        })
+        if (failedCustomer.docs[0]) {
+          await payload.update({
+            collection: 'customers',
+            id: failedCustomer.docs[0].id,
+            data: { newsletterEmailError: error.message.slice(0, 1000) },
+          })
+        }
+        throw new Error(`Resend rejected newsletter confirmation: ${error.message}`)
+      }
 
       return {
         success: true,
@@ -140,11 +218,10 @@ export class ResendNewsletterService implements NewsletterService {
     }
   }
 
-  async confirm(_token: string): Promise<SubscriptionResult> {
+  async confirm(token: string): Promise<SubscriptionResult> {
     try {
-      // In production, find customer by confirmation token
-      // For now, we'll just update the first unconfirmed subscriber
       const payload = await getPayload()
+      const tokenHash = hashToken(token)
 
       const unconfirmedCustomers = await payload.find({
         collection: 'customers',
@@ -158,6 +235,16 @@ export class ResendNewsletterService implements NewsletterService {
             {
               emailVerified: {
                 equals: false
+              }
+            },
+            {
+              confirmationTokenHash: {
+                equals: tokenHash
+              }
+            },
+            {
+              confirmationExpiresAt: {
+                greater_than: new Date().toISOString()
               }
             }
           ]
@@ -180,22 +267,47 @@ export class ResendNewsletterService implements NewsletterService {
         }
       }
 
-      // Mark as confirmed
+      const unsubscribeToken = generateToken()
+
+      // Consume the single-use confirmation token and issue an unsubscribe token.
       await payload.update({
         collection: 'customers',
         id: customer.id,
         data: {
-          emailVerified: true
+          emailVerified: true,
+          confirmationTokenHash: null,
+          confirmationExpiresAt: null,
+          unsubscribeTokenHash: hashToken(unsubscribeToken),
         }
       })
 
-      // Send welcome email
-      await this.sendWelcomeEmail({
-        email: customer.email,
-        name: customer.name || undefined,
-        subscribedAt: new Date(),
-        confirmed: true
-      })
+      try {
+        await this.sendWelcomeEmail({
+          email: customer.email,
+          name: customer.name || undefined,
+          subscribedAt: new Date(),
+          confirmed: true,
+          unsubscribeToken,
+        })
+        await payload.update({
+          collection: 'customers',
+          id: customer.id,
+          data: { newsletterWelcomeSentAt: new Date().toISOString(), newsletterEmailError: null },
+        })
+      } catch (error) {
+        await payload.update({
+          collection: 'customers',
+          id: customer.id,
+          data: {
+            newsletterEmailError:
+              error instanceof Error ? error.message.slice(0, 1000) : 'Welcome email failed',
+          },
+        })
+        return {
+          success: true,
+          message: 'Your subscription is confirmed. The welcome email may be delayed.',
+        }
+      }
 
       return {
         success: true,
@@ -212,15 +324,13 @@ export class ResendNewsletterService implements NewsletterService {
 
   async unsubscribe(token: string): Promise<UnsubscribeResult> {
     try {
-      // In production, find customer by unsubscribe token
-      // For now, we'll use email as the token
       const payload = await getPayload()
 
       const customers = await payload.find({
         collection: 'customers',
         where: {
-          email: {
-            equals: token.toLowerCase() // Using email as token for demo
+          unsubscribeTokenHash: {
+            equals: hashToken(token)
           }
         },
         limit: 1
@@ -244,7 +354,8 @@ export class ResendNewsletterService implements NewsletterService {
         collection: 'customers',
         id: unsubDoc.id,
         data: {
-          subscribedToNewsletter: false
+          subscribedToNewsletter: false,
+          unsubscribeTokenHash: null,
         }
       })
 
@@ -262,10 +373,14 @@ export class ResendNewsletterService implements NewsletterService {
   }
 
   async sendWelcomeEmail(subscriber: NewsletterSubscriber): Promise<void> {
-    const unsubscribeUrl = `${this.baseUrl}/newsletter/unsubscribe?token=${subscriber.unsubscribeToken || subscriber.email}`
+    if (!subscriber.unsubscribeToken) {
+      throw new Error('An unsubscribe token is required for newsletter email delivery')
+    }
+
+    const unsubscribeUrl = `${this.baseUrl}/newsletter/unsubscribe?token=${subscriber.unsubscribeToken}`
     const shopUrl = `${this.baseUrl}/store`
 
-    await this.resend.emails.send({
+    const { error } = await this.resend.emails.send({
       from: this.fromEmail,
       to: subscriber.email,
       subject: 'Welcome to The Good Opal Co Newsletter! 🌟',
@@ -275,6 +390,8 @@ export class ResendNewsletterService implements NewsletterService {
         shopUrl
       })
     })
+
+    if (error) throw new Error(`Resend rejected newsletter welcome email: ${error.message}`)
   }
 
   /**

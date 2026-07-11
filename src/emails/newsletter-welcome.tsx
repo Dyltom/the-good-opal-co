@@ -4,14 +4,12 @@ interface NewsletterWelcomeEmailProps {
   name?: string
   unsubscribeUrl: string
   shopUrl: string
-  couponCode?: string
 }
 
 export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
   name,
   unsubscribeUrl,
   shopUrl,
-  couponCode = 'WELCOME10',
 }) => {
   return (
     <html>
@@ -47,23 +45,17 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
                       the natural beauty of Australian opals.
                     </p>
 
-                    {/* Welcome Offer */}
+                    {/* Store link */}
                     <div style={{
-                      backgroundColor: '#f3e8ff',
-                      border: '2px dashed #7c3aed',
+                      backgroundColor: '#f7f1e8',
+                      border: '1px solid #d7c7b2',
                       borderRadius: '8px',
                       padding: '24px',
                       margin: '30px 0',
                       textAlign: 'center'
                     }}>
-                      <p style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 'bold', color: '#1a1a1a' }}>
-                        Here&apos;s your welcome gift!
-                      </p>
-                      <p style={{ margin: '0 0 20px 0', fontSize: '36px', fontWeight: 'bold', color: '#7c3aed' }}>
-                        {couponCode}
-                      </p>
                       <p style={{ margin: '0 0 20px 0', fontSize: '16px', color: '#666666' }}>
-                        Get 10% off your first purchase
+                        Browse currently available opals and jewellery.
                       </p>
                       <a
                         href={shopUrl}
@@ -87,29 +79,12 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
                       What to expect from us:
                     </h3>
                     <ul style={{ margin: '0 0 30px 0', paddingLeft: '20px', color: '#666666', lineHeight: '1.8' }}>
-                      <li>Exclusive subscriber-only offers and early access</li>
+                      <li>New-piece announcements and occasional offers</li>
                       <li>New opal collection announcements</li>
                       <li>Jewelry care tips and styling guides</li>
-                      <li>Behind-the-scenes stories from Australian opal mines</li>
+                      <li>Notes on selecting, wearing, and caring for opal</li>
                     </ul>
 
-                    {/* Social Links */}
-                    <div style={{ textAlign: 'center', margin: '40px 0' }}>
-                      <p style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#666666' }}>
-                        Follow us for daily opal inspiration:
-                      </p>
-                      <div>
-                        <a href="#" style={{ display: 'inline-block', margin: '0 10px', color: '#7c3aed', textDecoration: 'none' }}>
-                          Instagram
-                        </a>
-                        <a href="#" style={{ display: 'inline-block', margin: '0 10px', color: '#7c3aed', textDecoration: 'none' }}>
-                          Facebook
-                        </a>
-                        <a href="#" style={{ display: 'inline-block', margin: '0 10px', color: '#7c3aed', textDecoration: 'none' }}>
-                          Pinterest
-                        </a>
-                      </div>
-                    </div>
                   </td>
                 </tr>
 

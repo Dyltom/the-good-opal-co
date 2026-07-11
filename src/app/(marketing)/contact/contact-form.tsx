@@ -3,28 +3,24 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { sendContactEmail } from './actions'
+import { contactSchema } from './schema'
+import type { ContactFormData } from './schema'
+import { inquiryLabels, inquiryTypes } from './contact-intent'
+import type { InquiryType } from './contact-intent'
 import { Loader2 } from 'lucide-react'
 
-// Form validation schema
-const contactSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  phone: z.string().optional(),
-  subject: z.string().min(5, 'Subject must be at least 5 characters'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
-  orderNumber: z.string().optional(),
-})
+interface ContactFormProps {
+  initialInquiry: InquiryType
+  initialProduct?: string
+}
 
-type ContactFormData = z.infer<typeof contactSchema>
-
-export function ContactForm() {
+export function ContactForm({ initialInquiry, initialProduct = '' }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
@@ -39,9 +35,13 @@ export function ContactForm() {
       name: '',
       email: '',
       phone: '',
-      subject: '',
+      inquiryType: initialInquiry,
       message: '',
       orderNumber: '',
+      product: initialProduct,
+      budget: '',
+      timeline: '',
+      website: '',
     },
   })
 
@@ -54,7 +54,7 @@ export function ContactForm() {
       if (result.success) {
         toast({
           title: 'Message sent!',
-          description: 'Thank you for contacting us. We\'ll get back to you within 24 hours.',
+          description: 'Your details are with us. We\'ll reply by email.',
         })
         reset()
       } else {
@@ -72,8 +72,12 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid sm:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+      <div className="absolute -left-[9999px]" aria-hidden="true">
+        <Label htmlFor="website">Website</Label>
+        <Input id="website" {...register('website')} tabIndex={-1} autoComplete="off" />
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="name">
             Name <span className="text-red-500">*</span>
@@ -84,6 +88,8 @@ export function ContactForm() {
             placeholder="Your name"
             className="mt-1"
             disabled={isSubmitting}
+            aria-invalid={Boolean(errors.name)}
+            required
           />
           {errors.name && (
             <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
@@ -101,6 +107,8 @@ export function ContactForm() {
             placeholder="your@email.com"
             className="mt-1"
             disabled={isSubmitting}
+            aria-invalid={Boolean(errors.email)}
+            required
           />
           {errors.email && (
             <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
@@ -108,7 +116,27 @@ export function ContactForm() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-6">
+      <div>
+        <Label htmlFor="inquiryType">
+          What can we help with? <span className="text-red-600">*</span>
+        </Label>
+        <select
+          id="inquiryType"
+          {...register('inquiryType')}
+          className="mt-1 min-h-11 w-full rounded-md border border-warm-grey bg-white px-3 py-2 text-charcoal outline-none focus-visible:border-opal-electric-accessible focus-visible:ring-2 focus-visible:ring-opal-electric/30"
+          disabled={isSubmitting}
+          required
+        >
+          {inquiryTypes.map((type) => (
+            <option key={type} value={type}>{inquiryLabels[type]}</option>
+          ))}
+        </select>
+        {errors.inquiryType && (
+          <p className="mt-1 text-sm text-red-600">Please choose an inquiry type.</p>
+        )}
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="phone">
             Phone <span className="text-gray-500">(optional)</span>
@@ -143,28 +171,20 @@ export function ContactForm() {
         </div>
       </div>
 
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="product">Product or piece <span className="text-gray-500">(optional)</span></Label>
+          <Input id="product" {...register('product')} placeholder="Name, link, or idea" className="mt-1" disabled={isSubmitting} />
+        </div>
+        <div>
+          <Label htmlFor="budget">Approximate budget <span className="text-gray-500">(optional)</span></Label>
+          <Input id="budget" {...register('budget')} placeholder="e.g. AUD $1,500–$2,500" className="mt-1" disabled={isSubmitting} />
+        </div>
+      </div>
+
       <div>
-        <Label htmlFor="subject">
-          Subject <span className="text-red-500">*</span>
-        </Label>
-        <select
-          id="subject"
-          {...register('subject')}
-          className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opal-electric focus:border-transparent"
-          disabled={isSubmitting}
-        >
-          <option value="">Select a subject</option>
-          <option value="General Inquiry">General Inquiry</option>
-          <option value="Order Support">Order Support</option>
-          <option value="Custom Order Request">Custom Order Request</option>
-          <option value="Product Information">Product Information</option>
-          <option value="Wholesale Inquiry">Wholesale Inquiry</option>
-          <option value="Returns/Exchanges">Returns/Exchanges</option>
-          <option value="Other">Other</option>
-        </select>
-        {errors.subject && (
-          <p className="text-sm text-red-500 mt-1">{errors.subject.message}</p>
-        )}
+        <Label htmlFor="timeline">When do you need it? <span className="text-gray-500">(optional)</span></Label>
+        <Input id="timeline" {...register('timeline')} placeholder="A date, occasion, or no rush" className="mt-1" disabled={isSubmitting} />
       </div>
 
       <div>
@@ -178,6 +198,8 @@ export function ContactForm() {
           rows={6}
           className="mt-1"
           disabled={isSubmitting}
+          aria-invalid={Boolean(errors.message)}
+          required
         />
         {errors.message && (
           <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { readFileSync } from 'fs'
+import { readFileSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 
 const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
@@ -19,6 +19,27 @@ describe('deployment config', () => {
     expect(source).toMatch(/NODE_ENV.+production|production.+NODE_ENV/s)
   })
 
+  test('production uses DATABASE_URL and never pushes schema changes', () => {
+    const source = read('src/payload.config.ts')
+
+    expect(source).toContain("process.env['DATABASE_URL']")
+    expect(source).toContain("push: process.env['NODE_ENV'] !== 'production'")
+    expect(source).not.toContain('POSTGRES_HOST')
+  })
+
+  test('production media storage token is documented', () => {
+    expect(read('.env.example')).toContain('BLOB_READ_WRITE_TOKEN=')
+  })
+
+  test('demo discounts are not connected to checkout', () => {
+    const action = read('src/app/(marketing)/checkout/actions.ts')
+    const form = read('src/app/(marketing)/checkout/checkout-form.tsx')
+
+    expect(action).not.toContain('getDiscountManager')
+    expect(action).not.toContain('discountCode')
+    expect(form).not.toContain('DiscountCodeInput')
+  })
+
   test('marketing layout defines metadataBase for social image URLs', () => {
     const source = read('src/app/(marketing)/layout.tsx')
 
@@ -26,14 +47,50 @@ describe('deployment config', () => {
     expect(source).toContain('new URL(APP_URL)')
   })
 
-  test('session signing secret is documented for deployment', () => {
-    expect(read('.env.example')).toContain('JWT_SECRET=')
-    expect(read('docs/DEPLOYMENT_CHECKLIST.md')).toContain('JWT_SECRET')
+  test('admin email and distributed rate limiting are production-configured', () => {
+    const config = read('src/payload.config.ts')
+    const env = read('.env.example')
+
+    expect(config).toContain('resendAdapter')
+    expect(env).toContain('UPSTASH_REDIS_REST_URL=')
+    expect(env).toContain('UPSTASH_REDIS_REST_TOKEN=')
   })
 
   test('ESLint ignores agent tooling outside the deployable app', () => {
     const source = read('eslint.config.mjs')
 
     expect(source).toContain("'**/.agents/**'")
+  })
+
+  test('Vercel runs committed migrations before the production build', () => {
+    const config = JSON.parse(read('vercel.json')) as { buildCommand?: string }
+    const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
+
+    expect(config.buildCommand).toBe('pnpm payload migrate && pnpm build')
+    expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
+  })
+
+  test('paid Stripe line items drive transactional order fulfilment', () => {
+    const webhook = read('src/app/api/webhooks/stripe/route.ts')
+    const checkout = read('src/app/(marketing)/checkout/actions.ts')
+
+    expect(webhook).toContain("session.payment_status !== 'paid'")
+    expect(webhook).toContain('listLineItems')
+    expect(webhook).toContain('beginTransaction')
+    expect(webhook).toContain('commitTransaction')
+    expect(webhook).toContain('rollbackTransaction')
+    expect(checkout).not.toContain('cartItems: JSON.stringify')
+  })
+
+  test('newsletter links use persisted hashed tokens and a real unsubscribe route', () => {
+    const service = read('src/lib/newsletter/service.ts')
+    const unsubscribe = read('src/app/(marketing)/newsletter/unsubscribe/page.tsx')
+
+    expect(service).toContain('randomBytes(32)')
+    expect(service).toContain('confirmationTokenHash')
+    expect(service).toContain('equals: tokenHash')
+    expect(service).toContain('unsubscribeTokenHash')
+    expect(service).not.toContain('equals: token.toLowerCase()')
+    expect(unsubscribe).toContain('submitNewsletterUnsubscribe')
   })
 })

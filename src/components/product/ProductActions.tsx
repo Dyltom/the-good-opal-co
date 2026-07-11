@@ -51,7 +51,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       {/* Stock Status */}
       {product.stock > 0 && product.stock <= 5 && (
         <p className="text-sm text-amber-600 font-medium">
-          Only {product.stock} left in stock - order soon!
+          {product.stock === 1 ? 'One available' : `${product.stock} available`}
         </p>
       )}
 

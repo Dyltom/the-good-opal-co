@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
+import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
   access: {
-    read: () => true,
-    create: ({ req: { user } }) => !!user,
-    update: ({ req: { user } }) => !!user,
-    delete: ({ req: { user } }) => user?.['role'] === 'admin',
+    read: publishedOrAdmin,
+    create: isAdmin,
+    update: isAdmin,
+    delete: isAdmin,
   },
   admin: {
     useAsTitle: 'name',
@@ -146,6 +147,7 @@ export const Products: CollectionConfig = {
         { label: 'Crystal Opal', value: 'crystal-opal' },
         { label: 'Fire Opal', value: 'fire-opal' },
         { label: 'Matrix Opal', value: 'matrix-opal' },
+        { label: 'Opal Doublet', value: 'opal-doublet' },
       ],
       admin: {
         description: 'Type of opal used',
@@ -218,7 +220,7 @@ export const Products: CollectionConfig = {
     {
       name: 'certified',
       type: 'checkbox',
-      defaultValue: true,
+      defaultValue: false,
       admin: {
         description: 'Comes with certificate of authenticity',
       },

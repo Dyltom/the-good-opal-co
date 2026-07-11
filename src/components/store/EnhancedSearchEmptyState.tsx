@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Search, TrendingUp, Sparkles, DollarSign } from 'lucide-react'
+import { Search, TrendingUp, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -134,22 +134,6 @@ export function EnhancedSearchEmptyState({
           </div>
         </div>
 
-        {/* Special Offer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="bg-gradient-to-r from-opal-electric/10 to-opal-deep/10 rounded-xl p-6 border border-opal-electric/20"
-        >
-          <DollarSign className="w-8 h-8 text-opal-electric mx-auto mb-3" />
-          <h4 className="font-semibold mb-2">First-Time Buyer Special</h4>
-          <p className="text-sm text-muted-foreground mb-4">
-            Get 10% off your first purchase with code FIRSTOPAL
-          </p>
-          <Button size="sm" variant="secondary" asChild>
-            <Link href="/store">Shop Now</Link>
-          </Button>
-        </motion.div>
       </div>
     </motion.div>
   )

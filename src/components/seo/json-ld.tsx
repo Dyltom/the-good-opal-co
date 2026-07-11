@@ -4,6 +4,7 @@
  * Provides SEO-friendly structured data for search engines.
  * Supports various schema.org types for products, organization, and breadcrumbs.
  */
+import { APP_URL } from '@/lib/constants'
 
 /**
  * Base JSON-LD component for rendering structured data
@@ -29,18 +30,9 @@ export function OrganizationJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'The Good Opal Co',
-    description: 'Premium Australian opals, ethically sourced from Lightning Ridge, Coober Pedy, and Queensland.',
-    url: process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co',
-    logo: `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'}/logo.png`,
-    sameAs: [
-      'https://instagram.com/goodopalco',
-      'https://facebook.com/goodopalco',
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      email: 'thegoodopalco@gmail.com',
-      contactType: 'customer service',
-    },
+    description: 'Australian opals and jewellery selected by The Good Opal Co.',
+    url: APP_URL,
+    logo: `${APP_URL}/logo.png`,
     address: {
       '@type': 'PostalAddress',
       addressCountry: 'AU',
@@ -67,7 +59,7 @@ interface ProductJsonLdProps {
 }
 
 export function ProductJsonLd({ product }: ProductJsonLdProps) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'
+  const appUrl = APP_URL
 
   const data = {
     '@context': 'https://schema.org',
@@ -94,33 +86,6 @@ export function ProductJsonLd({ product }: ProductJsonLdProps) {
         '@type': 'Organization',
         name: 'The Good Opal Co',
       },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingRate: {
-          '@type': 'MonetaryAmount',
-          value: product.price >= 500 ? 0 : 15,
-          currency: 'AUD',
-        },
-        shippingDestination: {
-          '@type': 'DefinedRegion',
-          addressCountry: ['AU', 'NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'],
-        },
-        deliveryTime: {
-          '@type': 'ShippingDeliveryTime',
-          handlingTime: {
-            '@type': 'QuantitativeValue',
-            minValue: 1,
-            maxValue: 2,
-            unitCode: 'DAY',
-          },
-          transitTime: {
-            '@type': 'QuantitativeValue',
-            minValue: 3,
-            maxValue: 7,
-            unitCode: 'DAY',
-          },
-        },
-      },
     },
   }
 
@@ -140,7 +105,7 @@ interface BreadcrumbJsonLdProps {
 }
 
 export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'
+  const appUrl = APP_URL
 
   const data = {
     '@context': 'https://schema.org',
@@ -172,7 +137,7 @@ interface CollectionJsonLdProps {
 }
 
 export function CollectionJsonLd({ name, description, url, products }: CollectionJsonLdProps) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'
+  const appUrl = APP_URL
 
   const data = {
     '@context': 'https://schema.org',
@@ -237,7 +202,7 @@ export function FaqJsonLd({ items }: FaqJsonLdProps) {
  * Website structured data with search action
  */
 export function WebsiteJsonLd() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'
+  const appUrl = APP_URL
 
   const data = {
     '@context': 'https://schema.org',

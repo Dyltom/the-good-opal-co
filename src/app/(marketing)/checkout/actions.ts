@@ -14,23 +14,27 @@ import { getCart } from '@/lib/cart'
 import {
   calculateCheckoutPricing,
   calculateCheckoutSubtotal,
-  calculateStripeCheckoutAmounts,
   dollarsToCents,
-  toDiscountContext,
 } from '@/lib/checkout-pricing'
-import { getDiscountManager } from '@/lib/discounts'
 import { trackBeginCheckout } from '@/lib/analytics'
+import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
+import { APP_URL } from '@/lib/constants'
+import { CHECKOUT_COUNTRIES } from './validation'
 
 // Initialize Stripe
 const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
-  apiVersion: '2025-10-29.clover',
+  apiVersion: '2026-06-24.dahlia',
 })
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  discountCode: z.string().optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Please enter the name for this order')
+    .max(100, 'Name must be 100 characters or fewer'),
+  country: z.enum(CHECKOUT_COUNTRIES),
 })
 
 /**
@@ -63,7 +67,7 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
   const validationResult = checkoutSchema.safeParse({
     email: formData.get('email'),
     name: formData.get('name'),
-    discountCode: formData.get('discountCode') as string | undefined,
+    country: formData.get('country'),
   })
 
   if (!validationResult.success) {
@@ -73,7 +77,17 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
     }
   }
 
-  const { email, name, discountCode } = validationResult.data
+  const { email, name, country } = validationResult.data
+  const identifier = await getRequestIdentifier(email)
+  const allowed = await checkRateLimit({
+    scope: 'checkout',
+    identifier,
+    limit: 10,
+    windowSeconds: 15 * 60,
+  })
+  if (!allowed) {
+    return { success: false, error: 'Too many checkout attempts. Please try again later.' }
+  }
 
   // Check if Stripe is configured
   if (!process.env['STRIPE_SECRET_KEY']) {
@@ -85,53 +99,8 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
 
   try {
     const subtotal = calculateCheckoutSubtotal(cart.items)
-    const pricing = calculateCheckoutPricing(subtotal)
-
-    // Handle discount code if provided
-    let discountAmountCents = 0
-    let shippingDiscountCents = 0
-    let discountDescription = ''
-
-    if (discountCode) {
-      const discountManager = getDiscountManager()
-      const discountResult = await discountManager.applyDiscount(discountCode, {
-        ...toDiscountContext(pricing),
-        customerId: undefined,
-        currentDate: new Date()
-      })
-
-      if (!discountResult.error && discountResult.application) {
-        discountAmountCents = discountResult.discountAmount
-        shippingDiscountCents = discountResult.shippingDiscount
-        discountDescription = discountResult.application.description
-      }
-    }
-
-    // Create dynamic coupon in Stripe if discount is applied
-    let couponId: string | undefined
-
-    const { couponAmountOffCents, adjustedShippingCents } = calculateStripeCheckoutAmounts({
-      shippingCents: pricing.shippingCents,
-      discountAmountCents,
-      shippingDiscountCents,
-    })
-
-    if (couponAmountOffCents) {
-
-      // Create a one-time use coupon for this specific discount
-      const coupon = await stripe.coupons.create({
-        amount_off: couponAmountOffCents,
-        currency: 'aud',
-        duration: 'once',
-        name: discountCode || 'Discount',
-        metadata: {
-          code: discountCode || '',
-          description: discountDescription
-        }
-      })
-
-      couponId = coupon.id
-    }
+    const destination = country === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
+    const pricing = calculateCheckoutPricing(subtotal, destination)
 
     // Track begin checkout event
     trackBeginCheckout(cart.items, cart.total)
@@ -145,7 +114,7 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
           currency: 'aud',
           product_data: {
             name: item.name,
-            images: item.image ? [item.image] : [],
+            images: item.image?.startsWith('http') ? [item.image] : [],
             metadata: {
               productId: item.productId,
               slug: item.slug,
@@ -156,34 +125,35 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
         quantity: item.quantity,
       })),
       shipping_address_collection: {
-        allowed_countries: ['AU', 'NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'],
+        allowed_countries: [country],
       },
       shipping_options: [
         {
           shipping_rate_data: {
             type: 'fixed_amount',
             fixed_amount: {
-              amount: adjustedShippingCents,
+              amount: pricing.shippingCents,
               currency: 'aud',
             },
-            display_name: adjustedShippingCents === 0 ? 'Free Express Shipping' : 'Express Shipping',
+            display_name:
+              pricing.shippingCents === 0
+                ? 'Free tracked shipping'
+                : destination === 'AUSTRALIA'
+                  ? 'Australia tracked shipping'
+                  : 'International tracked shipping',
             delivery_estimate: {
-              minimum: { unit: 'business_day', value: 3 },
-              maximum: { unit: 'business_day', value: 7 },
+              minimum: { unit: 'business_day', value: destination === 'AUSTRALIA' ? 1 : 7 },
+              maximum: { unit: 'business_day', value: destination === 'AUSTRALIA' ? 5 : 14 },
             },
           },
         },
       ],
-      ...(couponId ? { discounts: [{ coupon: couponId }] } : {}),
       metadata: {
-        cartItems: JSON.stringify(cart.items),
         customerName: name,
-        discountCode: discountCode || '',
-        discountAmount: discountAmountCents.toString(),
-        shippingDiscount: shippingDiscountCents.toString(),
+        shippingCountry: country,
       },
-      success_url: `${process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env['NEXT_PUBLIC_APP_URL'] ?? 'http://localhost:3000'}/cart`,
+      success_url: `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_URL}/cart`,
     })
 
     // Return the URL for client-side redirect

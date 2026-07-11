@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { MarketingShell } from '@/components/marketing'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | The Good Opal Co',
@@ -8,14 +9,14 @@ export const metadata: Metadata = {
 }
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = new Date('2024-01-15').toLocaleDateString('en-AU', {
+  const lastUpdated = new Date('2026-07-11').toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 
   return (
-    <div className="min-h-screen bg-white">
+    <MarketingShell mainClassName="bg-white">
       <Container className="py-12">
         <Breadcrumb
           items={[
@@ -42,7 +43,7 @@ export default function PrivacyPolicyPage() {
                 The Good Opal Co (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or make a purchase from us.
               </p>
               <p className="text-content mb-4">
-                We comply with the Australian Privacy Principles (APPs) contained in the Privacy Act 1988 (Cth) and the General Data Protection Regulation (GDPR) for our international customers.
+                We handle personal information under applicable privacy laws. The rights and obligations that apply can depend on your location and our legal obligations.
               </p>
             </section>
 
@@ -150,7 +151,7 @@ export default function PrivacyPolicyPage() {
                 7. Your Rights
               </h2>
               <p className="text-content mb-4">
-                Under Australian privacy law and GDPR, you have the right to:
+                Depending on the law that applies to you, you may have rights to:
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>Access your personal information</li>
@@ -190,8 +191,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>Clicking the unsubscribe link in any marketing email</li>
-                <li>Contacting us at privacy@thegoodopalco.com</li>
-                <li>Updating your preferences in your account settings</li>
+                <li>Contacting us through the website contact form</li>
               </ul>
             </section>
 
@@ -236,9 +236,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Email: privacy@thegoodopalco.com</p>
-                <p className="text-content">Phone: +61 2 9555 1234</p>
-                <p className="text-content">Address: Sydney, NSW, Australia</p>
+                <p className="text-content">Use the website contact form and select the privacy topic.</p>
               </div>
             </section>
 
@@ -250,14 +248,12 @@ export default function PrivacyPolicyPage() {
                 If you&apos;re not satisfied with our response to your privacy concern, you may contact the Office of the Australian Information Commissioner:
               </p>
               <div className="bg-gray-50 p-6 rounded-lg mt-4">
-                <p className="text-content">Website: www.oaic.gov.au</p>
-                <p className="text-content">Phone: 1300 363 992</p>
-                <p className="text-content">Email: enquiries@oaic.gov.au</p>
+                <p className="text-content"><a href="https://www.oaic.gov.au" target="_blank" rel="noreferrer" className="underline underline-offset-4">Visit the OAIC website</a> for current contact details.</p>
               </div>
             </section>
           </div>
         </div>
       </Container>
-    </div>
+    </MarketingShell>
   )
 }

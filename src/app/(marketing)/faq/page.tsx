@@ -1,186 +1,129 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
+import Link from 'next/link'
 import { Container } from '@/components/layout'
-import { Navigation, Footer } from '@/components/navigation'
-import { Button } from '@/components/ui/button'
+import { MarketingShell } from '@/components/marketing'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { cn } from '@/lib/utils'
-import { ShieldCheck, Package, CreditCard, Gem, Wrench, Mail } from 'lucide-react'
-import { PageTransition } from '@/components/layout/PageTransition'
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions - The Good Opal Co',
-  description: 'Find answers to common questions about Australian opals, our jewellery, shipping, returns, and more.',
+  title: 'Frequently Asked Questions | The Good Opal Co',
+  description:
+    'Clear answers about Australian opals, product details, delivery, eligible returns, payment, care, and custom work.',
 }
 
 const faqCategories = [
   {
-    title: 'About Our Opals',
-    icon: Gem,
+    title: 'Choosing an opal',
     faqs: [
       {
-        question: 'How do I know if the opal is authentic?',
-        answer: 'Every opal we sell comes with a Certificate of Authenticity. Our opals are 100% natural Australian opals, sourced directly from mines in Lightning Ridge, Coober Pedy, Mintabie, and Andamooka. We never sell synthetic, lab-created, or imitation opals. Each certificate includes details about the stone\'s origin, type, weight, and unique characteristics.',
+        question: 'What product information do you provide?',
+        answer:
+          'Each listing shows the details available for that individual piece, which may include its opal type, known origin, dimensions, weight, setting material, and treatment information. Contact us before ordering if a detail important to your decision is missing.',
       },
       {
-        question: 'What makes Australian opals special?',
-        answer: 'Australia produces 95% of the world\'s precious opals and is home to the most vibrant and valuable opal varieties. Australian opals, particularly Black Opals from Lightning Ridge and Boulder Opals from Queensland, are renowned for their exceptional color play, fire, and brilliance. The unique geological conditions in Australia create opals unlike anywhere else in the world.',
+        question: 'Does every piece include a certificate?',
+        answer:
+          'A certificate or independent report is only included when the product listing says so. We do not describe every piece as independently certified. The listing and order record are the primary source of product details.',
       },
       {
-        question: 'What\'s the difference between black and white opals?',
-        answer: 'The main difference is the body tone. Black opals have a dark body tone (dark grey to black), which makes their color play appear more vibrant and dramatic. White opals have a lighter body tone (white to light grey). Black opals from Lightning Ridge are the rarest and most valuable, while white opals from Coober Pedy are more affordable but still stunning. The choice depends on your preference - both show beautiful color fire.',
+        question: 'Can I see a piece more closely before buying?',
+        answer:
+          'Yes. Ask for additional images or a virtual viewing if you need to inspect colour, scale, or a fine detail. Opal can look different under changing light and on different screens, so we encourage questions before purchase.',
       },
       {
-        question: 'How do you grade opal quality?',
-        answer: 'Opal quality is assessed based on several factors: body tone (darkness), brightness (intensity of color), color play (range of colors), pattern (arrangement of colors), clarity, and cut. The brightest, most vibrant colors on the darkest body tone command the highest prices. We carefully grade each opal and price them fairly based on these quality factors.',
-      },
-      {
-        question: 'Why do opals have different colors?',
-        answer: 'Opal\'s color play (called "play-of-color") is caused by the diffraction of light through microscopic silica spheres within the stone. As light enters the opal, it bends and splits into spectral colors. The size and arrangement of these spheres determines which colors you see. This is why each opal is completely unique - no two have the exact same internal structure.',
+        question: 'What is the difference between black, white, and boulder opal?',
+        answer:
+          'These names describe different body tones or formations. Black opal has a dark body tone, white opal has a pale body tone, and boulder opal remains attached to its ironstone host rock. Brightness, pattern, colour, condition, size, and personal preference all matter when comparing pieces.',
       },
     ],
   },
   {
-    title: 'Purchasing & Authenticity',
-    icon: ShieldCheck,
+    title: 'Delivery and returns',
     faqs: [
       {
-        question: 'Do you provide certificates of authenticity?',
-        answer: 'Yes! Every opal piece comes with a Certificate of Authenticity that includes: stone type (Black Opal, Boulder Opal, etc.), origin location, weight in carats, measurements, metal details (for jewellery), and a unique certificate number. For high-value pieces over $5,000, we can arrange independent gemological certification from accredited labs.',
+        question: 'How much is delivery?',
+        answer:
+          'Standard delivery is AUD 15 for orders under AUD 500. Standard delivery is free when the order subtotal is AUD 500 or more. Available destinations and any other delivery options are shown during checkout.',
       },
       {
-        question: 'What\'s your return policy?',
-        answer: 'We offer a 30-day money-back guarantee on all purchases. If you\'re not completely satisfied with your opal jewellery, you can return it within 30 days of delivery for a full refund (minus return shipping). The item must be in its original condition with all packaging and certificates. Custom-made pieces have a 14-day return window. We want you to love your opal!',
+        question: 'Will I receive tracking?',
+        answer:
+          'Tracked delivery is used where available. We send the tracking details after dispatch. Delivery timing depends on the destination and carrier, so any estimate is not a guaranteed arrival date.',
       },
       {
-        question: 'Are your opals ethically sourced?',
-        answer: 'Absolutely. We work directly with licensed Australian opal miners who follow strict environmental and ethical standards. We source our opals from trusted miners who adhere to Australian government regulations. We believe in fair prices for miners and sustainable mining practices.',
+        question: 'What is the change-of-mind return policy?',
+        answer:
+          'Contact us within 30 days of delivery. Standard, unused pieces may be returned when they remain in their original condition and packaging. Return postage is paid by the customer. Contact us before sending an item back so we can confirm the correct steps.',
       },
       {
-        question: 'Can I see the opal before I buy?',
-        answer: 'While we can\'t offer in-person viewings (as we\'re online-only), we provide multiple high-resolution photos and videos of each piece showing the opal from different angles and lighting conditions. We also offer video calls where we can show you the piece in real-time. Plus, our 30-day return policy gives you peace of mind to evaluate the opal at home.',
-      },
-      {
-        question: 'Do you offer a warranty or guarantee?',
-        answer: 'Yes! All our jewellery comes with a Lifetime Authenticity Guarantee - if your opal is ever found to be anything other than genuine Australian opal, we\'ll provide a full refund no matter how long you\'ve owned it. We also offer a 1-year warranty against manufacturing defects in the metalwork. Natural damage (chips, cracks from impact) is not covered, but we can often repair pieces for a fee.',
+        question: 'Which items are excluded from change-of-mind returns?',
+        answer:
+          'Custom, personalised, altered, worn, hygiene-sensitive, and final-sale pieces are not eligible for change-of-mind returns. These exclusions do not limit your automatic rights under the Australian Consumer Law when an item is faulty or materially different from its description.',
       },
     ],
   },
   {
-    title: 'Shipping & Delivery',
-    icon: Package,
+    title: 'Payment and order help',
     faqs: [
       {
-        question: 'How long does shipping take?',
-        answer: 'Australian domestic shipping: 3-7 business days via Australia Post with tracking. Express shipping (1-3 days) is available for an additional fee. International shipping: 7-21 business days depending on destination. All orders are processed within 1-2 business days. You\'ll receive tracking information as soon as your order ships.',
+        question: 'How is payment handled?',
+        answer:
+          'Available payment methods appear at checkout. Payment details are collected and processed by Stripe, and The Good Opal Co does not store your full card number.',
       },
       {
-        question: 'Do you ship internationally?',
-        answer: 'Yes! We ship worldwide. International shipping costs vary by destination and package weight. All international orders include full tracking and insurance. Please note that international customers are responsible for any customs duties or import taxes in their country. We declare all items at their full value as required by law.',
+        question: 'What should I do if something is wrong with my order?',
+        answer:
+          'Contact us promptly with your order number, a description of the issue, and clear photographs when possible. We will assess the item and explain the applicable repair, replacement, refund, or other remedy.',
       },
       {
-        question: 'Is shipping free?',
-        answer: 'We offer free standard shipping on all Australian orders over $500. For orders under $500, standard shipping is $15. Express shipping is available for $25. International shipping rates vary by country and are calculated at checkout based on your location and the weight of your order.',
-      },
-      {
-        question: 'How are items packaged?',
-        answer: 'Every piece of opal jewellery is carefully packaged in a beautiful presentation box with protective padding. The box is then placed in a shipping carton with additional cushioning. All orders over $1,000 require signature upon delivery for security. High-value items ship with full insurance and discreet packaging (no external markings indicating jewellery).',
-      },
-      {
-        question: 'Can I track my order?',
-        answer: 'Yes! Once your order ships, you\'ll receive an email with your tracking number and a link to track your package in real-time. You can also log into your account on our website to view order status and tracking information. If you have any questions about your shipment, our team is always happy to help.',
+        question: 'Can I change or cancel an order?',
+        answer:
+          'Contact us as soon as possible. We may be able to help before an order enters packing or dispatch, but changes and cancellations cannot be promised once fulfilment has started.',
       },
     ],
   },
   {
-    title: 'Payment & Security',
-    icon: CreditCard,
+    title: 'Opal care',
     faqs: [
       {
-        question: 'What payment methods do you accept?',
-        answer: 'We accept all major credit and debit cards (Visa, Mastercard, American Express) through our secure Stripe payment gateway. We also accept Apple Pay and Google Pay for faster checkout. All payments are processed securely with 256-bit SSL encryption. We never store your full card details on our servers.',
+        question: 'How should I clean opal jewellery?',
+        answer:
+          'Use a soft, damp cloth. For solid opal, a small amount of mild soap and lukewarm water may be suitable. Avoid ultrasonic or steam cleaners, harsh chemicals, prolonged soaking, and sudden temperature changes. Ask us first if you are unsure whether your piece is solid opal, a doublet, or a triplet.',
       },
       {
-        question: 'Is my payment information secure?',
-        answer: 'Absolutely. We use Stripe, one of the world\'s most trusted payment processors, which is PCI-DSS compliant. All payment data is encrypted using industry-standard 256-bit SSL encryption. We never see or store your full credit card information. Your security is our top priority.',
+        question: 'How should I store an opal?',
+        answer:
+          'Store it separately in a soft pouch or lined box so harder jewellery cannot scratch it. Remove opal jewellery before sport, household work, swimming, or any activity where it may be knocked or exposed to chemicals.',
       },
       {
-        question: 'Do you offer payment plans or financing?',
-        answer: 'For purchases over $2,000, we can arrange payment plans on a case-by-case basis. Please contact us to discuss options. We want to make owning beautiful Australian opal jewellery accessible while ensuring security for both parties. All payment plans require an initial deposit and signed agreement.',
-      },
-      {
-        question: 'Can I pay in installments?',
-        answer: 'We\'re currently setting up partnerships with buy-now-pay-later services like Afterpay and Zip for purchases up to $2,000. Check back soon or contact us for the latest information on installment payment options.',
+        question: 'Can you help with resizing or repairs?',
+        answer:
+          'Contact us with photographs and the relevant order or product details. Suitability, cost, and timing depend on the construction, condition, and required work, so we confirm these after assessment.',
       },
     ],
   },
   {
-    title: 'Opal Care & Maintenance',
-    icon: Wrench,
+    title: 'Custom work',
     faqs: [
       {
-        question: 'How do I care for my opal jewellery?',
-        answer: 'Opals are relatively soft (5.5-6.5 on Mohs scale) and require gentle care. Store separately from harder gemstones to avoid scratches. Clean with lukewarm water and mild soap using a soft cloth - never use ultrasonic cleaners, steam cleaners, or harsh chemicals. Remove opal jewellery before swimming, exercising, or doing household chores. With proper care, your opal will last generations.',
+        question: 'Can I request a custom piece?',
+        answer:
+          'Yes. Start with the type of piece, preferred metal, approximate size, budget, timing, and any opal colours or patterns you like. We will confirm whether the project is suitable before any commitment.',
       },
       {
-        question: 'Can opals get wet?',
-        answer: 'Yes, opals can get wet! Contrary to popular myth, water won\'t damage solid opals. In fact, opals contain 5-10% water naturally. However, avoid prolonged soaking and always dry thoroughly. Remove opal jewellery before swimming in chlorinated pools or hot tubs, as chemicals can be harmful. Brief contact with water (washing hands, rain) is perfectly fine.',
+        question: 'How are custom price and timing decided?',
+        answer:
+          'Both depend on the chosen opal, metal, design complexity, specialist work, and current availability. We provide the agreed scope, expected timing, price, and payment stages for your project before work begins.',
       },
       {
-        question: 'Will my opal crack or dry out?',
-        answer: 'Solid opals (which is what we sell) are very stable and won\'t dry out under normal conditions. Cracks typically only occur from physical impact or extreme temperature changes. Avoid exposing opals to extreme heat (saunas, direct sunlight for extended periods) or rapid temperature changes. We include detailed care instructions with every purchase.',
-      },
-      {
-        question: 'How should I store my opal jewellery?',
-        answer: 'Store opals in a soft cloth pouch or lined jewellery box, separate from other jewellery to prevent scratching. Room temperature with normal humidity is ideal - no special storage required. Avoid storing in extremely dry environments (like safety deposit boxes in some climates) for very extended periods. Wearing your opal regularly is actually good for it!',
-      },
-      {
-        question: 'Can you resize or repair opal jewellery?',
-        answer: 'Yes! We offer resizing services for rings and repairs for all our jewellery. Resizing typically takes 2-3 weeks and costs $60-150 depending on the piece. Repairs are quoted on a case-by-case basis. We recommend having opals professionally checked and cleaned every 1-2 years. Contact us for specific repair or resizing needs.',
-      },
-    ],
-  },
-  {
-    title: 'Custom Design & Commissions',
-    icon: Gem,
-    faqs: [
-      {
-        question: 'Can I create a custom piece of jewellery?',
-        answer: 'Absolutely! Custom design is one of our specialties. You can either choose an opal from our inventory and design a setting around it, or we can source a specific type of opal based on your requirements (colour, size, budget). Our in-house jewellers work with you to create a one-of-a-kind piece. The process typically takes 6-8 weeks from design approval to completion.',
-      },
-      {
-        question: 'How does the custom design process work?',
-        answer: '1) Initial consultation (phone/email/video) to discuss your vision and budget. 2) We provide opal options and design sketches. 3) You approve the design and opal selection. 4) We create your piece (6-8 weeks). 5) Final approval photos before shipping. 6) Your custom piece arrives with certificate. A 50% deposit is required to begin, with the balance due before shipping.',
-      },
-      {
-        question: 'Can I use my own opal for a custom setting?',
-        answer: 'Yes! If you have a family heirloom opal or a stone you\'ve purchased, we can create a beautiful setting for it. We\'ll need to evaluate the opal first (photos or in-person) to ensure it\'s suitable for setting and to design appropriately. Custom setting prices start at $800 for sterling silver and $1,500 for gold, depending on complexity.',
-      },
-      {
-        question: 'What\'s the price range for custom pieces?',
-        answer: 'Custom pieces typically range from $2,000 to $20,000+ depending on the opal (size, quality, rarity), metal choice (silver, gold, platinum), design complexity, and any additional gemstones. We can work with various budgets and will always be transparent about pricing before you commit. Simple custom settings start around $1,500 total.',
-      },
-    ],
-  },
-  {
-    title: 'Contact & Support',
-    icon: Mail,
-    faqs: [
-      {
-        question: 'How can I contact you?',
-        answer: 'Email us at thegoodopalco@gmail.com for any questions - we respond within 24 hours on business days. You can also reach us on Instagram @goodopalco for a quick response. We\'re here to help!',
-      },
-      {
-        question: 'Do you have a physical store I can visit?',
-        answer: 'We\'re currently online-only, which allows us to keep costs down and pass savings to you. However, we occasionally participate in jewellery shows and opal events around Australia. Follow us on Instagram @goodopalco for announcements about upcoming events where you can see our pieces in person.',
-      },
-      {
-        question: 'Can I schedule a video call to see opals?',
-        answer: 'Yes! We\'re happy to arrange video calls (Zoom, FaceTime, WhatsApp) where we can show you specific pieces in detail, demonstrate the opal\'s colour play in different lighting, and answer any questions in real-time. Email us to schedule a time that works for you. This is especially popular for high-value purchases.',
+        question: 'Can you work with an opal I already own?',
+        answer:
+          'Possibly. The stone must be assessed for condition, dimensions, and suitability before we can propose a setting or accept responsibility for the work. Send clear photographs and any known history through the contact form.',
       },
     ],
   },
@@ -188,152 +131,84 @@ const faqCategories = [
 
 export default function FAQPage() {
   return (
-    <PageTransition>
-      <div className="min-h-screen flex flex-col bg-white">
-        <Navigation
-          logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-          items={[
-            { href: '/store', label: 'Shop' },
-            { href: '/blog', label: 'Blog' },
-            { href: '/courses', label: 'Courses' },
-            { href: '/about', label: 'About' },
-            { href: '/contact', label: 'Contact' },
-            { href: '/faq', label: 'FAQ' },
-          ]}
-        />
-
-        <main className="flex-1">
-          {/* Hero Section */}
-          <section className="relative pt-32 pb-16 bg-gradient-to-br from-slate-50 via-white to-opal-electric/5 overflow-hidden">
-            {/* Magical sparkle effects */}
-            <div className="absolute inset-0">
-              <div className="absolute top-20 left-1/4 w-4 h-4 bg-opal-electric/30 rounded-full animate-pulse" />
-              <div className="absolute top-32 right-1/3 w-2 h-2 bg-fire-pink/40 rounded-full animate-pulse delay-300" />
-              <div className="absolute bottom-24 left-1/2 w-3 h-3 bg-opal-turquoise/30 rounded-full animate-pulse delay-700" />
-            </div>
-
-            <Container>
-              <div className="text-center max-w-4xl mx-auto">
-                <span className="font-accent text-xl text-transparent bg-clip-text bg-gradient-to-r from-opal-electric to-fire-pink mb-4 block animate-sparkle">
-                  ✨ Knowledge Center ✨
-                </span>
-                <h1 className="font-serif text-4xl md:text-5xl font-bold text-charcoal mb-4">
-                  Frequently Asked <span className="font-accent text-opal-electric">Questions</span>
+    <MarketingShell>
+        <section className="border-b border-warm-grey/60">
+          <Container className="py-14 sm:py-20 lg:py-24">
+            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+              <div className="max-w-2xl">
+                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                  Buyer guide
+                </p>
+                <h1 className="mt-5 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl">
+                  Clear answers before you choose.
                 </h1>
-                <p className="font-sans text-lg text-content-muted max-w-2xl mx-auto mb-4">
-                  Expert guidance on Australian opals, craftsmanship, and care
-                </p>
-                <p className="font-accent text-base text-opal-electric/70">
-                  ~ Where questions become wisdom ~
+                <p className="mt-7 max-w-xl font-sans text-lg leading-8 text-charcoal/70">
+                  Product details, delivery, eligible returns, care, and custom work. If your question is specific to one opal, send us the product link.
                 </p>
               </div>
-            </Container>
-          </section>
-
-          {/* FAQ Content */}
-          <section className="py-16 lg:py-24 bg-white">
-            {/* Decorative background elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full opacity-5 blur-3xl bg-gradient-to-br from-opal-electric to-fire-pink" />
-              <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full opacity-5 blur-3xl bg-gradient-to-tr from-opal-turquoise to-opal-emerald" />
+              <div className="relative aspect-[4/3] overflow-hidden bg-charcoal">
+                <Image
+                  src="/images/founders.jpg"
+                  alt="A polished Australian opal under direct light"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover"
+                  priority
+                />
+              </div>
             </div>
+          </Container>
+        </section>
 
-            <Container>
-              <div className="relative z-10 max-w-5xl mx-auto">
-                {faqCategories.map((category, categoryIndex) => {
-                  const Icon = category.icon
-                  const colors = [
-                    'from-opal-electric to-opal-electric/80',
-                    'from-fire-pink to-fire-pink/80',
-                    'from-opal-emerald to-opal-emerald/80',
-                    'from-fire-gold to-fire-gold/80',
-                    'from-opal-turquoise to-opal-turquoise/80',
-                    'from-opal-pink to-opal-pink/80',
-                  ]
-                  const gradient = colors[categoryIndex % colors.length]
-
-                  return (
-                    <div key={category.title} className={cn(
-                      "mb-16",
-                      categoryIndex !== 0 && "pt-16 border-t border-gray-soft"
-                    )}>
-                      {/* Category Header */}
-                      <div className="mb-8">
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-lg`}>
-                            <Icon className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <h2 className="font-serif text-2xl font-semibold text-charcoal">
-                              {category.title}
-                            </h2>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Magical Accordion */}
-                      <Accordion type="single" collapsible className="space-y-3">
-                        {category.faqs.map((faq, index) => (
-                          <AccordionItem
-                            key={index}
-                            value={`${category.title}-${index}`}
-                            className="bg-gradient-to-r from-gray-50/50 to-opal-electric/5 border border-gray-soft/50 rounded-xl overflow-hidden hover:from-opal-electric/10 hover:to-fire-pink/10 transition-all duration-300 shadow-sm hover:shadow-md"
-                          >
-                            <AccordionTrigger className="px-6 py-4 hover:no-underline group">
-                              <span className="font-sans text-left text-base font-medium text-charcoal group-hover:text-opal-electric-accessible transition-colors pr-6">
-                                {faq.question}
-                              </span>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-6 pb-4">
-                              <p className="font-sans text-content leading-relaxed">
-                                {faq.answer}
-                              </p>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* CTA Section */}
-              <div className="relative mt-20 text-center">
-                <div className="max-w-2xl mx-auto p-12 bg-gradient-to-br from-opal-electric/10 to-fire-pink/10 rounded-3xl border border-opal-electric/20">
-                  <div className="mb-6 inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-fire-pink to-opal-electric shadow-lg">
-                    <Mail className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-serif text-3xl font-bold text-charcoal mb-4">
-                    Need Personal <span className="font-accent text-opal-electric">Assistance?</span>
-                  </h3>
-                  <p className="font-sans text-lg text-content mb-8 leading-relaxed">
-                    Our opal experts are available to guide you through your selection
-                  </p>
-                  <div className="space-y-4">
-                    <Button
-                      size="lg"
-                      className="bg-gradient-to-r from-fire-pink to-opal-electric hover:from-opal-electric hover:to-fire-pink text-white px-8 py-3 text-base font-medium w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300"
-                      asChild
-                    >
-                      <a href="mailto:goodopalco@gmail.com">
-                        Schedule a Consultation
-                      </a>
-                    </Button>
-                    <div className="font-sans text-sm text-content-muted">
-                      or message us <span className="text-fire-pink font-medium">@goodopalco</span> on Instagram
-                    </div>
-                  </div>
-                  <p className="font-accent text-sm text-opal-electric/70 mt-4">
-                    ~ Where expertise meets magic ~
-                  </p>
+        <Container className="py-16 sm:py-20 lg:py-28">
+          <div className="mx-auto max-w-4xl">
+            {faqCategories.map((category, categoryIndex) => (
+              <section
+                key={category.title}
+                className={categoryIndex === 0 ? '' : 'mt-14 border-t border-warm-grey/60 pt-14'}
+              >
+                <div className="grid gap-6 sm:grid-cols-[10rem_1fr] sm:gap-10">
+                  <h2 className="font-serif text-2xl font-medium text-charcoal">
+                    {category.title}
+                  </h2>
+                  <Accordion type="single" collapsible>
+                    {category.faqs.map((faq, index) => (
+                      <AccordionItem
+                        key={faq.question}
+                        value={`${categoryIndex}-${index}`}
+                        className="border-warm-grey/70"
+                      >
+                        <AccordionTrigger className="py-5 text-left font-sans text-base font-semibold leading-6 text-charcoal hover:text-opal-electric-accessible hover:no-underline">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="max-w-2xl pb-6 font-sans text-sm leading-7 text-charcoal/70">
+                          {faq.answer}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </div>
-              </div>
-            </Container>
-          </section>
-        </main>
+              </section>
+            ))}
 
-        <Footer />
-      </div>
-    </PageTransition>
+            <section className="mt-20 border-t border-charcoal pt-10 sm:flex sm:items-end sm:justify-between sm:gap-10">
+              <div className="max-w-xl">
+                <h2 className="font-serif text-3xl font-medium text-charcoal">
+                  Still deciding?
+                </h2>
+                <p className="mt-4 font-sans text-sm leading-7 text-charcoal/70">
+                  Send the product link and tell us what you need to see or understand. We will answer from the details available for that piece.
+                </p>
+              </div>
+              <Link
+                href="/contact?subject=product-question"
+                className="mt-7 inline-flex min-h-12 shrink-0 items-center justify-center rounded-md bg-charcoal px-6 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 sm:mt-0"
+              >
+                Ask about a piece
+              </Link>
+            </section>
+          </div>
+        </Container>
+    </MarketingShell>
   )
 }

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
 import { Container } from '@/components/layout'
-import { Navigation, Footer } from '@/components/navigation'
+import { Footer, SiteNavigation } from '@/components/navigation'
 import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
@@ -11,16 +11,17 @@ import { formatCurrency } from '@/lib/utils'
 import { getFreeShippingProgress } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import {
-  AuthenticityChecklist,
-  SocialProof,
   PaymentBadgesCompact,
 } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
 import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
+import { resolveMediaUrl } from '@/lib/media-url'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
 }
+
+export const dynamic = 'force-dynamic'
 
 /**
  * Generate metadata for product pages
@@ -31,7 +32,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const { docs } = await payload.find({
     collection: 'products',
-    where: { slug: { equals: slug } },
+    where: {
+      and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }],
+    },
     limit: 1,
     depth: 2,
   })
@@ -43,20 +46,17 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     }
   }
 
-  const imageUrl = product.images?.[0]?.image?.url
+  const primaryImage = product.images?.[0]?.image
+  const imageUrl =
+    primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined
+  const description = extractPlainText(product.description).slice(0, 160)
 
   return {
     title: `${product.name} | The Good Opal Co`,
-    description:
-      typeof product.description === 'string'
-        ? product.description.slice(0, 160)
-        : 'Discover this unique Australian opal from The Good Opal Co.',
+    description: description || 'Discover this unique Australian opal from The Good Opal Co.',
     openGraph: {
       title: product.name,
-      description:
-        typeof product.description === 'string'
-          ? product.description.slice(0, 160)
-          : 'Authentic Australian opal',
+      description: description || 'Australian opal selected by The Good Opal Co.',
       images: imageUrl ? [{ url: imageUrl }] : undefined,
     },
   }
@@ -65,21 +65,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 /**
  * Generate static params for all published products
  */
-export async function generateStaticParams() {
-  const payload = await getPayload()
-
-  const { docs: products } = await payload.find({
-    collection: 'products',
-    where: { status: { equals: 'published' } },
-    limit: 500,
-    select: { slug: true },
-  })
-
-  return products.map((product) => ({
-    slug: product.slug,
-  }))
-}
-
 /**
  * Helper to extract plain text from rich text field
  */
@@ -113,7 +98,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   const { docs } = await payload.find({
     collection: 'products',
-    where: { slug: { equals: slug } },
+    where: {
+      and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }],
+    },
     limit: 1,
     depth: 2, // Include related media
   })
@@ -125,15 +112,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   // Extract image URL
   const primaryImage = product.images?.[0]?.image
-  const imageUrl = typeof primaryImage === 'object' && primaryImage ? primaryImage.url : undefined
+  const imageUrl =
+    typeof primaryImage === 'object' && primaryImage ? resolveMediaUrl(primaryImage.url) : undefined
 
   // Get description as plain text
   const descriptionText = extractPlainText(product.description)
-
-  // Social proof removed to comply with Australian Consumer Law
-  // Real analytics would be implemented here in production
-  const viewCount = undefined // Removed fake metrics
-  const lastSoldDaysAgo = undefined // Removed fake metrics
 
   // Format category name
   const categoryName = product.category
@@ -143,11 +126,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   // Collect all product images with alt text
   const productImages = product.images
-    ?.map((img: { image?: { url?: string; alt?: string } | string | null }, index: number) => {
+    ?.map((img, index: number) => {
       const imgObj = typeof img.image === 'object' && img.image ? img.image : null
       if (!imgObj?.url) return null
       return {
-        url: imgObj.url,
+        url: resolveMediaUrl(imgObj.url) ?? '',
         alt: imgObj.alt || `${product.name} view ${index + 1}`
       }
     })
@@ -164,7 +147,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           price: product.price,
           images: productImages.map(img => img.url),
           category: categoryName,
-          stock: product.stock,
+          stock: product.stock ?? 0,
           sku: String(product.id),
         }}
       />
@@ -177,77 +160,55 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       />
 
     <ProductViewTracker product={product}>
-      <div className="min-h-screen flex flex-col">
-        <Navigation
-          logo={{ id: 'logo', url: '/logo.png', alt: 'The Good Opal Co', width: 48, height: 48 }}
-          items={[
-            { href: '/store', label: 'Shop' },
-            { href: '/blog', label: 'Blog' },
-            { href: '/courses', label: 'Courses' },
-            { href: '/about', label: 'About' },
-            { href: '/contact', label: 'Contact' },
-            { href: '/faq', label: 'FAQ' },
-          ]}
-        />
-        <main className="flex-1">
-        {/* Premium Background */}
-        <div className="relative">
-          {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-white to-gray-50 -z-10" />
-
-        </div>
+      <div className="flex min-h-screen flex-col bg-cream">
+        <SiteNavigation />
+        <main id="main-content" tabIndex={-1} className="flex-1">
 
         {/* Breadcrumb */}
-        <section className="pt-24 pb-4">
+        <section className="pb-5 pt-28">
           <Container>
-            <nav className="flex items-center gap-2 text-sm">
-              <Link href="/" className="text-gray-500 hover:text-opal-electric-accessible transition-colors">
+            <nav aria-label="Breadcrumb" className="flex items-center gap-2 overflow-hidden font-sans text-xs text-charcoal/55 sm:text-sm">
+              <Link href="/" className="transition-colors hover:text-charcoal">
                 Home
               </Link>
-              <span className="text-gray-400">/</span>
-              <Link href="/store" className="text-gray-500 hover:text-opal-electric-accessible transition-colors">
-                Store
+              <span aria-hidden="true">/</span>
+              <Link href="/store" className="transition-colors hover:text-charcoal">
+                Shop
               </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-charcoal font-medium">{product.name}</span>
+              <span aria-hidden="true">/</span>
+              <span aria-current="page" className="truncate font-medium text-charcoal">{product.name}</span>
             </nav>
           </Container>
         </section>
 
         {/* Product Detail */}
-        <section className="pb-20">
+        <section className="pb-20 lg:pb-28">
           <Container>
-            <div className="grid lg:grid-cols-2 gap-12">
+            <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
               {/* Product Image Gallery */}
-              <div className="space-y-4">
+              <div>
                 <ProductImageGallery
                   productName={product.name}
                   images={productImages}
-                  featured={product.featured}
-                  stock={product.stock}
+                  featured={product.featured ?? false}
+                  stock={product.stock ?? 0}
                 />
-
-                {/* Social Proof */}
-                <div className="flex items-center justify-center">
-                  <SocialProof viewCount={viewCount} lastSoldDaysAgo={lastSoldDaysAgo} />
-                </div>
               </div>
 
               {/* Product Info */}
-              <div className="space-y-6">
+              <div className="space-y-7 lg:sticky lg:top-28 lg:self-start">
                 {/* Title */}
                 <div>
-                  <span className="mb-4 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-normal text-opal-electric-accessible">
-                    <span className="h-px w-12 bg-opal-electric-accessible/35"></span>
+                  <span className="mb-4 inline-flex items-center font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
                     {categoryName}
                   </span>
-                  <h1 className="mt-2 font-serif text-4xl font-semibold leading-tight text-charcoal md:text-5xl lg:text-6xl">
+                  <h1 className="max-w-[14ch] font-serif text-4xl font-medium leading-[1.02] text-charcoal md:text-5xl lg:text-6xl">
                     {product.name}
                   </h1>
                 </div>
 
                 {/* Price */}
-                <div className="flex items-start gap-4 pb-8 border-b border-gray-200">
+                <div className="flex items-start gap-4 border-b border-warm-grey/60 pb-7">
                   <div>
                     <span className="font-serif text-4xl font-semibold leading-none text-charcoal md:text-5xl">
                       {formatCurrency(product.price, 'AUD')}
@@ -266,13 +227,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {/* Description */}
-                <div className="text-charcoal/80 leading-relaxed">
-                  <p className="text-lg">{descriptionText}</p>
+                <div className="leading-relaxed text-charcoal/75">
+                  <p className="font-sans text-base leading-8 sm:text-lg">{descriptionText || 'Contact us for more detail about this piece, including its colour, origin, and condition.'}</p>
                 </div>
 
-                {/* Authenticity Checklist */}
-                <div className="py-6 border-y border-warm-grey">
-                  <AuthenticityChecklist />
+                <div className="grid grid-cols-2 border-y border-warm-grey/60 font-sans text-sm text-charcoal/70">
+                  <div className="border-r border-warm-grey/60 px-1 py-4">Australian opal</div>
+                  <div className="px-4 py-4">Origin disclosed where known</div>
+                  <div className="border-r border-t border-warm-grey/60 px-1 py-4">Tracked delivery</div>
+                  <div className="border-t border-warm-grey/60 px-4 py-4">Care guidance included</div>
                 </div>
 
                 {/* Product Actions */}
@@ -282,28 +245,28 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     slug: product.slug,
                     name: product.name,
                     price: product.price,
-                    stock: product.stock,
-                    image: imageUrl,
+                    stock: product.stock ?? 0,
+                    image: imageUrl ?? undefined,
                   }}
                 />
 
                 {/* Purchase Confidence */}
-                <div className="rounded-2xl border border-opal-electric-accessible/15 bg-opal-electric-accessible/5 p-5">
-                  <h2 className="mb-4 font-serif text-2xl font-semibold text-charcoal">
-                    Purchase confidence
+                <div className="border border-warm-grey/60 bg-white p-5">
+                  <h2 className="mb-4 font-serif text-2xl font-medium text-charcoal">
+                    Delivery and decisions
                   </h2>
                   <div className="grid gap-3 text-sm text-charcoal/75 sm:grid-cols-2">
                     <div>
                       <p className="font-sans font-semibold text-charcoal">Shipping</p>
                       <p className="mt-1">
                         {productShippingProgress.qualifies
-                          ? 'This piece qualifies for free express shipping.'
-                          : `${formatCurrency(productShippingProgress.remaining, 'AUD')} away from free express shipping.`}
+                          ? 'This piece qualifies for free shipping.'
+                          : `Shipping is calculated at checkout. Add ${formatCurrency(productShippingProgress.remaining, 'AUD')} to qualify for free shipping.`}
                       </p>
                     </div>
                     <div>
-                      <p className="font-sans font-semibold text-charcoal">Care</p>
-                      <p className="mt-1">Insured delivery, elegant packaging, and clear care guidance included.</p>
+                      <p className="font-sans font-semibold text-charcoal">Need a closer look?</p>
+                      <p className="mt-1"><Link href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`} className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible">Ask a question or book a viewing.</Link></p>
                     </div>
                   </div>
                 </div>
@@ -313,23 +276,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <PaymentBadgesCompact />
                 </div>
 
-                {/* Shipping Info */}
-                <div className="rounded-xl border border-warm-grey/30 bg-white p-5">
-                  <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-opal-electric-accessible" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                      </svg>
-                      <span className="font-medium">Free shipping over $500</span>
-                    </div>
-                    <div className="hidden h-4 w-px bg-gray-200 sm:block" />
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-opal-electric-accessible" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                      </svg>
-                      <span className="font-medium">30-day returns</span>
-                    </div>
-                  </div>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-warm-grey/60 pt-5 font-sans text-sm text-charcoal/65">
+                  <Link href="/shipping" className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible">Shipping details</Link>
+                  <Link href="/returns" className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible">Returns policy</Link>
+                  <Link href="/contact" className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible">Contact us</Link>
                 </div>
               </div>
             </div>
@@ -337,8 +287,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {/* Product Specifications */}
             {(product.stoneOrigin || product.stoneType || product.material || product.weight) && (
               <div className="mt-20 border-t border-warm-grey/40 pt-12">
-                <h2 className="mb-8 font-serif text-3xl font-semibold text-charcoal md:text-4xl">
-                  Gemstone <span className="text-opal-electric">Specifications</span>
+                <h2 className="mb-8 font-serif text-3xl font-medium text-charcoal md:text-4xl">
+                  Piece details
                 </h2>
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
                   {product.stoneType && (

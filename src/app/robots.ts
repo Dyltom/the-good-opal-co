@@ -7,7 +7,7 @@
 
 import { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopal.co'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopalco.com'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -22,6 +22,9 @@ export default function robots(): MetadataRoute.Robots {
           '/checkout',
           '/checkout/*',
           '/cart',
+          '/account',
+          '/account/*',
+          '/order-tracking',
           '/_next/*',
         ],
       },
