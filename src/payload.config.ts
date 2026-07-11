@@ -35,7 +35,14 @@ function getPayloadSecret(): string {
 
 function getDatabaseUrl(): string {
   const databaseUrl = process.env['DATABASE_URL']
-  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl
+  if (databaseUrl && databaseUrl.trim().length > 0) {
+    const parsed = new URL(databaseUrl)
+    const sslMode = parsed.searchParams.get('sslmode')
+    if (sslMode === 'prefer' || sslMode === 'require' || sslMode === 'verify-ca') {
+      parsed.searchParams.set('sslmode', 'verify-full')
+    }
+    return parsed.toString()
+  }
 
   if (process.env['NODE_ENV'] === 'production') {
     throw new Error('DATABASE_URL environment variable is required in production')

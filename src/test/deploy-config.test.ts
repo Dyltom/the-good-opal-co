@@ -24,6 +24,7 @@ describe('deployment config', () => {
 
     expect(source).toContain("process.env['DATABASE_URL']")
     expect(source).toContain("push: process.env['NODE_ENV'] !== 'production'")
+    expect(source).toContain("parsed.searchParams.set('sslmode', 'verify-full')")
     expect(source).not.toContain('POSTGRES_HOST')
   })
 
