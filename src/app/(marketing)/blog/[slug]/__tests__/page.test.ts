@@ -56,7 +56,10 @@ describe('blog post metadata', () => {
       'Learn what to inspect before buying an Australian opal.',
     )
     expect(metadata.alternates?.canonical).toBe(
-      'http://localhost:8412/blog/choose-an-australian-opal',
+      new URL(
+        '/blog/choose-an-australian-opal',
+        process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:8412',
+      ).toString(),
     )
     expect(metadata.openGraph).toMatchObject({
       type: 'article',
