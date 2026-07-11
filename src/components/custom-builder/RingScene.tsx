@@ -18,6 +18,7 @@ import {
   ClampToEdgeWrapping,
   Color,
   Float32BufferAttribute,
+  LinearFilter,
   RepeatWrapping,
   SRGBColorSpace,
   Vector3,
@@ -189,7 +190,11 @@ function outlinePoint(
   }
   if (shape === 'pear') {
     const taper = 0.15 + 0.85 * Math.pow((sine + 1) / 2, 0.65)
-    return [cosine * adjustedWidth * taper, sine * adjustedHeight]
+    // The taper's widest sampled point reaches only ~75.7% of the requested
+    // width. Normalise it so a documented 10 x 8 mm Aurora stone remains 8 mm
+    // wide instead of rendering as an unnaturally narrow 6 mm teardrop.
+    const pearWidthCorrection = 1.321
+    return [cosine * adjustedWidth * taper * pearWidthCorrection, sine * adjustedHeight]
   }
   return [cosine * adjustedWidth, sine * adjustedHeight]
 }
@@ -407,7 +412,6 @@ function OpalCabochon({
   opalImageUrls: readonly string[]
   selectedOpal?: BuilderOpal
 }) {
-  const { gl } = useThree()
   const [width, height] = dimensions
   const texture = useMemo(
     () => createOpalTexture(config.stone, selectedOpal),
@@ -430,7 +434,13 @@ function OpalCabochon({
     nextTexture.colorSpace = SRGBColorSpace
     nextTexture.wrapS = ClampToEdgeWrapping
     nextTexture.wrapT = ClampToEdgeWrapping
-    nextTexture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy())
+    // These reviewed photographs contain very small flashes of colour. Sampling
+    // generated whole-image mipmaps softens those flashes toward the pale body
+    // colour before the crop reaches the stone. Direct bilinear sampling keeps
+    // the catalogue pixels intact without introducing nearest-neighbour noise.
+    nextTexture.generateMipmaps = false
+    nextTexture.minFilter = LinearFilter
+    nextTexture.magFilter = LinearFilter
     if (crop) {
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
       const cropRect = computePhotoCrop(image?.width ?? 1, image?.height ?? 1, width / height, crop)
@@ -439,7 +449,7 @@ function OpalCabochon({
     }
     nextTexture.needsUpdate = true
     return nextTexture
-  }, [gl, height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
+  }, [height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
 
   useEffect(() => () => texture.dispose(), [texture])
   useEffect(() => () => photoTexture.dispose(), [photoTexture])
@@ -604,6 +614,7 @@ function StoneOutline({
   radius,
   z,
   finish = 'metal',
+  edgeVariation = 0,
 }: {
   config: RingConfig
   dimensions: StoneDimensions
@@ -611,6 +622,7 @@ function StoneOutline({
   radius: number
   z: number
   finish?: 'metal' | 'patina'
+  edgeVariation?: number
 }) {
   const [width, height] = dimensions
   const curve = useMemo(
@@ -618,13 +630,15 @@ function StoneOutline({
       new CatmullRomCurve3(
         Array.from({ length: 72 }, (_, index) => {
           const angle = (index / 72) * Math.PI * 2
-          const [x, y] = outlinePoint(config.shape, angle, width, height, offset)
+          const handmadeOffset =
+            edgeVariation * (Math.sin(angle * 3 + 0.4) * 0.65 + Math.sin(angle * 7) * 0.35)
+          const [x, y] = outlinePoint(config.shape, angle, width, height, offset + handmadeOffset)
           return new Vector3(x, y, z)
         }),
         true,
         'centripetal'
       ),
-    [config.shape, height, offset, width, z]
+    [config.shape, edgeVariation, height, offset, width, z]
   )
 
   return (
@@ -681,6 +695,7 @@ function Setting({
         radius={Math.max(0.005, profile.bezelLipRadius * 0.42)}
         z={0.043}
         finish="patina"
+        edgeVariation={0.0015}
       />
       <StoneOutline
         config={config}
@@ -688,6 +703,7 @@ function Setting({
         offset={profile.bezelLipOffset}
         radius={profile.bezelLipRadius}
         z={0.045}
+        edgeVariation={0.0025}
       />
 
       {config.setting === 'beaded' && (
@@ -699,18 +715,24 @@ function Setting({
             radius={profile.haloSupportRadius}
             z={0.045}
             finish="patina"
+            edgeVariation={0.002}
           />
           {beads.map(({ key, x, y }) => {
             // Sold Sun & Moon and Aurora rings use individually soldered beads.
             // Deterministic variation keeps the halo handmade without animating
             // or changing between renders.
-            const size = 0.94 + ((key * 7) % 7) * 0.022
-            const flattening = 0.64 + ((key * 5) % 5) * 0.025
+            const size = 0.94 + ((key * 5) % 7) * 0.022
+            const flattening = 0.68 + ((key * 3) % 5) * 0.025
             const heightVariation = (((key * 11) % 5) - 2) * 0.0015
+            const radialLength = Math.hypot(x, y) || 1
+            const radialJitter = (((key * 11) % 9) - 4) * 0.0012
+            const tangentJitter = (((key * 13) % 7) - 3) * 0.0008
+            const beadX = x + (x / radialLength) * radialJitter - (y / radialLength) * tangentJitter
+            const beadY = y + (y / radialLength) * radialJitter + (x / radialLength) * tangentJitter
             return (
               <mesh
                 key={key}
-                position={[x, y, 0.048 + heightVariation]}
+                position={[beadX, beadY, 0.048 + heightVariation]}
                 scale={[size, size, flattening]}
               >
                 <sphereGeometry args={[profile.beadRadius, 14, 14]} />
@@ -736,15 +758,19 @@ function RingShank({
   radius,
   settingY,
   shoulderRadius,
+  shoulderDepth,
   stoneWidth,
   tubeRadius,
+  tubeDepth,
 }: {
   metal: RingConfig['metal']
   radius: number
   settingY: number
   shoulderRadius: number
+  shoulderDepth: number
   stoneWidth: number
   tubeRadius: number
+  tubeDepth: number
 }) {
   const curve = useMemo(() => {
     const endX = stoneWidth - 0.02
@@ -777,14 +803,15 @@ function RingShank({
       const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
       const shoulderDistance = Math.min(progress, 1 - progress)
       const shoulderBlend = Math.min(1, shoulderDistance / 0.14)
-      const localRadius = shoulderRadius + (tubeRadius - shoulderRadius) * shoulderBlend
+      const localHalfWidth = shoulderRadius + (tubeRadius - shoulderRadius) * shoulderBlend
+      const localHalfDepth = shoulderDepth + (tubeDepth - shoulderDepth) * shoulderBlend
 
       for (let side = 0; side < radialSegments; side += 1) {
         const angle = (side / radialSegments) * Math.PI * 2
         positions.push(
-          point.x + inPlaneNormal.x * Math.cos(angle) * localRadius,
-          point.y + inPlaneNormal.y * Math.cos(angle) * localRadius,
-          point.z + Math.sin(angle) * localRadius
+          point.x + inPlaneNormal.x * Math.cos(angle) * localHalfDepth,
+          point.y + inPlaneNormal.y * Math.cos(angle) * localHalfDepth,
+          point.z + Math.sin(angle) * localHalfWidth
         )
       }
     }
@@ -811,7 +838,7 @@ function RingShank({
     nextGeometry.computeVertexNormals()
     nextGeometry.computeBoundingSphere()
     return nextGeometry
-  }, [curve, shoulderRadius, tubeRadius])
+  }, [curve, shoulderDepth, shoulderRadius, tubeDepth, tubeRadius])
 
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -849,8 +876,10 @@ function RingModel({
         metal={metal}
         radius={measurements.centreRadius}
         settingY={settingY}
+        shoulderDepth={styleProfile.shoulderDepth}
         shoulderRadius={styleProfile.shoulderRadius}
         stoneWidth={stoneWidth}
+        tubeDepth={styleProfile.shankDepth}
         tubeRadius={styleProfile.shankRadius}
       />
 
@@ -875,7 +904,7 @@ export function RingScene({
   return (
     <Canvas
       camera={{ position: cameraPositions[view], fov: 32 }}
-      dpr={[1, 1.25]}
+      dpr={[1, 2]}
       frameloop={allowMotion ? 'always' : 'demand'}
       gl={{ antialias: true, alpha: false }}
       scene={{ background }}

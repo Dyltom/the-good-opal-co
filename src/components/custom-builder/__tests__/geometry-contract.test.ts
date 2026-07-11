@@ -68,6 +68,7 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('const domeHeight = totalDepth * 0.58')
     expect(sceneSource).toContain("if (shape === 'elongated')")
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), 0.62)')
+    expect(sceneSource).toContain('const pearWidthCorrection = 1.321')
   })
 
   test('gives each named design meaningful geometry consumed by the scene', () => {
@@ -78,8 +79,10 @@ describe('custom ring geometry contract', () => {
     )
 
     for (const [style, profile] of profiles) {
-      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.065)
-      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.08)
+      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.085)
+      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.1)
+      expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
+      expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(0.95)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.25)
 
@@ -106,7 +109,9 @@ describe('custom ring geometry contract', () => {
       'beadRadius',
       'beadCount',
       'shankRadius',
+      'shankDepth',
       'shoulderRadius',
+      'shoulderDepth',
     ]) {
       expect(sceneSource, property).toMatch(new RegExp(`(?:profile|styleProfile)\\.${property}\\b`))
     }
@@ -116,6 +121,10 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('<meshBasicMaterial')
     expect(sceneSource).toContain('toneMapped={false}')
+    expect(sceneSource).toContain('nextTexture.generateMipmaps = false')
+    expect(sceneSource).toContain('nextTexture.minFilter = LinearFilter')
+    expect(sceneSource).toContain('nextTexture.magFilter = LinearFilter')
+    expect(sceneSource).toContain('dpr={[1, 2]}')
     expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
     expect(sceneSource).not.toContain('iridescence={0.06}')
   })
@@ -123,28 +132,29 @@ describe('custom ring geometry contract', () => {
   test('uses handmade sterling and soldered halo proportions from sold pieces', () => {
     expect(sceneSource).toContain("'sterling-silver': '#d2d3cf'")
     expect(sceneSource).toContain('envMapIntensity={1.2}')
-    expect(sceneSource).toContain('const size = 0.94 + ((key * 7) % 7) * 0.022')
+    expect(sceneSource).toContain('const size = 0.94 + ((key * 5) % 7) * 0.022')
     expect(ringStyleGeometryProfiles['sun-moon']).toMatchObject({
-      haloOffset: 0.056,
-      beadRadius: 0.039,
-      beadCount: 32,
-      shankRadius: 0.078,
+      haloOffset: 0.08,
+      beadRadius: 0.036,
+      beadCount: 38,
+      shankRadius: 0.09,
     })
     expect(ringStyleGeometryProfiles.aurora).toMatchObject({
-      haloOffset: 0.056,
-      beadRadius: 0.039,
+      haloOffset: 0.07,
+      beadRadius: 0.038,
       beadCount: 30,
     })
   })
 
   test('uses measured bezel, halo, and tapered shoulder proportions', () => {
-    expect(configSource).toContain('bezelWallThickness: 0.038')
-    expect(configSource).toContain('bezelLipRadius: 0.021')
-    expect(configSource).toContain('beadRadius: 0.039')
-    expect(configSource).toContain('beadCount: 32')
+    expect(configSource).toContain('bezelWallThickness: 0.056')
+    expect(configSource).toContain('bezelLipRadius: 0.013')
+    expect(configSource).toContain('beadRadius: 0.036')
+    expect(configSource).toContain('beadCount: 38')
     expect(sceneSource).toContain('shoulderDistance')
     expect(sceneSource).toContain('shoulderBlend')
-    expect(sceneSource).toContain('localRadius')
+    expect(sceneSource).toContain('localHalfWidth')
+    expect(sceneSource).toContain('localHalfDepth')
     expect(sceneSource).not.toContain('const solderedRadius =')
   })
 })
