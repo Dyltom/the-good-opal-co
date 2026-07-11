@@ -440,6 +440,48 @@ export interface Product {
    */
   weight?: number | null;
   /**
+   * Required before displaying weight on finished jewellery
+   */
+  weightUnit?: ('carats' | 'grams') | null;
+  /**
+   * Show this loose opal in the custom ring builder. Complete every reviewed builder field first.
+   */
+  builderEligible?: boolean | null;
+  builderSilhouette?: ('oval' | 'round' | 'elongated' | 'cushion' | 'pear') | null;
+  builderRecommendedStyle?: ('gemini' | 'coral' | 'sun-moon' | 'aurora') | null;
+  /**
+   * Six-digit hex body tone
+   */
+  builderBodyColour?: string | null;
+  /**
+   * Primary play-of-colour hex
+   */
+  builderFlashColourPrimary?: string | null;
+  /**
+   * Secondary play-of-colour hex
+   */
+  builderFlashColourSecondary?: string | null;
+  /**
+   * Accent play-of-colour hex
+   */
+  builderFlashColourAccent?: string | null;
+  /**
+   * 0 opaque, 1 transparent
+   */
+  builderTransmission?: number | null;
+  /**
+   * Horizontal focal point, 0 to 1
+   */
+  builderPhotoFocalX?: number | null;
+  /**
+   * Vertical focal point, 0 to 1
+   */
+  builderPhotoFocalY?: number | null;
+  /**
+   * Crop zoom, 1 or greater
+   */
+  builderPhotoZoom?: number | null;
+  /**
    * Ring size (if applicable)
    */
   ringSize?: string | null;
@@ -1118,6 +1160,18 @@ export interface ProductsSelect<T extends boolean = true> {
         depth?: T;
       };
   weight?: T;
+  weightUnit?: T;
+  builderEligible?: T;
+  builderSilhouette?: T;
+  builderRecommendedStyle?: T;
+  builderBodyColour?: T;
+  builderFlashColourPrimary?: T;
+  builderFlashColourSecondary?: T;
+  builderFlashColourAccent?: T;
+  builderTransmission?: T;
+  builderPhotoFocalX?: T;
+  builderPhotoFocalY?: T;
+  builderPhotoZoom?: T;
   ringSize?: T;
   careInstructions?: T;
   certified?: T;

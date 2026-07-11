@@ -28,6 +28,7 @@ const RingPreview = dynamic(() => import('./RingPreview').then((module) => modul
 interface RingConfiguratorProps {
   initialConfig: RingConfig
   opals: readonly BuilderOpal[]
+  unavailableOpalRequested?: boolean
 }
 
 interface OptionGroupProps<K extends keyof RingConfig> {
@@ -232,7 +233,11 @@ function RingStylePicker({
   )
 }
 
-export function RingConfigurator({ initialConfig, opals }: RingConfiguratorProps) {
+export function RingConfigurator({
+  initialConfig,
+  opals,
+  unavailableOpalRequested = false,
+}: RingConfiguratorProps) {
   const [config, setConfig] = useState(initialConfig)
   const [shareStatus, setShareStatus] = useState('')
   const selectedOpal = useMemo(
@@ -314,6 +319,16 @@ export function RingConfigurator({ initialConfig, opals }: RingConfiguratorProps
               Explore proportion, colour, setting, and metal together. This preview starts the
               conversation; each natural opal and finished piece remains one of a kind.
             </p>
+
+            {unavailableOpalRequested && (
+              <p
+                role="status"
+                className="mt-6 border-y border-warm-grey/70 py-4 text-sm leading-6 text-charcoal"
+              >
+                The opal saved in this link is no longer available. We have not substituted a
+                different stone. Choose another available opal below to continue.
+              </p>
+            )}
 
             <div className="mt-10 space-y-9">
               <OptionGroup

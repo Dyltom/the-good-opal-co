@@ -15,6 +15,7 @@ import * as migration_20260711_223000_course_education from './20260711_223000_c
 import * as migration_20260712_013000_order_operations_hardening from './20260712_013000_order_operations_hardening'
 import * as migration_20260712_042253_blog_editorial_taxonomy from './20260712_042253_blog_editorial_taxonomy'
 import * as migration_20260712_043000_course_interest_truth from './20260712_043000_course_interest_truth'
+import * as migration_20260712_060000_builder_visual_management from './20260712_060000_builder_visual_management'
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260712_043000_course_interest_truth.up,
     down: migration_20260712_043000_course_interest_truth.down,
     name: '20260712_043000_course_interest_truth',
+  },
+  {
+    up: migration_20260712_060000_builder_visual_management.up,
+    down: migration_20260712_060000_builder_visual_management.down,
+    name: '20260712_060000_builder_visual_management',
   },
 ]

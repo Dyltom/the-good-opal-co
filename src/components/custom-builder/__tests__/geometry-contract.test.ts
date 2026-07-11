@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest'
 import { ringStyleGeometryProfiles, ringStyles } from '../config'
 
 const sceneSource = readFileSync(resolve(__dirname, '../RingScene.tsx'), 'utf8')
+const configSource = readFileSync(resolve(__dirname, '../config.ts'), 'utf8')
 
 function capturedNumber(pattern: RegExp, label: string): number {
   const value = sceneSource.match(pattern)?.[1]
@@ -80,7 +81,7 @@ describe('custom ring geometry contract', () => {
       expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.065)
       expect(profile.shankRadius, style).toBeLessThanOrEqual(0.08)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(0.95)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.05)
+      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.25)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
@@ -111,13 +112,17 @@ describe('custom ring geometry contract', () => {
     }
   })
 
-  test('keeps reviewed product photography untinted while restoring polished depth', () => {
+  test('keeps reviewed product photography colour-faithful while restoring polished depth', () => {
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('emissiveMap={photoTexture}')
-    expect(sceneSource).toContain('clearcoat={0.92}')
-    expect(sceneSource).toContain('iridescence={0.18}')
+    expect(sceneSource).toContain('color="#080808"')
+    expect(sceneSource).toContain('emissive="#ffffff"')
+    expect(sceneSource).toContain('emissiveIntensity={0.92}')
+    expect(sceneSource).toContain('toneMapped={false}')
+    expect(sceneSource).toContain('clearcoat={0.88}')
+    expect(sceneSource).toContain('iridescence={0.06}')
     expect(sceneSource).not.toContain('<meshBasicMaterial attach="material-0"')
-    expect(sceneSource).not.toContain('color="#f4fbf8"')
+    expect(sceneSource).not.toContain('emissive="#f4f1e9"')
   })
 
   test('uses handmade sterling and soldered halo proportions from sold pieces', () => {
@@ -125,15 +130,26 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('envMapIntensity={1.2}')
     expect(sceneSource).toContain('const size = 0.94 + ((key * 7) % 7) * 0.022')
     expect(ringStyleGeometryProfiles['sun-moon']).toMatchObject({
-      haloOffset: 0.043,
-      beadRadius: 0.029,
-      beadCount: 40,
+      haloOffset: 0.056,
+      beadRadius: 0.039,
+      beadCount: 32,
       shankRadius: 0.078,
     })
     expect(ringStyleGeometryProfiles.aurora).toMatchObject({
-      haloOffset: 0.042,
-      beadRadius: 0.028,
-      beadCount: 36,
+      haloOffset: 0.056,
+      beadRadius: 0.039,
+      beadCount: 30,
     })
+  })
+
+  test('uses measured bezel, halo, and tapered shoulder proportions', () => {
+    expect(configSource).toContain('bezelWallThickness: 0.038')
+    expect(configSource).toContain('bezelLipRadius: 0.021')
+    expect(configSource).toContain('beadRadius: 0.039')
+    expect(configSource).toContain('beadCount: 32')
+    expect(sceneSource).toContain('shoulderDistance')
+    expect(sceneSource).toContain('shoulderBlend')
+    expect(sceneSource).toContain('localRadius')
+    expect(sceneSource).not.toContain('const solderedRadius =')
   })
 })

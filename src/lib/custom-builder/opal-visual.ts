@@ -2,6 +2,25 @@ import type { BuilderOpal, RingConfig } from '@/components/custom-builder/config
 
 type VisualProfile = BuilderOpal['visual']
 
+export interface BuilderVisualFields {
+  builderEligible?: boolean | null
+  builderSilhouette?: string | null
+  builderRecommendedStyle?: string | null
+  builderBodyColour?: string | null
+  builderFlashColourPrimary?: string | null
+  builderFlashColourSecondary?: string | null
+  builderFlashColourAccent?: string | null
+  builderTransmission?: number | null
+  builderPhotoFocalX?: number | null
+  builderPhotoFocalY?: number | null
+  builderPhotoZoom?: number | null
+  dimensions?: {
+    width?: number | null
+    length?: number | null
+    depth?: number | null
+  } | null
+}
+
 const reviewedProfiles: Record<
   string,
   Pick<
@@ -64,6 +83,72 @@ function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | u
   return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
 }
 
+const validSilhouettes = new Set<RingConfig['shape']>([
+  'oval',
+  'round',
+  'elongated',
+  'cushion',
+  'pear',
+])
+const validStyles = new Set<RingConfig['style']>(['gemini', 'coral', 'sun-moon', 'aurora'])
+const hexColourPattern = /^#[0-9a-f]{6}$/i
+
+function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undefined {
+  if (!fields?.builderEligible) return undefined
+
+  const silhouette = fields.builderSilhouette
+  const recommendedStyle = fields.builderRecommendedStyle
+  const dimensions = fields.dimensions
+  const colours = [
+    fields.builderFlashColourPrimary,
+    fields.builderFlashColourSecondary,
+    fields.builderFlashColourAccent,
+  ]
+
+  if (
+    !silhouette ||
+    !validSilhouettes.has(silhouette as RingConfig['shape']) ||
+    !recommendedStyle ||
+    !validStyles.has(recommendedStyle as RingConfig['style']) ||
+    !fields.builderBodyColour ||
+    !hexColourPattern.test(fields.builderBodyColour) ||
+    !colours.every((colour) => typeof colour === 'string' && hexColourPattern.test(colour)) ||
+    typeof fields.builderTransmission !== 'number' ||
+    typeof fields.builderPhotoFocalX !== 'number' ||
+    typeof fields.builderPhotoFocalY !== 'number' ||
+    typeof fields.builderPhotoZoom !== 'number' ||
+    typeof dimensions?.width !== 'number' ||
+    typeof dimensions.length !== 'number' ||
+    typeof dimensions.depth !== 'number' ||
+    dimensions.width <= 0 ||
+    dimensions.length <= 0 ||
+    dimensions.depth <= 0
+  ) {
+    return undefined
+  }
+
+  return {
+    silhouette: silhouette as RingConfig['shape'],
+    aspectRatio: dimensions.length / dimensions.width,
+    evidence: 'catalogue',
+    recommendedStyle: recommendedStyle as RingConfig['style'],
+    textureCrop: {
+      focalX: fields.builderPhotoFocalX,
+      focalY: fields.builderPhotoFocalY,
+      zoom: fields.builderPhotoZoom,
+    },
+    bodyColour: fields.builderBodyColour,
+    flashColours: colours as [string, string, string],
+    transmission: fields.builderTransmission,
+    patternSeed: 0,
+    dimensionsMm: {
+      width: dimensions.width,
+      length: dimensions.length,
+      depth: dimensions.depth,
+    },
+  }
+}
+
 const typeProfiles: Record<
   string,
   {
@@ -124,8 +209,12 @@ function hashString(value: string): number {
   return hash >>> 0
 }
 
-export function isBuilderEligibleOpal(slug: string, name: string): boolean {
-  return Boolean(name) && reviewedProfileFor(slug) !== undefined
+export function isBuilderEligibleOpal(
+  slug: string,
+  name: string,
+  fields?: BuilderVisualFields
+): boolean {
+  return Boolean(name) && Boolean(cmsReviewedProfile(fields) ?? reviewedProfileFor(slug))
 }
 
 function inferSilhouette(
@@ -174,22 +263,24 @@ function inferSilhouette(
 export function createOpalVisualProfile(
   slug: string,
   name: string,
-  stoneType: string
+  stoneType: string,
+  fields?: BuilderVisualFields
 ): { renderStone: RingConfig['stone']; visual: VisualProfile } {
   const seed = hashString(`${slug}:${name}`)
   const profile = typeProfiles[stoneType] ?? typeProfiles['crystal-opal']!
   const silhouette = inferSilhouette(name)
   const reviewed = reviewedProfileFor(slug)
+  const managed = cmsReviewedProfile(fields)
   const bodyColour = profile.bodies[seed % profile.bodies.length] ?? profile.bodies[0]!
   const flashColours = profile.flashes[(seed >>> 4) % profile.flashes.length] ?? profile.flashes[0]!
 
   return {
     renderStone: profile.renderStone,
     visual: {
-      ...(reviewed ?? silhouette),
-      bodyColour: reviewed?.bodyColour ?? bodyColour,
-      flashColours,
-      transmission: profile.transmission,
+      ...(managed ?? reviewed ?? silhouette),
+      bodyColour: managed?.bodyColour ?? reviewed?.bodyColour ?? bodyColour,
+      flashColours: managed?.flashColours ?? flashColours,
+      transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
     },
   }

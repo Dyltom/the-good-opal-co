@@ -1,6 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
-import { validateCurrencyAmount, validateWholeStock } from '../../lib/product-validation.ts'
+import {
+  validateBuilderProduct,
+  validateCurrencyAmount,
+  validateHexColour,
+  validateWholeStock,
+} from '../../lib/product-validation.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -13,6 +18,15 @@ export const Products: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'price', 'status', 'stock', 'updatedAt'],
+  },
+  hooks: {
+    beforeValidate: [
+      ({ data }) => {
+        const result = validateBuilderProduct(data)
+        if (result !== true) throw new Error(result)
+        return data
+      },
+    ],
   },
   fields: [
     {
@@ -250,6 +264,123 @@ export const Products: CollectionConfig = {
       admin: {
         description: 'Weight in carats (for opals) or grams (for jewelry)',
       },
+    },
+    {
+      name: 'weightUnit',
+      type: 'select',
+      options: [
+        { label: 'Carats', value: 'carats' },
+        { label: 'Grams', value: 'grams' },
+      ],
+      admin: {
+        description: 'Required before displaying weight on finished jewellery',
+      },
+    },
+    {
+      name: 'builderEligible',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description:
+          'Show this loose opal in the custom ring builder. Complete every reviewed builder field first.',
+        condition: (data) => data.category === 'raw-opals',
+      },
+    },
+    {
+      type: 'collapsible',
+      label: 'Reviewed ring builder visual',
+      admin: {
+        condition: (data) => data.category === 'raw-opals' && data.builderEligible === true,
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderSilhouette',
+              type: 'select',
+              options: [
+                { label: 'Oval', value: 'oval' },
+                { label: 'Round', value: 'round' },
+                { label: 'Elongated', value: 'elongated' },
+                { label: 'Cushion', value: 'cushion' },
+                { label: 'Pear', value: 'pear' },
+              ],
+            },
+            {
+              name: 'builderRecommendedStyle',
+              type: 'select',
+              options: [
+                { label: 'Gemini', value: 'gemini' },
+                { label: 'Coral', value: 'coral' },
+                { label: 'Sun & Moon', value: 'sun-moon' },
+                { label: 'Aurora', value: 'aurora' },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderBodyColour',
+              type: 'text',
+              validate: validateHexColour,
+              admin: { description: 'Six-digit hex body tone' },
+            },
+            {
+              name: 'builderFlashColourPrimary',
+              type: 'text',
+              validate: validateHexColour,
+              admin: { description: 'Primary play-of-colour hex' },
+            },
+            {
+              name: 'builderFlashColourSecondary',
+              type: 'text',
+              validate: validateHexColour,
+              admin: { description: 'Secondary play-of-colour hex' },
+            },
+            {
+              name: 'builderFlashColourAccent',
+              type: 'text',
+              validate: validateHexColour,
+              admin: { description: 'Accent play-of-colour hex' },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderTransmission',
+              type: 'number',
+              min: 0,
+              max: 1,
+              admin: { description: '0 opaque, 1 transparent' },
+            },
+            {
+              name: 'builderPhotoFocalX',
+              type: 'number',
+              min: 0,
+              max: 1,
+              admin: { description: 'Horizontal focal point, 0 to 1' },
+            },
+            {
+              name: 'builderPhotoFocalY',
+              type: 'number',
+              min: 0,
+              max: 1,
+              admin: { description: 'Vertical focal point, 0 to 1' },
+            },
+            {
+              name: 'builderPhotoZoom',
+              type: 'number',
+              min: 1,
+              admin: { description: 'Crop zoom, 1 or greater' },
+            },
+          ],
+        },
+      ],
     },
     {
       name: 'ringSize',

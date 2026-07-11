@@ -109,4 +109,42 @@ describe('custom builder opal visual profiles', () => {
     expect(first).toEqual(again)
     expect(second.visual.patternSeed).not.toBe(first.visual.patternSeed)
   })
+
+  test('uses complete Payload-managed visual data for newly reviewed store opals', () => {
+    const managed = {
+      builderEligible: true,
+      builderSilhouette: 'pear',
+      builderRecommendedStyle: 'aurora',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      dimensions: { width: 6, length: 9, depth: 3 },
+    }
+
+    expect(isBuilderEligibleOpal('new-reviewed-opal', 'New reviewed opal', managed)).toBe(true)
+    expect(
+      createOpalVisualProfile('new-reviewed-opal', 'New reviewed opal', 'black-opal', managed)
+        .visual
+    ).toMatchObject({
+      silhouette: 'pear',
+      aspectRatio: 1.5,
+      recommendedStyle: 'aurora',
+      bodyColour: '#173350',
+      flashColours: ['#16d7ef', '#43ef8f', '#ffcb42'],
+      transmission: 0.08,
+      textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
+      dimensionsMm: { width: 6, length: 9, depth: 3 },
+    })
+  })
+
+  test('does not expose incomplete CMS builder records', () => {
+    expect(
+      isBuilderEligibleOpal('unfinished-opal', 'Unfinished opal', { builderEligible: true })
+    ).toBe(false)
+  })
 })

@@ -16,6 +16,7 @@ import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { extractPlainText } from '@/lib/rich-text'
 import { mergeProductGallery } from '@/lib/product-gallery'
+import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -96,6 +97,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     ?.replace(/-/g, ' ')
     .replace(/\b\w/g, (c: string) => c.toUpperCase())
   const productShippingProgress = getFreeShippingProgress(product.price)
+  const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
+  const weightUnit =
+    product.weightUnit ?? (product.category === 'raw-opals' ? ('carats' as const) : undefined)
 
   // Collect all product images with alt text
   const productImages = mergeProductGallery(
@@ -228,9 +232,27 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         Tracked delivery
                       </div>
                       <div className="border-t border-warm-grey/60 px-4 py-4">
-                        Care guidance included
+                        Care questions answered
                       </div>
                     </div>
+
+                    {builderEligible && (product.stock ?? 0) > 0 && (
+                      <div className="border-y border-opal-electric-accessible/25 bg-opal-light/15 p-5">
+                        <p className="font-serif text-xl font-medium text-charcoal">
+                          Build a ring around this opal
+                        </p>
+                        <p className="mt-2 font-sans text-sm leading-6 text-charcoal/70">
+                          Open this exact available stone in the 3D studio and compare compatible
+                          settings before requesting a quote.
+                        </p>
+                        <Link
+                          href={`/services/design?p=${encodeURIComponent(String(product.id))}`}
+                          className="mt-3 inline-flex min-h-11 items-center font-sans text-sm font-semibold text-charcoal underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                        >
+                          Design with this opal
+                        </Link>
+                      </div>
+                    )}
 
                     {/* Product Actions */}
                     <ProductActions
@@ -342,11 +364,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                           </span>
                         </div>
                       )}
-                      {product.weight && (
+                      {product.weight && weightUnit && (
                         <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
                           <span className="text-charcoal/60">Weight</span>
                           <span className="font-semibold text-charcoal">
-                            {product.weight} carats
+                            {product.weight} {weightUnit}
                           </span>
                         </div>
                       )}

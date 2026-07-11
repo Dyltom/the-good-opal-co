@@ -453,17 +453,21 @@ function OpalCabochon({
         <meshPhysicalMaterial
           attach="material-0"
           map={photoTexture}
-          emissive="#f4f1e9"
+          color="#080808"
+          emissive="#ffffff"
           emissiveMap={photoTexture}
-          emissiveIntensity={0.22}
-          roughness={0.2}
+          emissiveIntensity={0.92}
+          roughness={0.22}
           metalness={0}
-          clearcoat={0.92}
-          clearcoatRoughness={0.055}
-          iridescence={0.18}
+          specularIntensity={0.65}
+          specularColor="#f6fbff"
+          clearcoat={0.88}
+          clearcoatRoughness={0.06}
+          iridescence={0.06}
           iridescenceIOR={1.42}
           iridescenceThicknessRange={[220, 520]}
-          envMapIntensity={0.72}
+          envMapIntensity={0.38}
+          toneMapped={false}
         />
         <meshStandardMaterial
           attach="material-1"
@@ -778,11 +782,59 @@ function RingShank({
       'centripetal'
     )
   }, [radius, settingY, stoneWidth])
-  const solderedRadius = (tubeRadius + shoulderRadius) / 2
+  const geometry = useMemo(() => {
+    const tubularSegments = 160
+    const radialSegments = 16
+    const positions: number[] = []
+    const indices: number[] = []
+
+    for (let segment = 0; segment <= tubularSegments; segment += 1) {
+      const progress = segment / tubularSegments
+      const point = curve.getPointAt(progress)
+      const tangent = curve.getTangentAt(progress).normalize()
+      const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
+      const shoulderDistance = Math.min(progress, 1 - progress)
+      const shoulderBlend = Math.min(1, shoulderDistance / 0.14)
+      const localRadius = shoulderRadius + (tubeRadius - shoulderRadius) * shoulderBlend
+
+      for (let side = 0; side < radialSegments; side += 1) {
+        const angle = (side / radialSegments) * Math.PI * 2
+        positions.push(
+          point.x + inPlaneNormal.x * Math.cos(angle) * localRadius,
+          point.y + inPlaneNormal.y * Math.cos(angle) * localRadius,
+          point.z + Math.sin(angle) * localRadius
+        )
+      }
+    }
+
+    for (let segment = 0; segment < tubularSegments; segment += 1) {
+      const currentStart = segment * radialSegments
+      const nextStart = (segment + 1) * radialSegments
+      for (let side = 0; side < radialSegments; side += 1) {
+        const nextSide = (side + 1) % radialSegments
+        indices.push(
+          currentStart + side,
+          nextStart + side,
+          nextStart + nextSide,
+          currentStart + side,
+          nextStart + nextSide,
+          currentStart + nextSide
+        )
+      }
+    }
+
+    const nextGeometry = new BufferGeometry()
+    nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+    nextGeometry.setIndex(indices)
+    nextGeometry.computeVertexNormals()
+    nextGeometry.computeBoundingSphere()
+    return nextGeometry
+  }, [curve, shoulderRadius, tubeRadius])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
 
   return (
-    <mesh>
-      <tubeGeometry args={[curve, 160, solderedRadius, 16, false]} />
+    <mesh geometry={geometry}>
       <MetalMaterial metal={metal} roughness={0.25} />
     </mesh>
   )

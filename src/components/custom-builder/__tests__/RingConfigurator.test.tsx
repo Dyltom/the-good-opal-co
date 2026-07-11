@@ -111,4 +111,13 @@ describe('RingConfigurator store opal selection', () => {
     })
     expect(consultationParams.get('product')).toContain('Coober Pedy crystal opal')
   })
+
+  test('warns instead of silently substituting an unavailable linked opal', () => {
+    render(
+      <RingConfigurator initialConfig={defaultRingConfig} opals={opals} unavailableOpalRequested />
+    )
+
+    expect(screen.getByRole('status').textContent).toContain('no longer available')
+    expect(screen.getByRole('status').textContent).toContain('not substituted')
+  })
 })

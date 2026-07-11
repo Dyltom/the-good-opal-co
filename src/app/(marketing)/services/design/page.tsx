@@ -99,6 +99,18 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       stoneType: true,
       stoneOrigin: true,
       weight: true,
+      dimensions: true,
+      builderEligible: true,
+      builderSilhouette: true,
+      builderRecommendedStyle: true,
+      builderBodyColour: true,
+      builderFlashColourPrimary: true,
+      builderFlashColourSecondary: true,
+      builderFlashColourAccent: true,
+      builderTransmission: true,
+      builderPhotoFocalX: true,
+      builderPhotoFocalY: true,
+      builderPhotoZoom: true,
     },
     where: {
       and: [
@@ -127,7 +139,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
   const mediaById = new Map(mediaResult.docs.map((media) => [String(media.id), media as Media]))
 
   return result.docs
-    .filter((product) => isBuilderEligibleOpal(product.slug, product.name))
+    .filter((product) => isBuilderEligibleOpal(product.slug, product.name, product))
     .flatMap((product): BuilderOpal[] => {
       const firstImage = product.images?.[0]?.image
       const image = firstImage ? mediaById.get(String(firstImage)) : undefined
@@ -137,7 +149,12 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       const imageUrl = productImageFallback(image?.filename) ?? resolveMediaUrl(image?.url)
       if (!imageUrl || !product.stoneType) return []
 
-      const renderProfile = createOpalVisualProfile(product.slug, product.name, product.stoneType)
+      const renderProfile = createOpalVisualProfile(
+        product.slug,
+        product.name,
+        product.stoneType,
+        product
+      )
       return [
         {
           id: String(product.id),
@@ -172,7 +189,8 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
     Object.fromEntries(Object.entries(query).map(([key, value]) => [key, first(value)]))
   )
   const requestedOpal = opals.find((opal) => opal.id === initialConfig.opalId)
-  const initialOpal = requestedOpal ?? opals[0]
+  const unavailableOpalRequested = Boolean(initialConfig.opalId && !requestedOpal)
+  const initialOpal = initialConfig.opalId ? requestedOpal : opals[0]
   const requestedStyle = first(query.y)
   const requestedStyleId = requestedStyle as RingConfig['style'] | undefined
   const styleId =
@@ -187,7 +205,7 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
         ),
         shape: shapeForOpal(initialOpal),
       }
-    : initialConfig
+    : { ...initialConfig, opalId: undefined }
 
   return (
     <MarketingShell>
@@ -214,7 +232,11 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
         </div>
       </header>
 
-      <RingConfigurator initialConfig={hydratedConfig} opals={opals} />
+      <RingConfigurator
+        initialConfig={hydratedConfig}
+        opals={opals}
+        unavailableOpalRequested={unavailableOpalRequested}
+      />
 
       <section className="bg-white py-16 sm:py-20">
         <Container>
