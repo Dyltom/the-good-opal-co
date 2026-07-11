@@ -88,7 +88,7 @@ the recorded counts in Payload. Never set the import flag for Preview.
 
 ## First administrator
 
-Set `ADMIN_EMAIL` to the owner address, then open `/admin` after the first deployment and create the first user with that exact email. Payload allows anonymous creation only for that address and only while no users exist; the server hook promotes it to `admin`. The email uniqueness constraint prevents concurrent duplicate bootstrap attempts. All later user creation requires an authenticated administrator. Confirm password-reset email before launch.
+Set `ADMIN_EMAIL` to the owner address and temporarily set `ADMIN_BOOTSTRAP_PASSWORD` to a randomly generated value of at least 16 characters. Open `/admin` after the first deployment and create the first user with that exact email and temporary password. Payload allows anonymous creation only when both values match and no users exist; the server hook promotes that user to `admin`. The email uniqueness constraint prevents concurrent duplicate bootstrap attempts. Remove `ADMIN_BOOTSTRAP_PASSWORD` from Vercel immediately after creation, change the admin password, and confirm password-reset email before launch. All later user creation requires an authenticated administrator.
 
 ## Stripe
 

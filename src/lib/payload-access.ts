@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto'
 import type { Access } from 'payload'
 
 type UserWithRole = {
@@ -10,6 +11,33 @@ function requestUser(user: unknown): UserWithRole | null {
   return user as UserWithRole
 }
 
+function isProductionDeployment(): boolean {
+  const vercelEnvironment = process.env.VERCEL_ENV?.trim()
+  return vercelEnvironment
+    ? vercelEnvironment === 'production'
+    : process.env.NODE_ENV === 'production'
+}
+
+function matchesBootstrapPassword(requestedPassword: unknown): boolean {
+  const configuredPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD
+
+  // Local development keeps Payload's convenient first-user screen. Production
+  // requires a temporary second factor because the configured owner email is
+  // normally public knowledge.
+  if (!isProductionDeployment() && !configuredPassword) return true
+  if (
+    typeof requestedPassword !== 'string' ||
+    !configuredPassword ||
+    configuredPassword.length < 16
+  ) {
+    return false
+  }
+
+  const expected = Buffer.from(configuredPassword)
+  const actual = Buffer.from(requestedPassword)
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
+
 export const isAdmin: Access = ({ req }) => requestUser(req.user)?.role === 'admin'
 
 export const isAdminOrFirstUser: Access = async ({ req, data }) => {
@@ -20,8 +48,12 @@ export const isAdminOrFirstUser: Access = async ({ req, data }) => {
     data && typeof data === 'object' && 'email' in data && typeof data.email === 'string'
       ? data.email.trim().toLowerCase()
       : null
+  const requestedPassword =
+    data && typeof data === 'object' && 'password' in data ? data.password : null
 
+  if (isProductionDeployment() && !bootstrapEmail) return false
   if (bootstrapEmail && requestedEmail !== bootstrapEmail) return false
+  if (!matchesBootstrapPassword(requestedPassword)) return false
 
   const { totalDocs } = await req.payload.count({
     collection: 'users',

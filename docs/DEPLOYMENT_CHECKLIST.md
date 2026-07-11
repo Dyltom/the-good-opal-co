@@ -25,7 +25,7 @@ Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
 
 ## Content and admin
 
-- [ ] First `/admin` user is created and has `admin` role.
+- [ ] Set a temporary random `ADMIN_BOOTSTRAP_PASSWORD`, create the first `/admin` user with `ADMIN_EMAIL` and that password, then remove the variable and change the password.
 - [ ] Password reset email arrives from verified Resend sender.
 - [ ] Product/media/post CRUD verified.
 - [ ] Blob upload remains available after redeploy.
