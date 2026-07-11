@@ -33,6 +33,15 @@ describe('custom ring geometry contract', () => {
     expect(worldFaceNormal.z).toBeCloseTo(0)
   })
 
+  test('pulls the camera back on portrait canvases so the ring stays in frame', () => {
+    expect(sceneSource).toContain('const aspectRatio = size.width / Math.max(1, size.height)')
+    expect(sceneSource).toContain(
+      'const portraitFramingScale = Math.min(1.7, Math.max(1, 0.92 / aspectRatio))'
+    )
+    expect(sceneSource).toContain('x * portraitFramingScale')
+    expect(sceneSource).toContain('size.height, size.width, view')
+  })
+
   test('seats the bezel on the band while keeping the stone base clear', () => {
     expect(sceneSource).toContain('const bezelBottom = depthProfile.baseZ - 0.012')
     expect(sceneSource).toContain('const bezelTop = depthProfile.girdleZ + 0.025')

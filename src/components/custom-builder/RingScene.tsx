@@ -95,14 +95,21 @@ const cameraPositions: Record<RingView, [number, number, number]> = {
 }
 
 function CameraPreset({ view }: { view: RingView }) {
-  const { camera, invalidate } = useThree()
+  const { camera, invalidate, size } = useThree()
 
   useEffect(() => {
-    camera.position.set(...cameraPositions[view])
+    const aspectRatio = size.width / Math.max(1, size.height)
+    const portraitFramingScale = Math.min(1.7, Math.max(1, 0.92 / aspectRatio))
+    const [x, y, z] = cameraPositions[view]
+    camera.position.set(
+      x * portraitFramingScale,
+      y * portraitFramingScale,
+      z * portraitFramingScale
+    )
     camera.lookAt(0, 0.42, 0)
     camera.updateProjectionMatrix()
     invalidate()
-  }, [camera, invalidate, view])
+  }, [camera, invalidate, size.height, size.width, view])
 
   return null
 }
