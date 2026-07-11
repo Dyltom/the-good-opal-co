@@ -9,6 +9,7 @@ import { ClearCartOnSuccess } from './clear-cart'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import { getPayload } from '@/lib/payload'
 import type { CartItem } from '@/lib/cart'
+import { shouldFinalizeCheckout } from '@/lib/stripe-fulfillment'
 
 /**
  * Checkout Success Page Metadata
@@ -97,7 +98,9 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
                 />
               ) : (
                 <>
-                  <ClearCartOnSuccess purchase={getPurchaseAnalytics(session)} />
+                  {shouldFinalizeCheckout(session.payment_status, orderConfirmed) && (
+                    <ClearCartOnSuccess purchase={getPurchaseAnalytics(session)} />
+                  )}
                   <SuccessState
                     email={session?.customer_email ?? undefined}
                     orderConfirmed={orderConfirmed}

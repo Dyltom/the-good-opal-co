@@ -23,7 +23,8 @@ describe('deployment config', () => {
     const source = read('src/payload.config.ts')
 
     expect(source).toContain("process.env['DATABASE_URL']")
-    expect(source).toContain("push: process.env['NODE_ENV'] !== 'production'")
+    expect(source).toContain("process.env['NODE_ENV'] !== 'production'")
+    expect(source).toContain("process.env['PAYLOAD_DB_PUSH'] !== 'false'")
     expect(source).toContain("parsed.searchParams.set('sslmode', 'verify-full')")
     expect(source).not.toContain('POSTGRES_HOST')
   })
@@ -105,6 +106,8 @@ describe('deployment config', () => {
     expect(config.buildCommand).toBe('node scripts/vercel-build.mjs')
     expect(buildScript).toContain("process.env.VERCEL_ENV === 'production'")
     expect(buildScript).toContain("run('pnpm', ['payload', 'migrate'])")
+    expect(buildScript).toContain("process.env.WOO_IMPORT_ON_DEPLOY === 'true'")
+    expect(buildScript).toContain("WOO_IMPORT_APPLY: 'true'")
     expect(buildScript.indexOf("['payload', 'migrate']")).toBeLessThan(
       buildScript.indexOf("['build']")
     )

@@ -8,6 +8,7 @@ import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 import type { Order } from '@/types/payload-types'
 import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
 import { calculateRefundAdjustment } from '@/lib/stripe-refunds'
+import { getRequiredCheckoutShippingDetails } from '@/lib/stripe-fulfillment'
 
 /**
  * Stripe Webhook Handler
@@ -83,24 +84,6 @@ async function getCheckoutItems(sessionId: string): Promise<CartItem[]> {
 }
 
 /**
- * Extended checkout session type with shipping details
- * The Stripe SDK types may not include shipping_details depending on API version
- */
-interface CheckoutSessionWithShipping extends Stripe.Checkout.Session {
-  shipping_details?: {
-    name?: string
-    address?: {
-      line1?: string
-      line2?: string
-      city?: string
-      state?: string
-      postal_code?: string
-      country?: string
-    }
-  } | null
-}
-
-/**
  * Generate unique order number
  */
 function generateOrderNumber(): string {
@@ -134,8 +117,8 @@ async function sendOrderConfirmation(order: Order): Promise<void> {
           line1: order.shippingAddress.line1,
           line2: order.shippingAddress.line2 ?? undefined,
           city: order.shippingAddress.city,
-          state: order.shippingAddress.state,
-          postalCode: order.shippingAddress.postalCode,
+          state: order.shippingAddress.state ?? undefined,
+          postalCode: order.shippingAddress.postalCode ?? undefined,
           country: order.shippingAddress.country,
         },
         baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
@@ -368,7 +351,7 @@ export async function POST(request: NextRequest) {
     event.type === 'checkout.session.completed' ||
     event.type === 'checkout.session.async_payment_succeeded'
   ) {
-    const session = event.data.object as CheckoutSessionWithShipping
+    const session = event.data.object
 
     if (session.payment_status !== 'paid') {
       return NextResponse.json({ received: true, awaitingPayment: true })
@@ -398,8 +381,7 @@ export async function POST(request: NextRequest) {
       const items = await getCheckoutItems(session.id)
       const customerName = session.metadata?.customerName ?? ''
 
-      // Get shipping details
-      const shippingDetails = session.shipping_details
+      const shippingDetails = getRequiredCheckoutShippingDetails(session)
 
       // Calculate subtotal from items
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -446,16 +428,16 @@ export async function POST(request: NextRequest) {
             status: inventoryAvailable ? 'processing' : 'pending',
             customer: {
               email: session.customer_email ?? '',
-              name: customerName || (shippingDetails?.name ?? ''),
+              name: customerName || shippingDetails.name,
               phone: session.customer_details?.phone ?? undefined,
             },
             shippingAddress: {
-              line1: shippingDetails?.address?.line1 ?? '',
-              line2: shippingDetails?.address?.line2 ?? undefined,
-              city: shippingDetails?.address?.city ?? '',
-              state: shippingDetails?.address?.state ?? '',
-              postalCode: shippingDetails?.address?.postal_code ?? '',
-              country: shippingDetails?.address?.country ?? 'AU',
+              line1: shippingDetails.address.line1,
+              line2: shippingDetails.address.line2 ?? undefined,
+              city: shippingDetails.address.city,
+              state: shippingDetails.address.state ?? undefined,
+              postalCode: shippingDetails.address.postal_code ?? undefined,
+              country: shippingDetails.address.country,
             },
             items: items.map((item) => ({
               productId: item.productId,
@@ -510,18 +492,18 @@ export async function POST(request: NextRequest) {
                 id: customer['id'],
                 req: transactionReq,
                 data: {
-                  name: customerName || (shippingDetails?.name ?? customer['name']),
+                  name: customerName || shippingDetails.name || customer['name'],
                   phone: session.customer_details?.phone ?? customer['phone'],
                   totalOrders: currentTotalOrders + 1,
                   totalSpent: currentTotalSpent + orderTotal,
                   lastOrderDate: paidAt,
                   defaultAddress: {
-                    line1: shippingDetails?.address?.line1 ?? '',
-                    line2: shippingDetails?.address?.line2 ?? '',
-                    city: shippingDetails?.address?.city ?? '',
-                    state: shippingDetails?.address?.state ?? '',
-                    postalCode: shippingDetails?.address?.postal_code ?? '',
-                    country: shippingDetails?.address?.country ?? 'AU',
+                    line1: shippingDetails.address.line1,
+                    line2: shippingDetails.address.line2 ?? '',
+                    city: shippingDetails.address.city,
+                    state: shippingDetails.address.state ?? '',
+                    postalCode: shippingDetails.address.postal_code ?? '',
+                    country: shippingDetails.address.country,
                   },
                 },
               })
@@ -533,19 +515,19 @@ export async function POST(request: NextRequest) {
               req: transactionReq,
               data: {
                 email: customerEmail,
-                name: customerName || (shippingDetails?.name ?? ''),
+                name: customerName || shippingDetails.name,
                 phone: session.customer_details?.phone ?? undefined,
                 source: 'checkout',
                 totalOrders: 1,
                 totalSpent: orderTotal,
                 lastOrderDate: paidAt,
                 defaultAddress: {
-                  line1: shippingDetails?.address?.line1 ?? '',
-                  line2: shippingDetails?.address?.line2 ?? '',
-                  city: shippingDetails?.address?.city ?? '',
-                  state: shippingDetails?.address?.state ?? '',
-                  postalCode: shippingDetails?.address?.postal_code ?? '',
-                  country: shippingDetails?.address?.country ?? 'AU',
+                  line1: shippingDetails.address.line1,
+                  line2: shippingDetails.address.line2 ?? '',
+                  city: shippingDetails.address.city,
+                  state: shippingDetails.address.state ?? '',
+                  postalCode: shippingDetails.address.postal_code ?? '',
+                  country: shippingDetails.address.country,
                 },
               },
             })

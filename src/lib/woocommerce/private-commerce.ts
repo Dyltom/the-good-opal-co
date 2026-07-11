@@ -124,6 +124,14 @@ export interface WooFetchOptions extends WooCredentials {
   perPage?: number
 }
 
+export interface WooAdminFetchOptions {
+  baseUrl: string
+  username: string
+  password: string
+  fetcher?: typeof fetch
+  perPage?: number
+}
+
 export interface WooCommerceSnapshot {
   orders: WooOrder[]
   customers: WooCustomer[]
@@ -294,6 +302,142 @@ export async function fetchWooCommerceSnapshot(
     if (order.refunds.length === 0) continue
     refundsByOrderId.set(order.id, await fetchWooRefunds(order.id, options))
   }
+  return { orders, customers, products, refundsByOrderId }
+}
+
+function responseCookies(response: Response): string[] {
+  const headers = response.headers as Headers & { getSetCookie?: () => string[] }
+  const setCookies = headers.getSetCookie?.() ?? []
+  const fallback = response.headers.get('set-cookie')
+  return (setCookies.length > 0 ? setCookies : fallback ? [fallback] : []).map(
+    (cookie) => cookie.split(';', 1)[0] ?? ''
+  )
+}
+
+function mergeCookies(current: Map<string, string>, cookies: readonly string[]): void {
+  for (const cookie of cookies) {
+    const separator = cookie.indexOf('=')
+    if (separator < 1) continue
+    current.set(cookie.slice(0, separator), cookie.slice(separator + 1))
+  }
+}
+
+function cookieHeader(cookies: ReadonlyMap<string, string>): string {
+  return [...cookies].map(([name, value]) => `${name}=${value}`).join('; ')
+}
+
+async function fetchAdminPages<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  options: WooAdminFetchOptions,
+  cookies: ReadonlyMap<string, string>,
+  nonce: string,
+  extraParameters: Readonly<Record<string, string>> = {}
+): Promise<T[]> {
+  const fetcher = options.fetcher ?? fetch
+  const perPage = options.perPage ?? 100
+  const records: T[] = []
+  let page = 1
+  let totalPages = 1
+
+  do {
+    const url = new URL(`${apiRoot(options.baseUrl)}/${path.replace(/^\//, '')}`)
+    url.searchParams.set('page', String(page))
+    url.searchParams.set('per_page', String(perPage))
+    for (const [name, value] of Object.entries(extraParameters)) {
+      url.searchParams.set(name, value)
+    }
+    const response = await fetcher(url, {
+      headers: {
+        accept: 'application/json',
+        cookie: cookieHeader(cookies),
+        'x-wp-nonce': nonce,
+      },
+      signal: AbortSignal.timeout(30_000),
+    })
+    if (!response.ok) {
+      throw new Error(
+        `WooCommerce admin request failed (${response.status}) for ${path} page ${page}`
+      )
+    }
+    records.push(...z.array(schema).parse(await response.json()))
+    const totalPagesHeader = response.headers.get('x-wp-totalpages')
+    if (totalPagesHeader) {
+      const parsed = Number.parseInt(totalPagesHeader, 10)
+      if (!Number.isInteger(parsed) || parsed < 1) {
+        throw new Error(`WooCommerce returned invalid X-WP-TotalPages for ${path}`)
+      }
+      totalPages = parsed
+    }
+    page += 1
+  } while (page <= totalPages)
+
+  return records
+}
+
+export async function fetchWooCommerceSnapshotFromAdmin(
+  options: WooAdminFetchOptions
+): Promise<WooCommerceSnapshot> {
+  const fetcher = options.fetcher ?? fetch
+  const parsedBaseUrl = new URL(options.baseUrl)
+  if (parsedBaseUrl.protocol !== 'https:') {
+    throw new Error('WooCommerce administrator imports require HTTPS')
+  }
+  parsedBaseUrl.pathname = parsedBaseUrl.pathname.replace(/\/$/, '')
+  parsedBaseUrl.search = ''
+  parsedBaseUrl.hash = ''
+  const baseUrl = parsedBaseUrl.toString().replace(/\/$/, '')
+  const cookies = new Map<string, string>([['wordpress_test_cookie', 'WP Cookie check']])
+  const loginBody = new URLSearchParams({
+    log: options.username,
+    pwd: options.password,
+    'wp-submit': 'Log In',
+    redirect_to: `${baseUrl}/wp-admin/`,
+    testcookie: '1',
+  })
+  const loginResponse = await fetcher(`${baseUrl}/wp-login.php`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/x-www-form-urlencoded',
+      cookie: cookieHeader(cookies),
+    },
+    body: loginBody,
+    redirect: 'manual',
+    signal: AbortSignal.timeout(30_000),
+  })
+  mergeCookies(cookies, responseCookies(loginResponse))
+  if (
+    ![301, 302, 303].includes(loginResponse.status) ||
+    ![...cookies.keys()].some((name) => name.startsWith('wordpress_logged_in_'))
+  ) {
+    throw new Error('WooCommerce administrator login failed')
+  }
+
+  const nonceResponse = await fetcher(`${baseUrl}/wp-admin/admin-ajax.php?action=rest-nonce`, {
+    headers: { cookie: cookieHeader(cookies) },
+    signal: AbortSignal.timeout(30_000),
+  })
+  const nonce = (await nonceResponse.text()).trim()
+  if (!nonceResponse.ok || !/^[A-Za-z0-9]+$/.test(nonce)) {
+    throw new Error('WooCommerce REST nonce request failed')
+  }
+
+  const [orders, customers, products] = await Promise.all([
+    fetchAdminPages('orders', wooOrderSchema, options, cookies, nonce, { status: 'any' }),
+    fetchAdminPages('customers', wooCustomerSchema, options, cookies, nonce),
+    fetchAdminPages('products', wooPrivateProductSchema, options, cookies, nonce, {
+      status: 'any',
+    }),
+  ])
+  const refundsByOrderId = new Map<number, WooRefund[]>()
+  for (const order of orders) {
+    if (order.refunds.length === 0) continue
+    refundsByOrderId.set(
+      order.id,
+      await fetchAdminPages(`orders/${order.id}/refunds`, wooRefundSchema, options, cookies, nonce)
+    )
+  }
+
   return { orders, customers, products, refundsByOrderId }
 }
 

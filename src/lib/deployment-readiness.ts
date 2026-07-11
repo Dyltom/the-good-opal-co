@@ -45,6 +45,13 @@ function value(env: Environment, name: string): string {
   return env[name]?.trim() ?? ''
 }
 
+function isProductionDeployment(env: Environment): boolean {
+  const vercelEnvironment = value(env, 'VERCEL_ENV')
+  return vercelEnvironment
+    ? vercelEnvironment === 'production'
+    : value(env, 'NODE_ENV') === 'production'
+}
+
 function isObviousPlaceholder(candidate: string): boolean {
   const normalized = candidate.toLowerCase()
   return PLACEHOLDER_MARKERS.some((marker) => normalized.includes(marker))
@@ -107,7 +114,7 @@ function hasValidRedisUrl(env: Environment): boolean {
 }
 
 export function assessDeploymentReadiness(env: Environment = process.env): DeploymentReadiness {
-  const production = value(env, 'NODE_ENV') === 'production'
+  const production = isProductionDeployment(env)
   const issues: ReadinessIssueCode[] = []
 
   if (!hasValidPayloadSecret(env)) issues.push('payload_secret_invalid')
@@ -167,7 +174,7 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
 }
 
 export function assertValidCoreProductionConfiguration(env: Environment = process.env): void {
-  if (value(env, 'NODE_ENV') !== 'production') return
+  if (!isProductionDeployment(env)) return
 
   const readiness = assessDeploymentReadiness(env)
   const coreIssues = readiness.issues.filter(

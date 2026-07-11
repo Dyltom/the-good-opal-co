@@ -14,6 +14,7 @@
 import { cookies } from 'next/headers'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { cartAddQuantitySchema, cartUpdateQuantitySchema } from '@/lib/cart-validation'
 
 /**
  * Represents an item in the shopping cart
@@ -87,13 +88,12 @@ export async function getCart(): Promise<Cart> {
       }
 
       try {
-        const { docs: [product] } = await payload.find({
+        const {
+          docs: [product],
+        } = await payload.find({
           collection: 'products',
           where: {
-            and: [
-              { id: { equals: item.productId } },
-              { status: { equals: 'published' } },
-            ],
+            and: [{ id: { equals: item.productId } }, { status: { equals: 'published' } }],
           },
           limit: 1,
           depth: 1,
@@ -175,15 +175,18 @@ export async function addItemToCartWithQuantity(
   item: Omit<CartItem, 'quantity'>,
   quantity: number
 ): Promise<Cart> {
+  const parsedQuantity = cartAddQuantitySchema.safeParse(quantity)
+  if (!parsedQuantity.success) throw new Error('Invalid cart quantity')
+  quantity = parsedQuantity.data
+
   // Validate stock before adding to cart
   const payload = await getPayload()
-  const { docs: [product] } = await payload.find({
+  const {
+    docs: [product],
+  } = await payload.find({
     collection: 'products',
     where: {
-      and: [
-        { id: { equals: item.productId } },
-        { status: { equals: 'published' } },
-      ],
+      and: [{ id: { equals: item.productId } }, { status: { equals: 'published' } }],
     },
   })
 
@@ -192,13 +195,15 @@ export async function addItemToCartWithQuantity(
   }
 
   const cart = await getCart()
-  const existingItem = cart.items.find(i => i.productId === item.productId)
+  const existingItem = cart.items.find((i) => i.productId === item.productId)
   const currentCartQuantity = existingItem?.quantity || 0
   const requestedTotalQuantity = currentCartQuantity + quantity
 
   const availableStock = product.stock ?? 0
   if (availableStock < requestedTotalQuantity) {
-    throw new Error(`Insufficient stock available. Only ${availableStock} items in stock, but ${requestedTotalQuantity} requested.`)
+    throw new Error(
+      `Insufficient stock available. Only ${availableStock} items in stock, but ${requestedTotalQuantity} requested.`
+    )
   }
 
   const existingIndex = cart.items.findIndex((i) => i.productId === item.productId)
@@ -213,7 +218,9 @@ export async function addItemToCartWithQuantity(
     // Add new item with specified quantity
     const primaryImage = product.images?.[0]?.image
     const image =
-      primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined
+      primaryImage && typeof primaryImage === 'object'
+        ? resolveMediaUrl(primaryImage.url)
+        : undefined
 
     if (cart.items.length >= MAX_CART_LINES) {
       throw new Error(`Your cart can contain up to ${MAX_CART_LINES} different items`)
@@ -257,6 +264,10 @@ export async function removeItemFromCart(productId: string): Promise<Cart> {
  * @throws Error if insufficient stock available
  */
 export async function updateCartItemQuantity(productId: string, quantity: number): Promise<Cart> {
+  const parsedQuantity = cartUpdateQuantitySchema.safeParse(quantity)
+  if (!parsedQuantity.success) throw new Error('Invalid cart quantity')
+  quantity = parsedQuantity.data
+
   const cart = await getCart()
 
   if (quantity <= 0) {
@@ -265,7 +276,9 @@ export async function updateCartItemQuantity(productId: string, quantity: number
 
   // Validate stock before updating quantity
   const payload = await getPayload()
-  const { docs: [product] } = await payload.find({
+  const {
+    docs: [product],
+  } = await payload.find({
     collection: 'products',
     where: {
       and: [{ id: { equals: productId } }, { status: { equals: 'published' } }],

@@ -18,9 +18,16 @@ import { Loader2 } from 'lucide-react'
 interface ContactFormProps {
   initialInquiry: InquiryType
   initialProduct?: string
+  initialMessage?: string
+  initialDesignConfiguration?: string
 }
 
-export function ContactForm({ initialInquiry, initialProduct = '' }: ContactFormProps) {
+export function ContactForm({
+  initialInquiry,
+  initialProduct = '',
+  initialMessage = '',
+  initialDesignConfiguration = '',
+}: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
 
@@ -36,11 +43,12 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
       email: '',
       phone: '',
       inquiryType: initialInquiry,
-      message: '',
+      message: initialMessage,
       orderNumber: '',
       product: initialProduct,
       budget: '',
       timeline: '',
+      designConfiguration: initialDesignConfiguration,
       website: '',
     },
   })
@@ -53,8 +61,10 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
 
       if (result.success) {
         toast({
-          title: 'Message sent!',
-          description: 'Your details are with us. We\'ll reply by email.',
+          title: 'Enquiry received',
+          description: result.confirmationDelayed
+            ? `Saved as ${result.reference}. Email confirmation may be delayed.`
+            : `Saved as ${result.reference}. We\'ll reply by email.`,
         })
         reset()
       } else {
@@ -63,7 +73,8 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
     } catch (error) {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to send message. Please try again.',
+        description:
+          error instanceof Error ? error.message : 'Failed to send message. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -77,6 +88,7 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
         <Label htmlFor="website">Website</Label>
         <Input id="website" {...register('website')} tabIndex={-1} autoComplete="off" />
       </div>
+      <input type="hidden" {...register('designConfiguration')} />
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="name">
@@ -91,9 +103,7 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
             aria-invalid={Boolean(errors.name)}
             required
           />
-          {errors.name && (
-            <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
         </div>
 
         <div>
@@ -110,9 +120,7 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
             aria-invalid={Boolean(errors.email)}
             required
           />
-          {errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
         </div>
       </div>
 
@@ -128,7 +136,9 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
           required
         >
           {inquiryTypes.map((type) => (
-            <option key={type} value={type}>{inquiryLabels[type]}</option>
+            <option key={type} value={type}>
+              {inquiryLabels[type]}
+            </option>
           ))}
         </select>
         {errors.inquiryType && (
@@ -149,9 +159,7 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
             className="mt-1"
             disabled={isSubmitting}
           />
-          {errors.phone && (
-            <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>
-          )}
+          {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
         </div>
 
         <div>
@@ -166,25 +174,49 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
             disabled={isSubmitting}
           />
           {errors.orderNumber && (
-            <p className="text-sm text-red-500 mt-1">{errors.orderNumber.message}</p>
+            <p className="mt-1 text-sm text-red-500">{errors.orderNumber.message}</p>
           )}
         </div>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
-          <Label htmlFor="product">Product or piece <span className="text-gray-500">(optional)</span></Label>
-          <Input id="product" {...register('product')} placeholder="Name, link, or idea" className="mt-1" disabled={isSubmitting} />
+          <Label htmlFor="product">
+            Product or piece <span className="text-gray-500">(optional)</span>
+          </Label>
+          <Input
+            id="product"
+            {...register('product')}
+            placeholder="Name, link, or idea"
+            className="mt-1"
+            disabled={isSubmitting}
+          />
         </div>
         <div>
-          <Label htmlFor="budget">Approximate budget <span className="text-gray-500">(optional)</span></Label>
-          <Input id="budget" {...register('budget')} placeholder="e.g. AUD $1,500–$2,500" className="mt-1" disabled={isSubmitting} />
+          <Label htmlFor="budget">
+            Approximate budget <span className="text-gray-500">(optional)</span>
+          </Label>
+          <Input
+            id="budget"
+            {...register('budget')}
+            placeholder="e.g. AUD $1,500–$2,500"
+            className="mt-1"
+            disabled={isSubmitting}
+          />
         </div>
       </div>
 
       <div>
-        <Label htmlFor="timeline">When do you need it? <span className="text-gray-500">(optional)</span></Label>
-        <Input id="timeline" {...register('timeline')} placeholder="A date, occasion, or no rush" className="mt-1" disabled={isSubmitting} />
+        <Label htmlFor="timeline">
+          When do you need it? <span className="text-gray-500">(optional)</span>
+        </Label>
+        <Input
+          id="timeline"
+          {...register('timeline')}
+          placeholder="A date, occasion, or no rush"
+          className="mt-1"
+          disabled={isSubmitting}
+        />
       </div>
 
       <div>
@@ -201,17 +233,10 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
           aria-invalid={Boolean(errors.message)}
           required
         />
-        {errors.message && (
-          <p className="text-sm text-red-500 mt-1">{errors.message.message}</p>
-        )}
+        {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>}
       </div>
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full"
-        size="lg"
-      >
+      <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -222,7 +247,7 @@ export function ContactForm({ initialInquiry, initialProduct = '' }: ContactForm
         )}
       </Button>
 
-      <p className="text-xs text-center text-gray-500">
+      <p className="text-center text-xs text-gray-500">
         By submitting this form, you agree to our{' '}
         <a href="/legal/privacy" className="underline hover:text-gray-700">
           Privacy Policy

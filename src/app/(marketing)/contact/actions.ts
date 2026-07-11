@@ -1,16 +1,20 @@
 'use server'
 
 import { Resend } from 'resend'
+import { randomBytes } from 'node:crypto'
 import { z } from 'zod'
 import { inquiryLabels } from './contact-intent'
 import { contactSchema } from './schema'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
+import { getPayload } from '@/lib/payload'
+import { ringConfigSchema } from '@/components/custom-builder/config'
+import type { RingConfig } from '@/components/custom-builder/config'
 
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export type ContactActionResult =
-  | { success: true }
+  | { success: true; reference: string; confirmationDelayed?: boolean }
   | { success: false; error: string }
 
 function escapeHtml(value: string): string {
@@ -25,6 +29,21 @@ function escapeHtml(value: string): string {
 function optionalDetail(label: string, value?: string): string {
   if (!value) return ''
   return `<p style="margin: 0 0 10px 0;"><strong>${label}:</strong> ${escapeHtml(value)}</p>`
+}
+
+function parseDesignConfiguration(value?: string): RingConfig | undefined {
+  if (!value) return undefined
+
+  try {
+    const parsed = ringConfigSchema.safeParse(JSON.parse(value))
+    return parsed.success ? parsed.data : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown email delivery error'
 }
 
 export async function sendContactEmail(data: unknown): Promise<ContactActionResult> {
@@ -42,18 +61,55 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     }
 
     const inquiryLabel = inquiryLabels[validated.inquiryType]
+    const designConfiguration = parseDesignConfiguration(validated.designConfiguration)
+    if (
+      validated.designConfiguration &&
+      (!designConfiguration || validated.inquiryType !== 'custom-design')
+    ) {
+      return {
+        success: false,
+        error: 'The custom design details are invalid. Please reopen the builder and try again.',
+      }
+    }
     const safeName = escapeHtml(validated.name)
     const safeEmail = escapeHtml(validated.email)
     const safeMessage = escapeHtml(validated.message)
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
+    const reference = `ENQ-${randomBytes(5).toString('hex').toUpperCase()}`
+    const payload = await getPayload()
+    const enquiry = await payload.create({
+      collection: 'enquiries',
+      data: {
+        reference,
+        type: validated.inquiryType,
+        status: 'new',
+        name: validated.name,
+        email: validated.email,
+        phone: validated.phone,
+        orderNumber: validated.orderNumber,
+        product: validated.product,
+        budget: validated.budget,
+        timeline: validated.timeline,
+        message: validated.message,
+        designConfiguration,
+        source: designConfiguration ? 'custom-builder' : 'website-contact',
+        submittedAt: new Date().toISOString(),
+      },
+    })
+
+    let ownerEmailSentAt: string | undefined
+    let customerEmailSentAt: string | undefined
+    const deliveryErrors: string[] = []
 
     // Send email to support team
-    const { error: supportError } = await resend.emails.send({
-      from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
-      to: process.env.CONTACT_EMAIL || 'thegoodopalco@gmail.com',
-      replyTo: validated.email,
-      subject: `[Website inquiry] ${inquiryLabel}`,
-      html: `
+    let supportError: { message: string } | null = null
+    try {
+      const result = await resend.emails.send({
+        from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
+        to: process.env.CONTACT_EMAIL || 'thegoodopalco@gmail.com',
+        replyTo: validated.email,
+        subject: `[${reference}] ${inquiryLabel}`,
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1a1a1a; border-bottom: 2px solid #e5e5e5; padding-bottom: 10px;">
             New Contact Form Submission
@@ -63,11 +119,13 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
             <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${safeName}</p>
             <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${safeEmail}</p>
             <p style="margin: 0 0 10px 0;"><strong>Inquiry:</strong> ${inquiryLabel}</p>
+            <p style="margin: 0 0 10px 0;"><strong>Reference:</strong> ${reference}</p>
             ${optionalDetail('Phone', validated.phone)}
             ${optionalDetail('Order number', validated.orderNumber)}
             ${optionalDetail('Product or piece', validated.product)}
             ${optionalDetail('Budget', validated.budget)}
             ${optionalDetail('Timeline', validated.timeline)}
+            ${optionalDetail('Design configuration', designConfiguration ? JSON.stringify(designConfiguration) : undefined)}
           </div>
 
           <div style="background-color: #ffffff; border: 1px solid #e5e5e5; padding: 20px; border-radius: 8px;">
@@ -81,22 +139,27 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
           </div>
         </div>
       `,
-    })
+      })
+      supportError = result.error
+    } catch (emailError) {
+      supportError = { message: errorMessage(emailError) }
+    }
 
     if (supportError) {
       console.error('Failed to send email to support:', supportError)
-      return {
-        success: false,
-        error: 'Failed to send message. Please try again later.',
-      }
+      deliveryErrors.push(`Owner email: ${supportError.message}`)
+    } else {
+      ownerEmailSentAt = new Date().toISOString()
     }
 
     // Send confirmation email to customer
-    const { error: customerError } = await resend.emails.send({
-      from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
-      to: validated.email,
-      subject: 'Thank you for contacting The Good Opal Co',
-      html: `
+    let customerError: { message: string } | null = null
+    try {
+      const result = await resend.emails.send({
+        from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
+        to: validated.email,
+        subject: `${reference}: We received your enquiry`,
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="text-align: center; padding: 30px 0;">
             <h1 style="color: #1a1a1a; font-size: 28px; margin: 0;">The Good Opal Co</h1>
@@ -105,6 +168,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
 
           <div style="background-color: #f7f7f7; padding: 30px; border-radius: 8px;">
             <h2 style="color: #1a1a1a; margin-top: 0;">Thank You for Contacting Us</h2>
+            <p style="color: #666; line-height: 1.6;"><strong>Your reference:</strong> ${reference}</p>
 
             <p style="color: #666; line-height: 1.6;">
               Dear ${safeName},
@@ -149,14 +213,38 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
           </div>
         </div>
       `,
-    })
+      })
+      customerError = result.error
+    } catch (emailError) {
+      customerError = { message: errorMessage(emailError) }
+    }
 
     if (customerError) {
       console.error('Failed to send confirmation email:', customerError)
-      // Don't fail the whole operation if confirmation email fails
+      deliveryErrors.push(`Customer email: ${customerError.message}`)
+    } else {
+      customerEmailSentAt = new Date().toISOString()
     }
 
-    return { success: true }
+    try {
+      await payload.update({
+        collection: 'enquiries',
+        id: enquiry.id,
+        data: {
+          ownerEmailSentAt,
+          customerEmailSentAt,
+          emailDeliveryError: deliveryErrors.length > 0 ? deliveryErrors.join('\n') : undefined,
+        },
+      })
+    } catch (updateError) {
+      console.error(`Failed to update email delivery state for ${reference}:`, updateError)
+    }
+
+    return {
+      success: true,
+      reference,
+      confirmationDelayed: deliveryErrors.length > 0 || undefined,
+    }
   } catch (error) {
     console.error('Contact form error:', error)
 

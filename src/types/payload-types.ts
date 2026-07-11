@@ -74,6 +74,7 @@ export interface Config {
     products: Product;
     orders: Order;
     customers: Customer;
+    enquiries: Enquiry;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -88,6 +89,7 @@ export interface Config {
     products: ProductsSelect<false> | ProductsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
+    enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -480,8 +482,8 @@ export interface Order {
     line1: string;
     line2?: string | null;
     city: string;
-    state: string;
-    postalCode: string;
+    state?: string | null;
+    postalCode?: string | null;
     country: string;
   };
   billingAddress?: {
@@ -633,6 +635,67 @@ export interface Customer {
   createdAt: string;
 }
 /**
+ * Website enquiries and custom design leads
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enquiries".
+ */
+export interface Enquiry {
+  id: number;
+  reference: string;
+  type:
+    | 'general'
+    | 'custom-design'
+    | 'virtual-viewing'
+    | 'product-question'
+    | 'order-support'
+    | 'returns'
+    | 'wholesale';
+  status:
+    | 'new'
+    | 'reviewing'
+    | 'awaiting-customer'
+    | 'consultation'
+    | 'quoted'
+    | 'accepted'
+    | 'deposit-paid'
+    | 'in-production'
+    | 'completed'
+    | 'declined'
+    | 'spam';
+  name: string;
+  email: string;
+  phone?: string | null;
+  orderNumber?: string | null;
+  product?: string | null;
+  budget?: string | null;
+  timeline?: string | null;
+  message: string;
+  /**
+   * Validated custom builder configuration snapshot
+   */
+  designConfiguration?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  source: 'website-contact' | 'custom-builder' | 'manual';
+  submittedAt: string;
+  ownerEmailSentAt?: string | null;
+  customerEmailSentAt?: string | null;
+  emailDeliveryError?: string | null;
+  /**
+   * Private staff notes
+   */
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -683,6 +746,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'customers';
         value: number | Customer;
+      } | null)
+    | ({
+        relationTo: 'enquiries';
+        value: number | Enquiry;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1031,6 +1098,32 @@ export interface CustomersSelect<T extends boolean = true> {
         tag?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "enquiries_select".
+ */
+export interface EnquiriesSelect<T extends boolean = true> {
+  reference?: T;
+  type?: T;
+  status?: T;
+  name?: T;
+  email?: T;
+  phone?: T;
+  orderNumber?: T;
+  product?: T;
+  budget?: T;
+  timeline?: T;
+  message?: T;
+  designConfiguration?: T;
+  source?: T;
+  submittedAt?: T;
+  ownerEmailSentAt?: T;
+  customerEmailSentAt?: T;
+  emailDeliveryError?: T;
+  internalNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

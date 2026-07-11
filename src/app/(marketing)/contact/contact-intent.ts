@@ -46,3 +46,11 @@ export function resolveInquiryType(value?: string): InquiryType {
 export function cleanContactContext(value?: string): string {
   return value?.trim().slice(0, 160) ?? ''
 }
+
+export function cleanContactMessage(value?: string): string {
+  return value?.trim().slice(0, 5000) ?? ''
+}
+
+export function cleanDesignConfiguration(value?: string): string {
+  return value?.trim().slice(0, 1000) ?? ''
+}

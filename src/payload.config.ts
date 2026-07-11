@@ -17,6 +17,7 @@ import { Categories } from './payload/collections/Categories.ts'
 import { Products } from './payload/collections/Products.ts'
 import { Orders } from './payload/collections/Orders.ts'
 import { Customers } from './payload/collections/Customers.ts'
+import { Enquiries } from './payload/collections/Enquiries.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -95,20 +96,17 @@ function getEmailSender(): { address: string; name: string } {
 const blobToken = getRequiredEnvironmentValue('BLOB_READ_WRITE_TOKEN')
 const emailSender = getEmailSender()
 
-for (const name of [
-  'CONTACT_EMAIL',
-  'ADMIN_EMAIL',
-]) {
+for (const name of ['CONTACT_EMAIL', 'ADMIN_EMAIL']) {
   getRequiredEnvironmentValue(name)
 }
 
 requireOneEnvironmentValue(
   ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_KV_REST_API_URL'],
-  'Upstash Redis URL',
+  'Upstash Redis URL'
 )
 requireOneEnvironmentValue(
   ['UPSTASH_REDIS_REST_TOKEN', 'UPSTASH_REDIS_REST_KV_REST_API_TOKEN'],
-  'Upstash Redis token',
+  'Upstash Redis token'
 )
 
 export default buildConfig({
@@ -123,7 +121,7 @@ export default buildConfig({
       beforeNavLinks: [],
     },
   },
-  collections: [Users, Media, Posts, Categories, Products, Orders, Customers],
+  collections: [Users, Media, Posts, Categories, Products, Orders, Customers, Enquiries],
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,
@@ -142,7 +140,8 @@ export default buildConfig({
       connectionString: getDatabaseUrl(),
     },
     migrationDir: path.resolve(dirname, 'migrations'),
-    push: process.env['NODE_ENV'] !== 'production',
+    push:
+      process.env['NODE_ENV'] !== 'production' && process.env['PAYLOAD_DB_PUSH'] !== 'false',
   }),
   sharp,
   plugins: [

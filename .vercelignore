@@ -1,0 +1,10 @@
+video/
+test-results/
+playwright-report/
+coverage/
+docker-data/
+gdopalco-bkup/
+media/
+.env
+.env.*
+!.env.example

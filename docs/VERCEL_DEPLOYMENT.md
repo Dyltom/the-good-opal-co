@@ -73,6 +73,14 @@ SEED_PUBLISH=true pnpm seed
 
 The seed is idempotent by product slug and does not overwrite existing products.
 
+For the final legacy commerce cutover, the importer can authenticate to the old
+WordPress administrator without creating a persistent WooCommerce API key. Set
+`WOO_BASE_URL`, `WOO_ADMIN_USERNAME`, `WOO_ADMIN_PASSWORD`, and
+`WOO_IMPORT_ON_DEPLOY=true` for one controlled Production deployment. The build
+runs migrations first, then performs an idempotent product/order/customer/refund
+import. Remove all four variables immediately after the successful import and
+confirm the imported counts in Payload. Never set the import flag for Preview.
+
 ## First administrator
 
 Set `ADMIN_EMAIL` to the owner address, then open `/admin` after the first deployment and create the first user with that exact email. Payload allows anonymous creation only for that address and only while no users exist; the server hook promotes it to `admin`. The email uniqueness constraint prevents concurrent duplicate bootstrap attempts. All later user creation requires an authenticated administrator. Confirm password-reset email before launch.

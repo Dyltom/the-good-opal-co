@@ -17,9 +17,14 @@ import {
   removeItemFromCart,
   updateCartItemQuantity,
   clearCart as clearCartUtil,
-  type CartItem,
   type Cart,
 } from '@/lib/cart'
+import {
+  cartAddQuantitySchema,
+  cartItemInputSchema,
+  cartProductIdSchema,
+  cartUpdateQuantitySchema,
+} from '@/lib/cart-validation'
 
 /**
  * Action result type for consistent error handling
@@ -37,11 +42,12 @@ interface ActionResult<T = void> {
  * @param item - Product details to add (quantity defaults to 1)
  * @returns ActionResult with updated cart
  */
-export async function addToCart(
-  item: Omit<CartItem, 'quantity'>
-): Promise<ActionResult<Cart>> {
+export async function addToCart(item: unknown): Promise<ActionResult<Cart>> {
+  const parsed = cartItemInputSchema.safeParse(item)
+  if (!parsed.success) return { success: false, error: 'Invalid cart item' }
+
   try {
-    const cart = await addItemToCart(item)
+    const cart = await addItemToCart(parsed.data)
     revalidatePath('/', 'layout')
     return { success: true, data: cart }
   } catch (error) {
@@ -62,12 +68,18 @@ export async function addToCart(
  * @returns ActionResult with updated cart
  */
 export async function addToCartWithQuantity(
-  item: Omit<CartItem, 'quantity'>,
-  quantity: number
+  item: unknown,
+  quantity: unknown
 ): Promise<ActionResult<Cart>> {
+  const parsedItem = cartItemInputSchema.safeParse(item)
+  const parsedQuantity = cartAddQuantitySchema.safeParse(quantity)
+  if (!parsedItem.success || !parsedQuantity.success) {
+    return { success: false, error: 'Invalid cart item or quantity' }
+  }
+
   try {
     const { addItemToCartWithQuantity } = await import('@/lib/cart')
-    const cart = await addItemToCartWithQuantity(item, quantity)
+    const cart = await addItemToCartWithQuantity(parsedItem.data, parsedQuantity.data)
     revalidatePath('/', 'layout')
     return { success: true, data: cart }
   } catch (error) {
@@ -85,9 +97,12 @@ export async function addToCartWithQuantity(
  * @param productId - ID of the product to remove
  * @returns ActionResult with updated cart
  */
-export async function removeFromCart(productId: string): Promise<ActionResult<Cart>> {
+export async function removeFromCart(productId: unknown): Promise<ActionResult<Cart>> {
+  const parsed = cartProductIdSchema.safeParse(productId)
+  if (!parsed.success) return { success: false, error: 'Invalid product' }
+
   try {
-    const cart = await removeItemFromCart(productId)
+    const cart = await removeItemFromCart(parsed.data)
     revalidatePath('/', 'layout')
     return { success: true, data: cart }
   } catch (error) {
@@ -107,11 +122,17 @@ export async function removeFromCart(productId: string): Promise<ActionResult<Ca
  * @returns ActionResult with updated cart
  */
 export async function updateQuantity(
-  productId: string,
-  quantity: number
+  productId: unknown,
+  quantity: unknown
 ): Promise<ActionResult<Cart>> {
+  const parsedId = cartProductIdSchema.safeParse(productId)
+  const parsedQuantity = cartUpdateQuantitySchema.safeParse(quantity)
+  if (!parsedId.success || !parsedQuantity.success) {
+    return { success: false, error: 'Invalid product or quantity' }
+  }
+
   try {
-    const cart = await updateCartItemQuantity(productId, quantity)
+    const cart = await updateCartItemQuantity(parsedId.data, parsedQuantity.data)
     revalidatePath('/', 'layout')
     return { success: true, data: cart }
   } catch (error) {

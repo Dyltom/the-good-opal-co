@@ -2,6 +2,7 @@ import type { Customer, Order, Product } from '@/types/payload-types'
 import { getPayload } from '@/lib/payload'
 import {
   fetchWooCommerceSnapshot,
+  fetchWooCommerceSnapshotFromAdmin,
   mapWooCustomer,
   mapWooOrder,
   mapWooPrivateProduct,
@@ -9,6 +10,7 @@ import {
   type LegacyCustomerData,
   type LegacyProductData,
 } from '@/lib/woocommerce/private-commerce'
+import { loadWooCommerceSnapshotDirectory } from '@/lib/woocommerce/snapshot-file'
 
 const TENANT_ID = 'good-opal-co'
 
@@ -152,13 +154,23 @@ function productNameKey(value: string): string {
 
 async function importCommerce(): Promise<void> {
   const apply = process.env['WOO_IMPORT_APPLY'] === 'true'
-  const credentials = {
-    baseUrl: requiredEnvironmentValue('WOO_BASE_URL'),
-    consumerKey: requiredEnvironmentValue('WOO_CONSUMER_KEY'),
-    consumerSecret: requiredEnvironmentValue('WOO_CONSUMER_SECRET'),
-  }
   const payload = await getPayload()
-  const snapshot = await fetchWooCommerceSnapshot(credentials)
+  const snapshotDirectory = process.env['WOO_SNAPSHOT_DIR']?.trim()
+  const adminUsername = process.env['WOO_ADMIN_USERNAME']?.trim()
+  const adminPassword = process.env['WOO_ADMIN_PASSWORD']
+  const snapshot = snapshotDirectory
+    ? await loadWooCommerceSnapshotDirectory(snapshotDirectory)
+    : adminUsername && adminPassword
+      ? await fetchWooCommerceSnapshotFromAdmin({
+          baseUrl: requiredEnvironmentValue('WOO_BASE_URL'),
+          username: adminUsername,
+          password: adminPassword,
+        })
+      : await fetchWooCommerceSnapshot({
+          baseUrl: requiredEnvironmentValue('WOO_BASE_URL'),
+          consumerKey: requiredEnvironmentValue('WOO_CONSUMER_KEY'),
+          consumerSecret: requiredEnvironmentValue('WOO_CONSUMER_SECRET'),
+        })
   const [existingProducts, existingOrders, existingCustomers] = await Promise.all([
     findAllProducts(),
     findAllOrders(),

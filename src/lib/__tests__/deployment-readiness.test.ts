@@ -144,4 +144,37 @@ describe('deployment readiness', () => {
 
     expect(readiness.checks.core).toBe(true)
   })
+
+  test('uses Vercel deployment target instead of NODE_ENV for preview readiness', () => {
+    const readiness = assessDeploymentReadiness({
+      ...validEnvironment,
+      VERCEL_ENV: 'preview',
+      NEXT_PUBLIC_APP_URL: 'http://preview.goodopal.test',
+      STRIPE_SECRET_KEY: `sk_test_${'a'.repeat(24)}`,
+      EMAIL_DELIVERY_VERIFIED: 'false',
+    })
+
+    expect(readiness.checks.core).toBe(true)
+    expect(readiness.checks.payments).toBe(true)
+    expect(readiness.checks.email).toBe(true)
+    expect(readiness.issues).not.toContain('stripe_live_mode_required')
+    expect(readiness.issues).not.toContain('email_delivery_unverified')
+    expect(() =>
+      assertValidCoreProductionConfiguration({
+        ...validEnvironment,
+        VERCEL_ENV: 'preview',
+        PAYLOAD_SECRET: 'short',
+      })
+    ).not.toThrow()
+  })
+
+  test('still enforces live credentials for Vercel production', () => {
+    const readiness = assessDeploymentReadiness({
+      ...validEnvironment,
+      VERCEL_ENV: 'production',
+      STRIPE_SECRET_KEY: `sk_test_${'a'.repeat(24)}`,
+    })
+
+    expect(readiness.issues).toContain('stripe_live_mode_required')
+  })
 })

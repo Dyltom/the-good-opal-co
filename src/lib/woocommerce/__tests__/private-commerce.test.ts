@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  fetchWooCommerceSnapshotFromAdmin,
   fetchWooOrders,
   mapWooCustomer,
   mapWooOrder,
@@ -64,6 +65,16 @@ function order(id: number): WooOrder {
 }
 
 describe('private WooCommerce API', () => {
+  it('refuses to send administrator credentials over HTTP', async () => {
+    await expect(
+      fetchWooCommerceSnapshotFromAdmin({
+        baseUrl: 'http://shop.example.com',
+        username: 'administrator',
+        password: 'private-password',
+      })
+    ).rejects.toThrow('require HTTPS')
+  })
+
   it('paginates with Basic auth without placing credentials in URLs or errors', async () => {
     const requests: Array<{ url: URL; authorization: string | null }> = []
     const fetcher = vi.fn<typeof fetch>(async (input, init) => {

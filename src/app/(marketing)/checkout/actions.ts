@@ -19,11 +19,7 @@ import {
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
 import { CHECKOUT_COUNTRIES } from './validation'
-
-// Initialize Stripe
-const stripe = new Stripe(process.env['STRIPE_SECRET_KEY'] ?? '', {
-  apiVersion: '2026-06-24.dahlia',
-})
+import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -76,20 +72,8 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
     }
   }
 
-  const { email, name, country } = validationResult.data
-  const identifier = await getRequestIdentifier(email)
-  const allowed = await checkRateLimit({
-    scope: 'checkout',
-    identifier,
-    limit: 10,
-    windowSeconds: 15 * 60,
-  })
-  if (!allowed) {
-    return { success: false, error: 'Too many checkout attempts. Please try again later.' }
-  }
-
-  // Check if Stripe is configured
-  if (!process.env['STRIPE_SECRET_KEY']) {
+  const stripeSecretKey = getConfiguredStripeSecretKey()
+  if (!stripeSecretKey) {
     return {
       success: false,
       error: 'Payment processing is not configured. Please contact support.',
@@ -97,6 +81,21 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
   }
 
   try {
+    const { email, name, country } = validationResult.data
+    const identifier = await getRequestIdentifier(email)
+    const allowed = await checkRateLimit({
+      scope: 'checkout',
+      identifier,
+      limit: 10,
+      windowSeconds: 15 * 60,
+    })
+    if (!allowed) {
+      return { success: false, error: 'Too many checkout attempts. Please try again later.' }
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2026-06-24.dahlia',
+    })
     const subtotal = calculateCheckoutSubtotal(cart.items)
     const destination = country === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
     const pricing = calculateCheckoutPricing(subtotal, destination)
@@ -167,16 +166,9 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
   } catch (error) {
     console.error('Stripe checkout error:', error)
 
-    if (error instanceof Stripe.errors.StripeError) {
-      return {
-        success: false,
-        error: error.message,
-      }
-    }
-
     return {
       success: false,
-      error: 'An unexpected error occurred. Please try again.',
+      error: 'Payment could not be started. Please try again or contact support.',
     }
   }
 }

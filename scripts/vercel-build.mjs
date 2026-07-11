@@ -1,8 +1,8 @@
 import { spawnSync } from 'node:child_process'
 
-function run(command, args) {
+function run(command, args, env = process.env) {
   const result = spawnSync(command, args, {
-    env: process.env,
+    env,
     stdio: 'inherit',
   })
 
@@ -14,6 +14,13 @@ run('pnpm', ['payload', 'generate:importmap'])
 
 if (process.env.VERCEL_ENV === 'production') {
   run('pnpm', ['payload', 'migrate'])
+  if (process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
+    console.log('[vercel-build] Running one-time WooCommerce commerce import.')
+    run('pnpm', ['import:woocommerce'], {
+      ...process.env,
+      WOO_IMPORT_APPLY: 'true',
+    })
+  }
 } else {
   console.log('[vercel-build] Skipping database migrations outside Production.')
 }

@@ -11,6 +11,7 @@ export const contactSchema = z.object({
   product: z.string().trim().max(160).optional(),
   budget: z.string().trim().max(80).optional(),
   timeline: z.string().trim().max(80).optional(),
+  designConfiguration: z.string().trim().max(1000).optional(),
   website: z.string().max(0).optional(),
 })
 

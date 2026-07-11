@@ -157,12 +157,10 @@ export const Orders: CollectionConfig = {
         {
           name: 'state',
           type: 'text',
-          required: true,
         },
         {
           name: 'postalCode',
           type: 'text',
-          required: true,
         },
         {
           name: 'country',
