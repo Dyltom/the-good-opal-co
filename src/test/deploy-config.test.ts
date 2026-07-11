@@ -99,6 +99,7 @@ describe('deployment config', () => {
     const quotePage = read('src/app/(marketing)/quote/[quoteNumber]/page.tsx')
 
     expect(config).toContain("source: '/quote/:path*'")
+    expect(config).toContain("source: '/api/quote/:path*'")
     expect(config).toContain("{ key: 'Referrer-Policy', value: 'no-referrer' }")
     expect(config).toContain("{ key: 'Cache-Control', value: 'private, no-store, max-age=0' }")
     expect(analytics).toContain("pathname.startsWith('/quote')")
