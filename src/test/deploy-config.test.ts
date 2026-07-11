@@ -148,10 +148,14 @@ describe('deployment config', () => {
     const config = read('next.config.ts')
 
     expect(config).toContain("key: 'Content-Security-Policy'")
-    expect(config).toContain("object-src 'none'")
-    expect(config).toContain("frame-ancestors 'none'")
-    expect(config).toContain("script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com")
+    expect(config).toContain('createContentSecurityPolicy()')
     expect(config).toContain("key: 'X-Content-Type-Options'")
+
+    const policy = read('src/lib/content-security-policy.ts')
+    expect(policy).toContain("object-src 'none'")
+    expect(policy).toContain("frame-ancestors 'none'")
+    expect(policy).toContain("script-src 'self' 'unsafe-inline'")
+    expect(policy).toContain('https://va.vercel-scripts.com')
   })
 
   test('Payload does not maintain an unused transactional search index', () => {
