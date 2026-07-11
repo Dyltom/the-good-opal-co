@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Pause, Play, Rotate3D } from 'lucide-react'
 import type { BuilderOpal, RingConfig } from './config'
+import { OpalFaceImage } from './OpalFaceImage'
 import { RingScene } from './RingScene'
 import type { RingView } from './RingScene'
 
@@ -108,21 +109,12 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
         <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3 sm:inset-x-7 sm:bottom-7">
           {selectedOpal ? (
             <div className="flex max-w-[calc(100%_-_3.75rem)] items-center gap-2.5 rounded-lg bg-black-rich/80 p-2 text-cream sm:max-w-[70%] sm:gap-3 sm:p-2.5">
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-cream/10 sm:h-28 sm:w-28">
-                <Image
-                  src={selectedOpal.imageUrl}
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-28">
+                <OpalFaceImage
+                  opal={selectedOpal}
                   alt=""
-                  fill
                   sizes="112px"
-                  className="object-cover"
-                  style={
-                    selectedOpal.visual.textureCrop
-                      ? {
-                          transform: `scale(${selectedOpal.visual.textureCrop.zoom})`,
-                          transformOrigin: `${selectedOpal.visual.textureCrop.focalX * 100}% ${selectedOpal.visual.textureCrop.focalY * 100}%`,
-                        }
-                      : undefined
-                  }
+                  className="h-full w-auto rounded-md"
                 />
               </div>
               <div className="min-w-0">

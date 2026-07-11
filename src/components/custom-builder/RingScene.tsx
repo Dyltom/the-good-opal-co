@@ -22,6 +22,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
+import { computePhotoCrop } from '@/lib/custom-builder/photo-crop'
 import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
 
 export type RingView = 'three-quarter' | 'front' | 'profile'
@@ -37,7 +38,7 @@ interface RingSceneProps {
 type StoneDimensions = readonly [width: number, height: number]
 
 const metalColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#d2d2cf',
+  'sterling-silver': '#dfdfda',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -125,13 +126,17 @@ function MetalMaterial({
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
-      metalness={1}
-      roughness={isSterlingSilver ? Math.max(0.3, roughness) : roughness}
+      metalness={isSterlingSilver ? 0.93 : 0.98}
+      roughness={isSterlingSilver ? Math.max(0.28, roughness) : roughness}
       clearcoat={isSterlingSilver ? 0.04 : 0.26}
       clearcoatRoughness={isSterlingSilver ? 0.32 : 0.16}
-      envMapIntensity={isSterlingSilver ? 1.08 : 1.2}
+      envMapIntensity={isSterlingSilver ? 1.34 : 1.2}
     />
   )
+}
+
+function PatinaMaterial() {
+  return <meshStandardMaterial color="#222522" metalness={0.72} roughness={0.46} />
 }
 
 function getStoneDimensions(config: RingConfig, selectedOpal?: BuilderOpal): StoneDimensions {
@@ -387,13 +392,10 @@ function OpalCabochon({
     nextTexture.wrapT = ClampToEdgeWrapping
     nextTexture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy())
     if (crop) {
-      const repeatX = 1 / crop.zoom
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
-      const imageAspect = image?.width && image?.height ? image.width / image.height : 1
-      const stoneAspect = width / height
-      const repeatY = Math.min(1, repeatX * (imageAspect / stoneAspect))
-      nextTexture.repeat.set(repeatX, repeatY)
-      nextTexture.offset.set(crop.focalX - repeatX / 2, 1 - crop.focalY - repeatY / 2)
+      const cropRect = computePhotoCrop(image?.width ?? 1, image?.height ?? 1, width / height, crop)
+      nextTexture.repeat.set(cropRect.width, cropRect.height)
+      nextTexture.offset.set(cropRect.left, 1 - cropRect.top - cropRect.height)
     }
     nextTexture.needsUpdate = true
     return nextTexture
@@ -407,14 +409,31 @@ function OpalCabochon({
 
   if (usesProductPhoto) {
     return (
-      <mesh geometry={geometry}>
-        <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
-        <meshBasicMaterial
-          attach="material-1"
-          color={selectedOpal?.visual.bodyColour ?? palette.body}
-          toneMapped={false}
-        />
-      </mesh>
+      <group>
+        <mesh geometry={geometry}>
+          <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
+          <meshStandardMaterial
+            attach="material-1"
+            color={selectedOpal?.visual.bodyColour ?? palette.body}
+            roughness={0.24}
+            metalness={0}
+          />
+        </mesh>
+        <mesh geometry={geometry} scale={[1.002, 1.002, 1.012]}>
+          <meshPhysicalMaterial
+            attach="material-0"
+            color="#f4fbf8"
+            transparent
+            opacity={0.1}
+            roughness={0.08}
+            specularIntensity={1}
+            clearcoat={1}
+            clearcoatRoughness={0.025}
+            depthWrite={false}
+          />
+          <meshBasicMaterial attach="material-1" transparent opacity={0} depthWrite={false} />
+        </mesh>
+      </group>
     )
   }
 
@@ -554,12 +573,14 @@ function StoneOutline({
   offset,
   radius,
   z,
+  finish = 'metal',
 }: {
   config: RingConfig
   dimensions: StoneDimensions
   offset: number
   radius: number
   z: number
+  finish?: 'metal' | 'patina'
 }) {
   const [width, height] = dimensions
   const curve = useMemo(
@@ -579,7 +600,11 @@ function StoneOutline({
   return (
     <mesh>
       <tubeGeometry args={[curve, 96, radius, 14, true]} />
-      <MetalMaterial metal={config.metal} roughness={0.2} />
+      {finish === 'patina' ? (
+        <PatinaMaterial />
+      ) : (
+        <MetalMaterial metal={config.metal} roughness={0.2} />
+      )}
     </mesh>
   )
 }
@@ -605,6 +630,14 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       <StoneOutline
         config={config}
         dimensions={dimensions}
+        offset={Math.max(0.004, profile.bezelLipOffset - profile.bezelLipRadius * 0.55)}
+        radius={0.009}
+        z={0.052}
+        finish="patina"
+      />
+      <StoneOutline
+        config={config}
+        dimensions={dimensions}
         offset={profile.bezelLipOffset}
         radius={profile.bezelLipRadius}
         z={0.055}
@@ -618,6 +651,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
             offset={profile.haloSupportOffset}
             radius={profile.haloSupportRadius}
             z={0.055}
+            finish="patina"
           />
           {beads.map(({ key, x, y }) => (
             <mesh key={key} position={[x, y, 0.068]}>
@@ -755,9 +789,9 @@ export function RingScene({
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[4, 5, 6]} intensity={2.8} color="#fffaf0" />
-      <directionalLight position={[-4, 1, 3]} intensity={1.7} color="#eef4f2" />
+      <ambientLight intensity={0.92} />
+      <directionalLight position={[4, 5, 6]} intensity={3.1} color="#fffaf0" />
+      <directionalLight position={[-4, 1, 3]} intensity={2.1} color="#eef4f2" />
       <pointLight position={[0, -2, 3]} intensity={0.8} color="#fff7eb" />
 
       <CameraPreset view={view} />

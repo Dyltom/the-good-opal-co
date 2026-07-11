@@ -13,6 +13,15 @@ describe('custom builder opal visual profiles', () => {
     expect(isBuilderEligibleOpal(slug, name)).toBe(true)
   })
 
+  test.each([
+    'lightning-ridge-white-opal-105-ct',
+    'mintabie-semi-black-opal-105-cts',
+    'mintabie-semi-black-opal-135-cts',
+    'queensland-crystal-pipe-opal-105-cts',
+  ])('keeps the checked-in import slug %s eligible after a clean restore', (slug) => {
+    expect(isBuilderEligibleOpal(slug, 'Imported store opal')).toBe(true)
+  })
+
   test('rejects legacy IDs and unsupported catalogue shapes', () => {
     expect(isBuilderEligibleOpal('128', 'Lightning Ridge Black Crystal Opal 3 cts')).toBe(false)
     expect(
@@ -41,7 +50,7 @@ describe('custom builder opal visual profiles', () => {
       evidence: 'catalogue',
       transmission: 0.26,
       bodyColour: '#79b7d1',
-      textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.9 },
+      textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.74 },
     })
   })
 
@@ -57,11 +66,11 @@ describe('custom builder opal visual profiles', () => {
       'black-opal'
     )
 
-    expect(white.visual.textureCrop).toEqual({ focalX: 0.507, focalY: 0.495, zoom: 3.25 })
+    expect(white.visual.textureCrop).toEqual({ focalX: 0.507, focalY: 0.495, zoom: 3.08 })
     expect(semiBlack.visual.textureCrop).toEqual({
       focalX: 0.501,
-      focalY: 0.489,
-      zoom: 3.83,
+      focalY: 0.493,
+      zoom: 3.61,
     })
   })
 

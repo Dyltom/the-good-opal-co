@@ -14,7 +14,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.12,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.507, focalY: 0.495, zoom: 3.25 },
+    textureCrop: { focalX: 0.507, focalY: 0.495, zoom: 3.08 },
     bodyColour: '#a1a694',
   },
   'mintabie-semi-black-opal-1-05-cts': {
@@ -22,7 +22,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.16,
     evidence: 'catalogue',
     recommendedStyle: 'coral',
-    textureCrop: { focalX: 0.504, focalY: 0.483, zoom: 5.25 },
+    textureCrop: { focalX: 0.504, focalY: 0.487, zoom: 4.81 },
     bodyColour: '#8da392',
   },
   'mintabie-semi-black-opal-1-35-cts': {
@@ -30,7 +30,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.23,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.501, focalY: 0.489, zoom: 3.83 },
+    textureCrop: { focalX: 0.501, focalY: 0.493, zoom: 3.61 },
     bodyColour: '#acb1a1',
   },
   'queensland-crystal-pipe-opal-1-45-cts': {
@@ -38,9 +38,20 @@ const reviewedProfiles: Record<
     aspectRatio: 1.77,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.9 },
+    textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.74 },
     bodyColour: '#79b7d1',
   },
+}
+
+const reviewedSlugAliases: Record<string, keyof typeof reviewedProfiles> = {
+  'lightning-ridge-white-opal-105-ct': 'lightning-ridge-white-opal-1-05-cts',
+  'mintabie-semi-black-opal-105-cts': 'mintabie-semi-black-opal-1-05-cts',
+  'mintabie-semi-black-opal-135-cts': 'mintabie-semi-black-opal-1-35-cts',
+  'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
+}
+
+function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | undefined {
+  return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
 }
 
 const typeProfiles: Record<
@@ -104,7 +115,7 @@ function hashString(value: string): number {
 }
 
 export function isBuilderEligibleOpal(slug: string, name: string): boolean {
-  return Boolean(name) && reviewedProfiles[slug] !== undefined
+  return Boolean(name) && reviewedProfileFor(slug) !== undefined
 }
 
 function inferSilhouette(
@@ -158,7 +169,7 @@ export function createOpalVisualProfile(
   const seed = hashString(`${slug}:${name}`)
   const profile = typeProfiles[stoneType] ?? typeProfiles['crystal-opal']!
   const silhouette = inferSilhouette(name)
-  const reviewed = reviewedProfiles[slug]
+  const reviewed = reviewedProfileFor(slug)
   const bodyColour = profile.bodies[seed % profile.bodies.length] ?? profile.bodies[0]!
   const flashColours = profile.flashes[(seed >>> 4) % profile.flashes.length] ?? profile.flashes[0]!
 
