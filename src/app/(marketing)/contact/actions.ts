@@ -9,6 +9,8 @@ import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { getPayload } from '@/lib/payload'
 import { ringConfigSchema } from '@/components/custom-builder/config'
 import type { RingConfig } from '@/components/custom-builder/config'
+import { contactCustomerMutation } from '@/lib/contact-customer'
+import type { Enquiry } from '@/types/payload-types'
 
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -77,25 +79,58 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
     const reference = `ENQ-${randomBytes(5).toString('hex').toUpperCase()}`
     const payload = await getPayload()
-    const enquiry = await payload.create({
-      collection: 'enquiries',
-      data: {
-        reference,
-        type: validated.inquiryType,
-        status: 'new',
-        name: validated.name,
-        email: validated.email,
-        phone: validated.phone,
-        orderNumber: validated.orderNumber,
-        product: validated.product,
-        budget: validated.budget,
-        timeline: validated.timeline,
-        message: validated.message,
-        designConfiguration,
-        source: designConfiguration ? 'custom-builder' : 'website-contact',
-        submittedAt: new Date().toISOString(),
-      },
-    })
+    const transactionID = await payload.db.beginTransaction()
+    if (transactionID === null) throw new Error('Database transactions are required for enquiries')
+    const req = { transactionID }
+    let enquiry: Enquiry
+
+    try {
+      enquiry = await payload.create({
+        collection: 'enquiries',
+        req,
+        data: {
+          reference,
+          type: validated.inquiryType,
+          status: 'new',
+          name: validated.name,
+          email: validated.email,
+          phone: validated.phone,
+          orderNumber: validated.orderNumber,
+          product: validated.product,
+          budget: validated.budget,
+          timeline: validated.timeline,
+          message: validated.message,
+          designConfiguration,
+          source: designConfiguration ? 'custom-builder' : 'website-contact',
+          submittedAt: new Date().toISOString(),
+        },
+      })
+
+      const customerResult = await payload.find({
+        collection: 'customers',
+        where: { email: { equals: validated.email.toLowerCase() } },
+        limit: 1,
+        req,
+      })
+      const existingCustomer = customerResult.docs[0]
+      const customerMutation = contactCustomerMutation(validated, existingCustomer)
+
+      if (customerMutation.kind === 'create') {
+        await payload.create({ collection: 'customers', data: customerMutation.data, req })
+      } else if (existingCustomer) {
+        await payload.update({
+          collection: 'customers',
+          id: existingCustomer.id,
+          data: customerMutation.data,
+          req,
+        })
+      }
+
+      await payload.db.commitTransaction(transactionID)
+    } catch (persistenceError) {
+      await payload.db.rollbackTransaction(transactionID)
+      throw persistenceError
+    }
 
     let ownerEmailSentAt: string | undefined
     let customerEmailSentAt: string | undefined
