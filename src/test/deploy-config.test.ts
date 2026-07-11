@@ -70,6 +70,17 @@ describe('deployment config', () => {
     expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
   })
 
+  test('Payload-backed catalog surfaces are not frozen at build time', () => {
+    for (const file of [
+      'src/app/(marketing)/page.tsx',
+      'src/app/(marketing)/store/page.tsx',
+      'src/app/(marketing)/blog/page.tsx',
+      'src/app/api/products/route.ts',
+    ]) {
+      expect(read(file), file).toContain("export const dynamic = 'force-dynamic'")
+    }
+  })
+
   test('paid Stripe line items drive transactional order fulfilment', () => {
     const webhook = read('src/app/api/webhooks/stripe/route.ts')
     const checkout = read('src/app/(marketing)/checkout/actions.ts')

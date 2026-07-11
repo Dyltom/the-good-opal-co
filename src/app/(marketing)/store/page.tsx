@@ -17,6 +17,8 @@ export const metadata = {
   description:
     'Browse one-of-a-kind Australian opals, finished jewellery, loose stones, and pieces for gifting. Every listing includes its known origin and details.',
 }
+export const dynamic = 'force-dynamic'
+
 interface StorePageProps {
   searchParams: Promise<StoreSearchParams>
 }

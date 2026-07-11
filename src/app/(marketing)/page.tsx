@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     'Shop one-of-a-kind Australian opals and handcrafted jewellery with clear origin, authenticity, delivery, and care details.',
 }
 
+export const dynamic = 'force-dynamic'
+
 function descriptionText(description: unknown): string {
   if (typeof description === 'string') return description
   const richText = description as {

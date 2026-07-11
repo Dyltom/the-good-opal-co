@@ -106,6 +106,7 @@ async function seed() {
   const payload = await getPayload()
   const publish = process.env.SEED_PUBLISH === 'true'
   let created = 0
+  let published = 0
   let skipped = 0
 
   for (const product of PRODUCTS) {
@@ -114,7 +115,21 @@ async function seed() {
       where: { slug: { equals: product.slug } },
       limit: 1,
     })
-    if (existing.docs.length > 0) {
+    const existingProduct = existing.docs[0]
+    if (existingProduct) {
+      if (publish && existingProduct.status === 'draft') {
+        await payload.update({
+          collection: 'products',
+          id: existingProduct.id,
+          data: {
+            status: 'published',
+            stock: product.stock,
+          },
+        })
+        published += 1
+        continue
+      }
+
       skipped += 1
       continue
     }
@@ -145,7 +160,7 @@ async function seed() {
   }
 
   payload.logger.info(
-    `Seed complete: ${created} created, ${skipped} already present. ${publish ? 'Published with imported stock.' : 'Created as drafts with zero stock for review.'}`
+    `Seed complete: ${created} created, ${published} existing drafts published, ${skipped} already present. ${publish ? 'Imported catalog is available with source stock.' : 'New products remain drafts with zero stock for review.'}`
   )
 }
 

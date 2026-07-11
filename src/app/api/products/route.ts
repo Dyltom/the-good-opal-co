@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/lib/payload'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/products
  * Returns products from Payload CMS for client-side fetching
@@ -14,7 +16,7 @@ export async function GET() {
       where: {
         status: { equals: 'published' },
       },
-      limit: 100,
+      limit: 200,
       depth: 2,
       sort: '-createdAt',
     })

@@ -11,6 +11,8 @@ export const metadata = {
   description: 'Practical notes about Australian opals, jewellery, buying, and care.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function BlogPage() {
   const payload = await getPayload()
   const { docs: posts } = await payload.find({
