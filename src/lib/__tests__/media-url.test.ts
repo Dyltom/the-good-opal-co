@@ -25,4 +25,13 @@ describe('resolveMediaUrl', () => {
       )
     ).toBe('/api/media/file/opal.jpg?size=card')
   })
+
+  test('uses the current authoritative primary for the corrected carved-heart parcel', () => {
+    expect(
+      resolveMediaUrl('https://the-good-opal-co.vercel.app/api/media/file/IMG_0810.jpg')
+    ).toBe('/images/products/IMG_0808.jpg')
+    expect(resolveMediaUrl('/api/media/file/IMG_0810.jpg')).toBe(
+      '/images/products/IMG_0808.jpg'
+    )
+  })
 })
