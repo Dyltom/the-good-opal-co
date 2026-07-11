@@ -18,6 +18,7 @@ import * as migration_20260712_043000_course_interest_truth from './20260712_043
 import * as migration_20260712_060000_builder_visual_management from './20260712_060000_builder_visual_management'
 import * as migration_20260712_070000_woo_import_ledger from './20260712_070000_woo_import_ledger'
 import * as migration_20260712_080000_inventory_reservations from './20260712_080000_inventory_reservations'
+import * as migration_20260712_090000_catalogue_fact_backfill from './20260712_090000_catalogue_fact_backfill'
 
 export const migrations = [
   {
@@ -119,5 +120,10 @@ export const migrations = [
     up: migration_20260712_080000_inventory_reservations.up,
     down: migration_20260712_080000_inventory_reservations.down,
     name: '20260712_080000_inventory_reservations',
+  },
+  {
+    up: migration_20260712_090000_catalogue_fact_backfill.up,
+    down: migration_20260712_090000_catalogue_fact_backfill.down,
+    name: '20260712_090000_catalogue_fact_backfill',
   },
 ]

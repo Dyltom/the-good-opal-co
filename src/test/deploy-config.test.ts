@@ -144,6 +144,16 @@ describe('deployment config', () => {
     expect(() => read('src/app/(payload)/admin/importMap.ts')).toThrow()
   })
 
+  test('production headers constrain executable and embedded content', () => {
+    const config = read('next.config.ts')
+
+    expect(config).toContain("key: 'Content-Security-Policy'")
+    expect(config).toContain("object-src 'none'")
+    expect(config).toContain("frame-ancestors 'none'")
+    expect(config).toContain("script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com")
+    expect(config).toContain("key: 'X-Content-Type-Options'")
+  })
+
   test('Payload does not maintain an unused transactional search index', () => {
     const config = read('src/payload.config.ts')
     const search = read('src/app/(marketing)/search/actions.ts')
@@ -161,6 +171,18 @@ describe('deployment config', () => {
     ]) {
       expect(read(file), file).toContain("export const dynamic = 'force-dynamic'")
     }
+  })
+
+  test('catalogue backfill uses only facts present in imported product copy', () => {
+    const migration = read('src/migrations/20260712_090000_catalogue_fact_backfill.ts')
+
+    expect(migration).toContain('WHERE "category" = \'raw-opals\'')
+    expect(migration).toContain('"material" = COALESCE("material", \'none\')')
+    expect(migration).toContain('"weight_unit", \'carats\'')
+    expect(migration).toContain('WHERE "slug" = \'gemini-ring-2\'')
+    expect(migration).toContain('"material" = \'sterling-silver\'')
+    expect(migration).toContain('"ring_size" = \'6.5\'')
+    expect(migration).toContain("'doublet-opal-earrings-bouquet-studs'")
   })
 
   test('paid Stripe line items drive transactional order fulfilment', () => {
