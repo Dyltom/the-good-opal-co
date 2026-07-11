@@ -31,6 +31,7 @@ interface RingSceneProps {
   config: RingConfig
   allowMotion: boolean
   onContextLost: () => void
+  opalImageUrls: readonly string[]
   selectedOpal?: BuilderOpal
   view: RingView
 }
@@ -366,10 +367,12 @@ function createCabochonGeometry(
 function OpalCabochon({
   config,
   dimensions,
+  opalImageUrls,
   selectedOpal,
 }: {
   config: RingConfig
   dimensions: StoneDimensions
+  opalImageUrls: readonly string[]
   selectedOpal?: BuilderOpal
 }) {
   const { gl } = useThree()
@@ -383,7 +386,11 @@ function OpalCabochon({
     [config.shape, height, width]
   )
   const palette = opalPalettes[config.stone]
-  const sourcePhoto = useTexture(selectedOpal?.imageUrl ?? '/images/products/20210923_172817.jpg')
+  const photoSources: string[] =
+    opalImageUrls.length > 0 ? [...opalImageUrls] : ['/images/products/20210923_172817.jpg']
+  const sourcePhotos = useTexture(photoSources)
+  const selectedPhotoIndex = selectedOpal ? photoSources.indexOf(selectedOpal.imageUrl) : 0
+  const sourcePhoto = sourcePhotos[Math.max(0, selectedPhotoIndex)] ?? sourcePhotos[0]!
   const photoTexture = useMemo(() => {
     const crop = selectedOpal?.visual.textureCrop
     const nextTexture = sourcePhoto.clone()
@@ -609,7 +616,15 @@ function StoneOutline({
   )
 }
 
-function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
+function Setting({
+  config,
+  opalImageUrls,
+  selectedOpal,
+}: {
+  config: RingConfig
+  opalImageUrls: readonly string[]
+  selectedOpal?: BuilderOpal
+}) {
   const dimensions = getStoneDimensions(config, selectedOpal)
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
@@ -662,7 +677,12 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         </>
       )}
 
-      <OpalCabochon config={config} dimensions={dimensions} selectedOpal={selectedOpal} />
+      <OpalCabochon
+        config={config}
+        dimensions={dimensions}
+        opalImageUrls={opalImageUrls}
+        selectedOpal={selectedOpal}
+      />
     </group>
   )
 }
@@ -725,7 +745,15 @@ function Shank({
   )
 }
 
-function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
+function RingModel({
+  config,
+  opalImageUrls,
+  selectedOpal,
+}: {
+  config: RingConfig
+  opalImageUrls: readonly string[]
+  selectedOpal?: BuilderOpal
+}) {
   const metal = config.metal
   const styleProfile = ringStyleGeometryProfiles[config.style]
   const [stoneWidth] = getStoneDimensions(config, selectedOpal)
@@ -763,7 +791,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
       <Shoulder points={shoulderPoints.right} radius={shoulderRadius} metal={metal} />
 
       <group position={[0, measurements.settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <Setting config={config} selectedOpal={selectedOpal} />
+        <Setting config={config} opalImageUrls={opalImageUrls} selectedOpal={selectedOpal} />
       </group>
     </group>
   )
@@ -773,6 +801,7 @@ export function RingScene({
   config,
   allowMotion,
   onContextLost,
+  opalImageUrls,
   selectedOpal,
   view,
 }: RingSceneProps) {
@@ -796,7 +825,7 @@ export function RingScene({
 
       <CameraPreset view={view} />
 
-      <RingModel config={config} selectedOpal={selectedOpal} />
+      <RingModel config={config} opalImageUrls={opalImageUrls} selectedOpal={selectedOpal} />
 
       <Environment resolution={128}>
         <Lightformer form="rect" intensity={4} position={[0, 4, -4]} scale={[5, 1.2, 1]} />

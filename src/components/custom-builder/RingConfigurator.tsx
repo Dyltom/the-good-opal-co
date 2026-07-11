@@ -280,7 +280,12 @@ export function RingConfigurator({ initialConfig, opals }: RingConfiguratorProps
       <div className="grid lg:grid-cols-[minmax(0,1.12fr)_minmax(25rem,0.88fr)]">
         <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:self-start">
           <ViewerErrorBoundary>
-            <RingPreview config={config} description={description} selectedOpal={selectedOpal} />
+            <RingPreview
+              config={config}
+              description={description}
+              opals={opals}
+              selectedOpal={selectedOpal}
+            />
           </ViewerErrorBoundary>
         </div>
 

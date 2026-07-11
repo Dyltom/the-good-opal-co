@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Pause, Play, Rotate3D } from 'lucide-react'
 import type { BuilderOpal, RingConfig } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
@@ -11,6 +11,7 @@ import type { RingView } from './RingScene'
 interface RingPreviewProps {
   config: RingConfig
   description: string
+  opals: readonly BuilderOpal[]
   selectedOpal?: BuilderOpal
 }
 
@@ -29,11 +30,15 @@ const views: readonly { id: RingView; label: string }[] = [
   { id: 'profile', label: 'Profile' },
 ]
 
-export function RingPreview({ config, description, selectedOpal }: RingPreviewProps) {
+export function RingPreview({ config, description, opals, selectedOpal }: RingPreviewProps) {
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
   const [motionEnabled, setMotionEnabled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const [view, setView] = useState<RingView>('front')
+  const opalImageUrls = useMemo(
+    () => Array.from(new Set(opals.map((opal) => opal.imageUrl))),
+    [opals]
+  )
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -54,6 +59,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
         <RingScene
           config={config}
           selectedOpal={selectedOpal}
+          opalImageUrls={opalImageUrls}
           allowMotion={motionEnabled}
           onContextLost={() => setWebGlAvailable(false)}
           view={view}
