@@ -23,6 +23,8 @@ import { Enquiries } from './payload/collections/Enquiries.ts'
 import { Courses } from './payload/collections/Courses.ts'
 import { CommerceImportRuns } from './payload/collections/CommerceImportRuns.ts'
 import { InventoryReservations } from './payload/collections/InventoryReservations.ts'
+import { CustomQuotes } from './payload/collections/CustomQuotes.ts'
+import { CustomQuoteEvents } from './payload/collections/CustomQuoteEvents.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -140,6 +142,8 @@ export default buildConfig({
     Courses,
     CommerceImportRuns,
     InventoryReservations,
+    CustomQuotes,
+    CustomQuoteEvents,
   ],
   editor: lexicalEditor({}),
   email: resendAdapter({

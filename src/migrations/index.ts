@@ -19,6 +19,7 @@ import * as migration_20260712_060000_builder_visual_management from './20260712
 import * as migration_20260712_070000_woo_import_ledger from './20260712_070000_woo_import_ledger'
 import * as migration_20260712_080000_inventory_reservations from './20260712_080000_inventory_reservations'
 import * as migration_20260712_090000_catalogue_fact_backfill from './20260712_090000_catalogue_fact_backfill'
+import * as migration_20260712_100000_custom_quote_domain from './20260712_100000_custom_quote_domain'
 
 export const migrations = [
   {
@@ -125,5 +126,10 @@ export const migrations = [
     up: migration_20260712_090000_catalogue_fact_backfill.up,
     down: migration_20260712_090000_catalogue_fact_backfill.down,
     name: '20260712_090000_catalogue_fact_backfill',
+  },
+  {
+    up: migration_20260712_100000_custom_quote_domain.up,
+    down: migration_20260712_100000_custom_quote_domain.down,
+    name: '20260712_100000_custom_quote_domain',
   },
 ]

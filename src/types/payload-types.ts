@@ -80,6 +80,8 @@ export interface Config {
     courses: Course;
     'commerce-import-runs': CommerceImportRun;
     'inventory-reservations': InventoryReservation;
+    'custom-quotes': CustomQuote;
+    'custom-quote-events': CustomQuoteEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -100,6 +102,8 @@ export interface Config {
     courses: CoursesSelect<false> | CoursesSelect<true>;
     'commerce-import-runs': CommerceImportRunsSelect<false> | CommerceImportRunsSelect<true>;
     'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
+    'custom-quotes': CustomQuotesSelect<false> | CustomQuotesSelect<true>;
+    'custom-quote-events': CustomQuoteEventsSelect<false> | CustomQuoteEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -914,6 +918,94 @@ export interface CommerceImportRun {
   createdAt: string;
 }
 /**
+ * Revisioned custom jewellery quotes; amounts are stored in currency cents
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-quotes".
+ */
+export interface CustomQuote {
+  id: number;
+  quoteNumber: string;
+  quoteSeriesId: string;
+  revision: number;
+  /**
+   * Select an earlier quote to create its next immutable revision
+   */
+  supersedes?: (number | null) | CustomQuote;
+  enquiry: number | Enquiry;
+  customerEmail: string;
+  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled' | 'superseded';
+  /**
+   * Full quoted price in cents
+   */
+  amountCents: number;
+  /**
+   * Required deposit in cents; zero means no deposit
+   */
+  depositAmountCents: number;
+  currency: 'AUD';
+  validUntil: string;
+  /**
+   * Exact scope, materials, timing, inclusions, exclusions, and cancellation terms accepted for this revision
+   */
+  terms: string;
+  acceptedAt?: string | null;
+  acceptedByEmail?: string | null;
+  acceptedTermsHash?: string | null;
+  depositStatus: 'not-required' | 'awaiting-payment' | 'paid' | 'refunded';
+  amountPaidCents?: number | null;
+  paidAt?: string | null;
+  stripeCheckoutSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+  /**
+   * Private operational notes; not part of accepted terms
+   */
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Append-only evidence ledger for custom quote lifecycle changes
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-quote-events".
+ */
+export interface CustomQuoteEvent {
+  id: number;
+  quote: number | CustomQuote;
+  enquiry: number | Enquiry;
+  eventType:
+    | 'created'
+    | 'sent'
+    | 'accepted'
+    | 'expired'
+    | 'cancelled'
+    | 'superseded'
+    | 'deposit-paid'
+    | 'deposit-refunded';
+  occurredAt: string;
+  quoteRevision: number;
+  actorType: 'admin' | 'customer' | 'stripe' | 'system';
+  actorEmail?: string | null;
+  amountCents: number;
+  depositAmountCents: number;
+  currency: string;
+  validUntil: string;
+  termsSnapshot: string;
+  termsHash: string;
+  evidence?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -988,6 +1080,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'inventory-reservations';
         value: number | InventoryReservation;
+      } | null)
+    | ({
+        relationTo: 'custom-quotes';
+        value: number | CustomQuote;
+      } | null)
+    | ({
+        relationTo: 'custom-quote-events';
+        value: number | CustomQuoteEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1498,6 +1598,57 @@ export interface InventoryReservationsSelect<T extends boolean = true> {
         quantity?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-quotes_select".
+ */
+export interface CustomQuotesSelect<T extends boolean = true> {
+  quoteNumber?: T;
+  quoteSeriesId?: T;
+  revision?: T;
+  supersedes?: T;
+  enquiry?: T;
+  customerEmail?: T;
+  status?: T;
+  amountCents?: T;
+  depositAmountCents?: T;
+  currency?: T;
+  validUntil?: T;
+  terms?: T;
+  acceptedAt?: T;
+  acceptedByEmail?: T;
+  acceptedTermsHash?: T;
+  depositStatus?: T;
+  amountPaidCents?: T;
+  paidAt?: T;
+  stripeCheckoutSessionId?: T;
+  stripePaymentIntentId?: T;
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "custom-quote-events_select".
+ */
+export interface CustomQuoteEventsSelect<T extends boolean = true> {
+  quote?: T;
+  enquiry?: T;
+  eventType?: T;
+  occurredAt?: T;
+  quoteRevision?: T;
+  actorType?: T;
+  actorEmail?: T;
+  amountCents?: T;
+  depositAmountCents?: T;
+  currency?: T;
+  validUntil?: T;
+  termsSnapshot?: T;
+  termsHash?: T;
+  evidence?: T;
   updatedAt?: T;
   createdAt?: T;
 }

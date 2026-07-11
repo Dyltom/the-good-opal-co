@@ -1,5 +1,89 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
+import {
+  hasCompleteAcceptanceEvidence,
+  hasCompleteDepositEvidence,
+} from '../../lib/custom-quote-evidence.ts'
+
+type EvidenceControlledStatus = 'quoted' | 'accepted' | 'deposit-paid' | 'in-production'
+
+export interface OperationalQuoteEvidence {
+  status: 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled' | 'superseded'
+  quoteNumber: string
+  revision: number
+  amountCents: number
+  depositAmountCents: number
+  currency: string
+  validUntil: string
+  terms: string
+  customerEmail: string
+  acceptedAt?: string | null
+  acceptedByEmail?: string | null
+  acceptedTermsHash?: string | null
+  depositStatus: 'not-required' | 'awaiting-payment' | 'paid' | 'refunded'
+  amountPaidCents?: number | null
+  paidAt?: string | null
+  stripeCheckoutSessionId?: string | null
+  stripePaymentIntentId?: string | null
+}
+
+function quoteHasAcceptance(quote: OperationalQuoteEvidence): boolean {
+  return (
+    quote.status === 'accepted' &&
+    hasCompleteAcceptanceEvidence({
+      acceptedAt: quote.acceptedAt,
+      acceptedByEmail: quote.acceptedByEmail,
+      acceptedTermsHash: quote.acceptedTermsHash,
+      customerEmail: quote.customerEmail,
+      snapshot: {
+        quoteNumber: quote.quoteNumber,
+        revision: quote.revision,
+        amountCents: quote.amountCents,
+        depositAmountCents: quote.depositAmountCents,
+        currency: quote.currency,
+        validUntil: quote.validUntil,
+        terms: quote.terms,
+      },
+    })
+  )
+}
+
+function quoteHasPaidDeposit(quote: OperationalQuoteEvidence): boolean {
+  return (
+    quote.depositStatus === 'paid' &&
+    hasCompleteDepositEvidence({
+      amountPaidCents: quote.amountPaidCents,
+      depositAmountCents: quote.depositAmountCents,
+      paidAt: quote.paidAt,
+      stripeCheckoutSessionId: quote.stripeCheckoutSessionId,
+      stripePaymentIntentId: quote.stripePaymentIntentId,
+    })
+  )
+}
+
+export function quoteEvidenceSupportsEnquiryStatus(
+  status: EvidenceControlledStatus,
+  quotes: readonly OperationalQuoteEvidence[]
+): boolean {
+  const liveQuotes = quotes.filter(
+    (quote) => quote.status !== 'cancelled' && quote.status !== 'superseded'
+  )
+  if (status === 'quoted') {
+    return liveQuotes.some(
+      (quote) =>
+        (quote.status === 'sent' || quote.status === 'accepted') &&
+        new Date(quote.validUntil).getTime() > Date.now()
+    )
+  }
+  if (status === 'accepted') return liveQuotes.some(quoteHasAcceptance)
+  if (status === 'deposit-paid') {
+    return liveQuotes.some((quote) => quoteHasAcceptance(quote) && quoteHasPaidDeposit(quote))
+  }
+  return liveQuotes.some(
+    (quote) =>
+      quoteHasAcceptance(quote) && (quote.depositAmountCents === 0 || quoteHasPaidDeposit(quote))
+  )
+}
 
 export const Enquiries: CollectionConfig = {
   slug: 'enquiries',
@@ -96,4 +180,28 @@ export const Enquiries: CollectionConfig = {
     { name: 'emailDeliveryError', type: 'textarea', admin: { readOnly: true } },
     { name: 'internalNotes', type: 'textarea', admin: { description: 'Private staff notes' } },
   ],
+  hooks: {
+    beforeChange: [
+      async ({ data, operation, originalDoc, req }) => {
+        if (operation !== 'update' || !data?.status || data.status === originalDoc?.status)
+          return data
+        if (!['quoted', 'accepted', 'deposit-paid', 'in-production'].includes(data.status))
+          return data
+
+        const quotes = await req.payload.find({
+          collection: 'custom-quotes',
+          where: { enquiry: { equals: originalDoc.id } },
+          pagination: false,
+          req,
+        })
+        const targetStatus = data.status as EvidenceControlledStatus
+        if (!quoteEvidenceSupportsEnquiryStatus(targetStatus, quotes.docs)) {
+          throw new Error(
+            `Enquiry cannot move to ${targetStatus} without matching immutable quote, acceptance, and Stripe deposit evidence`
+          )
+        }
+        return data
+      },
+    ],
+  },
 }
