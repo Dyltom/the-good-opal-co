@@ -45,6 +45,9 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm payload migrate
+      - run: pnpm seed
+        env:
+          SEED_PUBLISH: 'true'
       - run: pnpm test:unit --run
       - run: pnpm validate:build
         env:

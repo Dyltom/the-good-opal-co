@@ -15,14 +15,21 @@ test('custom ring builder keeps live opal state and one WebGL canvas across came
   const opals = page.getByRole('group', { name: '2. Choose an available opal' }).getByRole('button')
   expect(await opals.count()).toBeGreaterThan(1)
 
-  await opals.nth(1).click()
+  await page
+    .getByRole('button', {
+      name: 'Mintabie Semi Black Opal 1.05 cts Black opal · $45.00 loose',
+    })
+    .click()
   await expect(page).toHaveURL(/[?&]p=\d+/)
   await expect(page.getByRole('link', { name: 'View selected loose opal' })).toBeVisible()
 
   const styles = page.getByRole('group', { name: '3. Choose a collection design' })
   await expect(styles).toBeVisible()
-  await styles.getByRole('button', { name: /Aurora/ }).click()
-  await expect(page).toHaveURL(/[?&]y=aurora/)
+  await expect(styles.getByRole('button', { name: 'Aurora Requires a pear opal' })).toBeDisabled()
+  await styles
+    .getByRole('button', { name: 'Coral Cushion opal, clean bezel, dainty shank' })
+    .click()
+  await expect(page).toHaveURL(/[?&]y=coral/)
 
   const canvas = page.locator('canvas')
   await expect(canvas).toBeVisible({ timeout: 15_000 })
