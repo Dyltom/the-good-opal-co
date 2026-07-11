@@ -11,8 +11,12 @@ function hash(value: string): string {
 }
 
 function getRedis(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL?.trim()
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim()
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL?.trim() ||
+    process.env.UPSTASH_REDIS_REST_KV_REST_API_URL?.trim()
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN?.trim() ||
+    process.env.UPSTASH_REDIS_REST_KV_REST_API_TOKEN?.trim()
   return url && token ? new Redis({ url, token }) : null
 }
 
