@@ -12,9 +12,11 @@ function run(command, args, env = process.env) {
 
 run('pnpm', ['payload', 'generate:importmap'])
 
-if (process.env.VERCEL_ENV === 'production') {
+const vercelEnvironment = process.env.VERCEL_ENV
+
+if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
   run('pnpm', ['payload', 'migrate'])
-  if (process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
+  if (vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
     console.log('[vercel-build] Running one-time WooCommerce commerce import.')
     run('pnpm', ['import:woocommerce'], {
       ...process.env,
@@ -22,7 +24,7 @@ if (process.env.VERCEL_ENV === 'production') {
     })
   }
 } else {
-  console.log('[vercel-build] Skipping database migrations outside Production.')
+  console.log('[vercel-build] Skipping database migrations outside Vercel deployments.')
 }
 
 run('pnpm', ['build'])

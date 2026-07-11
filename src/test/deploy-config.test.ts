@@ -98,14 +98,18 @@ describe('deployment config', () => {
     expect(source).toContain("'**/.agents/**'")
   })
 
-  test('Vercel runs committed migrations only for production builds', () => {
+  test('Vercel migrates isolated production and preview databases before building', () => {
     const config = JSON.parse(read('vercel.json')) as { buildCommand?: string }
     const buildScript = read('scripts/vercel-build.mjs')
     const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
 
     expect(config.buildCommand).toBe('node scripts/vercel-build.mjs')
-    expect(buildScript).toContain("process.env.VERCEL_ENV === 'production'")
+    expect(buildScript).toContain("vercelEnvironment === 'production'")
+    expect(buildScript).toContain("vercelEnvironment === 'preview'")
     expect(buildScript).toContain("run('pnpm', ['payload', 'migrate'])")
+    expect(buildScript).toContain(
+      "vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true'"
+    )
     expect(buildScript).toContain("process.env.WOO_IMPORT_ON_DEPLOY === 'true'")
     expect(buildScript).toContain("WOO_IMPORT_APPLY: 'true'")
     expect(buildScript.indexOf("['payload', 'migrate']")).toBeLessThan(
