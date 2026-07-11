@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,17 +15,19 @@ import {
 import { cn } from '@/lib/utils'
 
 export function CookieConsent() {
+  const pathname = usePathname()
   const [showBanner, setShowBanner] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [preferences, setPreferences] = useState<CookiePreferences>(necessaryCookiePreferences)
 
   useEffect(() => {
+    if (pathname.startsWith('/quote')) return undefined
     // Check if user has already made a choice
     const consent = localStorage.getItem('cookie-consent')
     if (!consent) {
       // Show banner after a small delay for better UX
-      setTimeout(() => setShowBanner(true), 1000)
-      return
+      const timer = window.setTimeout(() => setShowBanner(true), 1000)
+      return () => window.clearTimeout(timer)
     }
 
     const parsed = parseCookiePreferences(consent)
@@ -34,7 +37,8 @@ export function CookieConsent() {
       localStorage.removeItem('cookie-consent')
       setShowBanner(true)
     }
-  }, [])
+    return undefined
+  }, [pathname])
 
   const acceptAll = () => {
     savePreferences(allCookiePreferences)
@@ -66,6 +70,8 @@ export function CookieConsent() {
   const toggleSettings = () => {
     setShowSettings(!showSettings)
   }
+
+  if (pathname.startsWith('/quote')) return null
 
   return (
     <AnimatePresence>

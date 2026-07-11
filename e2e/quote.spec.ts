@@ -1,12 +1,15 @@
 import { expect, test } from '@playwright/test'
 import { failOnRuntimeErrors } from './support/runtime-errors'
 
-test('private quote access clears the bearer fragment and fails without disclosure', async ({ page }) => {
+test('private quote access clears the bearer fragment and fails without disclosure', async ({
+  page,
+}) => {
   const assertNoErrors = failOnRuntimeErrors(page)
   await page.goto('/quote/access#not-a-valid-token', { waitUntil: 'domcontentloaded' })
   await expect(page).toHaveURL(/\/quote\/access$/)
   await expect(page.getByText(/secure quote link is unavailable/i)).toBeVisible()
-  await expect(page.getByText(/requires JavaScript/i)).toBeVisible()
+  await expect(page.getByText(/require JavaScript/i)).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your privacy choices' })).toHaveCount(0)
   assertNoErrors()
 })
 
