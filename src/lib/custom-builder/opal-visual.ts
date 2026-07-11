@@ -30,7 +30,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.18,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.47, focalY: 0.422, zoom: 4.8 },
+    textureCrop: { focalX: 0.48, focalY: 0.44, zoom: 5.2 },
     bodyColour: '#d9dccd',
   },
   'queensland-crystal-pipe-opal-1-45-cts': {
