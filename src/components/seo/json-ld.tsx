@@ -13,11 +13,20 @@ interface JsonLdProps {
   data: Record<string, unknown>
 }
 
+export function serializeJsonLd(data: Record<string, unknown>): string {
+  return JSON.stringify(data)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+}
+
 export function JsonLd({ data }: JsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   )
 }
@@ -79,9 +88,10 @@ export function ProductJsonLd({ product }: ProductJsonLdProps) {
       url: `${appUrl}/store/${product.slug}`,
       priceCurrency: 'AUD',
       price: product.price,
-      availability: product.stock && product.stock > 0
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
+      availability:
+        product.stock && product.stock > 0
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
         name: 'The Good Opal Co',

@@ -44,15 +44,20 @@ export function HeroWithImage({
 
   useEffect(() => {
     // Fetch a featured product to use as hero background
-    fetch('/api/products')
-      .then(res => res.json())
-      .then(data => {
+    fetch('/api/store-products')
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`Product feed failed with ${response.status}`)
+        const data: unknown = await response.json()
+        if (!Array.isArray(data)) throw new Error('Product feed returned an invalid response')
+        return data as ProductForHero[]
+      })
+      .then((data) => {
         const featured = data.find((p: ProductForHero) => p.featured && p.image)
         if (featured?.image) {
           setFeaturedImage(featured.image)
         }
       })
-      .catch(err => console.error('Failed to fetch hero image:', err))
+      .catch((err) => console.error('Failed to fetch hero image:', err))
   }, [])
 
   return (
@@ -65,12 +70,12 @@ export function HeroWithImage({
             <img
               src={featuredImage}
               alt="Featured Opal"
-              className="w-full h-full object-cover scale-105 blur-sm"
+              className="h-full w-full scale-105 object-cover blur-sm"
             />
             <div className="absolute inset-0 bg-gradient-to-br from-opal-electric/95 via-fire-pink/90 to-opal-electric/95" />
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-opal-electric via-fire-pink to-opal-light" />
+          <div className="h-full w-full bg-gradient-to-br from-opal-electric via-fire-pink to-opal-light" />
         )}
         {/* Animated Overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.1),transparent_50%)]" />
@@ -80,26 +85,26 @@ export function HeroWithImage({
       <div className="relative z-10 py-24 md:py-32 lg:py-40">
         <Container className="text-center text-white">
           {badge && (
-            <Badge className="mb-6 bg-white/20 text-white border-white/30 text-sm px-4 py-1.5 backdrop-blur-sm">
+            <Badge className="mb-6 border-white/30 bg-white/20 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
               {badge}
             </Badge>
           )}
 
           {subtitle && (
-            <p className="text-sm uppercase tracking-widest text-white/90 font-semibold mb-4">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-white/90">
               {subtitle}
             </p>
           )}
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold mb-6 text-balance max-w-5xl mx-auto leading-tight">
+          <h1 className="mx-auto mb-6 max-w-5xl text-balance font-serif text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
             {title}
           </h1>
 
-          <p className="text-lg md:text-xl text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed">
+          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-white/90 md:text-xl">
             {description}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             {buttons.map((button, index) => (
               <Button
                 key={index}
@@ -109,8 +114,8 @@ export function HeroWithImage({
                 className={
                   button.className ||
                   (button.variant === 'default'
-                    ? 'bg-white text-opal-electric-accessible hover:bg-white/90 font-semibold px-8 shadow-xl'
-                    : 'border-white/50 text-white hover:bg-white/10 backdrop-blur-sm')
+                    ? 'bg-white px-8 font-semibold text-opal-electric-accessible shadow-xl hover:bg-white/90'
+                    : 'border-white/50 text-white backdrop-blur-sm hover:bg-white/10')
                 }
               >
                 <Link href={button.href}>{button.label}</Link>
@@ -121,7 +126,7 @@ export function HeroWithImage({
       </div>
 
       {/* Bottom Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent z-[5]" />
+      <div className="absolute bottom-0 left-0 right-0 z-[5] h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   )
 }

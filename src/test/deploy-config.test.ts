@@ -151,7 +151,7 @@ describe('deployment config', () => {
       'src/app/(marketing)/page.tsx',
       'src/app/(marketing)/store/page.tsx',
       'src/app/(marketing)/blog/page.tsx',
-      'src/app/api/products/route.ts',
+      'src/app/api/store-products/route.ts',
     ]) {
       expect(read(file), file).toContain("export const dynamic = 'force-dynamic'")
     }
