@@ -78,6 +78,8 @@ export interface Config {
     customers: Customer;
     enquiries: Enquiry;
     courses: Course;
+    'commerce-import-runs': CommerceImportRun;
+    'inventory-reservations': InventoryReservation;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -96,6 +98,8 @@ export interface Config {
     customers: CustomersSelect<false> | CustomersSelect<true>;
     enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
     courses: CoursesSelect<false> | CoursesSelect<true>;
+    'commerce-import-runs': CommerceImportRunsSelect<false> | CommerceImportRunsSelect<true>;
+    'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -596,6 +600,10 @@ export interface Order {
    */
   stripeSessionId: string;
   /**
+   * Stock reservation consumed by this Stripe order
+   */
+  inventoryReservation?: (number | null) | InventoryReservation;
+  /**
    * Stripe Payment Intent ID
    */
   stripePaymentIntentId?: string | null;
@@ -643,6 +651,32 @@ export interface Order {
    * Internal notes about this order
    */
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Short-lived stock holds created before redirecting a customer to Stripe
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservations".
+ */
+export interface InventoryReservation {
+  id: number;
+  token: string;
+  stripeSessionId: string;
+  status: 'active' | 'pending-payment' | 'consumed' | 'released';
+  expiresAt: string;
+  releasedAt?: string | null;
+  releaseReason?: string | null;
+  consumedAt?: string | null;
+  items: {
+    productId: string;
+    slug: string;
+    name: string;
+    unitAmountCents: number;
+    quantity: number;
+    id?: string | null;
+  }[];
   updatedAt: string;
   createdAt: string;
 }
@@ -852,6 +886,34 @@ export interface Course {
   createdAt: string;
 }
 /**
+ * Immutable ledger preventing a WooCommerce cutover import from running twice
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-import-runs".
+ */
+export interface CommerceImportRun {
+  id: number;
+  runId: string;
+  mode: 'initial' | 'final-delta';
+  status: 'running' | 'completed' | 'failed';
+  deploymentId?: string | null;
+  startedAt: string;
+  completedAt?: string | null;
+  failedAt?: string | null;
+  summary?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -918,6 +980,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'courses';
         value: number | Course;
+      } | null)
+    | ({
+        relationTo: 'commerce-import-runs';
+        value: number | CommerceImportRun;
+      } | null)
+    | ({
+        relationTo: 'inventory-reservations';
+        value: number | InventoryReservation;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1243,6 +1313,7 @@ export interface OrdersSelect<T extends boolean = true> {
   total?: T;
   currency?: T;
   stripeSessionId?: T;
+  inventoryReservation?: T;
   stripePaymentIntentId?: T;
   stripeRefundedAmount?: T;
   stripeDisputeId?: T;
@@ -1384,6 +1455,48 @@ export interface CoursesSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "commerce-import-runs_select".
+ */
+export interface CommerceImportRunsSelect<T extends boolean = true> {
+  runId?: T;
+  mode?: T;
+  status?: T;
+  deploymentId?: T;
+  startedAt?: T;
+  completedAt?: T;
+  failedAt?: T;
+  summary?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory-reservations_select".
+ */
+export interface InventoryReservationsSelect<T extends boolean = true> {
+  token?: T;
+  stripeSessionId?: T;
+  status?: T;
+  expiresAt?: T;
+  releasedAt?: T;
+  releaseReason?: T;
+  consumedAt?: T;
+  items?:
+    | T
+    | {
+        productId?: T;
+        slug?: T;
+        name?: T;
+        unitAmountCents?: T;
+        quantity?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;

@@ -17,7 +17,15 @@ const vercelEnvironment = process.env.VERCEL_ENV
 if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
   run('pnpm', ['payload', 'migrate'])
   if (vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
-    console.log('[vercel-build] Running one-time WooCommerce commerce import.')
+    if (!process.env.WOO_IMPORT_RUN_ID?.trim()) {
+      throw new Error('[vercel-build] WOO_IMPORT_RUN_ID is required for a production import.')
+    }
+    if (!['initial', 'final-delta'].includes(process.env.WOO_IMPORT_MODE)) {
+      throw new Error('[vercel-build] WOO_IMPORT_MODE must be initial or final-delta.')
+    }
+    console.log(
+      `[vercel-build] Running guarded WooCommerce ${process.env.WOO_IMPORT_MODE} import ${process.env.WOO_IMPORT_RUN_ID}.`
+    )
     run('pnpm', ['import:woocommerce'], {
       ...process.env,
       WOO_IMPORT_APPLY: 'true',

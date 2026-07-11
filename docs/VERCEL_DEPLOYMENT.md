@@ -75,11 +75,16 @@ The seed is idempotent by product slug and does not overwrite existing products.
 
 For the final legacy commerce cutover, the importer can authenticate to the old
 WordPress administrator without creating a persistent WooCommerce API key. Set
-`WOO_BASE_URL`, `WOO_ADMIN_USERNAME`, `WOO_ADMIN_PASSWORD`, and
-`WOO_IMPORT_ON_DEPLOY=true` for one controlled Production deployment. The build
-runs migrations first, then performs an idempotent product/order/customer/refund
-import. Remove all four variables immediately after the successful import and
-confirm the imported counts in Payload. Never set the import flag for Preview.
+`WOO_BASE_URL`, `WOO_ADMIN_USERNAME`, `WOO_ADMIN_PASSWORD`,
+`WOO_IMPORT_ON_DEPLOY=true`, a never-before-used `WOO_IMPORT_RUN_ID`, and an
+explicit `WOO_IMPORT_MODE` (`initial` or `final-delta`) for one controlled
+Production deployment. Use `final-delta` only after checkout on the old store is
+frozen and before checkout on this store opens. The build runs migrations first,
+claims the run ID in the durable Commerce Import Runs ledger, then performs the
+product/order/customer/refund import. A claimed ID can never run again, even when
+its first attempt failed; inspect that ledger and the partial import before using
+a new ID. Remove all Woo import variables immediately after success and confirm
+the recorded counts in Payload. Never set the import flag for Preview.
 
 ## First administrator
 

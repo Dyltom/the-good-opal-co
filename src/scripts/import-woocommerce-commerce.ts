@@ -1,5 +1,6 @@
 import type { Customer, Order, Product } from '@/types/payload-types'
 import { getPayload } from '@/lib/payload'
+import type { Payload } from 'payload'
 import {
   fetchWooCommerceSnapshot,
   fetchWooCommerceSnapshotFromAdmin,
@@ -11,6 +12,11 @@ import {
   type LegacyProductData,
 } from '@/lib/woocommerce/private-commerce'
 import { loadWooCommerceSnapshotDirectory } from '@/lib/woocommerce/snapshot-file'
+import {
+  claimWooImportRun,
+  parseWooImportRunConfiguration,
+  type WooImportRunConfiguration,
+} from '@/lib/woocommerce/import-run'
 
 const TENANT_ID = 'good-opal-co'
 
@@ -19,6 +25,13 @@ interface ImportCounts {
   updated: number
   archived: number
   skipped: number
+}
+
+interface ImportSummary {
+  products: ImportCounts
+  customers: ImportCounts
+  orders: ImportCounts
+  refunds: number
 }
 
 function requiredEnvironmentValue(name: string): string {
@@ -61,8 +74,7 @@ function richText(text: string) {
   }
 }
 
-async function findAllProducts(): Promise<Product[]> {
-  const payload = await getPayload()
+async function findAllProducts(payload: Payload): Promise<Product[]> {
   const docs: Product[] = []
   let page = 1
   let hasNextPage = true
@@ -80,8 +92,7 @@ async function findAllProducts(): Promise<Product[]> {
   return docs
 }
 
-async function findAllOrders(): Promise<Order[]> {
-  const payload = await getPayload()
+async function findAllOrders(payload: Payload): Promise<Order[]> {
   const docs: Order[] = []
   let page = 1
   let hasNextPage = true
@@ -99,8 +110,7 @@ async function findAllOrders(): Promise<Order[]> {
   return docs
 }
 
-async function findAllCustomers(): Promise<Customer[]> {
-  const payload = await getPayload()
+async function findAllCustomers(payload: Payload): Promise<Customer[]> {
   const docs: Customer[] = []
   let page = 1
   let hasNextPage = true
@@ -152,9 +162,7 @@ function productNameKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '')
 }
 
-async function importCommerce(): Promise<void> {
-  const apply = process.env['WOO_IMPORT_APPLY'] === 'true'
-  const payload = await getPayload()
+async function importCommerce(payload: Payload, apply: boolean): Promise<ImportSummary> {
   const snapshotDirectory = process.env['WOO_SNAPSHOT_DIR']?.trim()
   const adminUsername = process.env['WOO_ADMIN_USERNAME']?.trim()
   const adminPassword = process.env['WOO_ADMIN_PASSWORD']
@@ -172,9 +180,9 @@ async function importCommerce(): Promise<void> {
           consumerSecret: requiredEnvironmentValue('WOO_CONSUMER_SECRET'),
         })
   const [existingProducts, existingOrders, existingCustomers] = await Promise.all([
-    findAllProducts(),
-    findAllOrders(),
-    findAllCustomers(),
+    findAllProducts(payload),
+    findAllOrders(payload),
+    findAllCustomers(payload),
   ])
 
   const productsByLegacyId = new Map(
@@ -484,17 +492,93 @@ async function importCommerce(): Promise<void> {
     }
   }
 
+  const summary: ImportSummary = {
+    products: productCounts,
+    customers: customerCounts,
+    orders: orderCounts,
+    refunds: [...snapshot.refundsByOrderId.values()].flat().length,
+  }
   const mode = apply ? 'applied' : 'dry run'
   payload.logger.info(
     `WooCommerce commerce import ${mode}: ` +
       `${productCounts.created} products create, ${productCounts.updated} update, ${productCounts.archived} archive; ` +
       `${customerCounts.created} customers create, ${customerCounts.updated} update, ${customerCounts.skipped} skip; ` +
       `${orderCounts.created} orders create, ${orderCounts.updated} update; ` +
-      `${[...snapshot.refundsByOrderId.values()].flat().length} refunds.`
+      `${summary.refunds} refunds.`
   )
+  return summary
 }
 
-importCommerce()
+async function claimImportRun(
+  payload: Payload,
+  configuration: WooImportRunConfiguration
+): Promise<string | number> {
+  return claimWooImportRun(configuration, {
+    create: async () => {
+      const run = await payload.create({
+        collection: 'commerce-import-runs',
+        data: {
+          runId: configuration.runId,
+          mode: configuration.mode,
+          status: 'running',
+          startedAt: new Date().toISOString(),
+          ...(configuration.deploymentId ? { deploymentId: configuration.deploymentId } : {}),
+        },
+        overrideAccess: true,
+      })
+      return run.id
+    },
+    findStatus: async () => {
+      const previous = await payload.find({
+        collection: 'commerce-import-runs',
+        where: { runId: { equals: configuration.runId } },
+        limit: 1,
+        overrideAccess: true,
+      })
+      return previous.docs[0]?.status ?? null
+    },
+  })
+}
+
+async function runCommerceImport(): Promise<void> {
+  const apply = process.env['WOO_IMPORT_APPLY'] === 'true'
+  const configuration = parseWooImportRunConfiguration(process.env, apply)
+  const payload = await getPayload()
+  const runId = configuration ? await claimImportRun(payload, configuration) : null
+
+  try {
+    const summary = await importCommerce(payload, apply)
+    if (runId !== null) {
+      await payload.update({
+        collection: 'commerce-import-runs',
+        id: runId,
+        data: {
+          status: 'completed',
+          completedAt: new Date().toISOString(),
+          summary,
+        },
+        overrideAccess: true,
+      })
+    }
+  } catch (error: unknown) {
+    if (runId !== null) {
+      const message = error instanceof Error ? error.message : 'Unknown import error'
+      await payload.update({
+        collection: 'commerce-import-runs',
+        id: runId,
+        data: {
+          status: 'failed',
+          failedAt: new Date().toISOString(),
+          error: message.slice(0, 4000),
+        },
+        overrideAccess: true,
+      })
+    }
+    throw error
+  }
+}
+
+runCommerceImport()
   .then(() => process.exit(0))
   .catch((error: unknown) => {
     const message = error instanceof Error ? error.message : 'Unknown import error'

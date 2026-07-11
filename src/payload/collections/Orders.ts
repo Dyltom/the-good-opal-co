@@ -283,6 +283,17 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'inventoryReservation',
+      type: 'relationship',
+      relationTo: 'inventory-reservations',
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Stock reservation consumed by this Stripe order',
+      },
+    },
+    {
       name: 'stripePaymentIntentId',
       type: 'text',
       unique: true,

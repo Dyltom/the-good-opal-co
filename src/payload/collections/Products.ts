@@ -27,6 +27,24 @@ export const Products: CollectionConfig = {
         return data
       },
     ],
+    beforeDelete: [
+      async ({ id, req }) => {
+        const activeReservations = await req.payload.count({
+          collection: 'inventory-reservations',
+          req,
+          overrideAccess: true,
+          where: {
+            and: [
+              { 'items.productId': { equals: String(id) } },
+              { status: { in: ['active', 'pending-payment'] } },
+            ],
+          },
+        })
+        if (activeReservations.totalDocs > 0) {
+          throw new Error('Product has an active checkout reservation and cannot be deleted')
+        }
+      },
+    ],
   },
   fields: [
     {

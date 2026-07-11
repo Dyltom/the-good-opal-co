@@ -21,6 +21,8 @@ import { Orders } from './payload/collections/Orders.ts'
 import { Customers } from './payload/collections/Customers.ts'
 import { Enquiries } from './payload/collections/Enquiries.ts'
 import { Courses } from './payload/collections/Courses.ts'
+import { CommerceImportRuns } from './payload/collections/CommerceImportRuns.ts'
+import { InventoryReservations } from './payload/collections/InventoryReservations.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -136,6 +138,8 @@ export default buildConfig({
     Customers,
     Enquiries,
     Courses,
+    CommerceImportRuns,
+    InventoryReservations,
   ],
   editor: lexicalEditor({}),
   email: resendAdapter({

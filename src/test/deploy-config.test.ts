@@ -111,6 +111,8 @@ describe('deployment config', () => {
       "vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true'"
     )
     expect(buildScript).toContain("process.env.WOO_IMPORT_ON_DEPLOY === 'true'")
+    expect(buildScript).toContain('WOO_IMPORT_RUN_ID is required')
+    expect(buildScript).toContain('WOO_IMPORT_MODE must be initial or final-delta')
     expect(buildScript).toContain("WOO_IMPORT_APPLY: 'true'")
     expect(buildScript.indexOf("['payload', 'migrate']")).toBeLessThan(
       buildScript.indexOf("['build']")
@@ -172,6 +174,14 @@ describe('deployment config', () => {
     expect(webhook).toContain('rollbackTransaction')
     expect(webhook).toContain('idempotencyKey: `order-confirmation/${order.id}`')
     expect(webhook).toContain('idempotencyKey: `inventory-review/${order.id}`')
+    expect(webhook).toContain("event.type === 'checkout.session.expired'")
+    expect(webhook).toContain("event.type === 'checkout.session.async_payment_failed'")
+    expect(webhook).toContain('reservedInventoryAvailable')
+    expect(webhook).toContain("status: 'consumed'")
+    expect(checkout).toContain('reserveCheckoutInventory')
+    expect(checkout).toContain('expires_at:')
+    expect(checkout).toContain('idempotencyKey: `checkout/${checkoutAttemptId}`')
+    expect(checkout).not.toContain('delivery_estimate')
     expect(checkout).not.toContain('cartItems: JSON.stringify')
   })
 

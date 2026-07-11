@@ -16,6 +16,8 @@ import * as migration_20260712_013000_order_operations_hardening from './2026071
 import * as migration_20260712_042253_blog_editorial_taxonomy from './20260712_042253_blog_editorial_taxonomy'
 import * as migration_20260712_043000_course_interest_truth from './20260712_043000_course_interest_truth'
 import * as migration_20260712_060000_builder_visual_management from './20260712_060000_builder_visual_management'
+import * as migration_20260712_070000_woo_import_ledger from './20260712_070000_woo_import_ledger'
+import * as migration_20260712_080000_inventory_reservations from './20260712_080000_inventory_reservations'
 
 export const migrations = [
   {
@@ -107,5 +109,15 @@ export const migrations = [
     up: migration_20260712_060000_builder_visual_management.up,
     down: migration_20260712_060000_builder_visual_management.down,
     name: '20260712_060000_builder_visual_management',
+  },
+  {
+    up: migration_20260712_070000_woo_import_ledger.up,
+    down: migration_20260712_070000_woo_import_ledger.down,
+    name: '20260712_070000_woo_import_ledger',
+  },
+  {
+    up: migration_20260712_080000_inventory_reservations.up,
+    down: migration_20260712_080000_inventory_reservations.down,
+    name: '20260712_080000_inventory_reservations',
   },
 ]

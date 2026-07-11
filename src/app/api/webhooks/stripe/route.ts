@@ -13,6 +13,12 @@ import {
   requireOrderForPaymentEvent,
   statusToRestoreAfterWonDispute,
 } from '@/lib/stripe-order-events'
+import {
+  markReservationPaymentPending,
+  releaseInventoryReservation,
+  reservationMatchesCheckoutItems,
+  reservationTokenFromSession,
+} from '@/lib/inventory-reservations'
 
 /**
  * Stripe Webhook Handler
@@ -368,6 +374,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  if (event.type === 'checkout.session.expired') {
+    await releaseInventoryReservation(event.data.object, 'checkout-expired')
+    return NextResponse.json({ received: true, inventoryReleased: true })
+  }
+
+  if (event.type === 'checkout.session.async_payment_failed') {
+    await releaseInventoryReservation(event.data.object, 'async-payment-failed')
+    return NextResponse.json({ received: true, inventoryReleased: true })
+  }
+
   // Handle the checkout.session.completed event
   if (
     event.type === 'checkout.session.completed' ||
@@ -376,6 +392,7 @@ export async function POST(request: NextRequest) {
     const session = event.data.object
 
     if (session.payment_status !== 'paid') {
+      await markReservationPaymentPending(session)
       return NextResponse.json({ received: true, awaitingPayment: true })
     }
 
@@ -418,25 +435,55 @@ export async function POST(request: NextRequest) {
 
       let transactionCommitted = false
       try {
-        const inventory = await Promise.all(
-          items.map(async (item) => {
-            const product = await payload.findByID({
-              collection: 'products',
-              id: item.productId,
+        const reservationToken = reservationTokenFromSession(session)
+        const reservationResult = reservationToken
+          ? await payload.find({
+              collection: 'inventory-reservations',
+              where: { token: { equals: reservationToken } },
+              limit: 1,
               req: transactionReq,
+              overrideAccess: true,
             })
-
-            return {
-              item,
-              product,
-              available:
-                product.status === 'published' &&
-                typeof product.stock === 'number' &&
-                product.stock >= item.quantity,
-            }
-          })
+          : null
+        const reservation = reservationResult?.docs[0]
+        const reservedInventoryAvailable = Boolean(
+          reservation &&
+          (reservation.status === 'active' || reservation.status === 'pending-payment') &&
+          reservationMatchesCheckoutItems(
+            reservation.items,
+            items.map((item) => ({
+              productId: item.productId,
+              slug: item.slug,
+              name: item.name,
+              unitAmountCents: Math.round(item.price * 100),
+              quantity: item.quantity,
+            }))
+          )
         )
-        const inventoryAvailable = inventory.every((entry) => entry.available)
+
+        const inventory = reservationToken
+          ? []
+          : await Promise.all(
+              items.map(async (item) => {
+                const product = await payload.findByID({
+                  collection: 'products',
+                  id: item.productId,
+                  req: transactionReq,
+                })
+
+                return {
+                  item,
+                  product,
+                  available:
+                    product.status === 'published' &&
+                    typeof product.stock === 'number' &&
+                    product.stock >= item.quantity,
+                }
+              })
+            )
+        const legacyInventoryAvailable =
+          !reservationToken && inventory.every((entry) => entry.available)
+        const inventoryAvailable = reservedInventoryAvailable || legacyInventoryAvailable
 
         // Order, customer totals, and stock changes share one serializable transaction.
         const order = await payload.create({
@@ -479,9 +526,15 @@ export async function POST(request: NextRequest) {
             stripeSessionId: session.id,
             stripePaymentIntentId:
               typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
+            inventoryReservation: reservation?.id,
+            inventoryDecrementedAt: reservedInventoryAvailable
+              ? new Date().toISOString()
+              : undefined,
             notes: inventoryAvailable
               ? undefined
-              : 'Paid order requires inventory review before fulfilment.',
+              : reservationToken
+                ? 'Paid order reservation is missing, released, consumed, or does not match Stripe line items. Manual inventory review required.'
+                : 'Paid legacy checkout requires inventory review before fulfilment.',
           },
         })
 
@@ -556,7 +609,18 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        if (inventoryAvailable) {
+        if (reservedInventoryAvailable && reservation) {
+          await payload.update({
+            collection: 'inventory-reservations',
+            id: reservation.id,
+            req: transactionReq,
+            overrideAccess: true,
+            data: {
+              status: 'consumed',
+              consumedAt: new Date().toISOString(),
+            },
+          })
+        } else if (legacyInventoryAvailable) {
           for (const { item, product } of inventory) {
             await payload.update({
               collection: 'products',

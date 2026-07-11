@@ -43,7 +43,11 @@ interface FormErrors {
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const [isPending, startTransition] = useTransition()
-  const [formData, setFormData] = useState<{ name: string; email: string; country: CheckoutCountry }>({
+  const [formData, setFormData] = useState<{
+    name: string
+    email: string
+    country: CheckoutCountry
+  }>({
     name: '',
     email: '',
     country: 'AU',
@@ -52,6 +56,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   const [errors, setErrors] = useState<FormErrors>({})
   const nameRef = useRef<HTMLInputElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
+  const checkoutAttemptRef = useRef<string | null>(null)
   const { toast } = useToast()
   const pricing = calculateCheckoutPricing(
     cart.total,
@@ -103,12 +108,17 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
       form.set('name', formData.name.trim())
       form.set('email', formData.email.trim())
       form.set('country', formData.country)
+      const checkoutAttemptId = checkoutAttemptRef.current ?? crypto.randomUUID()
+      checkoutAttemptRef.current = checkoutAttemptId
+      form.set('checkoutAttemptId', checkoutAttemptId)
       const result = await createCheckoutSession(form)
 
       if (result.success && result.url) {
         window.location.assign(result.url)
         return
       }
+
+      checkoutAttemptRef.current = null
 
       toast({
         title: 'Payment could not be started',
@@ -213,7 +223,9 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
               disabled={isPending}
             >
               {CHECKOUT_COUNTRIES.map((country) => (
-                <option key={country} value={country}>{countryLabels[country]}</option>
+                <option key={country} value={country}>
+                  {countryLabels[country]}
+                </option>
               ))}
             </select>
             <p className="text-sm text-charcoal/60">Your full address is entered on Stripe next.</p>
