@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
 
-export const Categories: CollectionConfig = {
-  slug: 'categories',
+export const Tags: CollectionConfig = {
+  slug: 'tags',
   access: {
     read: () => true,
     create: isAdmin,
@@ -20,7 +20,7 @@ export const Categories: CollectionConfig = {
       unique: true,
       index: true,
       admin: {
-        description: 'Stable category ID imported from the legacy WordPress site',
+        description: 'Stable tag ID imported from the legacy WordPress site',
         readOnly: true,
       },
     },
@@ -44,9 +44,6 @@ export const Categories: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
-      admin: {
-        description: 'Associated tenant ID for multi-tenancy',
-      },
       index: true,
     },
   ],

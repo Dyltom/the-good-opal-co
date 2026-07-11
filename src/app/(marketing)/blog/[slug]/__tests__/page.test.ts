@@ -23,6 +23,15 @@ function postFixture(overrides: Partial<Post> = {}): Post {
     },
     _status: 'published',
     publishedAt: '2025-04-10T00:00:00.000Z',
+    author: {
+      id: 2,
+      name: 'Stephanie Caruana',
+      slug: 'steph',
+      tenantId: 'good-opal-co',
+      updatedAt: '2025-04-12T00:00:00.000Z',
+      createdAt: '2025-04-09T00:00:00.000Z',
+    },
+    categories: [],
     tenantId: 'default',
     updatedAt: '2025-04-12T00:00:00.000Z',
     createdAt: '2025-04-09T00:00:00.000Z',
@@ -52,20 +61,20 @@ describe('blog post metadata', () => {
     })
 
     expect(metadata.title).toBe('Australian opal buying guide | The Good Opal Co')
-    expect(metadata.description).toBe(
-      'Learn what to inspect before buying an Australian opal.',
-    )
+    expect(metadata.description).toBe('Learn what to inspect before buying an Australian opal.')
     expect(metadata.alternates?.canonical).toBe(
       new URL(
         '/blog/choose-an-australian-opal',
-        process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:8412',
-      ).toString(),
+        process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:8412'
+      ).toString()
     )
     expect(metadata.openGraph).toMatchObject({
       type: 'article',
+      authors: ['Stephanie Caruana'],
       publishedTime: '2025-04-10T00:00:00.000Z',
       modifiedTime: '2025-04-12T00:00:00.000Z',
     })
+    expect(metadata.authors).toEqual([{ name: 'Stephanie Caruana' }])
     expect(find).toHaveBeenCalledWith(
       expect.objectContaining({
         overrideAccess: false,

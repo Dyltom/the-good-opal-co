@@ -2,8 +2,10 @@ import { getPayload } from '@/lib/payload'
 import {
   downloadWordPressMedia,
   fetchPublishedWordPressPosts,
+  type WordPressAuthor,
   type WordPressContentPost,
   type WordPressFeaturedMedia,
+  type WordPressTerm,
 } from '@/lib/wordpress/content-import'
 
 const TENANT_ID = 'good-opal-co'
@@ -70,6 +72,135 @@ async function existingPostFor(post: WordPressContentPost) {
   return slugOwner
 }
 
+async function upsertAuthor(author: WordPressAuthor): Promise<number> {
+  const payload = await getPayload()
+  const byLegacyId = await payload.find({
+    collection: 'authors',
+    where: { legacyWordPressId: { equals: author.id } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  const bySlug = byLegacyId.docs[0]
+    ? undefined
+    : (
+        await payload.find({
+          collection: 'authors',
+          where: { slug: { equals: author.slug } },
+          limit: 1,
+          overrideAccess: true,
+        })
+      ).docs[0]
+  const existing = byLegacyId.docs[0] ?? bySlug
+  const data = {
+    legacyWordPressId: author.id,
+    name: author.name,
+    slug: author.slug,
+    bio: author.bio || undefined,
+    tenantId: TENANT_ID,
+  }
+  if (existing) {
+    const updated = await payload.update({
+      collection: 'authors',
+      id: existing.id,
+      data,
+      overrideAccess: true,
+    })
+    return updated.id
+  }
+  const created = await payload.create({
+    collection: 'authors',
+    data,
+    overrideAccess: true,
+  })
+  return created.id
+}
+
+async function upsertCategory(term: WordPressTerm): Promise<number> {
+  const payload = await getPayload()
+  const byLegacyId = await payload.find({
+    collection: 'categories',
+    where: { legacyWordPressId: { equals: term.id } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  const bySlug = byLegacyId.docs[0]
+    ? undefined
+    : (
+        await payload.find({
+          collection: 'categories',
+          where: { slug: { equals: term.slug } },
+          limit: 1,
+          overrideAccess: true,
+        })
+      ).docs[0]
+  const existing = byLegacyId.docs[0] ?? bySlug
+  const data = {
+    legacyWordPressId: term.id,
+    name: term.name,
+    slug: term.slug,
+    description: term.description || undefined,
+    tenantId: TENANT_ID,
+  }
+  if (existing) {
+    const updated = await payload.update({
+      collection: 'categories',
+      id: existing.id,
+      data,
+      overrideAccess: true,
+    })
+    return updated.id
+  }
+  const created = await payload.create({
+    collection: 'categories',
+    data,
+    overrideAccess: true,
+  })
+  return created.id
+}
+
+async function upsertTag(term: WordPressTerm): Promise<number> {
+  const payload = await getPayload()
+  const byLegacyId = await payload.find({
+    collection: 'tags',
+    where: { legacyWordPressId: { equals: term.id } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  const bySlug = byLegacyId.docs[0]
+    ? undefined
+    : (
+        await payload.find({
+          collection: 'tags',
+          where: { slug: { equals: term.slug } },
+          limit: 1,
+          overrideAccess: true,
+        })
+      ).docs[0]
+  const existing = byLegacyId.docs[0] ?? bySlug
+  const data = {
+    legacyWordPressId: term.id,
+    name: term.name,
+    slug: term.slug,
+    description: term.description || undefined,
+    tenantId: TENANT_ID,
+  }
+  if (existing) {
+    const updated = await payload.update({
+      collection: 'tags',
+      id: existing.id,
+      data,
+      overrideAccess: true,
+    })
+    return updated.id
+  }
+  const created = await payload.create({
+    collection: 'tags',
+    data,
+    overrideAccess: true,
+  })
+  return created.id
+}
+
 async function importContent(): Promise<void> {
   const payload = await getPayload()
   const apply = enabled('WORDPRESS_CONTENT_APPLY')
@@ -80,6 +211,9 @@ async function importContent(): Promise<void> {
   let updated = 0
   let mediaImported = 0
   const mediaCache = new Map<number, number>()
+  const authorCache = new Map<number, number>()
+  const categoryCache = new Map<number, number>()
+  const tagCache = new Map<number, number>()
 
   for (const post of posts) {
     const existing = await existingPostFor(post)
@@ -100,6 +234,27 @@ async function importContent(): Promise<void> {
       }
     }
 
+    if (!post.author) throw new Error(`WordPress post ${post.id} has no embedded author`)
+    if (post.categories.length === 0) {
+      throw new Error(`WordPress post ${post.id} has no embedded category`)
+    }
+    const author = authorCache.get(post.author.id) ?? (await upsertAuthor(post.author))
+    authorCache.set(post.author.id, author)
+    const categories = await Promise.all(
+      post.categories.map(async (category) => {
+        const id = categoryCache.get(category.id) ?? (await upsertCategory(category))
+        categoryCache.set(category.id, id)
+        return id
+      })
+    )
+    const tags = await Promise.all(
+      post.tags.map(async (tag) => {
+        const id = tagCache.get(tag.id) ?? (await upsertTag(tag))
+        tagCache.set(tag.id, id)
+        return id
+      })
+    )
+
     const data = {
       legacyWordPressId: post.id,
       title: post.title,
@@ -107,6 +262,9 @@ async function importContent(): Promise<void> {
       excerpt: post.excerpt,
       content: post.content,
       ...(featuredImage ? { featuredImage } : {}),
+      author,
+      categories,
+      tags,
       _status: 'published' as const,
       publishedAt: post.publishedAt,
       tenantId: TENANT_ID,

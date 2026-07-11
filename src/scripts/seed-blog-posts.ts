@@ -9,7 +9,8 @@ const blogPosts = [
   {
     title: 'Understanding Australian Opal Types: A Complete Guide',
     slug: 'understanding-australian-opal-types',
-    excerpt: 'Discover the different types of Australian opals, from the prized Black Opal to the unique Boulder Opal, and learn what makes each one special.',
+    excerpt:
+      'Discover the different types of Australian opals, from the prized Black Opal to the unique Boulder Opal, and learn what makes each one special.',
     content: {
       root: {
         type: 'root',
@@ -25,14 +26,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Australian opals are among the most beautiful and valuable gemstones in the world. With over 95% of the world\'s opals coming from Australia, understanding the different types can help you appreciate these natural wonders even more.',
+                text: "Australian opals are among the most beautiful and valuable gemstones in the world. With over 95% of the world's opals coming from Australia, understanding the different types can help you appreciate these natural wonders even more.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -47,10 +48,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -65,9 +66,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -82,10 +83,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -100,9 +101,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -112,15 +113,15 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Boulder Opal - Nature\'s Canvas',
+                text: "Boulder Opal - Nature's Canvas",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -135,9 +136,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -152,10 +153,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -170,25 +171,27 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
-          }
-        ]
-      }
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
     },
     _status: 'published',
     publishedAt: new Date('2024-01-15').toISOString(),
     categories: ['education', 'opal-types'],
     meta: {
       title: 'Understanding Australian Opal Types: Black, White, Boulder & Crystal',
-      description: 'Complete guide to Australian opal types including Black Opal, White Opal, Boulder Opal, and Crystal Opal. Learn what makes each type unique.',
-    }
+      description:
+        'Complete guide to Australian opal types including Black Opal, White Opal, Boulder Opal, and Crystal Opal. Learn what makes each type unique.',
+    },
   },
   {
     title: 'How to Care for Your Opal Jewellery: Expert Tips',
     slug: 'how-to-care-for-opal-jewellery',
-    excerpt: 'Learn the best practices for caring for your precious opal jewellery to ensure it maintains its beauty for generations.',
+    excerpt:
+      'Learn the best practices for caring for your precious opal jewellery to ensure it maintains its beauty for generations.',
     content: {
       root: {
         type: 'root',
@@ -209,9 +212,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -226,10 +229,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -239,14 +242,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Remove your opal jewellery before swimming, exercising, or doing household chores. Chemicals in pools, sweat, and cleaning products can damage the opal\'s surface. Always put your opal jewellery on last when getting ready, after applying makeup, perfume, or hairspray.',
+                text: "Remove your opal jewellery before swimming, exercising, or doing household chores. Chemicals in pools, sweat, and cleaning products can damage the opal's surface. Always put your opal jewellery on last when getting ready, after applying makeup, perfume, or hairspray.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -261,10 +264,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -279,9 +282,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -296,10 +299,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -314,25 +317,27 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
-          }
-        ]
-      }
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
     },
     _status: 'published',
     publishedAt: new Date('2024-02-01').toISOString(),
     categories: ['care-guide', 'education'],
     meta: {
       title: 'Opal Care Guide: How to Clean and Maintain Your Opal Jewellery',
-      description: 'Expert tips on caring for opal jewellery. Learn proper cleaning methods, storage guidelines, and daily care practices to preserve your opals.',
-    }
+      description:
+        'Expert tips on caring for opal jewellery. Learn proper cleaning methods, storage guidelines, and daily care practices to preserve your opals.',
+    },
   },
   {
     title: 'The History of Australian Opal Mining',
     slug: 'history-australian-opal-mining',
-    excerpt: 'Journey through the fascinating history of opal mining in Australia, from the first discoveries to modern sustainable practices.',
+    excerpt:
+      'Journey through the fascinating history of opal mining in Australia, from the first discoveries to modern sustainable practices.',
     content: {
       root: {
         type: 'root',
@@ -348,14 +353,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'The story of Australian opal mining is one of adventure, hardship, and incredible discoveries. From accidental finds in the late 1800s to becoming the world\'s primary source of precious opal, Australia\'s opal mining history is as colorful as the stones themselves.',
+                text: "The story of Australian opal mining is one of adventure, hardship, and incredible discoveries. From accidental finds in the late 1800s to becoming the world's primary source of precious opal, Australia's opal mining history is as colorful as the stones themselves.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -370,10 +375,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -383,14 +388,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Australian opal was first discovered in 1849, but commercial mining didn\'t begin until the 1890s. The first significant find was at White Cliffs in New South Wales in 1890, followed by the discovery of opal at Lightning Ridge in 1901, which would become famous for its black opal.',
+                text: "Australian opal was first discovered in 1849, but commercial mining didn't begin until the 1890s. The first significant find was at White Cliffs in New South Wales in 1890, followed by the discovery of opal at Lightning Ridge in 1901, which would become famous for its black opal.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -405,10 +410,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -423,25 +428,27 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
-          }
-        ]
-      }
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
     },
     _status: 'published',
     publishedAt: new Date('2024-02-15').toISOString(),
     categories: ['history', 'mining'],
     meta: {
       title: 'The History of Australian Opal Mining: From 1849 to Today',
-      description: 'Explore the rich history of Australian opal mining, from first discoveries to modern practices. Learn about Lightning Ridge, Coober Pedy, and more.',
-    }
+      description:
+        'Explore the rich history of Australian opal mining, from first discoveries to modern practices. Learn about Lightning Ridge, Coober Pedy, and more.',
+    },
   },
   {
     title: 'Opal Buying Guide: What to Look For',
     slug: 'opal-buying-guide',
-    excerpt: 'Essential tips for buying opals, including how to assess quality, understand pricing, and avoid common mistakes.',
+    excerpt:
+      'Essential tips for buying opals, including how to assess quality, understand pricing, and avoid common mistakes.',
     content: {
       root: {
         type: 'root',
@@ -457,14 +464,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Buying an opal can be both exciting and overwhelming. With so many factors affecting value and quality, it\'s important to understand what to look for. This guide will help you make an informed decision when purchasing your next opal.',
+                text: "Buying an opal can be both exciting and overwhelming. With so many factors affecting value and quality, it's important to understand what to look for. This guide will help you make an informed decision when purchasing your next opal.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -479,10 +486,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -497,9 +504,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -514,10 +521,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -527,14 +534,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Brightness is perhaps the most important factor in determining an opal\'s value. It ranges from brilliant (the brightest) to dull. A brilliant opal will show vibrant colours even in low light, while a dull opal may only show colour in direct sunlight.',
+                text: "Brightness is perhaps the most important factor in determining an opal's value. It ranges from brilliant (the brightest) to dull. A brilliant opal will show vibrant colours even in low light, while a dull opal may only show colour in direct sunlight.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -549,10 +556,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -567,25 +574,27 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
-          }
-        ]
-      }
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
     },
     _status: 'published',
     publishedAt: new Date('2024-03-01').toISOString(),
     categories: ['buying-guide', 'education'],
     meta: {
       title: 'Opal Buying Guide: Body Tone, Brightness, Pattern & Value',
-      description: 'Complete guide to buying opals. Learn how to assess opal quality, understand pricing factors, and make informed purchases.',
-    }
+      description:
+        'Complete guide to buying opals. Learn how to assess opal quality, understand pricing factors, and make informed purchases.',
+    },
   },
   {
     title: 'Famous Australian Opals: Legendary Discoveries',
     slug: 'famous-australian-opals',
-    excerpt: 'Discover the stories behind Australia\'s most famous opals, from the Olympic Australis to the Fire Queen Opal.',
+    excerpt:
+      "Discover the stories behind Australia's most famous opals, from the Olympic Australis to the Fire Queen Opal.",
     content: {
       root: {
         type: 'root',
@@ -601,14 +610,14 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Throughout Australia\'s opal mining history, several stones have achieved legendary status due to their size, quality, or the stories surrounding their discovery. These famous opals have captivated collectors and gem enthusiasts worldwide.',
+                text: "Throughout Australia's opal mining history, several stones have achieved legendary status due to their size, quality, or the stories surrounding their discovery. These famous opals have captivated collectors and gem enthusiasts worldwide.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -623,10 +632,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -641,9 +650,9 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
+                version: 1,
+              },
+            ],
           },
           {
             type: 'heading',
@@ -658,10 +667,10 @@ const blogPosts = [
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
+                version: 1,
+              },
             ],
-            tag: 'h2'
+            tag: 'h2',
           },
           {
             type: 'paragraph',
@@ -671,26 +680,27 @@ const blogPosts = [
             children: [
               {
                 mode: 'normal',
-                text: 'Found at Lightning Ridge in 1938, the Aurora Australis is considered the world\'s most valuable black opal. With a distinctive harlequin pattern and brilliant play of colour, this 180-carat gem showcases the full spectrum of colours in a mesmerizing display.',
+                text: "Found at Lightning Ridge in 1938, the Aurora Australis is considered the world's most valuable black opal. With a distinctive harlequin pattern and brilliant play of colour, this 180-carat gem showcases the full spectrum of colours in a mesmerizing display.",
                 type: 'text',
                 style: '',
                 detail: 0,
                 format: 0,
-                version: 1
-              }
-            ]
-          }
-        ]
-      }
+                version: 1,
+              },
+            ],
+          },
+        ],
+      },
     },
     _status: 'published',
     publishedAt: new Date('2024-03-15').toISOString(),
     categories: ['history', 'famous-opals'],
     meta: {
       title: 'Famous Australian Opals: Olympic Australis, Aurora Australis & More',
-      description: 'Learn about Australia\'s most famous opals including the Olympic Australis and Aurora Australis. Discover legendary opal discoveries.',
-    }
-  }
+      description:
+        "Learn about Australia's most famous opals including the Olympic Australis and Aurora Australis. Discover legendary opal discoveries.",
+    },
+  },
 ]
 
 async function seedBlogPosts() {
@@ -701,7 +711,7 @@ async function seedBlogPosts() {
     // Check if we already have blog posts
     const existingPosts = await payload.find({
       collection: 'posts',
-      limit: 1
+      limit: 1,
     })
 
     if (existingPosts.docs.length > 0) {
@@ -709,8 +719,32 @@ async function seedBlogPosts() {
       return
     }
 
+    const existingAuthor = await payload.find({
+      collection: 'authors',
+      where: { slug: { equals: 'steph' } },
+      limit: 1,
+    })
+    const author =
+      existingAuthor.docs[0] ??
+      (await payload.create({
+        collection: 'authors',
+        data: {
+          name: 'Stephanie Caruana',
+          slug: 'steph',
+          tenantId: 'good-opal-co',
+        },
+      }))
+
     // Create categories first
-    const categories = ['education', 'opal-types', 'care-guide', 'history', 'mining', 'buying-guide', 'famous-opals']
+    const categories = [
+      'education',
+      'opal-types',
+      'care-guide',
+      'history',
+      'mining',
+      'buying-guide',
+      'famous-opals',
+    ]
     const categoryMap: Record<string, number> = {}
 
     for (const categoryName of categories) {
@@ -718,12 +752,13 @@ async function seedBlogPosts() {
         const category = await payload.create({
           collection: 'categories',
           data: {
-            name: categoryName.split('-').map(word =>
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' '),
+            name: categoryName
+              .split('-')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' '),
             slug: categoryName,
             tenantId: 'good-opal-co',
-          }
+          },
         })
         categoryMap[categoryName] = category.id
       } catch (error) {
@@ -731,7 +766,7 @@ async function seedBlogPosts() {
         const existing = await payload.find({
           collection: 'categories',
           where: { slug: { equals: categoryName } },
-          limit: 1
+          limit: 1,
         })
         if (existing.docs[0]) {
           categoryMap[categoryName] = existing.docs[0].id
@@ -742,12 +777,13 @@ async function seedBlogPosts() {
     // Create blog posts
     for (const post of blogPosts) {
       const { categories: categorySlugs, meta, ...postData } = post
-      const categoryIds = categorySlugs.map(cat => categoryMap[cat]).filter(Boolean)
+      const categoryIds = categorySlugs.map((cat) => categoryMap[cat]).filter(Boolean)
 
       await payload.create({
         collection: 'posts',
         data: {
           ...postData,
+          author: author.id,
           categories: categoryIds,
           featuredImage: undefined, // Add image IDs if you have them
           seo: {

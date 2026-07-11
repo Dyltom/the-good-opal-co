@@ -20,6 +20,21 @@ const featuredMediaSchema = z.object({
   title: renderedSchema,
 })
 
+const authorSchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string(),
+})
+
+const termSchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string(),
+  taxonomy: z.enum(['category', 'post_tag']),
+})
+
 const wordpressPostSchema = z.object({
   id: z.number().int().positive(),
   date_gmt: z.iso.datetime({ local: true }),
@@ -32,6 +47,8 @@ const wordpressPostSchema = z.object({
   _embedded: z
     .object({
       'wp:featuredmedia': z.array(featuredMediaSchema).optional(),
+      author: z.array(authorSchema).optional(),
+      'wp:term': z.array(z.array(termSchema)).optional(),
     })
     .optional(),
 })
@@ -55,6 +72,23 @@ export interface WordPressContentPost {
   publishedAt: string
   content: LexicalDocument
   featuredMedia: WordPressFeaturedMedia | null
+  author: WordPressAuthor | null
+  categories: WordPressTerm[]
+  tags: WordPressTerm[]
+}
+
+export interface WordPressAuthor {
+  id: number
+  name: string
+  slug: string
+  bio: string
+}
+
+export interface WordPressTerm {
+  id: number
+  name: string
+  slug: string
+  description: string
 }
 
 interface LexicalTextNode {
@@ -340,16 +374,45 @@ function featuredMediaFor(post: WordPressPost): WordPressFeaturedMedia | null {
   }
 }
 
+const editorialTermNames: Readonly<Record<number, string>> = {
+  55: 'Ring sizing',
+  92: 'Opal facts',
+  106: 'Sightseeing',
+}
+
+function termFor(term: z.infer<typeof termSchema>): WordPressTerm {
+  return {
+    id: term.id,
+    name: editorialTermNames[term.id] ?? plainText(term.name),
+    slug: term.slug,
+    description: plainText(term.description),
+  }
+}
+
 export function parseWordPressPostPage(input: unknown): WordPressContentPost[] {
-  return wordpressPostPageSchema.parse(input).map((post) => ({
-    id: post.id,
-    title: plainText(post.title.rendered),
-    slug: post.slug,
-    excerpt: excerptFromWordPressHtml(post.excerpt.rendered),
-    publishedAt: new Date(`${post.date_gmt}Z`).toISOString(),
-    content: wordpressHtmlToLexical(post.content.rendered),
-    featuredMedia: featuredMediaFor(post),
-  }))
+  return wordpressPostPageSchema.parse(input).map((post) => {
+    const terms = post._embedded?.['wp:term']?.flat() ?? []
+    const author = post._embedded?.author?.[0]
+    return {
+      id: post.id,
+      title: plainText(post.title.rendered),
+      slug: post.slug,
+      excerpt: excerptFromWordPressHtml(post.excerpt.rendered),
+      publishedAt: new Date(`${post.date_gmt}Z`).toISOString(),
+      content: wordpressHtmlToLexical(post.content.rendered),
+      featuredMedia: featuredMediaFor(post),
+      author: author
+        ? {
+            id: author.id,
+            name: plainText(author.name),
+            slug: author.slug,
+            bio: plainText(author.description),
+          }
+        : null,
+      categories: terms.filter((term) => term.taxonomy === 'category').map(termFor),
+      tags: terms.filter((term) => term.taxonomy === 'post_tag').map(termFor),
+    }
+  })
 }
 
 export async function fetchPublishedWordPressPosts(

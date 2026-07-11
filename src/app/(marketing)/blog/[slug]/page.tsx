@@ -6,12 +6,13 @@ import { cache } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { RichText } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
-import type { Media, Post } from '@/types/payload-types'
+import type { Author, Category, Media, Post, Tag } from '@/types/payload-types'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +35,18 @@ const getPublishedPost = cache(async (slug: string): Promise<Post | undefined> =
 
 function populatedMedia(media: number | null | Media | undefined): Media | null {
   return media && typeof media === 'object' ? media : null
+}
+
+function populatedAuthor(author: number | Author | null | undefined): Author | null {
+  return author && typeof author === 'object' ? author : null
+}
+
+function populatedCategories(categories: (number | Category)[] | null | undefined): Category[] {
+  return categories?.filter((category): category is Category => typeof category === 'object') ?? []
+}
+
+function populatedTags(tags: (number | Tag)[] | null | undefined): Tag[] {
+  return tags?.filter((tag): tag is Tag => typeof tag === 'object') ?? []
 }
 
 function withBrand(title: string): string {
@@ -61,11 +74,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   const canonical = new URL(`/blog/${encodeURIComponent(post.slug)}`, APP_URL).toString()
   const socialImage = populatedMedia(post.seo?.ogImage) || populatedMedia(post.featuredImage)
   const imageUrl = resolveMediaUrl(socialImage?.url)
+  const author = populatedAuthor(post.author)
 
   return {
     title,
     description,
     keywords: post.seo?.keywords ?? undefined,
+    authors: author ? [{ name: author.name }] : undefined,
     alternates: { canonical },
     openGraph: {
       type: 'article',
@@ -75,6 +90,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       siteName: APP_NAME,
       publishedTime: post.publishedAt ?? undefined,
       modifiedTime: post.updatedAt,
+      authors: author ? [author.name] : undefined,
       images: imageUrl ? [{ url: imageUrl, alt: socialImage?.alt || post.title }] : undefined,
     },
     twitter: {
@@ -98,9 +114,40 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     : null
   const featuredImage = populatedMedia(post.featuredImage)
   const imageUrl = resolveMediaUrl(featuredImage?.url)
+  const author = populatedAuthor(post.author)
+  const categories = populatedCategories(post.categories)
+  const tags = populatedTags(post.tags)
+  const canonical = new URL(`/blog/${encodeURIComponent(post.slug)}`, APP_URL).toString()
+  const description =
+    post.seo?.description?.trim() ||
+    post.excerpt?.trim() ||
+    'Practical guidance about Australian opals, jewellery, buying, and care.'
+  const blogPosting = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description,
+    url: canonical,
+    mainEntityOfPage: canonical,
+    datePublished: post.publishedAt ?? post.createdAt,
+    dateModified: post.updatedAt,
+    image: imageUrl || undefined,
+    author: author ? { '@type': 'Person', name: author.name } : undefined,
+    publisher: { '@type': 'Organization', name: APP_NAME, url: APP_URL },
+    articleSection: categories[0]?.name,
+    keywords: tags.map((tag) => tag.name),
+  }
 
   return (
     <MarketingShell>
+      <JsonLd data={blogPosting} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Opal notes', url: '/blog' },
+          { name: post.title, url: `/blog/${post.slug}` },
+        ]}
+      />
       <Container className="py-14 sm:py-20">
         <Link
           href="/blog"
@@ -109,14 +156,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to opal notes
         </Link>
         <article className="mx-auto mt-12 max-w-4xl">
-          {publishedDate ? (
-            <time className="font-sans text-xs uppercase tracking-[0.12em] text-charcoal/50">
-              {publishedDate}
-            </time>
+          {categories.length > 0 ? (
+            <p className="font-sans text-sm font-semibold text-opal-electric-accessible">
+              {categories.map((category) => category.name).join(' · ')}
+            </p>
           ) : null}
           <h1 className="mt-4 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl">
             {post.title}
           </h1>
+          {author || publishedDate ? (
+            <p className="mt-6 font-sans text-sm text-charcoal/60">
+              {author ? `By ${author.name}` : null}
+              {author && publishedDate ? ' · ' : null}
+              {publishedDate ? <time>{publishedDate}</time> : null}
+            </p>
+          ) : null}
           {post.excerpt ? (
             <p className="mt-7 max-w-3xl font-sans text-lg leading-8 text-charcoal/70">
               {post.excerpt}
@@ -137,6 +191,23 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {post.content ? (
             <div className="prose prose-lg mt-12 max-w-none prose-headings:font-serif prose-headings:font-medium prose-headings:text-charcoal prose-p:font-sans prose-p:leading-8 prose-p:text-charcoal/75 prose-a:text-opal-electric-accessible prose-blockquote:border-charcoal/30 prose-blockquote:text-charcoal/70">
               <RichText data={post.content as unknown as SerializedEditorState} />
+            </div>
+          ) : null}
+          {tags.length > 0 ? (
+            <div className="mt-12 border-t border-warm-grey/70 pt-6" aria-label="Article topics">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/50">
+                Topics
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="rounded-full border border-warm-grey bg-cream px-3 py-1.5 font-sans text-xs text-charcoal/70"
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
             </div>
           ) : null}
         </article>

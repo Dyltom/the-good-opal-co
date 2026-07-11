@@ -69,8 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    posts: Post;
+    authors: Author;
     categories: Category;
+    tags: Tag;
+    posts: Post;
     products: Product;
     orders: Order;
     customers: Customer;
@@ -85,8 +87,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    posts: PostsSelect<false> | PostsSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
@@ -222,6 +226,61 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors".
+ */
+export interface Author {
+  id: number;
+  /**
+   * Stable public author ID from the legacy WordPress site
+   */
+  legacyWordPressId?: number | null;
+  name: string;
+  slug: string;
+  bio?: string | null;
+  avatar?: (number | null) | Media;
+  tenantId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  /**
+   * Stable category ID imported from the legacy WordPress site
+   */
+  legacyWordPressId?: number | null;
+  name: string;
+  slug: string;
+  description?: string | null;
+  /**
+   * Associated tenant ID for multi-tenancy
+   */
+  tenantId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  /**
+   * Stable tag ID imported from the legacy WordPress site
+   */
+  legacyWordPressId?: number | null;
+  name: string;
+  slug: string;
+  description?: string | null;
+  tenantId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
 export interface Post {
@@ -259,14 +318,9 @@ export interface Post {
    * When this post was published
    */
   publishedAt?: string | null;
-  author?: (number | null) | User;
-  categories?: (number | Category)[] | null;
-  tags?:
-    | {
-        tag?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  author: number | Author;
+  categories: (number | Category)[];
+  tags?: (number | Tag)[] | null;
   seo?: {
     title?: string | null;
     description?: string | null;
@@ -288,26 +342,6 @@ export interface Post {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string | null;
-  /**
-   * Number of posts in this category
-   */
-  postCount?: number | null;
-  /**
-   * Associated tenant ID for multi-tenancy
-   */
-  tenantId: string;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -808,12 +842,20 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'posts';
-        value: number | Post;
+        relationTo: 'authors';
+        value: number | Author;
       } | null)
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
       } | null)
     | ({
         relationTo: 'products';
@@ -960,6 +1002,46 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  legacyWordPressId?: T;
+  name?: T;
+  slug?: T;
+  bio?: T;
+  avatar?: T;
+  tenantId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  legacyWordPressId?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  tenantId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  legacyWordPressId?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  tenantId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -972,12 +1054,7 @@ export interface PostsSelect<T extends boolean = true> {
   publishedAt?: T;
   author?: T;
   categories?: T;
-  tags?:
-    | T
-    | {
-        tag?: T;
-        id?: T;
-      };
+  tags?: T;
   seo?:
     | T
     | {
@@ -997,19 +1074,6 @@ export interface PostsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories_select".
- */
-export interface CategoriesSelect<T extends boolean = true> {
-  name?: T;
-  slug?: T;
-  description?: T;
-  postCount?: T;
-  tenantId?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

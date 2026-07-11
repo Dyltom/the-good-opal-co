@@ -20,6 +20,34 @@ const sourcePost = {
   excerpt: { rendered: '<p>Clean opals safely &#8230; <a>Read more</a></p>' },
   featured_media: 5425,
   _embedded: {
+    author: [
+      {
+        id: 2,
+        name: 'Stephanie Caruana',
+        slug: 'steph',
+        description: 'Founder and opal cutter.',
+      },
+    ],
+    'wp:term': [
+      [
+        {
+          id: 1,
+          name: 'DIY Cabbing Machine',
+          slug: 'diycabbing-machine',
+          description: 'Build a cabbing machine.',
+          taxonomy: 'category',
+        },
+      ],
+      [
+        {
+          id: 55,
+          name: 'Are you having trouble figuring out your ring size?',
+          slug: 'ring-size-hack',
+          description: '',
+          taxonomy: 'post_tag',
+        },
+      ],
+    ],
     'wp:featuredmedia': [
       {
         id: 5425,
@@ -42,6 +70,9 @@ describe('WordPress content import', () => {
       excerpt: 'Clean opals safely …',
       publishedAt: '2021-12-17T09:30:48.000Z',
       featuredMedia: { id: 5425, alt: 'DIY care', mimeType: 'image/jpeg' },
+      author: { id: 2, name: 'Stephanie Caruana', slug: 'steph' },
+      categories: [{ id: 1, name: 'DIY Cabbing Machine', slug: 'diycabbing-machine' }],
+      tags: [{ id: 55, name: 'Ring sizing', slug: 'ring-size-hack' }],
     })
   })
 

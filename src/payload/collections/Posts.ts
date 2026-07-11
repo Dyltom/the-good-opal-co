@@ -69,23 +69,21 @@ export const Posts: CollectionConfig = {
     {
       name: 'author',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'authors',
+      required: true,
     },
     {
       name: 'categories',
       type: 'relationship',
       relationTo: 'categories',
       hasMany: true,
+      required: true,
     },
     {
       name: 'tags',
-      type: 'array',
-      fields: [
-        {
-          name: 'tag',
-          type: 'text',
-        },
-      ],
+      type: 'relationship',
+      relationTo: 'tags',
+      hasMany: true,
     },
     {
       name: 'seo',

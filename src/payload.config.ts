@@ -14,6 +14,8 @@ import { Users } from './payload/collections/Users.ts'
 import { Media } from './payload/collections/Media.ts'
 import { Posts } from './payload/collections/Posts.ts'
 import { Categories } from './payload/collections/Categories.ts'
+import { Authors } from './payload/collections/Authors.ts'
+import { Tags } from './payload/collections/Tags.ts'
 import { Products } from './payload/collections/Products.ts'
 import { Orders } from './payload/collections/Orders.ts'
 import { Customers } from './payload/collections/Customers.ts'
@@ -122,7 +124,19 @@ export default buildConfig({
       beforeNavLinks: [],
     },
   },
-  collections: [Users, Media, Posts, Categories, Products, Orders, Customers, Enquiries, Courses],
+  collections: [
+    Users,
+    Media,
+    Authors,
+    Categories,
+    Tags,
+    Posts,
+    Products,
+    Orders,
+    Customers,
+    Enquiries,
+    Courses,
+  ],
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,
@@ -141,8 +155,7 @@ export default buildConfig({
       connectionString: getDatabaseUrl(),
     },
     migrationDir: path.resolve(dirname, 'migrations'),
-    push:
-      process.env['NODE_ENV'] !== 'production' && process.env['PAYLOAD_DB_PUSH'] !== 'false',
+    push: process.env['NODE_ENV'] !== 'production' && process.env['PAYLOAD_DB_PUSH'] !== 'false',
   }),
   sharp,
   plugins: [
