@@ -413,4 +413,29 @@ describe('buying flow UI/UX safeguards', () => {
     expect(legacyHeroSource).toContain('Free Shipping Over $500')
     expect(legacyHeroSource).not.toContain('Free Express Shipping')
   })
+
+  test('legal pages describe the deployed guest checkout and data handling', () => {
+    const terms = read('src/app/(marketing)/legal/terms/page.tsx')
+    const privacy = read('src/app/(marketing)/legal/privacy/page.tsx')
+
+    expect(terms).toContain('We currently offer guest checkout')
+    expect(terms).toContain('Australian Consumer Law')
+    expect(terms).not.toContain('When you create an account with us')
+    expect(terms).not.toContain('binding arbitration')
+    expect(privacy).toContain('Optional website usage analytics only after you consent')
+    expect(privacy).toContain('We do not currently use advertising')
+    expect(privacy).not.toContain('Regular security assessments')
+    expect(privacy).not.toContain('We ensure appropriate safeguards are in place')
+  })
+
+  test('product metadata and sitemap expose canonical conversion routes', () => {
+    const product = read('src/app/(marketing)/store/[slug]/page.tsx')
+    const sitemap = read('src/app/sitemap.ts')
+
+    expect(product).toContain('alternates: { canonical: `/store/${product.slug}` }')
+    expect(product).toContain("card: 'summary_large_image'")
+    expect(product).toContain('sku: product.sku ?? String(product.id)')
+    expect(sitemap).toContain('`${BASE_URL}/services/design`')
+    expect(sitemap).toContain('`${BASE_URL}/legal/cookies`')
+  })
 })

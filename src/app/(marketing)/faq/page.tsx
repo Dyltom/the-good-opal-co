@@ -49,7 +49,7 @@ const faqCategories = [
       {
         question: 'How much is delivery?',
         answer:
-          'Standard delivery is AUD 15 for orders under AUD 500. Standard delivery is free when the order subtotal is AUD 500 or more. Available destinations and any other delivery options are shown during checkout.',
+          'Tracked delivery is AUD 15 for orders under AUD 500. Tracked delivery is free when the order subtotal is AUD 500 or more. Available destinations and the final delivery charge are shown during checkout.',
       },
       {
         question: 'Will I receive tracking?',

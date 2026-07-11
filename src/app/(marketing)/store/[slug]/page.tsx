@@ -53,10 +53,18 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return {
     title: `${product.name} | The Good Opal Co`,
     description: description || 'Discover this unique Australian opal from The Good Opal Co.',
+    alternates: { canonical: `/store/${product.slug}` },
     openGraph: {
       title: product.name,
       description: description || 'Australian opal selected by The Good Opal Co.',
+      url: `/store/${product.slug}`,
       images: imageUrl ? [{ url: imageUrl }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description: description || 'Australian opal selected by The Good Opal Co.',
+      images: imageUrl ? [imageUrl] : undefined,
     },
   }
 }
@@ -129,7 +137,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           images: productImages.map((img) => img.url),
           category: categoryName,
           stock: product.stock ?? 0,
-          sku: String(product.id),
+          sku: product.sku ?? String(product.id),
         }}
       />
       <BreadcrumbJsonLd

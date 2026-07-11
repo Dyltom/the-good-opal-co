@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { MarketingShell } from '@/components/marketing'
+import { CONTACT_INFO } from '@/lib/constants/contact'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | The Good Opal Co',
@@ -62,20 +63,19 @@ export default function PrivacyPolicyPage() {
                 <li>Name and contact information (email address, phone number)</li>
                 <li>Billing and shipping addresses</li>
                 <li>Payment information (processed securely through Stripe)</li>
-                <li>Order history and preferences</li>
+                <li>Order history and messages you send us</li>
               </ul>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
                 2.2 Automatically Collected Information
               </h3>
               <p className="text-content mb-4">
-                When you visit our site, we automatically collect:
+                Our site and service providers may process limited technical information needed to operate and secure the service:
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
-                <li>Device information (browser type, operating system)</li>
-                <li>IP address and location data</li>
-                <li>Cookies and usage data</li>
-                <li>Shopping behavior and preferences</li>
+                <li>Essential cart and privacy-choice data stored in your browser</li>
+                <li>Request logs that may include IP address, browser information, requested page, and timestamps</li>
+                <li>Optional website usage analytics only after you consent to analytics</li>
               </ul>
             </section>
 
@@ -91,7 +91,7 @@ export default function PrivacyPolicyPage() {
                 <li>Communicate with you about your purchases</li>
                 <li>Send order confirmations and shipping updates</li>
                 <li>Respond to your inquiries and provide customer support</li>
-                <li>Improve our website and shopping experience</li>
+                <li>Operate, secure, diagnose, and improve our website and shopping experience</li>
                 <li>Send marketing communications (with your consent)</li>
                 <li>Prevent fraud and enhance security</li>
                 <li>Comply with legal obligations</li>
@@ -118,15 +118,17 @@ export default function PrivacyPolicyPage() {
                 5. Data Security
               </h2>
               <p className="text-content mb-4">
-                We implement appropriate technical and organizational measures to protect your personal information, including:
+                We use practical technical and organisational measures intended to protect personal information, including:
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
-                <li>SSL encryption for data transmission</li>
+                <li>HTTPS/TLS for data transmitted between your browser and the site</li>
                 <li>Secure payment processing through Stripe</li>
-                <li>Regular security assessments</li>
-                <li>Limited access to personal information</li>
-                <li>Secure data storage with encryption at rest</li>
+                <li>Restricted administrative access to order and customer records</li>
+                <li>Managed hosting, database, storage, and email providers</li>
               </ul>
+              <p className="text-content mb-4">
+                No transmission or storage method is completely secure. Please contact us promptly if you suspect information connected with an order has been misused.
+              </p>
             </section>
 
             <section className="mb-12">
@@ -134,16 +136,15 @@ export default function PrivacyPolicyPage() {
                 6. Cookies and Tracking
               </h2>
               <p className="text-content mb-4">
-                We use cookies and similar tracking technologies to:
+                We use only the browser storage described below:
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
-                <li>Maintain your shopping cart</li>
-                <li>Remember your preferences</li>
-                <li>Analyze website traffic and usage</li>
-                <li>Personalize your experience</li>
+                <li>An essential HTTP-only cart cookie so the server can retain your basket</li>
+                <li>Local storage recording your necessary and analytics consent choice</li>
+                <li>Vercel Analytics after you choose to allow analytics</li>
               </ul>
               <p className="text-content mb-4">
-                You can control cookies through your browser settings. Note that disabling cookies may affect website functionality.
+                We do not currently use advertising, remarketing, or social-media tracking pixels. You can change optional analytics through Cookie Settings. Blocking essential storage may prevent the cart and privacy controls from working.
               </p>
             </section>
 
@@ -170,7 +171,7 @@ export default function PrivacyPolicyPage() {
                 8. International Data Transfers
               </h2>
               <p className="text-content mb-4">
-                Your information may be transferred to and processed in countries other than Australia. We ensure appropriate safeguards are in place to protect your information in accordance with this Privacy Policy.
+                Stripe, Vercel, Resend, and other service providers may process information outside Australia. Processing locations depend on each provider&apos;s infrastructure and may change. We assess the providers we use and handle overseas disclosures as required by applicable privacy law, but we do not claim that every overseas jurisdiction provides protections identical to Australia.
               </p>
             </section>
 
@@ -201,7 +202,7 @@ export default function PrivacyPolicyPage() {
                 11. Data Retention
               </h2>
               <p className="text-content mb-4">
-                We retain your personal information for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required by law. Order information is typically retained for 7 years for tax purposes.
+                We retain personal information only as long as reasonably needed for orders, support, fraud prevention, disputes, and legal, tax, or accounting obligations. Different records can have different required retention periods.
               </p>
             </section>
 
@@ -213,7 +214,7 @@ export default function PrivacyPolicyPage() {
                 Our website may contain links to third-party websites. We are not responsible for the privacy practices of these sites. Key third-party services include:
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
-                <li><strong>Stripe:</strong> Payment processing (PCI-DSS compliant)</li>
+                <li><strong>Stripe:</strong> Hosted checkout and payment processing</li>
                 <li><strong>Vercel:</strong> Website hosting and analytics</li>
                 <li><strong>Resend:</strong> Email communications</li>
               </ul>
@@ -237,7 +238,8 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <p className="font-semibold text-charcoal mb-2">The Good Opal Co</p>
-                <p className="text-content">Use the website contact form and select the privacy topic.</p>
+                <p className="text-content">Email: <a className="underline underline-offset-4" href={`mailto:${CONTACT_INFO.privacyEmail}`}>{CONTACT_INFO.privacyEmail}</a></p>
+                <p className="text-content">Location: {CONTACT_INFO.address}</p>
               </div>
             </section>
 

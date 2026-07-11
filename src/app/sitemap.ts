@@ -110,6 +110,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${BASE_URL}/services/design`,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${BASE_URL}/shipping`,
       changeFrequency: 'monthly',
       priority: 0.4,
@@ -126,6 +131,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${BASE_URL}/legal/terms`,
+      changeFrequency: 'yearly',
+      priority: 0.2,
+    },
+    {
+      url: `${BASE_URL}/legal/cookies`,
       changeFrequency: 'yearly',
       priority: 0.2,
     },

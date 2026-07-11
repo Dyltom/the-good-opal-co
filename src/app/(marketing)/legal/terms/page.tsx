@@ -119,7 +119,7 @@ export default function TermsOfServicePage() {
                 5.1 Shipping Methods
               </h3>
               <p className="text-content mb-4">
-                Shipping availability, the applicable charge, and the current delivery estimate are shown before payment.
+                Shipping availability and the applicable charge are shown before payment. Dispatched orders include tracking where the selected service supports it.
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>Orders of $500 AUD or more qualify for free shipping</li>
@@ -131,14 +131,14 @@ export default function TermsOfServicePage() {
                 5.2 Delivery Times
               </h3>
               <p className="text-content mb-4">
-                Estimated delivery times are provided at checkout and in your order confirmation email. These are estimates only and we are not liable for delays caused by shipping carriers or customs.
+                Delivery timing begins after dispatch and varies by destination, carrier, and customs. Any timing we provide is an estimate rather than a guaranteed arrival date.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
                 5.3 Risk of Loss
               </h3>
               <p className="text-content mb-4">
-                All items purchased from The Good Opal Co are made pursuant to a shipment contract. Risk of loss and title for items pass to you upon delivery to the carrier.
+                Risk, title, and responsibility for a delayed, lost, or damaged shipment are handled under applicable law. Contact us promptly if tracking shows a problem so we can investigate with the carrier.
               </p>
             </section>
 
@@ -150,7 +150,7 @@ export default function TermsOfServicePage() {
                 6.1 Return Policy
               </h3>
               <p className="text-content mb-4">
-                We offer a 30-day return policy for unopened and unused items in their original packaging. Custom or personalized items cannot be returned unless defective.
+                We offer a 30-day change-of-mind return policy for standard, unused pieces in their original condition and packaging. Custom or personalised items are excluded from change-of-mind returns. These exclusions do not limit rights that cannot be excluded under the Australian Consumer Law.
               </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
@@ -201,13 +201,13 @@ export default function TermsOfServicePage() {
 
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-charcoal mb-4">
-                9. User Accounts
+                9. Guest Checkout and Order Access
               </h2>
               <p className="text-content mb-4">
-                When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for safeguarding the password and for all activities that occur under your account.
+                We currently offer guest checkout rather than customer password accounts. You must provide accurate, complete, and current checkout information so we can process and deliver your order.
               </p>
               <p className="text-content mb-4">
-                You agree to notify us immediately of any unauthorized access to or use of your account.
+                Order tracking uses your order number and the email address supplied at checkout. Keep those details private and contact us if you believe they have been used without permission.
               </p>
             </section>
 
@@ -237,12 +237,11 @@ export default function TermsOfServicePage() {
                 11.1 Disclaimers
               </h3>
               <p className="text-content mb-4">
-                The information on this website is provided on an &quot;as is&quot; basis. To the fullest extent permitted by law, The Good Opal Co:
+                Website information is provided in good faith and may contain errors or become outdated. To the extent permitted by law, we do not guarantee uninterrupted access to the website or that every general educational statement will suit a particular purpose.
               </p>
-              <ul className="list-disc pl-6 mb-4 space-y-2">
-                <li>Excludes all representations and warranties relating to this website and its contents</li>
-                <li>Excludes all liability for damages arising out of or in connection with your use of this website</li>
-              </ul>
+              <p className="text-content mb-4">
+                Nothing in these Terms excludes, restricts, or modifies a consumer guarantee, remedy, or other right that cannot lawfully be excluded, including rights under the Australian Consumer Law.
+              </p>
 
               <h3 className="text-xl font-medium text-charcoal mb-3">
                 11.2 Limitation of Liability
@@ -251,7 +250,7 @@ export default function TermsOfServicePage() {
                 In no event shall The Good Opal Co, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages.
               </p>
               <p className="text-content mb-4">
-                Our liability is limited to the maximum extent permitted by law. In any case, our total liability to you for all damages shall not exceed the amount paid by you for products purchased from us.
+                Any limitation of liability applies only to the maximum extent permitted by law and does not limit non-excludable consumer remedies.
               </p>
             </section>
 
@@ -269,10 +268,10 @@ export default function TermsOfServicePage() {
                 13. Governing Law and Jurisdiction
               </h2>
               <p className="text-content mb-4">
-                These Terms shall be governed by and construed in accordance with the laws of New South Wales, Australia. You irrevocably submit to the exclusive jurisdiction of the courts in that State or location.
+                These Terms are governed by the laws of New South Wales, Australia, subject to any mandatory law that applies where you live.
               </p>
               <p className="text-content mb-4">
-                Any disputes arising out of or relating to these Terms of Service shall first be resolved through good faith negotiations. If negotiations fail, disputes shall be resolved through binding arbitration in Sydney, Australia.
+                We encourage you to contact us first so we can try to resolve a concern in good faith. This does not prevent either party from using a court, tribunal, regulator, or dispute process available under applicable law.
               </p>
             </section>
 
