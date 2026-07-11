@@ -30,7 +30,7 @@ jobs:
       DATABASE_URL: postgresql://goodopalco:goodopalcopass@localhost:5432/goodopalco_test
       PAYLOAD_SECRET: ci-payload-secret-at-least-thirty-two-characters
       ADMIN_EMAIL: owner@example.com
-      NEXT_PUBLIC_APP_URL: http://localhost:8412
+      NEXT_PUBLIC_APP_URL: https://ci.goodopal.test
       STRIPE_SECRET_KEY: sk_test_placeholder
       STRIPE_WEBHOOK_SECRET: whsec_placeholder
       RESEND_API_KEY: re_ci_placeholder
@@ -48,7 +48,7 @@ jobs:
       - run: pnpm test:unit --run
       - run: pnpm validate:build
         env:
-          BLOB_READ_WRITE_TOKEN: vercel_blob_rw_ci_build_only
+          BLOB_READ_WRITE_TOKEN: vercel_blob_rw_cibuildstore_abcdefghijklmnopqrstuvwxyz1234567890
           UPSTASH_REDIS_REST_URL: https://ci-build-only.invalid
           UPSTASH_REDIS_REST_TOKEN: ci-build-only
       - run: pnpm exec playwright install --with-deps chromium
