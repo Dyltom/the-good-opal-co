@@ -2,6 +2,40 @@ export const PRODUCTS_PER_PAGE = 24
 
 export const STORE_SORTS = ['featured', 'newest', 'price-low', 'price-high'] as const
 export const STORE_PRICE_RANGES = ['under-250', '250-500', '500-1000', '1000-plus'] as const
+export const STORE_CATEGORIES = [
+  ['opal-rings', 'Rings'],
+  ['opal-necklaces', 'Necklaces'],
+  ['opal-earrings', 'Earrings'],
+  ['opal-bracelets', 'Bracelets'],
+  ['raw-opals', 'Loose opals'],
+  ['custom-commissions', 'Custom commissions'],
+] as const
+export const STORE_STONES = [
+  ['black-opal', 'Black opal'],
+  ['white-opal', 'White opal'],
+  ['boulder-opal', 'Boulder opal'],
+  ['crystal-opal', 'Crystal opal'],
+  ['fire-opal', 'Fire opal'],
+  ['matrix-opal', 'Matrix opal'],
+  ['opal-doublet', 'Opal doublet'],
+] as const
+export const STORE_ORIGINS = [
+  ['lightning-ridge', 'Lightning Ridge, NSW'],
+  ['coober-pedy', 'Coober Pedy, SA'],
+  ['andamooka', 'Andamooka, SA'],
+  ['mintabie', 'Mintabie, SA'],
+  ['queensland', 'Queensland'],
+  ['other-australian', 'Other Australian'],
+] as const
+export const STORE_MATERIALS = [
+  ['sterling-silver', 'Sterling silver'],
+  ['14k-gold', '14K gold'],
+  ['18k-gold', '18K gold'],
+  ['white-gold', 'White gold'],
+  ['rose-gold', 'Rose gold'],
+  ['platinum', 'Platinum'],
+  ['none', 'Loose stone'],
+] as const
 
 export type StoreSort = (typeof STORE_SORTS)[number]
 export type StorePriceRange = (typeof STORE_PRICE_RANGES)[number]
@@ -28,6 +62,13 @@ function isOneOf<T extends string>(value: string, values: readonly T[]): value i
   return values.includes(value as T)
 }
 
+function allowedValue(
+  value: string,
+  options: readonly (readonly [string, string])[]
+): string | undefined {
+  return options.some(([option]) => option === value) ? value : undefined
+}
+
 export function parseStoreQuery(params: StoreSearchParams): StoreQuery {
   const rawPage = Number(firstValue(params.page))
   const rawSort = firstValue(params.sort)
@@ -35,10 +76,10 @@ export function parseStoreQuery(params: StoreSearchParams): StoreQuery {
 
   return {
     search: firstValue(params.search).trim().slice(0, 80),
-    category: firstValue(params.category) || undefined,
-    stone: firstValue(params.stone) || undefined,
-    origin: firstValue(params.origin) || undefined,
-    material: firstValue(params.material) || undefined,
+    category: allowedValue(firstValue(params.category), STORE_CATEGORIES),
+    stone: allowedValue(firstValue(params.stone), STORE_STONES),
+    origin: allowedValue(firstValue(params.origin), STORE_ORIGINS),
+    material: allowedValue(firstValue(params.material), STORE_MATERIALS),
     price: isOneOf(rawPrice, STORE_PRICE_RANGES) ? rawPrice : undefined,
     availability: firstValue(params.availability) === 'all' ? 'all' : 'available',
     sort: isOneOf(rawSort, STORE_SORTS) ? rawSort : 'featured',

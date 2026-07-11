@@ -24,6 +24,22 @@ describe('/store server query', () => {
     })
   })
 
+  test('discards values that cannot be queried against catalog enums', () => {
+    expect(
+      parseStoreQuery({
+        category: 'Jewellery',
+        stone: 'Black Opal',
+        origin: 'Lightning Ridge',
+        material: 'silver',
+      })
+    ).toMatchObject({
+      category: undefined,
+      stone: undefined,
+      origin: undefined,
+      material: undefined,
+    })
+  })
+
   test('preserves active refinements between product pages', () => {
     const query = parseStoreQuery({
       category: 'opal-rings',

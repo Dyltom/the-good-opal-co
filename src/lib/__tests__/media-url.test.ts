@@ -17,4 +17,12 @@ describe('resolveMediaUrl', () => {
     )
     expect(resolveMediaUrl('/images/products/opal.jpg')).toBe('/images/products/opal.jpg')
   })
+
+  test('turns absolute Payload media origins into same-origin URLs', () => {
+    expect(
+      resolveMediaUrl(
+        'https://the-good-opal-co.vercel.app/api/media/file/opal.jpg?size=card'
+      )
+    ).toBe('/api/media/file/opal.jpg?size=card')
+  })
 })

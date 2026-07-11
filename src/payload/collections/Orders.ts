@@ -17,9 +17,10 @@ import { isAdmin } from '../../lib/payload-access.ts'
  */
 export const Orders: CollectionConfig = {
   slug: 'orders',
+  defaultSort: '-orderPlacedAt',
   admin: {
     useAsTitle: 'orderNumber',
-    defaultColumns: ['orderNumber', 'status', 'total', 'customer.email', 'createdAt'],
+    defaultColumns: ['orderNumber', 'status', 'total', 'customer.email', 'orderPlacedAt'],
     group: 'E-commerce',
     description: 'Customer orders with payment and shipping details',
   },
@@ -281,6 +282,8 @@ export const Orders: CollectionConfig = {
     {
       name: 'stripePaymentIntentId',
       type: 'text',
+      unique: true,
+      index: true,
       admin: {
         readOnly: true,
         position: 'sidebar',

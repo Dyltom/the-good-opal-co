@@ -58,7 +58,14 @@ async function getCheckoutItems(sessionId: string): Promise<CartItem[]> {
     const quantity = lineItem.quantity
     const unitAmount = lineItem.price?.unit_amount
 
-    if (!productId || !slug || !quantity || quantity < 1 || unitAmount === null || unitAmount === undefined) {
+    if (
+      !productId ||
+      !slug ||
+      !quantity ||
+      quantity < 1 ||
+      unitAmount === null ||
+      unitAmount === undefined
+    ) {
       throw new Error(`Invalid Stripe line item ${lineItem.id}`)
     }
 
@@ -212,6 +219,26 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
   const order = await findOrderByPaymentIntent(paymentIntentId)
   if (!order || order.status === 'refunded') return
 
+  const isFullyRefunded = charge.refunded && charge.amount_refunded >= charge.amount
+  if (!isFullyRefunded) {
+    const marker = `Stripe partial refund ${charge.id}:${charge.amount_refunded}`
+    if (!order.notes?.includes(marker)) {
+      await payload.update({
+        collection: 'orders',
+        id: order.id,
+        data: {
+          notes: [
+            order.notes,
+            `${marker} (${(charge.amount_refunded / 100).toFixed(2)} ${charge.currency.toUpperCase()}). Inventory unchanged.`,
+          ]
+            .filter(Boolean)
+            .join('\n'),
+        },
+      })
+    }
+    return
+  }
+
   const transactionID = await payload.db.beginTransaction()
   if (transactionID === null) throw new Error('Database transactions are required for refunds')
   const req = { transactionID }
@@ -339,6 +366,8 @@ export async function POST(request: NextRequest) {
 
       // Calculate subtotal from items
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+      const orderPlacedAt = new Date(session.created * 1000).toISOString()
+      const paidAt = new Date(event.created * 1000).toISOString()
 
       const transactionID = await payload.db.beginTransaction()
       if (transactionID === null) {
@@ -346,78 +375,80 @@ export async function POST(request: NextRequest) {
       }
       const transactionReq = { transactionID }
 
+      let transactionCommitted = false
       try {
-      const inventory = await Promise.all(
-        items.map(async (item) => {
-          const product = await payload.findByID({
-            collection: 'products',
-            id: item.productId,
-            req: transactionReq,
+        const inventory = await Promise.all(
+          items.map(async (item) => {
+            const product = await payload.findByID({
+              collection: 'products',
+              id: item.productId,
+              req: transactionReq,
+            })
+
+            return {
+              item,
+              product,
+              available:
+                product.status === 'published' &&
+                typeof product.stock === 'number' &&
+                product.stock >= item.quantity,
+            }
           })
+        )
+        const inventoryAvailable = inventory.every((entry) => entry.available)
 
-          return {
-            item,
-            product,
-            available:
-              product.status === 'published' &&
-              typeof product.stock === 'number' &&
-              product.stock >= item.quantity,
-          }
-        }),
-      )
-      const inventoryAvailable = inventory.every((entry) => entry.available)
-
-      // Order, customer totals, and stock changes share one serializable transaction.
-      const order = await payload.create({
-        collection: 'orders',
-        req: transactionReq,
-        data: {
-          orderNumber: generateOrderNumber(),
-          source: 'stripe',
-          status: inventoryAvailable ? 'processing' : 'pending',
-          customer: {
-            email: session.customer_email ?? '',
-            name: customerName || (shippingDetails?.name ?? ''),
-            phone: session.customer_details?.phone ?? undefined,
+        // Order, customer totals, and stock changes share one serializable transaction.
+        const order = await payload.create({
+          collection: 'orders',
+          req: transactionReq,
+          data: {
+            orderNumber: generateOrderNumber(),
+            source: 'stripe',
+            orderPlacedAt,
+            paidAt,
+            status: inventoryAvailable ? 'processing' : 'pending',
+            customer: {
+              email: session.customer_email ?? '',
+              name: customerName || (shippingDetails?.name ?? ''),
+              phone: session.customer_details?.phone ?? undefined,
+            },
+            shippingAddress: {
+              line1: shippingDetails?.address?.line1 ?? '',
+              line2: shippingDetails?.address?.line2 ?? undefined,
+              city: shippingDetails?.address?.city ?? '',
+              state: shippingDetails?.address?.state ?? '',
+              postalCode: shippingDetails?.address?.postal_code ?? '',
+              country: shippingDetails?.address?.country ?? 'AU',
+            },
+            items: items.map((item) => ({
+              productId: item.productId,
+              slug: item.slug,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image,
+            })),
+            subtotal,
+            shipping: session.shipping_cost?.amount_total
+              ? session.shipping_cost.amount_total / 100
+              : 0,
+            tax: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
+            total: session.amount_total ? session.amount_total / 100 : subtotal,
+            currency: session.currency?.toUpperCase() ?? 'AUD',
+            stripeSessionId: session.id,
+            stripePaymentIntentId:
+              typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
+            notes: inventoryAvailable
+              ? undefined
+              : 'Paid order requires inventory review before fulfilment.',
           },
-          shippingAddress: {
-            line1: shippingDetails?.address?.line1 ?? '',
-            line2: shippingDetails?.address?.line2 ?? undefined,
-            city: shippingDetails?.address?.city ?? '',
-            state: shippingDetails?.address?.state ?? '',
-            postalCode: shippingDetails?.address?.postal_code ?? '',
-            country: shippingDetails?.address?.country ?? 'AU',
-          },
-          items: items.map((item) => ({
-            productId: item.productId,
-            slug: item.slug,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
-          })),
-          subtotal,
-          shipping: session.shipping_cost?.amount_total
-            ? session.shipping_cost.amount_total / 100
-            : 0,
-          tax: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
-          total: session.amount_total ? session.amount_total / 100 : subtotal,
-          currency: session.currency?.toUpperCase() ?? 'AUD',
-          stripeSessionId: session.id,
-          stripePaymentIntentId:
-            typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
-          notes: inventoryAvailable
-            ? undefined
-            : 'Paid order requires inventory review before fulfilment.',
-        },
-      })
+        })
 
-      console.log(`Order created: ${order.orderNumber}`)
+        console.log(`Order created: ${order.orderNumber}`)
 
-      // Update or create customer record for CRM
-      const customerEmail = session.customer_email?.toLowerCase()
-      if (customerEmail) {
-        try {
+        // Update or create customer record for CRM
+        const customerEmail = session.customer_email?.toLowerCase()
+        if (customerEmail) {
           const orderTotal = session.amount_total ? session.amount_total / 100 : subtotal
 
           // Check if customer already exists
@@ -446,7 +477,7 @@ export async function POST(request: NextRequest) {
                   phone: session.customer_details?.phone ?? customer['phone'],
                   totalOrders: currentTotalOrders + 1,
                   totalSpent: currentTotalSpent + orderTotal,
-                  lastOrderDate: new Date().toISOString(),
+                  lastOrderDate: paidAt,
                   defaultAddress: {
                     line1: shippingDetails?.address?.line1 ?? '',
                     line2: shippingDetails?.address?.line2 ?? '',
@@ -470,7 +501,7 @@ export async function POST(request: NextRequest) {
                 source: 'checkout',
                 totalOrders: 1,
                 totalSpent: orderTotal,
-                lastOrderDate: new Date().toISOString(),
+                lastOrderDate: paidAt,
                 defaultAddress: {
                   line1: shippingDetails?.address?.line1 ?? '',
                   line2: shippingDetails?.address?.line2 ?? '',
@@ -482,49 +513,43 @@ export async function POST(request: NextRequest) {
               },
             })
           }
-        } catch (customerError) {
-          console.error('Failed to update/create customer:', customerError)
-          // Don't fail the webhook for customer update errors
         }
-      }
 
-      if (inventoryAvailable) {
-        for (const { item, product } of inventory) {
+        if (inventoryAvailable) {
+          for (const { item, product } of inventory) {
+            await payload.update({
+              collection: 'products',
+              id: item.productId,
+              req: transactionReq,
+              data: { stock: (product.stock ?? 0) - item.quantity },
+            })
+          }
           await payload.update({
-            collection: 'products',
-            id: item.productId,
+            collection: 'orders',
+            id: order.id,
             req: transactionReq,
-            data: { stock: (product.stock ?? 0) - item.quantity },
+            data: { inventoryDecrementedAt: new Date().toISOString() },
           })
         }
-        await payload.update({
-          collection: 'orders',
-          id: order.id,
-          req: transactionReq,
-          data: { inventoryDecrementedAt: new Date().toISOString() },
+
+        await payload.db.commitTransaction(transactionID)
+        transactionCommitted = true
+
+        await sendOrderConfirmation(order)
+        await sendInventoryReviewAlert(order)
+
+        return NextResponse.json({
+          received: true,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
         })
-      }
-
-      await payload.db.commitTransaction(transactionID)
-
-      await sendOrderConfirmation(order)
-      await sendInventoryReviewAlert(order)
-
-      return NextResponse.json({
-        received: true,
-        orderId: order.id,
-        orderNumber: order.orderNumber,
-      })
       } catch (transactionError) {
-        await payload.db.rollbackTransaction(transactionID)
+        if (!transactionCommitted) await payload.db.rollbackTransaction(transactionID)
         throw transactionError
       }
     } catch (error) {
       console.error('Error processing checkout.session.completed:', error)
-      return NextResponse.json(
-        { error: 'Failed to process order' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to process order' }, { status: 500 })
     }
   }
 

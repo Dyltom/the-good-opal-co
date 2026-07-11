@@ -132,9 +132,6 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     conditions.push({
       or: [
         { name: { contains: query.search } },
-        { material: { contains: query.search } },
-        { stoneType: { contains: query.search } },
-        { stoneOrigin: { contains: query.search } },
         { sku: { contains: query.search } },
       ],
     })

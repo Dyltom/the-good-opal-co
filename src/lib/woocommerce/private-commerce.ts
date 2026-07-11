@@ -350,6 +350,22 @@ export function payloadStatusForWoo(status: string): LegacyOrderData['status'] {
   }
 }
 
+export function wooOrderCommerceContribution(
+  order: WooOrder,
+  refunds: readonly WooRefund[]
+): { totalOrders: number; totalSpent: number } {
+  if (!order.date_paid_gmt) return { totalOrders: 0, totalSpent: 0 }
+
+  const refunded = refunds.reduce(
+    (sum, refund) => sum + money(refund.amount, `refund ${refund.id} amount`),
+    0
+  )
+  return {
+    totalOrders: 1,
+    totalSpent: Math.max(0, money(order.total, 'order total') - refunded),
+  }
+}
+
 export function mapWooOrder(
   order: WooOrder,
   refunds: readonly WooRefund[],

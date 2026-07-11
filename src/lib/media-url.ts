@@ -3,7 +3,11 @@ export function resolveMediaUrl(url: string | null | undefined): string | undefi
 
   try {
     const parsed = new URL(url)
-    if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+    if (
+      parsed.hostname === 'localhost' ||
+      parsed.hostname === '127.0.0.1' ||
+      parsed.pathname.startsWith('/api/media/file/')
+    ) {
       return `${parsed.pathname}${parsed.search}`
     }
   } catch {

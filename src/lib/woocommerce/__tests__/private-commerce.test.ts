@@ -6,6 +6,7 @@ import {
   mapWooPrivateProduct,
   payloadStatusForWoo,
   wooCustomerSchema,
+  wooOrderCommerceContribution,
   type WooCustomer,
   type WooOrder,
   type WooPrivateProduct,
@@ -135,6 +136,24 @@ describe('WooCommerce import mapping', () => {
     expect(payloadStatusForWoo('cancelled')).toBe('cancelled')
     expect(payloadStatusForWoo('failed')).toBe('cancelled')
     expect(payloadStatusForWoo('refunded')).toBe('refunded')
+  })
+
+  it('derives customer totals only from paid orders and nets refunds', () => {
+    const refund: WooRefund = {
+      id: 3,
+      date_created_gmt: '2024-01-03T04:05:06',
+      amount: '25.00',
+      reason: 'Returned',
+      refunded_by: 1,
+    }
+
+    expect(wooOrderCommerceContribution(order(9), [refund])).toEqual({
+      totalOrders: 1,
+      totalSpent: 90,
+    })
+    expect(
+      wooOrderCommerceContribution({ ...order(10), status: 'cancelled', date_paid_gmt: null }, [])
+    ).toEqual({ totalOrders: 0, totalSpent: 0 })
   })
 
   it('preserves legacy quote records that have no line items', () => {

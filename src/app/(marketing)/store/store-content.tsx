@@ -2,6 +2,10 @@ import Link from 'next/link'
 import { ProductCard } from '@/components/product/ProductCard'
 import {
   PRODUCTS_PER_PAGE,
+  STORE_CATEGORIES,
+  STORE_MATERIALS,
+  STORE_ORIGINS,
+  STORE_STONES,
   storeQueryParams,
   storeUrl,
   type StoreQuery,
@@ -30,42 +34,10 @@ interface StoreContentProps {
   totalPages: number
 }
 
-const categories = [
-  ['opal-rings', 'Rings'],
-  ['opal-necklaces', 'Necklaces'],
-  ['opal-earrings', 'Earrings'],
-  ['opal-bracelets', 'Bracelets'],
-  ['raw-opals', 'Loose opals'],
-  ['custom-commissions', 'Custom commissions'],
-] as const
-
-const stones = [
-  ['black-opal', 'Black opal'],
-  ['white-opal', 'White opal'],
-  ['boulder-opal', 'Boulder opal'],
-  ['crystal-opal', 'Crystal opal'],
-  ['fire-opal', 'Fire opal'],
-  ['matrix-opal', 'Matrix opal'],
-] as const
-
-const origins = [
-  ['lightning-ridge', 'Lightning Ridge, NSW'],
-  ['coober-pedy', 'Coober Pedy, SA'],
-  ['andamooka', 'Andamooka, SA'],
-  ['mintabie', 'Mintabie, SA'],
-  ['queensland', 'Queensland'],
-  ['other-australian', 'Other Australian'],
-] as const
-
-const materials = [
-  ['sterling-silver', 'Sterling silver'],
-  ['14k-gold', '14K gold'],
-  ['18k-gold', '18K gold'],
-  ['white-gold', 'White gold'],
-  ['rose-gold', 'Rose gold'],
-  ['platinum', 'Platinum'],
-  ['none', 'Loose stone'],
-] as const
+const categories = STORE_CATEGORIES
+const stones = STORE_STONES
+const origins = STORE_ORIGINS
+const materials = STORE_MATERIALS
 
 const priceRanges = [
   ['under-250', 'Under $250'],
@@ -103,7 +75,9 @@ function FilterSelect({
       >
         <option value="">Any</option>
         {options.map(([optionValue, optionLabel]) => (
-          <option key={optionValue} value={optionValue}>{optionLabel}</option>
+          <option key={optionValue} value={optionValue}>
+            {optionLabel}
+          </option>
         ))}
       </select>
     </label>
@@ -118,9 +92,15 @@ function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: numb
   )
 
   return (
-    <nav aria-label="Product pages" className="mt-14 flex flex-wrap items-center justify-center gap-2">
+    <nav
+      aria-label="Product pages"
+      className="mt-14 flex flex-wrap items-center justify-center gap-2"
+    >
       {query.page > 1 ? (
-        <Link className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline" href={storeUrl(query, query.page - 1)}>
+        <Link
+          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline"
+          href={storeUrl(query, query.page - 1)}
+        >
           Previous
         </Link>
       ) : null}
@@ -129,14 +109,20 @@ function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: numb
         const previousPage = pages[index - 1]
         return (
           <span key={page} className="contents">
-            {previousPage && page - previousPage > 1 ? <span aria-hidden="true" className="px-1">…</span> : null}
+            {previousPage && page - previousPage > 1 ? (
+              <span aria-hidden="true" className="px-1">
+                …
+              </span>
+            ) : null}
             <Link
               href={storeUrl(query, page)}
               aria-current={page === query.page ? 'page' : undefined}
               aria-label={`Page ${page}`}
-              className={page === query.page
-                ? 'flex min-h-11 min-w-11 items-center justify-center rounded-full bg-charcoal font-sans text-sm font-semibold text-cream'
-                : 'flex min-h-11 min-w-11 items-center justify-center rounded-full font-sans text-sm font-semibold hover:bg-warm-grey/45'}
+              className={
+                page === query.page
+                  ? 'flex min-h-11 min-w-11 items-center justify-center rounded-full bg-charcoal font-sans text-sm font-semibold text-cream'
+                  : 'flex min-h-11 min-w-11 items-center justify-center rounded-full font-sans text-sm font-semibold hover:bg-warm-grey/45'
+              }
             >
               {page}
             </Link>
@@ -145,7 +131,10 @@ function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: numb
       })}
 
       {query.page < totalPages ? (
-        <Link className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline" href={storeUrl(query, query.page + 1)}>
+        <Link
+          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline"
+          href={storeUrl(query, query.page + 1)}
+        >
           Next
         </Link>
       ) : null}
@@ -162,14 +151,17 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
       <header className="border-b border-warm-grey/60 bg-cream px-5 py-14 sm:px-8 sm:py-20">
         <div className="mx-auto grid max-w-[92rem] gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
-            <p className="mb-5 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">The collection</p>
+            <p className="mb-5 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
+              The collection
+            </p>
             <h1 className="max-w-[12ch] font-serif text-[clamp(3.1rem,7vw,7.25rem)] leading-[0.87] tracking-[-0.045em] text-charcoal">
               Find the opal that stays with you.
             </h1>
           </div>
           <div className="max-w-xl lg:pb-2">
-            <p className="font-sans text-base leading-7 text-charcoal/68 sm:text-lg sm:leading-8">
-              One-of-a-kind Australian stones and finished pieces, photographed individually. Use the details you know, or browse slowly.
+            <p className="text-charcoal/68 font-sans text-base leading-7 sm:text-lg sm:leading-8">
+              One-of-a-kind Australian stones and finished pieces, photographed individually. Use
+              the details you know, or browse slowly.
             </p>
             <ul className="mt-7 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-warm-grey/70 pt-5 font-sans text-xs font-semibold text-charcoal/65 sm:grid-cols-3">
               <li>Origin disclosed</li>
@@ -182,8 +174,15 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
 
       <section className="bg-[#f8f5ee] px-5 py-10 sm:px-8 sm:py-14" aria-label="Opal collection">
         <div className="mx-auto max-w-[92rem]">
-          <form action="/store" method="get" role="search" className="grid gap-3 border-b border-warm-grey/70 pb-8 sm:grid-cols-[1fr_auto]">
-            <label className="sr-only" htmlFor="store-search">Search the collection</label>
+          <form
+            action="/store"
+            method="get"
+            role="search"
+            className="grid gap-3 border-b border-warm-grey/70 pb-8 sm:grid-cols-[1fr_auto]"
+          >
+            <label className="sr-only" htmlFor="store-search">
+              Search the collection
+            </label>
             <input
               id="store-search"
               type="search"
@@ -193,7 +192,10 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
               className="min-h-12 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-base text-charcoal outline-none placeholder:text-charcoal/40 focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
             />
             <HiddenQueryFields query={query} omit={['search', 'page']} />
-            <button className="min-h-12 rounded-sm bg-charcoal px-7 font-sans text-sm font-semibold text-cream hover:bg-charcoal/88 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2" type="submit">
+            <button
+              className="hover:bg-charcoal/88 min-h-12 rounded-sm bg-charcoal px-7 font-sans text-sm font-semibold text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+              type="submit"
+            >
               Search
             </button>
           </form>
@@ -203,7 +205,9 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
               <details className="group lg:hidden">
                 <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between border-y border-warm-grey/70 font-sans text-sm font-semibold">
                   Refine collection
-                  <span aria-hidden="true" className="text-lg group-open:rotate-45">+</span>
+                  <span aria-hidden="true" className="text-lg group-open:rotate-45">
+                    +
+                  </span>
                 </summary>
                 <FilterForm query={query} className="py-6" />
               </details>
@@ -217,18 +221,35 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
               <h2 className="sr-only">Current collection</h2>
               <div className="mb-7 flex flex-col gap-4 border-b border-warm-grey/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
                 <p className="font-sans text-sm text-charcoal/65" aria-live="polite">
-                  {totalDocs === 0 ? 'No pieces found' : `Showing ${start}–${end} of ${totalDocs} pieces`}
+                  {totalDocs === 0
+                    ? 'No pieces found'
+                    : `Showing ${start}–${end} of ${totalDocs} pieces`}
                 </p>
                 <form action="/store" method="get" className="flex items-center gap-3">
                   <HiddenQueryFields query={query} omit={['sort', 'page']} />
-                  <label htmlFor="store-sort" className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55">Sort</label>
-                  <select id="store-sort" name="sort" defaultValue={query.sort} className="min-h-11 rounded-sm border border-warm-grey/70 bg-cream px-3 font-sans text-sm outline-none focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30">
+                  <label
+                    htmlFor="store-sort"
+                    className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55"
+                  >
+                    Sort
+                  </label>
+                  <select
+                    id="store-sort"
+                    name="sort"
+                    defaultValue={query.sort}
+                    className="min-h-11 rounded-sm border border-warm-grey/70 bg-cream px-3 font-sans text-sm outline-none focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
+                  >
                     <option value="featured">Selected first</option>
                     <option value="newest">Newest</option>
                     <option value="price-low">Price, low to high</option>
                     <option value="price-high">Price, high to low</option>
                   </select>
-                  <button type="submit" className="min-h-11 border-b border-charcoal font-sans text-sm font-semibold">Apply</button>
+                  <button
+                    type="submit"
+                    className="min-h-11 border-b border-charcoal font-sans text-sm font-semibold"
+                  >
+                    Apply
+                  </button>
                 </form>
               </div>
 
@@ -250,11 +271,22 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
                 <div className="border-y border-warm-grey/70 py-20 text-center">
                   <p className="font-serif text-4xl">Nothing matches yet.</p>
                   <p className="mx-auto mt-4 max-w-md font-sans text-sm leading-6 text-charcoal/65">
-                    Try fewer details, browse every available piece, or ask us to help source something particular.
+                    Try fewer details, browse every available piece, or ask us to help source
+                    something particular.
                   </p>
                   <div className="mt-7 flex flex-wrap justify-center gap-3">
-                    <Link href="/store" className="min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream">Clear filters</Link>
-                    <Link href="/contact?subject=opal-finder" className="min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold">Ask for help</Link>
+                    <Link
+                      href="/store"
+                      className="min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream"
+                    >
+                      Clear filters
+                    </Link>
+                    <Link
+                      href="/contact?subject=opal-finder"
+                      className="min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold"
+                    >
+                      Ask for help
+                    </Link>
                   </div>
                 </div>
               )}
@@ -279,17 +311,43 @@ function FilterForm({ query, className }: { query: StoreQuery; className?: strin
       <FilterSelect label="Setting" name="material" value={query.material} options={materials} />
       <FilterSelect label="Price" name="price" value={query.price} options={priceRanges} />
       <label className="flex min-h-11 items-center gap-3 border-y border-warm-grey/60 py-3 font-sans text-sm text-charcoal/75">
-        <input type="checkbox" name="availability" value="all" defaultChecked={query.availability === 'all'} className="h-4 w-4 accent-charcoal" />
+        <input
+          type="checkbox"
+          name="availability"
+          value="all"
+          defaultChecked={query.availability === 'all'}
+          className="h-4 w-4 accent-charcoal"
+        />
         Include collected pieces
       </label>
       <div className="flex gap-3 pt-2">
-        <button type="submit" className="min-h-11 flex-1 rounded-sm bg-charcoal px-5 font-sans text-sm font-semibold text-cream">Apply</button>
-        {hasAnyFilter(query) ? <Link href="/store" className="min-h-11 px-3 py-3 font-sans text-sm font-semibold underline underline-offset-4">Clear</Link> : null}
+        <button
+          type="submit"
+          className="min-h-11 flex-1 rounded-sm bg-charcoal px-5 font-sans text-sm font-semibold text-cream"
+        >
+          Apply
+        </button>
+        {hasAnyFilter(query) ? (
+          <Link
+            href="/store"
+            className="min-h-11 px-3 py-3 font-sans text-sm font-semibold underline underline-offset-4"
+          >
+            Clear
+          </Link>
+        ) : null}
       </div>
     </form>
   )
 }
 
 function hasAnyFilter(query: StoreQuery): boolean {
-  return Boolean(query.search || query.category || query.stone || query.origin || query.material || query.price || query.availability === 'all')
+  return Boolean(
+    query.search ||
+    query.category ||
+    query.stone ||
+    query.origin ||
+    query.material ||
+    query.price ||
+    query.availability === 'all'
+  )
 }

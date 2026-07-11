@@ -5,6 +5,7 @@ import {
   mapWooCustomer,
   mapWooOrder,
   mapWooPrivateProduct,
+  wooOrderCommerceContribution,
   type LegacyCustomerData,
   type LegacyProductData,
 } from '@/lib/woocommerce/private-commerce'
@@ -294,16 +295,11 @@ async function importCommerce(): Promise<void> {
   const customersByEmail = new Map(
     existingCustomers.map((customer) => [customer.email.trim().toLowerCase(), customer])
   )
-  const registeredCustomerStats = new Map<string, { totalOrders: number; totalSpent: number }>()
   const touchedCustomerEmails = new Set<string>()
   const customerCounts: ImportCounts = { created: 0, updated: 0, archived: 0, skipped: 0 }
 
   for (const sourceCustomer of snapshot.customers) {
     const mapped = mapWooCustomer(sourceCustomer)
-    registeredCustomerStats.set(mapped.email, {
-      totalOrders: mapped.totalOrders,
-      totalSpent: mapped.totalSpent,
-    })
     const byLegacyId = customersByLegacyId.get(sourceCustomer.id)
     const byEmail = customersByEmail.get(mapped.email)
     if (byLegacyId && byEmail && byLegacyId.id !== byEmail.id) {
@@ -360,31 +356,36 @@ async function importCommerce(): Promise<void> {
     )
     if (mappedOrder.customer.email.endsWith('@legacy.invalid')) continue
     const previous = orderMetrics.get(mappedOrder.customer.email)
-    const paidAmount = sourceOrder.date_paid_gmt ? mappedOrder.total : 0
-    const refundedAmount = mappedOrder.legacyRefunds.reduce((sum, refund) => sum + refund.amount, 0)
-    const lastOrderDate =
-      !previous || mappedOrder.orderPlacedAt > previous.lastOrderDate
-        ? mappedOrder.orderPlacedAt
-        : previous.lastOrderDate
+    const contribution = wooOrderCommerceContribution(
+      sourceOrder,
+      snapshot.refundsByOrderId.get(sourceOrder.id) ?? []
+    )
+    const isLatestOrder = !previous || mappedOrder.orderPlacedAt > previous.lastOrderDate
+    const lastOrderDate = isLatestOrder ? mappedOrder.orderPlacedAt : previous.lastOrderDate
     orderMetrics.set(mappedOrder.customer.email, {
-      name: mappedOrder.customer.name,
-      ...(mappedOrder.customer.phone ? { phone: mappedOrder.customer.phone } : {}),
-      totalOrders: (previous?.totalOrders ?? 0) + 1,
-      totalSpent: (previous?.totalSpent ?? 0) + Math.max(0, paidAmount - refundedAmount),
+      name: isLatestOrder ? mappedOrder.customer.name : previous.name,
+      ...(isLatestOrder
+        ? mappedOrder.customer.phone
+          ? { phone: mappedOrder.customer.phone }
+          : {}
+        : previous.phone
+          ? { phone: previous.phone }
+          : {}),
+      totalOrders: (previous?.totalOrders ?? 0) + contribution.totalOrders,
+      totalSpent: (previous?.totalSpent ?? 0) + contribution.totalSpent,
       lastOrderDate,
-      defaultAddress: mappedOrder.shippingAddress,
+      defaultAddress: isLatestOrder ? mappedOrder.shippingAddress : previous.defaultAddress,
     })
   }
   for (const [email, guest] of orderMetrics) {
     const existing = customersByEmail.get(email)
-    const registered = registeredCustomerStats.get(email)
     const guestData = {
       email,
       name: guest.name,
       phone: guest.phone,
       source: 'import' as const,
-      totalOrders: guest.totalOrders + (registered?.totalOrders ?? 0),
-      totalSpent: guest.totalSpent + (registered?.totalSpent ?? 0),
+      totalOrders: guest.totalOrders,
+      totalSpent: guest.totalSpent,
       lastOrderDate: guest.lastOrderDate,
       defaultAddress: guest.defaultAddress,
       tags: [{ tag: 'WooCommerce guest' }],
