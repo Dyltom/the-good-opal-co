@@ -8,7 +8,7 @@ export const Enquiries: CollectionConfig = {
     useAsTitle: 'reference',
     defaultColumns: ['reference', 'type', 'status', 'name', 'email', 'submittedAt'],
     group: 'CRM',
-    description: 'Website enquiries and custom design leads',
+    description: 'Website enquiries, custom design leads, and course interest',
   },
   access: {
     read: isAdmin,
@@ -37,6 +37,7 @@ export const Enquiries: CollectionConfig = {
         { label: 'Order support', value: 'order-support' },
         { label: 'Return or exchange', value: 'returns' },
         { label: 'Wholesale or trade', value: 'wholesale' },
+        { label: 'Course or workshop interest', value: 'course-interest' },
       ],
     },
     {

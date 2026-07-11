@@ -46,6 +46,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Posts collection may not exist
   }
 
+  let courses: Array<{ slug: string; updatedAt: string }> = []
+  try {
+    const { docs } = await payload.find({
+      collection: 'courses',
+      where: { status: { equals: 'published' } },
+      limit: 1000,
+      select: { slug: true, updatedAt: true },
+    })
+    courses = docs as Array<{ slug: string; updatedAt: string }>
+  } catch {
+    // Courses collection may not exist during a rolling migration.
+  }
+
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -65,6 +78,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/courses`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
     },
     {
       url: `${BASE_URL}/faq`,
@@ -127,5 +146,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...productPages, ...postPages]
+  const coursePages: MetadataRoute.Sitemap = courses.map((course) => ({
+    url: `${BASE_URL}/courses/${course.slug}`,
+    lastModified: new Date(course.updatedAt),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }))
+
+  return [...staticPages, ...productPages, ...postPages, ...coursePages]
 }

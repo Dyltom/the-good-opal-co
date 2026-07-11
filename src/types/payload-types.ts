@@ -75,6 +75,7 @@ export interface Config {
     orders: Order;
     customers: Customer;
     enquiries: Enquiry;
+    courses: Course;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +91,7 @@ export interface Config {
     orders: OrdersSelect<false> | OrdersSelect<true>;
     customers: CustomersSelect<false> | CustomersSelect<true>;
     enquiries: EnquiriesSelect<false> | EnquiriesSelect<true>;
+    courses: CoursesSelect<false> | CoursesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -635,7 +637,7 @@ export interface Customer {
   createdAt: string;
 }
 /**
- * Website enquiries and custom design leads
+ * Website enquiries, custom design leads, and course interest
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "enquiries".
@@ -650,7 +652,8 @@ export interface Enquiry {
     | 'product-question'
     | 'order-support'
     | 'returns'
-    | 'wholesale';
+    | 'wholesale'
+    | 'course-interest';
   status:
     | 'new'
     | 'reviewing'
@@ -692,6 +695,73 @@ export interface Enquiry {
    * Private staff notes
    */
   internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Public course outlines and interest status. Lesson access is managed separately.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses".
+ */
+export interface Course {
+  id: number;
+  /**
+   * Stable LearnDash course ID when imported
+   */
+  legacyWordPressId?: number | null;
+  title: string;
+  /**
+   * Permanent public URL identifier
+   */
+  slug: string;
+  summary: string;
+  /**
+   * Public course overview. Do not include protected lesson content.
+   */
+  introduction: string;
+  featuredImage?: (number | null) | Media;
+  status: 'draft' | 'published' | 'archived';
+  publishedAt?: string | null;
+  format: 'online' | 'live-online' | 'in-person';
+  level: 'beginner' | 'all-levels' | 'intermediate';
+  duration?: string | null;
+  availability: 'register-interest' | 'coming-soon' | 'closed';
+  instructor: {
+    name: string;
+    role?: string | null;
+    bio?: string | null;
+  };
+  curriculum: {
+    title: string;
+    summary: string;
+    /**
+     * One public topic per line
+     */
+    topics?: string | null;
+    id?: string | null;
+  }[];
+  audience?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  outcomes?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  tenantId: string;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -750,6 +820,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'enquiries';
         value: number | Enquiry;
+      } | null)
+    | ({
+        relationTo: 'courses';
+        value: number | Course;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1124,6 +1198,61 @@ export interface EnquiriesSelect<T extends boolean = true> {
   customerEmailSentAt?: T;
   emailDeliveryError?: T;
   internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses_select".
+ */
+export interface CoursesSelect<T extends boolean = true> {
+  legacyWordPressId?: T;
+  title?: T;
+  slug?: T;
+  summary?: T;
+  introduction?: T;
+  featuredImage?: T;
+  status?: T;
+  publishedAt?: T;
+  format?: T;
+  level?: T;
+  duration?: T;
+  availability?: T;
+  instructor?:
+    | T
+    | {
+        name?: T;
+        role?: T;
+        bio?: T;
+      };
+  curriculum?:
+    | T
+    | {
+        title?: T;
+        summary?: T;
+        topics?: T;
+        id?: T;
+      };
+  audience?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  outcomes?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  tenantId?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

@@ -17,7 +17,7 @@ import {
 export const metadata: Metadata = {
   title: 'Contact | The Good Opal Co',
   description:
-    'Ask about an Australian opal, a custom piece, an order, or a private product viewing.',
+    'Ask about an Australian opal, custom piece, order, course, or private product viewing.',
   alternates: { canonical: '/contact' },
 }
 
@@ -32,6 +32,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
   const initialMessage = cleanContactMessage(query.message)
   const initialDesignConfiguration = cleanDesignConfiguration(query.design)
   const isCustomIntent = initialInquiry === 'custom-design'
+  const isCourseIntent = initialInquiry === 'course-interest'
 
   return (
     <MarketingShell>
@@ -48,7 +49,9 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           <p className="max-w-xl text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
             {isCustomIntent
               ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
-              : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
+              : isCourseIntent
+                ? 'Tell us what you want to learn and your current experience. We will share confirmed access and course details when they are ready.'
+                : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
           </p>
         </div>
       </section>
@@ -61,10 +64,13 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
         <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <h2 className="font-serif text-3xl">A useful first message</h2>
+            <h2 className="font-serif text-3xl">
+              {isCourseIntent ? 'What helps us reply' : 'A useful first message'}
+            </h2>
             <p className="mt-4 max-w-md leading-7 text-charcoal-light">
-              Include a product name or link, your approximate budget, and any date that matters.
-              Leave anything unknown blank.
+              {isCourseIntent
+                ? 'Share your current experience, the cutting method you want to learn, and any tools you already use. Leave anything unknown blank.'
+                : 'Include a product name or link, your approximate budget, and any date that matters. Leave anything unknown blank.'}
             </p>
 
             <div className="mt-9 border-y border-warm-grey/60 py-6">

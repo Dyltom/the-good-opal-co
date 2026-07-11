@@ -35,6 +35,7 @@ export function ContactForm({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
@@ -52,6 +53,7 @@ export function ContactForm({
       website: '',
     },
   })
+  const isCourseIntent = watch('inquiryType') === 'course-interest'
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
@@ -162,58 +164,67 @@ export function ContactForm({
           {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
         </div>
 
-        <div>
-          <Label htmlFor="orderNumber">
-            Order Number <span className="text-gray-500">(if applicable)</span>
-          </Label>
-          <Input
-            id="orderNumber"
-            {...register('orderNumber')}
-            placeholder="e.g., #1234"
-            className="mt-1"
-            disabled={isSubmitting}
-          />
-          {errors.orderNumber && (
-            <p className="mt-1 text-sm text-red-500">{errors.orderNumber.message}</p>
-          )}
-        </div>
+        {!isCourseIntent ? (
+          <div>
+            <Label htmlFor="orderNumber">
+              Order Number <span className="text-gray-500">(if applicable)</span>
+            </Label>
+            <Input
+              id="orderNumber"
+              {...register('orderNumber')}
+              placeholder="e.g., #1234"
+              className="mt-1"
+              disabled={isSubmitting}
+            />
+            {errors.orderNumber && (
+              <p className="mt-1 text-sm text-red-500">{errors.orderNumber.message}</p>
+            )}
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <div>
+        <div className={isCourseIntent ? 'sm:col-span-2' : undefined}>
           <Label htmlFor="product">
-            Product or piece <span className="text-gray-500">(optional)</span>
+            Course, product, or piece <span className="text-gray-500">(optional)</span>
           </Label>
           <Input
             id="product"
             {...register('product')}
-            placeholder="Name, link, or idea"
+            placeholder="Course, product, link, or idea"
             className="mt-1"
             disabled={isSubmitting}
           />
         </div>
-        <div>
-          <Label htmlFor="budget">
-            Approximate budget <span className="text-gray-500">(optional)</span>
-          </Label>
-          <Input
-            id="budget"
-            {...register('budget')}
-            placeholder="e.g. AUD $1,500–$2,500"
-            className="mt-1"
-            disabled={isSubmitting}
-          />
-        </div>
+        {!isCourseIntent ? (
+          <div>
+            <Label htmlFor="budget">
+              Approximate budget <span className="text-gray-500">(optional)</span>
+            </Label>
+            <Input
+              id="budget"
+              {...register('budget')}
+              placeholder="e.g. AUD $1,500–$2,500"
+              className="mt-1"
+              disabled={isSubmitting}
+            />
+          </div>
+        ) : null}
       </div>
 
       <div>
         <Label htmlFor="timeline">
-          When do you need it? <span className="text-gray-500">(optional)</span>
+          {isCourseIntent ? 'When would you like to begin?' : 'When do you need it?'}{' '}
+          <span className="text-gray-500">(optional)</span>
         </Label>
         <Input
           id="timeline"
           {...register('timeline')}
-          placeholder="A date, occasion, or no rush"
+          placeholder={
+            isCourseIntent
+              ? 'Flexible, soon, or a particular month'
+              : 'A date, occasion, or no rush'
+          }
           className="mt-1"
           disabled={isSubmitting}
         />
@@ -226,7 +237,11 @@ export function ContactForm({
         <Textarea
           id="message"
           {...register('message')}
-          placeholder="Please tell us how we can help you..."
+          placeholder={
+            isCourseIntent
+              ? 'Your experience, preferred cutting method, and tools you already use'
+              : 'Please tell us how we can help you...'
+          }
           rows={6}
           className="mt-1"
           disabled={isSubmitting}
@@ -242,6 +257,8 @@ export function ContactForm({
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Sending...
           </>
+        ) : isCourseIntent ? (
+          'Register Interest'
         ) : (
           'Send Message'
         )}

@@ -11,7 +11,7 @@ describe('shared storefront component system', () => {
 
     expect(siteNavigation).toContain('getNavigationProps')
     expect(navigationConstants).toContain("{ href: '/services', label: 'Custom' }")
-    expect(navigationConstants).not.toContain("href: '/courses'")
+    expect(navigationConstants).toContain("{ href: '/courses', label: 'Courses' }")
   })
 
   test('marketing shell owns navigation, main semantics, and footer', () => {
@@ -28,6 +28,7 @@ describe('shared storefront component system', () => {
     'cart/page.tsx',
     'checkout/page.tsx',
     'contact/page.tsx',
+    'courses/page.tsx',
     'faq/page.tsx',
     'returns/page.tsx',
     'services/page.tsx',

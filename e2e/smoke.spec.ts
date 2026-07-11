@@ -15,6 +15,7 @@ test('core public routes render without server or browser errors', async ({ page
     '/returns',
     '/order-tracking',
     '/blog',
+    '/courses',
     '/legal/privacy',
     '/legal/terms',
     '/legal/cookies',
@@ -60,7 +61,9 @@ test('health, robots, sitemap, redirects, and not-found behavior are coherent', 
   const robots = await page.request.get('/robots.txt')
   expect(robots.status()).toBe(200)
   expect(await robots.text()).not.toContain('/_next/')
-  expect((await page.request.get('/sitemap.xml')).status()).toBe(200)
+  const sitemap = await page.request.get('/sitemap.xml')
+  expect(sitemap.status()).toBe(200)
+  expect(await sitemap.text()).toContain('/courses')
 
   await page.goto('/account')
   await expect(page).toHaveURL(/\/order-tracking$/)
@@ -69,6 +72,24 @@ test('health, robots, sitemap, redirects, and not-found behavior are coherent', 
 
   const missing = await page.goto('/definitely-not-a-real-page')
   expect(missing?.status()).toBe(404)
+})
+
+test('course interest keeps course context through to contact', async ({ page }) => {
+  await page.goto('/courses', { waitUntil: 'domcontentloaded' })
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Learn what the stone can become.' })
+  ).toBeVisible()
+  const courseLink = page.getByRole('link', { name: 'Explore the curriculum' })
+  expect(await courseLink.count()).toBeGreaterThan(0)
+  await courseLink.first().click()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Opal Cutting')
+  await page.getByRole('link', { name: 'Register my interest' }).click()
+  await expect(page).toHaveURL(/subject=course-interest/)
+  await expect(page.getByLabel('What can we help with? *')).toHaveValue('course-interest')
+  await expect(page.getByLabel('Course, product, or piece (optional)')).toHaveValue(
+    'The Complete Opal Cutting & Valuation Course'
+  )
+  await expect(page.getByLabel('Message *')).toHaveValue(/register my interest/i)
 })
 
 test('contact form exposes validation and accessible field names', async ({ page }) => {

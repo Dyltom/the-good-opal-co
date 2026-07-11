@@ -25,6 +25,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   { href: '/store', label: 'Shop' },
   { href: '/services', label: 'Custom' },
   { href: '/blog', label: 'Learn' },
+  { href: '/courses', label: 'Courses' },
   { href: '/about', label: 'Our story' },
 ]
 

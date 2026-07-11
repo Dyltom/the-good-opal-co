@@ -18,6 +18,7 @@ import { Products } from './payload/collections/Products.ts'
 import { Orders } from './payload/collections/Orders.ts'
 import { Customers } from './payload/collections/Customers.ts'
 import { Enquiries } from './payload/collections/Enquiries.ts'
+import { Courses } from './payload/collections/Courses.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -121,7 +122,7 @@ export default buildConfig({
       beforeNavLinks: [],
     },
   },
-  collections: [Users, Media, Posts, Categories, Products, Orders, Customers, Enquiries],
+  collections: [Users, Media, Posts, Categories, Products, Orders, Customers, Enquiries, Courses],
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,
@@ -155,11 +156,11 @@ export default buildConfig({
     }),
     // SEO plugin - adds meta fields to collections
     seoPlugin({
-      collections: ['posts', 'products'],
+      collections: ['posts', 'products', 'courses'],
       uploadsCollection: 'media',
       generateTitle: ({ doc }) => `${doc?.title || doc?.name || 'Page'} | The Good Opal Co`,
       generateDescription: ({ doc }) =>
-        doc?.description || doc?.excerpt || 'Premium Australian opal jewelry',
+        doc?.summary || doc?.description || doc?.excerpt || 'Australian opals and jewellery',
     }),
     // NOTE: Ecommerce plugin removed - using custom Products collection with opal-specific fields
     // We have custom cart/checkout with Stripe already working

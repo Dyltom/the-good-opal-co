@@ -10,6 +10,8 @@ describe('contact lead intent', () => {
   test('preserves custom and product-viewing intent from links', () => {
     expect(resolveInquiryType('custom-design')).toBe('custom-design')
     expect(resolveInquiryType('virtual-viewing')).toBe('virtual-viewing')
+    expect(resolveInquiryType('course-interest')).toBe('course-interest')
+    expect(resolveInquiryType('workshop')).toBe('course-interest')
     expect(resolveInquiryType('unknown-campaign')).toBe('general')
   })
 
@@ -51,5 +53,17 @@ describe('contact lead intent', () => {
         message: 'Too short',
       }).success
     ).toBe(false)
+  })
+
+  test('accepts a course interest lead without payment or enrollment claims', () => {
+    expect(
+      contactSchema.safeParse({
+        name: 'Jamie Opal',
+        email: 'jamie@example.com',
+        inquiryType: 'course-interest',
+        product: 'The Complete Opal Cutting & Valuation Course',
+        message: 'I am a beginner and would like to learn the sandpaper cutting method.',
+      }).success
+    ).toBe(true)
   })
 })

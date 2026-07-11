@@ -6,6 +6,7 @@ export const inquiryTypes = [
   'order-support',
   'returns',
   'wholesale',
+  'course-interest',
 ] as const
 
 export type InquiryType = (typeof inquiryTypes)[number]
@@ -18,6 +19,7 @@ export const inquiryLabels: Record<InquiryType, string> = {
   'order-support': 'Order support',
   returns: 'Return or exchange',
   wholesale: 'Wholesale or trade',
+  'course-interest': 'Course or workshop interest',
 }
 
 const inquiryAliases: Record<string, InquiryType> = {
@@ -35,6 +37,11 @@ const inquiryAliases: Record<string, InquiryType> = {
   return: 'returns',
   returns: 'returns',
   wholesale: 'wholesale',
+  course: 'course-interest',
+  courses: 'course-interest',
+  workshop: 'course-interest',
+  classes: 'course-interest',
+  'course-interest': 'course-interest',
   general: 'general',
 }
 
