@@ -67,7 +67,7 @@ describe('deployment config', () => {
     const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
 
     expect(config.buildCommand).toBe(
-      'pnpm payload generate:importmap && pnpm payload migrate && WORDPRESS_PRODUCT_IMAGES_APPLY=true node --import tsx src/scripts/import-wordpress-product-images.ts && pnpm build'
+      'pnpm payload generate:importmap && pnpm payload migrate && pnpm build'
     )
     expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
   })
