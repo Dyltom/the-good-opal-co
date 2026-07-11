@@ -20,12 +20,15 @@ export function Navigation({
   sticky = true,
   className,
 }: NavigationProps) {
+  const [hydrated, setHydrated] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const menuRef = useFocusTrap<HTMLDivElement>({
     active: mobileMenuOpen,
     onEscape: () => setMobileMenuOpen(false),
   })
+
+  useEffect(() => setHydrated(true), [])
 
   useEffect(() => {
     if (!mobileMenuOpen) return
@@ -101,9 +104,7 @@ export function Navigation({
           </div>
 
           <div className="ml-auto hidden w-full max-w-[19rem] xl:block">
-            <Suspense
-              fallback={<div aria-hidden="true" className="h-11 rounded-md bg-white/65" />}
-            >
+            <Suspense fallback={<div aria-hidden="true" className="h-11 rounded-md bg-white/65" />}>
               <SearchInput variant="default" />
             </Suspense>
           </div>
@@ -122,7 +123,8 @@ export function Navigation({
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-charcoal transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible lg:hidden"
+              disabled={!hydrated}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-charcoal transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-wait disabled:opacity-60 lg:hidden"
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-navigation"
               aria-label="Open navigation"

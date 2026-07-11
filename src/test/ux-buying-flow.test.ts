@@ -174,6 +174,8 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('role="dialog"')
     expect(source).toContain('aria-modal="true"')
     expect(source).toContain("document.body.style.overflow = 'hidden'")
+    expect(source).toContain('disabled={!hydrated}')
+    expect(source).toContain('useEffect(() => setHydrated(true), [])')
   })
 
   test('product detail exposes a safe-area mobile purchase bar', () => {
