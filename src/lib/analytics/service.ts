@@ -4,6 +4,7 @@
  */
 
 import type { AnalyticsService, GtmEvent } from './types'
+import { parseCookiePreferences } from '@/lib/cookie-consent'
 
 declare global {
   interface Window {
@@ -54,7 +55,7 @@ export class GoogleAnalyticsService implements AnalyticsService {
 
     try {
       window.gtag?.('config', this.measurementId, {
-        page_path: path
+        page_path: path,
       })
       this.logDebug('Page view tracked', path)
     } catch (error) {
@@ -63,9 +64,14 @@ export class GoogleAnalyticsService implements AnalyticsService {
   }
 
   private isEnabled(): boolean {
-    return typeof window !== 'undefined' &&
-           !!window.gtag &&
-           !!this.measurementId
+    if (typeof window === 'undefined' || !window.gtag || !this.measurementId) return false
+    try {
+      return (
+        parseCookiePreferences(window.localStorage.getItem('cookie-consent'))?.analytics === true
+      )
+    } catch {
+      return false
+    }
   }
 
   private logDebug(message: string, data?: unknown): void {
@@ -85,12 +91,10 @@ export class MockAnalyticsService implements AnalyticsService {
 
   trackEvent(event: GtmEvent): void {
     this.events.push(event)
-    console.log('[Mock Analytics] Event tracked:', event)
   }
 
   pageView(path: string): void {
     this.pageViews.push(path)
-    console.log('[Mock Analytics] Page view tracked:', path)
   }
 
   getEvents(): GtmEvent[] {
@@ -107,6 +111,12 @@ export class MockAnalyticsService implements AnalyticsService {
   }
 }
 
+export class NoopAnalyticsService implements AnalyticsService {
+  trackEvent(_event: GtmEvent): void {}
+
+  pageView(_path: string): void {}
+}
+
 /**
  * Factory function for creating analytics service
  * Dependency Inversion: Depends on abstraction (AnalyticsService)
@@ -115,9 +125,10 @@ export function createAnalyticsService(
   measurementId?: string,
   isDevelopment = false
 ): AnalyticsService {
-  if (!measurementId || isDevelopment) {
+  if (isDevelopment) {
     return new MockAnalyticsService()
   }
+  if (!measurementId) return new NoopAnalyticsService()
 
   return new GoogleAnalyticsService(measurementId, isDevelopment)
 }

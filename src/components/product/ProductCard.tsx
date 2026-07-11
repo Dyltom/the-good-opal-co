@@ -58,7 +58,7 @@ export function ProductCard({
   product,
   index = 0,
   variant = 'default',
-  showWishlist = true,
+  showWishlist = false,
   showMetadata = false,
   animated = true,
   darkBackground = false,

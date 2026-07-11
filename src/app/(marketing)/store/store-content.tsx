@@ -3,7 +3,6 @@ import { ProductCard } from '@/components/product/ProductCard'
 import {
   PRODUCTS_PER_PAGE,
   STORE_CATEGORIES,
-  STORE_MATERIALS,
   STORE_ORIGINS,
   STORE_STONES,
   storeQueryParams,
@@ -37,7 +36,6 @@ interface StoreContentProps {
 const categories = STORE_CATEGORIES
 const stones = STORE_STONES
 const origins = STORE_ORIGINS
-const materials = STORE_MATERIALS
 
 const priceRanges = [
   ['under-250', 'Under $250'],
@@ -188,7 +186,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
               type="search"
               name="search"
               defaultValue={query.search}
-              placeholder="Search by stone, origin, setting or SKU"
+              placeholder="Search by product name or SKU"
               className="min-h-12 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-base text-charcoal outline-none placeholder:text-charcoal/40 focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
             />
             <HiddenQueryFields query={query} omit={['search', 'page']} />
@@ -308,7 +306,6 @@ function FilterForm({ query, className }: { query: StoreQuery; className?: strin
       <FilterSelect label="Piece" name="category" value={query.category} options={categories} />
       <FilterSelect label="Stone" name="stone" value={query.stone} options={stones} />
       <FilterSelect label="Origin" name="origin" value={query.origin} options={origins} />
-      <FilterSelect label="Setting" name="material" value={query.material} options={materials} />
       <FilterSelect label="Price" name="price" value={query.price} options={priceRanges} />
       <label className="flex min-h-11 items-center gap-3 border-y border-warm-grey/60 py-3 font-sans text-sm text-charcoal/75">
         <input

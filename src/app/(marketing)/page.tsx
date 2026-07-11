@@ -111,7 +111,7 @@ const discoveryPaths = [
   {
     eyebrow: 'Collector stones',
     title: 'For the detail-led collector.',
-    copy: 'Browse loose and raw opals by colour, type, origin, dimensions, and availability.',
+    copy: 'Browse loose and raw opals by colour, type, origin, price, and availability.',
     href: '/store?category=raw-opals',
     cta: 'Browse collector stones',
     image: '/images/categories/opals.jpg',

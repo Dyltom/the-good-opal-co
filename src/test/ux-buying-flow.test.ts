@@ -16,10 +16,12 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards expose purchase actions on touch and keyboard focus', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('opacity-100 sm:opacity-0')
+    expect(source).toContain('opacity-100')
+    expect(source).toContain('sm:opacity-0')
     expect(source).toContain('sm:group-focus-within:opacity-100')
     expect(source).toContain('Quick add')
     expect(source).toContain('aria-pressed={isWishlisted}')
+    expect(source).toContain('showWishlist = false')
     expect(source).toContain('priority={index < 4}')
     expect(source).toContain('disabled={product.stock === 0}')
     expect(source).not.toContain('tracking-[0.3em]')
@@ -33,6 +35,20 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('Showing ${start}–${end} of ${totalDocs} pieces')
     expect(source).toContain('products.map((product, index)')
     expect(source).toContain('index={index}')
+  })
+
+  test('search suggestions use typed product and filter destinations', () => {
+    const actionSource = read('src/app/(marketing)/search/actions.ts')
+    const inputSource = read('src/components/search/SearchInput.tsx')
+    const storeSource = read('src/app/(marketing)/store/store-content.tsx')
+
+    expect(actionSource).toContain("href: '/store?category=opal-rings'")
+    expect(actionSource).toContain("href: '/store?category=raw-opals'")
+    expect(actionSource).toContain("href: '/store?stone=black-opal'")
+    expect(actionSource).toContain('`/store/${encodeURIComponent(product.slug)}`')
+    expect(inputSource).toContain('router.push(suggestion.href)')
+    expect(storeSource).toContain('placeholder="Search by product name or SKU"')
+    expect(storeSource).not.toContain('label="Setting" name="material"')
   })
 
   test('store discovery controls use accessible GET forms and native mobile disclosure', () => {
@@ -63,7 +79,8 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('max-h-[92dvh]')
     expect(source).toContain('sticky bottom-0')
     expect(source).toContain('env(safe-area-inset-bottom)')
-    expect(source).toContain('min-h-[44px] min-w-[44px]')
+    expect(source).toContain('min-h-[44px]')
+    expect(source).toContain('min-w-[44px]')
     expect(source).toContain('h-11 w-11 min-h-[44px] min-w-[44px]')
     expect(source).toContain('flex flex-col gap-3 sm:flex-row')
     expect(source).not.toContain('scale:')

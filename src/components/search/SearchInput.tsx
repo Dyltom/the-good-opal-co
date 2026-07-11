@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, X, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getSearchSuggestions } from '@/app/(marketing)/search/actions'
+import type { SearchSuggestion } from '@/app/(marketing)/search/actions'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface SearchInputProps {
@@ -26,7 +27,7 @@ export function SearchInput({
   const searchParams = useSearchParams()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState(initialQuery || searchParams.get('q') || '')
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [loading, setLoading] = useState(false)
@@ -94,9 +95,7 @@ export function SearchInput({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setSelectedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        )
+        setSelectedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev))
         break
       case 'ArrowUp':
         e.preventDefault()
@@ -105,7 +104,12 @@ export function SearchInput({
       case 'Enter':
         e.preventDefault()
         if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-          handleSearch(suggestions[selectedIndex])
+          const suggestion = suggestions[selectedIndex]
+          setQuery(suggestion.label)
+          router.push(suggestion.href)
+          setSuggestions([])
+          setShowSuggestions(false)
+          onClose?.()
         } else {
           handleSearch(query)
         }
@@ -117,25 +121,25 @@ export function SearchInput({
     }
   }
 
-  const handleSuggestionClick = (suggestion: string) => {
-    handleSearch(suggestion)
+  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
+    setQuery(suggestion.label)
+    router.push(suggestion.href)
+    setSuggestions([])
+    setShowSuggestions(false)
+    onClose?.()
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn(
-        'relative',
-        variant === 'mobile' && 'w-full',
-        className
-      )}
+      className={cn('relative', variant === 'mobile' && 'w-full', className)}
     >
       <div
         className={cn(
           'relative flex items-center rounded-lg border bg-white transition-all',
           'focus-within:border-opal-electric focus-within:ring-2 focus-within:ring-opal-electric/20',
-          variant === 'default' && 'w-80 h-10 border-gray-200',
-          variant === 'mobile' && 'w-full h-12 border-gray-300',
+          variant === 'default' && 'h-10 w-80 border-gray-200',
+          variant === 'mobile' && 'h-12 w-full border-gray-300',
           className?.includes('w-full') && 'w-full'
         )}
       >
@@ -216,7 +220,7 @@ export function SearchInput({
           {suggestions.length > 0 ? (
             suggestions.map((suggestion, index) => (
               <button
-                key={suggestion}
+                key={suggestion.href}
                 type="button"
                 role="option"
                 aria-selected={index === selectedIndex}
@@ -229,16 +233,21 @@ export function SearchInput({
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <Search className="h-3.5 w-3.5 text-opal-electric/60 shrink-0" />
-                  <span className="truncate">{suggestion}</span>
+                  <Search className="h-3.5 w-3.5 shrink-0 text-opal-electric/60" />
+                  <span className="truncate">{suggestion.label}</span>
                 </div>
               </button>
             ))
           ) : (
-            <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="px-4 py-3 text-center text-sm text-gray-500">
+              <div className="mb-1 flex items-center justify-center gap-2">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
                 <span>No results found</span>
               </div>
