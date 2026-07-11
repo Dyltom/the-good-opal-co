@@ -164,7 +164,9 @@ async function seed() {
   )
 }
 
-seed().catch((error: unknown) => {
-  console.error(error)
-  process.exitCode = 1
-})
+seed()
+  .then(() => process.exit(0))
+  .catch((error: unknown) => {
+    console.error(error)
+    process.exit(1)
+  })

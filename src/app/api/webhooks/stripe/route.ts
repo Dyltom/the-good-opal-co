@@ -373,6 +373,7 @@ export async function POST(request: NextRequest) {
         req: transactionReq,
         data: {
           orderNumber: generateOrderNumber(),
+          source: 'stripe',
           status: inventoryAvailable ? 'processing' : 'pending',
           customer: {
             email: session.customer_email ?? '',

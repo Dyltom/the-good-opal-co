@@ -34,7 +34,9 @@
     "docker:ps": "export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock && docker compose ps",
     "email": "email dev --dir src/emails --port 3002",
     "email:export": "email export",
-    "seed": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/seed.ts"
+    "seed": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/seed.ts",
+    "catalog:sync:woo": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/sync-woocommerce-catalog.ts",
+    "import:woocommerce": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/import-woocommerce-commerce.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

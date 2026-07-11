@@ -31,6 +31,25 @@ export const Customers: CollectionConfig = {
       index: true,
     },
     {
+      name: 'legacyWooId',
+      type: 'number',
+      unique: true,
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Original WooCommerce customer ID',
+      },
+    },
+    {
+      name: 'wooCreatedAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'name',
       type: 'text',
     },

@@ -44,6 +44,52 @@ export const Orders: CollectionConfig = {
         description: 'Unique order identifier (e.g., OPAL-ABC123)',
       },
     },
+    {
+      name: 'source',
+      type: 'text',
+      required: true,
+      defaultValue: 'stripe',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Order source system',
+      },
+    },
+    {
+      name: 'legacyWooId',
+      type: 'number',
+      unique: true,
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Original WooCommerce order ID',
+      },
+    },
+    {
+      name: 'legacyWooStatus',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'orderPlacedAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'paidAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
 
     // Order Status
     {
@@ -123,6 +169,18 @@ export const Orders: CollectionConfig = {
           required: true,
           defaultValue: 'AU',
         },
+      ],
+    },
+    {
+      name: 'billingAddress',
+      type: 'group',
+      fields: [
+        { name: 'line1', type: 'text' },
+        { name: 'line2', type: 'text' },
+        { name: 'city', type: 'text' },
+        { name: 'state', type: 'text' },
+        { name: 'postalCode', type: 'text' },
+        { name: 'country', type: 'text' },
       ],
     },
 
@@ -227,6 +285,30 @@ export const Orders: CollectionConfig = {
         readOnly: true,
         position: 'sidebar',
         description: 'Stripe Payment Intent ID',
+      },
+    },
+    {
+      name: 'paymentMethod',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'legacyTransactionId',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'legacyRefunds',
+      type: 'json',
+      admin: {
+        readOnly: true,
+        description: 'WooCommerce refund audit data',
       },
     },
     {

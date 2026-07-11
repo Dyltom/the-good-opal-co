@@ -66,8 +66,17 @@ describe('deployment config', () => {
     const config = JSON.parse(read('vercel.json')) as { buildCommand?: string }
     const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
 
-    expect(config.buildCommand).toBe('pnpm payload migrate && pnpm build')
+    expect(config.buildCommand).toBe(
+      'pnpm payload generate:importmap && pnpm payload migrate && pnpm import:woocommerce && pnpm build'
+    )
     expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
+  })
+
+  test('Payload admin uses the generated import map without a shadowing TypeScript stub', () => {
+    const importMap = read('src/app/(payload)/admin/importMap.js')
+
+    expect(importMap).toContain('VercelBlobClientUploadHandler')
+    expect(() => read('src/app/(payload)/admin/importMap.ts')).toThrow()
   })
 
   test('Payload-backed catalog surfaces are not frozen at build time', () => {

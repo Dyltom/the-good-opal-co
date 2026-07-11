@@ -120,6 +120,50 @@ export const Products: CollectionConfig = {
         description: 'Stock Keeping Unit (unique identifier)',
       },
     },
+    {
+      name: 'legacyWooId',
+      type: 'number',
+      unique: true,
+      index: true,
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Original WooCommerce product ID',
+      },
+    },
+    {
+      name: 'wooStatus',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Original WooCommerce product status',
+      },
+    },
+    {
+      name: 'wooCatalogVisibility',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'wooManageStock',
+      type: 'checkbox',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'wooModifiedAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
     // Jewelry-specific fields
     {
       name: 'material',

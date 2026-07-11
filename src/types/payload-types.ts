@@ -348,6 +348,17 @@ export interface Product {
    */
   sku?: string | null;
   /**
+   * Original WooCommerce product ID
+   */
+  legacyWooId?: number | null;
+  /**
+   * Original WooCommerce product status
+   */
+  wooStatus?: string | null;
+  wooCatalogVisibility?: string | null;
+  wooManageStock?: boolean | null;
+  wooModifiedAt?: string | null;
+  /**
    * Metal type used in the jewelry
    */
   material?: ('sterling-silver' | '14k-gold' | '18k-gold' | 'white-gold' | 'rose-gold' | 'platinum' | 'none') | null;
@@ -438,6 +449,17 @@ export interface Order {
    * Unique order identifier (e.g., OPAL-ABC123)
    */
   orderNumber: string;
+  /**
+   * Order source system
+   */
+  source: string;
+  /**
+   * Original WooCommerce order ID
+   */
+  legacyWooId?: number | null;
+  legacyWooStatus?: string | null;
+  orderPlacedAt?: string | null;
+  paidAt?: string | null;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'disputed';
   customer: {
     email: string;
@@ -451,6 +473,14 @@ export interface Order {
     state: string;
     postalCode: string;
     country: string;
+  };
+  billingAddress?: {
+    line1?: string | null;
+    line2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
   };
   items: {
     productId: string;
@@ -480,6 +510,20 @@ export interface Order {
    * Stripe Payment Intent ID
    */
   stripePaymentIntentId?: string | null;
+  paymentMethod?: string | null;
+  legacyTransactionId?: string | null;
+  /**
+   * WooCommerce refund audit data
+   */
+  legacyRefunds?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   confirmationEmailSentAt?: string | null;
   confirmationEmailError?: string | null;
   inventoryRestockedAt?: string | null;
@@ -507,6 +551,11 @@ export interface Order {
 export interface Customer {
   id: number;
   email: string;
+  /**
+   * Original WooCommerce customer ID
+   */
+  legacyWooId?: number | null;
+  wooCreatedAt?: string | null;
   name?: string | null;
   phone?: string | null;
   /**
@@ -848,6 +897,11 @@ export interface ProductsSelect<T extends boolean = true> {
   featured?: T;
   stock?: T;
   sku?: T;
+  legacyWooId?: T;
+  wooStatus?: T;
+  wooCatalogVisibility?: T;
+  wooManageStock?: T;
+  wooModifiedAt?: T;
   material?: T;
   stoneType?: T;
   stoneOrigin?: T;
@@ -880,6 +934,11 @@ export interface ProductsSelect<T extends boolean = true> {
  */
 export interface OrdersSelect<T extends boolean = true> {
   orderNumber?: T;
+  source?: T;
+  legacyWooId?: T;
+  legacyWooStatus?: T;
+  orderPlacedAt?: T;
+  paidAt?: T;
   status?: T;
   customer?:
     | T
@@ -889,6 +948,16 @@ export interface OrdersSelect<T extends boolean = true> {
         phone?: T;
       };
   shippingAddress?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        postalCode?: T;
+        country?: T;
+      };
+  billingAddress?:
     | T
     | {
         line1?: T;
@@ -916,6 +985,9 @@ export interface OrdersSelect<T extends boolean = true> {
   currency?: T;
   stripeSessionId?: T;
   stripePaymentIntentId?: T;
+  paymentMethod?: T;
+  legacyTransactionId?: T;
+  legacyRefunds?: T;
   confirmationEmailSentAt?: T;
   confirmationEmailError?: T;
   inventoryRestockedAt?: T;
@@ -934,6 +1006,8 @@ export interface OrdersSelect<T extends boolean = true> {
  */
 export interface CustomersSelect<T extends boolean = true> {
   email?: T;
+  legacyWooId?: T;
+  wooCreatedAt?: T;
   name?: T;
   phone?: T;
   subscribedToNewsletter?: T;
