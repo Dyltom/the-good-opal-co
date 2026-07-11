@@ -144,6 +144,10 @@ function customerUpdateData(customer: LegacyCustomerData) {
   }
 }
 
+function productNameKey(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '')
+}
+
 async function importCommerce(): Promise<void> {
   const apply = process.env['WOO_IMPORT_APPLY'] === 'true'
   const credentials = {
@@ -173,29 +177,38 @@ async function importCommerce(): Promise<void> {
       .map((product) => [product.sku as string, product])
   )
   const productsBySlug = new Map(existingProducts.map((product) => [product.slug, product]))
-  const sourceProductIds = new Set(snapshot.products.map((product) => product.id))
+  const productNameBuckets = new Map<string, Product[]>()
+  for (const product of existingProducts) {
+    const key = productNameKey(product.name)
+    productNameBuckets.set(key, [...(productNameBuckets.get(key) ?? []), product])
+  }
+  const productsByUniqueName = new Map(
+    [...productNameBuckets].flatMap(([key, products]) =>
+      products.length === 1 && products[0] ? [[key, products[0]] as const] : []
+    )
+  )
   const productReferences = new Map<number, { id: string | number; slug: string }>()
   const productCounts: ImportCounts = { created: 0, updated: 0, archived: 0, skipped: 0 }
-
-  for (const sourceProduct of snapshot.products) {
+  const productPlans = snapshot.products.map((sourceProduct) => {
     const mapped = mapWooPrivateProduct(sourceProduct)
-    const existing =
-      productsByLegacyId.get(sourceProduct.id) ??
-      productsBySku.get(sourceProduct.sku) ??
-      productsBySku.get(`WP-${sourceProduct.id}`)
-    const slugOwner = productsBySlug.get(mapped.slug)
-    if (slugOwner && slugOwner.id !== existing?.id) {
-      throw new Error(
-        `WooCommerce product ${sourceProduct.id} conflicts with an existing product slug`
-      )
+    const candidates = [
+      productsByLegacyId.get(sourceProduct.id),
+      productsBySku.get(`WP-${sourceProduct.id}`),
+      productsBySku.get(mapped.sku),
+      productsBySlug.get(mapped.slug),
+      productsByUniqueName.get(productNameKey(mapped.name)),
+    ].filter((product): product is Product => product !== undefined)
+    const candidateIds = new Set(candidates.map((product) => String(product.id)))
+    if (candidateIds.size > 1) {
+      throw new Error(`WooCommerce product ${sourceProduct.id} matches multiple historical records`)
     }
-    const skuOwner = productsBySku.get(mapped.sku)
-    if (skuOwner && skuOwner.id !== existing?.id) {
-      throw new Error(
-        `WooCommerce product ${sourceProduct.id} conflicts with an existing product SKU`
-      )
-    }
+    return { sourceProduct, mapped, existing: candidates[0] }
+  })
+  const matchedExistingProductIds = new Set(
+    productPlans.flatMap(({ existing }) => (existing ? [String(existing.id)] : []))
+  )
 
+  for (const { sourceProduct, mapped, existing } of productPlans) {
     if (existing) {
       productCounts.updated += 1
       productReferences.set(sourceProduct.id, { id: existing.id, slug: mapped.slug })
@@ -223,10 +236,7 @@ async function importCommerce(): Promise<void> {
   const staleProducts = existingProducts.filter((product) => {
     const sourceManaged =
       typeof product.legacyWooId === 'number' || Boolean(product.sku?.startsWith('WP-'))
-    if (!sourceManaged) return false
-    if (typeof product.legacyWooId === 'number') return !sourceProductIds.has(product.legacyWooId)
-    const legacyId = Number.parseInt(product.sku?.slice(3) ?? '', 10)
-    return !Number.isInteger(legacyId) || !sourceProductIds.has(legacyId)
+    return sourceManaged && !matchedExistingProductIds.has(String(product.id))
   })
   productCounts.archived = staleProducts.length
   if (apply) {
