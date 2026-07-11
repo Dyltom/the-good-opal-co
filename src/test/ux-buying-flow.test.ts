@@ -365,4 +365,35 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).not.toContain('Magical sparkle effects')
     expect(source).not.toContain('from-black/80')
   })
+
+  test('cookie controls and policy describe only technology that is actually enabled', () => {
+    const consentSource = read('src/components/layout/CookieConsent.tsx')
+    const policySource = read('src/app/(marketing)/legal/cookies/page.tsx')
+
+    expect(consentSource).toContain('Accept analytics')
+    expect(consentSource).toContain('Necessary only')
+    expect(consentSource).not.toContain('Marketing Cookies')
+    expect(consentSource).not.toContain('Preference Cookies')
+    expect(consentSource).not.toContain('window.fbq')
+    expect(policySource).toContain('Vercel Web Analytics')
+    expect(policySource).toContain('We do not currently use')
+    expect(policySource).toContain('advertising, remarketing, or social-media tracking pixels')
+    expect(policySource).not.toContain('Facebook Pixel')
+    expect(policySource).not.toContain('Google Ads')
+    expect(policySource).not.toContain('Wishlist')
+  })
+
+  test('shipping page matches the rates enforced during checkout', () => {
+    const source = read('src/app/(marketing)/shipping/page.tsx')
+    const legacyHeroSource = read('src/components/sections/ProductHero.tsx')
+
+    expect(source).toContain('SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS')
+    expect(source).toContain('SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS')
+    expect(source).toContain('SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD')
+    expect(source).toContain('The carrier estimate is shown at checkout')
+    expect(source).not.toContain('3–7 business days')
+    expect(source).not.toContain('Free express')
+    expect(legacyHeroSource).toContain('Free Shipping Over $500')
+    expect(legacyHeroSource).not.toContain('Free Express Shipping')
+  })
 })

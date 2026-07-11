@@ -25,9 +25,7 @@ interface ProductHeroProps {
 }
 
 function formatBadgeText(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/\b[a-z]/g, (char) => char.toUpperCase())
+  return text.toLowerCase().replace(/\b[a-z]/g, (char) => char.toUpperCase())
 }
 
 export function ProductHero({ products }: ProductHeroProps) {
@@ -67,15 +65,16 @@ export function ProductHero({ products }: ProductHeroProps) {
     <section className="relative overflow-hidden bg-charcoal-dark pt-[84px]">
       {/* Screen reader announcement for slide changes */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
-        {currentProduct && `Now showing ${currentProduct.name}, ${currentIndex + 1} of ${products.length}`}
+        {currentProduct &&
+          `Now showing ${currentProduct.name}, ${currentIndex + 1} of ${products.length}`}
       </div>
       <div className="absolute inset-x-0 top-0 h-px bg-opal-light/35" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(144,224,239,0.12),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.04),transparent_48%)]" />
 
       <div className="relative z-10 mx-auto w-full max-w-screen-xl px-4 py-12 sm:px-6 sm:py-16 md:py-20 lg:px-8 lg:py-24">
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center w-full">
+        <div className="grid w-full items-center gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left Content */}
-          <div className="order-2 lg:order-1 text-center lg:text-left">
+          <div className="order-2 text-center lg:order-1 lg:text-left">
             {/* Editorial badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -89,7 +88,7 @@ export function ProductHero({ products }: ProductHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mb-6 font-serif text-4xl font-semibold leading-[1.05] text-balance text-white sm:text-5xl md:text-6xl"
+              className="mb-6 text-balance font-serif text-4xl font-semibold leading-[1.05] text-white sm:text-5xl md:text-6xl"
             >
               Authentic Australian
               <span className="block text-opal-light">Opal Jewellery</span>
@@ -99,10 +98,10 @@ export function ProductHero({ products }: ProductHeroProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg md:text-xl lg:text-2xl text-white/80 max-w-2xl mb-10 leading-relaxed"
+              className="mb-10 max-w-2xl text-lg leading-relaxed text-white/80 md:text-xl lg:text-2xl"
             >
-              From Lightning Ridge to your jewellery box. A storybook colour palette, hand-shaped settings,
-              and one-of-a-kind stones with a quieter kind of magic.
+              From Lightning Ridge to your jewellery box. A storybook colour palette, hand-shaped
+              settings, and one-of-a-kind stones with a quieter kind of magic.
             </motion.p>
 
             <motion.div
@@ -111,26 +110,23 @@ export function ProductHero({ products }: ProductHeroProps) {
               transition={{ delay: 0.3 }}
               className="mb-8 max-w-xl border-y border-white/15 py-4 text-sm leading-relaxed text-white/70"
             >
-              Trusted details, clear care, and one-of-a-kind stones. Product details, shipping, returns, and care guidance stay close to the buying decision.
+              Trusted details, clear care, and one-of-a-kind stones. Product details, shipping,
+              returns, and care guidance stay close to the buying decision.
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              className="flex flex-col justify-center gap-4 sm:flex-row lg:justify-start"
             >
-              <Button
-                size="lg"
-                className="px-8 py-3 shadow-sm"
-                asChild
-              >
+              <Button size="lg" className="px-8 py-3 shadow-sm" asChild>
                 <Link href="/store">Shop Collection</Link>
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="px-8 py-3 bg-white/10 text-white border-white/20 hover:bg-white/20"
+                className="border-white/20 bg-white/10 px-8 py-3 text-white hover:bg-white/20"
                 asChild
               >
                 <Link href="/blog">Learn More</Link>
@@ -139,7 +135,7 @@ export function ProductHero({ products }: ProductHeroProps) {
           </div>
 
           {/* Right Product Showcase */}
-          <div className="order-1 lg:order-2 relative">
+          <div className="relative order-1 lg:order-2">
             <div className="relative mx-auto aspect-[4/5] w-full max-w-[calc(100vw-2rem)] sm:max-w-sm">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -148,25 +144,27 @@ export function ProductHero({ products }: ProductHeroProps) {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.5 }}
-                  className="relative w-full h-full"
+                  className="relative h-full w-full"
                 >
                   <Link
                     href={`/store/${currentProduct.slug}`}
-                    className="block relative w-full h-full group"
+                    className="group relative block h-full w-full"
                   >
                     {/* Product Card */}
                     <div className="relative h-full w-full overflow-hidden rounded-xl border border-white/15 bg-white shadow-md transition-colors duration-300 group-hover:border-opal-light/45">
                       {/* Badge */}
-                      <div className="absolute top-4 left-4 z-20">
-                        <div className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
-                          currentProduct.badge.type === 'featured'
-                            ? 'bg-charcoal-dark/85 text-white'
-                            : currentProduct.badge.type === 'sale'
-                            ? 'bg-fire-gold text-charcoal'
-                            : currentProduct.badge.type === 'limited'
-                            ? 'bg-fire-pink-dark text-white'
-                            : 'bg-opal-emerald-dark text-white'
-                        }`}>
+                      <div className="absolute left-4 top-4 z-20">
+                        <div
+                          className={`rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
+                            currentProduct.badge.type === 'featured'
+                              ? 'bg-charcoal-dark/85 text-white'
+                              : currentProduct.badge.type === 'sale'
+                                ? 'bg-fire-gold text-charcoal'
+                                : currentProduct.badge.type === 'limited'
+                                  ? 'bg-fire-pink-dark text-white'
+                                  : 'bg-opal-emerald-dark text-white'
+                          }`}
+                        >
                           {formatBadgeText(currentProduct.badge.text)}
                         </div>
                       </div>
@@ -174,7 +172,7 @@ export function ProductHero({ products }: ProductHeroProps) {
                       {/* Product Image */}
                       <div className="relative h-3/5 overflow-hidden bg-gray-100">
                         {imageLoading && (
-                          <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 animate-pulse" />
+                          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-gray-200 to-gray-100" />
                         )}
                         <Image
                           src={currentProduct.image}
@@ -193,20 +191,25 @@ export function ProductHero({ products }: ProductHeroProps) {
 
                       {/* Product Info */}
                       <div className="p-6">
-                        <h3 className="text-lg font-bold text-charcoal mb-3 line-clamp-2">
+                        <h3 className="mb-3 line-clamp-2 text-lg font-bold text-charcoal">
                           {currentProduct.name}
                         </h3>
 
                         {/* Rating & Sold - Only show if real data exists */}
-                        {(currentProduct.rating !== undefined || currentProduct.sold !== undefined) && (
-                          <div className="flex items-center gap-3 mb-3 text-sm">
+                        {(currentProduct.rating !== undefined ||
+                          currentProduct.sold !== undefined) && (
+                          <div className="mb-3 flex items-center gap-3 text-sm">
                             {currentProduct.rating !== undefined && (
                               <>
                                 <div className="flex items-center gap-1">
-                                  <Star className="w-4 h-4 fill-current text-opal-gold" />
-                                  <span className="text-charcoal/70">{currentProduct.rating.toFixed(1)}</span>
+                                  <Star className="h-4 w-4 fill-current text-opal-gold" />
+                                  <span className="text-charcoal/70">
+                                    {currentProduct.rating.toFixed(1)}
+                                  </span>
                                 </div>
-                                {currentProduct.sold !== undefined && <span className="text-charcoal/50">•</span>}
+                                {currentProduct.sold !== undefined && (
+                                  <span className="text-charcoal/50">•</span>
+                                )}
                               </>
                             )}
                             {currentProduct.sold !== undefined && (
@@ -217,7 +220,9 @@ export function ProductHero({ products }: ProductHeroProps) {
 
                         {/* Price */}
                         <div className="flex items-baseline gap-3">
-                          <span className="text-2xl font-bold text-charcoal">{currentProduct.price}</span>
+                          <span className="text-2xl font-bold text-charcoal">
+                            {currentProduct.price}
+                          </span>
                           {currentProduct.originalPrice && (
                             <span className="text-lg text-charcoal/50 line-through">
                               {currentProduct.originalPrice}
@@ -235,24 +240,24 @@ export function ProductHero({ products }: ProductHeroProps) {
                 <>
                   <button
                     onClick={goToPrevious}
-                    className="absolute left-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-charcoal-dark group"
+                    className="group absolute left-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-charcoal-dark"
                     aria-label="Previous product"
                   >
-                    <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                    <ChevronLeft className="h-5 w-5 transition-transform group-hover:-translate-x-0.5" />
                   </button>
                   <button
                     onClick={goToNext}
-                    className="absolute right-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-charcoal-dark group"
+                    className="group absolute right-2 top-1/2 z-20 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition-colors duration-300 hover:bg-white/20 focus:bg-white/20 focus:outline-none focus:ring-2 focus:ring-opal-electric focus:ring-offset-2 focus:ring-offset-charcoal-dark"
                     aria-label="Next product"
                   >
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                    <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
                   </button>
                 </>
               )}
 
               {/* Product Indicators */}
               {products.length > 1 && (
-                <div className="flex flex-wrap justify-center gap-1 mt-6">
+                <div className="mt-6 flex flex-wrap justify-center gap-1">
                   {products.map((_, index) => (
                     <button
                       key={index}
@@ -262,10 +267,10 @@ export function ProductHero({ products }: ProductHeroProps) {
                       aria-current={index === currentIndex ? 'true' : undefined}
                     >
                       <span
-                        className={`block transition-all duration-300 rounded-full ${
+                        className={`block rounded-full transition-all duration-300 ${
                           index === currentIndex
-                            ? 'w-8 h-2 bg-white'
-                            : 'w-2 h-2 bg-white/40 group-hover:bg-white/60'
+                            ? 'h-2 w-8 bg-white'
+                            : 'h-2 w-2 bg-white/40 group-hover:bg-white/60'
                         }`}
                       />
                     </button>
@@ -280,10 +285,15 @@ export function ProductHero({ products }: ProductHeroProps) {
       {/* Bottom Trust Badges */}
       <div className="relative pb-8 pt-6">
         <div className="mx-auto w-full max-w-screen-xl px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white/[0.08]">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -295,8 +305,13 @@ export function ProductHero({ products }: ProductHeroProps) {
               <p className="text-sm text-white/80">100% Authentic</p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white/[0.08]">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -305,11 +320,16 @@ export function ProductHero({ products }: ProductHeroProps) {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-white/80">Free Express Shipping</p>
+              <p className="text-sm text-white/80">Free Shipping Over $500</p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white/[0.08]">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -321,8 +341,13 @@ export function ProductHero({ products }: ProductHeroProps) {
               <p className="text-sm text-white/80">30-Day Returns</p>
             </div>
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full border border-white/15 bg-white/[0.08] flex items-center justify-center mx-auto mb-2">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full border border-white/15 bg-white/[0.08]">
+                <svg
+                  className="h-7 w-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

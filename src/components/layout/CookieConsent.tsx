@@ -5,24 +5,18 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  allCookiePreferences,
+  necessaryCookiePreferences,
+  parseCookiePreferences,
+  type CookiePreferences,
+} from '@/lib/cookie-consent'
 import { cn } from '@/lib/utils'
-
-interface CookiePreferences {
-  necessary: boolean
-  analytics: boolean
-  marketing: boolean
-  preferences: boolean
-}
 
 export function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [preferences, setPreferences] = useState<CookiePreferences>({
-    necessary: true, // Always true, can't be disabled
-    analytics: false,
-    marketing: false,
-    preferences: false,
-  })
+  const [preferences, setPreferences] = useState<CookiePreferences>(necessaryCookiePreferences)
 
   useEffect(() => {
     // Check if user has already made a choice
@@ -33,39 +27,21 @@ export function CookieConsent() {
       return
     }
 
-    try {
-      const parsed: unknown = JSON.parse(consent)
-      if (parsed && typeof parsed === 'object') {
-        setPreferences((current) => ({
-          ...current,
-          ...parsed,
-          necessary: true,
-        }))
-      }
-    } catch {
+    const parsed = parseCookiePreferences(consent)
+    if (parsed) {
+      setPreferences(parsed)
+    } else {
       localStorage.removeItem('cookie-consent')
       setShowBanner(true)
     }
   }, [])
 
   const acceptAll = () => {
-    const allAccepted: CookiePreferences = {
-      necessary: true,
-      analytics: true,
-      marketing: true,
-      preferences: true,
-    }
-    savePreferences(allAccepted)
+    savePreferences(allCookiePreferences)
   }
 
   const acceptNecessary = () => {
-    const onlyNecessary: CookiePreferences = {
-      necessary: true,
-      analytics: false,
-      marketing: false,
-      preferences: false,
-    }
-    savePreferences(onlyNecessary)
+    savePreferences(necessaryCookiePreferences)
   }
 
   const savePreferences = (prefs: CookiePreferences) => {
@@ -74,21 +50,12 @@ export function CookieConsent() {
     localStorage.setItem('cookie-consent-date', new Date().toISOString())
     window.dispatchEvent(new Event('cookie-consent-updated'))
 
-    // Initialize analytics and marketing based on preferences
-    if (prefs.analytics) {
-      // Initialize Google Analytics
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('consent', 'update', {
-          analytics_storage: 'granted',
-        })
-      }
-    }
-
-    if (prefs.marketing) {
-      // Initialize marketing cookies (Facebook Pixel, etc)
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('consent', 'grant')
-      }
+    // Update Google consent when it is configured. Vercel Analytics reacts to
+    // the event through AnalyticsConsentGate.
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('consent', 'update', {
+        analytics_storage: prefs.analytics ? 'granted' : 'denied',
+      })
     }
 
     // Hide banner
@@ -121,8 +88,8 @@ export function CookieConsent() {
                         Your privacy choices
                       </h3>
                       <p className="mb-3 text-xs leading-5 text-charcoal/70 sm:mb-4 sm:text-sm sm:leading-6">
-                        Choose whether we may use analytics and marketing cookies. Necessary cookies
-                        keep the shop working.{' '}
+                        Choose whether we may use optional analytics. Necessary storage keeps the
+                        cart and privacy controls working.{' '}
                         <Link
                           href="/legal/cookies"
                           className="text-opal-electric-accessible hover:underline"
@@ -136,7 +103,7 @@ export function CookieConsent() {
                           size="sm"
                           className="w-full bg-charcoal text-cream hover:bg-charcoal-dark sm:w-auto"
                         >
-                          Accept All
+                          Accept analytics
                         </Button>
                         <Button
                           onClick={acceptNecessary}
@@ -144,7 +111,7 @@ export function CookieConsent() {
                           variant="outline"
                           className="w-full sm:w-auto"
                         >
-                          Necessary Only
+                          Necessary only
                         </Button>
                         <Button
                           onClick={toggleSettings}
@@ -224,52 +191,6 @@ export function CookieConsent() {
                             className="h-4 w-4 cursor-pointer rounded text-opal-electric"
                           />
                         </div>
-
-                        {/* Marketing Cookies */}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <h5 className="mb-1 text-sm font-medium text-charcoal">
-                              Marketing Cookies
-                            </h5>
-                            <p className="text-xs text-content-muted">
-                              Used to deliver personalized advertisements based on your interests.
-                            </p>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={preferences.marketing}
-                            onChange={(e) =>
-                              setPreferences({
-                                ...preferences,
-                                marketing: e.target.checked,
-                              })
-                            }
-                            className="h-4 w-4 cursor-pointer rounded text-opal-electric"
-                          />
-                        </div>
-
-                        {/* Preference Cookies */}
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <h5 className="mb-1 text-sm font-medium text-charcoal">
-                              Preference Cookies
-                            </h5>
-                            <p className="text-xs text-content-muted">
-                              Remember your preferences like language and currency.
-                            </p>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={preferences.preferences}
-                            onChange={(e) =>
-                              setPreferences({
-                                ...preferences,
-                                preferences: e.target.checked,
-                              })
-                            }
-                            className="h-4 w-4 cursor-pointer rounded text-opal-electric"
-                          />
-                        </div>
                       </div>
 
                       <div className="mt-6 grid gap-2 sm:flex sm:gap-3">
@@ -282,18 +203,13 @@ export function CookieConsent() {
                         </Button>
                         <Button
                           onClick={() => {
-                            setPreferences({
-                              necessary: true,
-                              analytics: true,
-                              marketing: true,
-                              preferences: true,
-                            })
+                            setPreferences(allCookiePreferences)
                           }}
                           size="sm"
                           variant="ghost"
                           className="w-full sm:w-auto"
                         >
-                          Select All
+                          Allow analytics
                         </Button>
                       </div>
                     </div>
