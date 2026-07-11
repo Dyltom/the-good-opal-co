@@ -30,6 +30,11 @@ export interface NewsletterService {
   confirm(token: string): Promise<SubscriptionResult>
   unsubscribe(token: string): Promise<UnsubscribeResult>
   sendWelcomeEmail(subscriber: NewsletterSubscriber): Promise<void>
+  sendCampaign(
+    subject: string,
+    content: string,
+    segment?: string[]
+  ): Promise<{ sent: number; failed: number }>
 }
 
 export interface SubscribeOptions {
