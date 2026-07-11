@@ -6,6 +6,7 @@ import { Footer, SiteNavigation } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ClearCartOnSuccess } from './clear-cart'
+import { OrderFinalizationRefresh } from './order-finalization-refresh'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import { getPayload } from '@/lib/payload'
 import type { CartItem } from '@/lib/cart'
@@ -98,6 +99,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
                 />
               ) : (
                 <>
+                  <OrderFinalizationRefresh pending={!orderConfirmed} />
                   {shouldFinalizeCheckout(session.payment_status, orderConfirmed) && (
                     <ClearCartOnSuccess purchase={getPurchaseAnalytics(session)} />
                   )}

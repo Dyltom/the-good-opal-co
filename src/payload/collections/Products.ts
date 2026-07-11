@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
+import { validateCurrencyAmount, validateWholeStock } from '../../lib/product-validation.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -36,11 +37,13 @@ export const Products: CollectionConfig = {
       type: 'number',
       required: true,
       min: 0,
+      validate: validateCurrencyAmount,
     },
     {
       name: 'compareAtPrice',
       type: 'number',
       min: 0,
+      validate: validateCurrencyAmount,
       admin: {
         description: 'Original price (for showing discounts)',
       },
@@ -108,6 +111,8 @@ export const Products: CollectionConfig = {
       name: 'stock',
       type: 'number',
       defaultValue: 0,
+      min: 0,
+      validate: validateWholeStock,
       admin: {
         description: 'Available quantity (0 = out of stock)',
       },

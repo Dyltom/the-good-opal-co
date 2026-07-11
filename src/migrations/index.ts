@@ -11,6 +11,7 @@ import * as migration_20260711_190000_enquiry_pipeline from './20260711_190000_e
 import * as migration_20260711_213000_optional_international_address from './20260711_213000_optional_international_address'
 import * as migration_20260711_213100_certification_claim_integrity from './20260711_213100_certification_claim_integrity'
 import * as migration_20260711_223000_course_education from './20260711_223000_course_education'
+import * as migration_20260712_013000_order_operations_hardening from './20260712_013000_order_operations_hardening'
 
 export const migrations = [
   {
@@ -77,5 +78,10 @@ export const migrations = [
     up: migration_20260711_223000_course_education.up,
     down: migration_20260711_223000_course_education.down,
     name: '20260711_223000_course_education',
+  },
+  {
+    up: migration_20260712_013000_order_operations_hardening.up,
+    down: migration_20260712_013000_order_operations_hardening.down,
+    name: '20260712_013000_order_operations_hardening',
   },
 ]

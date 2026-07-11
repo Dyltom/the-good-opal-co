@@ -9,6 +9,10 @@ import type { Order } from '@/types/payload-types'
 import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
 import { calculateRefundAdjustment } from '@/lib/stripe-refunds'
 import { getRequiredCheckoutShippingDetails } from '@/lib/stripe-fulfillment'
+import {
+  requireOrderForPaymentEvent,
+  statusToRestoreAfterWonDispute,
+} from '@/lib/stripe-order-events'
 
 /**
  * Stripe Webhook Handler
@@ -221,11 +225,11 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
       limit: 1,
       req,
     })
-    const order = orderResult.docs[0]
-    if (!order) {
-      await payload.db.commitTransaction(transactionID)
-      return
-    }
+    const order = requireOrderForPaymentEvent(
+      orderResult.docs[0] ?? null,
+      'charge.refunded',
+      paymentIntentId
+    )
 
     const adjustment = calculateRefundAdjustment({
       orderTotal: Math.round(order.total * 100),
@@ -255,13 +259,22 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
       })
     }
 
+    const restockNotes: string[] = []
     if (isFullyRefunded && order.inventoryDecrementedAt && !order.inventoryRestockedAt) {
       for (const item of order.items) {
-        const product = await payload.findByID({
+        const productResult = await payload.find({
           collection: 'products',
-          id: item.productId,
+          where: { id: { equals: item.productId } },
+          limit: 1,
           req,
         })
+        const product = productResult.docs[0]
+        if (!product) {
+          restockNotes.push(
+            `Inventory not restocked for deleted product ${item.productId} (${item.name}).`
+          )
+          continue
+        }
         await payload.update({
           collection: 'products',
           id: product.id,
@@ -287,6 +300,7 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
             ? [
                 order.notes,
                 `Stripe charge ${charge.id} cumulative refund: ${(adjustment.refundedAmount / 100).toFixed(2)} ${charge.currency.toUpperCase()}.${isFullyRefunded ? '' : ' Inventory unchanged.'}`,
+                ...restockNotes,
               ]
                 .filter(Boolean)
                 .join('\n')
@@ -307,14 +321,22 @@ async function markOrderDisputed(dispute: Stripe.Dispute): Promise<void> {
   if (!paymentIntentId) return
 
   const payload = await getPayload()
-  const order = await findOrderByPaymentIntent(paymentIntentId)
-  if (!order) return
+  const order = requireOrderForPaymentEvent(
+    await findOrderByPaymentIntent(paymentIntentId),
+    `charge.dispute.${dispute.status}`,
+    paymentIntentId
+  )
+  const disputeWon = dispute.status === 'won'
+  const statusBeforeDispute = order.status === 'disputed' ? order.statusBeforeDispute : order.status
 
   await payload.update({
     collection: 'orders',
     id: order.id,
     data: {
-      status: 'disputed',
+      status: disputeWon ? statusToRestoreAfterWonDispute(order.statusBeforeDispute) : 'disputed',
+      stripeDisputeId: dispute.id,
+      stripeDisputeStatus: dispute.status,
+      statusBeforeDispute: disputeWon ? null : statusBeforeDispute,
       notes: [order.notes, `Stripe dispute ${dispute.id}: ${dispute.status}.`]
         .filter(Boolean)
         .join('\n'),

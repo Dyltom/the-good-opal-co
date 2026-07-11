@@ -1,6 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { randomBytes } from 'node:crypto'
 import { isAdmin } from '../../lib/payload-access.ts'
+import {
+  sendShipmentNotification,
+  shouldSendShipmentNotification,
+} from '../../lib/order-shipment.ts'
+import type { Order } from '../../types/payload-types.ts'
 
 /**
  * Orders Collection
@@ -300,6 +305,31 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'stripeDisputeId',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'stripeDisputeStatus',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'statusBeforeDispute',
+      type: 'text',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+        description: 'Order status restored when a Stripe dispute is won',
+      },
+    },
+    {
       name: 'paymentMethod',
       type: 'text',
       admin: {
@@ -369,6 +399,23 @@ export const Orders: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'shipmentEmailSentAt',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'shipmentEmailError',
+      type: 'textarea',
+      admin: {
+        readOnly: true,
+        description:
+          'Last dispatch-email error. Saving a shipped order with tracking retries delivery.',
+      },
+    },
 
     // Shipping & Tracking
     {
@@ -413,6 +460,40 @@ export const Orders: CollectionConfig = {
           }
         }
         return data
+      },
+    ],
+    afterChange: [
+      async ({ context, doc, req }) => {
+        const order = doc as Order
+        if (context['skipShipmentNotification'] || !shouldSendShipmentNotification(order)) {
+          return doc
+        }
+
+        try {
+          await sendShipmentNotification(order)
+          await req.payload.update({
+            collection: 'orders',
+            id: order.id,
+            data: {
+              shipmentEmailSentAt: new Date().toISOString(),
+              shipmentEmailError: null,
+            },
+            context: { ...context, skipShipmentNotification: true },
+            req,
+          })
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Shipment notification failed'
+          await req.payload.update({
+            collection: 'orders',
+            id: order.id,
+            data: { shipmentEmailError: message.slice(0, 1000) },
+            context: { ...context, skipShipmentNotification: true },
+            req,
+          })
+          throw error
+        }
+
+        return doc
       },
     ],
   },

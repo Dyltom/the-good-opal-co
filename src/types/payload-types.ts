@@ -528,6 +528,12 @@ export interface Order {
    * Cumulative Stripe refund in currency minor units (cents for AUD)
    */
   stripeRefundedAmount?: number | null;
+  stripeDisputeId?: string | null;
+  stripeDisputeStatus?: string | null;
+  /**
+   * Order status restored when a Stripe dispute is won
+   */
+  statusBeforeDispute?: string | null;
   paymentMethod?: string | null;
   legacyTransactionId?: string | null;
   /**
@@ -548,6 +554,11 @@ export interface Order {
   inventoryDecrementedAt?: string | null;
   inventoryAlertSentAt?: string | null;
   inventoryAlertError?: string | null;
+  shipmentEmailSentAt?: string | null;
+  /**
+   * Last dispatch-email error. Saving a shipped order with tracking retries delivery.
+   */
+  shipmentEmailError?: string | null;
   /**
    * Shipping carrier tracking number
    */
@@ -1118,6 +1129,9 @@ export interface OrdersSelect<T extends boolean = true> {
   stripeSessionId?: T;
   stripePaymentIntentId?: T;
   stripeRefundedAmount?: T;
+  stripeDisputeId?: T;
+  stripeDisputeStatus?: T;
+  statusBeforeDispute?: T;
   paymentMethod?: T;
   legacyTransactionId?: T;
   legacyRefunds?: T;
@@ -1127,6 +1141,8 @@ export interface OrdersSelect<T extends boolean = true> {
   inventoryDecrementedAt?: T;
   inventoryAlertSentAt?: T;
   inventoryAlertError?: T;
+  shipmentEmailSentAt?: T;
+  shipmentEmailError?: T;
   trackingNumber?: T;
   shippingCarrier?: T;
   notes?: T;
