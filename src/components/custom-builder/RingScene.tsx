@@ -797,8 +797,9 @@ export function RingScene({
   return (
     <Canvas
       camera={{ position: cameraPositions[view], fov: 32 }}
-      dpr={[1, 1.5]}
-      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      dpr={[1, 1.25]}
+      frameloop={allowMotion ? 'always' : 'demand'}
+      gl={{ antialias: true, alpha: false }}
       scene={{ background }}
       onCreated={({ gl }) => {
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
