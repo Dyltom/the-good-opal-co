@@ -112,17 +112,12 @@ describe('custom ring geometry contract', () => {
     }
   })
 
-  test('keeps reviewed product photography colour-faithful while restoring polished depth', () => {
+  test('keeps reviewed product photography colour-faithful without scene-light tinting', () => {
     expect(sceneSource).toContain('map={photoTexture}')
-    expect(sceneSource).toContain('emissiveMap={photoTexture}')
-    expect(sceneSource).toContain('color="#080808"')
-    expect(sceneSource).toContain('emissive="#ffffff"')
-    expect(sceneSource).toContain('emissiveIntensity={0.92}')
+    expect(sceneSource).toContain('<meshBasicMaterial')
     expect(sceneSource).toContain('toneMapped={false}')
-    expect(sceneSource).toContain('clearcoat={0.88}')
-    expect(sceneSource).toContain('iridescence={0.06}')
-    expect(sceneSource).not.toContain('<meshBasicMaterial attach="material-0"')
-    expect(sceneSource).not.toContain('emissive="#f4f1e9"')
+    expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
+    expect(sceneSource).not.toContain('iridescence={0.06}')
   })
 
   test('uses handmade sterling and soldered halo proportions from sold pieces', () => {

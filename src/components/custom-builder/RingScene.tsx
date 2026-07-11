@@ -450,25 +450,7 @@ function OpalCabochon({
   if (usesProductPhoto) {
     return (
       <mesh geometry={geometry}>
-        <meshPhysicalMaterial
-          attach="material-0"
-          map={photoTexture}
-          color="#080808"
-          emissive="#ffffff"
-          emissiveMap={photoTexture}
-          emissiveIntensity={0.92}
-          roughness={0.22}
-          metalness={0}
-          specularIntensity={0.65}
-          specularColor="#f6fbff"
-          clearcoat={0.88}
-          clearcoatRoughness={0.06}
-          iridescence={0.06}
-          iridescenceIOR={1.42}
-          iridescenceThicknessRange={[220, 520]}
-          envMapIntensity={0.38}
-          toneMapped={false}
-        />
+        <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
         <meshStandardMaterial
           attach="material-1"
           color={selectedOpal?.visual.bodyColour ?? palette.body}
