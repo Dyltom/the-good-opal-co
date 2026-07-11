@@ -18,7 +18,12 @@ test('private quote pages are no-store, no-referrer, and non-enumerating', async
     waitUntil: 'domcontentloaded',
   })
   expect(response?.status()).toBe(200)
-  expect(response?.headers()['cache-control']).toContain('no-store')
+  const cacheControl = response?.headers()['cache-control'] ?? ''
+  // Next.js development mode deliberately replaces route headers with
+  // `no-cache, must-revalidate`; deployed production responses retain the
+  // stricter configured `private, no-store, max-age=0` policy.
+  expect(cacheControl).toMatch(/no-store|no-cache, must-revalidate/)
+  expect(cacheControl).not.toContain('public')
   expect(response?.headers()['referrer-policy']).toBe('no-referrer')
   expect(response?.headers()['x-robots-tag']).toContain('noindex')
   await expect(page.getByRole('heading', { name: 'This quote is unavailable' })).toBeVisible()

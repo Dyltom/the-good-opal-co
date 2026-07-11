@@ -62,7 +62,7 @@ describe('custom builder opal visual profiles', () => {
     expect(profile.renderStone).toBe('blue-green')
     expect(profile.visual).toMatchObject({
       silhouette: 'elongated',
-      aspectRatio: 1.77,
+      aspectRatio: 9.5 / 5.3,
       recommendedStyle: 'gemini',
       evidence: 'catalogue',
       transmission: 0.26,
@@ -92,6 +92,8 @@ describe('custom builder opal visual profiles', () => {
       zoom: 3.61,
     })
     expect(semiBlack.visual.dimensionsMm).toEqual({ width: 7, length: 8, depth: 3.5 })
+    expect(white.visual.aspectRatio).toBe(7 / 6)
+    expect(semiBlack.visual.aspectRatio).toBe(8 / 7)
   })
 
   test('matches the oval Mintabie 1.05 stone to the Gemini setting', () => {

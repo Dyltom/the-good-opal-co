@@ -41,9 +41,24 @@ describe('custom ring geometry contract', () => {
       'const portraitFramingScale = Math.min(1.7, Math.max(1, 0.92 / aspectRatio))'
     )
     expect(sceneSource).toContain('x * portraitFramingScale')
-    expect(sceneSource).toContain('size.height, size.width, view')
+    expect(sceneSource).toContain('size.height, size.width, target, view')
     expect(previewSource).toContain('w-full min-w-0 overflow-hidden')
     expect(configuratorSource).toContain('min-w-0 lg:sticky')
+  })
+
+  test('uses stable view-specific up vectors and the actual model centre', () => {
+    expect(sceneSource).toContain("'three-quarter': [4.2, 4.4, 2.4]")
+    expect(sceneSource).toContain("'three-quarter': [0, 0, -1]")
+    expect(sceneSource).toContain('front: [0, 5.8, 0]')
+    expect(sceneSource).toContain('front: [0, 0, -1]')
+    expect(sceneSource).toContain('camera.up.set(...cameraUpVectors[view])')
+    expect(sceneSource).toContain('camera.lookAt(...target)')
+    expect(sceneSource).toContain('const modelTop =')
+    expect(sceneSource).toContain('const modelBottom = -measurements.outerRadius')
+    expect(sceneSource).toContain('return [0, (modelTop + modelBottom) / 2, 0]')
+    expect(sceneSource).toContain('up: cameraUpVectors[view]')
+    expect(sceneSource).toContain('target={framingTarget}')
+    expect(sceneSource).not.toContain('camera.lookAt(0, 0.42, 0)')
   })
 
   test('seats the bezel on the band while keeping the stone base clear', () => {
@@ -144,6 +159,9 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('dpr={[1, 2]}')
     expect(sceneSource).toContain('gl.outputColorSpace = SRGBColorSpace')
     expect(sceneSource).toContain('color={selectedOpal?.visual.bodyColour ?? palette.body}')
+    expect(sceneSource).toContain('[selectedOpal.imageUrl, ...opalImageUrls]')
+    expect(sceneSource).toContain('const sourcePhoto = sourcePhotos[0]!')
+    expect(sceneSource).not.toContain('photoSources.indexOf(selectedOpal.imageUrl)')
     expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
     expect(sceneSource).not.toContain('iridescence={0.06}')
     expect(sceneSource).not.toContain('<meshStandardMaterial\n          attach="material-1"')
@@ -177,6 +195,12 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('shoulderBlend')
     expect(sceneSource).toContain('localHalfWidth')
     expect(sceneSource).toContain('localHalfDepth')
+    expect(sceneSource).toContain(
+      'stoneWidth + styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2'
+    )
+    expect(sceneSource).toContain('const joinX = settingHalfWidth - shoulderDepth * 0.4')
+    expect(sceneSource).toContain('const joinY = settingBaseY + shoulderDepth * 0.35')
+    expect(sceneSource).toContain('settingBaseY={measurements.outerRadius}')
     expect(sceneSource).not.toContain('const solderedRadius =')
   })
 })

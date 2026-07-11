@@ -38,6 +38,7 @@ interface RingSceneProps {
 }
 
 type StoneDimensions = readonly [width: number, height: number]
+type CameraVector = readonly [x: number, y: number, z: number]
 
 interface CabochonDepthProfile {
   baseZ: number
@@ -88,28 +89,38 @@ const opalPalettes: Record<
   },
 }
 
-const cameraPositions: Record<RingView, [number, number, number]> = {
-  'three-quarter': [3.2, 3.8, 4.2],
-  front: [0, 5.8, 0.3],
+const cameraPositions: Record<RingView, CameraVector> = {
+  'three-quarter': [4.2, 4.4, 2.4],
+  front: [0, 5.8, 0],
   profile: [0, 0.8, 5.8],
 }
 
-function CameraPreset({ view }: { view: RingView }) {
+const cameraUpVectors: Record<RingView, CameraVector> = {
+  'three-quarter': [0, 0, -1],
+  // The stone's local +Y maps to world -Z when mounted on top of the shank.
+  // Using -Z as screen-up keeps the long stone axis upright. Default Y-up is
+  // parallel to this view direction and makes lookAt roll unpredictably.
+  front: [0, 0, -1],
+  profile: [0, 1, 0],
+}
+
+function CameraPreset({ target, view }: { target: CameraVector; view: RingView }) {
   const { camera, invalidate, size } = useThree()
 
   useEffect(() => {
     const aspectRatio = size.width / Math.max(1, size.height)
     const portraitFramingScale = Math.min(1.7, Math.max(1, 0.92 / aspectRatio))
     const [x, y, z] = cameraPositions[view]
+    camera.up.set(...cameraUpVectors[view])
     camera.position.set(
       x * portraitFramingScale,
       y * portraitFramingScale,
       z * portraitFramingScale
     )
-    camera.lookAt(0, 0.42, 0)
+    camera.lookAt(...target)
     camera.updateProjectionMatrix()
     invalidate()
-  }, [camera, invalidate, size.height, size.width, view])
+  }, [camera, invalidate, size.height, size.width, target, view])
 
   return null
 }
@@ -325,6 +336,22 @@ function getCabochonDepthProfile(
   }
 }
 
+function getRingFramingTarget(config: RingConfig, selectedOpal?: BuilderOpal): CameraVector {
+  const [stoneWidth, stoneHeight] = getStoneDimensions(config, selectedOpal)
+  const measurements = getRingMeasurements(config)
+  const depthProfile = getCabochonDepthProfile(
+    stoneWidth,
+    stoneHeight,
+    selectedOpal?.visual.dimensionsMm?.depth
+  )
+  const settingBottom = depthProfile.baseZ - 0.012
+  const settingY = measurements.outerRadius - settingBottom
+  const modelTop = settingY + depthProfile.girdleZ + depthProfile.domeHeight
+  const modelBottom = -measurements.outerRadius
+
+  return [0, (modelTop + modelBottom) / 2, 0]
+}
+
 function createCabochonGeometry(
   shape: RingConfig['shape'],
   width: number,
@@ -435,11 +462,19 @@ function OpalCabochon({
     [config.shape, height, selectedOpal?.visual.dimensionsMm?.depth, width]
   )
   const palette = opalPalettes[config.stone]
-  const photoSources: string[] =
-    opalImageUrls.length > 0 ? [...opalImageUrls] : ['/images/products/20210923_172817.jpg']
+  const photoSources = Array.from(
+    new Set(
+      selectedOpal
+        ? [selectedOpal.imageUrl, ...opalImageUrls]
+        : opalImageUrls.length > 0
+          ? opalImageUrls
+          : ['/images/products/20210923_172817.jpg']
+    )
+  )
   const sourcePhotos = useTexture(photoSources)
-  const selectedPhotoIndex = selectedOpal ? photoSources.indexOf(selectedOpal.imageUrl) : 0
-  const sourcePhoto = sourcePhotos[Math.max(0, selectedPhotoIndex)] ?? sourcePhotos[0]!
+  // The selected store product is always source zero. Never substitute another
+  // opal when an image list is stale or reordered during a selection update.
+  const sourcePhoto = sourcePhotos[0]!
   const photoTexture = useMemo(() => {
     const crop = selectedOpal?.visual.textureCrop
     const nextTexture = sourcePhoto.clone()
@@ -759,40 +794,44 @@ function Setting({
 function RingShank({
   metal,
   radius,
-  settingY,
+  settingBaseY,
+  settingHalfWidth,
   shoulderRadius,
   shoulderDepth,
-  stoneWidth,
   tubeRadius,
   tubeDepth,
 }: {
   metal: RingConfig['metal']
   radius: number
-  settingY: number
+  settingBaseY: number
+  settingHalfWidth: number
   shoulderRadius: number
   shoulderDepth: number
-  stoneWidth: number
   tubeRadius: number
   tubeDepth: number
 }) {
   const curve = useMemo(() => {
-    const endX = stoneWidth - 0.02
+    // Let the shoulder surface overlap the bezel's outer wall at its base. The
+    // earlier centreline ended inside the stone width, leaving a cathedral-like
+    // air gap instead of the low solder join visible on the sold rings.
+    const joinX = settingHalfWidth - shoulderDepth * 0.4
+    const joinY = settingBaseY + shoulderDepth * 0.35
     const ringPoints = Array.from({ length: 97 }, (_, index) => {
       const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
       return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
     })
     return new CatmullRomCurve3(
       [
-        new Vector3(-endX, settingY - 0.02, 0),
-        new Vector3(-endX - 0.025, settingY - 0.09, 0),
+        new Vector3(-joinX, joinY, 0),
+        new Vector3(-joinX - 0.03, settingBaseY - 0.045, 0),
         ...ringPoints,
-        new Vector3(endX + 0.025, settingY - 0.09, 0),
-        new Vector3(endX, settingY - 0.02, 0),
+        new Vector3(joinX + 0.03, settingBaseY - 0.045, 0),
+        new Vector3(joinX, joinY, 0),
       ],
       false,
       'centripetal'
     )
-  }, [radius, settingY, stoneWidth])
+  }, [radius, settingBaseY, settingHalfWidth, shoulderDepth])
   const geometry = useMemo(() => {
     const tubularSegments = 160
     const radialSegments = 16
@@ -872,16 +911,18 @@ function RingModel({
   )
   const settingBottom = depthProfile.baseZ - 0.012
   const settingY = measurements.outerRadius - settingBottom
+  const settingHalfWidth =
+    stoneWidth + styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
 
   return (
     <group>
       <RingShank
         metal={metal}
         radius={measurements.centreRadius}
-        settingY={settingY}
+        settingBaseY={measurements.outerRadius}
+        settingHalfWidth={settingHalfWidth}
         shoulderDepth={styleProfile.shoulderDepth}
         shoulderRadius={styleProfile.shoulderRadius}
-        stoneWidth={stoneWidth}
         tubeDepth={styleProfile.shankDepth}
         tubeRadius={styleProfile.shankRadius}
       />
@@ -903,10 +944,14 @@ export function RingScene({
 }: RingSceneProps) {
   const background = useMemo(() => new Color('#151512'), [])
   const measurements = getRingMeasurements(config)
+  const framingTarget = useMemo(
+    () => getRingFramingTarget(config, selectedOpal),
+    [config, selectedOpal]
+  )
 
   return (
     <Canvas
-      camera={{ position: cameraPositions[view], fov: 32 }}
+      camera={{ position: cameraPositions[view], up: cameraUpVectors[view], fov: 32 }}
       dpr={[1, 2]}
       frameloop={allowMotion ? 'always' : 'demand'}
       gl={{ antialias: true, alpha: false }}
@@ -921,7 +966,7 @@ export function RingScene({
       <directionalLight position={[-4, 1, 3]} intensity={1.5} color="#eef4f2" />
       <pointLight position={[0, -2, 3]} intensity={0.8} color="#fff7eb" />
 
-      <CameraPreset view={view} />
+      <CameraPreset target={framingTarget} view={view} />
 
       <RingModel config={config} opalImageUrls={opalImageUrls} selectedOpal={selectedOpal} />
 
@@ -954,7 +999,7 @@ export function RingScene({
       />
       <OrbitControls
         makeDefault
-        target={[0, 0.42, 0]}
+        target={framingTarget}
         enablePan={false}
         enableZoom
         minDistance={4.8}
