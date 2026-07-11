@@ -162,6 +162,7 @@ export const Products: CollectionConfig = {
       type: 'number',
       unique: true,
       index: true,
+      access: { read: isAdmin },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -171,6 +172,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooStatus',
       type: 'text',
+      access: { read: isAdmin },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -180,6 +182,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooCatalogVisibility',
       type: 'text',
+      access: { read: isAdmin },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -188,6 +191,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooManageStock',
       type: 'checkbox',
+      access: { read: isAdmin },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -196,6 +200,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooModifiedAt',
       type: 'date',
+      access: { read: isAdmin },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -435,6 +440,7 @@ export const Products: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
+      access: { read: isAdmin },
       admin: {
         description: 'Associated tenant ID for multi-tenancy',
       },

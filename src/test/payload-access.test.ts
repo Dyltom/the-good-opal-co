@@ -7,6 +7,7 @@ import {
   publishedOrAdmin,
   publishedVersionOrAdmin,
 } from '@/lib/payload-access'
+import { Products } from '@/payload/collections/Products'
 
 function args(user: PayloadRequest['user']): Parameters<Access>[0] {
   return { req: { user } } as Parameters<Access>[0]
@@ -27,6 +28,22 @@ describe('Payload access rules', () => {
     expect(await publishedOrAdmin(args(null))).toEqual({
       status: { equals: 'published' },
     })
+  })
+
+  test('public catalog responses omit legacy commerce and tenancy fields', () => {
+    for (const name of [
+      'legacyWooId',
+      'wooStatus',
+      'wooCatalogVisibility',
+      'wooManageStock',
+      'wooModifiedAt',
+      'tenantId',
+    ]) {
+      const field = Products.fields.find(
+        (candidate) => 'name' in candidate && candidate.name === name
+      )
+      expect(field && 'access' in field ? field.access?.read : undefined, name).toBe(isAdmin)
+    }
   })
 
   test('public draft-enabled content access uses Payload publication state', async () => {
