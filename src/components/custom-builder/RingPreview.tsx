@@ -115,11 +115,19 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
                   fill
                   sizes="112px"
                   className="object-cover"
+                  style={
+                    selectedOpal.visual.textureCrop
+                      ? {
+                          transform: `scale(${selectedOpal.visual.textureCrop.zoom})`,
+                          transformOrigin: `${selectedOpal.visual.textureCrop.focalX * 100}% ${selectedOpal.visual.textureCrop.focalY * 100}%`,
+                        }
+                      : undefined
+                  }
                 />
               </div>
               <div className="min-w-0">
                 <p className="text-[0.65rem] uppercase tracking-[0.12em] text-opal-light">
-                  Reference opal
+                  Selected opal face
                 </p>
                 <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
                 <p className="mt-1 text-[0.65rem] text-cream/70">

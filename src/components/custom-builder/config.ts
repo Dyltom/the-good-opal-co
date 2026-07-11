@@ -73,34 +73,40 @@ export interface RingStyleOption extends ConfigOption<RingConfig['style']> {
 
 export interface RingStyleGeometryProfile {
   bezelWallOffset: number
+  bezelWallThickness: number
   bezelLipOffset: number
   bezelLipRadius: number
   haloOffset: number
+  haloSupportOffset: number
+  haloSupportRadius: number
   beadRadius: number
   beadCount: number
   shankRadius: number
   shoulderRadius: number
 }
 
-export const ringStyleGeometryProfiles: Record<
-  RingConfig['style'],
-  RingStyleGeometryProfile
-> = {
+export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
     bezelWallOffset: 0.02,
+    bezelWallThickness: 0.026,
     bezelLipOffset: 0.012,
     bezelLipRadius: 0.021,
     haloOffset: 0,
+    haloSupportOffset: 0,
+    haloSupportRadius: 0,
     beadRadius: 0,
     beadCount: 0,
     shankRadius: 0.078,
     shoulderRadius: 0.078,
   },
   coral: {
-    bezelWallOffset: 0.026,
-    bezelLipOffset: 0.017,
-    bezelLipRadius: 0.026,
+    bezelWallOffset: 0.024,
+    bezelWallThickness: 0.03,
+    bezelLipOffset: 0.015,
+    bezelLipRadius: 0.022,
     haloOffset: 0,
+    haloSupportOffset: 0,
+    haloSupportRadius: 0,
     beadRadius: 0,
     beadCount: 0,
     shankRadius: 0.086,
@@ -108,20 +114,26 @@ export const ringStyleGeometryProfiles: Record<
   },
   'sun-moon': {
     bezelWallOffset: 0.021,
+    bezelWallThickness: 0.026,
     bezelLipOffset: 0.013,
     bezelLipRadius: 0.021,
-    haloOffset: 0.064,
-    beadRadius: 0.027,
+    haloOffset: 0.074,
+    haloSupportOffset: 0.056,
+    haloSupportRadius: 0.01,
+    beadRadius: 0.034,
     beadCount: 30,
     shankRadius: 0.081,
     shoulderRadius: 0.081,
   },
   aurora: {
     bezelWallOffset: 0.022,
+    bezelWallThickness: 0.026,
     bezelLipOffset: 0.014,
     bezelLipRadius: 0.022,
-    haloOffset: 0.059,
-    beadRadius: 0.025,
+    haloOffset: 0.076,
+    haloSupportOffset: 0.057,
+    haloSupportRadius: 0.01,
+    beadRadius: 0.035,
     beadCount: 27,
     shankRadius: 0.078,
     shoulderRadius: 0.08,
@@ -219,10 +231,7 @@ export const defaultRingConfig: RingConfig = {
   size: 7,
 }
 
-export function applyRingStyle(
-  config: RingConfig,
-  styleId: RingConfig['style']
-): RingConfig {
+export function applyRingStyle(config: RingConfig, styleId: RingConfig['style']): RingConfig {
   const style = ringStyles.find((option) => option.id === styleId) ?? ringStyles[0]!
   return {
     ...config,

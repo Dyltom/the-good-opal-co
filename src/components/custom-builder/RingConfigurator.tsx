@@ -172,8 +172,9 @@ function RingStylePicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">3. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Each design comes from a photographed Good Opal Co ring previously made in sterling
-        silver.
+        Each design comes from a photographed Good Opal Co ring previously made in sterling silver.
+        The selected stone keeps its real silhouette while the bezel and halo treatment adapt around
+        it.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
@@ -243,9 +244,10 @@ export function RingConfigurator({ initialConfig, opals }: RingConfiguratorProps
   function selectOpal(opal: BuilderOpal) {
     setConfig((current) => {
       const next = { ...current, opalId: opal.id, stone: opal.renderStone }
-      const styled = opal.visual.evidence === 'catalogue'
-        ? applyRingStyle(next, opal.visual.recommendedStyle)
-        : next
+      const styled =
+        opal.visual.evidence === 'catalogue'
+          ? applyRingStyle(next, opal.visual.recommendedStyle)
+          : next
       return { ...styled, shape: shapeForOpal(opal) }
     })
   }

@@ -37,7 +37,7 @@ interface RingSceneProps {
 type StoneDimensions = readonly [width: number, height: number]
 
 const metalColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#d9d9d4',
+  'sterling-silver': '#d2d2cf',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -50,7 +50,7 @@ const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
   oval: [0.4, 0.52],
   elongated: [0.35, 0.62],
   cushion: [0.5, 0.5],
-  pear: [0.42, 0.54],
+  pear: [0.4, 0.5],
 }
 
 const opalPalettes: Record<
@@ -125,11 +125,11 @@ function MetalMaterial({
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
-      metalness={isSterlingSilver ? 0.88 : 1}
+      metalness={1}
       roughness={isSterlingSilver ? Math.max(0.3, roughness) : roughness}
-      clearcoat={isSterlingSilver ? 0.1 : 0.26}
+      clearcoat={isSterlingSilver ? 0.04 : 0.26}
       clearcoatRoughness={isSterlingSilver ? 0.32 : 0.16}
-      envMapIntensity={isSterlingSilver ? 0.95 : 1.2}
+      envMapIntensity={isSterlingSilver ? 1.08 : 1.2}
     />
   )
 }
@@ -279,7 +279,7 @@ function createCabochonGeometry(
   const angularSegments = 72
   const baseZ = -0.045
   const girdleZ = 0.035
-  const domeHeight = Math.min(width, height) * 0.55
+  const domeHeight = Math.min(width, height) * 0.4
   const positions: number[] = [0, 0, girdleZ + domeHeight]
   const uvs: number[] = [0.5, 0.5]
   const indices: number[] = []
@@ -367,6 +367,7 @@ function OpalCabochon({
   dimensions: StoneDimensions
   selectedOpal?: BuilderOpal
 }) {
+  const { gl } = useThree()
   const [width, height] = dimensions
   const texture = useMemo(
     () => createOpalTexture(config.stone, selectedOpal),
@@ -384,6 +385,7 @@ function OpalCabochon({
     nextTexture.colorSpace = SRGBColorSpace
     nextTexture.wrapS = ClampToEdgeWrapping
     nextTexture.wrapT = ClampToEdgeWrapping
+    nextTexture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy())
     if (crop) {
       const repeatX = 1 / crop.zoom
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
@@ -395,7 +397,7 @@ function OpalCabochon({
     }
     nextTexture.needsUpdate = true
     return nextTexture
-  }, [height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
+  }, [gl, height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
 
   useEffect(() => () => texture.dispose(), [texture])
   useEffect(() => () => photoTexture.dispose(), [photoTexture])
@@ -406,15 +408,11 @@ function OpalCabochon({
   if (usesProductPhoto) {
     return (
       <mesh geometry={geometry}>
-        <meshBasicMaterial
-          attach="material-0"
-          map={photoTexture}
-          toneMapped={false}
-        />
+        <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
         <meshBasicMaterial
           attach="material-1"
           color={selectedOpal?.visual.bodyColour ?? palette.body}
-          toneMapped
+          toneMapped={false}
         />
       </mesh>
     )
@@ -454,7 +452,8 @@ function createBezelWallGeometry(
   shape: RingConfig['shape'],
   width: number,
   height: number,
-  offset: number
+  offset: number,
+  thickness: number
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const segments = 96
@@ -463,16 +462,59 @@ function createBezelWallGeometry(
 
   for (let segment = 0; segment < segments; segment += 1) {
     const angle = (segment / segments) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, width, height, offset)
-    positions.push(x, y, -0.07, x, y, 0.055)
+    const [outerX, outerY] = outlinePoint(shape, angle, width, height, offset + thickness / 2)
+    const [innerX, innerY] = outlinePoint(shape, angle, width, height, offset - thickness / 2)
+    positions.push(
+      outerX,
+      outerY,
+      -0.07,
+      outerX,
+      outerY,
+      0.055,
+      innerX,
+      innerY,
+      -0.07,
+      innerX,
+      innerY,
+      0.055
+    )
   }
   for (let segment = 0; segment < segments; segment += 1) {
     const next = (segment + 1) % segments
-    const bottom = segment * 2
-    const top = bottom + 1
-    const nextBottom = next * 2
-    const nextTop = nextBottom + 1
-    indices.push(bottom, nextBottom, nextTop, bottom, nextTop, top)
+    const outerBottom = segment * 4
+    const outerTop = outerBottom + 1
+    const innerBottom = outerBottom + 2
+    const innerTop = outerBottom + 3
+    const nextOuterBottom = next * 4
+    const nextOuterTop = nextOuterBottom + 1
+    const nextInnerBottom = nextOuterBottom + 2
+    const nextInnerTop = nextOuterBottom + 3
+    indices.push(
+      outerBottom,
+      nextOuterBottom,
+      nextOuterTop,
+      outerBottom,
+      nextOuterTop,
+      outerTop,
+      innerBottom,
+      innerTop,
+      nextInnerTop,
+      innerBottom,
+      nextInnerTop,
+      nextInnerBottom,
+      outerTop,
+      nextOuterTop,
+      nextInnerTop,
+      outerTop,
+      nextInnerTop,
+      innerTop,
+      outerBottom,
+      innerBottom,
+      nextInnerBottom,
+      outerBottom,
+      nextInnerBottom,
+      nextOuterBottom
+    )
   }
 
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
@@ -485,15 +527,17 @@ function BezelWall({
   config,
   dimensions,
   offset,
+  thickness,
 }: {
   config: RingConfig
   dimensions: StoneDimensions
   offset: number
+  thickness: number
 }) {
   const [width, height] = dimensions
   const geometry = useMemo(
-    () => createBezelWallGeometry(config.shape, width, height, offset),
-    [config.shape, height, offset, width]
+    () => createBezelWallGeometry(config.shape, width, height, offset, thickness),
+    [config.shape, height, offset, thickness, width]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -552,7 +596,12 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
 
   return (
     <group>
-      <BezelWall config={config} dimensions={dimensions} offset={profile.bezelWallOffset} />
+      <BezelWall
+        config={config}
+        dimensions={dimensions}
+        offset={profile.bezelWallOffset}
+        thickness={profile.bezelWallThickness}
+      />
       <StoneOutline
         config={config}
         dimensions={dimensions}
@@ -566,8 +615,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
           <StoneOutline
             config={config}
             dimensions={dimensions}
-            offset={profile.haloOffset - 0.01}
-            radius={0.012}
+            offset={profile.haloSupportOffset}
+            radius={profile.haloSupportRadius}
             z={0.055}
           />
           {beads.map(({ key, x, y }) => (
@@ -599,10 +648,18 @@ function Shoulder({
   )
 
   return (
-    <mesh>
-      <tubeGeometry args={[curve, 40, radius, 14, false]} />
-      <MetalMaterial metal={metal} roughness={0.2} />
-    </mesh>
+    <group>
+      <mesh>
+        <tubeGeometry args={[curve, 40, radius, 14, false]} />
+        <MetalMaterial metal={metal} roughness={0.2} />
+      </mesh>
+      {[points[0]!, points.at(-1)!].map((point, index) => (
+        <mesh key={index} position={point}>
+          <sphereGeometry args={[radius, 14, 14]} />
+          <MetalMaterial metal={metal} roughness={0.2} />
+        </mesh>
+      ))}
+    </group>
   )
 }
 

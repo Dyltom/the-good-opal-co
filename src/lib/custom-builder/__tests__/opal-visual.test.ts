@@ -36,12 +36,12 @@ describe('custom builder opal visual profiles', () => {
     expect(profile.renderStone).toBe('blue-green')
     expect(profile.visual).toMatchObject({
       silhouette: 'elongated',
-      aspectRatio: 1.79,
+      aspectRatio: 1.77,
       recommendedStyle: 'gemini',
       evidence: 'catalogue',
       transmission: 0.26,
-      bodyColour: '#a8d9d8',
-      textureCrop: { focalX: 0.515, focalY: 0.49, zoom: 5.35 },
+      bodyColour: '#79b7d1',
+      textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.9 },
     })
   })
 
@@ -57,8 +57,12 @@ describe('custom builder opal visual profiles', () => {
       'black-opal'
     )
 
-    expect(white.visual.textureCrop).toEqual({ focalX: 0.5, focalY: 0.51, zoom: 3.4 })
-    expect(semiBlack.visual.textureCrop).toEqual({ focalX: 0.48, focalY: 0.44, zoom: 5.2 })
+    expect(white.visual.textureCrop).toEqual({ focalX: 0.507, focalY: 0.495, zoom: 3.25 })
+    expect(semiBlack.visual.textureCrop).toEqual({
+      focalX: 0.501,
+      focalY: 0.489,
+      zoom: 3.83,
+    })
   })
 
   test('rejects product photos that cannot provide a clean isolated stone face', () => {
