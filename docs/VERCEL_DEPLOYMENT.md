@@ -121,11 +121,12 @@ pnpm test:e2e
 
 Then verify on a Vercel Preview:
 
-- `/api/health` reports `database: connected`. Its `status` and HTTP status are
-  liveness signals; `readiness.status` may be `degraded` while the storefront is
-  online. Do not launch payments until `readiness.revenueReady` is `true`, and do
-  not call the release complete until `readiness.ready` is `true`. Readiness
-  issue codes are deliberately sanitized and never contain environment values.
+- `/api/health` reports liveness with HTTP 200 while the database is connected;
+  `liveness` is `healthy` and `status` may be `degraded` when launch dependencies
+  are missing. `/api/readiness` returns HTTP 200 only when every required launch
+  dependency is ready, otherwise HTTP 503. Do not launch payments until
+  `revenueReady` is `true`, and do not call the release complete until `ready` is
+  `true`. Issue codes are sanitized and never contain environment values.
 - First-admin creation and product/post/media CRUD work.
 - An uploaded image is served from Blob after a new deployment.
 - Desktop and mobile home, store, product, cart, checkout, contact, newsletter, order tracking, legal, and error routes work without console errors.

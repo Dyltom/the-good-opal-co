@@ -51,6 +51,7 @@ Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
 - [ ] Keyboard navigation, focus, labels, headings, contrast, and reduced-motion behavior checked.
 - [ ] No unexpected browser console or Vercel runtime errors.
 - [ ] `/api/health` fails when the database is unavailable and succeeds when connected.
+- [ ] `/api/readiness` returns 200 only when core, payments, email, storage, rate limiting, and database checks pass.
 - [ ] Sitemap and robots use the canonical production origin.
 - [ ] Vercel logs/alerts, Neon backups, Stripe webhook failure alerts, and Resend bounce handling have named owners.
 - [ ] Rollback procedure tested against the previous Vercel deployment and a compatible database migration state.

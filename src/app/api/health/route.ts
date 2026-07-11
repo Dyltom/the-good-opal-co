@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getPayload } from '@/lib/payload'
 import { assessDeploymentReadiness } from '@/lib/deployment-readiness'
+import { checkDatabaseConnection } from '@/lib/database-health'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,16 +12,11 @@ export async function GET() {
   const readiness = assessDeploymentReadiness()
 
   try {
-    const payload = await getPayload()
-    await Promise.race([
-      payload.count({ collection: 'products', overrideAccess: true }),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Database health check timed out')), 4_000)
-      ),
-    ])
+    await checkDatabaseConnection()
 
     const health = {
-      status: 'healthy',
+      status: readiness.ready ? 'healthy' : 'degraded',
+      liveness: 'healthy',
       timestamp: new Date().toISOString(),
       environment: process.env['NODE_ENV'] || 'development',
       database: 'connected',
@@ -33,6 +28,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: 'unhealthy',
+        liveness: 'unhealthy',
         timestamp: new Date().toISOString(),
         database: 'unavailable',
         readiness,
