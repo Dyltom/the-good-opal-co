@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "pnpm payload migrate && pnpm seed && pnpm build",
+  "buildCommand": "pnpm payload migrate && pnpm build",
   "regions": ["syd1"],
   "functions": {
     "src/app/api/webhooks/stripe/route.ts": {
