@@ -112,7 +112,7 @@ function getRingMeasurements(config: RingConfig) {
     centreRadius,
     outerRadius,
     radialThickness,
-    settingY: outerRadius + 0.07,
+    settingY: outerRadius + 0.045,
   }
 }
 
@@ -299,8 +299,8 @@ function createCabochonGeometry(
   const geometry = new BufferGeometry()
   const radialSegments = 18
   const angularSegments = 72
-  const baseZ = -0.045
-  const girdleZ = 0.035
+  const baseZ = -0.04
+  const girdleZ = 0.03
   // The sold collection uses low cabochons. A shallow dome keeps the photographed
   // face legible and avoids ballooning its colour pattern around the shoulders.
   const baseThickness = girdleZ - baseZ
@@ -498,16 +498,16 @@ function createBezelWallGeometry(
     positions.push(
       outerX,
       outerY,
-      -0.07,
+      -0.045,
       outerX,
       outerY,
-      0.055,
+      0.045,
       innerX,
       innerY,
-      -0.07,
+      -0.045,
       innerX,
       innerY,
-      0.055
+      0.045
     )
   }
   for (let segment = 0; segment < segments; segment += 1) {
@@ -652,7 +652,7 @@ function Setting({
         dimensions={dimensions}
         offset={Math.max(0.004, profile.bezelLipOffset - profile.bezelLipRadius * 0.55)}
         radius={Math.max(0.005, profile.bezelLipRadius * 0.42)}
-        z={0.052}
+        z={0.043}
         finish="patina"
       />
       <StoneOutline
@@ -660,7 +660,7 @@ function Setting({
         dimensions={dimensions}
         offset={profile.bezelLipOffset}
         radius={profile.bezelLipRadius}
-        z={0.055}
+        z={0.045}
       />
 
       {config.setting === 'beaded' && (
@@ -670,7 +670,7 @@ function Setting({
             dimensions={dimensions}
             offset={profile.haloSupportOffset}
             radius={profile.haloSupportRadius}
-            z={0.055}
+            z={0.045}
             finish="patina"
           />
           {beads.map(({ key, x, y }) => {
@@ -683,7 +683,7 @@ function Setting({
             return (
               <mesh
                 key={key}
-                position={[x, y, 0.058 + heightVariation]}
+                position={[x, y, 0.048 + heightVariation]}
                 scale={[size, size, flattening]}
               >
                 <sphereGeometry args={[profile.beadRadius, 14, 14]} />
@@ -722,6 +722,10 @@ function Shoulder({
     <group>
       <mesh>
         <tubeGeometry args={[curve, 40, radius, 14, false]} />
+        <MetalMaterial metal={metal} roughness={0.2} />
+      </mesh>
+      <mesh position={points[0]}>
+        <sphereGeometry args={[radius, 14, 14]} />
         <MetalMaterial metal={metal} roughness={0.2} />
       </mesh>
     </group>
@@ -778,13 +782,13 @@ function RingModel({
     () => ({
       left: [
         [gapX, gapY, 0],
-        [-endX - 0.035, measurements.settingY - 0.14, 0],
-        [-endX, measurements.settingY - 0.035, 0],
+        [-endX - 0.025, measurements.settingY - 0.09, 0],
+        [-endX, measurements.settingY - 0.02, 0],
       ] as const,
       right: [
         [-gapX, gapY, 0],
-        [endX + 0.035, measurements.settingY - 0.14, 0],
-        [endX, measurements.settingY - 0.035, 0],
+        [endX + 0.025, measurements.settingY - 0.09, 0],
+        [endX, measurements.settingY - 0.02, 0],
       ] as const,
     }),
     [endX, gapX, gapY, measurements]
