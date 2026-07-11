@@ -2,15 +2,12 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-  ALTER TABLE "search" DISABLE ROW LEVEL SECURITY;
-  ALTER TABLE "search_rels" DISABLE ROW LEVEL SECURITY;
-  DROP TABLE "search" CASCADE;
-  DROP TABLE "search_rels" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_search_fk";
-
-  DROP INDEX "payload_locked_documents_rels_search_id_idx";
-  CREATE UNIQUE INDEX "orders_stripe_payment_intent_id_idx" ON "orders" USING btree ("stripe_payment_intent_id");
-  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN "search_id";`)
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_search_fk";
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_search_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "search_id";
+  DROP TABLE IF EXISTS "search_rels" CASCADE;
+  DROP TABLE IF EXISTS "search" CASCADE;
+  CREATE UNIQUE INDEX IF NOT EXISTS "orders_stripe_payment_intent_id_idx" ON "orders" USING btree ("stripe_payment_intent_id");`)
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
