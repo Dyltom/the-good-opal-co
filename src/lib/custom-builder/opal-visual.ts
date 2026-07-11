@@ -14,7 +14,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.17,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.5, focalY: 0.51, zoom: 3.4 },
+    textureCrop: { focalX: 0.422, focalY: 0.413, zoom: 3.62 },
     bodyColour: '#dce4d6',
   },
   'mintabie-semi-black-opal-1-05-cts': {
@@ -30,7 +30,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.18,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.48, focalY: 0.44, zoom: 5.2 },
+    textureCrop: { focalX: 0.419, focalY: 0.422, zoom: 4.42 },
     bodyColour: '#d9dccd',
   },
   'queensland-crystal-pipe-opal-1-45-cts': {
@@ -38,16 +38,8 @@ const reviewedProfiles: Record<
     aspectRatio: 1.79,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.434, focalY: 0.394, zoom: 5.6 },
+    textureCrop: { focalX: 0.437, focalY: 0.414, zoom: 5.35 },
     bodyColour: '#a8d9d8',
-  },
-  'lightning-ridge-semi-black-opal-1-40-cts': {
-    silhouette: 'pear',
-    aspectRatio: 1.63,
-    evidence: 'catalogue',
-    recommendedStyle: 'aurora',
-    textureCrop: { focalX: 0.419, focalY: 0.468, zoom: 5.75 },
-    bodyColour: '#778f91',
   },
 }
 

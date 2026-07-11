@@ -6,7 +6,6 @@ const reviewedOpals = [
   ['mintabie-semi-black-opal-1-05-cts', 'Mintabie Semi Black Opal 1.05 cts'],
   ['mintabie-semi-black-opal-1-35-cts', 'Mintabie Semi Black Opal 1.35 cts'],
   ['queensland-crystal-pipe-opal-1-45-cts', 'Queensland Crystal Pipe Opal 1.05 cts'],
-  ['lightning-ridge-semi-black-opal-1-40-cts', 'Lightning Ridge Semi Black Opal 1.40 cts'],
 ] as const
 
 describe('custom builder opal visual profiles', () => {
@@ -42,8 +41,33 @@ describe('custom builder opal visual profiles', () => {
       evidence: 'catalogue',
       transmission: 0.26,
       bodyColour: '#a8d9d8',
-      textureCrop: { focalX: 0.434, focalY: 0.394, zoom: 5.6 },
+      textureCrop: { focalX: 0.437, focalY: 0.414, zoom: 5.35 },
     })
+  })
+
+  test('keeps reviewed photo crops aligned with the complete stone face', () => {
+    const white = createOpalVisualProfile(
+      'lightning-ridge-white-opal-1-05-cts',
+      'Lightning Ridge White Opal 1.05 ct',
+      'white-opal'
+    )
+    const semiBlack = createOpalVisualProfile(
+      'mintabie-semi-black-opal-1-35-cts',
+      'Mintabie Semi Black Opal 1.35 cts',
+      'black-opal'
+    )
+
+    expect(white.visual.textureCrop).toEqual({ focalX: 0.422, focalY: 0.413, zoom: 3.62 })
+    expect(semiBlack.visual.textureCrop).toEqual({ focalX: 0.419, focalY: 0.422, zoom: 4.42 })
+  })
+
+  test('rejects product photos that cannot provide a clean isolated stone face', () => {
+    expect(
+      isBuilderEligibleOpal(
+        'lightning-ridge-semi-black-opal-1-40-cts',
+        'Lightning Ridge Semi Black Opal 1.40 cts'
+      )
+    ).toBe(false)
   })
 
   test('creates stable but distinct palettes for individual store stones', () => {

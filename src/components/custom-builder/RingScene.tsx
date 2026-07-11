@@ -22,7 +22,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import type { BuilderOpal, RingConfig } from './config'
+import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
 
 export type RingView = 'three-quarter' | 'front' | 'profile'
 
@@ -403,30 +403,44 @@ function OpalCabochon({
 
   const usesProductPhoto = Boolean(selectedOpal?.visual.textureCrop)
 
+  if (usesProductPhoto) {
+    return (
+      <mesh geometry={geometry}>
+        <meshBasicMaterial
+          attach="material-0"
+          map={photoTexture}
+          toneMapped={false}
+        />
+        <meshBasicMaterial
+          attach="material-1"
+          color={selectedOpal?.visual.bodyColour ?? palette.body}
+          toneMapped
+        />
+      </mesh>
+    )
+  }
+
   return (
     <mesh geometry={geometry}>
       <meshPhysicalMaterial
         attach="material-0"
-        map={usesProductPhoto ? photoTexture : texture}
-        emissive={usesProductPhoto ? '#ffffff' : '#000000'}
-        emissiveMap={usesProductPhoto ? photoTexture : undefined}
-        emissiveIntensity={usesProductPhoto ? 0.42 : 0}
-        color={usesProductPhoto ? '#ffffff' : palette.base}
-        roughness={usesProductPhoto ? 0.4 : 0.13}
-        specularIntensity={usesProductPhoto ? 0.2 : 1}
-        transmission={usesProductPhoto ? 0 : (selectedOpal?.visual.transmission ?? 0.1)}
+        map={texture}
+        color={palette.base}
+        roughness={0.13}
+        specularIntensity={1}
+        transmission={selectedOpal?.visual.transmission ?? 0.1}
         thickness={0.6}
-        clearcoat={usesProductPhoto ? 0.22 : 1}
-        clearcoatRoughness={usesProductPhoto ? 0.18 : 0.035}
-        iridescence={usesProductPhoto ? 0 : 1}
+        clearcoat={1}
+        clearcoatRoughness={0.035}
+        iridescence={1}
         iridescenceIOR={1.42}
         iridescenceThicknessRange={[160, 720]}
-        envMapIntensity={usesProductPhoto ? 0.35 : 1.5}
+        envMapIntensity={1.5}
       />
       <meshPhysicalMaterial
         attach="material-1"
-        map={usesProductPhoto ? photoTexture : texture}
-        color={usesProductPhoto ? '#ffffff' : palette.body}
+        map={texture}
+        color={palette.body}
         roughness={0.24}
         metalness={0}
         clearcoat={0.7}
@@ -439,7 +453,8 @@ function OpalCabochon({
 function createBezelWallGeometry(
   shape: RingConfig['shape'],
   width: number,
-  height: number
+  height: number,
+  offset: number
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const segments = 96
@@ -448,7 +463,7 @@ function createBezelWallGeometry(
 
   for (let segment = 0; segment < segments; segment += 1) {
     const angle = (segment / segments) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, width, height, 0.022)
+    const [x, y] = outlinePoint(shape, angle, width, height, offset)
     positions.push(x, y, -0.07, x, y, 0.055)
   }
   for (let segment = 0; segment < segments; segment += 1) {
@@ -466,11 +481,19 @@ function createBezelWallGeometry(
   return geometry
 }
 
-function BezelWall({ config, dimensions }: { config: RingConfig; dimensions: StoneDimensions }) {
+function BezelWall({
+  config,
+  dimensions,
+  offset,
+}: {
+  config: RingConfig
+  dimensions: StoneDimensions
+  offset: number
+}) {
   const [width, height] = dimensions
   const geometry = useMemo(
-    () => createBezelWallGeometry(config.shape, width, height),
-    [config.shape, height, width]
+    () => createBezelWallGeometry(config.shape, width, height, offset),
+    [config.shape, height, offset, width]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -520,20 +543,21 @@ function StoneOutline({
 function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
   const dimensions = getStoneDimensions(config, selectedOpal)
   const [width, height] = dimensions
-  const beadCount = config.shape === 'pear' ? 28 : 30
+  const profile = ringStyleGeometryProfiles[config.style]
+  const beadCount = profile.beadCount
   const beads = useMemo(
-    () => evenlySpacedOutlinePoints(config.shape, width, height, 0.072, beadCount),
-    [beadCount, config.shape, height, width]
+    () => evenlySpacedOutlinePoints(config.shape, width, height, profile.haloOffset, beadCount),
+    [beadCount, config.shape, height, profile.haloOffset, width]
   )
 
   return (
     <group>
-      <BezelWall config={config} dimensions={dimensions} />
+      <BezelWall config={config} dimensions={dimensions} offset={profile.bezelWallOffset} />
       <StoneOutline
         config={config}
         dimensions={dimensions}
-        offset={0.014}
-        radius={0.024}
+        offset={profile.bezelLipOffset}
+        radius={profile.bezelLipRadius}
         z={0.055}
       />
 
@@ -542,13 +566,13 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
           <StoneOutline
             config={config}
             dimensions={dimensions}
-            offset={0.062}
+            offset={profile.haloOffset - 0.01}
             radius={0.012}
             z={0.055}
           />
           {beads.map(({ key, x, y }) => (
             <mesh key={key} position={[x, y, 0.068]}>
-              <sphereGeometry args={[0.028, 14, 14]} />
+              <sphereGeometry args={[profile.beadRadius, 14, 14]} />
               <MetalMaterial metal={config.metal} roughness={0.25} />
             </mesh>
           ))}
@@ -582,7 +606,15 @@ function Shoulder({
   )
 }
 
-function Shank({ radius, metal }: { radius: number; metal: RingConfig['metal'] }) {
+function Shank({
+  radius,
+  tubeRadius,
+  metal,
+}: {
+  radius: number
+  tubeRadius: number
+  metal: RingConfig['metal']
+}) {
   const curve = useMemo(
     () =>
       new CatmullRomCurve3(
@@ -596,7 +628,7 @@ function Shank({ radius, metal }: { radius: number; metal: RingConfig['metal'] }
 
   return (
     <mesh scale={[1, 1, 1.18]}>
-      <tubeGeometry args={[curve, 128, 0.085, 16, false]} />
+      <tubeGeometry args={[curve, 128, tubeRadius, 16, false]} />
       <MetalMaterial metal={metal} roughness={0.25} />
     </mesh>
   )
@@ -604,9 +636,10 @@ function Shank({ radius, metal }: { radius: number; metal: RingConfig['metal'] }
 
 function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
   const metal = config.metal
+  const styleProfile = ringStyleGeometryProfiles[config.style]
   const [stoneWidth] = getStoneDimensions(config, selectedOpal)
   const measurements = getRingMeasurements(config)
-  const shoulderRadius = 0.085
+  const shoulderRadius = styleProfile.shoulderRadius
   const endX = stoneWidth + 0.025
   const gapAngle = (115 * Math.PI) / 180
   const gapX = measurements.centreRadius * Math.cos(gapAngle)
@@ -615,13 +648,13 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
     () => ({
       left: [
         [gapX, gapY, 0],
-        [-endX - 0.02, measurements.settingY - 0.09, 0],
-        [-endX, measurements.settingY - 0.015, 0],
+        [-endX - 0.02, measurements.settingY - 0.14, 0],
+        [-endX, measurements.settingY - 0.06, 0],
       ] as const,
       right: [
         [-gapX, gapY, 0],
-        [endX + 0.02, measurements.settingY - 0.09, 0],
-        [endX, measurements.settingY - 0.015, 0],
+        [endX + 0.02, measurements.settingY - 0.14, 0],
+        [endX, measurements.settingY - 0.06, 0],
       ] as const,
     }),
     [endX, gapX, gapY, measurements]
@@ -629,7 +662,11 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
 
   return (
     <group>
-      <Shank radius={measurements.centreRadius} metal={metal} />
+      <Shank
+        radius={measurements.centreRadius}
+        tubeRadius={styleProfile.shankRadius}
+        metal={metal}
+      />
 
       <Shoulder points={shoulderPoints.left} radius={shoulderRadius} metal={metal} />
       <Shoulder points={shoulderPoints.right} radius={shoulderRadius} metal={metal} />
@@ -662,9 +699,9 @@ export function RingScene({
       }}
     >
       <ambientLight intensity={0.7} />
-      <directionalLight position={[4, 5, 6]} intensity={2.8} color="#fff2d8" />
-      <directionalLight position={[-4, 1, 3]} intensity={2.1} color="#8ee7ed" />
-      <pointLight position={[0, -2, 3]} intensity={1.1} color="#ff9d8e" />
+      <directionalLight position={[4, 5, 6]} intensity={2.8} color="#fffaf0" />
+      <directionalLight position={[-4, 1, 3]} intensity={1.7} color="#eef4f2" />
+      <pointLight position={[0, -2, 3]} intensity={0.8} color="#fff7eb" />
 
       <CameraPreset view={view} />
 
@@ -675,7 +712,7 @@ export function RingScene({
         <Lightformer
           form="rect"
           intensity={2.5}
-          color="#8fe9ee"
+          color="#eef4f2"
           position={[-4, 1, 2]}
           rotation={[0, Math.PI / 2, 0]}
           scale={[3, 1, 1]}
@@ -683,7 +720,7 @@ export function RingScene({
         <Lightformer
           form="rect"
           intensity={2}
-          color="#ffc2a5"
+          color="#fff2df"
           position={[4, -1, 1]}
           rotation={[0, -Math.PI / 2, 0]}
           scale={[2, 1, 1]}

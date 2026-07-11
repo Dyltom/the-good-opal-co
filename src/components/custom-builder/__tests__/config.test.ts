@@ -4,6 +4,7 @@ import {
   describeRingConfig,
   metalIds,
   metals,
+  ringStyleGeometryProfiles,
   ringConfigFromRecord,
   ringConfigToSearchParams,
 } from '../config'
@@ -80,5 +81,16 @@ describe('custom ring configuration', () => {
     expect(describeRingConfig(defaultRingConfig, 'Lightning Ridge black crystal opal')).toBe(
       'Lightning Ridge black crystal opal, Gemini design, sterling silver, size 7'
     )
+  })
+
+  test('gives every photographed collection design distinct geometry', () => {
+    const profiles = Object.values(ringStyleGeometryProfiles)
+    const signatures = profiles.map((profile) => JSON.stringify(profile))
+
+    expect(new Set(signatures)).toHaveLength(profiles.length)
+    expect(ringStyleGeometryProfiles['sun-moon'].beadCount).toBeGreaterThan(0)
+    expect(ringStyleGeometryProfiles.aurora.beadCount).toBeGreaterThan(0)
+    expect(ringStyleGeometryProfiles.gemini.beadCount).toBe(0)
+    expect(ringStyleGeometryProfiles.coral.beadCount).toBe(0)
   })
 })

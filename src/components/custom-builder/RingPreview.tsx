@@ -107,8 +107,8 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
       {webGlAvailable && (
         <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3 sm:inset-x-7 sm:bottom-7">
           {selectedOpal ? (
-            <div className="flex max-w-[76%] items-center gap-3 rounded-lg bg-black-rich/80 p-2.5 text-cream sm:max-w-[70%]">
-              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-cream/10 sm:h-28 sm:w-28">
+            <div className="flex max-w-[calc(100%_-_3.75rem)] items-center gap-2.5 rounded-lg bg-black-rich/80 p-2 text-cream sm:max-w-[70%] sm:gap-3 sm:p-2.5">
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-cream/10 sm:h-28 sm:w-28">
                 <Image
                   src={selectedOpal.imageUrl}
                   alt=""
@@ -121,7 +121,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
                 <p className="text-[0.65rem] uppercase tracking-[0.12em] text-opal-light">
                   Reference opal
                 </p>
-                <p className="truncate text-xs text-cream/85">{selectedOpal.name}</p>
+                <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
                 <p className="mt-1 text-[0.65rem] text-cream/70">
                   {selectedOpal.stoneTypeLabel}
                   {selectedOpal.weight ? ` · ${selectedOpal.weight} ct` : ''}
@@ -152,11 +152,13 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
             ) : (
               <Play aria-hidden="true" className="h-4 w-4" />
             )}
-            {prefersReducedMotion
-              ? 'Motion reduced'
-              : motionEnabled
-                ? 'Pause motion'
-                : 'Play motion'}
+            <span className="sr-only sm:not-sr-only">
+              {prefersReducedMotion
+                ? 'Motion reduced'
+                : motionEnabled
+                  ? 'Pause motion'
+                  : 'Play motion'}
+            </span>
           </button>
         </div>
       )}

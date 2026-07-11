@@ -71,6 +71,63 @@ export interface RingStyleOption extends ConfigOption<RingConfig['style']> {
   referenceImage: string
 }
 
+export interface RingStyleGeometryProfile {
+  bezelWallOffset: number
+  bezelLipOffset: number
+  bezelLipRadius: number
+  haloOffset: number
+  beadRadius: number
+  beadCount: number
+  shankRadius: number
+  shoulderRadius: number
+}
+
+export const ringStyleGeometryProfiles: Record<
+  RingConfig['style'],
+  RingStyleGeometryProfile
+> = {
+  gemini: {
+    bezelWallOffset: 0.02,
+    bezelLipOffset: 0.012,
+    bezelLipRadius: 0.021,
+    haloOffset: 0,
+    beadRadius: 0,
+    beadCount: 0,
+    shankRadius: 0.078,
+    shoulderRadius: 0.078,
+  },
+  coral: {
+    bezelWallOffset: 0.026,
+    bezelLipOffset: 0.017,
+    bezelLipRadius: 0.026,
+    haloOffset: 0,
+    beadRadius: 0,
+    beadCount: 0,
+    shankRadius: 0.086,
+    shoulderRadius: 0.088,
+  },
+  'sun-moon': {
+    bezelWallOffset: 0.021,
+    bezelLipOffset: 0.013,
+    bezelLipRadius: 0.021,
+    haloOffset: 0.064,
+    beadRadius: 0.027,
+    beadCount: 30,
+    shankRadius: 0.081,
+    shoulderRadius: 0.081,
+  },
+  aurora: {
+    bezelWallOffset: 0.022,
+    bezelLipOffset: 0.014,
+    bezelLipRadius: 0.022,
+    haloOffset: 0.059,
+    beadRadius: 0.025,
+    beadCount: 27,
+    shankRadius: 0.078,
+    shoulderRadius: 0.08,
+  },
+}
+
 export const metals: readonly ConfigOption<RingConfig['metal']>[] = [
   {
     id: 'sterling-silver',
@@ -102,7 +159,7 @@ export const shapes: readonly ConfigOption<RingConfig['shape']>[] = [
 
 export const settings: readonly ConfigOption<RingConfig['setting']>[] = [
   { id: 'bezel', label: 'Full bezel', detail: 'Continuous protective rim' },
-  { id: 'beaded', label: 'Beaded bezel', detail: 'Handmade sterling granulation' },
+  { id: 'beaded', label: 'Bezel with bead halo', detail: 'Full bezel and handmade silver pearls' },
 ]
 
 export const bands: readonly ConfigOption<RingConfig['band']>[] = [

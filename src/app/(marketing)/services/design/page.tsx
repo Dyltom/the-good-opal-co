@@ -50,11 +50,11 @@ const builderOpalPriority = [
   'lightning-ridge-white-opal-1-05-cts',
   'queensland-crystal-pipe-opal-1-45-cts',
   'mintabie-semi-black-opal-1-05-cts',
-  'lightning-ridge-semi-black-opal-1-40-cts',
 ] as const
 
 const productImageOverrides: Record<string, string> = {
   '20211104_234659': '20211104_234659-1-1.jpg',
+  '20210923_173846': '20210923_173846-1.jpg',
   '20211129_165305': '20211129_165305-1.jpg',
   '20211129_164200': '20211129_164200-1-1.jpg',
   '20211129_164004': '20211129_164004-1-1.jpg',
