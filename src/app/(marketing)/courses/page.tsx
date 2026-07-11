@@ -13,7 +13,7 @@ import type { Course, Media } from '@/types/payload-types'
 export const metadata: Metadata = {
   title: 'Opal cutting courses | The Good Opal Co',
   description:
-    'Learn Australian opal anatomy, cutting methods, polishing, and valuation with Steph.',
+    "Explore Steph's public outline for Australian opal anatomy, cutting, polishing, and valuation.",
   alternates: { canonical: '/courses' },
 }
 
@@ -161,7 +161,8 @@ export default async function CoursesPage() {
                       href={`/courses/${course.slug}`}
                       className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
                     >
-                      Explore the curriculum <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                      Explore the public outline{' '}
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Link>
                     <div className="mt-10 max-w-md">
                       <CourseInterestPanel course={course} />
@@ -175,8 +176,8 @@ export default async function CoursesPage() {
           <div className="mt-20 border-y border-warm-grey/70 py-14">
             <h2 className="font-serif text-3xl font-medium">Course details are being reviewed.</h2>
             <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-charcoal/65">
-              The free opal guides remain available while the next course outline and access
-              arrangements are confirmed.
+              The free opal guides remain available while the next course outline, format, and
+              timing are confirmed.
             </p>
             <Link
               href="/blog"

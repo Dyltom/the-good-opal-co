@@ -214,7 +214,7 @@ export function ContactForm({
 
       <div>
         <Label htmlFor="timeline">
-          {isCourseIntent ? 'When would you like to begin?' : 'When do you need it?'}{' '}
+          {isCourseIntent ? 'What timing would suit you?' : 'When do you need it?'}{' '}
           <span className="text-gray-500">(optional)</span>
         </Label>
         <Input
@@ -258,7 +258,7 @@ export function ContactForm({
             Sending...
           </>
         ) : isCourseIntent ? (
-          'Register Interest'
+          'Send Course Interest'
         ) : (
           'Send Message'
         )}

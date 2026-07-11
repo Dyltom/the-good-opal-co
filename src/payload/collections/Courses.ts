@@ -8,7 +8,8 @@ export const Courses: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'status', 'format', 'availability', 'publishedAt', 'updatedAt'],
     group: 'Education',
-    description: 'Public course outlines and interest status. Lesson access is managed separately.',
+    description:
+      'Public course outlines and interest-enquiry status. No lessons or payments are managed here.',
   },
   access: {
     read: publishedOrAdmin,
@@ -39,7 +40,10 @@ export const Courses: CollectionConfig = {
       name: 'introduction',
       type: 'textarea',
       required: true,
-      admin: { description: 'Public course overview. Do not include protected lesson content.' },
+      admin: {
+        description:
+          'Public overview only. Do not imply confirmed lessons, dates, live support, bookings, or paid availability.',
+      },
     },
     { name: 'featuredImage', type: 'upload', relationTo: 'media' },
     {
@@ -83,7 +87,7 @@ export const Courses: CollectionConfig = {
       required: true,
       defaultValue: 'register-interest',
       options: [
-        { label: 'Register interest', value: 'register-interest' },
+        { label: 'Accepting interest enquiries', value: 'register-interest' },
         { label: 'Coming soon', value: 'coming-soon' },
         { label: 'Closed', value: 'closed' },
       ],

@@ -743,7 +743,7 @@ export interface Enquiry {
   createdAt: string;
 }
 /**
- * Public course outlines and interest status. Lesson access is managed separately.
+ * Public course outlines and interest-enquiry status. No lessons or payments are managed here.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "courses".
@@ -761,7 +761,7 @@ export interface Course {
   slug: string;
   summary: string;
   /**
-   * Public course overview. Do not include protected lesson content.
+   * Public overview only. Do not imply confirmed lessons, dates, live support, bookings, or paid availability.
    */
   introduction: string;
   featuredImage?: (number | null) | Media;

@@ -50,7 +50,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             {isCustomIntent
               ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
               : isCourseIntent
-                ? 'Tell us what you want to learn and your current experience. We will share confirmed access and course details when they are ready.'
+                ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
                 : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
           </p>
         </div>

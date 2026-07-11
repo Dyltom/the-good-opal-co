@@ -16,7 +16,7 @@ export function courseInterestHref(courseTitle: string): string {
   const params = new URLSearchParams({
     subject: 'course-interest',
     product: courseTitle,
-    message: `I would like to register my interest in ${courseTitle}. Please let me know when access, timing, and course details are confirmed.`,
+    message: `I would like updates about ${courseTitle}. Please let me know when its format, timing, and availability are confirmed. I understand this enquiry is not enrolment or payment.`,
   })
 
   return `/contact?${params.toString()}`

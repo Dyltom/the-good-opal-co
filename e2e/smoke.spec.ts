@@ -88,19 +88,21 @@ test('course interest keeps course context through to contact', async ({ page })
   await expect(
     page.getByRole('heading', { level: 1, name: 'Learn what the stone can become.' })
   ).toBeVisible()
-  const courseLink = page.getByRole('link', { name: 'Explore the curriculum' })
+  const courseLink = page.getByRole('link', { name: 'Explore the public outline' })
   expect(await courseLink.count()).toBeGreaterThan(0)
   const courseHref = await courseLink.first().getAttribute('href')
   expect(courseHref).toMatch(/^\/courses\/[a-z0-9-]+$/)
   await page.goto(courseHref!)
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Opal Cutting')
-  await page.getByRole('link', { name: 'Register my interest' }).click()
+  await expect(page.getByText('It is not enrolment or payment.')).toBeVisible()
+  await page.getByRole('link', { name: 'Send course interest' }).click()
   await expect(page).toHaveURL(/subject=course-interest/)
   await expect(page.getByLabel('What can we help with? *')).toHaveValue('course-interest')
   await expect(page.getByLabel('Course, product, or piece (optional)')).toHaveValue(
     'The Complete Opal Cutting & Valuation Course'
   )
-  await expect(page.getByLabel('Message *')).toHaveValue(/register my interest/i)
+  await expect(page.getByLabel('Message *')).toHaveValue(/not enrolment or payment/i)
+  await expect(page.getByRole('button', { name: 'Send Course Interest' })).toBeVisible()
 })
 
 test('contact form exposes validation and accessible field names', async ({ page }) => {

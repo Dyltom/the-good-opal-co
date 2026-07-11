@@ -17,13 +17,13 @@ interface Slide {
   backgroundImage?: string
   gradient: string
 }
-
 const slides: Slide[] = [
   {
     id: 1,
     badge: 'OUR COLLECTION',
     title: 'Opals',
-    description: 'Our high-quality opals are sourced from all corners of Australia and meticulously handcrafted in-house. Each piece is unique—explore our extensive collection to find the perfect opal to collect or set in jewellery.',
+    description:
+      'Our high-quality opals are sourced from all corners of Australia and meticulously handcrafted in-house. Each piece is unique—explore our extensive collection to find the perfect opal to collect or set in jewellery.',
     cta: {
       label: 'SHOP OPALS',
       href: '/store?category=opals',
@@ -35,7 +35,8 @@ const slides: Slide[] = [
     id: 2,
     badge: 'OUR COURSES',
     title: 'Learn How to Cut Opal',
-    description: 'Join one of our guided courses to learn how to cut opal. Benefit from our years of expertise and receive 1:1 guidance as you practice cutting and valuing opal.',
+    description:
+      "Explore Steph's public outline for learning opal cutting and valuation, then send an interest enquiry to hear when the format, timing, and availability are confirmed.",
     cta: {
       label: 'EXPLORE COURSES',
       href: '/courses',
@@ -47,7 +48,8 @@ const slides: Slide[] = [
     id: 3,
     badge: 'TRENDING',
     title: 'Jewellery',
-    description: 'Explore our jewellery collection or design a one-of-a-kind piece to treat yourself or gift to someone special.',
+    description:
+      'Explore our jewellery collection or design a one-of-a-kind piece to treat yourself or gift to someone special.',
     cta: {
       label: 'SHOP JEWELLERY',
       href: '/store?category=jewellery',
@@ -92,24 +94,24 @@ export function HeroCarousel() {
   }
 
   return (
-    <section className="relative h-[500px] md:h-[600px] lg:h-[650px] overflow-hidden bg-charcoal">
+    <section className="relative h-[500px] overflow-hidden bg-charcoal md:h-[600px] lg:h-[650px]">
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
           key={slide.id}
           className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
             index === currentSlide
-              ? 'opacity-100 translate-x-0'
+              ? 'translate-x-0 opacity-100'
               : index < currentSlide
-              ? 'opacity-0 -translate-x-full'
-              : 'opacity-0 translate-x-full'
+                ? '-translate-x-full opacity-0'
+                : 'translate-x-full opacity-0'
           }`}
         >
           {/* Background Image with Ken Burns Effect */}
           {slide.backgroundImage && (
             <>
               <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute inset-0 w-full h-full">
+                <div className="absolute inset-0 h-full w-full">
                   <OptimizedImage
                     src={slide.backgroundImage}
                     alt={slide.title}
@@ -118,7 +120,7 @@ export function HeroCarousel() {
                     height={800}
                     priority={index === 0}
                     quality={90}
-                    className={`w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${
+                    className={`h-full w-full object-cover transition-transform duration-[8000ms] ease-out ${
                       index === currentSlide ? 'scale-110' : 'scale-100'
                     }`}
                     sizes="100vw"
@@ -136,60 +138,70 @@ export function HeroCarousel() {
           )}
 
           {/* Subtle shimmer overlay */}
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="pointer-events-none absolute inset-0 opacity-20">
             <div
-              className={`absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-[3000ms] ${
+              className={`absolute left-0 top-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-[3000ms] ${
                 index === currentSlide ? 'translate-x-full' : '-translate-x-full'
               }`}
-              style={{ transform: index === currentSlide ? 'translateX(100%)' : 'translateX(-100%)' }}
+              style={{
+                transform: index === currentSlide ? 'translateX(100%)' : 'translateX(-100%)',
+              }}
             />
           </div>
 
           {/* Content with Entrance Animations */}
-          <div className="relative z-10 h-full flex items-center">
-            <div className="max-w-screen-xl mx-auto px-6 w-full">
+          <div className="relative z-10 flex h-full items-center">
+            <div className="mx-auto w-full max-w-screen-xl px-6">
               <div className="max-w-3xl">
                 {/* Slide Counter - Fade in */}
-                <div className={`flex items-center gap-4 mb-6 transition-all duration-700 delay-100 ${
-                  index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}>
-                  <span className="text-7xl md:text-8xl font-bold text-white/40">
-                    0{slide.id}
-                  </span>
-                  <span className="text-2xl md:text-3xl font-bold text-white/60">
-                    / 03
-                  </span>
+                <div
+                  className={`mb-6 flex items-center gap-4 transition-all delay-100 duration-700 ${
+                    index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                  }`}
+                >
+                  <span className="text-7xl font-bold text-white/40 md:text-8xl">0{slide.id}</span>
+                  <span className="text-2xl font-bold text-white/60 md:text-3xl">/ 03</span>
                 </div>
 
                 {/* Badge - Fade in with delay */}
-                <p className={`text-sm uppercase tracking-[0.3em] text-white/90 font-bold mb-4 transition-all duration-700 delay-200 ${
-                  index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}>
+                <p
+                  className={`mb-4 text-sm font-bold uppercase tracking-[0.3em] text-white/90 transition-all delay-200 duration-700 ${
+                    index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                  }`}
+                >
                   {slide.badge}
                 </p>
 
                 {/* Title - Slide in from left */}
-                <h1 className={`text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-none transition-all duration-700 delay-300 ${
-                  index === currentSlide ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
-                }`}>
+                <h1
+                  className={`mb-6 font-serif text-5xl font-bold leading-none text-white transition-all delay-300 duration-700 md:text-7xl lg:text-8xl ${
+                    index === currentSlide
+                      ? 'translate-x-0 opacity-100'
+                      : '-translate-x-8 opacity-0'
+                  }`}
+                >
                   {slide.title}
                 </h1>
 
                 {/* Description - Fade in with delay */}
-                <p className={`text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-2xl transition-all duration-700 delay-500 ${
-                  index === currentSlide ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                }`}>
+                <p
+                  className={`mb-10 max-w-2xl text-lg leading-relaxed text-white/90 transition-all delay-500 duration-700 md:text-xl ${
+                    index === currentSlide ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                  }`}
+                >
                   {slide.description}
                 </p>
 
                 {/* CTA - Pop in with delay */}
-                <div className={`transition-all duration-700 delay-700 ${
-                  index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                }`}>
+                <div
+                  className={`transition-all delay-700 duration-700 ${
+                    index === currentSlide ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                  }`}
+                >
                   <Button
                     asChild
                     size="lg"
-                    className="bg-opal-electric text-white hover:bg-opal-deep hover:scale-105 font-bold px-10 py-6 text-base shadow-xl transition-all duration-300"
+                    className="bg-opal-electric px-10 py-6 text-base font-bold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:bg-opal-deep"
                   >
                     <Link href={slide.cta.href}>{slide.cta.label}</Link>
                   </Button>
@@ -203,33 +215,41 @@ export function HeroCarousel() {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+        className="group absolute left-6 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 md:h-14 md:w-14"
         aria-label="Previous slide"
       >
-        <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-6 w-6 transition-transform group-hover:scale-110"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 group"
+        className="group absolute right-6 top-1/2 z-20 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/20 md:h-14 md:w-14"
         aria-label="Next slide"
       >
-        <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-6 w-6 transition-transform group-hover:scale-110"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-3">
+      <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-3">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`transition-all duration-300 rounded-full ${
-              index === currentSlide
-                ? 'w-12 h-3 bg-white'
-                : 'w-3 h-3 bg-white/40 hover:bg-white/60'
+            className={`rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'h-3 w-12 bg-white' : 'h-3 w-3 bg-white/40 hover:bg-white/60'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

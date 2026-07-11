@@ -146,10 +146,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 id="curriculum-heading"
                 className="mt-3 font-serif text-4xl font-medium sm:text-5xl"
               >
-                Course curriculum
+                Course outline
               </h2>
               <p className="mt-4 max-w-2xl font-sans text-sm leading-6 text-charcoal/65">
-                The outline shows the subjects covered. Lesson materials remain account-gated.
+                This public outline shows the planned subjects. It does not include lessons or
+                promise a start date.
               </p>
               <div className="mt-8">
                 <CourseCurriculum modules={course.curriculum} />
