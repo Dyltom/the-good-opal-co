@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { CartButton } from '@/components/cart/CartButton'
@@ -101,7 +101,11 @@ export function Navigation({
           </div>
 
           <div className="ml-auto hidden w-full max-w-[19rem] xl:block">
-            <SearchInput variant="default" />
+            <Suspense
+              fallback={<div aria-hidden="true" className="h-11 rounded-md bg-white/65" />}
+            >
+              <SearchInput variant="default" />
+            </Suspense>
           </div>
 
           {cta ? (
@@ -156,7 +160,11 @@ export function Navigation({
             </div>
 
             <div className="py-5">
-              <SearchInput variant="mobile" onClose={closeMenu} />
+              <Suspense
+                fallback={<div aria-hidden="true" className="h-11 rounded-md bg-white/65" />}
+              >
+                <SearchInput variant="mobile" onClose={closeMenu} />
+              </Suspense>
             </div>
 
             <div className="flex flex-col border-t border-warm-grey/55">
