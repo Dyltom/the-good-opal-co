@@ -242,6 +242,7 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
       previousRefundedAmount: order.stripeRefundedAmount ?? 0,
       stripeRefundedAmount: charge.amount_refunded,
     })
+    const reconciliationNotes: string[] = []
 
     if (adjustment.refundDelta > 0) {
       const customerResult = await payload.find({
@@ -252,17 +253,19 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
       })
       const customer = customerResult.docs[0]
       if (!customer) {
-        throw new Error(`Customer record missing for Stripe order ${order.orderNumber}`)
+        reconciliationNotes.push(
+          `Customer CRM record was missing; order and inventory refund reconciliation continued.`
+        )
+      } else {
+        await payload.update({
+          collection: 'customers',
+          id: customer.id,
+          req,
+          data: {
+            totalSpent: Math.max(0, (customer.totalSpent ?? 0) - adjustment.refundDelta / 100),
+          },
+        })
       }
-
-      await payload.update({
-        collection: 'customers',
-        id: customer.id,
-        req,
-        data: {
-          totalSpent: Math.max(0, (customer.totalSpent ?? 0) - adjustment.refundDelta / 100),
-        },
-      })
     }
 
     const restockNotes: string[] = []
@@ -294,6 +297,7 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
       collection: 'orders',
       id: order.id,
       req,
+      context: { stripeRefundReconciliation: true },
       data: {
         status: isFullyRefunded ? 'refunded' : order.status,
         stripeRefundedAmount: adjustment.refundedAmount,
@@ -306,6 +310,7 @@ async function markOrderRefunded(charge: Stripe.Charge): Promise<void> {
             ? [
                 order.notes,
                 `Stripe charge ${charge.id} cumulative refund: ${(adjustment.refundedAmount / 100).toFixed(2)} ${charge.currency.toUpperCase()}.${isFullyRefunded ? '' : ' Inventory unchanged.'}`,
+                ...reconciliationNotes,
                 ...restockNotes,
               ]
                 .filter(Boolean)

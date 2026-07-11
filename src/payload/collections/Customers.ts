@@ -259,5 +259,26 @@ export const Customers: CollectionConfig = {
         return data
       },
     ],
+    beforeDelete: [
+      async ({ id, req }) => {
+        const customer = await req.payload.findByID({
+          collection: 'customers',
+          id,
+          req,
+          overrideAccess: true,
+        })
+        const relatedOrders = await req.payload.count({
+          collection: 'orders',
+          req,
+          overrideAccess: true,
+          where: { 'customer.email': { equals: customer.email.toLowerCase() } },
+        })
+        if (relatedOrders.totalDocs > 0) {
+          throw new Error(
+            'Customer has financial order records and cannot be deleted. Remove marketing consent or personal notes instead.'
+          )
+        }
+      },
+    ],
   },
 }

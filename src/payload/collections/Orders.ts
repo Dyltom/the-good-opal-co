@@ -460,7 +460,17 @@ export const Orders: CollectionConfig = {
   timestamps: true,
   hooks: {
     beforeChange: [
-      ({ data, operation }) => {
+      ({ context, data, operation, originalDoc }) => {
+        if (
+          operation === 'update' &&
+          data?.status === 'refunded' &&
+          originalDoc?.status !== 'refunded' &&
+          !context['stripeRefundReconciliation']
+        ) {
+          throw new Error(
+            'Refund status is set only after Stripe confirms the money movement. Refund the payment in Stripe first.'
+          )
+        }
         // Generate order number on create
         if (operation === 'create' && !data?.orderNumber) {
           const timestamp = Date.now().toString(36).toUpperCase()

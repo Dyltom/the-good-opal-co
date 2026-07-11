@@ -185,6 +185,19 @@ describe('deployment config', () => {
     expect(checkout).not.toContain('cartItems: JSON.stringify')
   })
 
+  test('admin and refund reconciliation cannot falsify financial state', () => {
+    const orders = read('src/payload/collections/Orders.ts')
+    const customers = read('src/payload/collections/Customers.ts')
+    const webhook = read('src/app/api/webhooks/stripe/route.ts')
+
+    expect(orders).toContain("!context['stripeRefundReconciliation']")
+    expect(orders).toContain('Refund status is set only after Stripe confirms')
+    expect(customers).toContain('Customer has financial order records and cannot be deleted')
+    expect(webhook).toContain('context: { stripeRefundReconciliation: true }')
+    expect(webhook).toContain('order and inventory refund reconciliation continued')
+    expect(webhook).not.toContain('Customer record missing for Stripe order')
+  })
+
   test('newsletter links use persisted hashed tokens and a real unsubscribe route', () => {
     const service = read('src/lib/newsletter/service.ts')
     const unsubscribe = read('src/app/(marketing)/newsletter/unsubscribe/page.tsx')
