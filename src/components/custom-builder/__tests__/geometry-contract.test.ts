@@ -14,7 +14,7 @@ function capturedNumber(pattern: RegExp, label: string): number {
 describe('custom ring geometry contract', () => {
   test('mounts the setting face upright at the top of the shank', () => {
     expect(sceneSource).toContain(
-      '<group position={[0, measurements.settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>'
+      '<group position={[0, settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>'
     )
 
     // Local stone +Z becomes world +Y after this rotation: the face points away
@@ -33,19 +33,12 @@ describe('custom ring geometry contract', () => {
   })
 
   test('seats the bezel on the band while keeping the stone base clear', () => {
-    const settingLift = capturedNumber(/settingY: outerRadius \+ ([\d.]+)/, 'setting lift')
-    const bezelBottom = capturedNumber(/outerY,\s+(-[\d.]+),\s+outerX/, 'bezel bottom')
-    const bezelTop = capturedNumber(
-      /outerY,\s+-[\d.]+,\s+outerX,\s+outerY,\s+([\d.]+)/,
-      'bezel top'
-    )
-    const stoneBase = capturedNumber(/const baseZ = (-[\d.]+)/, 'stone base')
-    const stoneGirdle = capturedNumber(/const girdleZ = ([\d.]+)/, 'stone girdle')
-
-    expect(settingLift + bezelBottom).toBeCloseTo(0)
-    expect(settingLift + stoneBase).toBeGreaterThan(0)
-    expect(bezelBottom).toBeLessThan(stoneBase)
-    expect(bezelTop).toBeGreaterThan(stoneGirdle)
+    expect(sceneSource).toContain('const bezelBottom = depthProfile.baseZ - 0.012')
+    expect(sceneSource).toContain('const bezelTop = depthProfile.girdleZ + 0.025')
+    expect(sceneSource).toContain('const settingBottom = depthProfile.baseZ - 0.012')
+    expect(sceneSource).toContain('const settingY = measurements.outerRadius - settingBottom')
+    expect(sceneSource).toContain('bottomZ={bezelBottom}')
+    expect(sceneSource).toContain('topZ={bezelTop}')
   })
 
   test('keeps ring and cabochon proportions monotonic and shape-specific', () => {
@@ -69,8 +62,9 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('elongated: [0.35, 0.62]')
     expect(sceneSource).toContain('cushion: [0.5, 0.5]')
     expect(sceneSource).toContain('pear: [0.4, 0.5]')
-    expect(sceneSource).toContain('depthMm * 0.05 - baseThickness')
-    expect(sceneSource).toContain(': Math.min(width, height) * 0.19')
+    expect(sceneSource).toContain('depthMm * 0.1')
+    expect(sceneSource).toContain(': Math.min(width, height) * 0.38')
+    expect(sceneSource).toContain('const domeHeight = totalDepth * 0.58')
     expect(sceneSource).toContain("if (shape === 'elongated')")
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), 0.62)')
   })
@@ -117,10 +111,12 @@ describe('custom ring geometry contract', () => {
     }
   })
 
-  test('does not wash reviewed product photography with a white material overlay', () => {
-    expect(sceneSource).toContain(
-      '<meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />'
-    )
+  test('keeps reviewed product photography untinted while restoring polished depth', () => {
+    expect(sceneSource).toContain('map={photoTexture}')
+    expect(sceneSource).toContain('emissiveMap={photoTexture}')
+    expect(sceneSource).toContain('clearcoat={0.92}')
+    expect(sceneSource).toContain('iridescence={0.18}')
+    expect(sceneSource).not.toContain('<meshBasicMaterial attach="material-0"')
     expect(sceneSource).not.toContain('color="#f4fbf8"')
   })
 

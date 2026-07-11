@@ -25,10 +25,10 @@ const reviewedProfiles: Record<
     dimensionsMm: { width: 6, length: 7, depth: 3 },
   },
   'mintabie-semi-black-opal-1-05-cts': {
-    silhouette: 'cushion',
-    aspectRatio: 1.16,
+    silhouette: 'oval',
+    aspectRatio: 1.3,
     evidence: 'catalogue',
-    recommendedStyle: 'coral',
+    recommendedStyle: 'gemini',
     textureCrop: { focalX: 0.504, focalY: 0.487, zoom: 4.81 },
     bodyColour: '#a8c4b8',
     dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },

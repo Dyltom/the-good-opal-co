@@ -38,6 +38,12 @@ interface RingSceneProps {
 
 type StoneDimensions = readonly [width: number, height: number]
 
+interface CabochonDepthProfile {
+  baseZ: number
+  domeHeight: number
+  girdleZ: number
+}
+
 const metalColours: Record<RingConfig['metal'], string> = {
   'sterling-silver': '#d2d3cf',
   '14k-gold': '#cda84d',
@@ -104,15 +110,11 @@ function getRingMeasurements(config: RingConfig) {
   const insideDiameterMm = 11.63 + 0.8128 * config.size
   const innerRadius = insideDiameterMm / 20
   const radialThickness = 0.085
-  const axialHalfWidth = 0.11
   const centreRadius = innerRadius + radialThickness
   const outerRadius = centreRadius + radialThickness
   return {
-    axialHalfWidth,
     centreRadius,
     outerRadius,
-    radialThickness,
-    settingY: outerRadius + 0.045,
   }
 }
 
@@ -290,6 +292,22 @@ function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpa
   return texture
 }
 
+function getCabochonDepthProfile(
+  width: number,
+  height: number,
+  depthMm?: number
+): CabochonDepthProfile {
+  const girdleZ = 0.028
+  const totalDepth = depthMm ? depthMm * 0.1 : Math.min(width, height) * 0.38
+  const domeHeight = totalDepth * 0.58
+
+  return {
+    baseZ: girdleZ - (totalDepth - domeHeight),
+    domeHeight,
+    girdleZ,
+  }
+}
+
 function createCabochonGeometry(
   shape: RingConfig['shape'],
   width: number,
@@ -299,14 +317,7 @@ function createCabochonGeometry(
   const geometry = new BufferGeometry()
   const radialSegments = 18
   const angularSegments = 72
-  const baseZ = -0.04
-  const girdleZ = 0.03
-  // The sold collection uses low cabochons. A shallow dome keeps the photographed
-  // face legible and avoids ballooning its colour pattern around the shoulders.
-  const baseThickness = girdleZ - baseZ
-  const domeHeight = depthMm
-    ? Math.max(0.025, depthMm * 0.05 - baseThickness)
-    : Math.min(width, height) * 0.19
+  const { baseZ, domeHeight, girdleZ } = getCabochonDepthProfile(width, height, depthMm)
   const positions: number[] = [0, 0, girdleZ + domeHeight]
   const uvs: number[] = [0.5, 0.5]
   const indices: number[] = []
@@ -403,7 +414,8 @@ function OpalCabochon({
     [config.stone, selectedOpal]
   )
   const geometry = useMemo(
-    () => createCabochonGeometry(config.shape, width, height, selectedOpal?.visual.dimensionsMm?.depth),
+    () =>
+      createCabochonGeometry(config.shape, width, height, selectedOpal?.visual.dimensionsMm?.depth),
     [config.shape, height, selectedOpal?.visual.dimensionsMm?.depth, width]
   )
   const palette = opalPalettes[config.stone]
@@ -438,7 +450,21 @@ function OpalCabochon({
   if (usesProductPhoto) {
     return (
       <mesh geometry={geometry}>
-        <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
+        <meshPhysicalMaterial
+          attach="material-0"
+          map={photoTexture}
+          emissive="#f4f1e9"
+          emissiveMap={photoTexture}
+          emissiveIntensity={0.22}
+          roughness={0.2}
+          metalness={0}
+          clearcoat={0.92}
+          clearcoatRoughness={0.055}
+          iridescence={0.18}
+          iridescenceIOR={1.42}
+          iridescenceThicknessRange={[220, 520]}
+          envMapIntensity={0.72}
+        />
         <meshStandardMaterial
           attach="material-1"
           color={selectedOpal?.visual.bodyColour ?? palette.body}
@@ -484,7 +510,9 @@ function createBezelWallGeometry(
   width: number,
   height: number,
   offset: number,
-  thickness: number
+  thickness: number,
+  bottomZ: number,
+  topZ: number
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const segments = 96
@@ -498,16 +526,16 @@ function createBezelWallGeometry(
     positions.push(
       outerX,
       outerY,
-      -0.045,
+      bottomZ,
       outerX,
       outerY,
-      0.045,
+      topZ,
       innerX,
       innerY,
-      -0.045,
+      bottomZ,
       innerX,
       innerY,
-      0.045
+      topZ
     )
   }
   for (let segment = 0; segment < segments; segment += 1) {
@@ -557,18 +585,22 @@ function createBezelWallGeometry(
 function BezelWall({
   config,
   dimensions,
+  bottomZ,
   offset,
   thickness,
+  topZ,
 }: {
   config: RingConfig
   dimensions: StoneDimensions
+  bottomZ: number
   offset: number
   thickness: number
+  topZ: number
 }) {
   const [width, height] = dimensions
   const geometry = useMemo(
-    () => createBezelWallGeometry(config.shape, width, height, offset, thickness),
-    [config.shape, height, offset, thickness, width]
+    () => createBezelWallGeometry(config.shape, width, height, offset, thickness, bottomZ, topZ),
+    [bottomZ, config.shape, height, offset, thickness, topZ, width]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -633,6 +665,13 @@ function Setting({
   const dimensions = getStoneDimensions(config, selectedOpal)
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
+  const depthProfile = getCabochonDepthProfile(
+    width,
+    height,
+    selectedOpal?.visual.dimensionsMm?.depth
+  )
+  const bezelBottom = depthProfile.baseZ - 0.012
+  const bezelTop = depthProfile.girdleZ + 0.025
   const beadCount = profile.beadCount
   const beads = useMemo(
     () => evenlySpacedOutlinePoints(config.shape, width, height, profile.haloOffset, beadCount),
@@ -644,8 +683,10 @@ function Setting({
       <BezelWall
         config={config}
         dimensions={dimensions}
+        bottomZ={bezelBottom}
         offset={profile.bezelWallOffset}
         thickness={profile.bezelWallThickness}
+        topZ={bezelTop}
       />
       <StoneOutline
         config={config}
@@ -722,9 +763,9 @@ function RingShank({
   const curve = useMemo(() => {
     const endX = stoneWidth - 0.02
     const ringPoints = Array.from({ length: 97 }, (_, index) => {
-          const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
-          return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
-        })
+      const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
+      return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
+    })
     return new CatmullRomCurve3(
       [
         new Vector3(-endX, settingY - 0.02, 0),
@@ -758,21 +799,28 @@ function RingModel({
 }) {
   const metal = config.metal
   const styleProfile = ringStyleGeometryProfiles[config.style]
-  const [stoneWidth] = getStoneDimensions(config, selectedOpal)
+  const [stoneWidth, stoneHeight] = getStoneDimensions(config, selectedOpal)
   const measurements = getRingMeasurements(config)
+  const depthProfile = getCabochonDepthProfile(
+    stoneWidth,
+    stoneHeight,
+    selectedOpal?.visual.dimensionsMm?.depth
+  )
+  const settingBottom = depthProfile.baseZ - 0.012
+  const settingY = measurements.outerRadius - settingBottom
 
   return (
     <group>
       <RingShank
         metal={metal}
         radius={measurements.centreRadius}
-        settingY={measurements.settingY}
+        settingY={settingY}
         shoulderRadius={styleProfile.shoulderRadius}
         stoneWidth={stoneWidth}
         tubeRadius={styleProfile.shankRadius}
       />
 
-      <group position={[0, measurements.settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <group position={[0, settingY, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <Setting config={config} opalImageUrls={opalImageUrls} selectedOpal={selectedOpal} />
       </group>
     </group>

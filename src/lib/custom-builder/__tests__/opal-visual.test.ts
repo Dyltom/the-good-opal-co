@@ -77,6 +77,21 @@ describe('custom builder opal visual profiles', () => {
     expect(semiBlack.visual.dimensionsMm).toEqual({ width: 7, length: 8, depth: 3.5 })
   })
 
+  test('matches the oval Mintabie 1.05 stone to the Gemini setting', () => {
+    const mintabie = createOpalVisualProfile(
+      'mintabie-semi-black-opal-1-05-cts',
+      'Mintabie Semi Black Opal 1.05 cts',
+      'black-opal'
+    )
+
+    expect(mintabie.visual).toMatchObject({
+      silhouette: 'oval',
+      aspectRatio: 1.3,
+      recommendedStyle: 'gemini',
+      dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
+    })
+  })
+
   test('rejects product photos that cannot provide a clean isolated stone face', () => {
     expect(
       isBuilderEligibleOpal(
