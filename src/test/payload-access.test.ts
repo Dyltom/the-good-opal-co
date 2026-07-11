@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import type { Access, PayloadRequest } from 'payload'
 import {
   isAdmin,
+  isAdminField,
   isAdminOrFirstUser,
   isAdminOrSelf,
   publishedOrAdmin,
@@ -42,7 +43,7 @@ describe('Payload access rules', () => {
       const field = Products.fields.find(
         (candidate) => 'name' in candidate && candidate.name === name
       )
-      expect(field && 'access' in field ? field.access?.read : undefined, name).toBe(isAdmin)
+      expect(field && 'access' in field ? field.access?.read : undefined, name).toBe(isAdminField)
     }
   })
 

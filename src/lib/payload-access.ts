@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto'
-import type { Access } from 'payload'
+import type { Access, FieldAccess } from 'payload'
 
 type UserWithRole = {
   id: string | number
@@ -39,6 +39,8 @@ function matchesBootstrapPassword(requestedPassword: unknown): boolean {
 }
 
 export const isAdmin: Access = ({ req }) => requestUser(req.user)?.role === 'admin'
+
+export const isAdminField: FieldAccess = ({ req }) => requestUser(req.user)?.role === 'admin'
 
 export const isAdminOrFirstUser: Access = async ({ req, data }) => {
   if (requestUser(req.user)?.role === 'admin') return true

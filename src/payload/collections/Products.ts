@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
+import { isAdmin, isAdminField, publishedOrAdmin } from '../../lib/payload-access.ts'
 import {
   validateBuilderProduct,
   validateCurrencyAmount,
@@ -162,7 +162,7 @@ export const Products: CollectionConfig = {
       type: 'number',
       unique: true,
       index: true,
-      access: { read: isAdmin },
+      access: { read: isAdminField },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -172,7 +172,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooStatus',
       type: 'text',
-      access: { read: isAdmin },
+      access: { read: isAdminField },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -182,7 +182,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooCatalogVisibility',
       type: 'text',
-      access: { read: isAdmin },
+      access: { read: isAdminField },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -191,7 +191,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooManageStock',
       type: 'checkbox',
-      access: { read: isAdmin },
+      access: { read: isAdminField },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -200,7 +200,7 @@ export const Products: CollectionConfig = {
     {
       name: 'wooModifiedAt',
       type: 'date',
-      access: { read: isAdmin },
+      access: { read: isAdminField },
       admin: {
         readOnly: true,
         position: 'sidebar',
@@ -440,7 +440,7 @@ export const Products: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
-      access: { read: isAdmin },
+      access: { read: isAdminField },
       admin: {
         description: 'Associated tenant ID for multi-tenancy',
       },
