@@ -361,6 +361,7 @@ async function importCommerce(): Promise<void> {
       snapshot.refundsByOrderId.get(sourceOrder.id) ?? [],
       productReferences
     )
+    if (mappedOrder.customer.email.endsWith('@legacy.invalid')) continue
     const previous = orderMetrics.get(mappedOrder.customer.email)
     const paidAmount = sourceOrder.date_paid_gmt ? mappedOrder.total : 0
     const refundedAmount = mappedOrder.legacyRefunds.reduce((sum, refund) => sum + refund.amount, 0)

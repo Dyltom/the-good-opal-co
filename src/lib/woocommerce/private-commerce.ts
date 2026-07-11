@@ -346,10 +346,9 @@ export function mapWooOrder(
   refunds: readonly WooRefund[],
   productReferences: ReadonlyMap<number, { id: string | number; slug: string }> = new Map()
 ): LegacyOrderData {
-  const email = order.billing.email.trim().toLowerCase()
-  if (!email || !z.string().email().safeParse(email).success) {
-    throw new Error(`WooCommerce order ${order.id} has no valid billing email`)
-  }
+  const billingEmail = order.billing.email.trim().toLowerCase()
+  const hasValidBillingEmail = z.string().email().safeParse(billingEmail).success
+  const email = hasValidBillingEmail ? billingEmail : `legacy-order-${order.id}@legacy.invalid`
   const unavailable: LegacyAddress = {
     line1: 'Not provided',
     city: 'Not provided',
@@ -384,6 +383,10 @@ export function mapWooOrder(
             quantity: 1,
           },
         ]
+  const notes = [
+    ...(hasValidBillingEmail ? [] : ['WooCommerce billing email was missing or invalid.']),
+    ...(order.customer_note ? [`WooCommerce customer note: ${order.customer_note}`] : []),
+  ]
 
   return {
     orderNumber: `WOO-${order.number || order.id}`,
@@ -418,7 +421,7 @@ export function mapWooOrder(
       refundedAt: dateFromGmt(refund.date_created_gmt),
       refundedBy: refund.refunded_by,
     })),
-    ...(order.customer_note ? { notes: `WooCommerce customer note: ${order.customer_note}` } : {}),
+    ...(notes.length > 0 ? { notes: notes.join('\n') } : {}),
   }
 }
 

@@ -152,6 +152,18 @@ describe('WooCommerce import mapping', () => {
     ])
   })
 
+  it('preserves orders with missing billing email using a non-deliverable audit address', () => {
+    const noEmailOrder = {
+      ...order(12),
+      billing: { ...address, email: '' },
+      customer_note: '',
+    }
+    const mapped = mapWooOrder(noEmailOrder, [])
+
+    expect(mapped.customer.email).toBe('legacy-order-12@legacy.invalid')
+    expect(mapped.notes).toContain('billing email was missing')
+  })
+
   it('does not infer marketing consent while preserving customer commerce totals', () => {
     const customer: WooCustomer = {
       id: 7,
