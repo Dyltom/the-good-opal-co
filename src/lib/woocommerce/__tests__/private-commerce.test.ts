@@ -137,6 +137,21 @@ describe('WooCommerce import mapping', () => {
     expect(payloadStatusForWoo('refunded')).toBe('refunded')
   })
 
+  it('preserves legacy quote records that have no line items', () => {
+    const emptyOrder = { ...order(11), line_items: [] }
+    const mapped = mapWooOrder(emptyOrder, [])
+
+    expect(mapped.items).toEqual([
+      {
+        productId: 'legacy-woo-order-11',
+        slug: 'legacy-woo-order-11',
+        name: 'Legacy WooCommerce order (no line items)',
+        price: 0,
+        quantity: 1,
+      },
+    ])
+  })
+
   it('does not infer marketing consent while preserving customer commerce totals', () => {
     const customer: WooCustomer = {
       id: 7,

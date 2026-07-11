@@ -57,7 +57,7 @@ export const wooOrderSchema = z.object({
   shipping_total: z.string(),
   total_tax: z.string(),
   total: z.string(),
-  line_items: z.array(orderLineSchema).min(1),
+  line_items: z.array(orderLineSchema),
   refunds: z.array(refundSummarySchema),
 })
 
@@ -363,6 +363,27 @@ export function mapWooOrder(
     (sum, item) => sum + money(item.subtotal, `line item ${item.id} subtotal`),
     0
   )
+  const items =
+    order.line_items.length > 0
+      ? order.line_items.map((item) => {
+          const reference = productReferences.get(item.product_id)
+          return {
+            productId: String(reference?.id ?? `legacy-woo-product-${item.product_id}`),
+            slug: reference?.slug ?? `legacy-woo-product-${item.product_id}`,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+          }
+        })
+      : [
+          {
+            productId: `legacy-woo-order-${order.id}`,
+            slug: `legacy-woo-order-${order.id}`,
+            name: 'Legacy WooCommerce order (no line items)',
+            price: 0,
+            quantity: 1,
+          },
+        ]
 
   return {
     orderNumber: `WOO-${order.number || order.id}`,
@@ -379,16 +400,7 @@ export function mapWooOrder(
     },
     shippingAddress,
     billingAddress,
-    items: order.line_items.map((item) => {
-      const reference = productReferences.get(item.product_id)
-      return {
-        productId: String(reference?.id ?? `legacy-woo-product-${item.product_id}`),
-        slug: reference?.slug ?? `legacy-woo-product-${item.product_id}`,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-      }
-    }),
+    items,
     subtotal: order.subtotal ? money(order.subtotal, 'order subtotal') : computedSubtotal,
     shipping: money(order.shipping_total, 'shipping total'),
     tax: money(order.total_tax, 'tax total'),
