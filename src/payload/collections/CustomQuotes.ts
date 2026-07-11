@@ -7,6 +7,7 @@ import type {
 import {
   hasCompleteAcceptanceEvidence,
   hasCompleteDepositEvidence,
+  quoteAcceptanceEvidenceHash,
   quoteTermsHash,
   type QuoteEvidenceSnapshot,
 } from '../../lib/custom-quote-evidence.ts'
@@ -26,9 +27,30 @@ export interface QuoteRecord extends QuoteEvidenceSnapshot {
   acceptedAt?: string | null
   acceptedByEmail?: string | null
   acceptedTermsHash?: string | null
+  acceptedStatementVersion?: string | null
+  acceptedEvidenceHash?: string | null
   paidAt?: string | null
+  stripeRefundedAmountCents?: number | null
+  refundedAt?: string | null
+  depositCheckoutGeneration?: number | null
+  pendingStripeCheckoutSessionId?: string | null
+  pendingStripeCheckoutExpiresAt?: string | null
   stripeCheckoutSessionId?: string | null
   stripePaymentIntentId?: string | null
+  stripeDisputeId?: string | null
+  stripeDisputeStatus?: string | null
+  depositDisputedAt?: string | null
+  stripeDisputeEventAt?: string | null
+  customerEmailSentAt?: string | null
+  customerEmailProviderId?: string | null
+  customerEmailError?: string | null
+  deliveryStatus?: 'not-sent' | 'issuing' | 'sent' | 'failed' | null
+  deliveryAttemptCount?: number | null
+  deliveryLastAttemptAt?: string | null
+  depositConfirmationEmailSentAt?: string | null
+  depositConfirmationEmailProviderId?: string | null
+  depositConfirmationEmailError?: string | null
+  linkVersion?: number | null
   supersedes?: number | { id: number } | null
 }
 
@@ -116,6 +138,19 @@ export function assertCustomQuoteEvidenceTransition(input: {
     ) {
       throw new Error('Customer acceptance evidence does not match this quote revision')
     }
+    if (
+      !current.acceptedStatementVersion ||
+      !current.acceptedAt ||
+      current.acceptedEvidenceHash !==
+        quoteAcceptanceEvidenceHash({
+          acceptedAt: current.acceptedAt,
+          customerEmail: current.customerEmail,
+          snapshot: snapshotFrom(current),
+          statementVersion: current.acceptedStatementVersion,
+        })
+    ) {
+      throw new Error('Customer acceptance statement evidence is incomplete')
+    }
   }
 
   if (current.depositStatus !== previous.depositStatus) {
@@ -186,10 +221,31 @@ export const guardCustomQuoteChange: CollectionBeforeChangeHook = async ({
     next.acceptedAt = null
     next.acceptedByEmail = null
     next.acceptedTermsHash = null
+    next.acceptedStatementVersion = null
+    next.acceptedEvidenceHash = null
     next.amountPaidCents = null
     next.paidAt = null
+    next.stripeRefundedAmountCents = 0
+    next.refundedAt = null
+    next.depositCheckoutGeneration = 0
+    next.pendingStripeCheckoutSessionId = null
+    next.pendingStripeCheckoutExpiresAt = null
     next.stripeCheckoutSessionId = null
     next.stripePaymentIntentId = null
+    next.stripeDisputeId = null
+    next.stripeDisputeStatus = null
+    next.depositDisputedAt = null
+    next.stripeDisputeEventAt = null
+    next.customerEmailSentAt = null
+    next.customerEmailProviderId = null
+    next.customerEmailError = null
+    next.deliveryStatus = 'not-sent'
+    next.deliveryAttemptCount = 0
+    next.deliveryLastAttemptAt = null
+    next.depositConfirmationEmailSentAt = null
+    next.depositConfirmationEmailProviderId = null
+    next.depositConfirmationEmailError = null
+    next.linkVersion = 1
   } else if (
     originalDoc?.status === 'draft' &&
     next.depositAmountCents !== undefined &&
@@ -201,8 +257,70 @@ export const guardCustomQuoteChange: CollectionBeforeChangeHook = async ({
   const previous = originalDoc as QuoteRecord | undefined
   const merged = { ...previous, ...next } as QuoteRecord
 
+  const stripeEvidenceFields: Array<keyof QuoteRecord> = [
+    'amountPaidCents',
+    'paidAt',
+    'stripeRefundedAmountCents',
+    'refundedAt',
+    'depositCheckoutGeneration',
+    'pendingStripeCheckoutSessionId',
+    'pendingStripeCheckoutExpiresAt',
+    'stripeCheckoutSessionId',
+    'stripePaymentIntentId',
+    'stripeDisputeId',
+    'stripeDisputeStatus',
+    'depositDisputedAt',
+    'stripeDisputeEventAt',
+    'depositConfirmationEmailSentAt',
+    'depositConfirmationEmailProviderId',
+    'depositConfirmationEmailError',
+  ]
+  if (
+    previous &&
+    stripeEvidenceFields.some(
+      (field) => data?.[field] !== undefined && data[field] !== previous[field]
+    ) &&
+    !context['stripeQuoteDepositReconciliation']
+  ) {
+    throw new Error('Stripe payment evidence requires verified Stripe reconciliation')
+  }
+
   if (merged.depositAmountCents > merged.amountCents) {
     throw new Error('Deposit cannot exceed the quote total')
+  }
+
+  const refundedAmount = merged.stripeRefundedAmountCents ?? 0
+  if (
+    refundedAmount < 0 ||
+    refundedAmount > (merged.amountPaidCents ?? 0) ||
+    refundedAmount < (previous?.stripeRefundedAmountCents ?? 0)
+  ) {
+    throw new Error('Stripe refunded amount must be cumulative and cannot exceed the deposit paid')
+  }
+  if (merged.depositStatus === 'refunded' && refundedAmount !== merged.amountPaidCents) {
+    throw new Error('Refunded deposit status requires a full Stripe refund')
+  }
+  if (
+    previous?.stripeDisputeEventAt &&
+    merged.stripeDisputeEventAt &&
+    new Date(merged.stripeDisputeEventAt).getTime() <
+      new Date(previous.stripeDisputeEventAt).getTime()
+  ) {
+    throw new Error('Stripe dispute evidence cannot move backwards')
+  }
+  if (
+    merged.status === 'cancelled' &&
+    previous?.status !== 'cancelled' &&
+    merged.depositStatus === 'paid'
+  ) {
+    throw new Error('A paid quote cannot be cancelled before its deposit is fully refunded')
+  }
+  if (
+    merged.status === 'cancelled' &&
+    previous?.status !== 'cancelled' &&
+    merged.pendingStripeCheckoutSessionId
+  ) {
+    throw new Error('A quote cannot be cancelled while its Stripe deposit session is still open')
   }
 
   if (
@@ -233,7 +351,11 @@ export const guardCustomQuoteChange: CollectionBeforeChangeHook = async ({
     ((data?.acceptedAt !== undefined && data.acceptedAt !== previous.acceptedAt) ||
       (data?.acceptedByEmail !== undefined && data.acceptedByEmail !== previous.acceptedByEmail) ||
       (data?.acceptedTermsHash !== undefined &&
-        data.acceptedTermsHash !== previous.acceptedTermsHash))
+        data.acceptedTermsHash !== previous.acceptedTermsHash) ||
+      (data?.acceptedStatementVersion !== undefined &&
+        data.acceptedStatementVersion !== previous.acceptedStatementVersion) ||
+      (data?.acceptedEvidenceHash !== undefined &&
+        data.acceptedEvidenceHash !== previous.acceptedEvidenceHash))
   ) {
     throw new Error('Customer acceptance evidence is immutable')
   }
@@ -249,11 +371,52 @@ export const guardCustomQuoteChange: CollectionBeforeChangeHook = async ({
     throw new Error('Stripe deposit evidence is immutable')
   }
 
+  const deliveryEvidenceFields: Array<keyof QuoteRecord> = [
+    'linkVersion',
+    'customerEmailSentAt',
+    'customerEmailProviderId',
+    'customerEmailError',
+    'deliveryStatus',
+    'deliveryAttemptCount',
+    'deliveryLastAttemptAt',
+  ]
+  if (
+    deliveryEvidenceFields.some(
+      (field) => data?.[field] !== undefined && data[field] !== previous?.[field]
+    ) &&
+    !context['quoteDeliveryEvidence']
+  ) {
+    throw new Error('Quote delivery evidence is system controlled')
+  }
+
+  if (
+    merged.status === 'sent' &&
+    previous?.status !== 'sent' &&
+    (!context['quoteDeliveryEvidence'] ||
+      !next.customerEmailSentAt ||
+      !next.customerEmailProviderId ||
+      next.deliveryStatus !== 'sent')
+  ) {
+    throw new Error('A quote cannot be sent without verified customer email delivery')
+  }
+
   return next
 }
 
 function eventForTransition(previous: QuoteRecord | undefined, current: QuoteRecord) {
   if (!previous) return { eventType: 'created' as const, actorType: 'admin' as const }
+  if (current.stripeDisputeStatus !== previous.stripeDisputeStatus) {
+    return {
+      eventType:
+        current.stripeDisputeStatus === 'won'
+          ? ('deposit-dispute-resolved' as const)
+          : ('deposit-disputed' as const),
+      actorType: 'stripe' as const,
+    }
+  }
+  if ((current.stripeRefundedAmountCents ?? 0) > (previous.stripeRefundedAmountCents ?? 0)) {
+    return { eventType: 'deposit-refunded' as const, actorType: 'stripe' as const }
+  }
   if (previous.depositStatus !== current.depositStatus && current.depositStatus === 'paid') {
     return { eventType: 'deposit-paid' as const, actorType: 'stripe' as const }
   }
@@ -305,8 +468,18 @@ export const appendCustomQuoteEvidence: CollectionAfterChangeHook = async ({
       evidence: {
         acceptedAt: quote.acceptedAt,
         acceptedTermsHash: quote.acceptedTermsHash,
+        acceptedStatementVersion: quote.acceptedStatementVersion,
+        acceptedEvidenceHash: quote.acceptedEvidenceHash,
+        customerEmailSentAt: quote.customerEmailSentAt,
+        customerEmailProviderId: quote.customerEmailProviderId,
         amountPaidCents: quote.amountPaidCents,
         paidAt: quote.paidAt,
+        stripeRefundedAmountCents: quote.stripeRefundedAmountCents,
+        refundedAt: quote.refundedAt,
+        stripeDisputeId: quote.stripeDisputeId,
+        stripeDisputeStatus: quote.stripeDisputeStatus,
+        depositDisputedAt: quote.depositDisputedAt,
+        stripeDisputeEventAt: quote.stripeDisputeEventAt,
         stripeCheckoutSessionId: quote.stripeCheckoutSessionId,
         stripePaymentIntentId: quote.stripePaymentIntentId,
       },
@@ -337,6 +510,13 @@ export const CustomQuotes: CollectionConfig = {
     defaultColumns: ['quoteNumber', 'customerEmail', 'status', 'amountCents', 'validUntil'],
     group: 'CRM',
     description: 'Revisioned custom jewellery quotes; amounts are stored in currency cents',
+    components: {
+      edit: {
+        beforeDocumentControls: [
+          '@/components/payload/SendCustomQuoteButton#SendCustomQuoteButton',
+        ],
+      },
+    },
   },
   access: { read: isAdmin, create: isAdmin, update: isAdmin, delete: () => false },
   fields: [
@@ -370,7 +550,10 @@ export const CustomQuotes: CollectionConfig = {
       required: true,
       defaultValue: 'draft',
       options: ['draft', 'sent', 'accepted', 'expired', 'cancelled', 'superseded'],
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+        description: 'Use “Send / retry quote” to deliver a draft; Sent cannot be forged manually.',
+      },
     },
     {
       name: 'amountCents',
@@ -401,6 +584,8 @@ export const CustomQuotes: CollectionConfig = {
     { name: 'acceptedAt', type: 'date', admin: { readOnly: true } },
     { name: 'acceptedByEmail', type: 'email', admin: { readOnly: true } },
     { name: 'acceptedTermsHash', type: 'text', admin: { readOnly: true, hidden: true } },
+    { name: 'acceptedStatementVersion', type: 'text', admin: { readOnly: true } },
+    { name: 'acceptedEvidenceHash', type: 'text', admin: { readOnly: true, hidden: true } },
     {
       name: 'depositStatus',
       type: 'select',
@@ -411,6 +596,29 @@ export const CustomQuotes: CollectionConfig = {
     },
     { name: 'amountPaidCents', type: 'number', min: 0, admin: { readOnly: true } },
     { name: 'paidAt', type: 'date', admin: { readOnly: true } },
+    {
+      name: 'stripeRefundedAmountCents',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      admin: { readOnly: true },
+    },
+    { name: 'refundedAt', type: 'date', admin: { readOnly: true } },
+    {
+      name: 'depositCheckoutGeneration',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      admin: { readOnly: true, hidden: true },
+    },
+    {
+      name: 'pendingStripeCheckoutSessionId',
+      type: 'text',
+      unique: true,
+      index: true,
+      admin: { readOnly: true },
+    },
+    { name: 'pendingStripeCheckoutExpiresAt', type: 'date', admin: { readOnly: true } },
     {
       name: 'stripeCheckoutSessionId',
       type: 'text',
@@ -425,11 +633,45 @@ export const CustomQuotes: CollectionConfig = {
       index: true,
       admin: { readOnly: true },
     },
+    { name: 'stripeDisputeId', type: 'text', unique: true, index: true, admin: { readOnly: true } },
+    { name: 'stripeDisputeStatus', type: 'text', admin: { readOnly: true } },
+    { name: 'depositDisputedAt', type: 'date', admin: { readOnly: true } },
+    { name: 'stripeDisputeEventAt', type: 'date', admin: { readOnly: true } },
     {
       name: 'internalNotes',
       type: 'textarea',
       admin: { description: 'Private operational notes; not part of accepted terms' },
     },
+    {
+      name: 'linkVersion',
+      type: 'number',
+      required: true,
+      min: 1,
+      defaultValue: 1,
+      admin: { readOnly: true, hidden: true },
+    },
+    { name: 'customerEmailSentAt', type: 'date', admin: { readOnly: true } },
+    { name: 'customerEmailProviderId', type: 'text', admin: { readOnly: true } },
+    { name: 'customerEmailError', type: 'textarea', admin: { readOnly: true } },
+    {
+      name: 'deliveryStatus',
+      type: 'select',
+      required: true,
+      defaultValue: 'not-sent',
+      options: ['not-sent', 'issuing', 'sent', 'failed'],
+      admin: { readOnly: true, position: 'sidebar' },
+    },
+    {
+      name: 'deliveryAttemptCount',
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      admin: { readOnly: true },
+    },
+    { name: 'deliveryLastAttemptAt', type: 'date', admin: { readOnly: true } },
+    { name: 'depositConfirmationEmailSentAt', type: 'date', admin: { readOnly: true } },
+    { name: 'depositConfirmationEmailProviderId', type: 'text', admin: { readOnly: true } },
+    { name: 'depositConfirmationEmailError', type: 'textarea', admin: { readOnly: true } },
   ],
   hooks: {
     beforeChange: [guardCustomQuoteChange],

@@ -1,8 +1,10 @@
 import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
+import { isValidQuoteLinkSecret } from '@/lib/custom-quotes/quote-link-token'
 
 export type ReadinessIssueCode =
   | 'payload_secret_invalid'
   | 'app_url_invalid'
+  | 'quote_link_secret_invalid'
   | 'email_from_invalid'
   | 'stripe_secret_key_invalid'
   | 'stripe_live_mode_required'
@@ -62,6 +64,11 @@ function hasValidPayloadSecret(env: Environment): boolean {
   return secret.length >= 32 && !isObviousPlaceholder(secret)
 }
 
+function hasValidQuoteLinkSecret(env: Environment): boolean {
+  const secret = value(env, 'QUOTE_LINK_SECRET')
+  return isValidQuoteLinkSecret(secret) && !isObviousPlaceholder(secret)
+}
+
 function hasValidAppUrl(env: Environment, production: boolean): boolean {
   const configured = value(env, 'NEXT_PUBLIC_APP_URL')
 
@@ -118,6 +125,9 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
   const issues: ReadinessIssueCode[] = []
 
   if (!hasValidPayloadSecret(env)) issues.push('payload_secret_invalid')
+  if (!hasValidQuoteLinkSecret(env)) {
+    issues.push('quote_link_secret_invalid')
+  }
   if (!hasValidAppUrl(env, production)) issues.push('app_url_invalid')
   if (!hasValidEmailFrom(env)) issues.push('email_from_invalid')
   const stripeSecretKey = getConfiguredStripeSecretKey(value(env, 'STRIPE_SECRET_KEY'))
@@ -144,7 +154,10 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
   if (!redisToken || isObviousPlaceholder(redisToken)) issues.push('redis_token_missing')
 
   const core = !issues.some(
-    (issue) => issue === 'payload_secret_invalid' || issue === 'app_url_invalid'
+    (issue) =>
+      issue === 'payload_secret_invalid' ||
+      issue === 'quote_link_secret_invalid' ||
+      issue === 'app_url_invalid'
   )
   const payments = !issues.some(
     (issue) =>
@@ -178,7 +191,10 @@ export function assertValidCoreProductionConfiguration(env: Environment = proces
 
   const readiness = assessDeploymentReadiness(env)
   const coreIssues = readiness.issues.filter(
-    (issue) => issue === 'payload_secret_invalid' || issue === 'app_url_invalid'
+    (issue) =>
+      issue === 'payload_secret_invalid' ||
+      issue === 'quote_link_secret_invalid' ||
+      issue === 'app_url_invalid'
   )
 
   if (coreIssues.length > 0) {

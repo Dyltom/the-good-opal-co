@@ -19,6 +19,11 @@ import {
   reservationMatchesCheckoutItems,
   reservationTokenFromSession,
 } from '@/lib/inventory-reservations'
+import {
+  isCustomQuoteDepositSession,
+  verifyPaidQuoteDepositSession,
+} from '@/lib/custom-quote-deposits'
+import { sendQuoteDepositConfirmation } from '@/lib/custom-quotes/deposit-confirmation'
 
 /**
  * Stripe Webhook Handler
@@ -202,6 +207,224 @@ function paymentIntentIdFromCharge(charge: Stripe.Charge): string | null {
   return charge.payment_intent?.id ?? null
 }
 
+function relationshipId(value: number | { id: number }): number {
+  return typeof value === 'number' ? value : value.id
+}
+
+async function clearPendingQuoteDepositSession(session: Stripe.Checkout.Session): Promise<void> {
+  const payload = await getPayload()
+  const result = await payload.find({
+    collection: 'custom-quotes',
+    where: { pendingStripeCheckoutSessionId: { equals: session.id } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  const quote = result.docs[0]
+  if (!quote || quote.depositStatus !== 'awaiting-payment') return
+  await payload.update({
+    collection: 'custom-quotes',
+    id: quote.id,
+    overrideAccess: true,
+    context: { stripeQuoteDepositReconciliation: true },
+    data: {
+      pendingStripeCheckoutSessionId: null,
+      pendingStripeCheckoutExpiresAt: null,
+    },
+  })
+}
+
+async function reconcileQuoteDeposit(
+  session: Stripe.Checkout.Session,
+  eventCreated: number
+): Promise<{ duplicate: boolean; quoteId: number }> {
+  const quoteId = Number(session.metadata?.quoteId)
+  if (!Number.isSafeInteger(quoteId) || quoteId < 1) {
+    throw new Error('Stripe quote deposit is missing a valid quote ID')
+  }
+
+  const payload = await getPayload()
+  const transactionID = await payload.db.beginTransaction()
+  if (transactionID === null) throw new Error('Database transactions are required for deposits')
+  const req = { transactionID }
+
+  try {
+    const quote = await payload.findByID({
+      collection: 'custom-quotes',
+      id: quoteId,
+      req,
+      overrideAccess: true,
+    })
+    const evidence = verifyPaidQuoteDepositSession({ quote, session, eventCreated })
+    if (quote.depositStatus === 'paid') {
+      await payload.db.commitTransaction(transactionID)
+      return { duplicate: true, quoteId: quote.id }
+    }
+
+    await payload.update({
+      collection: 'custom-quotes',
+      id: quote.id,
+      req,
+      overrideAccess: true,
+      context: { stripeQuoteDepositReconciliation: true },
+      data: {
+        depositStatus: 'paid',
+        amountPaidCents: quote.depositAmountCents,
+        paidAt: evidence.paidAt,
+        stripeRefundedAmountCents: 0,
+        stripeCheckoutSessionId: session.id,
+        stripePaymentIntentId: evidence.paymentIntentId,
+        pendingStripeCheckoutSessionId: null,
+        pendingStripeCheckoutExpiresAt: null,
+      },
+    })
+    await payload.update({
+      collection: 'enquiries',
+      id: relationshipId(quote.enquiry),
+      req,
+      overrideAccess: true,
+      data: { status: 'deposit-paid' },
+    })
+    await payload.db.commitTransaction(transactionID)
+    return { duplicate: false, quoteId: quote.id }
+  } catch (error) {
+    await payload.db.rollbackTransaction(transactionID)
+    throw error
+  }
+}
+
+async function reconcileQuoteDepositRefund(charge: Stripe.Charge): Promise<boolean> {
+  const paymentIntentId = paymentIntentIdFromCharge(charge)
+  if (!paymentIntentId) return false
+  const payload = await getPayload()
+  const transactionID = await payload.db.beginTransaction()
+  if (transactionID === null) throw new Error('Database transactions are required for refunds')
+  const req = { transactionID }
+  try {
+    const result = await payload.find({
+      collection: 'custom-quotes',
+      where: { stripePaymentIntentId: { equals: paymentIntentId } },
+      limit: 1,
+      req,
+      overrideAccess: true,
+    })
+    const quote = result.docs[0]
+    if (!quote) {
+      await payload.db.commitTransaction(transactionID)
+      return false
+    }
+    if (
+      (quote.depositStatus !== 'paid' && quote.depositStatus !== 'refunded') ||
+      charge.amount !== quote.amountPaidCents ||
+      charge.currency.toUpperCase() !== quote.currency
+    ) {
+      throw new Error('Stripe refund does not match the recorded custom quote deposit')
+    }
+
+    const cumulativeRefund = Math.min(charge.amount_refunded, quote.amountPaidCents ?? 0)
+    if (cumulativeRefund > (quote.stripeRefundedAmountCents ?? 0)) {
+      const fullyRefunded = cumulativeRefund === quote.amountPaidCents
+      await payload.update({
+        collection: 'custom-quotes',
+        id: quote.id,
+        req,
+        overrideAccess: true,
+        context: { stripeQuoteDepositReconciliation: true },
+        data: {
+          stripeRefundedAmountCents: cumulativeRefund,
+          refundedAt: new Date().toISOString(),
+          depositStatus: fullyRefunded ? 'refunded' : 'paid',
+        },
+      })
+      await payload.update({
+        collection: 'enquiries',
+        id: relationshipId(quote.enquiry),
+        req,
+        overrideAccess: true,
+        data: { status: 'accepted' },
+      })
+    }
+    await payload.db.commitTransaction(transactionID)
+    return true
+  } catch (error) {
+    await payload.db.rollbackTransaction(transactionID)
+    throw error
+  }
+}
+
+async function reconcileQuoteDepositDispute(
+  dispute: Stripe.Dispute,
+  eventCreated: number
+): Promise<boolean> {
+  const chargeId = typeof dispute.charge === 'string' ? dispute.charge : dispute.charge.id
+  const charge = await stripe.charges.retrieve(chargeId)
+  const paymentIntentId = paymentIntentIdFromCharge(charge)
+  if (!paymentIntentId) return false
+  const payload = await getPayload()
+  const transactionID = await payload.db.beginTransaction()
+  if (transactionID === null) throw new Error('Database transactions are required for disputes')
+  const req = { transactionID }
+  try {
+    const result = await payload.find({
+      collection: 'custom-quotes',
+      where: { stripePaymentIntentId: { equals: paymentIntentId } },
+      limit: 1,
+      req,
+      overrideAccess: true,
+    })
+    const quote = result.docs[0]
+    if (!quote) {
+      await payload.db.commitTransaction(transactionID)
+      return false
+    }
+    if (
+      (quote.depositStatus !== 'paid' && quote.depositStatus !== 'refunded') ||
+      charge.amount !== quote.amountPaidCents ||
+      charge.currency.toUpperCase() !== quote.currency
+    ) {
+      throw new Error('Stripe dispute does not match the recorded custom quote deposit')
+    }
+
+    const occurredAt = new Date(eventCreated * 1000).toISOString()
+    if (
+      !quote.stripeDisputeEventAt ||
+      new Date(occurredAt).getTime() > new Date(quote.stripeDisputeEventAt).getTime()
+    ) {
+      await payload.update({
+        collection: 'custom-quotes',
+        id: quote.id,
+        req,
+        overrideAccess: true,
+        context: { stripeQuoteDepositReconciliation: true },
+        data: {
+          stripeDisputeId: dispute.id,
+          stripeDisputeStatus: dispute.status,
+          stripeDisputeEventAt: occurredAt,
+          depositDisputedAt: quote.depositDisputedAt ?? occurredAt,
+        },
+      })
+      await payload.update({
+        collection: 'enquiries',
+        id: relationshipId(quote.enquiry),
+        req,
+        overrideAccess: true,
+        data: {
+          status:
+            dispute.status === 'won' &&
+            quote.depositStatus === 'paid' &&
+            (quote.stripeRefundedAmountCents ?? 0) === 0
+              ? 'deposit-paid'
+              : 'accepted',
+        },
+      })
+    }
+    await payload.db.commitTransaction(transactionID)
+    return true
+  } catch (error) {
+    await payload.db.rollbackTransaction(transactionID)
+    throw error
+  }
+}
+
 async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Order | null> {
   const payload = await getPayload()
   const result = await payload.find({
@@ -380,11 +603,19 @@ export async function POST(request: NextRequest) {
   }
 
   if (event.type === 'checkout.session.expired') {
+    if (isCustomQuoteDepositSession(event.data.object)) {
+      await clearPendingQuoteDepositSession(event.data.object)
+      return NextResponse.json({ received: true, quoteDepositReleased: true })
+    }
     await releaseInventoryReservation(event.data.object, 'checkout-expired')
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
 
   if (event.type === 'checkout.session.async_payment_failed') {
+    if (isCustomQuoteDepositSession(event.data.object)) {
+      await clearPendingQuoteDepositSession(event.data.object)
+      return NextResponse.json({ received: true, quoteDepositReleased: true })
+    }
     await releaseInventoryReservation(event.data.object, 'async-payment-failed')
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
@@ -395,6 +626,20 @@ export async function POST(request: NextRequest) {
     event.type === 'checkout.session.async_payment_succeeded'
   ) {
     const session = event.data.object
+
+    if (isCustomQuoteDepositSession(session)) {
+      if (session.payment_status !== 'paid') {
+        return NextResponse.json({ received: true, awaitingQuoteDeposit: true })
+      }
+      try {
+        const result = await reconcileQuoteDeposit(session, event.created)
+        await sendQuoteDepositConfirmation(result.quoteId)
+        return NextResponse.json({ received: true, quoteDeposit: true, ...result })
+      } catch (error) {
+        console.error('Error reconciling custom quote deposit:', error)
+        return NextResponse.json({ error: 'Failed to reconcile quote deposit' }, { status: 500 })
+      }
+    }
 
     if (session.payment_status !== 'paid') {
       await markReservationPaymentPending(session)
@@ -670,11 +915,17 @@ export async function POST(request: NextRequest) {
   }
 
   if (event.type === 'charge.refunded') {
-    await markOrderRefunded(event.data.object)
+    const currentCharge = await stripe.charges.retrieve(event.data.object.id)
+    if (!(await reconcileQuoteDepositRefund(currentCharge))) {
+      await markOrderRefunded(currentCharge)
+    }
   }
 
   if (event.type === 'charge.dispute.created' || event.type === 'charge.dispute.closed') {
-    await markOrderDisputed(event.data.object)
+    const currentDispute = await stripe.disputes.retrieve(event.data.object.id)
+    if (!(await reconcileQuoteDepositDispute(currentDispute, event.created))) {
+      await markOrderDisputed(currentDispute)
+    }
   }
 
   // Return success for unhandled events

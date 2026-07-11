@@ -92,6 +92,22 @@ describe('deployment config', () => {
     expect(env).toContain('UPSTASH_REDIS_REST_TOKEN=')
   })
 
+  test('private quote bearer links are excluded from logs, caching, indexing, and analytics', () => {
+    const config = read('next.config.ts')
+    const analytics = read('src/components/analytics/AnalyticsConsentGate.tsx')
+    const accessPage = read('src/app/(marketing)/quote/access/quote-access-redeemer.tsx')
+    const quotePage = read('src/app/(marketing)/quote/[quoteNumber]/page.tsx')
+
+    expect(config).toContain("source: '/quote/:path*'")
+    expect(config).toContain("{ key: 'Referrer-Policy', value: 'no-referrer' }")
+    expect(config).toContain("{ key: 'Cache-Control', value: 'private, no-store, max-age=0' }")
+    expect(analytics).toContain("pathname.startsWith('/quote')")
+    expect(accessPage).toContain('window.location.hash.slice(1)')
+    expect(accessPage).toContain("replaceState(null, '', '/quote/access')")
+    expect(quotePage).toContain("export const dynamic = 'force-dynamic'")
+    expect(quotePage).toContain('index: false, follow: false, nocache: true')
+  })
+
   test('ESLint ignores agent tooling outside the deployable app', () => {
     const source = read('eslint.config.mjs')
 

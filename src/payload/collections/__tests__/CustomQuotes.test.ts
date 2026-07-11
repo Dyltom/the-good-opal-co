@@ -1,8 +1,11 @@
-import { describe, expect, it } from 'vitest'
-import { quoteTermsHash } from '../../../lib/custom-quote-evidence'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { quoteAcceptanceEvidenceHash, quoteTermsHash } from '../../../lib/custom-quote-evidence'
 import { assertCustomQuoteEvidenceTransition, type QuoteRecord } from '../CustomQuotes'
 
 const future = new Date(Date.now() + 86_400_000).toISOString()
+const secret = '0123456789abcdef0123456789abcdef'
+
+beforeAll(() => vi.stubEnv('QUOTE_LINK_SECRET', secret))
 const sent: QuoteRecord = {
   id: 1,
   enquiry: 2,
@@ -25,8 +28,19 @@ function accepted(): QuoteRecord {
     status: 'accepted' as const,
     acceptedAt: new Date().toISOString(),
     acceptedByEmail: sent.customerEmail,
+    acceptedStatementVersion: 'custom-quote-v1',
   }
-  return { ...evidence, acceptedTermsHash: quoteTermsHash(evidence) }
+  return {
+    ...evidence,
+    acceptedTermsHash: quoteTermsHash(evidence),
+    acceptedEvidenceHash: quoteAcceptanceEvidenceHash({
+      acceptedAt: evidence.acceptedAt,
+      customerEmail: evidence.customerEmail,
+      snapshot: evidence,
+      statementVersion: 'custom-quote-v1',
+      secret,
+    }),
+  }
 }
 
 describe('custom quote transition evidence', () => {

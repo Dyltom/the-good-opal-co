@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, createHmac } from 'node:crypto'
 
 export interface QuoteEvidenceSnapshot {
   quoteNumber: string
@@ -8,6 +8,14 @@ export interface QuoteEvidenceSnapshot {
   currency: string
   validUntil: string
   terms: string
+}
+
+export function formatCustomQuoteExpiry(value: string): string {
+  return `${new Intl.DateTimeFormat('en-AU', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: 'Australia/Sydney',
+  }).format(new Date(value))} Sydney time`
 }
 
 export function quoteTermsHash(snapshot: QuoteEvidenceSnapshot): string {
@@ -21,6 +29,29 @@ export function quoteTermsHash(snapshot: QuoteEvidenceSnapshot): string {
         revision: snapshot.revision,
         terms: snapshot.terms,
         validUntil: snapshot.validUntil,
+      })
+    )
+    .digest('hex')
+}
+
+export function quoteAcceptanceEvidenceHash(input: {
+  acceptedAt: string
+  customerEmail: string
+  snapshot: QuoteEvidenceSnapshot
+  statementVersion: string
+  secret?: string
+}): string {
+  const secret = input.secret ?? process.env['QUOTE_LINK_SECRET']
+  if (!secret || Buffer.byteLength(secret, 'utf8') < 32) {
+    throw new Error('QUOTE_LINK_SECRET must contain at least 32 bytes')
+  }
+  return createHmac('sha256', secret)
+    .update(
+      JSON.stringify({
+        acceptedAt: input.acceptedAt,
+        customerEmail: input.customerEmail.trim().toLowerCase(),
+        quoteTermsHash: quoteTermsHash(input.snapshot),
+        statementVersion: input.statementVersion,
       })
     )
     .digest('hex')
@@ -49,6 +80,7 @@ export function hasCompleteDepositEvidence(input: {
   amountPaidCents?: number | null
   depositAmountCents: number
   paidAt?: string | null
+  stripeRefundedAmountCents?: number | null
   stripeCheckoutSessionId?: string | null
   stripePaymentIntentId?: string | null
 }): boolean {
@@ -58,6 +90,7 @@ export function hasCompleteDepositEvidence(input: {
     input.amountPaidCents !== undefined &&
     input.amountPaidCents !== null &&
     input.amountPaidCents === input.depositAmountCents &&
+    (input.stripeRefundedAmountCents ?? 0) === 0 &&
     input.paidAt &&
     input.stripeCheckoutSessionId?.trim() &&
     input.stripePaymentIntentId?.trim()

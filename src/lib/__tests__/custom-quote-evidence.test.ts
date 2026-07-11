@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   hasCompleteAcceptanceEvidence,
   hasCompleteDepositEvidence,
+  formatCustomQuoteExpiry,
+  quoteAcceptanceEvidenceHash,
   quoteTermsHash,
   type QuoteEvidenceSnapshot,
 } from '../custom-quote-evidence'
@@ -17,6 +19,9 @@ const quote: QuoteEvidenceSnapshot = {
 }
 
 describe('custom quote evidence', () => {
+  it('shows customers the exact Sydney expiry time used by enforcement', () => {
+    expect(formatCustomQuoteExpiry('2026-07-12T00:00:00.000Z')).toContain('10:00 am Sydney time')
+  })
   it('binds acceptance to the exact commercial revision', () => {
     const hash = quoteTermsHash(quote)
 
@@ -30,6 +35,37 @@ describe('custom quote evidence', () => {
       })
     ).toBe(true)
     expect(quoteTermsHash({ ...quote, amountCents: quote.amountCents + 1 })).not.toBe(hash)
+  })
+
+  it('HMAC-binds acceptance without retaining an IP-derived fingerprint', () => {
+    const acceptedAt = '2026-07-12T00:00:00.000Z'
+    const secret = '0123456789abcdef0123456789abcdef'
+    const evidence = quoteAcceptanceEvidenceHash({
+      acceptedAt,
+      customerEmail: 'BUYER@example.com',
+      snapshot: quote,
+      statementVersion: 'custom-quote-v1',
+      secret,
+    })
+    expect(evidence).toMatch(/^[a-f0-9]{64}$/)
+    expect(
+      quoteAcceptanceEvidenceHash({
+        acceptedAt,
+        customerEmail: 'buyer@example.com',
+        snapshot: quote,
+        statementVersion: 'custom-quote-v1',
+        secret,
+      })
+    ).toBe(evidence)
+    expect(
+      quoteAcceptanceEvidenceHash({
+        acceptedAt,
+        customerEmail: 'buyer@example.com',
+        snapshot: { ...quote, amountCents: quote.amountCents + 1 },
+        statementVersion: 'custom-quote-v1',
+        secret,
+      })
+    ).not.toBe(evidence)
   })
 
   it('rejects acceptance by another email or against altered terms', () => {

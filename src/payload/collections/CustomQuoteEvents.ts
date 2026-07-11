@@ -38,6 +38,8 @@ export const CustomQuoteEvents: CollectionConfig = {
         { label: 'Superseded', value: 'superseded' },
         { label: 'Deposit paid', value: 'deposit-paid' },
         { label: 'Deposit refunded', value: 'deposit-refunded' },
+        { label: 'Deposit disputed', value: 'deposit-disputed' },
+        { label: 'Deposit dispute resolved', value: 'deposit-dispute-resolved' },
       ],
       admin: { readOnly: true },
     },

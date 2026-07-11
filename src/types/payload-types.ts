@@ -934,6 +934,9 @@ export interface CustomQuote {
   supersedes?: (number | null) | CustomQuote;
   enquiry: number | Enquiry;
   customerEmail: string;
+  /**
+   * Use “Send / retry quote” to deliver a draft; Sent cannot be forged manually.
+   */
   status: 'draft' | 'sent' | 'accepted' | 'expired' | 'cancelled' | 'superseded';
   /**
    * Full quoted price in cents
@@ -952,15 +955,36 @@ export interface CustomQuote {
   acceptedAt?: string | null;
   acceptedByEmail?: string | null;
   acceptedTermsHash?: string | null;
+  acceptedStatementVersion?: string | null;
+  acceptedEvidenceHash?: string | null;
   depositStatus: 'not-required' | 'awaiting-payment' | 'paid' | 'refunded';
   amountPaidCents?: number | null;
   paidAt?: string | null;
+  stripeRefundedAmountCents?: number | null;
+  refundedAt?: string | null;
+  depositCheckoutGeneration?: number | null;
+  pendingStripeCheckoutSessionId?: string | null;
+  pendingStripeCheckoutExpiresAt?: string | null;
   stripeCheckoutSessionId?: string | null;
   stripePaymentIntentId?: string | null;
+  stripeDisputeId?: string | null;
+  stripeDisputeStatus?: string | null;
+  depositDisputedAt?: string | null;
+  stripeDisputeEventAt?: string | null;
   /**
    * Private operational notes; not part of accepted terms
    */
   internalNotes?: string | null;
+  linkVersion: number;
+  customerEmailSentAt?: string | null;
+  customerEmailProviderId?: string | null;
+  customerEmailError?: string | null;
+  deliveryStatus: 'not-sent' | 'issuing' | 'sent' | 'failed';
+  deliveryAttemptCount?: number | null;
+  deliveryLastAttemptAt?: string | null;
+  depositConfirmationEmailSentAt?: string | null;
+  depositConfirmationEmailProviderId?: string | null;
+  depositConfirmationEmailError?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -982,7 +1006,9 @@ export interface CustomQuoteEvent {
     | 'cancelled'
     | 'superseded'
     | 'deposit-paid'
-    | 'deposit-refunded';
+    | 'deposit-refunded'
+    | 'deposit-disputed'
+    | 'deposit-dispute-resolved';
   occurredAt: string;
   quoteRevision: number;
   actorType: 'admin' | 'customer' | 'stripe' | 'system';
@@ -1621,12 +1647,33 @@ export interface CustomQuotesSelect<T extends boolean = true> {
   acceptedAt?: T;
   acceptedByEmail?: T;
   acceptedTermsHash?: T;
+  acceptedStatementVersion?: T;
+  acceptedEvidenceHash?: T;
   depositStatus?: T;
   amountPaidCents?: T;
   paidAt?: T;
+  stripeRefundedAmountCents?: T;
+  refundedAt?: T;
+  depositCheckoutGeneration?: T;
+  pendingStripeCheckoutSessionId?: T;
+  pendingStripeCheckoutExpiresAt?: T;
   stripeCheckoutSessionId?: T;
   stripePaymentIntentId?: T;
+  stripeDisputeId?: T;
+  stripeDisputeStatus?: T;
+  depositDisputedAt?: T;
+  stripeDisputeEventAt?: T;
   internalNotes?: T;
+  linkVersion?: T;
+  customerEmailSentAt?: T;
+  customerEmailProviderId?: T;
+  customerEmailError?: T;
+  deliveryStatus?: T;
+  deliveryAttemptCount?: T;
+  deliveryLastAttemptAt?: T;
+  depositConfirmationEmailSentAt?: T;
+  depositConfirmationEmailProviderId?: T;
+  depositConfirmationEmailError?: T;
   updatedAt?: T;
   createdAt?: T;
 }

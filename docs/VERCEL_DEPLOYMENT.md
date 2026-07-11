@@ -27,6 +27,7 @@ Set these for Production. Use isolated test values for Preview and Development.
 ```text
 DATABASE_URL
 PAYLOAD_SECRET
+QUOTE_LINK_SECRET
 ADMIN_EMAIL
 NEXT_PUBLIC_APP_URL
 STRIPE_SECRET_KEY
@@ -46,7 +47,7 @@ Optional:
 NEXT_PUBLIC_GA_MEASUREMENT_ID
 ```
 
-`NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate `PAYLOAD_SECRET` from at least 32 random bytes. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret.
+`NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate separate `PAYLOAD_SECRET` and `QUOTE_LINK_SECRET` values from at least 32 random bytes each; never reuse them. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret.
 
 ## Database migrations and catalog
 
@@ -101,6 +102,7 @@ https://YOUR_DOMAIN/api/webhooks/stripe
 Subscribe to:
 
 - `checkout.session.completed`
+- `checkout.session.expired`
 - `checkout.session.async_payment_succeeded`
 - `checkout.session.async_payment_failed`
 - `payment_intent.payment_failed`
@@ -111,6 +113,8 @@ Subscribe to:
 Copy the endpoint-specific signing secret to `STRIPE_WEBHOOK_SECRET`. Checkout supports Australia, New Zealand, United States, United Kingdom, Canada, Singapore, Hong Kong, and Japan; destination is selected before Stripe so the correct Australian or international rate is charged.
 
 Order creation, customer totals, and inventory decrement share a serializable database transaction. Confirmation-email failures return an error and retry on webhook replay without duplicating the order. Refund events restock only inventory previously decremented. Disputes mark the order for manual review.
+
+Custom quote links exchange an email URL fragment for a private, quote-scoped HttpOnly cookie, so the bearer token does not enter Vercel request logs or analytics. Quote acceptance and deposit evidence are immutable. Quote deposits use the same webhook endpoint but are classified before product-order and inventory logic; subscribe to the same checkout, refund, and dispute events listed above.
 
 ## Release gates
 

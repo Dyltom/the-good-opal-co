@@ -20,16 +20,21 @@ export interface OperationalQuoteEvidence {
   acceptedAt?: string | null
   acceptedByEmail?: string | null
   acceptedTermsHash?: string | null
+  acceptedStatementVersion?: string | null
+  acceptedEvidenceHash?: string | null
   depositStatus: 'not-required' | 'awaiting-payment' | 'paid' | 'refunded'
   amountPaidCents?: number | null
   paidAt?: string | null
+  stripeRefundedAmountCents?: number | null
   stripeCheckoutSessionId?: string | null
   stripePaymentIntentId?: string | null
+  stripeDisputeStatus?: string | null
 }
 
 function quoteHasAcceptance(quote: OperationalQuoteEvidence): boolean {
   return (
     quote.status === 'accepted' &&
+    Boolean(quote.acceptedStatementVersion && quote.acceptedEvidenceHash) &&
     hasCompleteAcceptanceEvidence({
       acceptedAt: quote.acceptedAt,
       acceptedByEmail: quote.acceptedByEmail,
@@ -51,10 +56,12 @@ function quoteHasAcceptance(quote: OperationalQuoteEvidence): boolean {
 function quoteHasPaidDeposit(quote: OperationalQuoteEvidence): boolean {
   return (
     quote.depositStatus === 'paid' &&
+    (!quote.stripeDisputeStatus || quote.stripeDisputeStatus === 'won') &&
     hasCompleteDepositEvidence({
       amountPaidCents: quote.amountPaidCents,
       depositAmountCents: quote.depositAmountCents,
       paidAt: quote.paidAt,
+      stripeRefundedAmountCents: quote.stripeRefundedAmountCents,
       stripeCheckoutSessionId: quote.stripeCheckoutSessionId,
       stripePaymentIntentId: quote.stripePaymentIntentId,
     })

@@ -22,6 +22,8 @@ function acceptedQuote(): OperationalQuoteEvidence {
     ...quote,
     acceptedAt: new Date().toISOString(),
     acceptedByEmail: quote.customerEmail,
+    acceptedStatementVersion: 'custom-quote-v1',
+    acceptedEvidenceHash: 'evidence-hash',
     acceptedTermsHash: quoteTermsHash(quote),
   }
 }
