@@ -205,6 +205,24 @@ describe('WooCommerce import mapping', () => {
     expect(customer.total_spent).toBe('0')
   })
 
+  it('preserves customers with Payload-invalid legacy email addresses', () => {
+    const customer = wooCustomerSchema.parse({
+      id: 85,
+      date_created_gmt: '2022-06-01T00:00:00',
+      email: '.9541@gmail.com',
+      first_name: '',
+      last_name: '',
+      billing: address,
+      shipping: address,
+      is_paying_customer: false,
+    })
+
+    expect(mapWooCustomer(customer)).toMatchObject({
+      email: 'legacy-customer-85@legacy.invalid',
+      notes: 'Original invalid WooCommerce email: .9541@gmail.com',
+    })
+  })
+
   it('preserves private product visibility and exact managed stock', () => {
     const product: WooPrivateProduct = {
       id: 42,

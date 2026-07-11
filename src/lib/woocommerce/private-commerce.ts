@@ -189,6 +189,7 @@ export interface LegacyCustomerData {
   totalSpent: number
   defaultAddress: Partial<LegacyAddress>
   tags: Array<{ tag: string }>
+  notes?: string
 }
 
 export interface LegacyProductData {
@@ -310,6 +311,14 @@ function fullName(firstName: string, lastName: string): string {
   return [firstName, lastName].filter(Boolean).join(' ').trim()
 }
 
+function isPayloadEmail(value: string): boolean {
+  if (!z.string().email().safeParse(value).success) return false
+  const [localPart] = value.split('@')
+  return Boolean(
+    localPart && !localPart.startsWith('.') && !localPart.endsWith('.') && !localPart.includes('..')
+  )
+}
+
 function addressFromWoo(
   address: z.infer<typeof addressSchema>,
   fallback: LegacyAddress
@@ -347,7 +356,7 @@ export function mapWooOrder(
   productReferences: ReadonlyMap<number, { id: string | number; slug: string }> = new Map()
 ): LegacyOrderData {
   const billingEmail = order.billing.email.trim().toLowerCase()
-  const hasValidBillingEmail = z.string().email().safeParse(billingEmail).success
+  const hasValidBillingEmail = isPayloadEmail(billingEmail)
   const email = hasValidBillingEmail ? billingEmail : `legacy-order-${order.id}@legacy.invalid`
   const unavailable: LegacyAddress = {
     line1: 'Not provided',
@@ -425,9 +434,10 @@ export function mapWooOrder(
   }
 }
 
-export function mapWooCustomer(customer: WooCustomer): LegacyCustomerData | null {
-  const email = customer.email.trim().toLowerCase()
-  if (!z.string().email().safeParse(email).success) return null
+export function mapWooCustomer(customer: WooCustomer): LegacyCustomerData {
+  const sourceEmail = customer.email.trim().toLowerCase()
+  const hasValidEmail = isPayloadEmail(sourceEmail)
+  const email = hasValidEmail ? sourceEmail : `legacy-customer-${customer.id}@legacy.invalid`
   const address = customer.shipping.address_1 ? customer.shipping : customer.billing
   return {
     legacyWooId: customer.id,
@@ -451,6 +461,7 @@ export function mapWooCustomer(customer: WooCustomer): LegacyCustomerData | null
       ...(address.country ? { country: address.country } : {}),
     },
     tags: [{ tag: customer.is_paying_customer ? 'WooCommerce customer' : 'WooCommerce account' }],
+    ...(hasValidEmail ? {} : { notes: `Original invalid WooCommerce email: ${sourceEmail}` }),
   }
 }
 

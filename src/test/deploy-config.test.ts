@@ -79,6 +79,14 @@ describe('deployment config', () => {
     expect(() => read('src/app/(payload)/admin/importMap.ts')).toThrow()
   })
 
+  test('Payload does not maintain an unused transactional search index', () => {
+    const config = read('src/payload.config.ts')
+    const search = read('src/app/(marketing)/search/actions.ts')
+
+    expect(config).not.toContain('searchPlugin')
+    expect(search).toContain("collection: 'products'")
+  })
+
   test('Payload-backed catalog surfaces are not frozen at build time', () => {
     for (const file of [
       'src/app/(marketing)/page.tsx',

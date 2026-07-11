@@ -1,7 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { seoPlugin } from '@payloadcms/plugin-seo'
-import { searchPlugin } from '@payloadcms/plugin-search'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { resendAdapter } from '@payloadcms/email-resend'
 import path from 'path'
@@ -154,14 +153,6 @@ export default buildConfig({
       generateTitle: ({ doc }) => `${doc?.title || doc?.name || 'Page'} | The Good Opal Co`,
       generateDescription: ({ doc }) =>
         doc?.description || doc?.excerpt || 'Premium Australian opal jewelry',
-    }),
-    // Search plugin - fast indexed search
-    searchPlugin({
-      collections: ['posts', 'products'],
-      defaultPriorities: {
-        posts: 10,
-        products: 20,
-      },
     }),
     // NOTE: Ecommerce plugin removed - using custom Products collection with opal-specific fields
     // We have custom cart/checkout with Stripe already working

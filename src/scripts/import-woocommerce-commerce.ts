@@ -141,6 +141,7 @@ function customerUpdateData(customer: LegacyCustomerData) {
     totalOrders: customer.totalOrders,
     totalSpent: customer.totalSpent,
     defaultAddress: customer.defaultAddress,
+    ...(customer.notes ? { notes: customer.notes } : {}),
   }
 }
 
@@ -299,10 +300,6 @@ async function importCommerce(): Promise<void> {
 
   for (const sourceCustomer of snapshot.customers) {
     const mapped = mapWooCustomer(sourceCustomer)
-    if (!mapped) {
-      customerCounts.skipped += 1
-      continue
-    }
     registeredCustomerStats.set(mapped.email, {
       totalOrders: mapped.totalOrders,
       totalSpent: mapped.totalSpent,
