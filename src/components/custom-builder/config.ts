@@ -117,26 +117,26 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.026,
     bezelLipOffset: 0.013,
     bezelLipRadius: 0.021,
-    haloOffset: 0.074,
-    haloSupportOffset: 0.056,
+    haloOffset: 0.064,
+    haloSupportOffset: 0.047,
     haloSupportRadius: 0.01,
-    beadRadius: 0.038,
+    beadRadius: 0.043,
     beadCount: 30,
-    shankRadius: 0.081,
-    shoulderRadius: 0.081,
+    shankRadius: 0.09,
+    shoulderRadius: 0.09,
   },
   aurora: {
     bezelWallOffset: 0.022,
     bezelWallThickness: 0.026,
     bezelLipOffset: 0.014,
     bezelLipRadius: 0.022,
-    haloOffset: 0.076,
-    haloSupportOffset: 0.057,
+    haloOffset: 0.059,
+    haloSupportOffset: 0.043,
     haloSupportRadius: 0.01,
-    beadRadius: 0.039,
+    beadRadius: 0.043,
     beadCount: 27,
     shankRadius: 0.078,
-    shoulderRadius: 0.08,
+    shoulderRadius: 0.078,
   },
 }
 
@@ -239,6 +239,24 @@ export function applyRingStyle(config: RingConfig, styleId: RingConfig['style'])
     shape: style.shape,
     setting: style.setting,
     band: style.band,
+  }
+}
+
+export function isRingStyleCompatible(
+  styleId: RingConfig['style'],
+  opal: Pick<BuilderOpal, 'visual'>
+): boolean {
+  const silhouette = opal.visual.silhouette
+
+  switch (styleId) {
+    case 'gemini':
+      return silhouette === 'oval' || silhouette === 'elongated'
+    case 'coral':
+      return silhouette === 'cushion'
+    case 'sun-moon':
+      return silhouette === 'oval'
+    case 'aurora':
+      return silhouette === 'pear'
   }
 }
 

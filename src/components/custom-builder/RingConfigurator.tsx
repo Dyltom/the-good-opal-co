@@ -9,6 +9,7 @@ import { cn, formatCurrency } from '@/lib/utils'
 import {
   applyRingStyle,
   describeRingConfig,
+  isRingStyleCompatible,
   metals,
   ringStyles,
   shapeForOpal,
@@ -162,9 +163,11 @@ function OpalPicker({
 }
 
 function RingStylePicker({
+  selectedOpal,
   value,
   onSelect,
 }: {
+  selectedOpal?: BuilderOpal
   value: RingConfig['style']
   onSelect: (style: RingStyleOption) => void
 }) {
@@ -179,14 +182,16 @@ function RingStylePicker({
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
           const selected = style.id === value
+          const compatible = !selectedOpal || isRingStyleCompatible(style.id, selectedOpal)
           return (
             <button
               key={style.id}
               type="button"
               aria-pressed={selected}
+              disabled={!compatible}
               onClick={() => onSelect(style)}
               className={cn(
-                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.99]',
+                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform,opacity] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45',
                 selected
                   ? 'border-charcoal shadow-md'
                   : 'border-warm-grey/80 hover:border-charcoal/45'
@@ -209,7 +214,7 @@ function RingStylePicker({
               <span className="block p-3">
                 <span className="block text-sm font-medium">{style.label}</span>
                 <span className="mt-1 block text-xs leading-5 text-charcoal-light">
-                  {style.detail}
+                  {compatible ? style.detail : `Requires a ${style.shape} opal`}
                 </span>
               </span>
             </button>
@@ -317,6 +322,7 @@ export function RingConfigurator({ initialConfig, opals }: RingConfiguratorProps
               </p>
               <OpalPicker opals={opals} selectedId={config.opalId} onSelect={selectOpal} />
               <RingStylePicker
+                selectedOpal={selectedOpal}
                 value={config.style}
                 onSelect={(style) =>
                   setConfig((current) => ({

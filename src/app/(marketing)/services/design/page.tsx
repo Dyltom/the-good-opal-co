@@ -1,7 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
-import { RingConfigurator, applyRingStyle, ringConfigFromRecord } from '@/components/custom-builder'
+import {
+  RingConfigurator,
+  applyRingStyle,
+  isRingStyleCompatible,
+  ringConfigFromRecord,
+} from '@/components/custom-builder'
 import { shapeForOpal, type BuilderOpal, type RingConfig } from '@/components/custom-builder/config'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
@@ -126,7 +131,10 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
     .flatMap((product): BuilderOpal[] => {
       const firstImage = product.images?.[0]?.image
       const image = firstImage ? mediaById.get(String(firstImage)) : undefined
-      const imageUrl = resolveMediaUrl(image?.url) ?? productImageFallback(image?.filename)
+      // Reviewed builder opals have owned, checked-in source photography. Prefer it
+      // over Payload's file route so a missing local/ephemeral media file cannot
+      // collapse the complete WebGL scene.
+      const imageUrl = productImageFallback(image?.filename) ?? resolveMediaUrl(image?.url)
       if (!imageUrl || !product.stoneType) return []
 
       const renderProfile = createOpalVisualProfile(product.slug, product.name, product.stoneType)
@@ -166,13 +174,16 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
   const requestedOpal = opals.find((opal) => opal.id === initialConfig.opalId)
   const initialOpal = requestedOpal ?? opals[0]
   const requestedStyle = first(query.y)
+  const requestedStyleId = requestedStyle as RingConfig['style'] | undefined
+  const styleId =
+    initialOpal && requestedStyleId && isRingStyleCompatible(requestedStyleId, initialOpal)
+      ? requestedStyleId
+      : initialOpal?.visual.recommendedStyle
   const hydratedConfig: RingConfig = initialOpal
     ? {
         ...applyRingStyle(
           { ...initialConfig, opalId: initialOpal.id, stone: initialOpal.renderStone },
-          requestedStyle || initialOpal.visual.evidence !== 'catalogue'
-            ? initialConfig.style
-            : initialOpal.visual.recommendedStyle
+          styleId ?? initialConfig.style
         ),
         shape: shapeForOpal(initialOpal),
       }

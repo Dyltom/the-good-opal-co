@@ -65,11 +65,11 @@ describe('custom ring geometry contract', () => {
     expect(size13Diameter).toBeGreaterThan(size4Diameter)
 
     expect(sceneSource).toContain('round: [0.42, 0.42]')
-    expect(sceneSource).toContain('oval: [0.4, 0.52]')
+    expect(sceneSource).toContain('oval: [0.4, 0.5]')
     expect(sceneSource).toContain('elongated: [0.35, 0.62]')
     expect(sceneSource).toContain('cushion: [0.5, 0.5]')
     expect(sceneSource).toContain('pear: [0.4, 0.5]')
-    expect(sceneSource).toContain('const domeHeight = Math.min(width, height) * 0.4')
+    expect(sceneSource).toContain('const domeHeight = Math.min(width, height) * 0.25')
   })
 
   test('gives each named design meaningful geometry consumed by the scene', () => {
@@ -88,7 +88,7 @@ describe('custom ring geometry contract', () => {
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
         expect(profile.haloOffset - profile.beadRadius, style).toBeGreaterThan(
-          profile.bezelWallOffset
+          profile.bezelLipOffset
         )
       } else {
         expect(profile.beadRadius, style).toBe(0)
@@ -112,5 +112,27 @@ describe('custom ring geometry contract', () => {
     ]) {
       expect(sceneSource, property).toMatch(new RegExp(`(?:profile|styleProfile)\\.${property}\\b`))
     }
+  })
+
+  test('does not wash reviewed product photography with a white material overlay', () => {
+    expect(sceneSource).toContain(
+      '<meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />'
+    )
+    expect(sceneSource).not.toContain('color="#f4fbf8"')
+  })
+
+  test('uses handmade sterling and soldered halo proportions from sold pieces', () => {
+    expect(sceneSource).toContain("'sterling-silver': '#c9cac7'")
+    expect(sceneSource).toContain('envMapIntensity={isSterlingSilver ? 0.9 : 1.2}')
+    expect(sceneSource).toContain('position={[x, y, 0.06]} scale={[1, 1, 0.72]}')
+    expect(ringStyleGeometryProfiles['sun-moon']).toMatchObject({
+      haloOffset: 0.064,
+      beadRadius: 0.043,
+      shankRadius: 0.09,
+    })
+    expect(ringStyleGeometryProfiles.aurora).toMatchObject({
+      haloOffset: 0.059,
+      beadRadius: 0.043,
+    })
   })
 })

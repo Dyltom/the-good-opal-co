@@ -39,7 +39,7 @@ interface RingSceneProps {
 type StoneDimensions = readonly [width: number, height: number]
 
 const metalColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#dfdfda',
+  'sterling-silver': '#c9cac7',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -49,7 +49,7 @@ const metalColours: Record<RingConfig['metal'], string> = {
 
 const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
   round: [0.42, 0.42],
-  oval: [0.4, 0.52],
+  oval: [0.4, 0.5],
   elongated: [0.35, 0.62],
   cushion: [0.5, 0.5],
   pear: [0.4, 0.5],
@@ -127,17 +127,17 @@ function MetalMaterial({
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
-      metalness={isSterlingSilver ? 0.93 : 0.98}
-      roughness={isSterlingSilver ? Math.max(0.28, roughness) : roughness}
-      clearcoat={isSterlingSilver ? 0.04 : 0.26}
+      metalness={isSterlingSilver ? 1 : 0.98}
+      roughness={isSterlingSilver ? Math.max(0.34, roughness) : roughness}
+      clearcoat={isSterlingSilver ? 0 : 0.26}
       clearcoatRoughness={isSterlingSilver ? 0.32 : 0.16}
-      envMapIntensity={isSterlingSilver ? 1.34 : 1.2}
+      envMapIntensity={isSterlingSilver ? 0.9 : 1.2}
     />
   )
 }
 
 function PatinaMaterial() {
-  return <meshStandardMaterial color="#222522" metalness={0.72} roughness={0.46} />
+  return <meshStandardMaterial color="#454641" metalness={0.65} roughness={0.55} />
 }
 
 function getStoneDimensions(config: RingConfig, selectedOpal?: BuilderOpal): StoneDimensions {
@@ -285,7 +285,9 @@ function createCabochonGeometry(
   const angularSegments = 72
   const baseZ = -0.045
   const girdleZ = 0.035
-  const domeHeight = Math.min(width, height) * 0.4
+  // The sold collection uses low cabochons. A shallow dome keeps the photographed
+  // face legible and avoids ballooning its colour pattern around the shoulders.
+  const domeHeight = Math.min(width, height) * 0.25
   const positions: number[] = [0, 0, girdleZ + domeHeight]
   const uvs: number[] = [0.5, 0.5]
   const indices: number[] = []
@@ -416,31 +418,15 @@ function OpalCabochon({
 
   if (usesProductPhoto) {
     return (
-      <group>
-        <mesh geometry={geometry}>
-          <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
-          <meshStandardMaterial
-            attach="material-1"
-            color={selectedOpal?.visual.bodyColour ?? palette.body}
-            roughness={0.24}
-            metalness={0}
-          />
-        </mesh>
-        <mesh geometry={geometry} scale={[1.002, 1.002, 1.012]}>
-          <meshPhysicalMaterial
-            attach="material-0"
-            color="#f4fbf8"
-            transparent
-            opacity={0.1}
-            roughness={0.08}
-            specularIntensity={1}
-            clearcoat={1}
-            clearcoatRoughness={0.025}
-            depthWrite={false}
-          />
-          <meshBasicMaterial attach="material-1" transparent opacity={0} depthWrite={false} />
-        </mesh>
-      </group>
+      <mesh geometry={geometry}>
+        <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
+        <meshStandardMaterial
+          attach="material-1"
+          color={selectedOpal?.visual.bodyColour ?? palette.body}
+          roughness={0.24}
+          metalness={0}
+        />
+      </mesh>
     )
   }
 
@@ -669,9 +655,9 @@ function Setting({
             finish="patina"
           />
           {beads.map(({ key, x, y }) => (
-            <mesh key={key} position={[x, y, 0.068]}>
+            <mesh key={key} position={[x, y, 0.06]} scale={[1, 1, 0.72]}>
               <sphereGeometry args={[profile.beadRadius, 14, 14]} />
-              <MetalMaterial metal={config.metal} roughness={0.25} />
+              <MetalMaterial metal={config.metal} roughness={0.42} />
             </mesh>
           ))}
         </>
