@@ -312,9 +312,14 @@ function getCabochonDepthProfile(
   const girdleZ = 0.028
   const totalDepth = depthMm ? depthMm * 0.1 : Math.min(width, height) * 0.38
   const domeHeight = totalDepth * 0.58
+  // A loose stone's full depth disappears into the bezel cup once set. Showing
+  // all of it makes the finished ring look like a deep cylindrical pendant.
+  // Keep enough seated edge to read as secure while matching the low-profile
+  // handmade cups visible in the sold Aurora and Sun & Moon photographs.
+  const visibleSeatDepth = Math.min(totalDepth - domeHeight, 0.07)
 
   return {
-    baseZ: girdleZ - (totalDepth - domeHeight),
+    baseZ: girdleZ - visibleSeatDepth,
     domeHeight,
     girdleZ,
   }
@@ -468,11 +473,10 @@ function OpalCabochon({
     return (
       <mesh geometry={geometry}>
         <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
-        <meshStandardMaterial
+        <meshBasicMaterial
           attach="material-1"
           color={selectedOpal?.visual.bodyColour ?? palette.body}
-          roughness={0.24}
-          metalness={0}
+          toneMapped={false}
         />
       </mesh>
     )
@@ -704,14 +708,6 @@ function Setting({
         finish="patina"
         edgeVariation={0.0015}
       />
-      <StoneOutline
-        config={config}
-        dimensions={dimensions}
-        offset={profile.bezelLipOffset}
-        radius={profile.bezelLipRadius}
-        z={0.045}
-        edgeVariation={0.0025}
-      />
 
       {config.setting === 'beaded' && (
         <>
@@ -916,6 +912,7 @@ export function RingScene({
       gl={{ antialias: true, alpha: false }}
       scene={{ background }}
       onCreated={({ gl }) => {
+        gl.outputColorSpace = SRGBColorSpace
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >

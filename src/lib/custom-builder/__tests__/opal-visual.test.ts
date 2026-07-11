@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest'
-import { createOpalVisualProfile, isBuilderEligibleOpal } from '../opal-visual'
+import {
+  createOpalVisualProfile,
+  isBuilderEligibleOpal,
+  reviewedOpalImageUrl,
+} from '../opal-visual'
 
 const reviewedOpals = [
   ['lightning-ridge-white-opal-1-05-cts', 'Lightning Ridge White Opal 1.05 cts'],
@@ -20,6 +24,19 @@ describe('custom builder opal visual profiles', () => {
     'queensland-crystal-pipe-opal-105-cts',
   ])('keeps the checked-in import slug %s eligible after a clean restore', (slug) => {
     expect(isBuilderEligibleOpal(slug, 'Imported store opal')).toBe(true)
+  })
+
+  test.each([
+    ['lightning-ridge-white-opal-1-05-cts', '/images/products/20211104_234659-1-1.jpg'],
+    ['mintabie-semi-black-opal-105-cts', '/images/products/20210923_174046.jpg'],
+    ['mintabie-semi-black-opal-1-35-cts', '/images/products/20210923_173846-1.jpg'],
+    ['queensland-crystal-pipe-opal-105-cts', '/images/products/20211012_173649.jpg'],
+  ] as const)('locks reviewed store opal %s to its audited source photo', (slug, imageUrl) => {
+    expect(reviewedOpalImageUrl(slug)).toBe(imageUrl)
+  })
+
+  test('does not invent a source photo for a newly managed opal', () => {
+    expect(reviewedOpalImageUrl('new-reviewed-opal')).toBeUndefined()
   })
 
   test('rejects legacy IDs and unsupported catalogue shapes', () => {

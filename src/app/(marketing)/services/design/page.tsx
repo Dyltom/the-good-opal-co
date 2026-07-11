@@ -11,7 +11,11 @@ import { shapeForOpal, type BuilderOpal, type RingConfig } from '@/components/cu
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { resolveMediaUrl } from '@/lib/media-url'
-import { createOpalVisualProfile, isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
+import {
+  createOpalVisualProfile,
+  isBuilderEligibleOpal,
+  reviewedOpalImageUrl,
+} from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
 import type { Media } from '@/types/payload-types'
 
@@ -146,7 +150,10 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       // Reviewed builder opals have owned, checked-in source photography. Prefer it
       // over Payload's file route so a missing local/ephemeral media file cannot
       // collapse the complete WebGL scene.
-      const imageUrl = productImageFallback(image?.filename) ?? resolveMediaUrl(image?.url)
+      const imageUrl =
+        reviewedOpalImageUrl(product.slug) ??
+        productImageFallback(image?.filename) ??
+        resolveMediaUrl(image?.url)
       if (!imageUrl || !product.stoneType) return []
 
       const renderProfile = createOpalVisualProfile(

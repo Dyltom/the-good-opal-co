@@ -79,6 +79,10 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('depthMm * 0.1')
     expect(sceneSource).toContain(': Math.min(width, height) * 0.38')
     expect(sceneSource).toContain('const domeHeight = totalDepth * 0.58')
+    expect(sceneSource).toContain(
+      'const visibleSeatDepth = Math.min(totalDepth - domeHeight, 0.07)'
+    )
+    expect(sceneSource).toContain('baseZ: girdleZ - visibleSeatDepth')
     expect(sceneSource).toContain("if (shape === 'elongated')")
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), 0.62)')
     expect(sceneSource).toContain('const pearWidthCorrection = 1.321')
@@ -138,8 +142,11 @@ describe('custom ring geometry contract', () => {
     expect(sceneSource).toContain('nextTexture.minFilter = LinearFilter')
     expect(sceneSource).toContain('nextTexture.magFilter = LinearFilter')
     expect(sceneSource).toContain('dpr={[1, 2]}')
+    expect(sceneSource).toContain('gl.outputColorSpace = SRGBColorSpace')
+    expect(sceneSource).toContain('color={selectedOpal?.visual.bodyColour ?? palette.body}')
     expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
     expect(sceneSource).not.toContain('iridescence={0.06}')
+    expect(sceneSource).not.toContain('<meshStandardMaterial\n          attach="material-1"')
   })
 
   test('uses handmade sterling and soldered halo proportions from sold pieces', () => {
@@ -162,6 +169,8 @@ describe('custom ring geometry contract', () => {
   test('uses measured bezel, halo, and tapered shoulder proportions', () => {
     expect(configSource).toContain('bezelWallThickness: 0.056')
     expect(configSource).toContain('bezelLipRadius: 0.013')
+    expect(sceneSource.match(/<StoneOutline/g)).toHaveLength(2)
+    expect(sceneSource).toContain('finish="patina"')
     expect(configSource).toContain('beadRadius: 0.036')
     expect(configSource).toContain('beadCount: 38')
     expect(sceneSource).toContain('shoulderDistance')

@@ -7,8 +7,14 @@ import { defaultRingConfig } from '../config'
 
 vi.mock('next/dynamic', () => ({
   default: () =>
-    function RingPreviewStub() {
-      return <div data-testid="ring-preview" />
+    function RingPreviewStub({ selectedOpal }: { selectedOpal?: BuilderOpal }) {
+      return (
+        <div
+          data-testid="ring-preview"
+          data-selected-opal={selectedOpal?.id}
+          data-selected-image={selectedOpal?.imageUrl}
+        />
+      )
     },
 }))
 
@@ -94,6 +100,10 @@ describe('RingConfigurator store opal selection', () => {
     await waitFor(() => {
       expect(new URLSearchParams(window.location.search).get('p')).toBe('204')
     })
+    expect(screen.getByTestId('ring-preview').getAttribute('data-selected-opal')).toBe('204')
+    expect(screen.getByTestId('ring-preview').getAttribute('data-selected-image')).toBe(
+      '/crystal-opal.jpg'
+    )
     expect(new URLSearchParams(window.location.search).get('o')).toBe('blue-green')
     expect(screen.getByText(/Coober Pedy crystal opal, Gemini design/i)).not.toBeNull()
     expect(

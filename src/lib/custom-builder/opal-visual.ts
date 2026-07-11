@@ -79,6 +79,18 @@ const reviewedSlugAliases: Record<string, keyof typeof reviewedProfiles> = {
   'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
 }
 
+const reviewedPhotoBySlug: Record<keyof typeof reviewedProfiles, string> = {
+  'lightning-ridge-white-opal-1-05-cts': '/images/products/20211104_234659-1-1.jpg',
+  'mintabie-semi-black-opal-1-05-cts': '/images/products/20210923_174046.jpg',
+  'mintabie-semi-black-opal-1-35-cts': '/images/products/20210923_173846-1.jpg',
+  'queensland-crystal-pipe-opal-1-45-cts': '/images/products/20211012_173649.jpg',
+}
+
+export function reviewedOpalImageUrl(slug: string): string | undefined {
+  const reviewedSlug = reviewedSlugAliases[slug] ?? slug
+  return reviewedPhotoBySlug[reviewedSlug]
+}
+
 function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | undefined {
   return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
 }
