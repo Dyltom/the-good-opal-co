@@ -78,6 +78,9 @@ test('health, robots, sitemap, redirects, and not-found behavior are coherent', 
 
   const missing = await page.goto('/definitely-not-a-real-page')
   expect(missing?.status()).toBe(404)
+
+  const missingProduct = await page.request.get('/store/definitely-not-a-real-product')
+  expect(missingProduct.status()).toBe(404)
 })
 
 test('course interest keeps course context through to contact', async ({ page }) => {

@@ -40,9 +40,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const product = docs[0]
   if (!product) {
-    return {
-      title: 'Product Not Found | The Good Opal Co',
-    }
+    notFound()
   }
 
   const primaryImage = product.images?.[0]?.image
