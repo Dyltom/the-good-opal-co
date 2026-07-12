@@ -132,6 +132,18 @@ describe('custom builder opal visual profiles', () => {
     expect(profile.visual.photoFit).toBeUndefined()
   })
 
+  test('uses the selected product photo for every individual opal while review is refined', () => {
+    const profile = createOpalVisualProfile(
+      'newly-imported-individual-opal',
+      'Newly imported Australian opal',
+      'crystal-opal',
+      { builderMappingStatus: 'reviewed' }
+    )
+
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.5, focalY: 0.5, zoom: 2.25 })
+    expect(profile.visual.photoFit).toBe('estimated')
+  })
+
   test('keeps reviewed photo crops aligned with the complete stone face', () => {
     const white = createOpalVisualProfile(
       'lightning-ridge-white-opal-1-05-cts',

@@ -34,6 +34,7 @@ import {
   type RingConfig,
 } from './config'
 import {
+  applyHandmadeBeadVariation,
   cameraPositions,
   cameraUpVectors,
   evenlySpacedOutlinePoints,
@@ -129,8 +130,16 @@ function MetalMaterial({
   )
 }
 
-function PatinaMaterial() {
-  return <meshStandardMaterial color="#2c2d29" metalness={0.72} roughness={0.62} />
+function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
+  const shadowColour =
+    metal === 'sterling-silver'
+      ? '#2c2d29'
+      : metal === '14k-gold' || metal === '18k-gold'
+        ? '#6b4b22'
+        : metal === 'rose-gold'
+          ? '#704a42'
+          : '#575a59'
+  return <meshStandardMaterial color={shadowColour} metalness={0.72} roughness={0.62} />
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -626,7 +635,7 @@ function BezelWall({
   return (
     <mesh castShadow geometry={geometry} receiveShadow>
       {finish === 'patina' ? (
-        <PatinaMaterial />
+        <PatinaMaterial metal={config.metal} />
       ) : (
         <MetalMaterial metal={config.metal} roughness={0.3} />
       )}
@@ -672,7 +681,7 @@ function StoneOutline({
     <mesh castShadow receiveShadow>
       <tubeGeometry args={[curve, 96, radius, 14, true]} />
       {finish === 'patina' ? (
-        <PatinaMaterial />
+        <PatinaMaterial metal={config.metal} />
       ) : (
         <MetalMaterial metal={config.metal} roughness={0.2} />
       )}
@@ -695,8 +704,18 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const haloSupport = getHaloSupportGeometry(profile)
   const beadCount = profile.beadCount
   const beads = useMemo(
-    () => evenlySpacedOutlinePoints(config.shape, width, height, profile.haloOffset, beadCount),
-    [beadCount, config.shape, height, profile.haloOffset, width]
+    () =>
+      applyHandmadeBeadVariation(
+        evenlySpacedOutlinePoints(
+          config.shape,
+          width,
+          height,
+          profile.haloOffset,
+          beadCount,
+          profile.haloPhase
+        )
+      ),
+    [beadCount, config.shape, height, profile.haloOffset, profile.haloPhase, width]
   )
 
   return (
@@ -727,11 +746,11 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       <StoneOutline
         config={config}
         dimensions={dimensions}
-        offset={0.003}
-        radius={0.0045}
+        offset={profile.innerSeamOffset}
+        radius={profile.innerSeamRadius}
         z={bezelTop + 0.001}
         finish="patina"
-        edgeVariation={0.001}
+        edgeVariation={profile.innerSeamVariation}
       />
 
       {config.setting === 'beaded' && (
@@ -745,26 +764,18 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
             thickness={haloSupport.thickness}
             topZ={0.03}
           />
-          {beads.map(({ key, x, y }) => {
+          {beads.map(({ key, x, y, size, flattening, heightVariation }) => {
             // Sold Sun & Moon and Aurora rings use individually soldered beads.
             // Deterministic variation keeps the halo handmade without animating
             // or changing between renders.
-            const size = 0.94 + ((key * 5) % 7) * 0.022
-            const flattening = 0.68 + ((key * 3) % 5) * 0.025
-            const heightVariation = (((key * 11) % 5) - 2) * 0.0015
-            const radialLength = Math.hypot(x, y) || 1
-            const radialJitter = (((key * 11) % 9) - 4) * 0.0012
-            const tangentJitter = (((key * 13) % 7) - 3) * 0.0008
-            const beadX = x + (x / radialLength) * radialJitter - (y / radialLength) * tangentJitter
-            const beadY = y + (y / radialLength) * radialJitter + (x / radialLength) * tangentJitter
             return (
               <mesh
                 key={key}
-                position={[beadX, beadY, 0.048 + heightVariation]}
+                position={[x, y, 0.048 + heightVariation]}
                 scale={[size, size, flattening]}
               >
                 <sphereGeometry args={[profile.beadRadius, 14, 14]} />
-                <MetalMaterial metal={config.metal} roughness={0.46} />
+                <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
               </mesh>
             )
           })}
@@ -785,7 +796,12 @@ function RingShank({
   shoulderDepth,
   tubeRadius,
   tubeDepth,
-  style,
+  joinInsetFactor,
+  joinLiftFactor,
+  shoulderLead,
+  shoulderBlend,
+  crossSectionPower,
+  metalRoughness,
 }: {
   metal: RingConfig['metal']
   radius: number
@@ -795,15 +811,19 @@ function RingShank({
   shoulderDepth: number
   tubeRadius: number
   tubeDepth: number
-  style: RingConfig['style']
+  joinInsetFactor: number
+  joinLiftFactor: number
+  shoulderLead: number
+  shoulderBlend: number
+  crossSectionPower: number
+  metalRoughness: number
 }) {
   const curve = useMemo(() => {
     // Let the shoulder surface overlap the bezel's outer wall at its base. The
     // earlier centreline ended inside the stone width, leaving a cathedral-like
     // air gap instead of the low solder join visible on the sold rings.
-    const isGemini = style === 'gemini'
-    const joinX = settingHalfWidth - shoulderDepth * (isGemini ? 0.12 : 0.4)
-    const joinY = settingBaseY + shoulderDepth * (isGemini ? 0.18 : 0.35)
+    const joinX = settingHalfWidth - shoulderDepth * joinInsetFactor
+    const joinY = settingBaseY + shoulderDepth * joinLiftFactor
     const ringPoints = Array.from({ length: 97 }, (_, index) => {
       const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
       return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
@@ -811,15 +831,23 @@ function RingShank({
     return new CatmullRomCurve3(
       [
         new Vector3(-joinX, joinY, 0),
-        new Vector3(-joinX - (isGemini ? 0.075 : 0.03), settingBaseY - 0.04, 0),
+        new Vector3(-joinX - shoulderLead, settingBaseY - 0.04, 0),
         ...ringPoints,
-        new Vector3(joinX + (isGemini ? 0.075 : 0.03), settingBaseY - 0.04, 0),
+        new Vector3(joinX + shoulderLead, settingBaseY - 0.04, 0),
         new Vector3(joinX, joinY, 0),
       ],
       false,
       'centripetal'
     )
-  }, [radius, settingBaseY, settingHalfWidth, shoulderDepth, style])
+  }, [
+    joinInsetFactor,
+    joinLiftFactor,
+    radius,
+    settingBaseY,
+    settingHalfWidth,
+    shoulderDepth,
+    shoulderLead,
+  ])
   const geometry = useMemo(() => {
     const tubularSegments = 160
     const radialSegments = 16
@@ -832,18 +860,17 @@ function RingShank({
       const tangent = curve.getTangentAt(progress).normalize()
       const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
       const shoulderDistance = Math.min(progress, 1 - progress)
-      const shoulderBlend = Math.min(1, shoulderDistance / (style === 'gemini' ? 0.2 : 0.14))
-      const localHalfWidth = shoulderRadius + (tubeRadius - shoulderRadius) * shoulderBlend
-      const localHalfDepth = shoulderDepth + (tubeDepth - shoulderDepth) * shoulderBlend
+      const blend = Math.min(1, shoulderDistance / shoulderBlend)
+      const localHalfWidth = shoulderRadius + (tubeRadius - shoulderRadius) * blend
+      const localHalfDepth = shoulderDepth + (tubeDepth - shoulderDepth) * blend
 
       for (let side = 0; side < radialSegments; side += 1) {
         const angle = (side / radialSegments) * Math.PI * 2
-        // A softly squared superellipse matches the forged, low-profile band
-        // in the Gemini reference. It also gives metals broad highlight planes
+        // A softly squared superellipse matches the forged, low-profile bands
+        // across the sold references. It also gives metals broad highlight planes
         // instead of the plastic-looking highlight produced by a round tube.
         const cosine = Math.cos(angle)
         const sine = Math.sin(angle)
-        const crossSectionPower = style === 'gemini' ? 0.58 : 0.72
         const acrossBand = Math.sign(cosine) * Math.pow(Math.abs(cosine), crossSectionPower)
         const throughBand = Math.sign(sine) * Math.pow(Math.abs(sine), crossSectionPower)
         positions.push(
@@ -876,13 +903,21 @@ function RingShank({
     nextGeometry.computeVertexNormals()
     nextGeometry.computeBoundingSphere()
     return nextGeometry
-  }, [curve, shoulderDepth, shoulderRadius, style, tubeDepth, tubeRadius])
+  }, [
+    crossSectionPower,
+    curve,
+    shoulderBlend,
+    shoulderDepth,
+    shoulderRadius,
+    tubeDepth,
+    tubeRadius,
+  ])
 
   useEffect(() => () => geometry.dispose(), [geometry])
 
   return (
     <mesh castShadow geometry={geometry} receiveShadow>
-      <MetalMaterial metal={metal} roughness={style === 'gemini' ? 0.31 : 0.25} />
+      <MetalMaterial metal={metal} roughness={metalRoughness} />
     </mesh>
   )
 }
@@ -896,8 +931,12 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
     stoneDimensions: dimensions,
   } = getSettingPlacement(config, selectedOpal)
   const [stoneWidth] = dimensions
-  const settingHalfWidth =
-    stoneWidth + styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
+  const bezelOuterOffset =
+    styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
+  const support = getHaloSupportGeometry(styleProfile)
+  const settingOuterOffset =
+    config.setting === 'beaded' ? support.offset + support.thickness / 2 : bezelOuterOffset
+  const settingHalfWidth = stoneWidth + settingOuterOffset
 
   return (
     <group>
@@ -910,7 +949,12 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         shoulderRadius={styleProfile.shoulderRadius}
         tubeDepth={styleProfile.shankDepth}
         tubeRadius={styleProfile.shankRadius}
-        style={config.style}
+        joinInsetFactor={styleProfile.joinInsetFactor}
+        joinLiftFactor={styleProfile.joinLiftFactor}
+        shoulderLead={styleProfile.shoulderLead}
+        shoulderBlend={styleProfile.shoulderBlend}
+        crossSectionPower={styleProfile.crossSectionPower}
+        metalRoughness={styleProfile.metalRoughness}
       />
 
       <group position={[0, settingY, 0]} rotation={[settingRotationX, 0, 0]}>

@@ -12,9 +12,10 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('finish="patina"')
   })
 
-  test('gives Gemini a forged softly squared shank and broad shoulders', () => {
-    expect(sceneSource).toContain("const isGemini = style === 'gemini'")
-    expect(sceneSource).toContain("const crossSectionPower = style === 'gemini' ? 0.58 : 0.72")
+  test('drives each forged shank and shoulder join from its sold-style profile', () => {
+    expect(sceneSource).toContain('shoulderDepth * joinInsetFactor')
+    expect(sceneSource).toContain('shoulderDistance / shoulderBlend')
+    expect(sceneSource).toContain('Math.pow(Math.abs(cosine), crossSectionPower)')
     expect(sceneSource).toContain('const acrossBand =')
     expect(sceneSource).toContain('const throughBand =')
   })

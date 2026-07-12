@@ -134,6 +134,38 @@ export function getStoneDimensions(
   return [width, Math.min(0.72, Math.max(width, width * selectedOpal.visual.aspectRatio))]
 }
 
+function baseOutlinePoint(
+  shape: RingConfig['shape'],
+  angle: number,
+  width: number,
+  height: number
+): readonly [number, number] {
+  const cosine = Math.cos(angle)
+  const sine = Math.sin(angle)
+
+  if (shape === 'cushion') {
+    return [
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.32) * width,
+      Math.sign(sine) * Math.pow(Math.abs(sine), 0.32) * height,
+    ]
+  }
+  if (shape === 'elongated') {
+    // Queensland pipe opals read as rounded capsules with straighter sides,
+    // not stretched ellipses.
+    return [
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.62) * width,
+      Math.sign(sine) * Math.pow(Math.abs(sine), 0.62) * height,
+    ]
+  }
+  if (shape === 'pear') {
+    const taper = 0.15 + 0.85 * Math.pow((sine + 1) / 2, 0.65)
+    // Normalise the taper so documented width remains the true rendered width.
+    const pearWidthCorrection = 1.321
+    return [cosine * width * taper * pearWidthCorrection, sine * height]
+  }
+  return [cosine * width, sine * height]
+}
+
 export function outlinePoint(
   shape: RingConfig['shape'],
   angle: number,
@@ -141,32 +173,27 @@ export function outlinePoint(
   height: number,
   offset = 0
 ): readonly [number, number] {
-  const cosine = Math.cos(angle)
-  const sine = Math.sin(angle)
-  const adjustedWidth = width + offset
-  const adjustedHeight = height + offset
+  const point = baseOutlinePoint(shape, angle, width, height)
+  if (offset === 0) return point
 
-  if (shape === 'cushion') {
-    return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.5) * adjustedWidth,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.5) * adjustedHeight,
-    ]
+  // Expand along the local surface normal. Scaling both axes by `offset`
+  // makes superellipse corners visibly thicker than their sides, especially
+  // on Coral's squared cushion. A sampled tangent keeps every setting wall a
+  // physically consistent width across all supported silhouettes.
+  const epsilon = 0.0001
+  const before = baseOutlinePoint(shape, angle - epsilon, width, height)
+  const after = baseOutlinePoint(shape, angle + epsilon, width, height)
+  const tangentX = after[0] - before[0]
+  const tangentY = after[1] - before[1]
+  const length = Math.hypot(tangentX, tangentY) || 1
+  let normalX = tangentY / length
+  let normalY = -tangentX / length
+  if (normalX * point[0] + normalY * point[1] < 0) {
+    normalX *= -1
+    normalY *= -1
   }
-  if (shape === 'elongated') {
-    // Queensland pipe opals read as rounded capsules with straighter sides,
-    // not stretched ellipses.
-    return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.62) * adjustedWidth,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.62) * adjustedHeight,
-    ]
-  }
-  if (shape === 'pear') {
-    const taper = 0.15 + 0.85 * Math.pow((sine + 1) / 2, 0.65)
-    // Normalise the taper so documented width remains the true rendered width.
-    const pearWidthCorrection = 1.321
-    return [cosine * adjustedWidth * taper * pearWidthCorrection, sine * adjustedHeight]
-  }
-  return [cosine * adjustedWidth, sine * adjustedHeight]
+
+  return [point[0] + normalX * offset, point[1] + normalY * offset]
 }
 
 export function evenlySpacedOutlinePoints(
@@ -174,10 +201,11 @@ export function evenlySpacedOutlinePoints(
   width: number,
   height: number,
   offset: number,
-  count: number
+  count: number,
+  startAngle = 0
 ): readonly { key: number; x: number; y: number }[] {
   const samples = Array.from({ length: 361 }, (_, index) => {
-    const angle = (index / 360) * Math.PI * 2
+    const angle = startAngle + (index / 360) * Math.PI * 2
     const [x, y] = outlinePoint(shape, angle, width, height, offset)
     return { x, y }
   })
@@ -193,8 +221,50 @@ export function evenlySpacedOutlinePoints(
   return Array.from({ length: count }, (_, index) => {
     const target = (index / count) * perimeter
     const sampleIndex = distances.findIndex((distance) => distance >= target)
-    const point = samples[Math.max(0, sampleIndex)] ?? samples[0]!
-    return { key: index, ...point }
+    const upperIndex = Math.max(1, sampleIndex)
+    const lowerIndex = upperIndex - 1
+    const lower = samples[lowerIndex] ?? samples[0]!
+    const upper = samples[upperIndex] ?? samples.at(-1)!
+    const lowerDistance = distances[lowerIndex] ?? 0
+    const upperDistance = distances[upperIndex] ?? lowerDistance
+    const span = upperDistance - lowerDistance
+    const progress = span > 0 ? (target - lowerDistance) / span : 0
+    return {
+      key: index,
+      x: lower.x + (upper.x - lower.x) * progress,
+      y: lower.y + (upper.y - lower.y) * progress,
+    }
+  })
+}
+
+export interface HandmadeBeadPoint {
+  flattening: number
+  heightVariation: number
+  key: number
+  size: number
+  x: number
+  y: number
+}
+
+export function applyHandmadeBeadVariation(
+  points: readonly { key: number; x: number; y: number }[]
+): readonly HandmadeBeadPoint[] {
+  return points.map(({ key, x, y }) => {
+    const size = 0.94 + ((key * 5) % 7) * 0.022
+    const flattening = 0.68 + ((key * 3) % 5) * 0.025
+    const heightVariation = (((key * 11) % 5) - 2) * 0.0015
+    const radialLength = Math.hypot(x, y) || 1
+    const radialJitter = (((key * 11) % 9) - 4) * 0.0012
+    const tangentJitter = (((key * 13) % 7) - 3) * 0.0008
+
+    return {
+      key,
+      x: x + (x / radialLength) * radialJitter - (y / radialLength) * tangentJitter,
+      y: y + (y / radialLength) * radialJitter + (x / radialLength) * tangentJitter,
+      size,
+      flattening,
+      heightVariation,
+    }
   })
 }
 

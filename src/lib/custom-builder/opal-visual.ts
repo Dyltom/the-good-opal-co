@@ -442,18 +442,27 @@ export function createOpalVisualProfile(
   const cataloguePhoto = cataloguePhotoProfiles[slug]
   const managed = cmsReviewedProfile(fields)
   const dimensionsMm = completeDimensions(fields)
+  const baseVisual = managed ?? reviewed ?? cataloguePhoto ?? silhouette
+  const usesIndividualPhoto = classifyOpalListing(name) === 'individual'
+  const baseTextureCrop =
+    managed?.textureCrop ?? reviewed?.textureCrop ?? cataloguePhoto?.textureCrop
+  const basePhotoFit = managed?.photoFit ?? reviewed?.photoFit ?? cataloguePhoto?.photoFit
   const bodyColour = profile.bodies[seed % profile.bodies.length] ?? profile.bodies[0]!
   const flashColours = profile.flashes[(seed >>> 4) % profile.flashes.length] ?? profile.flashes[0]!
 
   return {
     renderStone: profile.renderStone,
     visual: {
-      ...(managed ?? reviewed ?? cataloguePhoto ?? silhouette),
+      ...baseVisual,
       bodyColour: managed?.bodyColour ?? reviewed?.bodyColour ?? bodyColour,
       flashColours: managed?.flashColours ?? flashColours,
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
       dimensionsMm: managed?.dimensionsMm ?? reviewed?.dimensionsMm ?? dimensionsMm,
+      textureCrop:
+        baseTextureCrop ??
+        (usesIndividualPhoto ? { focalX: 0.5, focalY: 0.5, zoom: 2.25 } : undefined),
+      photoFit: basePhotoFit ?? (usesIndividualPhoto ? 'estimated' : undefined),
     },
   }
 }
