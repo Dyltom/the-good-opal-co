@@ -4,6 +4,7 @@ type VisualProfile = BuilderOpal['visual']
 
 export interface BuilderVisualFields {
   builderEligible?: boolean | null
+  builderMappingStatus?: string | null
   builderSilhouette?: string | null
   builderRecommendedStyle?: string | null
   builderBodyColour?: string | null
@@ -231,7 +232,14 @@ const validStyles = new Set<RingConfig['style']>(['gemini', 'coral', 'sun-moon',
 const hexColourPattern = /^#[0-9a-f]{6}$/i
 
 function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undefined {
-  if (!fields?.builderEligible) return undefined
+  const mappingApproved =
+    fields?.builderMappingStatus === undefined ||
+    fields.builderMappingStatus === null ||
+    fields.builderMappingStatus === 'reviewed' ||
+    fields.builderMappingStatus === 'manual'
+  if (!fields?.builderEligible || !mappingApproved) {
+    return undefined
+  }
 
   const silhouette = fields.builderSilhouette
   const recommendedStyle = fields.builderRecommendedStyle

@@ -19,6 +19,7 @@ import {
   reviewedOpalImageUrl,
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
+import { isBuilderMappingApproved } from '@/lib/custom-builder/mapping-lifecycle'
 import type { Media } from '@/types/payload-types'
 
 export const metadata: Metadata = {
@@ -110,6 +111,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       weight: true,
       dimensions: true,
       builderEligible: true,
+      builderMappingStatus: true,
       builderSilhouette: true,
       builderRecommendedStyle: true,
       builderBodyColour: true,
@@ -149,6 +151,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
 
   return result.docs
     .filter((product) => isAvailableOpalListing(product.name))
+    .filter((product) => isBuilderMappingApproved(product.builderMappingStatus))
     .flatMap((product): BuilderOpal[] => {
       const firstImage = product.images?.[0]?.image
       const image = firstImage ? mediaById.get(String(firstImage)) : undefined

@@ -452,7 +452,35 @@ export interface Product {
    */
   weightUnit?: ('carats' | 'grams') | null;
   /**
-   * Show this loose opal in the custom ring builder. Complete every reviewed builder field first.
+   * Review inferred values below. Use Manual when you intentionally override them.
+   */
+  builderMappingStatus?: ('pending' | 'reviewed' | 'manual' | 'stale') | null;
+  /**
+   * Deterministic input completeness score; not image-recognition accuracy.
+   */
+  builderMappingConfidence?: number | null;
+  /**
+   * Inference rules version. Version changes make approved mappings stale.
+   */
+  builderMappingVersion?: number | null;
+  /**
+   * Changes whenever mapped source image identity or order changes.
+   */
+  builderMappingSourceImageHash?: string | null;
+  /**
+   * Tracks source image, name, opal type, slug, and dimensions.
+   */
+  builderMappingInputHash?: string | null;
+  /**
+   * Set when mapping is explicitly approved as Reviewed or Manual.
+   */
+  builderMappingReviewedAt?: string | null;
+  /**
+   * Internal review notes, image caveats, and reasons for manual overrides.
+   */
+  builderMappingNotes?: string | null;
+  /**
+   * Show this loose opal in the custom ring builder. Requires Reviewed or Manual mapping and complete visual fields.
    */
   builderEligible?: boolean | null;
   builderSilhouette?: ('oval' | 'round' | 'elongated' | 'cushion' | 'pear') | null;
@@ -1357,6 +1385,13 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   weight?: T;
   weightUnit?: T;
+  builderMappingStatus?: T;
+  builderMappingConfidence?: T;
+  builderMappingVersion?: T;
+  builderMappingSourceImageHash?: T;
+  builderMappingInputHash?: T;
+  builderMappingReviewedAt?: T;
+  builderMappingNotes?: T;
   builderEligible?: T;
   builderSilhouette?: T;
   builderRecommendedStyle?: T;

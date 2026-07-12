@@ -55,6 +55,10 @@ describe('product commerce validation', () => {
     expect(validateBuilderProduct({ ...valid, category: 'opal-rings' })).toBe(
       'Builder opals must use the Raw Opals category'
     )
+    expect(validateBuilderProduct({ ...valid, builderMappingStatus: 'pending' })).toBe(
+      'Builder opals require a reviewed or manually approved mapping'
+    )
+    expect(validateBuilderProduct({ ...valid, builderMappingStatus: 'manual' })).toBe(true)
   })
 
   test.each(['#78c5df', '#FFFFFF', undefined, null, ''])('accepts hex colour value %s', (value) => {

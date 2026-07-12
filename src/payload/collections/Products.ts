@@ -6,6 +6,10 @@ import {
   validateHexColour,
   validateWholeStock,
 } from '../../lib/product-validation.ts'
+import {
+  applyBuilderMappingLifecycle,
+  builderMappingNeedsReview,
+} from '../../lib/custom-builder/mapping-lifecycle.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -17,14 +21,26 @@ export const Products: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'price', 'status', 'stock', 'updatedAt'],
+    defaultColumns: ['name', 'price', 'status', 'builderMappingStatus', 'stock', 'updatedAt'],
   },
   hooks: {
     beforeValidate: [
+      ({ data, originalDoc }) =>
+        applyBuilderMappingLifecycle(data, originalDoc, new Date().toISOString()),
       ({ data }) => {
         const result = validateBuilderProduct(data)
         if (result !== true) throw new Error(result)
         return data
+      },
+    ],
+    afterChange: [
+      ({ doc, previousDoc, req }) => {
+        if (!builderMappingNeedsReview(doc, previousDoc)) return
+        req.payload.logger.info({
+          builderMappingStatus: doc.builderMappingStatus,
+          msg: 'Opal builder mapping queued for admin review',
+          productId: doc.id,
+        })
       },
     ],
     beforeDelete: [
@@ -300,20 +316,105 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      type: 'collapsible',
+      label: 'Opal builder mapping lifecycle',
+      admin: {
+        condition: (data) => data.category === 'raw-opals',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderMappingStatus',
+              type: 'select',
+              options: [
+                { label: 'Pending review', value: 'pending' },
+                { label: 'Reviewed inference', value: 'reviewed' },
+                { label: 'Manual override approved', value: 'manual' },
+                { label: 'Stale — review again', value: 'stale' },
+              ],
+              admin: {
+                description:
+                  'Review inferred values below. Use Manual when you intentionally override them.',
+              },
+            },
+            {
+              name: 'builderMappingConfidence',
+              type: 'number',
+              min: 0,
+              max: 1,
+              admin: {
+                readOnly: true,
+                description:
+                  'Deterministic input completeness score; not image-recognition accuracy.',
+              },
+            },
+            {
+              name: 'builderMappingVersion',
+              type: 'number',
+              admin: {
+                readOnly: true,
+                description:
+                  'Inference rules version. Version changes make approved mappings stale.',
+              },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderMappingSourceImageHash',
+              type: 'text',
+              admin: {
+                readOnly: true,
+                description: 'Changes whenever mapped source image identity or order changes.',
+              },
+            },
+            {
+              name: 'builderMappingInputHash',
+              type: 'text',
+              admin: {
+                readOnly: true,
+                description: 'Tracks source image, name, opal type, slug, and dimensions.',
+              },
+            },
+          ],
+        },
+        {
+          name: 'builderMappingReviewedAt',
+          type: 'date',
+          admin: {
+            readOnly: true,
+            description: 'Set when mapping is explicitly approved as Reviewed or Manual.',
+          },
+        },
+        {
+          name: 'builderMappingNotes',
+          type: 'textarea',
+          access: { read: isAdminField },
+          admin: {
+            description: 'Internal review notes, image caveats, and reasons for manual overrides.',
+          },
+        },
+      ],
+    },
+    {
       name: 'builderEligible',
       type: 'checkbox',
       defaultValue: false,
       admin: {
         description:
-          'Show this loose opal in the custom ring builder. Complete every reviewed builder field first.',
+          'Show this loose opal in the custom ring builder. Requires Reviewed or Manual mapping and complete visual fields.',
         condition: (data) => data.category === 'raw-opals',
       },
     },
     {
       type: 'collapsible',
-      label: 'Reviewed ring builder visual',
+      label: 'Ring builder visual review and manual overrides',
       admin: {
-        condition: (data) => data.category === 'raw-opals' && data.builderEligible === true,
+        condition: (data) => data.category === 'raw-opals',
       },
       fields: [
         {

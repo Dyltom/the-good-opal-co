@@ -22,6 +22,7 @@ import * as migration_20260712_090000_catalogue_fact_backfill from './20260712_0
 import * as migration_20260712_100000_custom_quote_domain from './20260712_100000_custom_quote_domain'
 import * as migration_20260712_110000_custom_quote_delivery from './20260712_110000_custom_quote_delivery'
 import * as migration_20260712_120100_course_public_syllabus from './20260712_120100_course_public_syllabus'
+import * as migration_20260712_131000_builder_mapping_lifecycle from './20260712_131000_builder_mapping_lifecycle'
 
 export const migrations = [
   {
@@ -143,5 +144,10 @@ export const migrations = [
     up: migration_20260712_120100_course_public_syllabus.up,
     down: migration_20260712_120100_course_public_syllabus.down,
     name: '20260712_120100_course_public_syllabus',
+  },
+  {
+    up: migration_20260712_131000_builder_mapping_lifecycle.up,
+    down: migration_20260712_131000_builder_mapping_lifecycle.down,
+    name: '20260712_131000_builder_mapping_lifecycle',
   },
 ]

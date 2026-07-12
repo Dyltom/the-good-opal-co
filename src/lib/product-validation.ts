@@ -41,6 +41,14 @@ export function validateBuilderProduct(data: unknown): true | string {
     return 'Builder opals must use the Raw Opals category'
   }
   if (!data.stoneType) return 'Builder opals require an opal type'
+  if (
+    data.builderMappingStatus !== undefined &&
+    data.builderMappingStatus !== null &&
+    data.builderMappingStatus !== 'reviewed' &&
+    data.builderMappingStatus !== 'manual'
+  ) {
+    return 'Builder opals require a reviewed or manually approved mapping'
+  }
   if (!builderShapes.has(String(data.builderSilhouette))) {
     return 'Builder opals require a reviewed silhouette'
   }

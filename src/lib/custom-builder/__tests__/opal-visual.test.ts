@@ -235,4 +235,30 @@ describe('custom builder opal visual profiles', () => {
       isBuilderEligibleOpal('unfinished-opal', 'Unfinished opal', { builderEligible: true })
     ).toBe(false)
   })
+
+  test('does not expose pending or stale CMS mappings', () => {
+    const managed = {
+      builderEligible: true,
+      builderMappingStatus: 'pending',
+      builderSilhouette: 'pear',
+      builderRecommendedStyle: 'aurora',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      dimensions: { width: 6, length: 8, depth: 3 },
+    }
+
+    expect(isBuilderEligibleOpal('pending-opal', 'Pending opal', managed)).toBe(false)
+    expect(
+      isBuilderEligibleOpal('stale-opal', 'Stale opal', {
+        ...managed,
+        builderMappingStatus: 'stale',
+      })
+    ).toBe(false)
+  })
 })
