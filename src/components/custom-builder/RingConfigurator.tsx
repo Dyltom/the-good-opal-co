@@ -10,7 +10,7 @@ import {
   applyRingStyle,
   defaultOpalPlacement,
   describeRingConfig,
-  isRingStyleCompatible,
+  getRingStyleFit,
   metals,
   ringStyles,
   shapeForOpal,
@@ -275,23 +275,22 @@ function RingStylePicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">3. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Each design comes from a photographed Good Opal Co ring previously made in sterling silver.
-        The selected stone keeps its real silhouette while the bezel and halo treatment adapt around
-        it.
+        Try every design with your selected opal. Each reference is a photographed Good Opal Co
+        ring; the preview keeps your stone’s real silhouette and adapts that design’s bezel, trim,
+        and shank around it. Your maker still confirms whether the physical stone can be set safely.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
           const selected = style.id === value
-          const compatible = !selectedOpal || isRingStyleCompatible(style.id, selectedOpal)
+          const fit = selectedOpal ? getRingStyleFit(style.id, selectedOpal) : undefined
           return (
             <button
               key={style.id}
               type="button"
               aria-pressed={selected}
-              disabled={!compatible}
               onClick={() => onSelect(style)}
               className={cn(
-                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform,opacity] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45',
+                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.99]',
                 selected
                   ? 'border-charcoal shadow-md'
                   : 'border-warm-grey/80 hover:border-charcoal/45'
@@ -312,10 +311,29 @@ function RingStylePicker({
                 )}
               </span>
               <span className="block p-3">
-                <span className="block text-sm font-medium">{style.label}</span>
-                <span className="mt-1 block text-xs leading-5 text-charcoal-light">
-                  {compatible ? style.detail : `Requires a ${style.shape} opal`}
+                <span className="flex items-start justify-between gap-2">
+                  <span className="block text-sm font-medium">{style.label}</span>
+                  {fit && (
+                    <span
+                      className={cn(
+                        'shrink-0 rounded-full px-2 py-0.5 text-[0.58rem] font-medium uppercase tracking-[0.08em]',
+                        fit.kind === 'original'
+                          ? 'bg-opal-emerald/10 text-opal-emerald-dark'
+                          : 'bg-cream text-charcoal-light'
+                      )}
+                    >
+                      {fit.kind === 'original' ? 'Reference shape' : 'Adapted'}
+                    </span>
+                  )}
                 </span>
+                <span className="mt-1 block text-xs leading-5 text-charcoal-light">
+                  {style.detail}
+                </span>
+                {fit && (
+                  <span className="mt-2 block text-[0.65rem] leading-4 text-charcoal-light">
+                    {fit.label}
+                  </span>
+                )}
               </span>
             </button>
           )
@@ -358,10 +376,7 @@ export function RingConfigurator({
         opalId: opal.id,
         stone: opal.renderStone,
       }
-      const styled =
-        opal.visual.evidence === 'catalogue'
-          ? applyRingStyle(next, opal.visual.recommendedStyle)
-          : next
+      const styled = applyRingStyle(next, current.style)
       return { ...styled, shape: shapeForOpal(opal) }
     })
   }
@@ -439,10 +454,10 @@ export function RingConfigurator({
                 selectedOpal={selectedOpal}
                 value={config.style}
                 onSelect={(style) =>
-                  setConfig((current) => ({
-                    ...applyRingStyle(current, style.id),
-                    ...(selectedOpal ? { shape: shapeForOpal(selectedOpal) } : {}),
-                  }))
+                  setConfig((current) => {
+                    const stoneShape = selectedOpal ? shapeForOpal(selectedOpal) : current.shape
+                    return { ...applyRingStyle(current, style.id), shape: stoneShape }
+                  })
                 }
               />
 

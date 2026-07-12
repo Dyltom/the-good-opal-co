@@ -23,6 +23,7 @@ import * as migration_20260712_100000_custom_quote_domain from './20260712_10000
 import * as migration_20260712_110000_custom_quote_delivery from './20260712_110000_custom_quote_delivery'
 import * as migration_20260712_120100_course_public_syllabus from './20260712_120100_course_public_syllabus'
 import * as migration_20260712_131000_builder_mapping_lifecycle from './20260712_131000_builder_mapping_lifecycle'
+import * as migration_20260712_143000_heart_silhouette from './20260712_143000_heart_silhouette'
 
 export const migrations = [
   {
@@ -149,5 +150,10 @@ export const migrations = [
     up: migration_20260712_131000_builder_mapping_lifecycle.up,
     down: migration_20260712_131000_builder_mapping_lifecycle.down,
     name: '20260712_131000_builder_mapping_lifecycle',
+  },
+  {
+    up: migration_20260712_143000_heart_silhouette.up,
+    down: migration_20260712_143000_heart_silhouette.down,
+    name: '20260712_143000_heart_silhouette',
   },
 ]

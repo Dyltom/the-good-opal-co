@@ -16,7 +16,9 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   const opals = opalGroup.getByRole('button')
   expect(await opals.count()).toBeGreaterThan(1)
 
-  await opalGroup.getByRole('combobox', { name: 'Filter available opals' }).selectOption('individual')
+  await opalGroup
+    .getByRole('combobox', { name: 'Filter available opals' })
+    .selectOption('individual')
   const individualOpals = opalGroup.getByRole('button').filter({ hasText: 'Individual stone' })
   expect(await individualOpals.count()).toBeGreaterThan(1)
   await individualOpals.nth(1).click()
@@ -32,10 +34,18 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
 
   const styles = page.getByRole('group', { name: '3. Choose a collection design' })
   await expect(styles).toBeVisible()
-  const compatibleStyles = styles.locator('button:not([disabled]):not([aria-pressed="true"])')
-  expect(await compatibleStyles.count()).toBeGreaterThan(0)
-  await compatibleStyles.first().click()
-  await expect(page).toHaveURL(/[?&]y=(gemini|coral|sun-moon|aurora)/)
+  for (const style of ['Gemini', 'Coral', 'Sun & Moon', 'Aurora']) {
+    await expect(styles.getByRole('button', { name: new RegExp(style, 'i') })).toBeEnabled()
+  }
+  await styles.getByRole('button', { name: /Aurora/i }).click()
+  await expect(page).toHaveURL(/[?&]y=aurora/)
+
+  await individualOpals.nth(0).click()
+  await expect(page).toHaveURL(/[?&]y=aurora/)
+  await expect(styles.getByRole('button', { name: /Aurora/i })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  )
 
   const canvas = page.locator('canvas')
   const fallback = page.getByText('Interactive 3D is unavailable on this device.')

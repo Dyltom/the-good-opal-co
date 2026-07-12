@@ -4,6 +4,7 @@ import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { StoreContent, type StoreProduct } from './store-content'
 import {
   parseStoreQuery,
@@ -105,7 +106,7 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
     stock: typeof product.stock === 'number' ? product.stock : 0,
     featured: product.featured === true,
     category: optionalString(product.category),
-    image: firstImageUrl(product.images),
+    image: firstImageUrl(product.images) ?? ownedProductImageUrl(product.slug),
     stoneOrigin: optionalString(product.stoneOrigin),
     stoneType: optionalString(product.stoneType),
     createdAt: optionalString(product.createdAt),

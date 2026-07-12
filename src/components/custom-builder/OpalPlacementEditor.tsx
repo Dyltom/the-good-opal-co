@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
 import { defaultOpalPlacement } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
+import { cssSilhouetteClipPath } from './geometry'
 
 interface OpalPlacementEditorProps {
   onChange: (placement: OpalPlacement) => void
@@ -42,9 +43,7 @@ function roundPlacement(value: number): number {
 function silhouetteClass(shape: BuilderOpal['visual']['silhouette']): string {
   if (shape === 'round') return 'rounded-full'
   if (shape === 'cushion') return 'rounded-[22%]'
-  return shape === 'pear'
-    ? '[clip-path:polygon(50%_0%,76%_15%,92%_45%,86%_70%,50%_100%,14%_70%,8%_45%,24%_15%)]'
-    : 'rounded-[50%]'
+  return shape === 'pear' || shape === 'heart' ? '' : 'rounded-[50%]'
 }
 
 const metalColours: Record<RingConfig['metal'], string> = {
@@ -58,7 +57,7 @@ const metalColours: Record<RingConfig['metal'], string> = {
 
 const styleLabels: Record<RingConfig['style'], string> = {
   aurora: 'Aurora halo',
-  coral: 'Coral sculpted halo',
+  coral: 'Coral clean bezel',
   gemini: 'Gemini clean bezel',
   'sun-moon': 'Sun & Moon beaded trim',
 }
@@ -109,6 +108,7 @@ export function OpalPlacementEditor({
 }: OpalPlacementEditorProps) {
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const clipPath = cssSilhouetteClipPath(opal.visual.silhouette)
 
   function update<K extends keyof OpalPlacement>(key: K, value: OpalPlacement[K]) {
     onChange({ ...placement, [key]: value })
@@ -136,14 +136,14 @@ export function OpalPlacementEditor({
       ...placement,
       opalPositionX: roundPlacement(
         clamp(
-          start.opalPositionX - ((event.clientX - start.x) / start.width) * 0.7,
+          start.opalPositionX + ((event.clientX - start.x) / start.width) * 0.7,
           -limits.position,
           limits.position
         )
       ),
       opalPositionY: roundPlacement(
         clamp(
-          start.opalPositionY - ((event.clientY - start.y) / start.height) * 0.7,
+          start.opalPositionY + ((event.clientY - start.y) / start.height) * 0.7,
           -limits.position,
           limits.position
         )
@@ -216,14 +216,15 @@ export function OpalPlacementEditor({
               className={cn(
                 'relative mx-auto w-[58%] p-[5px] shadow-[0_18px_36px_rgb(0_0_0/0.48)] sm:w-[52%]',
                 style === 'sun-moon' && 'outline outline-dotted outline-[5px] outline-offset-[5px]',
-                (style === 'aurora' || style === 'coral') &&
-                  'ring-[7px] ring-white/30 ring-offset-[5px] ring-offset-[#171714]',
+                style === 'aurora' && 'outline outline-dotted outline-[8px] outline-offset-[6px]',
                 silhouetteClass(opal.visual.silhouette)
               )}
               style={{
                 aspectRatio: 1 / opal.visual.aspectRatio,
                 backgroundColor: metalColours[metal],
-                outlineColor: style === 'sun-moon' ? metalColours[metal] : undefined,
+                clipPath,
+                outlineColor:
+                  style === 'sun-moon' || style === 'aurora' ? metalColours[metal] : undefined,
               }}
             >
               <div
@@ -231,6 +232,7 @@ export function OpalPlacementEditor({
                   'h-full w-full overflow-hidden bg-charcoal',
                   silhouetteClass(opal.visual.silhouette)
                 )}
+                style={{ clipPath }}
               >
                 <OpalFaceImage
                   opal={opal}

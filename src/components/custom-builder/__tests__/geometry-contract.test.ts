@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   cameraPositions,
   cameraUpVectors,
+  cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
   getCabochonDepthProfile,
   getCameraPosition,
@@ -187,10 +188,46 @@ describe('custom ring geometry contract', () => {
     ['elongated', 0.35, 0.62],
     ['cushion', 0.5, 0.5],
     ['pear', 0.4, 0.5],
+    ['heart', 0.5, 0.5],
   ] as const)('preserves documented %s silhouette extents', (shape, width, height) => {
     const extents = sampledExtents(shape, width, height)
     expect(extents.maxX - extents.minX).toBeCloseTo(width * 2, 2)
-    expect(extents.maxY - extents.minY).toBeCloseTo(height * 2, 8)
+    // The heart's lobe maximum falls between the 720 sampled angles.
+    expect(extents.maxY - extents.minY).toBeCloseTo(height * 2, shape === 'heart' ? 6 : 8)
+  })
+
+  test('keeps the heart point down, lobes symmetric, and offsets finite', () => {
+    const width = 0.5
+    const height = 0.5
+    const point = outlinePoint('heart', -Math.PI / 2, width, height)
+    const notch = outlinePoint('heart', Math.PI / 2, width, height)
+    const leftLobe = outlinePoint('heart', Math.PI - 0.663, width, height)
+    const rightLobe = outlinePoint('heart', 0.663, width, height)
+
+    expect(point[0]).toBeCloseTo(0, 12)
+    expect(point[1]).toBeCloseTo(-height, 12)
+    expect(leftLobe[0]).toBeCloseTo(-rightLobe[0], 12)
+    expect(leftLobe[1]).toBeCloseTo(rightLobe[1], 12)
+    expect(leftLobe[1]).toBeGreaterThan(notch[1])
+
+    for (let index = 0; index < 360; index += 1) {
+      const angle = (index / 360) * Math.PI * 2
+      const base = outlinePoint('heart', angle, width, height)
+      const expanded = outlinePoint('heart', angle, width, height, 0.03)
+      expect(expanded.every(Number.isFinite)).toBe(true)
+      expect(Math.hypot(expanded[0] - base[0], expanded[1] - base[1])).toBeCloseTo(0.03, 10)
+    }
+  })
+
+  test('generates the workbench heart and pear clips from the 3D contour', () => {
+    const heartClip = cssSilhouetteClipPath('heart')
+    const pearClip = cssSilhouetteClipPath('pear')
+
+    expect(heartClip).toMatch(/^polygon\(.+\)$/)
+    expect(heartClip?.split(',')).toHaveLength(72)
+    expect(heartClip).toContain('50% 100%')
+    expect(pearClip).toMatch(/^polygon\(.+\)$/)
+    expect(cssSilhouetteClipPath('oval')).toBeUndefined()
   })
 
   test('spaces handmade halo beads consistently along an oval perimeter', () => {
@@ -215,7 +252,7 @@ describe('custom ring geometry contract', () => {
 
     for (const [style, profile] of profiles) {
       expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.085)
-      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.1)
+      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.12)
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
 

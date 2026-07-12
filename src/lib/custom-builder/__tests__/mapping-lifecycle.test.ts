@@ -38,6 +38,16 @@ describe('opal builder mapping lifecycle', () => {
   test('uses shape and dimensions embedded in legacy description text', () => {
     expect(
       inferBuilderMapping({
+        description: 'Natural carved opal measuring 7.5 x 7.5 x 2 mm',
+        name: 'Coober Pedy heart opal',
+      })
+    ).toMatchObject({
+      builderRecommendedStyle: 'coral',
+      builderSilhouette: 'heart',
+    })
+
+    expect(
+      inferBuilderMapping({
         description: 'Natural pear cabochon measuring 9 x 6 x 2 mm',
         name: 'Lightning Ridge opal',
       })

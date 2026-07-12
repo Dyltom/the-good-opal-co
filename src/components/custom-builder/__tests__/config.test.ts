@@ -32,6 +32,14 @@ describe('custom ring configuration', () => {
     expect(ringConfigFromRecord(values)).toEqual(config)
   })
 
+  test('preserves an adapted stone shape in a shared collection design', () => {
+    expect(ringConfigFromRecord({ y: 'coral', s: 'oval' })).toMatchObject({
+      style: 'coral',
+      shape: 'oval',
+      setting: 'bezel',
+    })
+  })
+
   test('rejects tampered or incomplete URL state', () => {
     expect(ringConfigFromRecord({ m: 'plastic', z: '999' })).toEqual(defaultRingConfig)
   })

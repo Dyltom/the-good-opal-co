@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import {
   applyPhotoPlacement,
   computePhotoCrop,
+  computePlacedPhotoCrop,
   computePhotoTextureTransform,
   rotationCoverScale,
 } from '../photo-crop'
@@ -62,8 +63,8 @@ describe('custom builder photo crops', () => {
         opalRotation: 30,
       }
     )
-    expect(adjusted.focalX).toBeCloseTo(0.7)
-    expect(adjusted.focalY).toBeCloseTo(0.35)
+    expect(adjusted.focalX).toBeCloseTo(0.3)
+    expect(adjusted.focalY).toBeCloseTo(0.65)
     expect(adjusted.zoom).toBeCloseTo(4.2)
 
     expect(
@@ -76,6 +77,33 @@ describe('custom builder photo crops', () => {
           opalRotation: 0,
         }
       )
-    ).toEqual({ focalX: 1, focalY: 0, zoom: 12 })
+    ).toEqual({ focalX: 0.45, focalY: 0.55, zoom: 12 })
   })
+
+  test.each([1.5, 2.25, 4])(
+    'uses the full pan range monotonically without dead zones at zoom %s',
+    (zoom) => {
+      const positions = [-0.45, -0.3, -0.15, 0, 0.15, 0.3, 0.45]
+      const leftEdges = positions.map((opalPositionX) =>
+        computePlacedPhotoCrop(
+          1200,
+          1000,
+          0.8,
+          { focalX: 0.5, focalY: 0.5, zoom },
+          {
+            opalPositionX,
+            opalPositionY: 0,
+            opalScale: 1,
+            opalRotation: 0,
+          }
+        ).left
+      )
+
+      for (let index = 1; index < leftEdges.length; index += 1) {
+        expect(leftEdges[index]!).toBeLessThan(leftEdges[index - 1]!)
+      }
+      expect(leftEdges[0]).toBeGreaterThan(0)
+      expect(leftEdges.at(-1)).toBeCloseTo(0, 12)
+    }
+  )
 })

@@ -23,13 +23,13 @@ describe('photoreal ring rendering contract', () => {
   test('uses colour-managed PBR metals and studio shadows', () => {
     expect(sceneSource).toContain('metalness={1}')
     expect(sceneSource).toContain('gl.toneMapping = ACESFilmicToneMapping')
-    expect(sceneSource).toContain('gl.shadowMap.type = PCFShadowMap')
+    expect(sceneSource).toContain('shadows={{ type: PCFShadowMap }}')
     expect(sceneSource).toContain('<Environment resolution={256}>')
     expect(sceneSource).toContain('<ContactShadows')
   })
 
   test('applies customer crop placement to the photographed opal texture', () => {
-    expect(sceneSource).toContain('applyPhotoPlacement(crop, config)')
+    expect(sceneSource).toContain('computePlacedPhotoCrop(')
     expect(sceneSource).toContain('nextTexture.rotation = (-config.opalRotation * Math.PI) / 180')
     expect(sceneSource).toContain('nextTexture.center.set(0.5, 0.5)')
   })

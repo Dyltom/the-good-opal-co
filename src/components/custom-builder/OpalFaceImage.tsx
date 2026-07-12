@@ -5,8 +5,7 @@ import type { ComponentProps } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import {
-  applyPhotoPlacement,
-  computePhotoCrop,
+  computePlacedPhotoCrop,
   rotationCoverScale,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement } from './config'
@@ -22,16 +21,19 @@ interface OpalFaceImageProps {
 export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFaceImageProps) {
   const [imageSize, setImageSize] = useState<{ width: number; height: number }>()
   const stoneAspect = 1 / opal.visual.aspectRatio
-  const adjustedFocus = applyPhotoPlacement(
-    opal.visual.textureCrop ?? { focalX: 0.5, focalY: 0.5, zoom: 1 },
-    placement
-  )
   const crop = useMemo(
-    () =>
-      imageSize
-        ? computePhotoCrop(imageSize.width, imageSize.height, stoneAspect, adjustedFocus)
-        : undefined,
-    [adjustedFocus, imageSize, stoneAspect]
+    () => {
+      if (!imageSize) return undefined
+      const focus = opal.visual.textureCrop ?? { focalX: 0.5, focalY: 0.5, zoom: 1 }
+      return computePlacedPhotoCrop(
+        imageSize.width,
+        imageSize.height,
+        stoneAspect,
+        focus,
+        placement
+      )
+    },
+    [imageSize, opal.visual.textureCrop, placement, stoneAspect]
   )
 
   useEffect(() => setImageSize(undefined), [opal.imageUrl])

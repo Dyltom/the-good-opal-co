@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
+import { RingConfigurator, applyRingStyle, ringConfigFromRecord } from '@/components/custom-builder'
 import {
-  RingConfigurator,
-  applyRingStyle,
-  isRingStyleCompatible,
-  ringConfigFromRecord,
-} from '@/components/custom-builder'
-import { shapeForOpal, type BuilderOpal, type RingConfig } from '@/components/custom-builder/config'
+  shapeForOpal,
+  styleIds,
+  type BuilderOpal,
+  type RingConfig,
+} from '@/components/custom-builder/config'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import {
   classifyOpalListing,
   createOpalVisualProfile,
@@ -98,7 +99,8 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
   const result = await payload.find({
     collection: 'products',
     depth: 0,
-    limit: 100,
+    limit: 2000,
+    pagination: false,
     sort: '-updatedAt',
     select: {
       id: true,
@@ -131,8 +133,9 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       ],
     },
   })
+  const products = result.docs
 
-  const mediaIds = result.docs.flatMap((product) => {
+  const mediaIds = products.flatMap((product) => {
     const image = product.images?.[0]?.image
     return typeof image === 'number' ? [image] : []
   })
@@ -149,7 +152,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       : { docs: [] }
   const mediaById = new Map(mediaResult.docs.map((media) => [String(media.id), media as Media]))
 
-  return result.docs
+  return products
     .filter((product) => isAvailableOpalListing(product.name))
     .filter((product) => isBuilderMappingApproved(product.builderMappingStatus))
     .flatMap((product): BuilderOpal[] => {
@@ -161,6 +164,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       const imageUrl =
         reviewedOpalImageUrl(product.slug) ??
         resolveMediaUrl(image?.url) ??
+        ownedProductImageUrl(product.slug) ??
         productImageFallback(image?.filename)
       if (!imageUrl) return []
 
@@ -215,11 +219,10 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
   const unavailableOpalRequested = Boolean(initialConfig.opalId && !requestedOpal)
   const initialOpal = initialConfig.opalId ? requestedOpal : opals[0]
   const requestedStyle = first(query.y)
-  const requestedStyleId = requestedStyle as RingConfig['style'] | undefined
-  const styleId =
-    initialOpal && requestedStyleId && isRingStyleCompatible(requestedStyleId, initialOpal)
-      ? requestedStyleId
-      : initialOpal?.visual.recommendedStyle
+  const hasValidRequestedStyle = styleIds.some((style) => style === requestedStyle)
+  const styleId = hasValidRequestedStyle
+    ? initialConfig.style
+    : initialOpal?.visual.recommendedStyle
   const hydratedConfig: RingConfig = initialOpal
     ? {
         ...applyRingStyle(

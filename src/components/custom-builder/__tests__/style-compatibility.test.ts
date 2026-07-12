@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { isRingStyleCompatible, type BuilderOpal, type RingConfig } from '../config'
+import { getRingStyleFit, type BuilderOpal, type RingConfig } from '../config'
 
 function opal(silhouette: RingConfig['shape']): Pick<BuilderOpal, 'visual'> {
   return {
@@ -16,18 +16,20 @@ function opal(silhouette: RingConfig['shape']): Pick<BuilderOpal, 'visual'> {
   }
 }
 
-describe('sold ring style compatibility', () => {
+describe('sold ring style adaptation', () => {
   test.each([
-    ['gemini', 'oval', true],
-    ['gemini', 'elongated', true],
-    ['gemini', 'cushion', false],
-    ['coral', 'cushion', true],
-    ['coral', 'oval', false],
-    ['sun-moon', 'oval', true],
-    ['sun-moon', 'elongated', false],
-    ['aurora', 'pear', true],
-    ['aurora', 'oval', false],
-  ] as const)('%s with %s is %s', (style, silhouette, compatible) => {
-    expect(isRingStyleCompatible(style, opal(silhouette))).toBe(compatible)
+    ['gemini', 'oval', 'original'],
+    ['gemini', 'elongated', 'adapted'],
+    ['gemini', 'cushion', 'adapted'],
+    ['coral', 'cushion', 'original'],
+    ['coral', 'oval', 'adapted'],
+    ['coral', 'heart', 'adapted'],
+    ['sun-moon', 'oval', 'original'],
+    ['sun-moon', 'elongated', 'adapted'],
+    ['aurora', 'pear', 'original'],
+    ['aurora', 'oval', 'adapted'],
+    ['aurora', 'heart', 'adapted'],
+  ] as const)('%s with %s is %s', (style, silhouette, fit) => {
+    expect(getRingStyleFit(style, opal(silhouette)).kind).toBe(fit)
   })
 })

@@ -15,7 +15,7 @@ export function validateWholeStock(value: unknown): true | string {
     : 'Stock must be a whole number of zero or more'
 }
 
-const builderShapes = new Set(['oval', 'round', 'elongated', 'cushion', 'pear'])
+const builderShapes = new Set(['oval', 'round', 'elongated', 'cushion', 'pear', 'heart'])
 const builderStyles = new Set(['gemini', 'coral', 'sun-moon', 'aurora'])
 const hexColourPattern = /^#[0-9a-f]{6}$/i
 

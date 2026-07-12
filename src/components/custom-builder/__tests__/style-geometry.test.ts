@@ -19,6 +19,7 @@ describe('sold ring style geometry', () => {
       bezelWallOffset: 0.032,
       bezelWallThickness: 0.052,
       bezelLipOffset: 0.01,
+      innerSeamRadius: 0.008,
       shankRadius: 0.09,
       shoulderRadius: 0.096,
       crossSectionPower: 0.6,
@@ -46,7 +47,8 @@ describe('sold ring style geometry', () => {
 
     expect(sunMoon.beadCount).toBeGreaterThan(aurora.beadCount)
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
-    expect(sunMoon.haloOffset).toBeGreaterThan(aurora.haloOffset)
+    expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
+    expect(sunMoon.beadFlattening).toBeLessThan(aurora.beadFlattening)
     expect(sunMoon).toMatchObject({ beadCount: 34, beadRadius: 0.042, haloOffset: 0.095 })
     expect(aurora).toMatchObject({ beadCount: 28, beadRadius: 0.046, haloOffset: 0.086 })
   })
@@ -65,9 +67,7 @@ describe('sold ring style geometry', () => {
         profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
       )
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
-      expect(supportOuterEdge).toBeLessThanOrEqual(
-        profile.haloOffset + profile.beadRadius * 0.2
-      )
+      expect(supportOuterEdge).toBeLessThanOrEqual(profile.haloOffset + profile.beadRadius * 0.2)
     }
   )
 

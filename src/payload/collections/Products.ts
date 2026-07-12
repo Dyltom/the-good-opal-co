@@ -429,6 +429,7 @@ export const Products: CollectionConfig = {
                 { label: 'Elongated', value: 'elongated' },
                 { label: 'Cushion', value: 'cushion' },
                 { label: 'Pear', value: 'pear' },
+                { label: 'Heart', value: 'heart' },
               ],
             },
             {

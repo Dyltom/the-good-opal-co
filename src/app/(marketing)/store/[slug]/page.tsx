@@ -14,6 +14,7 @@ import { PaymentBadgesCompact } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
 import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { extractPlainText } from '@/lib/rich-text'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
@@ -47,7 +48,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const primaryImage = product.images?.[0]?.image
   const imageUrl =
-    primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined
+    (primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined) ??
+    ownedProductImageUrl(product.slug)
   const description = extractPlainText(product.description).slice(0, 160)
 
   return {
@@ -95,7 +97,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   // Extract image URL
   const primaryImage = product.images?.[0]?.image
   const imageUrl =
-    typeof primaryImage === 'object' && primaryImage ? resolveMediaUrl(primaryImage.url) : undefined
+    (typeof primaryImage === 'object' && primaryImage
+      ? resolveMediaUrl(primaryImage.url)
+      : undefined) ?? ownedProductImageUrl(product.slug)
 
   // Get description as plain text
   const descriptionText = extractPlainText(product.description)
@@ -110,9 +114,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     product.weightUnit ?? (product.category === 'raw-opals' ? ('carats' as const) : undefined)
 
   // Collect all product images with alt text
-  const productImages = mergeProductGallery(
-    product.slug,
-    product.name,
+  const cmsImages =
     product.images
       ?.map((img, index: number) => {
         const imgObj = typeof img.image === 'object' && img.image ? img.image : null
@@ -123,6 +125,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         }
       })
       .filter((img): img is { url: string; alt: string } => Boolean(img)) ?? []
+  const ownedImage = ownedProductImageUrl(product.slug)
+  const productImages = mergeProductGallery(
+    product.slug,
+    product.name,
+    cmsImages.length === 0 && ownedImage
+      ? [{ url: ownedImage, alt: product.name }]
+      : cmsImages
   )
 
   return (

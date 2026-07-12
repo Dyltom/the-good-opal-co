@@ -14,6 +14,7 @@
 import { cookies } from 'next/headers'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { cartAddQuantitySchema, cartUpdateQuantitySchema } from '@/lib/cart-validation'
 
 /**
@@ -103,9 +104,9 @@ export async function getCart(): Promise<Cart> {
         if (product && availableStock > 0) {
           const primaryImage = product.images?.[0]?.image
           const image =
-            primaryImage && typeof primaryImage === 'object'
+            (primaryImage && typeof primaryImage === 'object'
               ? resolveMediaUrl(primaryImage.url)
-              : undefined
+              : undefined) ?? ownedProductImageUrl(product.slug)
 
           validatedItems.push({
             productId: String(product.id),
@@ -218,9 +219,9 @@ export async function addItemToCartWithQuantity(
     // Add new item with specified quantity
     const primaryImage = product.images?.[0]?.image
     const image =
-      primaryImage && typeof primaryImage === 'object'
+      (primaryImage && typeof primaryImage === 'object'
         ? resolveMediaUrl(primaryImage.url)
-        : undefined
+        : undefined) ?? ownedProductImageUrl(product.slug)
 
     if (cart.items.length >= MAX_CART_LINES) {
       throw new Error(`Your cart can contain up to ${MAX_CART_LINES} different items`)

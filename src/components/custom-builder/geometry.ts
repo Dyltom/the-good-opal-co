@@ -27,6 +27,7 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
   elongated: [0.35, 0.62],
   cushion: [0.5, 0.5],
   pear: [0.4, 0.5],
+  heart: [0.5, 0.5],
 }
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
@@ -163,6 +164,20 @@ function baseOutlinePoint(
     const pearWidthCorrection = 1.321
     return [cosine * width * taper * pearWidthCorrection, sine * height]
   }
+  if (shape === 'heart') {
+    // Classic heart curve, reparameterised so -Y is the point and +Y the lobes.
+    const parameter = Math.PI / 2 - angle
+    const heartX = Math.pow(Math.sin(parameter), 3)
+    const rawY =
+      13 * Math.cos(parameter) -
+      5 * Math.cos(2 * parameter) -
+      2 * Math.cos(3 * parameter) -
+      Math.cos(4 * parameter)
+    const heartMinY = -17
+    const heartMaxY = 11.92325241526326
+    const heartY = ((rawY - heartMinY) / (heartMaxY - heartMinY)) * 2 - 1
+    return [heartX * width, heartY * height]
+  }
   return [cosine * width, sine * height]
 }
 
@@ -194,6 +209,19 @@ export function outlinePoint(
   }
 
   return [point[0] + normalX * offset, point[1] + normalY * offset]
+}
+
+export function cssSilhouetteClipPath(shape: RingConfig['shape']): string | undefined {
+  if (shape !== 'heart' && shape !== 'pear') return undefined
+
+  const points = Array.from({ length: 72 }, (_, index) => {
+    const angle = (index / 72) * Math.PI * 2
+    const [x, y] = outlinePoint(shape, angle, 1, 1)
+    const cssX = Math.round((x + 1) * 50_000) / 1000
+    const cssY = Math.round((1 - y) * 50_000) / 1000
+    return `${cssX}% ${cssY}%`
+  })
+  return `polygon(${points.join(',')})`
 }
 
 export function evenlySpacedOutlinePoints(
@@ -247,15 +275,17 @@ export interface HandmadeBeadPoint {
 }
 
 export function applyHandmadeBeadVariation(
-  points: readonly { key: number; x: number; y: number }[]
+  points: readonly { key: number; x: number; y: number }[],
+  variation = 1,
+  baseFlattening = 0.72
 ): readonly HandmadeBeadPoint[] {
   return points.map(({ key, x, y }) => {
-    const size = 0.94 + ((key * 5) % 7) * 0.022
-    const flattening = 0.68 + ((key * 3) % 5) * 0.025
-    const heightVariation = (((key * 11) % 5) - 2) * 0.0015
+    const size = 1 + (-0.06 + ((key * 5) % 7) * 0.022) * variation
+    const flattening = baseFlattening + (((key * 3) % 5) - 2) * 0.0125 * variation
+    const heightVariation = (((key * 11) % 5) - 2) * 0.0015 * variation
     const radialLength = Math.hypot(x, y) || 1
-    const radialJitter = (((key * 11) % 9) - 4) * 0.0012
-    const tangentJitter = (((key * 13) % 7) - 3) * 0.0008
+    const radialJitter = (((key * 11) % 9) - 4) * 0.0012 * variation
+    const tangentJitter = (((key * 13) % 7) - 3) * 0.0008 * variation
 
     return {
       key,

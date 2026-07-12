@@ -483,7 +483,7 @@ export interface Product {
    * Show this loose opal in the custom ring builder. Requires Reviewed or Manual mapping and complete visual fields.
    */
   builderEligible?: boolean | null;
-  builderSilhouette?: ('oval' | 'round' | 'elongated' | 'cushion' | 'pear') | null;
+  builderSilhouette?: ('oval' | 'round' | 'elongated' | 'cushion' | 'pear' | 'heart') | null;
   builderRecommendedStyle?: ('gemini' | 'coral' | 'sun-moon' | 'aurora') | null;
   /**
    * Six-digit hex body tone

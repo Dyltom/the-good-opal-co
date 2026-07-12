@@ -1,6 +1,6 @@
 import { classifyOpalListing, inferBuilderStoneType } from './opal-visual'
 
-export const BUILDER_MAPPING_VERSION = 2
+export const BUILDER_MAPPING_VERSION = 3
 
 export const builderMappingStatuses = ['pending', 'reviewed', 'manual', 'stale'] as const
 
@@ -23,7 +23,7 @@ interface InferredMapping {
   builderPhotoFocalY: number
   builderPhotoZoom: number
   builderRecommendedStyle: 'aurora' | 'coral' | 'gemini' | 'sun-moon'
-  builderSilhouette: 'cushion' | 'elongated' | 'oval' | 'pear' | 'round'
+  builderSilhouette: 'cushion' | 'elongated' | 'heart' | 'oval' | 'pear' | 'round'
   builderTransmission: number
 }
 
@@ -213,10 +213,11 @@ export function createBuilderSourceImageHash(images: unknown): string | undefine
 }
 
 function explicitShape(name: string): InferredMapping['builderSilhouette'] | undefined {
+  if (/\bheart\b/i.test(name)) return 'heart'
   if (/\b(pear|teardrop)\b/i.test(name)) return 'pear'
   if (/\b(round|circular)\b/i.test(name)) return 'round'
   if (/\b(marquise|pipe|long|elongated)\b/i.test(name)) return 'elongated'
-  if (/\b(cushion|square|heart|fossil|carved)\b/i.test(name)) return 'cushion'
+  if (/\b(cushion|square|fossil|carved)\b/i.test(name)) return 'cushion'
   if (/\boval\b/i.test(name)) return 'oval'
   return undefined
 }
@@ -236,6 +237,7 @@ function styleForShape(
 ): InferredMapping['builderRecommendedStyle'] {
   if (shape === 'pear') return 'aurora'
   if (shape === 'cushion') return 'coral'
+  if (shape === 'heart') return 'coral'
   if (shape === 'round') return 'sun-moon'
   return 'gemini'
 }

@@ -46,6 +46,7 @@ describe('product commerce validation', () => {
     }
 
     expect(validateBuilderProduct(valid)).toBe(true)
+    expect(validateBuilderProduct({ ...valid, builderSilhouette: 'heart' })).toBe(true)
     expect(validateBuilderProduct({ ...valid, images: [] })).toBe(
       'Builder opals require a reviewed face image'
     )

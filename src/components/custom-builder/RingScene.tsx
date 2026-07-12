@@ -26,11 +26,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import {
-  applyPhotoPlacement,
-  computePhotoCrop,
-  computePhotoTextureTransform,
-} from '@/lib/custom-builder/photo-crop'
+import { computePlacedPhotoCrop, computePhotoTextureTransform } from '@/lib/custom-builder/photo-crop'
 import {
   getHaloSupportGeometry,
   ringStyleGeometryProfiles,
@@ -387,11 +383,12 @@ function OpalCabochon({
     nextTexture.magFilter = LinearFilter
     if (crop) {
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
-      const cropRect = computePhotoCrop(
+      const cropRect = computePlacedPhotoCrop(
         image?.width ?? 1,
         image?.height ?? 1,
         width / height,
-        applyPhotoPlacement(crop, config)
+        crop,
+        config
       )
       const transform = computePhotoTextureTransform(cropRect, width / height, config.opalRotation)
       nextTexture.repeat.set(transform.repeatX, transform.repeatY)
@@ -712,9 +709,20 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
           profile.haloOffset,
           beadCount,
           profile.haloPhase
-        )
+        ),
+        profile.beadVariation,
+        profile.beadFlattening
       ),
-    [beadCount, config.shape, height, profile.haloOffset, profile.haloPhase, width]
+    [
+      beadCount,
+      config.shape,
+      height,
+      profile.beadFlattening,
+      profile.beadVariation,
+      profile.haloOffset,
+      profile.haloPhase,
+      width,
+    ]
   )
 
   return (
@@ -982,13 +990,12 @@ export function RingScene({
       dpr={[1, 2]}
       frameloop={allowMotion ? 'always' : 'demand'}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-      shadows
+      shadows={{ type: PCFShadowMap }}
       scene={{ background }}
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace
         gl.toneMapping = ACESFilmicToneMapping
         gl.toneMappingExposure = 1.08
-        gl.shadowMap.type = PCFShadowMap
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >

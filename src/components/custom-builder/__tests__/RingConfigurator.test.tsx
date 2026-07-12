@@ -133,6 +133,54 @@ describe('RingConfigurator store opal selection', () => {
     expect(consultationParams.get('product')).toContain('Coober Pedy crystal opal')
   })
 
+  test('lets every opal try every collection design and preserves it across stone changes', async () => {
+    const user = userEvent.setup()
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
+        opals={opals}
+      />
+    )
+
+    const aurora = screen.getByRole('button', { name: /Aurora/i })
+    const coral = screen.getByRole('button', { name: /Coral/i })
+    const sunMoon = screen.getByRole('button', { name: /Sun & Moon/i })
+    expect(aurora.hasAttribute('disabled')).toBe(false)
+    expect(coral.hasAttribute('disabled')).toBe(false)
+    expect(sunMoon.hasAttribute('disabled')).toBe(false)
+
+    await user.click(aurora)
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('y')).toBe('aurora')
+      expect(params.get('s')).toBe('oval')
+    })
+
+    await user.click(screen.getByRole('button', { name: /Coober Pedy crystal opal/i }))
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('p')).toBe('204')
+      expect(params.get('y')).toBe('aurora')
+      expect(params.get('s')).toBe('oval')
+    })
+    expect(screen.getByRole('button', { name: /Aurora/i }).textContent).toContain(
+      'Adapted to oval opal'
+    )
+  })
+
+  test('keeps the visual guide stone shape while trying another collection design', async () => {
+    const user = userEvent.setup()
+    render(<RingConfigurator initialConfig={defaultRingConfig} opals={[]} />)
+
+    await user.click(screen.getByRole('button', { name: /Coral/i }))
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('y')).toBe('coral')
+      expect(params.get('s')).toBe('oval')
+    })
+  })
+
   test('warns instead of silently substituting an unavailable linked opal', () => {
     render(
       <RingConfigurator initialConfig={defaultRingConfig} opals={opals} unavailableOpalRequested />

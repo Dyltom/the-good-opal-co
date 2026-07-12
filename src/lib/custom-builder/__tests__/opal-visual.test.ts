@@ -99,8 +99,44 @@ describe('custom builder opal visual profiles', () => {
     })
   })
 
+  test('preserves a carved heart as a heart instead of forcing a cushion cut', () => {
+    const profile = createOpalVisualProfile(
+      'coober-pedy-carved-heart-1-ct',
+      'Coober Pedy Carved Heart 1 ct',
+      'white-opal'
+    )
+
+    expect(profile.visual).toMatchObject({
+      silhouette: 'heart',
+      aspectRatio: 1,
+      recommendedStyle: 'coral',
+      photoFit: 'reviewed',
+      textureCrop: { focalX: 0.5, focalY: 0.51, zoom: 2.2 },
+    })
+  })
+
   test.each([
-    'mintabie-carved-heart',
+    [
+      'mintabie-dark-opal-heart-055-cts',
+      'Mintabie Dark Opal heart 0.55 cts',
+      { focalX: 0.49, focalY: 0.48, zoom: 1.85 },
+    ],
+    [
+      'mintabie-dark-opal-heart-070cts',
+      'Mintabie Dark Opal heart 0.70cts',
+      { focalX: 0.48, focalY: 0.43, zoom: 2.25 },
+    ],
+  ] as const)('uses a separate reviewed crop for %s', (slug, name, textureCrop) => {
+    const profile = createOpalVisualProfile(slug, name, 'white-opal')
+
+    expect(profile.visual).toMatchObject({
+      silhouette: 'heart',
+      photoFit: 'reviewed',
+      textureCrop,
+    })
+  })
+
+  test.each([
     'lightning-ridge-black-opal-6-30ct',
     'lightning-ridge-black-opal-1-45-cts',
     'lightning-ridge-semi-black-opal-1-40-cts',

@@ -116,13 +116,29 @@ const cataloguePhotoProfiles: Record<
     'silhouette' | 'aspectRatio' | 'evidence' | 'recommendedStyle' | 'textureCrop' | 'photoFit'
   >
 > = {
-  'mintabie-carved-heart': {
-    silhouette: 'cushion',
+  'mintabie-dark-opal-heart-055-cts': {
+    silhouette: 'heart',
+    aspectRatio: 6 / 5.5,
+    evidence: 'catalogue',
+    recommendedStyle: 'coral',
+    textureCrop: { focalX: 0.49, focalY: 0.48, zoom: 1.85 },
+    photoFit: 'reviewed',
+  },
+  'mintabie-dark-opal-heart-070cts': {
+    silhouette: 'heart',
+    aspectRatio: 6 / 5.5,
+    evidence: 'catalogue',
+    recommendedStyle: 'coral',
+    textureCrop: { focalX: 0.48, focalY: 0.43, zoom: 2.25 },
+    photoFit: 'reviewed',
+  },
+  'coober-pedy-carved-heart-1-ct': {
+    silhouette: 'heart',
     aspectRatio: 1,
     evidence: 'catalogue',
     recommendedStyle: 'coral',
-    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 1.8 },
-    photoFit: 'estimated',
+    textureCrop: { focalX: 0.5, focalY: 0.51, zoom: 2.2 },
+    photoFit: 'reviewed',
   },
   'lightning-ridge-black-opal-6-30ct': {
     silhouette: 'pear',
@@ -227,6 +243,7 @@ const validSilhouettes = new Set<RingConfig['shape']>([
   'elongated',
   'cushion',
   'pear',
+  'heart',
 ])
 const validStyles = new Set<RingConfig['style']>(['gemini', 'coral', 'sun-moon', 'aurora'])
 const hexColourPattern = /^#[0-9a-f]{6}$/i
@@ -367,6 +384,14 @@ export function isBuilderEligibleOpal(
 function inferSilhouette(
   name: string
 ): Pick<VisualProfile, 'silhouette' | 'aspectRatio' | 'evidence' | 'recommendedStyle'> {
+  if (/\bheart\b/i.test(name)) {
+    return {
+      silhouette: 'heart',
+      aspectRatio: 1,
+      evidence: 'catalogue',
+      recommendedStyle: 'coral',
+    }
+  }
   if (/(pear|teardrop)/i.test(name)) {
     return {
       silhouette: 'pear',

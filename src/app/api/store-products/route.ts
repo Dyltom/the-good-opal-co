@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from '@/lib/payload'
 import { extractPlainText } from '@/lib/rich-text'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { ownedProductImageUrl } from '@/lib/owned-product-image'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,7 @@ export async function GET() {
           stock: product.stock,
           featured: product.featured,
           category: product.category,
-          image: imageUrl,
+          image: imageUrl ?? ownedProductImageUrl(product.slug),
           stoneType: product.stoneType,
           origin: product.stoneOrigin,
         }
