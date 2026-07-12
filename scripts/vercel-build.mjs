@@ -19,6 +19,13 @@ if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
     run('node', ['scripts/reconcile-production-migration-ledger.mjs'])
   }
   run('pnpm', ['payload', 'migrate'])
+  if (vercelEnvironment === 'production' && process.env.WOO_IMPORT_DRY_RUN_ON_DEPLOY === 'true') {
+    console.log('[vercel-build] Running read-only WooCommerce import reconciliation.')
+    run('pnpm', ['import:woocommerce'], {
+      ...process.env,
+      WOO_IMPORT_APPLY: 'false',
+    })
+  }
   if (vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
     if (!process.env.WOO_IMPORT_RUN_ID?.trim()) {
       throw new Error('[vercel-build] WOO_IMPORT_RUN_ID is required for a production import.')

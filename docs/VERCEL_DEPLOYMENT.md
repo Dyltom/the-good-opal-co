@@ -89,6 +89,11 @@ its first attempt failed; inspect that ledger and the partial import before usin
 a new ID. Remove all Woo import variables immediately after success and confirm
 the recorded counts in Payload. Never set the import flag for Preview.
 
+To reconcile source and target counts without changing data, temporarily set the
+same Woo credentials plus `WOO_IMPORT_DRY_RUN_ON_DEPLOY=true` for one Production
+deployment. Review its build log, then remove all four variables. Dry runs never
+claim an import-run ledger entry and force `WOO_IMPORT_APPLY=false`.
+
 ## First administrator
 
 Set `ADMIN_EMAIL` to the owner address and temporarily set `ADMIN_BOOTSTRAP_PASSWORD` to a randomly generated value of at least 16 characters. Open `/admin` after the first deployment and create the first user with that exact email and temporary password. Payload allows anonymous creation only when both values match and no users exist; the server hook promotes that user to `admin`. The email uniqueness constraint prevents concurrent duplicate bootstrap attempts. Remove `ADMIN_BOOTSTRAP_PASSWORD` from Vercel immediately after creation, change the admin password, and confirm password-reset email before launch. All later user creation requires an authenticated administrator.

@@ -130,6 +130,10 @@ describe('deployment config', () => {
     expect(buildScript).toContain(
       "vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true'"
     )
+    expect(buildScript).toContain(
+      "vercelEnvironment === 'production' && process.env.WOO_IMPORT_DRY_RUN_ON_DEPLOY === 'true'"
+    )
+    expect(buildScript).toContain("WOO_IMPORT_APPLY: 'false'")
     expect(buildScript).toContain("process.env.WOO_IMPORT_ON_DEPLOY === 'true'")
     expect(buildScript).toContain('WOO_IMPORT_RUN_ID is required')
     expect(buildScript).toContain('WOO_IMPORT_MODE must be initial or final-delta')
