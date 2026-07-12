@@ -16,6 +16,7 @@ import {
   ringConfigToSearchParams,
 } from './config'
 import type { BuilderOpal, ConfigOption, RingConfig, RingStyleOption } from './config'
+import { OpalFaceImage } from './OpalFaceImage'
 import { ViewerErrorBoundary } from './ViewerErrorBoundary'
 
 const RingPreview = dynamic(() => import('./RingPreview').then((module) => module.RingPreview), {
@@ -134,13 +135,12 @@ function OpalPicker({
                   : 'border-warm-grey/80 hover:border-charcoal/45'
               )}
             >
-              <span className="relative block aspect-square overflow-hidden bg-warm-grey/25">
-                <Image
-                  src={opal.imageUrl}
+              <span className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#171714] p-4 sm:p-5">
+                <OpalFaceImage
+                  opal={opal}
                   alt=""
-                  fill
-                  sizes="(max-width: 640px) 45vw, 240px"
-                  className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.025]"
+                  sizes="(max-width: 640px) 36vw, 190px"
+                  className="h-[88%] w-auto rounded-md shadow-[0_6px_18px_rgb(0_0_0/0.28)] transition-transform duration-300 ease-out group-hover:scale-[1.025]"
                 />
                 {selected && (
                   <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-charcoal text-cream shadow-sm">
