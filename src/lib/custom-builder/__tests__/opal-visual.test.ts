@@ -111,7 +111,7 @@ describe('custom builder opal visual profiles', () => {
       aspectRatio: 1,
       recommendedStyle: 'coral',
       photoFit: 'reviewed',
-      textureCrop: { focalX: 0.5, focalY: 0.51, zoom: 2.2 },
+      textureCrop: { focalX: 0.5, focalY: 0.56, zoom: 3.2 },
     })
   })
 
@@ -192,7 +192,7 @@ describe('custom builder opal visual profiles', () => {
       'black-opal'
     )
 
-    expect(white.visual.textureCrop).toEqual({ focalX: 0.507, focalY: 0.495, zoom: 3.08 })
+    expect(white.visual.textureCrop).toEqual({ focalX: 0.507, focalY: 0.489, zoom: 4.16 })
     expect(white.visual.dimensionsMm).toEqual({ width: 6, length: 7, depth: 3 })
     expect(semiBlack.visual.textureCrop).toEqual({
       focalX: 0.501,
@@ -328,10 +328,11 @@ describe('custom builder opal visual profiles', () => {
     }
 
     expect(isBuilderEligibleOpal('mapped-opal', 'Mapped opal', fields)).toBe(false)
-    expect(createOpalVisualProfile('mapped-opal', 'Mapped opal', 'black-opal', fields).visual)
-      .toMatchObject({
-        silhouette: 'pear',
-        textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
-      })
+    expect(
+      createOpalVisualProfile('mapped-opal', 'Mapped opal', 'black-opal', fields).visual
+    ).toMatchObject({
+      silhouette: 'pear',
+      textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
+    })
   })
 })

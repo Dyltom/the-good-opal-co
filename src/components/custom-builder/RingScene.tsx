@@ -26,7 +26,10 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import { computePlacedPhotoCrop, computePhotoTextureTransform } from '@/lib/custom-builder/photo-crop'
+import {
+  computePlacedPhotoCrop,
+  computePhotoTextureTransform,
+} from '@/lib/custom-builder/photo-crop'
 import {
   getHaloSupportGeometry,
   ringStyleGeometryProfiles,
@@ -35,6 +38,7 @@ import {
 } from './config'
 import {
   applyHandmadeBeadVariation,
+  adaptiveOutlinePointCount,
   cameraPositions,
   cameraUpVectors,
   evenlySpacedOutlinePoints,
@@ -61,7 +65,7 @@ interface RingSceneProps {
 }
 
 const metalColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#d2d3cf',
+  'sterling-silver': '#eeeae2',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -121,11 +125,11 @@ function MetalMaterial({
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
-      metalness={1}
-      roughness={isSterlingSilver ? Math.max(0.27, roughness) : roughness}
-      clearcoat={0.08}
-      clearcoatRoughness={0.3}
-      envMapIntensity={1.65}
+      metalness={0.96}
+      roughness={isSterlingSilver ? Math.max(0.34, roughness) : roughness}
+      clearcoat={0.04}
+      clearcoatRoughness={0.36}
+      envMapIntensity={2.2}
     />
   )
 }
@@ -409,7 +413,7 @@ function OpalCabochon({
   if (usesProductPhoto) {
     return (
       <group>
-        <mesh geometry={geometry}>
+        <mesh castShadow geometry={geometry} receiveShadow>
           <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
           <meshBasicMaterial
             attach="material-1"
@@ -697,8 +701,20 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025
   const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+  const bezelCapInnerOffset = profile.bezelLipOffset - profile.bezelLipRadius
+  const bezelCapThickness = outerBezelOffset - bezelCapInnerOffset
+  const bezelCapOffset = bezelCapInnerOffset + bezelCapThickness / 2
   const haloSupport = getHaloSupportGeometry(profile)
-  const beadCount = profile.beadCount
+  const beadCount =
+    profile.beadCount > 0
+      ? adaptiveOutlinePointCount(
+          config.shape,
+          width,
+          height,
+          profile.haloOffset,
+          profile.beadPitchMm
+        )
+      : 0
   const beads = useMemo(
     () =>
       applyHandmadeBeadVariation(
@@ -742,13 +758,13 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         thickness={profile.bezelWallThickness}
         topZ={bezelTop}
       />
-      <StoneOutline
+      <BezelWall
         config={config}
         dimensions={dimensions}
-        offset={profile.bezelLipOffset}
-        radius={profile.bezelLipRadius}
-        z={bezelTop - profile.bezelLipRadius * 0.18}
-        edgeVariation={0.0012}
+        bottomZ={bezelTop - profile.bezelLipRadius}
+        offset={bezelCapOffset}
+        thickness={bezelCapThickness}
+        topZ={bezelTop + profile.bezelLipRadius * 0.18}
       />
       <StoneOutline
         config={config}
@@ -777,8 +793,10 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
             // or changing between renders.
             return (
               <mesh
+                castShadow
                 key={key}
                 position={[x, y, 0.048 + heightVariation]}
+                receiveShadow
                 scale={[size, size, flattening]}
               >
                 <sphereGeometry args={[profile.beadRadius, 14, 14]} />
@@ -826,9 +844,9 @@ function RingShank({
   metalRoughness: number
 }) {
   const curve = useMemo(() => {
-    // Let the shoulder surface overlap the bezel's outer wall at its base. The
-    // earlier centreline ended inside the stone width, leaving a cathedral-like
-    // air gap instead of the low solder join visible on the sold rings.
+    // Bury the capped shoulder ends beneath the setting. Exposed tube ends read
+    // as decorative collars and make the head appear to float; the sold rings
+    // use a low, continuous solder join hidden below the bezel edge.
     const joinX = settingHalfWidth - shoulderDepth * joinInsetFactor
     const joinY = settingBaseY + shoulderDepth * joinLiftFactor
     const ringPoints = Array.from({ length: 97 }, (_, index) => {
@@ -904,6 +922,19 @@ function RingShank({
       }
     }
 
+    const startCentre = positions.length / 3
+    const startPoint = curve.getPointAt(0)
+    positions.push(startPoint.x, startPoint.y, startPoint.z)
+    const endCentre = positions.length / 3
+    const endPoint = curve.getPointAt(1)
+    positions.push(endPoint.x, endPoint.y, endPoint.z)
+    const endStart = tubularSegments * radialSegments
+    for (let side = 0; side < radialSegments; side += 1) {
+      const nextSide = (side + 1) % radialSegments
+      indices.push(startCentre, nextSide, side)
+      indices.push(endCentre, endStart + side, endStart + nextSide)
+    }
+
     const nextGeometry = new BufferGeometry()
     nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
     nextGeometry.setIndex(indices)
@@ -977,7 +1008,7 @@ export function RingScene({
   selectedOpal,
   view,
 }: RingSceneProps) {
-  const background = useMemo(() => new Color('#11110f'), [])
+  const background = useMemo(() => new Color('#171815'), [])
   const measurements = getRingMeasurements(config)
   const framingTarget = useMemo(
     () => getRingFramingTarget(config, selectedOpal),
@@ -999,7 +1030,8 @@ export function RingScene({
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >
-      <ambientLight intensity={0.34} />
+      <ambientLight intensity={0.48} />
+      <hemisphereLight args={['#f6f0e7', '#24251f', 1.25]} />
       <directionalLight
         castShadow
         position={[4.5, 5.5, 5]}
@@ -1018,6 +1050,14 @@ export function RingScene({
 
       <Environment resolution={256}>
         <Lightformer form="rect" intensity={5.5} position={[0, 4, -4]} scale={[5, 1.1, 1]} />
+        <Lightformer
+          form="rect"
+          intensity={4.2}
+          color="#f7f2e9"
+          position={[0, 4, 3]}
+          rotation={[Math.PI / 5, 0, 0]}
+          scale={[5, 1.6, 1]}
+        />
         <Lightformer
           form="rect"
           intensity={3.4}

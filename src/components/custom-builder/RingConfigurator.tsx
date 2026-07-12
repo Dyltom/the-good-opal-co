@@ -121,8 +121,14 @@ function OpalPicker({
     [deferredQuery, kind, opals]
   )
   const selectedIndex = matchingOpals.findIndex((opal) => opal.id === selectedId)
-  const effectiveVisibleCount = Math.max(visibleCount, selectedIndex >= 0 ? selectedIndex + 1 : 0)
-  const visibleOpals = matchingOpals.slice(0, effectiveVisibleCount)
+  const orderedOpals = useMemo(() => {
+    if (selectedIndex <= 0) return matchingOpals
+    const selected = matchingOpals[selectedIndex]
+    return selected
+      ? [selected, ...matchingOpals.filter((opal) => opal.id !== selected.id)]
+      : matchingOpals
+  }, [matchingOpals, selectedIndex])
+  const visibleOpals = orderedOpals.slice(0, visibleCount)
 
   useEffect(() => {
     setVisibleCount(12)
@@ -139,7 +145,7 @@ function OpalPicker({
 
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">2. Choose an available opal</legend>
+      <legend className="font-serif text-xl font-medium">3. Choose an available opal</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
         Every published, in-stock loose-opal listing is shown. Product photos belong to the exact
         listing. Parcels, calibrated sets, and specimens use a representative 3D concept; your
@@ -249,7 +255,7 @@ function OpalPicker({
           })}
         </div>
       )}
-      {effectiveVisibleCount < matchingOpals.length && (
+      {visibleCount < matchingOpals.length && (
         <button
           type="button"
           onClick={() => setVisibleCount((current) => current + 12)}
@@ -273,7 +279,7 @@ function RingStylePicker({
 }) {
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">3. Choose a collection design</legend>
+      <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
         Try every design with your selected opal. Each reference is a photographed Good Opal Co
         ring; the preview keeps your stone’s real silhouette and adapts that design’s bezel, trim,
@@ -449,7 +455,6 @@ export function RingConfigurator({
                 The collection references were made in sterling silver. Gold and platinum are
                 bespoke material adaptations confirmed during consultation.
               </p>
-              <OpalPicker opals={opals} selectedId={config.opalId} onSelect={selectOpal} />
               <RingStylePicker
                 selectedOpal={selectedOpal}
                 value={config.style}
@@ -460,6 +465,7 @@ export function RingConfigurator({
                   })
                 }
               />
+              <OpalPicker opals={opals} selectedId={config.opalId} onSelect={selectOpal} />
 
               {selectedOpal && (
                 <OpalPlacementEditor

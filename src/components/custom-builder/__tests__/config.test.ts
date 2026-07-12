@@ -50,6 +50,19 @@ describe('custom ring configuration', () => {
     expect(ringConfigFromRecord({ ...values, px: '5', ps: '0.1' })).toEqual(defaultRingConfig)
   })
 
+  test('preserves valid style, shape, and opal when one URL value is malformed', () => {
+    expect(
+      ringConfigFromRecord({ y: 'aurora', s: 'heart', p: '90', px: 'not-a-number', z: '7' })
+    ).toMatchObject({
+      style: 'aurora',
+      shape: 'heart',
+      setting: 'beaded',
+      opalId: '90',
+      opalPositionX: 0,
+      size: 7,
+    })
+  })
+
   test('uses the product material identifiers as the public URL contract', () => {
     expect(metalIds).toEqual([
       'sterling-silver',

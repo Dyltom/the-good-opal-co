@@ -192,8 +192,8 @@ describe('custom ring geometry contract', () => {
   ] as const)('preserves documented %s silhouette extents', (shape, width, height) => {
     const extents = sampledExtents(shape, width, height)
     expect(extents.maxX - extents.minX).toBeCloseTo(width * 2, 2)
-    // The heart's lobe maximum falls between the 720 sampled angles.
-    expect(extents.maxY - extents.minY).toBeCloseTo(height * 2, shape === 'heart' ? 6 : 8)
+    // The handmade heart's lobe maximum falls between sampled angles.
+    expect(extents.maxY - extents.minY).toBeCloseTo(height * 2, shape === 'heart' ? 3 : 8)
   })
 
   test('keeps the heart point down, lobes symmetric, and offsets finite', () => {
@@ -201,14 +201,15 @@ describe('custom ring geometry contract', () => {
     const height = 0.5
     const point = outlinePoint('heart', -Math.PI / 2, width, height)
     const notch = outlinePoint('heart', Math.PI / 2, width, height)
-    const leftLobe = outlinePoint('heart', Math.PI - 0.663, width, height)
-    const rightLobe = outlinePoint('heart', 0.663, width, height)
+    const leftLobe = outlinePoint('heart', Math.PI / 2 + 0.45, width, height)
+    const rightLobe = outlinePoint('heart', Math.PI / 2 - 0.45, width, height)
 
     expect(point[0]).toBeCloseTo(0, 12)
     expect(point[1]).toBeCloseTo(-height, 12)
     expect(leftLobe[0]).toBeCloseTo(-rightLobe[0], 12)
     expect(leftLobe[1]).toBeCloseTo(rightLobe[1], 12)
     expect(leftLobe[1]).toBeGreaterThan(notch[1])
+    expect(notch[1]).toBeGreaterThan(height * 0.8)
 
     for (let index = 0; index < 360; index += 1) {
       const angle = (index / 360) * Math.PI * 2
@@ -251,13 +252,22 @@ describe('custom ring geometry contract', () => {
     )
 
     for (const [style, profile] of profiles) {
-      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.085)
-      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.12)
+      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.075)
+      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.1)
+      expect(profile.shankRadius * 20, style).toBeGreaterThanOrEqual(1.5)
+      expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(2)
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
+      expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.85)
+      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.95)
+      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.1)
+      expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.1)
+      expect(profile.joinInsetFactor, style).toBeGreaterThanOrEqual(1)
+      expect(profile.joinLiftFactor, style).toBeLessThanOrEqual(0)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
+        expect(profile.beadPitchMm, style).toBeGreaterThan(0)
         expect(profile.haloOffset - profile.beadRadius, style).toBeGreaterThan(
           profile.bezelLipOffset
         )

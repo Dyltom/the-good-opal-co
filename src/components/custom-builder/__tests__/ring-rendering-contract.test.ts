@@ -8,7 +8,8 @@ describe('photoreal ring rendering contract', () => {
   test('models a complete low bezel rather than a floating outline', () => {
     expect(sceneSource).toContain('function createSettingBaseGeometry(')
     expect(sceneSource).toContain('<SettingBase')
-    expect(sceneSource).toContain('offset={profile.bezelLipOffset}')
+    expect(sceneSource).toContain('const bezelCapInnerOffset =')
+    expect(sceneSource).toContain('thickness={bezelCapThickness}')
     expect(sceneSource).toContain('finish="patina"')
   })
 
@@ -18,10 +19,12 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), crossSectionPower)')
     expect(sceneSource).toContain('const acrossBand =')
     expect(sceneSource).toContain('const throughBand =')
+    expect(sceneSource).toContain('const startCentre = positions.length / 3')
   })
 
   test('uses colour-managed PBR metals and studio shadows', () => {
-    expect(sceneSource).toContain('metalness={1}')
+    expect(sceneSource).toContain('metalness={0.96}')
+    expect(sceneSource).toContain('envMapIntensity={2.2}')
     expect(sceneSource).toContain('gl.toneMapping = ACESFilmicToneMapping')
     expect(sceneSource).toContain('shadows={{ type: PCFShadowMap }}')
     expect(sceneSource).toContain('<Environment resolution={256}>')

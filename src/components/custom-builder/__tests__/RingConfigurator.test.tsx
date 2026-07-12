@@ -305,7 +305,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(<RingConfigurator initialConfig={defaultRingConfig} opals={catalogue} />)
 
-    const picker = screen.getByRole('group', { name: '2. Choose an available opal' })
+    const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
     expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(12)
     expect(screen.getByText('15 listings found')).not.toBeNull()
 
@@ -317,5 +317,28 @@ describe('RingConfigurator store opal selection', () => {
     expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(1)
     expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
     expect(screen.getByText('3D shows a representative setting concept')).not.toBeNull()
+  })
+
+  test('pins a linked deep-catalogue opal without rendering every preceding card', () => {
+    const catalogue = Array.from({ length: 90 }, (_, index) => ({
+      ...opals[0]!,
+      id: `opal-${index + 1}`,
+      name: `Individual opal ${index + 1}`,
+      slug: `individual-opal-${index + 1}`,
+    }))
+    const selectedId = 'opal-81'
+
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: selectedId }}
+        opals={catalogue}
+      />
+    )
+
+    const styles = screen.getByRole('group', { name: '2. Choose a collection design' })
+    const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
+    expect(styles.compareDocumentPosition(picker) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(12)
+    expect(screen.getByRole('button', { name: /Individual opal 81/i })).not.toBeNull()
   })
 })

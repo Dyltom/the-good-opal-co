@@ -116,6 +116,7 @@ export interface RingStyleGeometryProfile {
   haloOffset: number
   beadRadius: number
   beadCount: number
+  beadPitchMm: number
   beadFlattening: number
   beadRoughness: number
   beadVariation: number
@@ -161,6 +162,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
+    beadPitchMm: 0,
     beadFlattening: 0.7,
     beadRoughness: 0.34,
     beadVariation: 0,
@@ -169,16 +171,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.0045,
     innerSeamVariation: 0.001,
-    joinInsetFactor: 0.12,
-    joinLiftFactor: 0.18,
+    joinInsetFactor: 1.25,
+    joinLiftFactor: -0.4,
     shoulderLead: 0.075,
-    shoulderBlend: 0.2,
-    crossSectionPower: 0.58,
+    shoulderBlend: 0.08,
+    crossSectionPower: 0.9,
     metalRoughness: 0.31,
-    shankRadius: 0.118,
-    shankDepth: 0.07,
-    shoulderRadius: 0.128,
-    shoulderDepth: 0.078,
+    shankRadius: 0.098,
+    shankDepth: 0.06,
+    shoulderRadius: 0.106,
+    shoulderDepth: 0.066,
   },
   coral: {
     bezelWallOffset: 0.032,
@@ -188,6 +190,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
+    beadPitchMm: 0,
     beadFlattening: 0.7,
     beadRoughness: 0.34,
     beadVariation: 0,
@@ -196,11 +199,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.001,
     innerSeamRadius: 0.008,
     innerSeamVariation: 0.0025,
-    joinInsetFactor: 0.12,
-    joinLiftFactor: 0.18,
+    joinInsetFactor: 1.25,
+    joinLiftFactor: -0.4,
     shoulderLead: 0.065,
-    shoulderBlend: 0.18,
-    crossSectionPower: 0.6,
+    shoulderBlend: 0.08,
+    crossSectionPower: 0.9,
     metalRoughness: 0.31,
     shankRadius: 0.09,
     shankDepth: 0.052,
@@ -215,6 +218,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloOffset: 0.095,
     beadRadius: 0.042,
     beadCount: 34,
+    beadPitchMm: 1.06,
     beadFlattening: 0.68,
     beadRoughness: 0.34,
     beadVariation: 0.55,
@@ -223,16 +227,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.0045,
     innerSeamVariation: 0.001,
-    joinInsetFactor: 0.4,
-    joinLiftFactor: 0.35,
+    joinInsetFactor: 1.25,
+    joinLiftFactor: -0.4,
     shoulderLead: 0.03,
-    shoulderBlend: 0.14,
-    crossSectionPower: 0.72,
+    shoulderBlend: 0.075,
+    crossSectionPower: 0.9,
     metalRoughness: 0.25,
-    shankRadius: 0.106,
-    shankDepth: 0.064,
-    shoulderRadius: 0.114,
-    shoulderDepth: 0.072,
+    shankRadius: 0.082,
+    shankDepth: 0.05,
+    shoulderRadius: 0.089,
+    shoulderDepth: 0.055,
   },
   aurora: {
     bezelWallOffset: 0.028,
@@ -242,6 +246,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     haloOffset: 0.086,
     beadRadius: 0.046,
     beadCount: 28,
+    beadPitchMm: 1.1,
     beadFlattening: 0.76,
     beadRoughness: 0.4,
     beadVariation: 1.35,
@@ -250,16 +255,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.0045,
     innerSeamVariation: 0.001,
-    joinInsetFactor: 0.4,
-    joinLiftFactor: 0.35,
+    joinInsetFactor: 1.25,
+    joinLiftFactor: -0.4,
     shoulderLead: 0.03,
-    shoulderBlend: 0.14,
-    crossSectionPower: 0.72,
+    shoulderBlend: 0.075,
+    crossSectionPower: 0.9,
     metalRoughness: 0.25,
-    shankRadius: 0.108,
-    shankDepth: 0.066,
-    shoulderRadius: 0.116,
-    shoulderDepth: 0.074,
+    shankRadius: 0.087,
+    shankDepth: 0.052,
+    shoulderRadius: 0.094,
+    shoulderDepth: 0.057,
   },
 }
 
@@ -431,22 +436,56 @@ export function ringConfigToSearchParams(config: RingConfig): URLSearchParams {
 }
 
 export function ringConfigFromRecord(values: Record<string, string | undefined>): RingConfig {
-  const requestedStyle = styleIds.find((style) => style === values[queryKeys.style]) ?? 'gemini'
+  function optionValue<T extends string>(
+    options: readonly T[],
+    value: string | undefined,
+    fallback: T
+  ): T {
+    return options.some((option) => option === value) ? (value as T) : fallback
+  }
+
+  function boundedNumber(
+    value: string | undefined,
+    fallback: number,
+    minimum: number,
+    maximum: number
+  ): number {
+    if (value === undefined) return fallback
+    const number = Number(value)
+    return Number.isFinite(number) && number >= minimum && number <= maximum ? number : fallback
+  }
+
+  const requestedStyle = optionValue(styleIds, values[queryKeys.style], defaultRingConfig.style)
   const style = ringStyles.find((option) => option.id === requestedStyle) ?? ringStyles[0]!
+  const opalId = z.string().trim().min(1).max(30).safeParse(values[queryKeys.opalId])
   const candidate = {
-    metal: values[queryKeys.metal] ?? defaultRingConfig.metal,
-    stone: values[queryKeys.stone] ?? defaultRingConfig.stone,
+    metal: optionValue(metalIds, values[queryKeys.metal], defaultRingConfig.metal),
+    stone: optionValue(stoneIds, values[queryKeys.stone], defaultRingConfig.stone),
     style: style.id,
-    shape: values[queryKeys.shape] ?? style.shape,
+    shape: optionValue(shapeIds, values[queryKeys.shape], style.shape),
     setting: style.setting,
     band: style.band,
-    size: Number(values[queryKeys.size] ?? defaultRingConfig.size),
-    opalId: values[queryKeys.opalId],
-    opalPositionX: Number(values[queryKeys.opalPositionX] ?? defaultRingConfig.opalPositionX),
-    opalPositionY: Number(values[queryKeys.opalPositionY] ?? defaultRingConfig.opalPositionY),
-    opalScale: Number(values[queryKeys.opalScale] ?? defaultRingConfig.opalScale),
-    opalRotation: Number(values[queryKeys.opalRotation] ?? defaultRingConfig.opalRotation),
+    size: boundedNumber(values[queryKeys.size], defaultRingConfig.size, 4, 13),
+    opalId: opalId.success ? opalId.data : undefined,
+    opalPositionX: boundedNumber(
+      values[queryKeys.opalPositionX],
+      defaultRingConfig.opalPositionX,
+      -0.45,
+      0.45
+    ),
+    opalPositionY: boundedNumber(
+      values[queryKeys.opalPositionY],
+      defaultRingConfig.opalPositionY,
+      -0.45,
+      0.45
+    ),
+    opalScale: boundedNumber(values[queryKeys.opalScale], defaultRingConfig.opalScale, 0.75, 2.25),
+    opalRotation: boundedNumber(
+      values[queryKeys.opalRotation],
+      defaultRingConfig.opalRotation,
+      -180,
+      180
+    ),
   }
-  const parsed = ringConfigSchema.safeParse(candidate)
-  return parsed.success ? parsed.data : defaultRingConfig
+  return ringConfigSchema.parse(candidate)
 }

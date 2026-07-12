@@ -25,6 +25,9 @@ import * as migration_20260712_120100_course_public_syllabus from './20260712_12
 import * as migration_20260712_131000_builder_mapping_lifecycle from './20260712_131000_builder_mapping_lifecycle'
 import * as migration_20260712_143000_heart_silhouette from './20260712_143000_heart_silhouette'
 import * as migration_20260712_150000_catalogue_builder_approval from './20260712_150000_catalogue_builder_approval'
+import * as migration_20260712_160000_white_opal_crop_alignment from './20260712_160000_white_opal_crop_alignment'
+import * as migration_20260712_161000_stone_only_crop_alignment from './20260712_161000_stone_only_crop_alignment'
+import * as migration_20260712_162000_heart_stone_only_crop from './20260712_162000_heart_stone_only_crop'
 
 export const migrations = [
   {
@@ -161,5 +164,20 @@ export const migrations = [
     up: migration_20260712_150000_catalogue_builder_approval.up,
     down: migration_20260712_150000_catalogue_builder_approval.down,
     name: '20260712_150000_catalogue_builder_approval',
+  },
+  {
+    up: migration_20260712_160000_white_opal_crop_alignment.up,
+    down: migration_20260712_160000_white_opal_crop_alignment.down,
+    name: '20260712_160000_white_opal_crop_alignment',
+  },
+  {
+    up: migration_20260712_161000_stone_only_crop_alignment.up,
+    down: migration_20260712_161000_stone_only_crop_alignment.down,
+    name: '20260712_161000_stone_only_crop_alignment',
+  },
+  {
+    up: migration_20260712_162000_heart_stone_only_crop.up,
+    down: migration_20260712_162000_heart_stone_only_crop.down,
+    name: '20260712_162000_heart_stone_only_crop',
   },
 ]

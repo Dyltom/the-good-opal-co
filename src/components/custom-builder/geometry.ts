@@ -31,7 +31,7 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 }
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
-  'three-quarter': [4.2, 4.4, 2.4],
+  'three-quarter': [3.4, 5.2, 3.2],
   front: [0, 5.8, 0],
   profile: [0, 0.8, 5.8],
 }
@@ -165,18 +165,15 @@ function baseOutlinePoint(
     return [cosine * width * taper * pearWidthCorrection, sine * height]
   }
   if (shape === 'heart') {
-    // Classic heart curve, reparameterised so -Y is the point and +Y the lobes.
-    const parameter = Math.PI / 2 - angle
-    const heartX = Math.pow(Math.sin(parameter), 3)
-    const rawY =
-      13 * Math.cos(parameter) -
-      5 * Math.cos(2 * parameter) -
-      2 * Math.cos(3 * parameter) -
-      Math.cos(4 * parameter)
-    const heartMinY = -17
-    const heartMaxY = 11.92325241526326
-    const heartY = ((rawY - heartMinY) / (heartMaxY - heartMinY)) * 2 - 1
-    return [heartX * width, heartY * height]
+    // The catalogue hearts are hand-carved with a broad body, shallow notch,
+    // and softly tapering point. A classic mathematical heart is too pinched
+    // and leaves photographed background visible around the real stone face.
+    const upperHalf = Math.max(0, sine)
+    const lowerHalf = Math.max(0, -sine)
+    const notch = 0.22 * Math.exp(-Math.pow(cosine / 0.2, 2)) * upperHalf
+    const positiveYScale = sine > 0 ? 1 / 0.932 : 1
+    const taper = 1 - 0.42 * Math.pow(lowerHalf, 1.35)
+    return [cosine * width * taper, (sine - notch) * positiveYScale * height]
   }
   return [cosine * width, sine * height]
 }
@@ -263,6 +260,26 @@ export function evenlySpacedOutlinePoints(
       y: lower.y + (upper.y - lower.y) * progress,
     }
   })
+}
+
+export function adaptiveOutlinePointCount(
+  shape: RingConfig['shape'],
+  width: number,
+  height: number,
+  offset: number,
+  pitchMm: number
+): number {
+  if (pitchMm <= 0) return 0
+  const samples = 720
+  let perimeter = 0
+  let previous = outlinePoint(shape, 0, width, height, offset)
+  for (let index = 1; index <= samples; index += 1) {
+    const point = outlinePoint(shape, (index / samples) * Math.PI * 2, width, height, offset)
+    perimeter += Math.hypot(point[0] - previous[0], point[1] - previous[1])
+    previous = point
+  }
+  // Ring geometry uses 1 scene unit = 10 physical millimetres.
+  return Math.max(12, Math.round((perimeter * 10) / pitchMm))
 }
 
 export interface HandmadeBeadPoint {

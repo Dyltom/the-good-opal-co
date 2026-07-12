@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import { getHaloSupportGeometry, ringStyleGeometryProfiles, ringStyles } from '../config'
-import { applyHandmadeBeadVariation, evenlySpacedOutlinePoints, outlinePoint } from '../geometry'
+import {
+  adaptiveOutlinePointCount,
+  applyHandmadeBeadVariation,
+  evenlySpacedOutlinePoints,
+  outlinePoint,
+} from '../geometry'
 
 describe('sold ring style geometry', () => {
   test('maps each named sold construction to its photographed silhouette', () => {
@@ -22,7 +27,7 @@ describe('sold ring style geometry', () => {
       innerSeamRadius: 0.008,
       shankRadius: 0.09,
       shoulderRadius: 0.096,
-      crossSectionPower: 0.6,
+      crossSectionPower: 0.9,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
     expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.11)
@@ -45,14 +50,68 @@ describe('sold ring style geometry', () => {
     const sunMoon = ringStyleGeometryProfiles['sun-moon']
     const aurora = ringStyleGeometryProfiles.aurora
 
-    expect(sunMoon.beadCount).toBeGreaterThan(aurora.beadCount)
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon.beadFlattening).toBeLessThan(aurora.beadFlattening)
-    expect(sunMoon).toMatchObject({ beadCount: 34, beadRadius: 0.042, haloOffset: 0.095 })
-    expect(aurora).toMatchObject({ beadCount: 28, beadRadius: 0.046, haloOffset: 0.086 })
+    expect(sunMoon).toMatchObject({ beadPitchMm: 1.06, beadRadius: 0.042, haloOffset: 0.095 })
+    expect(aurora).toMatchObject({ beadPitchMm: 1.1, beadRadius: 0.046, haloOffset: 0.086 })
   })
 
+  test.each([
+    ['sun-moon', 'oval', 0.3, 0.35, 25],
+    ['sun-moon', 'oval', 0.4, 0.5, 32],
+    ['aurora', 'pear', 0.4, 0.5, 30],
+    ['aurora', 'pear', 0.5, 0.75, 40],
+  ] as const)(
+    'adapts %s bead count to the %s opal perimeter',
+    (style, shape, width, height, expectedCount) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const count = adaptiveOutlinePointCount(
+        shape,
+        width,
+        height,
+        profile.haloOffset,
+        profile.beadPitchMm
+      )
+
+      expect(count).toBeGreaterThanOrEqual(expectedCount - 2)
+      expect(count).toBeLessThanOrEqual(expectedCount + 2)
+    }
+  )
+
+  test.each(['sun-moon', 'aurora'] as const)(
+    'keeps %s bead pitch within its photographed range',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const shape = style === 'aurora' ? 'pear' : 'oval'
+      const count = adaptiveOutlinePointCount(
+        shape,
+        0.4,
+        0.5,
+        profile.haloOffset,
+        profile.beadPitchMm
+      )
+      const points = evenlySpacedOutlinePoints(
+        shape,
+        0.4,
+        0.5,
+        profile.haloOffset,
+        count,
+        profile.haloPhase
+      )
+      const chordPitchMm =
+        (points.reduce((sum, point, index) => {
+          const next = points[(index + 1) % points.length]!
+          return sum + Math.hypot(next.x - point.x, next.y - point.y)
+        }, 0) /
+          points.length) *
+        10
+
+      const [minimum, maximum] = style === 'sun-moon' ? [1.0, 1.1] : [1.04, 1.15]
+      expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
+      expect(chordPitchMm).toBeLessThanOrEqual(maximum)
+    }
+  )
   test.each(['sun-moon', 'aurora'] as const)(
     'supports the %s soldered beads with a continuous backplate',
     (style) => {
@@ -76,15 +135,17 @@ describe('sold ring style geometry', () => {
     (style) => {
       const profile = ringStyleGeometryProfiles[style]
       const shape = style === 'aurora' ? 'pear' : 'oval'
+      const count = adaptiveOutlinePointCount(
+        shape,
+        0.4,
+        0.5,
+        profile.haloOffset,
+        profile.beadPitchMm
+      )
       const beads = applyHandmadeBeadVariation(
-        evenlySpacedOutlinePoints(
-          shape,
-          0.4,
-          0.5,
-          profile.haloOffset,
-          profile.beadCount,
-          profile.haloPhase
-        )
+        evenlySpacedOutlinePoints(shape, 0.4, 0.5, profile.haloOffset, count, profile.haloPhase),
+        profile.beadVariation,
+        profile.beadFlattening
       )
       const gaps = beads.map((bead, index) => {
         const next = beads[(index + 1) % beads.length]!
@@ -95,7 +156,10 @@ describe('sold ring style geometry', () => {
         )
       })
 
-      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(0.004)
+      // Handmade soldered beads should touch or very slightly overlap rather
+      // than read as a disconnected string of pearls.
+      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
+      expect(Math.max(...gaps)).toBeLessThanOrEqual(0.035)
     }
   )
 
@@ -104,16 +168,23 @@ describe('sold ring style geometry', () => {
     (style) => {
       const profile = ringStyleGeometryProfiles[style]
       const shape = style === 'aurora' ? 'pear' : 'oval'
+      const count = adaptiveOutlinePointCount(
+        shape,
+        0.4,
+        0.5,
+        profile.haloOffset,
+        profile.beadPitchMm
+      )
       const points = evenlySpacedOutlinePoints(
         shape,
         0.4,
         0.5,
         profile.haloOffset,
-        profile.beadCount,
+        count,
         profile.haloPhase
       )
       const point = points[0]!
-      const crown = points[profile.beadCount / 2]!
+      const crown = points[Math.floor(count / 2)]!
 
       expect(point.x).toBeCloseTo(0, 2)
       expect(point.y).toBeLessThan(0)

@@ -10,9 +10,9 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
 
   expect(response?.status()).toBeLessThan(400)
   await expect(page.getByRole('heading', { name: 'See the possibilities.' })).toBeVisible()
-  await expect(page.getByRole('group', { name: '2. Choose an available opal' })).toBeVisible()
+  await expect(page.getByRole('group', { name: '3. Choose an available opal' })).toBeVisible()
 
-  const opalGroup = page.getByRole('group', { name: '2. Choose an available opal' })
+  const opalGroup = page.getByRole('group', { name: '3. Choose an available opal' })
   const opals = opalGroup.getByRole('button')
   expect(await opals.count()).toBeGreaterThan(1)
 
@@ -32,7 +32,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page).toHaveURL(/[?&]ps=1\.35/)
   await expect(page).toHaveURL(/[?&]pr=25/)
 
-  const styles = page.getByRole('group', { name: '3. Choose a collection design' })
+  const styles = page.getByRole('group', { name: '2. Choose a collection design' })
   await expect(styles).toBeVisible()
   for (const style of ['Gemini', 'Coral', 'Sun & Moon', 'Aurora']) {
     await expect(styles.getByRole('button', { name: new RegExp(style, 'i') })).toBeEnabled()
