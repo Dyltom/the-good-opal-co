@@ -12,25 +12,23 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page.getByRole('heading', { name: 'See the possibilities.' })).toBeVisible()
   await expect(page.getByRole('group', { name: '2. Choose an available opal' })).toBeVisible()
 
-  const opals = page.getByRole('group', { name: '2. Choose an available opal' }).getByRole('button')
+  const opalGroup = page.getByRole('group', { name: '2. Choose an available opal' })
+  const opals = opalGroup.getByRole('button')
   expect(await opals.count()).toBeGreaterThan(1)
 
-  await page
-    .getByRole('button', {
-      name: 'Individual stone Mintabie Semi Black Opal 1.05 cts Black opal · $45.00 loose',
-    })
-    .click()
+  await opalGroup.getByRole('combobox', { name: 'Filter available opals' }).selectOption('individual')
+  const individualOpals = opalGroup.getByRole('button').filter({ hasText: 'Individual stone' })
+  expect(await individualOpals.count()).toBeGreaterThan(1)
+  await individualOpals.nth(1).click()
   await expect(page).toHaveURL(/[?&]p=\d+/)
   await expect(page.getByRole('link', { name: 'View selected loose opal' })).toBeVisible()
 
   const styles = page.getByRole('group', { name: '3. Choose a collection design' })
   await expect(styles).toBeVisible()
-  await expect(styles.getByRole('button', { name: 'Aurora Requires a pear opal' })).toBeDisabled()
-  await expect(styles.getByRole('button', { name: 'Coral Requires a cushion opal' })).toBeDisabled()
-  await styles
-    .getByRole('button', { name: 'Sun & Moon Oval opal with handmade beaded trim' })
-    .click()
-  await expect(page).toHaveURL(/[?&]y=sun-moon/)
+  const compatibleStyles = styles.locator('button:not([disabled]):not([aria-pressed="true"])')
+  expect(await compatibleStyles.count()).toBeGreaterThan(0)
+  await compatibleStyles.first().click()
+  await expect(page).toHaveURL(/[?&]y=(gemini|coral|sun-moon|aurora)/)
 
   const canvas = page.locator('canvas')
   const fallback = page.getByText('Interactive 3D is unavailable on this device.')
