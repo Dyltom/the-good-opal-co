@@ -18,6 +18,47 @@ export interface NormalizedPhotoCrop {
   width: number
 }
 
+export interface PhotoTextureTransform {
+  offsetX: number
+  offsetY: number
+  repeatX: number
+  repeatY: number
+}
+
+/**
+ * Rotating a rectangular photo inside a fixed stone aperture exposes its
+ * corners unless the source is enlarged. This returns the minimum scale that
+ * keeps the aperture covered for the given rotation and aspect ratio.
+ */
+export function rotationCoverScale(stoneAspect: number, rotationDegrees: number): number {
+  if (stoneAspect <= 0) return 1
+
+  const radians = (Math.abs(rotationDegrees % 180) * Math.PI) / 180
+  const sine = Math.abs(Math.sin(radians))
+  const cosine = Math.abs(Math.cos(radians))
+
+  return Math.max(cosine + sine / stoneAspect, cosine + sine * stoneAspect)
+}
+
+/**
+ * Converts a top-left image crop into Three.js texture coordinates. Three
+ * rotates around texture centre, so offsets are expressed relative to 0.5.
+ */
+export function computePhotoTextureTransform(
+  crop: NormalizedPhotoCrop,
+  stoneAspect: number,
+  rotationDegrees: number
+): PhotoTextureTransform {
+  const coverScale = rotationCoverScale(stoneAspect, rotationDegrees)
+
+  return {
+    offsetX: crop.left + crop.width / 2 - 0.5,
+    offsetY: 0.5 - crop.top - crop.height / 2,
+    repeatX: crop.width / coverScale,
+    repeatY: crop.height / coverScale,
+  }
+}
+
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value))
 }

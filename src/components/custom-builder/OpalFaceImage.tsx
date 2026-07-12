@@ -4,7 +4,11 @@ import Image from 'next/image'
 import type { ComponentProps } from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { applyPhotoPlacement, computePhotoCrop } from '@/lib/custom-builder/photo-crop'
+import {
+  applyPhotoPlacement,
+  computePhotoCrop,
+  rotationCoverScale,
+} from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement } from './config'
 
 interface OpalFaceImageProps {
@@ -33,6 +37,7 @@ export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFa
   useEffect(() => setImageSize(undefined), [opal.imageUrl])
 
   const rotation = placement?.opalRotation ?? 0
+  const coverScale = rotationCoverScale(stoneAspect, rotation)
   const handleLoad: ComponentProps<typeof Image>['onLoad'] = (event) =>
     setImageSize({
       width: event.currentTarget.naturalWidth,
@@ -51,8 +56,8 @@ export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFa
             height: `${100 / crop.height}%`,
             left: `${(-crop.left / crop.width) * 100}%`,
             top: `${(-crop.top / crop.height) * 100}%`,
-            transform: `rotate(${rotation}deg)`,
-            transformOrigin: 'center',
+            transform: `rotate(${rotation}deg) scale(${coverScale})`,
+            transformOrigin: `${(crop.left + crop.width / 2) * 100}% ${(crop.top + crop.height / 2) * 100}%`,
             width: `${100 / crop.width}%`,
           }}
         >
@@ -65,7 +70,7 @@ export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFa
           fill
           sizes={sizes}
           className="object-cover"
-          style={{ transform: `rotate(${rotation}deg) scale(${rotation === 0 ? 1 : 1.15})` }}
+          style={{ transform: `rotate(${rotation}deg) scale(${coverScale})` }}
           onLoad={handleLoad}
         />
       )}

@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { applyPhotoPlacement, computePhotoCrop } from '../photo-crop'
+import {
+  applyPhotoPlacement,
+  computePhotoCrop,
+  computePhotoTextureTransform,
+  rotationCoverScale,
+} from '../photo-crop'
 
 describe('custom builder photo crops', () => {
   test.each([
@@ -28,6 +33,23 @@ describe('custom builder photo crops', () => {
       width: 1,
       height: 1,
     })
+  })
+
+  test('enlarges rotated source photos enough to keep the stone aperture covered', () => {
+    expect(rotationCoverScale(1, 0)).toBeCloseTo(1)
+    expect(rotationCoverScale(1, 45)).toBeCloseTo(Math.SQRT2)
+    expect(rotationCoverScale(0.8, 90)).toBeCloseTo(1.25)
+    expect(rotationCoverScale(0, 45)).toBe(1)
+  })
+
+  test('keeps the selected crop centre fixed when Three.js rotates the texture', () => {
+    const crop = { left: 0.2, top: 0.1, width: 0.4, height: 0.6 }
+    const transform = computePhotoTextureTransform(crop, 0.8, 45)
+
+    expect(0.5 + transform.offsetX).toBeCloseTo(crop.left + crop.width / 2)
+    expect(0.5 - transform.offsetY).toBeCloseTo(crop.top + crop.height / 2)
+    expect(transform.repeatX).toBeLessThan(crop.width)
+    expect(transform.repeatY).toBeLessThan(crop.height)
   })
 
   test('applies customer placement without allowing the source focus outside the image', () => {

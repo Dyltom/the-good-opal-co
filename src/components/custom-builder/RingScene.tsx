@@ -26,7 +26,11 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import { applyPhotoPlacement, computePhotoCrop } from '@/lib/custom-builder/photo-crop'
+import {
+  applyPhotoPlacement,
+  computePhotoCrop,
+  computePhotoTextureTransform,
+} from '@/lib/custom-builder/photo-crop'
 import {
   getHaloSupportGeometry,
   ringStyleGeometryProfiles,
@@ -389,20 +393,15 @@ function OpalCabochon({
         width / height,
         applyPhotoPlacement(crop, config)
       )
-      nextTexture.repeat.set(cropRect.width, cropRect.height)
-      nextTexture.offset.set(cropRect.left, 1 - cropRect.top - cropRect.height)
+      const transform = computePhotoTextureTransform(cropRect, width / height, config.opalRotation)
+      nextTexture.repeat.set(transform.repeatX, transform.repeatY)
+      nextTexture.offset.set(transform.offsetX, transform.offsetY)
       nextTexture.center.set(0.5, 0.5)
       nextTexture.rotation = (-config.opalRotation * Math.PI) / 180
     }
     nextTexture.needsUpdate = true
     return nextTexture
-  }, [
-    config,
-    height,
-    selectedOpal?.visual.textureCrop,
-    sourcePhoto,
-    width,
-  ])
+  }, [config, height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
 
   useEffect(() => () => texture.dispose(), [texture])
   useEffect(() => () => photoTexture.dispose(), [photoTexture])
@@ -931,8 +930,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
     stoneDimensions: dimensions,
   } = getSettingPlacement(config, selectedOpal)
   const [stoneWidth] = dimensions
-  const bezelOuterOffset =
-    styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
+  const bezelOuterOffset = styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
   const support = getHaloSupportGeometry(styleProfile)
   const settingOuterOffset =
     config.setting === 'beaded' ? support.offset + support.thickness / 2 : bezelOuterOffset

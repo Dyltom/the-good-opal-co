@@ -448,16 +448,16 @@ export function RingConfigurator({
 
               {selectedOpal && (
                 <OpalPlacementEditor
+                  metal={config.metal}
                   opal={selectedOpal}
+                  style={config.style}
                   placement={{
                     opalPositionX: config.opalPositionX,
                     opalPositionY: config.opalPositionY,
                     opalScale: config.opalScale,
                     opalRotation: config.opalRotation,
                   }}
-                  onChange={(placement) =>
-                    setConfig((current) => ({ ...current, ...placement }))
-                  }
+                  onChange={(placement) => setConfig((current) => ({ ...current, ...placement }))}
                 />
               )}
 

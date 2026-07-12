@@ -181,6 +181,62 @@ describe('RingConfigurator store opal selection', () => {
     })
   })
 
+  test('supports direct keyboard positioning and simple rotation controls', async () => {
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
+        opals={opals}
+      />
+    )
+
+    fireEvent.keyDown(
+      screen.getByRole('group', {
+        name: /Adjust approximate cut placement/i,
+      }),
+      { key: 'ArrowRight' }
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate opal right' }))
+
+    await waitFor(() => {
+      const preview = screen.getByTestId('ring-preview')
+      expect(preview.getAttribute('data-opal-position-x')).toBe('0.01')
+      expect(preview.getAttribute('data-opal-rotation')).toBe('15')
+    })
+  })
+
+  test('keeps direct drag coordinates concise in shared URLs', async () => {
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
+        opals={opals}
+      />
+    )
+
+    const placement = screen.getByRole('group', {
+      name: /Adjust approximate cut placement/i,
+    })
+    Object.defineProperty(placement, 'setPointerCapture', { value: vi.fn() })
+    vi.spyOn(placement, 'getBoundingClientRect').mockReturnValue({
+      bottom: 400,
+      height: 300,
+      left: 100,
+      right: 400,
+      top: 100,
+      width: 300,
+      x: 100,
+      y: 100,
+      toJSON: () => ({}),
+    })
+
+    fireEvent.pointerDown(placement, { clientX: 150, clientY: 150, pointerId: 1 })
+    fireEvent.pointerMove(placement, { clientX: 173.456, clientY: 167.891, pointerId: 1 })
+
+    await waitFor(() => {
+      const position = new URLSearchParams(window.location.search).get('px')
+      expect(position).toMatch(/^-?\d+(?:\.\d{1,3})?$/)
+    })
+  })
+
   test('searches a large live catalogue and renders it progressively', async () => {
     const user = userEvent.setup()
     const catalogue = [
