@@ -2,6 +2,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
+import {
+  BreadcrumbJsonLd,
+  JsonLd,
+  merchantReturnPolicyStructuredData,
+} from '@/components/seo'
 
 export const metadata: Metadata = {
   title: 'Returns & Refunds | The Good Opal Co',
@@ -12,6 +17,10 @@ export const metadata: Metadata = {
 export default function ReturnsPage() {
   return (
     <MarketingShell>
+      <JsonLd
+        data={{ '@context': 'https://schema.org', ...merchantReturnPolicyStructuredData() }}
+      />
+      <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Returns', url: '/returns' }]} />
       <Container className="py-16 sm:py-20 lg:py-28">
           <PageHeader
             eyebrow="Order information"

@@ -125,15 +125,30 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const blogPosting = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
+    '@id': `${canonical}#article`,
     headline: post.title,
     description,
     url: canonical,
     mainEntityOfPage: canonical,
     datePublished: post.publishedAt ?? post.createdAt,
     dateModified: post.updatedAt,
-    image: imageUrl || undefined,
-    author: author ? { '@type': 'Person', name: author.name } : undefined,
-    publisher: { '@type': 'Organization', name: APP_NAME, url: APP_URL },
+    image: imageUrl
+      ? {
+          '@type': 'ImageObject',
+          url: imageUrl,
+          caption: featuredImage?.alt || post.title,
+        }
+      : undefined,
+    author: author
+      ? {
+          '@type': 'Person',
+          name: author.name,
+          ...(author.name === 'Stephanie Caruana' ? { url: `${APP_URL}/about` } : {}),
+        }
+      : { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },
+    publisher: { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },
+    isPartOf: { '@type': 'WebSite', '@id': `${APP_URL}/#website` },
+    inLanguage: 'en-AU',
     articleSection: categories[0]?.name,
     keywords: tags.map((tag) => tag.name),
   }

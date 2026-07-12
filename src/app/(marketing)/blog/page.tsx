@@ -3,6 +3,8 @@ import { ArrowRight } from 'lucide-react'
 import { BlogCard } from '@/components/blog/BlogCard'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
+import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
+import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 
@@ -44,6 +46,33 @@ export default async function BlogPage() {
 
   return (
     <MarketingShell>
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          '@id': `${APP_URL}/blog#collection`,
+          name: 'Opal notes',
+          description: 'Practical notes about Australian opals, jewellery, buying, and care.',
+          url: `${APP_URL}/blog`,
+          isPartOf: { '@type': 'WebSite', '@id': `${APP_URL}/#website` },
+          mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: cards.length,
+            itemListElement: cards.map((post, index) => ({
+              '@type': 'ListItem',
+              position: index + 1,
+              url: `${APP_URL}/blog/${post.slug}`,
+              name: post.title,
+            })),
+          },
+        }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Opal notes', url: '/blog' },
+        ]}
+      />
       <Container className="py-14 sm:py-20 lg:py-24">
         <PageHeader
           eyebrow="Field notes"

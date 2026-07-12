@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
+import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
 import {
   Accordion,
   AccordionContent,
@@ -131,8 +132,14 @@ const faqCategories = [
 ]
 
 export default function FAQPage() {
+  const allFaqs = faqCategories.flatMap((category) => category.faqs)
+
   return (
     <MarketingShell>
+        <FaqJsonLd items={allFaqs} />
+        <BreadcrumbJsonLd
+          items={[{ name: 'Home', url: '/' }, { name: 'Frequently asked questions', url: '/faq' }]}
+        />
         <section className="border-b border-warm-grey/60">
           <Container className="py-14 sm:py-20 lg:py-24">
             <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">

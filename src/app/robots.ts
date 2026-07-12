@@ -25,9 +25,14 @@ export default function robots(): MetadataRoute.Robots {
           '/account',
           '/account/*',
           '/order-tracking',
+          '/quote',
+          '/quote/*',
+          '/newsletter',
+          '/newsletter/*',
         ],
       },
     ],
     sitemap: `${BASE_URL}/sitemap.xml`,
+    host: BASE_URL,
   }
 }

@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, Gem, Hammer } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseInterestPanel } from '@/components/education'
+import { CourseListJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { courseFormatLabels, courseLevelLabels } from '@/lib/courses'
@@ -36,6 +37,15 @@ export default async function CoursesPage() {
 
   return (
     <MarketingShell>
+      {courses.length > 0 ? (
+        <CourseListJsonLd
+          courses={courses.map((course) => ({
+            name: course.title,
+            slug: course.slug,
+            description: course.summary,
+          }))}
+        />
+      ) : null}
       <section className="overflow-hidden border-b border-warm-grey/60 bg-cream">
         <Container className="grid gap-10 py-14 sm:py-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-24">
           <div className="relative z-10">

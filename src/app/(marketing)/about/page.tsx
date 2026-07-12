@@ -3,6 +3,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
+import { BreadcrumbJsonLd, JsonLd, OrganizationJsonLd } from '@/components/seo'
+import { APP_NAME, APP_URL } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Our Story | The Good Opal Co',
@@ -32,6 +34,20 @@ const principles = [
 export default function AboutPage() {
   return (
     <MarketingShell>
+        <OrganizationJsonLd />
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            '@id': `${APP_URL}/about#stephanie-caruana`,
+            name: 'Stephanie Caruana',
+            url: `${APP_URL}/about`,
+            jobTitle: 'Founder',
+            worksFor: { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },
+            knowsAbout: ['Australian opal', 'Opal jewellery', 'Opal cutting'],
+          }}
+        />
+        <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'About', url: '/about' }]} />
         <section className="border-b border-warm-grey/60">
           <div className="grid min-h-[34rem] lg:grid-cols-[0.9fr_1.1fr]">
             <div className="flex items-center bg-cream px-6 py-16 sm:px-10 lg:px-[max(4rem,calc((100vw-80rem)/2))]">

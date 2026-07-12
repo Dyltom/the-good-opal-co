@@ -7,6 +7,7 @@ import { ArrowLeft, Check, UserRound } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseCurriculum, CourseInterestPanel } from '@/components/education'
+import { BreadcrumbJsonLd, CourseJsonLd } from '@/components/seo'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { courseFormatLabels, courseLevelLabels, courseOutlineStats } from '@/lib/courses'
 import { getPayload } from '@/lib/payload'
@@ -70,6 +71,24 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   return (
     <MarketingShell>
+      <CourseJsonLd
+        course={{
+          name: course.title,
+          slug: course.slug,
+          description: course.summary,
+          instructor: course.instructor.name,
+          image: imageUrl ?? undefined,
+          level: courseLevelLabels[course.level],
+          format: courseFormatLabels[course.format],
+        }}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Courses', url: '/courses' },
+          { name: course.title, url: `/courses/${course.slug}` },
+        ]}
+      />
       <Container className="py-10 sm:py-14">
         <Link
           href="/courses"

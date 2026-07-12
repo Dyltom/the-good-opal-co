@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
+import { BreadcrumbJsonLd } from '@/components/seo'
 import { SHIPPING_CONFIG } from '@/lib/constants/shipping'
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 export default function ShippingPage() {
   return (
     <MarketingShell>
+      <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Shipping', url: '/shipping' }]} />
       <Container className="py-16 sm:py-20 lg:py-28">
         <PageHeader
           eyebrow="Order information"

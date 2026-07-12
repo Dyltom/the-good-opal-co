@@ -12,4 +12,7 @@ export {
   CollectionJsonLd,
   FaqJsonLd,
   WebsiteJsonLd,
+  CourseJsonLd,
+  CourseListJsonLd,
+  merchantReturnPolicyStructuredData,
 } from './json-ld'
