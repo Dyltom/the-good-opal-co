@@ -25,6 +25,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page).toHaveURL(/[?&]p=\d+/)
   await expect(page.getByRole('link', { name: 'View selected loose opal' })).toBeVisible()
 
+  await page.locator('summary').filter({ hasText: 'Fine position' }).click()
   await page.getByRole('slider', { name: 'Horizontal' }).fill('0.18')
   await page.getByRole('slider', { name: 'Zoom' }).fill('1.35')
   await page.getByRole('slider', { name: 'Rotation' }).fill('25')
