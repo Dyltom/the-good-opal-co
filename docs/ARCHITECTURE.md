@@ -26,6 +26,10 @@ rate-limit counters.
 - Unit tests: `src/**/__tests__/` and `src/test/`.
 - Browser tests: `e2e/`.
 
+Locale activation is an atomic content, commerce, routing, and discovery release.
+See [INTERNATIONALISATION.md](./INTERNATIONALISATION.md) before publishing any
+locale beyond the reviewed `en-AU` default.
+
 ## State and trust model
 
 - React Server Components own data reads unless browser interaction is required.
