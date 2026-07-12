@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Pause, Play, Rotate3D } from 'lucide-react'
 import type { BuilderOpal, RingConfig } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
@@ -11,7 +11,6 @@ import type { RingView } from './RingScene'
 interface RingPreviewProps {
   config: RingConfig
   description: string
-  opals: readonly BuilderOpal[]
   selectedOpal?: BuilderOpal
 }
 
@@ -30,16 +29,11 @@ const views: readonly { id: RingView; label: string }[] = [
   { id: 'profile', label: 'Profile' },
 ]
 
-export function RingPreview({ config, description, opals, selectedOpal }: RingPreviewProps) {
+export function RingPreview({ config, description, selectedOpal }: RingPreviewProps) {
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
   const [motionEnabled, setMotionEnabled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const [view, setView] = useState<RingView>('front')
-  const opalImageUrls = useMemo(
-    () => Array.from(new Set(opals.map((opal) => opal.imageUrl))),
-    [opals]
-  )
-
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
     setPrefersReducedMotion(media.matches)
@@ -59,7 +53,6 @@ export function RingPreview({ config, description, opals, selectedOpal }: RingPr
         <RingScene
           config={config}
           selectedOpal={selectedOpal}
-          opalImageUrls={opalImageUrls}
           allowMotion={motionEnabled}
           onContextLost={() => setWebGlAvailable(false)}
           view={view}
@@ -125,7 +118,9 @@ export function RingPreview({ config, description, opals, selectedOpal }: RingPr
               </div>
               <div className="min-w-0">
                 <p className="text-[0.65rem] uppercase tracking-[0.12em] text-opal-light">
-                  Selected opal face
+                  {selectedOpal.selectionKind === 'individual'
+                    ? 'Selected opal face'
+                    : 'Selected listing photo'}
                 </p>
                 <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
                 <p className="mt-1 text-[0.65rem] text-cream/70">
@@ -140,11 +135,15 @@ export function RingPreview({ config, description, opals, selectedOpal }: RingPr
                   </p>
                 )}
                 <p className="mt-1 text-[0.65rem] leading-4 text-cream/60">
-                  {selectedOpal.visual.textureCrop
+                  {selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
                     ? `Reviewed ${selectedOpal.visual.silhouette} profile · actual product photo on stone`
-                    : selectedOpal.visual.evidence === 'catalogue'
-                      ? `${selectedOpal.visual.silhouette} profile from catalogue description`
-                      : 'Normalised shape, colour guided by opal type'}
+                    : selectedOpal.visual.textureCrop
+                      ? 'Listing photo mapped to an estimated setting profile · visual guide only'
+                      : selectedOpal.selectionKind === 'individual'
+                        ? 'Listing photo shown · 3D shape and colour are a visual guide'
+                        : selectedOpal.selectionKind === 'specimen'
+                          ? 'Specimen photo shown · setting feasibility requires consultation'
+                          : 'Multiple stones pictured · 3D represents material, not one guaranteed stone'}
                 </p>
               </div>
             </div>

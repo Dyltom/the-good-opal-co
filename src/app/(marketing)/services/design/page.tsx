@@ -12,8 +12,10 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { resolveMediaUrl } from '@/lib/media-url'
 import {
+  classifyOpalListing,
   createOpalVisualProfile,
-  isBuilderEligibleOpal,
+  inferBuilderStoneType,
+  isAvailableOpalListing,
   reviewedOpalImageUrl,
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
@@ -67,6 +69,9 @@ const productImageOverrides: Record<string, string> = {
   '20211129_165305': '20211129_165305-1.jpg',
   '20211129_164200': '20211129_164200-1-1.jpg',
   '20211129_164004': '20211129_164004-1-1.jpg',
+  'wp-5499-img_0803': 'IMG_0803.jpg',
+  'wp-5507-img': 'IMG-0741-1.jpg',
+  'wp-5481-img_0810': 'IMG_0808.jpg',
 }
 
 function normaliseAssetStem(filename: string): string {
@@ -83,7 +88,7 @@ function productImageFallback(filename?: string | null): string | undefined {
   const extension = filename.split('.').pop()?.toLowerCase()
   if (!extension || !['jpg', 'jpeg', 'png', 'webp'].includes(extension)) return undefined
 
-  const publicFilename = productImageOverrides[stem] ?? `${stem}.${extension}`
+  const publicFilename = productImageOverrides[stem] ?? filename
   return `/images/products/${publicFilename}`
 }
 
@@ -143,7 +148,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
   const mediaById = new Map(mediaResult.docs.map((media) => [String(media.id), media as Media]))
 
   return result.docs
-    .filter((product) => isBuilderEligibleOpal(product.slug, product.name, product))
+    .filter((product) => isAvailableOpalListing(product.name))
     .flatMap((product): BuilderOpal[] => {
       const firstImage = product.images?.[0]?.image
       const image = firstImage ? mediaById.get(String(firstImage)) : undefined
@@ -154,14 +159,11 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
         reviewedOpalImageUrl(product.slug) ??
         productImageFallback(image?.filename) ??
         resolveMediaUrl(image?.url)
-      if (!imageUrl || !product.stoneType) return []
+      if (!imageUrl) return []
 
-      const renderProfile = createOpalVisualProfile(
-        product.slug,
-        product.name,
-        product.stoneType,
-        product
-      )
+      const stoneType = inferBuilderStoneType(product.stoneType, product.name)
+
+      const renderProfile = createOpalVisualProfile(product.slug, product.name, stoneType, product)
       return [
         {
           id: String(product.id),
@@ -170,10 +172,11 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
           imageUrl,
           imageAlt: image?.alt ?? product.name,
           price: product.price,
-          stoneType: product.stoneType,
-          stoneTypeLabel: stoneTypeLabels[product.stoneType] ?? 'Australian opal',
+          stoneType,
+          stoneTypeLabel: stoneTypeLabels[stoneType] ?? 'Australian opal',
           originLabel: product.stoneOrigin ? originLabels[product.stoneOrigin] : undefined,
           weight: product.weight ?? undefined,
+          selectionKind: classifyOpalListing(product.name),
           ...renderProfile,
         },
       ]
@@ -185,9 +188,19 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       const rightIndex = builderOpalPriority.indexOf(
         right.slug as (typeof builderOpalPriority)[number]
       )
-      return (leftIndex < 0 ? 999 : leftIndex) - (rightIndex < 0 ? 999 : rightIndex)
+      const priorityDifference =
+        (leftIndex < 0 ? 999 : leftIndex) - (rightIndex < 0 ? 999 : rightIndex)
+      if (priorityDifference !== 0) return priorityDifference
+
+      const kindOrder: Record<BuilderOpal['selectionKind'], number> = {
+        individual: 0,
+        assortment: 1,
+        parcel: 2,
+        specimen: 3,
+      }
+      const kindDifference = kindOrder[left.selectionKind] - kindOrder[right.selectionKind]
+      return kindDifference || left.name.localeCompare(right.name)
     })
-    .slice(0, 12)
 }
 
 export default async function DesignPage({ searchParams }: DesignPageProps) {

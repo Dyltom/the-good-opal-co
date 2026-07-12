@@ -21,6 +21,37 @@ export interface BuilderVisualFields {
   } | null
 }
 
+export type BuilderOpalSelectionKind = BuilderOpal['selectionKind']
+
+const nonOpalListingPattern = /\b(deposit|gift\s*card|consultation|shipping|repair)\b/i
+
+/**
+ * The collection contains one legacy service product filed as a raw opal.
+ * Keep the catalogue query broad, then reject only records that are clearly
+ * not physical opal listings.
+ */
+export function isAvailableOpalListing(name: string): boolean {
+  return name.trim().length > 0 && !nonOpalListingPattern.test(name)
+}
+
+export function classifyOpalListing(name: string): BuilderOpalSelectionKind {
+  if (/\bspecimen\b/i.test(name)) return 'specimen'
+  if (/\bparcel\b/i.test(name)) return 'parcel'
+  if (/\b(calibrated|priced individually)\b/i.test(name)) return 'assortment'
+  return 'individual'
+}
+
+export function inferBuilderStoneType(stoneType: string | null | undefined, name: string): string {
+  if (stoneType) return stoneType
+  if (/\b(doublet|triplet)\b/i.test(name)) return 'opal-doublet'
+  if (/\b(matrix|andamooka)\b/i.test(name)) return 'matrix-opal'
+  if (/\b(boulder|koroit|queensland)\b/i.test(name)) return 'boulder-opal'
+  if (/\b(crystal|pipe)\b/i.test(name)) return 'crystal-opal'
+  if (/\b(black|semi[ -]?black|dark|mintabie)\b/i.test(name)) return 'black-opal'
+  if (/\b(white|milky|coober\s*pedy)\b/i.test(name)) return 'white-opal'
+  return 'unknown-opal'
+}
+
 const reviewedProfiles: Record<
   string,
   Pick<
@@ -32,6 +63,7 @@ const reviewedProfiles: Record<
     | 'textureCrop'
     | 'bodyColour'
     | 'dimensionsMm'
+    | 'photoFit'
   >
 > = {
   'lightning-ridge-white-opal-1-05-cts': {
@@ -42,6 +74,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.507, focalY: 0.495, zoom: 3.08 },
     bodyColour: '#d7dcc9',
     dimensionsMm: { width: 6, length: 7, depth: 3 },
+    photoFit: 'reviewed',
   },
   'mintabie-semi-black-opal-1-05-cts': {
     silhouette: 'oval',
@@ -51,6 +84,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.504, focalY: 0.487, zoom: 4.81 },
     bodyColour: '#a8c4b8',
     dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
+    photoFit: 'reviewed',
   },
   'mintabie-semi-black-opal-1-35-cts': {
     silhouette: 'oval',
@@ -60,6 +94,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.501, focalY: 0.493, zoom: 3.61 },
     bodyColour: '#cbd5c7',
     dimensionsMm: { width: 7, length: 8, depth: 3.5 },
+    photoFit: 'reviewed',
   },
   'queensland-crystal-pipe-opal-1-45-cts': {
     silhouette: 'elongated',
@@ -69,6 +104,96 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.74 },
     bodyColour: '#78c5df',
     dimensionsMm: { width: 5.3, length: 9.5, depth: 2.5 },
+    photoFit: 'reviewed',
+  },
+}
+
+const cataloguePhotoProfiles: Record<
+  string,
+  Pick<
+    VisualProfile,
+    'silhouette' | 'aspectRatio' | 'evidence' | 'recommendedStyle' | 'textureCrop' | 'photoFit'
+  >
+> = {
+  'mintabie-carved-heart': {
+    silhouette: 'cushion',
+    aspectRatio: 1,
+    evidence: 'catalogue',
+    recommendedStyle: 'coral',
+    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 1.8 },
+    photoFit: 'estimated',
+  },
+  'lightning-ridge-black-opal-6-30ct': {
+    silhouette: 'pear',
+    aspectRatio: 1.3,
+    evidence: 'catalogue',
+    recommendedStyle: 'aurora',
+    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 1.45 },
+    photoFit: 'estimated',
+  },
+  'lightning-ridge-black-opal-1-45-cts': {
+    silhouette: 'elongated',
+    aspectRatio: 2.25,
+    evidence: 'catalogue',
+    recommendedStyle: 'gemini',
+    textureCrop: { focalX: 0.51, focalY: 0.55, zoom: 3.1 },
+    photoFit: 'estimated',
+  },
+  'lightning-ridge-semi-black-opal-1-40-cts': {
+    silhouette: 'oval',
+    aspectRatio: 1.5,
+    evidence: 'catalogue',
+    recommendedStyle: 'gemini',
+    textureCrop: { focalX: 0.49, focalY: 0.44, zoom: 3.2 },
+    photoFit: 'estimated',
+  },
+  'lightning-ridge-semi-black-opal-5-50-cts': {
+    silhouette: 'elongated',
+    aspectRatio: 1.75,
+    evidence: 'catalogue',
+    recommendedStyle: 'gemini',
+    textureCrop: { focalX: 0.52, focalY: 0.5, zoom: 2.8 },
+    photoFit: 'estimated',
+  },
+  'coober-pedy-white-opal-6-35-cts': {
+    silhouette: 'elongated',
+    aspectRatio: 1.55,
+    evidence: 'catalogue',
+    recommendedStyle: 'gemini',
+    textureCrop: { focalX: 0.49, focalY: 0.52, zoom: 1.55 },
+    photoFit: 'estimated',
+  },
+  'queensland-boulder-opal-20-cts': {
+    silhouette: 'cushion',
+    aspectRatio: 1.25,
+    evidence: 'catalogue',
+    recommendedStyle: 'coral',
+    textureCrop: { focalX: 0.52, focalY: 0.5, zoom: 2.35 },
+    photoFit: 'estimated',
+  },
+  'mintabie-semi-black-opal-6-80-cts': {
+    silhouette: 'elongated',
+    aspectRatio: 1.55,
+    evidence: 'catalogue',
+    recommendedStyle: 'gemini',
+    textureCrop: { focalX: 0.53, focalY: 0.51, zoom: 2.15 },
+    photoFit: 'estimated',
+  },
+  'coober-pedy-white-opal-2-30-cts-copy': {
+    silhouette: 'pear',
+    aspectRatio: 1.2,
+    evidence: 'catalogue',
+    recommendedStyle: 'aurora',
+    textureCrop: { focalX: 0.52, focalY: 0.5, zoom: 2.35 },
+    photoFit: 'estimated',
+  },
+  'lightning-ridge-white-opal-1-70-cts-2': {
+    silhouette: 'cushion',
+    aspectRatio: 1.2,
+    evidence: 'catalogue',
+    recommendedStyle: 'coral',
+    textureCrop: { focalX: 0.53, focalY: 0.55, zoom: 2.25 },
+    photoFit: 'estimated',
   },
 }
 
@@ -153,6 +278,7 @@ function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undef
     flashColours: colours as [string, string, string],
     transmission: fields.builderTransmission,
     patternSeed: 0,
+    photoFit: 'reviewed',
     dimensionsMm: {
       width: dimensions.width,
       length: dimensions.length,
@@ -272,6 +398,28 @@ function inferSilhouette(
   }
 }
 
+function completeDimensions(
+  fields?: BuilderVisualFields
+): VisualProfile['dimensionsMm'] | undefined {
+  const dimensions = fields?.dimensions
+  if (
+    typeof dimensions?.width !== 'number' ||
+    typeof dimensions.length !== 'number' ||
+    typeof dimensions.depth !== 'number' ||
+    dimensions.width <= 0 ||
+    dimensions.length <= 0 ||
+    dimensions.depth <= 0
+  ) {
+    return undefined
+  }
+
+  return {
+    width: dimensions.width,
+    length: dimensions.length,
+    depth: dimensions.depth,
+  }
+}
+
 export function createOpalVisualProfile(
   slug: string,
   name: string,
@@ -282,18 +430,21 @@ export function createOpalVisualProfile(
   const profile = typeProfiles[stoneType] ?? typeProfiles['crystal-opal']!
   const silhouette = inferSilhouette(name)
   const reviewed = reviewedProfileFor(slug)
+  const cataloguePhoto = cataloguePhotoProfiles[slug]
   const managed = cmsReviewedProfile(fields)
+  const dimensionsMm = completeDimensions(fields)
   const bodyColour = profile.bodies[seed % profile.bodies.length] ?? profile.bodies[0]!
   const flashColours = profile.flashes[(seed >>> 4) % profile.flashes.length] ?? profile.flashes[0]!
 
   return {
     renderStone: profile.renderStone,
     visual: {
-      ...(managed ?? reviewed ?? silhouette),
+      ...(managed ?? reviewed ?? cataloguePhoto ?? silhouette),
       bodyColour: managed?.bodyColour ?? reviewed?.bodyColour ?? bodyColour,
       flashColours: managed?.flashColours ?? flashColours,
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
+      dimensionsMm: managed?.dimensionsMm ?? reviewed?.dimensionsMm ?? dimensionsMm,
     },
   }
 }

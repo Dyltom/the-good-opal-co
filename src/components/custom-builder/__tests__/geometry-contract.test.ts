@@ -32,6 +32,7 @@ const measuredOpal: BuilderOpal = {
   price: 125,
   stoneType: 'boulder-opal',
   stoneTypeLabel: 'Boulder opal',
+  selectionKind: 'individual',
   renderStone: 'blue-green',
   visual: {
     silhouette: 'elongated',

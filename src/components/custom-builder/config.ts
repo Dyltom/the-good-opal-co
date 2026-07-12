@@ -38,6 +38,7 @@ export interface BuilderOpal {
   stoneTypeLabel: string
   originLabel?: string
   weight?: number
+  selectionKind: 'individual' | 'assortment' | 'parcel' | 'specimen'
   renderStone: RingConfig['stone']
   visual: {
     silhouette: RingConfig['shape']
@@ -47,6 +48,7 @@ export interface BuilderOpal {
     transmission: number
     patternSeed: number
     evidence: 'catalogue' | 'type-fallback'
+    photoFit?: 'reviewed' | 'estimated'
     recommendedStyle: RingConfig['style']
     textureCrop?: {
       focalX: number

@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import {
+  classifyOpalListing,
   createOpalVisualProfile,
+  inferBuilderStoneType,
+  isAvailableOpalListing,
   isBuilderEligibleOpal,
   reviewedOpalImageUrl,
 } from '../opal-visual'
@@ -13,6 +16,30 @@ const reviewedOpals = [
 ] as const
 
 describe('custom builder opal visual profiles', () => {
+  test('admits physical opal listings while rejecting miscategorised services', () => {
+    expect(isAvailableOpalListing('Lightning Ridge Black Opal 6.30ct')).toBe(true)
+    expect(isAvailableOpalListing('Coober Pedy Carved Heart Parcel')).toBe(true)
+    expect(isAvailableOpalListing('Large Koroit Boulder Opal Specimen')).toBe(true)
+    expect(isAvailableOpalListing('Custom Jewellery Deposit')).toBe(false)
+    expect(isAvailableOpalListing('Ring repair fee')).toBe(false)
+  })
+
+  test.each([
+    ['Mintabie Dark Opal heart 0.55 cts', 'individual'],
+    ['Premium Calibrated Rounds 2.5mm', 'assortment'],
+    ['Freeform Doublet Parcel 2.3 cts', 'parcel'],
+    ['Large Koroit Boulder Opal Specimen 108.65 cts', 'specimen'],
+  ] as const)('classifies %s truthfully as %s', (name, kind) => {
+    expect(classifyOpalListing(name)).toBe(kind)
+  })
+
+  test('infers only broad stone families when legacy records omit a type', () => {
+    expect(inferBuilderStoneType(null, 'Freeform Doublet Parcel')).toBe('opal-doublet')
+    expect(inferBuilderStoneType(null, 'Coober Pedy Carved Heart Parcel')).toBe('white-opal')
+    expect(inferBuilderStoneType(null, 'Mystery Australian Opal')).toBe('unknown-opal')
+    expect(inferBuilderStoneType('black-opal', 'White-looking listing')).toBe('black-opal')
+  })
+
   test.each(reviewedOpals)('makes reviewed store opal %s eligible by stable slug', (slug, name) => {
     expect(isBuilderEligibleOpal(slug, name)).toBe(true)
   })
@@ -72,6 +99,39 @@ describe('custom builder opal visual profiles', () => {
     })
   })
 
+  test.each([
+    'mintabie-carved-heart',
+    'lightning-ridge-black-opal-6-30ct',
+    'lightning-ridge-black-opal-1-45-cts',
+    'lightning-ridge-semi-black-opal-1-40-cts',
+    'lightning-ridge-semi-black-opal-5-50-cts',
+    'coober-pedy-white-opal-6-35-cts',
+    'queensland-boulder-opal-20-cts',
+    'mintabie-semi-black-opal-6-80-cts',
+    'coober-pedy-white-opal-2-30-cts-copy',
+    'lightning-ridge-white-opal-1-70-cts-2',
+  ])('maps the audited listing photo for current individual stone %s', (slug) => {
+    const profile = createOpalVisualProfile(slug, 'Current individual opal', 'white-opal')
+
+    expect(profile.visual.photoFit).toBe('estimated')
+    expect(profile.visual.textureCrop).toMatchObject({
+      focalX: expect.any(Number),
+      focalY: expect.any(Number),
+      zoom: expect.any(Number),
+    })
+  })
+
+  test('keeps multi-stone listings on a representative material render', () => {
+    const profile = createOpalVisualProfile(
+      'freeform-doublet-parcel-2-3-cts',
+      'Freeform Doublet Parcel 2.3 cts',
+      'opal-doublet'
+    )
+
+    expect(profile.visual.textureCrop).toBeUndefined()
+    expect(profile.visual.photoFit).toBeUndefined()
+  })
+
   test('keeps reviewed photo crops aligned with the complete stone face', () => {
     const white = createOpalVisualProfile(
       'lightning-ridge-white-opal-1-05-cts',
@@ -127,6 +187,15 @@ describe('custom builder opal visual profiles', () => {
 
     expect(first).toEqual(again)
     expect(second.visual.patternSeed).not.toBe(first.visual.patternSeed)
+  })
+
+  test('keeps complete catalogue measurements without pretending a visual was reviewed', () => {
+    const profile = createOpalVisualProfile('catalogue-opal', 'Australian opal', 'white-opal', {
+      dimensions: { width: 6, length: 8, depth: 3 },
+    })
+
+    expect(profile.visual.evidence).toBe('type-fallback')
+    expect(profile.visual.dimensionsMm).toEqual({ width: 6, length: 8, depth: 3 })
   })
 
   test('uses complete Payload-managed visual data for newly reviewed store opals', () => {

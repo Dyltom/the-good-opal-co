@@ -17,7 +17,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
 
   await page
     .getByRole('button', {
-      name: 'Mintabie Semi Black Opal 1.05 cts Black opal · $45.00 loose',
+      name: 'Individual stone Mintabie Semi Black Opal 1.05 cts Black opal · $45.00 loose',
     })
     .click()
   await expect(page).toHaveURL(/[?&]p=\d+/)

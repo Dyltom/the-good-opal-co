@@ -44,6 +44,7 @@ const opals: BuilderOpal[] = [
     stoneTypeLabel: 'Black opal',
     originLabel: 'Lightning Ridge, NSW',
     weight: 1.2,
+    selectionKind: 'individual',
     renderStone: 'lightning',
     visual: {
       silhouette: 'oval',
@@ -67,6 +68,7 @@ const opals: BuilderOpal[] = [
     stoneTypeLabel: 'Crystal opal',
     originLabel: 'Coober Pedy, SA',
     weight: 0.9,
+    selectionKind: 'individual',
     renderStone: 'blue-green',
     visual: {
       silhouette: 'oval',
@@ -129,5 +131,39 @@ describe('RingConfigurator store opal selection', () => {
 
     expect(screen.getByRole('status').textContent).toContain('no longer available')
     expect(screen.getByRole('status').textContent).toContain('not substituted')
+  })
+
+  test('searches a large live catalogue and renders it progressively', async () => {
+    const user = userEvent.setup()
+    const catalogue = [
+      ...Array.from({ length: 14 }, (_, index) => ({
+        ...opals[0]!,
+        id: `individual-${index}`,
+        name: `Individual opal ${index + 1}`,
+        slug: `individual-opal-${index + 1}`,
+      })),
+      {
+        ...opals[1]!,
+        id: 'parcel-1',
+        name: 'Coober Pedy colour parcel',
+        slug: 'coober-pedy-colour-parcel',
+        selectionKind: 'parcel' as const,
+      },
+    ]
+
+    render(<RingConfigurator initialConfig={defaultRingConfig} opals={catalogue} />)
+
+    const picker = screen.getByRole('group', { name: '2. Choose an available opal' })
+    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(12)
+    expect(screen.getByText('15 listings found')).not.toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Show 12 more' }))
+    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(15)
+
+    await user.type(screen.getByRole('searchbox', { name: 'Search available opals' }), 'parcel')
+    await waitFor(() => expect(screen.getByText('1 listing found')).not.toBeNull())
+    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(1)
+    expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
+    expect(screen.getByText('3D shows a representative setting concept')).not.toBeNull()
   })
 })
