@@ -8,7 +8,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseCurriculum, CourseInterestPanel } from '@/components/education'
 import { APP_NAME, APP_URL } from '@/lib/constants'
-import { courseFormatLabels, courseLevelLabels } from '@/lib/courses'
+import { courseFormatLabels, courseLevelLabels, courseOutlineStats } from '@/lib/courses'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import type { Course, Media } from '@/types/payload-types'
@@ -66,6 +66,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   if (!course) notFound()
   const featured = mediaObject(course.featuredImage)
   const imageUrl = resolveMediaUrl(featured?.url)
+  const outlineStats = courseOutlineStats(course.curriculum)
 
   return (
     <MarketingShell>
@@ -85,6 +86,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <span>{courseFormatLabels[course.format]}</span>
               <span>{courseLevelLabels[course.level]}</span>
               {course.duration ? <span>{course.duration}</span> : null}
+              {outlineStats.lessons > 0 ? <span>{outlineStats.lessons} lesson groups</span> : null}
             </div>
             <h1 className="mt-5 max-w-[13ch] text-balance font-serif text-[clamp(3rem,6vw,6.3rem)] font-medium leading-[0.94]">
               {course.title}

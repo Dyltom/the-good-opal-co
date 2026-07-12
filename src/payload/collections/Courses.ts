@@ -9,7 +9,7 @@ export const Courses: CollectionConfig = {
     defaultColumns: ['title', 'status', 'format', 'availability', 'publishedAt', 'updatedAt'],
     group: 'Education',
     description:
-      'Public course outlines and interest-enquiry status. No lessons or payments are managed here.',
+      'Public course and lesson outlines plus interest-enquiry status. Lesson bodies, enrolments, and payments are not managed here.',
   },
   access: {
     read: publishedOrAdmin,
@@ -112,7 +112,10 @@ export const Courses: CollectionConfig = {
         {
           name: 'topics',
           type: 'textarea',
-          admin: { description: 'One public topic per line' },
+          admin: {
+            description:
+              'Start each lesson with ## Lesson title, then add one public step per line. Do not paste private lesson content here.',
+          },
         },
       ],
     },

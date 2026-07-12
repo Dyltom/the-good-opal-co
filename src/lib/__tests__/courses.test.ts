@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { courseInterestHref, courseTopics } from '@/lib/courses'
+import {
+  courseInterestHref,
+  courseLessonOutline,
+  courseOutlineStats,
+  courseTopics,
+} from '@/lib/courses'
 
 describe('course public helpers', () => {
   test('builds an interest-only contact handoff without checkout state', () => {
@@ -20,5 +25,43 @@ describe('course public helpers', () => {
       'Safety first',
       'Polishing',
     ])
+  })
+
+  test('preserves the legacy plain-line syllabus as one lesson group', () => {
+    expect(courseLessonOutline('Colour bars\nPolishing')).toEqual([
+      { title: '', topics: ['Colour bars', 'Polishing'] },
+    ])
+  })
+
+  test('parses lesson headings and optional topic markers into a public hierarchy', () => {
+    expect(
+      courseLessonOutline(`## Inspecting rough
+- Colour bars and potch
+- Host rock
+## Finishing
+Polishing`)
+    ).toEqual([
+      { title: 'Inspecting rough', topics: ['Colour bars and potch', 'Host rock'] },
+      { title: 'Finishing', topics: ['Polishing'] },
+    ])
+  })
+
+  test('counts published lesson groups and steps across the curriculum', () => {
+    expect(
+      courseOutlineStats([
+        {
+          id: 'one',
+          title: 'Module one',
+          summary: 'First module',
+          topics: '## Lesson one\nStep one\nStep two',
+        },
+        {
+          id: 'two',
+          title: 'Module two',
+          summary: 'Second module',
+          topics: '## Lesson two\nStep three\n## Lesson three\nStep four',
+        },
+      ])
+    ).toEqual({ lessons: 3, topics: 4 })
   })
 })

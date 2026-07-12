@@ -21,6 +21,7 @@ import * as migration_20260712_080000_inventory_reservations from './20260712_08
 import * as migration_20260712_090000_catalogue_fact_backfill from './20260712_090000_catalogue_fact_backfill'
 import * as migration_20260712_100000_custom_quote_domain from './20260712_100000_custom_quote_domain'
 import * as migration_20260712_110000_custom_quote_delivery from './20260712_110000_custom_quote_delivery'
+import * as migration_20260712_120100_course_public_syllabus from './20260712_120100_course_public_syllabus'
 
 export const migrations = [
   {
@@ -137,5 +138,10 @@ export const migrations = [
     up: migration_20260712_110000_custom_quote_delivery.up,
     down: migration_20260712_110000_custom_quote_delivery.down,
     name: '20260712_110000_custom_quote_delivery',
+  },
+  {
+    up: migration_20260712_120100_course_public_syllabus.up,
+    down: migration_20260712_120100_course_public_syllabus.down,
+    name: '20260712_120100_course_public_syllabus',
   },
 ]
