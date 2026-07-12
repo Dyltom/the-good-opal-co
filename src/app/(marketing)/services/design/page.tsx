@@ -160,8 +160,8 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       // collapse the complete WebGL scene.
       const imageUrl =
         reviewedOpalImageUrl(product.slug) ??
-        productImageFallback(image?.filename) ??
-        resolveMediaUrl(image?.url)
+        resolveMediaUrl(image?.url) ??
+        productImageFallback(image?.filename)
       if (!imageUrl) return []
 
       const stoneType = inferBuilderStoneType(product.stoneType, product.name)

@@ -135,6 +135,11 @@ async function seed() {
     }
 
     const mediaId = await mediaIdFor(product.image, product.name)
+    const category = categoryFor(product)
+    const trustedBuilderMapping =
+      category === 'raw-opals'
+        ? { builderMappingStatus: 'reviewed' as const }
+        : {}
     await payload.create({
       collection: 'products',
       data: {
@@ -146,7 +151,8 @@ async function seed() {
         stock: publish ? product.stock : 0,
         status: publish ? 'published' : 'draft',
         featured: product.featured ?? false,
-        category: categoryFor(product),
+        category,
+        ...trustedBuilderMapping,
         images: mediaId ? [{ image: mediaId }] : [],
         stoneType: stoneTypeFor(product.stoneType),
         stoneOrigin: originFor(product.origin),
