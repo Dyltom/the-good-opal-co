@@ -261,4 +261,29 @@ describe('custom builder opal visual profiles', () => {
       })
     ).toBe(false)
   })
+
+  test('uses an approved mapped photo in the builder without enabling the store CTA', () => {
+    const fields = {
+      builderEligible: false,
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'pear',
+      builderRecommendedStyle: 'aurora',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      dimensions: { width: 6, length: 8, depth: 2 },
+    }
+
+    expect(isBuilderEligibleOpal('mapped-opal', 'Mapped opal', fields)).toBe(false)
+    expect(createOpalVisualProfile('mapped-opal', 'Mapped opal', 'black-opal', fields).visual)
+      .toMatchObject({
+        silhouette: 'pear',
+        textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
+      })
+  })
 })

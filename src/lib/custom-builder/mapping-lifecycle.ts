@@ -1,6 +1,6 @@
 import { classifyOpalListing, inferBuilderStoneType } from './opal-visual'
 
-export const BUILDER_MAPPING_VERSION = 1
+export const BUILDER_MAPPING_VERSION = 2
 
 export const builderMappingStatuses = ['pending', 'reviewed', 'manual', 'stale'] as const
 
@@ -119,6 +119,39 @@ function dimensionsFrom(value: unknown): Dimensions {
   }
 }
 
+function richTextContent(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map(richTextContent).filter(Boolean).join(' ')
+  if (!isRecord(value)) return ''
+
+  const ownText = typeof value.text === 'string' ? value.text : ''
+  const childText = 'children' in value ? richTextContent(value.children) : ''
+  const rootText = 'root' in value ? richTextContent(value.root) : ''
+  return [ownText, childText, rootText].filter(Boolean).join(' ')
+}
+
+/**
+ * Legacy WooCommerce measurements are embedded in prose and use inconsistent
+ * axis order. For a single stone the longest axis is length, the middle axis
+ * is width, and the shortest axis is depth, regardless of source order.
+ */
+export function inferDimensionsFromDescription(value: unknown): Required<Dimensions> | undefined {
+  const text = richTextContent(value)
+  const match = text.match(
+    /\b(\d+(?:\.\d+)?)\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*(?:mm|millimet(?:er|re)s?)\b/i
+  )
+  if (!match) return undefined
+
+  const values = match
+    .slice(1, 4)
+    .map(Number)
+    .filter((number) => Number.isFinite(number) && number > 0 && number <= 100)
+    .sort((left, right) => right - left)
+  if (values.length !== 3) return undefined
+
+  return { length: values[0]!, width: values[1]!, depth: values[2]! }
+}
+
 function stableHash(value: string): string {
   let first = 2166136261
   let second = 2246822519
@@ -139,12 +172,38 @@ function imageIdentity(value: unknown): string | undefined {
   if (typeof image === 'string' || typeof image === 'number') return String(image)
   if (!isRecord(image)) return undefined
 
-  const identity = [image.id, image.updatedAt, image.filename, image.url, image.filesize]
+  const identity = [
+    image.id,
+    image.updatedAt,
+    image.filename,
+    image.url,
+    image.filesize,
+    image.width,
+    image.height,
+    image.focalX,
+    image.focalY,
+  ]
     .filter((part) => typeof part === 'string' || typeof part === 'number')
     .map(String)
     .join(':')
 
   return identity || undefined
+}
+
+function normalizedMediaFocus(value: unknown): { focalX: number; focalY: number } | undefined {
+  const first = Array.isArray(value) ? value[0] : undefined
+  const image = isRecord(first) && 'image' in first ? first.image : first
+  if (!isRecord(image)) return undefined
+
+  const normalize = (coordinate: unknown): number | undefined => {
+    if (typeof coordinate !== 'number' || !Number.isFinite(coordinate)) return undefined
+    if (coordinate >= 0 && coordinate <= 1) return coordinate
+    if (coordinate > 1 && coordinate <= 100) return coordinate / 100
+    return undefined
+  }
+  const focalX = normalize(image.focalX)
+  const focalY = normalize(image.focalY)
+  return focalX === undefined || focalY === undefined ? undefined : { focalX, focalY }
 }
 
 export function createBuilderSourceImageHash(images: unknown): string | undefined {
@@ -183,19 +242,25 @@ function styleForShape(
 
 export function inferBuilderMapping(product: ProductRecord): InferredMapping {
   const name = typeof product.name === 'string' ? product.name : ''
-  const dimensions = dimensionsFrom(product.dimensions)
-  const shape = explicitShape(name) ?? dimensionShape(dimensions) ?? 'oval'
+  const description = richTextContent(product.description)
+  const structuredDimensions = dimensionsFrom(product.dimensions)
+  const dimensions =
+    structuredDimensions.length && structuredDimensions.width
+      ? structuredDimensions
+      : (inferDimensionsFromDescription(product.description) ?? structuredDimensions)
+  const shape = explicitShape(`${name} ${description}`) ?? dimensionShape(dimensions) ?? 'oval'
   const stoneType = inferBuilderStoneType(
     typeof product.stoneType === 'string' ? product.stoneType : undefined,
     name
   )
   const colours = visualProfiles[stoneType] ?? visualProfiles['crystal-opal']!
   const listingKind = classifyOpalListing(name)
+  const mediaFocus = normalizedMediaFocus(product.images)
 
   return {
     ...colours,
-    builderPhotoFocalX: 0.5,
-    builderPhotoFocalY: 0.5,
+    builderPhotoFocalX: mediaFocus?.focalX ?? 0.5,
+    builderPhotoFocalY: mediaFocus?.focalY ?? 0.5,
     builderPhotoZoom: listingKind === 'individual' ? 2.25 : 1.35,
     builderRecommendedStyle: styleForShape(shape),
     builderSilhouette: shape,
@@ -205,13 +270,23 @@ export function inferBuilderMapping(product: ProductRecord): InferredMapping {
 function mappingConfidence(product: ProductRecord, sourceHash: string | undefined): number {
   const name = typeof product.name === 'string' ? product.name : ''
   const dimensions = dimensionsFrom(product.dimensions)
-  const hasDimensions = Boolean(
+  const inferredDimensions = inferDimensionsFromDescription(product.description)
+  const availableDimensions =
     finitePositive(dimensions.length) &&
     finitePositive(dimensions.width) &&
     finitePositive(dimensions.depth)
+      ? dimensions
+      : inferredDimensions
+  const hasDimensions = Boolean(
+    finitePositive(availableDimensions?.length) &&
+    finitePositive(availableDimensions?.width) &&
+    finitePositive(availableDimensions?.depth)
   )
   const stoneType = typeof product.stoneType === 'string' && product.stoneType.length > 0
-  const shape = Boolean(explicitShape(name) ?? dimensionShape(dimensions))
+  const shape = Boolean(
+    explicitShape(`${name} ${richTextContent(product.description)}`) ??
+      dimensionShape(availableDimensions ?? {})
+  )
   const confidence =
     0.15 +
     (sourceHash ? 0.3 : 0) +
@@ -227,9 +302,12 @@ function validStatus(value: unknown): value is BuilderMappingStatus {
 
 function mappingInputHash(product: ProductRecord, sourceHash: string | undefined): string {
   const dimensions = dimensionsFrom(product.dimensions)
+  const description = richTextContent(product.description)
   return stableHash(
     JSON.stringify({
       dimensions,
+      descriptionDimensions: inferDimensionsFromDescription(product.description) ?? null,
+      descriptionShape: explicitShape(description) ?? null,
       name: typeof product.name === 'string' ? product.name.trim() : '',
       slug: typeof product.slug === 'string' ? product.slug.trim() : '',
       sourceHash: sourceHash ?? null,
@@ -266,11 +344,24 @@ export function applyBuilderMappingLifecycle(
 ): ProductRecord {
   const incoming = isRecord(data) ? { ...data } : {}
   const previous = isRecord(originalDoc) ? originalDoc : {}
-  const product = mergeProduct(incoming, previous)
+  let product = mergeProduct(incoming, previous)
 
   if (product.category !== 'raw-opals') {
     if (product.builderEligible === true) incoming.builderEligible = false
     return incoming
+  }
+
+  const dimensions = dimensionsFrom(product.dimensions)
+  const hasStructuredDimensions = Boolean(
+    dimensions.length || dimensions.width || dimensions.depth
+  )
+  const name = typeof product.name === 'string' ? product.name : ''
+  if (!hasStructuredDimensions && classifyOpalListing(name) === 'individual') {
+    const inferredDimensions = inferDimensionsFromDescription(product.description)
+    if (inferredDimensions) {
+      incoming.dimensions = inferredDimensions
+      product = mergeProduct(incoming, previous)
+    }
   }
 
   const sourceHash = createBuilderSourceImageHash(product.images)

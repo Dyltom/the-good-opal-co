@@ -4,6 +4,7 @@ import {
   builderMappingNeedsReview,
   BUILDER_MAPPING_VERSION,
   createBuilderSourceImageHash,
+  inferDimensionsFromDescription,
   inferBuilderMapping,
   isBuilderMappingApproved,
 } from '../mapping-lifecycle'
@@ -34,6 +35,25 @@ describe('opal builder mapping lifecycle', () => {
     expect(inferBuilderMapping(product)).toEqual(inferBuilderMapping(product))
   })
 
+  test('uses shape and dimensions embedded in legacy description text', () => {
+    expect(
+      inferBuilderMapping({
+        description: 'Natural pear cabochon measuring 9 x 6 x 2 mm',
+        name: 'Lightning Ridge opal',
+      })
+    ).toMatchObject({
+      builderRecommendedStyle: 'aurora',
+      builderSilhouette: 'pear',
+    })
+
+    expect(
+      inferBuilderMapping({
+        description: 'Natural cabochon measuring 12 x 6 x 2 mm',
+        name: 'Lightning Ridge opal',
+      })
+    ).toMatchObject({ builderSilhouette: 'elongated' })
+  })
+
   test('uses stable image identity while respecting hero-image order', () => {
     const first = createBuilderSourceImageHash([
       { image: { id: 7, filename: 'opal.jpg', updatedAt: '2026-07-12' } },
@@ -51,6 +71,75 @@ describe('opal builder mapping lifecycle', () => {
     expect(first).toMatch(/^[0-9a-f]{16}$/)
     expect(same).toBe(first)
     expect(reordered).not.toBe(first)
+  })
+
+  test('tracks Payload focal-point changes as source-image changes', () => {
+    const centred = createBuilderSourceImageHash([
+      { image: { id: 7, filename: 'opal.jpg', focalX: 50, focalY: 50 } },
+    ])
+    const adjusted = createBuilderSourceImageHash([
+      { image: { id: 7, filename: 'opal.jpg', focalX: 62, focalY: 44 } },
+    ])
+
+    expect(adjusted).not.toBe(centred)
+  })
+
+  test('recovers single-opal dimensions from legacy rich text regardless of axis order', () => {
+    const description = {
+      root: {
+        children: [
+          { children: [{ text: 'This opal measures 3 x 7 x 6 mm and has bright colour.' }] },
+        ],
+      },
+    }
+
+    expect(inferDimensionsFromDescription(description)).toEqual({
+      depth: 3,
+      length: 7,
+      width: 6,
+    })
+    expect(inferDimensionsFromDescription('Measures 9.5 × 5.3 × 2.5 millimetres')).toEqual({
+      depth: 2.5,
+      length: 9.5,
+      width: 5.3,
+    })
+  })
+
+  test('uses uploaded media focal point and legacy measurements for a new individual opal', () => {
+    const result = applyBuilderMappingLifecycle(
+      {
+        category: 'raw-opals',
+        description: { root: { children: [{ children: [{ text: 'Measures 2 x 12 x 6 mm' }] }] } },
+        images: [{ image: { filename: 'opal.jpg', focalX: 61, focalY: 43 } }],
+        name: 'Lightning Ridge black opal',
+        slug: 'legacy-black-opal',
+        stoneType: 'black-opal',
+      },
+      undefined,
+      now
+    )
+
+    expect(result).toMatchObject({
+      builderPhotoFocalX: 0.61,
+      builderPhotoFocalY: 0.43,
+      builderSilhouette: 'elongated',
+      dimensions: { depth: 2, length: 12, width: 6 },
+    })
+  })
+
+  test('does not treat parcel measurements as one stone', () => {
+    const result = applyBuilderMappingLifecycle(
+      {
+        category: 'raw-opals',
+        description: 'Biggest measures 9 x 6 x 2 mm',
+        images: [{ image: 'media-1' }],
+        name: 'Bright opal parcel',
+      },
+      undefined,
+      now
+    )
+
+    expect(result.dimensions).toBeUndefined()
   })
 
   test('queues a new raw opal for review and fills missing suggestions', () => {

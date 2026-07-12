@@ -237,7 +237,7 @@ function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undef
     fields.builderMappingStatus === null ||
     fields.builderMappingStatus === 'reviewed' ||
     fields.builderMappingStatus === 'manual'
-  if (!fields?.builderEligible || !mappingApproved) {
+  if (!fields || !mappingApproved) {
     return undefined
   }
 
@@ -360,7 +360,8 @@ export function isBuilderEligibleOpal(
   name: string,
   fields?: BuilderVisualFields
 ): boolean {
-  return Boolean(name) && Boolean(cmsReviewedProfile(fields) ?? reviewedProfileFor(slug))
+  const managed = fields?.builderEligible ? cmsReviewedProfile(fields) : undefined
+  return Boolean(name) && Boolean(managed ?? reviewedProfileFor(slug))
 }
 
 function inferSilhouette(
