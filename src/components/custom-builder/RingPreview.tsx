@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Pause, Play, Rotate3D } from 'lucide-react'
 import type { BuilderOpal, RingConfig } from './config'
+import { opalPlacementFromConfig } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
 import { RingScene } from './RingScene'
 import type { RingView } from './RingScene'
@@ -111,6 +112,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
               <div className="flex h-16 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-28">
                 <OpalFaceImage
                   opal={selectedOpal}
+                  placement={opalPlacementFromConfig(config)}
                   alt=""
                   sizes="112px"
                   className="h-full w-auto rounded-md"

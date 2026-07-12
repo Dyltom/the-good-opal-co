@@ -8,6 +8,7 @@ import { ArrowRight, Check, ExternalLink, RotateCcw, Share2 } from 'lucide-react
 import { cn, formatCurrency } from '@/lib/utils'
 import {
   applyRingStyle,
+  defaultOpalPlacement,
   describeRingConfig,
   isRingStyleCompatible,
   metals,
@@ -17,6 +18,7 @@ import {
 } from './config'
 import type { BuilderOpal, ConfigOption, RingConfig, RingStyleOption } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
+import { OpalPlacementEditor } from './OpalPlacementEditor'
 import { ViewerErrorBoundary } from './ViewerErrorBoundary'
 
 const RingPreview = dynamic(() => import('./RingPreview').then((module) => module.RingPreview), {
@@ -350,7 +352,12 @@ export function RingConfigurator({
 
   function selectOpal(opal: BuilderOpal) {
     setConfig((current) => {
-      const next = { ...current, opalId: opal.id, stone: opal.renderStone }
+      const next = {
+        ...current,
+        ...defaultOpalPlacement,
+        opalId: opal.id,
+        stone: opal.renderStone,
+      }
       const styled =
         opal.visual.evidence === 'catalogue'
           ? applyRingStyle(next, opal.visual.recommendedStyle)
@@ -439,8 +446,23 @@ export function RingConfigurator({
                 }
               />
 
+              {selectedOpal && (
+                <OpalPlacementEditor
+                  opal={selectedOpal}
+                  placement={{
+                    opalPositionX: config.opalPositionX,
+                    opalPositionY: config.opalPositionY,
+                    opalScale: config.opalScale,
+                    opalRotation: config.opalRotation,
+                  }}
+                  onChange={(placement) =>
+                    setConfig((current) => ({ ...current, ...placement }))
+                  }
+                />
+              )}
+
               <fieldset>
-                <legend className="font-serif text-xl font-medium">4. Ring size (US)</legend>
+                <legend className="font-serif text-xl font-medium">5. Ring size (US)</legend>
                 <div className="mt-3 flex items-center gap-4">
                   <select
                     value={config.size}

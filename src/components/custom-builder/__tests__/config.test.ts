@@ -12,6 +12,7 @@ import {
 describe('custom ring configuration', () => {
   test('round-trips a shared configuration', () => {
     const config = {
+      ...defaultRingConfig,
       metal: 'rose-gold',
       stone: 'sunset',
       style: 'coral',
@@ -20,6 +21,10 @@ describe('custom ring configuration', () => {
       band: 'classic',
       size: 8.5,
       opalId: '127',
+      opalPositionX: 0.18,
+      opalPositionY: -0.12,
+      opalScale: 1.35,
+      opalRotation: 25,
     } as const
     const params = ringConfigToSearchParams(config)
     const values = Object.fromEntries(params.entries())
@@ -29,6 +34,12 @@ describe('custom ring configuration', () => {
 
   test('rejects tampered or incomplete URL state', () => {
     expect(ringConfigFromRecord({ m: 'plastic', z: '999' })).toEqual(defaultRingConfig)
+  })
+
+  test('rejects unsafe customer photo placement values', () => {
+    const values = Object.fromEntries(ringConfigToSearchParams(defaultRingConfig))
+
+    expect(ringConfigFromRecord({ ...values, px: '5', ps: '0.1' })).toEqual(defaultRingConfig)
   })
 
   test('uses the product material identifiers as the public URL contract', () => {

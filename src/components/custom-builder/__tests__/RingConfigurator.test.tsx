@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
@@ -7,12 +7,21 @@ import { defaultRingConfig } from '../config'
 
 vi.mock('next/dynamic', () => ({
   default: () =>
-    function RingPreviewStub({ selectedOpal }: { selectedOpal?: BuilderOpal }) {
+    function RingPreviewStub({
+      config,
+      selectedOpal,
+    }: {
+      config: typeof defaultRingConfig
+      selectedOpal?: BuilderOpal
+    }) {
       return (
         <div
           data-testid="ring-preview"
           data-selected-opal={selectedOpal?.id}
           data-selected-image={selectedOpal?.imageUrl}
+          data-opal-position-x={config.opalPositionX}
+          data-opal-scale={config.opalScale}
+          data-opal-rotation={config.opalRotation}
         />
       )
     },
@@ -131,6 +140,45 @@ describe('RingConfigurator store opal selection', () => {
 
     expect(screen.getByRole('status').textContent).toContain('no longer available')
     expect(screen.getByRole('status').textContent).toContain('not substituted')
+  })
+
+  test('persists approximate opal placement in the share URL and consultation payload', async () => {
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
+        opals={opals}
+      />
+    )
+
+    fireEvent.change(screen.getByRole('slider', { name: 'Horizontal' }), {
+      target: { value: '0.2' },
+    })
+    fireEvent.change(screen.getByRole('slider', { name: 'Zoom' }), {
+      target: { value: '1.4' },
+    })
+    fireEvent.change(screen.getByRole('slider', { name: 'Rotation' }), {
+      target: { value: '35' },
+    })
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('px')).toBe('0.2')
+      expect(params.get('ps')).toBe('1.4')
+      expect(params.get('pr')).toBe('35')
+    })
+    expect(screen.getByTestId('ring-preview').getAttribute('data-opal-position-x')).toBe('0.2')
+    expect(screen.getByTestId('ring-preview').getAttribute('data-opal-scale')).toBe('1.4')
+    expect(screen.getByTestId('ring-preview').getAttribute('data-opal-rotation')).toBe('35')
+
+    const consultationHref = screen
+      .getByRole('link', { name: /Request my design consultation/i })
+      .getAttribute('href')
+    const consultationParams = new URL(consultationHref!, window.location.origin).searchParams
+    expect(JSON.parse(consultationParams.get('design') ?? '{}')).toMatchObject({
+      opalPositionX: 0.2,
+      opalScale: 1.4,
+      opalRotation: 35,
+    })
   })
 
   test('searches a large live catalogue and renders it progressively', async () => {

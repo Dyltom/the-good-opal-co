@@ -26,4 +26,10 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('<Environment resolution={256}>')
     expect(sceneSource).toContain('<ContactShadows')
   })
+
+  test('applies customer crop placement to the photographed opal texture', () => {
+    expect(sceneSource).toContain('applyPhotoPlacement(crop, config)')
+    expect(sceneSource).toContain('nextTexture.rotation = (-config.opalRotation * Math.PI) / 180')
+    expect(sceneSource).toContain('nextTexture.center.set(0.5, 0.5)')
+  })
 })

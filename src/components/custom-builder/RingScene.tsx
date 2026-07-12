@@ -26,7 +26,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three'
-import { computePhotoCrop } from '@/lib/custom-builder/photo-crop'
+import { applyPhotoPlacement, computePhotoCrop } from '@/lib/custom-builder/photo-crop'
 import {
   getHaloSupportGeometry,
   ringStyleGeometryProfiles,
@@ -374,13 +374,26 @@ function OpalCabochon({
     nextTexture.magFilter = LinearFilter
     if (crop) {
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
-      const cropRect = computePhotoCrop(image?.width ?? 1, image?.height ?? 1, width / height, crop)
+      const cropRect = computePhotoCrop(
+        image?.width ?? 1,
+        image?.height ?? 1,
+        width / height,
+        applyPhotoPlacement(crop, config)
+      )
       nextTexture.repeat.set(cropRect.width, cropRect.height)
       nextTexture.offset.set(cropRect.left, 1 - cropRect.top - cropRect.height)
+      nextTexture.center.set(0.5, 0.5)
+      nextTexture.rotation = (-config.opalRotation * Math.PI) / 180
     }
     nextTexture.needsUpdate = true
     return nextTexture
-  }, [height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
+  }, [
+    config,
+    height,
+    selectedOpal?.visual.textureCrop,
+    sourcePhoto,
+    width,
+  ])
 
   useEffect(() => () => texture.dispose(), [texture])
   useEffect(() => () => photoTexture.dispose(), [photoTexture])

@@ -4,6 +4,13 @@ export interface PhotoCropFocus {
   zoom: number
 }
 
+export interface PhotoPlacementAdjustment {
+  opalPositionX: number
+  opalPositionY: number
+  opalScale: number
+  opalRotation: number
+}
+
 export interface NormalizedPhotoCrop {
   height: number
   left: number
@@ -13,6 +20,19 @@ export interface NormalizedPhotoCrop {
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value))
+}
+
+export function applyPhotoPlacement(
+  crop: PhotoCropFocus,
+  placement?: PhotoPlacementAdjustment
+): PhotoCropFocus {
+  if (!placement) return crop
+
+  return {
+    focalX: clamp(crop.focalX + placement.opalPositionX, 0, 1),
+    focalY: clamp(crop.focalY + placement.opalPositionY, 0, 1),
+    zoom: clamp(crop.zoom * placement.opalScale, 1, 12),
+  }
 }
 
 /**

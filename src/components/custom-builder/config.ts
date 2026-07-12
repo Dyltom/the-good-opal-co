@@ -23,9 +23,34 @@ export const ringConfigSchema = z.object({
   band: z.enum(bandIds),
   size: z.number().min(4).max(13),
   opalId: z.string().trim().max(30).optional(),
+  opalPositionX: z.number().min(-0.45).max(0.45),
+  opalPositionY: z.number().min(-0.45).max(0.45),
+  opalScale: z.number().min(0.75).max(2.25),
+  opalRotation: z.number().min(-180).max(180),
 })
 
 export type RingConfig = z.infer<typeof ringConfigSchema>
+
+export type OpalPlacement = Pick<
+  RingConfig,
+  'opalPositionX' | 'opalPositionY' | 'opalScale' | 'opalRotation'
+>
+
+export const defaultOpalPlacement: OpalPlacement = {
+  opalPositionX: 0,
+  opalPositionY: 0,
+  opalScale: 1,
+  opalRotation: 0,
+}
+
+export function opalPlacementFromConfig(config: RingConfig): OpalPlacement {
+  return {
+    opalPositionX: config.opalPositionX,
+    opalPositionY: config.opalPositionY,
+    opalScale: config.opalScale,
+    opalRotation: config.opalRotation,
+  }
+}
 
 export interface BuilderOpal {
   id: string
@@ -252,6 +277,7 @@ export const defaultRingConfig: RingConfig = {
   setting: 'bezel',
   band: 'classic',
   size: 7,
+  ...defaultOpalPlacement,
 }
 
 export function applyRingStyle(config: RingConfig, styleId: RingConfig['style']): RingConfig {
@@ -310,6 +336,10 @@ const queryKeys: Record<keyof RingConfig, string> = {
   band: 'b',
   size: 'z',
   opalId: 'p',
+  opalPositionX: 'px',
+  opalPositionY: 'py',
+  opalScale: 'ps',
+  opalRotation: 'pr',
 }
 
 export function ringConfigToSearchParams(config: RingConfig): URLSearchParams {
@@ -322,6 +352,13 @@ export function ringConfigToSearchParams(config: RingConfig): URLSearchParams {
   params.set(queryKeys.band, config.band)
   params.set(queryKeys.size, String(config.size))
   if (config.opalId) params.set(queryKeys.opalId, config.opalId)
+  if (config.opalPositionX !== 0)
+    params.set(queryKeys.opalPositionX, String(config.opalPositionX))
+  if (config.opalPositionY !== 0)
+    params.set(queryKeys.opalPositionY, String(config.opalPositionY))
+  if (config.opalScale !== 1) params.set(queryKeys.opalScale, String(config.opalScale))
+  if (config.opalRotation !== 0)
+    params.set(queryKeys.opalRotation, String(config.opalRotation))
   return params
 }
 
@@ -337,6 +374,14 @@ export function ringConfigFromRecord(values: Record<string, string | undefined>)
     band: style.band,
     size: Number(values[queryKeys.size] ?? defaultRingConfig.size),
     opalId: values[queryKeys.opalId],
+    opalPositionX: Number(
+      values[queryKeys.opalPositionX] ?? defaultRingConfig.opalPositionX
+    ),
+    opalPositionY: Number(
+      values[queryKeys.opalPositionY] ?? defaultRingConfig.opalPositionY
+    ),
+    opalScale: Number(values[queryKeys.opalScale] ?? defaultRingConfig.opalScale),
+    opalRotation: Number(values[queryKeys.opalRotation] ?? defaultRingConfig.opalRotation),
   }
   const parsed = ringConfigSchema.safeParse(candidate)
   return parsed.success ? parsed.data : defaultRingConfig

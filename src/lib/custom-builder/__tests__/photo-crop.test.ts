@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { computePhotoCrop } from '../photo-crop'
+import { applyPhotoPlacement, computePhotoCrop } from '../photo-crop'
 
 describe('custom builder photo crops', () => {
   test.each([
@@ -28,5 +28,32 @@ describe('custom builder photo crops', () => {
       width: 1,
       height: 1,
     })
+  })
+
+  test('applies customer placement without allowing the source focus outside the image', () => {
+    const adjusted = applyPhotoPlacement(
+      { focalX: 0.5, focalY: 0.5, zoom: 3 },
+      {
+        opalPositionX: 0.2,
+        opalPositionY: -0.15,
+        opalScale: 1.4,
+        opalRotation: 30,
+      }
+    )
+    expect(adjusted.focalX).toBeCloseTo(0.7)
+    expect(adjusted.focalY).toBeCloseTo(0.35)
+    expect(adjusted.zoom).toBeCloseTo(4.2)
+
+    expect(
+      applyPhotoPlacement(
+        { focalX: 0.9, focalY: 0.1, zoom: 8 },
+        {
+          opalPositionX: 0.45,
+          opalPositionY: -0.45,
+          opalScale: 2.25,
+          opalRotation: 0,
+        }
+      )
+    ).toEqual({ focalX: 1, focalY: 0, zoom: 12 })
   })
 })
