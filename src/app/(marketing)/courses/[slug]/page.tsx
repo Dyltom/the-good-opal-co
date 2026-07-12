@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   const title = course.meta?.title?.trim() || `${course.title} | ${APP_NAME}`
   const description = course.meta?.description?.trim() || course.summary
   const image = mediaObject(course.meta?.image) || mediaObject(course.featuredImage)
-  const imageUrl = resolveMediaUrl(image?.url)
+  const imageUrl = resolveMediaUrl(image?.url) || `${APP_URL}/images/about-hero.jpg`
   const canonical = new URL(`/courses/${encodeURIComponent(course.slug)}`, APP_URL).toString()
   return {
     title,
@@ -56,7 +56,13 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
       description,
       url: canonical,
       siteName: APP_NAME,
-      images: imageUrl ? [{ url: imageUrl, alt: image?.alt || course.title }] : undefined,
+      images: [{ url: imageUrl, alt: image?.alt || course.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
     },
   }
 }

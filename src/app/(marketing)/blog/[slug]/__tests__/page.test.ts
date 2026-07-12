@@ -74,6 +74,7 @@ describe('blog post metadata', () => {
       publishedTime: '2025-04-10T00:00:00.000Z',
       modifiedTime: '2025-04-12T00:00:00.000Z',
     })
+    expect(metadata.twitter).toMatchObject({ card: 'summary_large_image' })
     expect(metadata.authors).toEqual([{ name: 'Stephanie Caruana' }])
     expect(find).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -86,6 +87,17 @@ describe('blog post metadata', () => {
         },
       })
     )
+  })
+
+  it('uses the default social image when the post has no populated image', async () => {
+    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'opal-care' }) })
+
+    expect(metadata.openGraph).toMatchObject({
+      images: [expect.objectContaining({ url: expect.stringContaining('/images/about-hero.jpg') })],
+    })
+    expect(metadata.twitter).toMatchObject({
+      images: [expect.stringContaining('/images/about-hero.jpg')],
+    })
   })
 
   test('prevents indexing when no published post matches', async () => {

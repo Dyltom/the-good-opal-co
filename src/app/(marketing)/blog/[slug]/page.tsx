@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     'Practical guidance about Australian opals, jewellery, buying, and care.'
   const canonical = new URL(`/blog/${encodeURIComponent(post.slug)}`, APP_URL).toString()
   const socialImage = populatedMedia(post.seo?.ogImage) || populatedMedia(post.featuredImage)
-  const imageUrl = resolveMediaUrl(socialImage?.url)
+  const imageUrl = resolveMediaUrl(socialImage?.url) || `${APP_URL}/images/about-hero.jpg`
   const author = populatedAuthor(post.author)
 
   return {
@@ -91,13 +91,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       publishedTime: post.publishedAt ?? undefined,
       modifiedTime: post.updatedAt,
       authors: author ? [author.name] : undefined,
-      images: imageUrl ? [{ url: imageUrl, alt: socialImage?.alt || post.title }] : undefined,
+      images: [{ url: imageUrl, alt: socialImage?.alt || post.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: imageUrl ? [imageUrl] : undefined,
+      images: [imageUrl],
     },
   }
 }
