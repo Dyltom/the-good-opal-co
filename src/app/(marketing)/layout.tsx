@@ -4,7 +4,8 @@ import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
-import { APP_DESCRIPTION, APP_NAME, APP_URL } from '@/lib/constants'
+import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE } from '@/lib/constants'
+import { getTextDirection } from '@/lib/i18n'
 
 // Self-hosted via next/font — no external CDN request, optimal loading
 const merriweather = Merriweather({
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: APP_NAME,
     type: 'website',
-    locale: 'en_AU',
+    locale: DEFAULT_LOCALE.replace('-', '_'),
   },
   twitter: {
     card: 'summary_large_image',
@@ -68,7 +69,8 @@ export default function MarketingLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang={DEFAULT_LOCALE}
+      dir={getTextDirection(DEFAULT_LOCALE)}
       className={`${merriweather.variable} ${ebGaramond.variable} ${dancingScript.variable}`}
     >
       <head>

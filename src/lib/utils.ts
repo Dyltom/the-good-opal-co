@@ -5,6 +5,7 @@
 
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { DEFAULT_CURRENCY, DEFAULT_LOCALE } from '@/lib/constants'
 
 /**
  * Merge Tailwind CSS classes with proper precedence
@@ -18,10 +19,10 @@ export function cn(...inputs: ClassValue[]): string {
 /**
  * Format a number with locale-specific separators
  * @param value - Number to format
- * @param locale - Locale string (default: 'en-US')
+ * @param locale - Locale string (default: 'en-AU')
  * @returns Formatted number string
  */
-export function formatNumber(value: number, locale: string = 'en-US'): string {
+export function formatNumber(value: number, locale: string = DEFAULT_LOCALE): string {
   return new Intl.NumberFormat(locale).format(value)
 }
 
@@ -35,7 +36,7 @@ export function formatNumber(value: number, locale: string = 'en-US'): string {
 export function formatDate(
   date: Date | string | number,
   options: Intl.DateTimeFormatOptions = {},
-  locale: string = 'en-AU'
+  locale: string = DEFAULT_LOCALE
 ): string {
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
 
@@ -54,7 +55,7 @@ export function formatDate(
  */
 export function formatRelativeTime(
   date: Date | string | number,
-  locale: string = 'en-AU'
+  locale: string = DEFAULT_LOCALE
 ): string {
   const dateObj = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
 
@@ -85,12 +86,18 @@ export function formatRelativeTime(
 /**
  * Format price in AUD cents to display string
  * @param cents - Price in cents (integer)
+ * @param locale - Locale used for display separators and symbol placement
+ * @param currency - ISO 4217 transaction currency (default: AUD)
  * @returns Formatted price string (e.g., "$45.99")
  */
-export function formatPrice(cents: number): string {
-  return new Intl.NumberFormat('en-AU', {
+export function formatPrice(
+  cents: number,
+  locale: string = DEFAULT_LOCALE,
+  currency: string = DEFAULT_CURRENCY
+): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'AUD',
+    currency,
   }).format(cents / 100)
 }
 
@@ -98,10 +105,15 @@ export function formatPrice(cents: number): string {
  * Format currency value
  * @param amount - Amount in dollars
  * @param currency - Currency code (default: AUD)
+ * @param locale - Locale used for display separators and symbol placement
  * @returns Formatted currency string
  */
-export function formatCurrency(amount: number, currency = 'AUD'): string {
-  return new Intl.NumberFormat('en-AU', {
+export function formatCurrency(
+  amount: number,
+  currency: string = DEFAULT_CURRENCY,
+  locale: string = DEFAULT_LOCALE
+): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
   }).format(amount)

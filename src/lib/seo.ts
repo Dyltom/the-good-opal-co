@@ -6,6 +6,7 @@
 import type { Metadata } from 'next'
 import type { SEO } from '@/types'
 import { APP_NAME, APP_URL, DEFAULT_SEO } from './constants'
+import { getLanguageAlternates } from './i18n'
 
 /**
  * Generate Next.js metadata object
@@ -38,6 +39,7 @@ export function generateMetadata(seo?: SEO, path?: string): Metadata {
     },
     alternates: {
       canonical: url,
+      languages: getLanguageAlternates(path ?? '/'),
     },
     openGraph: {
       title: title || DEFAULT_SEO.defaultTitle,
