@@ -15,6 +15,9 @@ run('pnpm', ['payload', 'generate:importmap'])
 const vercelEnvironment = process.env.VERCEL_ENV
 
 if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
+  if (vercelEnvironment === 'production') {
+    run('node', ['scripts/reconcile-production-migration-ledger.mjs'])
+  }
   run('pnpm', ['payload', 'migrate'])
   if (vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
     if (!process.env.WOO_IMPORT_RUN_ID?.trim()) {

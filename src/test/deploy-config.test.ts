@@ -123,6 +123,9 @@ describe('deployment config', () => {
     expect(config.buildCommand).toBe('node scripts/vercel-build.mjs')
     expect(buildScript).toContain("vercelEnvironment === 'production'")
     expect(buildScript).toContain("vercelEnvironment === 'preview'")
+    expect(buildScript).toContain(
+      "run('node', ['scripts/reconcile-production-migration-ledger.mjs'])"
+    )
     expect(buildScript).toContain("run('pnpm', ['payload', 'migrate'])")
     expect(buildScript).toContain(
       "vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true'"

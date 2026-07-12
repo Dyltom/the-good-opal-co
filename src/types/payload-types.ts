@@ -823,7 +823,7 @@ export interface Enquiry {
   createdAt: string;
 }
 /**
- * Public course outlines and interest-enquiry status. No lessons or payments are managed here.
+ * Public course and lesson outlines plus interest-enquiry status. Lesson bodies, enrolments, and payments are not managed here.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "courses".
@@ -860,7 +860,7 @@ export interface Course {
     title: string;
     summary: string;
     /**
-     * One public topic per line
+     * Start each lesson with ## Lesson title, then add one public step per line. Do not paste private lesson content here.
      */
     topics?: string | null;
     id?: string | null;

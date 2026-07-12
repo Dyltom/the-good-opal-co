@@ -53,6 +53,8 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID
 
 `vercel.json` delegates to `scripts/vercel-build.mjs`. Production builds run committed Payload migrations before `next build`; Preview and Development builds never run migrations. Every environment still needs an isolated database because the running application can write through Payload. Do not run concurrent production deployments. Use a preview database, verify the artifact, then schedule the production deployment.
 
+The original production database was created by Payload development schema sync and contains a legacy `dev` migration marker. Before the first migrated Production build, `scripts/reconcile-production-migration-ledger.mjs` verifies that exact historical schema, transactionally replaces the marker with the five migrations already represented by the database, and then allows Payload to apply the remaining migrations. It is a no-op once durable migration history exists and refuses any unrecognized schema.
+
 For later schema changes:
 
 ```bash
