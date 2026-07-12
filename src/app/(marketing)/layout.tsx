@@ -36,13 +36,38 @@ export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   applicationName: APP_NAME,
   description: APP_DESCRIPTION,
+  alternates: {
+    types: {
+      'application/rss+xml': `${APP_URL}/feed.xml`,
+    },
+  },
   openGraph: {
     siteName: APP_NAME,
     type: 'website',
     locale: DEFAULT_LOCALE.replace('-', '_'),
+    images: [
+      {
+        url: `${APP_URL}/images/about-hero.jpg`,
+        width: 1200,
+        height: 900,
+        alt: 'Australian opals selected by The Good Opal Co',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
+    images: [`${APP_URL}/images/about-hero.jpg`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
   },
 }
 

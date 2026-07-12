@@ -5,9 +5,10 @@
  * Blocks admin, checkout, and API routes from indexing.
  */
 
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from 'next'
+import { APP_URL } from '@/lib/constants'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://thegoodopalco.com'
+const BASE_URL = APP_URL
 
 export default function robots(): MetadataRoute.Robots {
   return {

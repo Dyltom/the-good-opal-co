@@ -161,6 +161,15 @@ describe('deployment config', () => {
     expect(purchaseConversion).toContain('trackPurchase(')
   })
 
+  test('global discovery metadata exposes rich previews and the editorial feed', () => {
+    const layout = read('src/app/(marketing)/layout.tsx')
+
+    expect(layout).toContain("'application/rss+xml': `${APP_URL}/feed.xml`")
+    expect(layout).toContain("url: `${APP_URL}/images/about-hero.jpg`")
+    expect(layout).toContain("'max-image-preview': 'large'")
+    expect(layout).toContain("'max-snippet': -1")
+  })
+
   test('Payload admin uses the generated import map without a shadowing TypeScript stub', () => {
     const importMap = read('src/app/(payload)/admin/importMap.js')
 
