@@ -12,6 +12,7 @@ import {
 } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import {
+  ACESFilmicToneMapping,
   AdditiveBlending,
   BufferGeometry,
   CanvasTexture,
@@ -20,6 +21,7 @@ import {
   Color,
   Float32BufferAttribute,
   LinearFilter,
+  PCFShadowMap,
   RepeatWrapping,
   SRGBColorSpace,
   Vector3,
@@ -109,7 +111,7 @@ function CameraPreset({ target, view }: { target: CameraVector; view: RingView }
 
 function MetalMaterial({
   metal,
-  roughness = 0.2,
+  roughness = 0.22,
 }: {
   metal: RingConfig['metal']
   roughness?: number
@@ -118,17 +120,17 @@ function MetalMaterial({
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
-      metalness={isSterlingSilver ? 0.9 : 0.98}
-      roughness={isSterlingSilver ? Math.max(0.32, roughness) : roughness}
-      clearcoat={isSterlingSilver ? 0.08 : 0.26}
-      clearcoatRoughness={isSterlingSilver ? 0.26 : 0.16}
-      envMapIntensity={1.2}
+      metalness={1}
+      roughness={isSterlingSilver ? Math.max(0.27, roughness) : roughness}
+      clearcoat={0.08}
+      clearcoatRoughness={0.3}
+      envMapIntensity={1.65}
     />
   )
 }
 
 function PatinaMaterial() {
-  return <meshStandardMaterial color="#454641" metalness={0.65} roughness={0.55} />
+  return <meshStandardMaterial color="#2c2d29" metalness={0.72} roughness={0.62} />
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -509,6 +511,81 @@ function createBezelWallGeometry(
   return geometry
 }
 
+function createSettingBaseGeometry(
+  shape: RingConfig['shape'],
+  width: number,
+  height: number,
+  offset: number,
+  bottomZ: number,
+  topZ: number
+): BufferGeometry {
+  const geometry = new BufferGeometry()
+  const segments = 96
+  const positions: number[] = [0, 0, bottomZ, 0, 0, topZ]
+  const indices: number[] = []
+
+  for (let segment = 0; segment < segments; segment += 1) {
+    const angle = (segment / segments) * Math.PI * 2
+    const [x, y] = outlinePoint(shape, angle, width, height, offset)
+    positions.push(x, y, bottomZ, x, y, topZ)
+  }
+
+  for (let segment = 0; segment < segments; segment += 1) {
+    const next = (segment + 1) % segments
+    const bottom = 2 + segment * 2
+    const top = bottom + 1
+    const nextBottom = 2 + next * 2
+    const nextTop = nextBottom + 1
+    indices.push(
+      0,
+      nextBottom,
+      bottom,
+      1,
+      top,
+      nextTop,
+      bottom,
+      nextBottom,
+      nextTop,
+      bottom,
+      nextTop,
+      top
+    )
+  }
+
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
+function SettingBase({
+  config,
+  dimensions,
+  bottomZ,
+  offset,
+  topZ,
+}: {
+  config: RingConfig
+  dimensions: StoneDimensions
+  bottomZ: number
+  offset: number
+  topZ: number
+}) {
+  const [width, height] = dimensions
+  const geometry = useMemo(
+    () => createSettingBaseGeometry(config.shape, width, height, offset, bottomZ, topZ),
+    [bottomZ, config.shape, height, offset, topZ, width]
+  )
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  return (
+    <mesh castShadow geometry={geometry} receiveShadow>
+      <MetalMaterial metal={config.metal} roughness={0.34} />
+    </mesh>
+  )
+}
+
 function BezelWall({
   config,
   dimensions,
@@ -534,7 +611,7 @@ function BezelWall({
   useEffect(() => () => geometry.dispose(), [geometry])
 
   return (
-    <mesh geometry={geometry}>
+    <mesh castShadow geometry={geometry} receiveShadow>
       {finish === 'patina' ? (
         <PatinaMaterial />
       ) : (
@@ -579,7 +656,7 @@ function StoneOutline({
   )
 
   return (
-    <mesh>
+    <mesh castShadow receiveShadow>
       <tubeGeometry args={[curve, 96, radius, 14, true]} />
       {finish === 'patina' ? (
         <PatinaMaterial />
@@ -601,6 +678,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   )
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025
+  const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
   const haloSupport = getHaloSupportGeometry(profile)
   const beadCount = profile.beadCount
   const beads = useMemo(
@@ -610,6 +688,13 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
 
   return (
     <group>
+      <SettingBase
+        config={config}
+        dimensions={dimensions}
+        bottomZ={bezelBottom - 0.028}
+        offset={outerBezelOffset}
+        topZ={bezelBottom + 0.004}
+      />
       <BezelWall
         config={config}
         dimensions={dimensions}
@@ -621,11 +706,19 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       <StoneOutline
         config={config}
         dimensions={dimensions}
-        offset={Math.max(0.004, profile.bezelLipOffset - profile.bezelLipRadius * 0.55)}
-        radius={Math.max(0.005, profile.bezelLipRadius * 0.42)}
-        z={0.043}
+        offset={profile.bezelLipOffset}
+        radius={profile.bezelLipRadius}
+        z={bezelTop - profile.bezelLipRadius * 0.18}
+        edgeVariation={0.0012}
+      />
+      <StoneOutline
+        config={config}
+        dimensions={dimensions}
+        offset={0.003}
+        radius={0.0045}
+        z={bezelTop + 0.001}
         finish="patina"
-        edgeVariation={0.0015}
+        edgeVariation={0.001}
       />
 
       {config.setting === 'beaded' && (
@@ -679,6 +772,7 @@ function RingShank({
   shoulderDepth,
   tubeRadius,
   tubeDepth,
+  style,
 }: {
   metal: RingConfig['metal']
   radius: number
@@ -688,13 +782,15 @@ function RingShank({
   shoulderDepth: number
   tubeRadius: number
   tubeDepth: number
+  style: RingConfig['style']
 }) {
   const curve = useMemo(() => {
     // Let the shoulder surface overlap the bezel's outer wall at its base. The
     // earlier centreline ended inside the stone width, leaving a cathedral-like
     // air gap instead of the low solder join visible on the sold rings.
-    const joinX = settingHalfWidth - shoulderDepth * 0.4
-    const joinY = settingBaseY + shoulderDepth * 0.35
+    const isGemini = style === 'gemini'
+    const joinX = settingHalfWidth - shoulderDepth * (isGemini ? 0.12 : 0.4)
+    const joinY = settingBaseY + shoulderDepth * (isGemini ? 0.18 : 0.35)
     const ringPoints = Array.from({ length: 97 }, (_, index) => {
       const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
       return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
@@ -702,15 +798,15 @@ function RingShank({
     return new CatmullRomCurve3(
       [
         new Vector3(-joinX, joinY, 0),
-        new Vector3(-joinX - 0.03, settingBaseY - 0.045, 0),
+        new Vector3(-joinX - (isGemini ? 0.075 : 0.03), settingBaseY - 0.04, 0),
         ...ringPoints,
-        new Vector3(joinX + 0.03, settingBaseY - 0.045, 0),
+        new Vector3(joinX + (isGemini ? 0.075 : 0.03), settingBaseY - 0.04, 0),
         new Vector3(joinX, joinY, 0),
       ],
       false,
       'centripetal'
     )
-  }, [radius, settingBaseY, settingHalfWidth, shoulderDepth])
+  }, [radius, settingBaseY, settingHalfWidth, shoulderDepth, style])
   const geometry = useMemo(() => {
     const tubularSegments = 160
     const radialSegments = 16
@@ -723,16 +819,24 @@ function RingShank({
       const tangent = curve.getTangentAt(progress).normalize()
       const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
       const shoulderDistance = Math.min(progress, 1 - progress)
-      const shoulderBlend = Math.min(1, shoulderDistance / 0.14)
+      const shoulderBlend = Math.min(1, shoulderDistance / (style === 'gemini' ? 0.2 : 0.14))
       const localHalfWidth = shoulderRadius + (tubeRadius - shoulderRadius) * shoulderBlend
       const localHalfDepth = shoulderDepth + (tubeDepth - shoulderDepth) * shoulderBlend
 
       for (let side = 0; side < radialSegments; side += 1) {
         const angle = (side / radialSegments) * Math.PI * 2
+        // A softly squared superellipse matches the forged, low-profile band
+        // in the Gemini reference. It also gives metals broad highlight planes
+        // instead of the plastic-looking highlight produced by a round tube.
+        const cosine = Math.cos(angle)
+        const sine = Math.sin(angle)
+        const crossSectionPower = style === 'gemini' ? 0.58 : 0.72
+        const acrossBand = Math.sign(cosine) * Math.pow(Math.abs(cosine), crossSectionPower)
+        const throughBand = Math.sign(sine) * Math.pow(Math.abs(sine), crossSectionPower)
         positions.push(
-          point.x + inPlaneNormal.x * Math.cos(angle) * localHalfDepth,
-          point.y + inPlaneNormal.y * Math.cos(angle) * localHalfDepth,
-          point.z + Math.sin(angle) * localHalfWidth
+          point.x + inPlaneNormal.x * acrossBand * localHalfDepth,
+          point.y + inPlaneNormal.y * acrossBand * localHalfDepth,
+          point.z + throughBand * localHalfWidth
         )
       }
     }
@@ -759,13 +863,13 @@ function RingShank({
     nextGeometry.computeVertexNormals()
     nextGeometry.computeBoundingSphere()
     return nextGeometry
-  }, [curve, shoulderDepth, shoulderRadius, tubeDepth, tubeRadius])
+  }, [curve, shoulderDepth, shoulderRadius, style, tubeDepth, tubeRadius])
 
   useEffect(() => () => geometry.dispose(), [geometry])
 
   return (
-    <mesh geometry={geometry}>
-      <MetalMaterial metal={metal} roughness={0.25} />
+    <mesh castShadow geometry={geometry} receiveShadow>
+      <MetalMaterial metal={metal} roughness={style === 'gemini' ? 0.31 : 0.25} />
     </mesh>
   )
 }
@@ -793,6 +897,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         shoulderRadius={styleProfile.shoulderRadius}
         tubeDepth={styleProfile.shankDepth}
         tubeRadius={styleProfile.shankRadius}
+        style={config.style}
       />
 
       <group position={[0, settingY, 0]} rotation={[settingRotationX, 0, 0]}>
@@ -809,7 +914,7 @@ export function RingScene({
   selectedOpal,
   view,
 }: RingSceneProps) {
-  const background = useMemo(() => new Color('#151512'), [])
+  const background = useMemo(() => new Color('#11110f'), [])
   const measurements = getRingMeasurements(config)
   const framingTarget = useMemo(
     () => getRingFramingTarget(config, selectedOpal),
@@ -821,47 +926,67 @@ export function RingScene({
       camera={{ position: cameraPositions[view], up: cameraUpVectors[view], fov: 32 }}
       dpr={[1, 2]}
       frameloop={allowMotion ? 'always' : 'demand'}
-      gl={{ antialias: true, alpha: false }}
+      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      shadows
       scene={{ background }}
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace
+        gl.toneMapping = ACESFilmicToneMapping
+        gl.toneMappingExposure = 1.08
+        gl.shadowMap.type = PCFShadowMap
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >
-      <ambientLight intensity={0.82} />
-      <directionalLight position={[4, 5, 6]} intensity={2.5} color="#fffaf0" />
-      <directionalLight position={[-4, 1, 3]} intensity={1.5} color="#eef4f2" />
-      <pointLight position={[0, -2, 3]} intensity={0.8} color="#fff7eb" />
+      <ambientLight intensity={0.34} />
+      <directionalLight
+        castShadow
+        position={[4.5, 5.5, 5]}
+        intensity={3.1}
+        color="#fff7e8"
+        shadow-bias={-0.00015}
+        shadow-mapSize-height={1024}
+        shadow-mapSize-width={1024}
+      />
+      <directionalLight position={[-4, 2, 3]} intensity={1.35} color="#e5f1f2" />
+      <pointLight position={[0, -2, 3]} intensity={0.42} color="#fff1de" />
 
       <CameraPreset target={framingTarget} view={view} />
 
       <RingModel config={config} selectedOpal={selectedOpal} />
 
-      <Environment resolution={128}>
-        <Lightformer form="rect" intensity={4} position={[0, 4, -4]} scale={[5, 1.2, 1]} />
+      <Environment resolution={256}>
+        <Lightformer form="rect" intensity={5.5} position={[0, 4, -4]} scale={[5, 1.1, 1]} />
         <Lightformer
           form="rect"
-          intensity={2.5}
+          intensity={3.4}
           color="#eef4f2"
           position={[-4, 1, 2]}
           rotation={[0, Math.PI / 2, 0]}
-          scale={[3, 1, 1]}
+          scale={[3.5, 0.75, 1]}
         />
         <Lightformer
           form="rect"
-          intensity={2}
+          intensity={2.4}
           color="#fff2df"
           position={[4, -1, 1]}
           rotation={[0, -Math.PI / 2, 0]}
-          scale={[2, 1, 1]}
+          scale={[2.5, 0.65, 1]}
+        />
+        <Lightformer
+          form="ring"
+          intensity={1.5}
+          color="#fffaf2"
+          position={[0, -3, 2]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={2.4}
         />
       </Environment>
 
       <ContactShadows
         position={[0, -measurements.outerRadius - 0.08, 0]}
-        opacity={0.34}
+        opacity={0.46}
         scale={4}
-        blur={2.6}
+        blur={2.15}
         far={4}
       />
       <OrbitControls
