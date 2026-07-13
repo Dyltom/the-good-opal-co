@@ -118,6 +118,20 @@ describe('custom ring geometry contract', () => {
     expect(projectedDepth['three-quarter']).toBeLessThan(0.9)
   })
 
+  test('shows the setting long axis in profile instead of looking into its end', () => {
+    const target = getRingFramingTarget(defaultRingConfig)
+    const longStoneAxis = rotateSettingVectorToWorld([0, 1, 0])
+    const projection = projectWorldAxisToView(
+      longStoneAxis,
+      cameraPositions.profile,
+      target,
+      cameraUpVectors.profile
+    )
+
+    expect(Math.abs(projection.depth)).toBeLessThan(0.01)
+    expect(Math.abs(projection.horizontal)).toBeGreaterThan(0.99)
+  })
+
   test('scales portrait cameras without changing the selected view direction ratios', () => {
     expect(getPortraitFramingScale(1200, 800)).toBe(1)
     expect(getPortraitFramingScale(390, 844)).toBe(1.7)

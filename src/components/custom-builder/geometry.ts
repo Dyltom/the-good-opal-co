@@ -44,7 +44,9 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
   'three-quarter': [3.4, 5.2, 3.2],
   front: [0, 5.8, 0],
-  profile: [0, 0.8, 5.8],
+  // Look across the band, not into the tip of the setting's long axis. The old
+  // end-on view hid pear and elongated crowns behind their bezel or halo.
+  profile: [5.8, 0.8, 0],
 }
 
 export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
