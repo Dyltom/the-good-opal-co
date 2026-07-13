@@ -303,11 +303,32 @@ describe('builder mapping processor', () => {
       data: {
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderMappingAnalysisError:
-          'Automatic crop mapping skipped for a multi-stone or specimen listing',
+          'Automatic crop mapping skipped for a non-individual or non-opal listing',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
       },
       overrideAccess: true,
     })
+  })
+
+  test('does not analyze a legacy non-opal service filed in the raw-opal category', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/deposit.jpg' } }],
+          name: 'Custom Jewellery Deposit',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({
+      analyzed: 0,
+      failed: 0,
+      nonIndividual: 1,
+    })
+    expect(mocks.sharp).not.toHaveBeenCalled()
   })
 })

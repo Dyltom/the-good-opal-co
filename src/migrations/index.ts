@@ -30,6 +30,7 @@ import * as migration_20260712_161000_stone_only_crop_alignment from './20260712
 import * as migration_20260712_162000_heart_stone_only_crop from './20260712_162000_heart_stone_only_crop'
 import * as migration_20260713_180000_builder_photo_analysis from './20260713_180000_builder_photo_analysis'
 import * as migration_20260714_090000_preserve_reviewed_builder_mappings from './20260714_090000_preserve_reviewed_builder_mappings'
+import * as migration_20260714_093000_audited_opal_photo_mapping from './20260714_093000_audited_opal_photo_mapping'
 
 export const migrations = [
   {
@@ -191,5 +192,10 @@ export const migrations = [
     up: migration_20260714_090000_preserve_reviewed_builder_mappings.up,
     down: migration_20260714_090000_preserve_reviewed_builder_mappings.down,
     name: '20260714_090000_preserve_reviewed_builder_mappings',
+  },
+  {
+    up: migration_20260714_093000_audited_opal_photo_mapping.up,
+    down: migration_20260714_093000_audited_opal_photo_mapping.down,
+    name: '20260714_093000_audited_opal_photo_mapping',
   },
 ]

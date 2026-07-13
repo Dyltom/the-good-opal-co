@@ -43,6 +43,7 @@ export function isAvailableOpalListing(name: string): boolean {
 }
 
 export function classifyOpalListing(name: string): BuilderOpalSelectionKind {
+  if (/^queensland boulder opal 20 cts$/i.test(name.trim())) return 'specimen'
   if (/\bspecimen\b/i.test(name)) return 'specimen'
   if (/\bparcel\b/i.test(name)) return 'parcel'
   if (/\b(calibrated|priced individually)\b/i.test(name)) return 'assortment'
@@ -160,7 +161,7 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 1.3,
     evidence: 'catalogue',
     recommendedStyle: 'aurora',
-    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 1.45 },
+    textureCrop: { focalX: 0.452, focalY: 0.537, zoom: 3.2 },
     photoFit: 'estimated',
   },
   'lightning-ridge-black-opal-1-45-cts': {
@@ -168,7 +169,7 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 2.25,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.51, focalY: 0.55, zoom: 3.1 },
+    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 4.75 },
     photoFit: 'estimated',
   },
   'lightning-ridge-semi-black-opal-1-40-cts': {
@@ -176,7 +177,7 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 1.5,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.49, focalY: 0.44, zoom: 3.2 },
+    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 4.75 },
     photoFit: 'estimated',
   },
   'lightning-ridge-semi-black-opal-5-50-cts': {
@@ -184,15 +185,15 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 1.75,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.52, focalY: 0.5, zoom: 2.8 },
+    textureCrop: { focalX: 0.526, focalY: 0.584, zoom: 3.91 },
     photoFit: 'estimated',
   },
   'coober-pedy-white-opal-6-35-cts': {
-    silhouette: 'elongated',
-    aspectRatio: 1.55,
+    silhouette: 'oval',
+    aspectRatio: 1.3,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.49, focalY: 0.52, zoom: 1.55 },
+    textureCrop: { focalX: 0.5, focalY: 0.52, zoom: 3.35 },
     photoFit: 'estimated',
   },
   'queensland-boulder-opal-20-cts': {
@@ -208,23 +209,23 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 1.55,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.53, focalY: 0.51, zoom: 2.15 },
+    textureCrop: { focalX: 0.5, focalY: 0.53, zoom: 3.75 },
     photoFit: 'estimated',
   },
   'coober-pedy-white-opal-2-30-cts-copy': {
-    silhouette: 'pear',
+    silhouette: 'oval',
     aspectRatio: 1.2,
     evidence: 'catalogue',
-    recommendedStyle: 'aurora',
-    textureCrop: { focalX: 0.52, focalY: 0.5, zoom: 2.35 },
+    recommendedStyle: 'gemini',
+    textureCrop: { focalX: 0.372, focalY: 0.506, zoom: 6.12 },
     photoFit: 'estimated',
   },
   'lightning-ridge-white-opal-1-70-cts-2': {
-    silhouette: 'cushion',
-    aspectRatio: 1.2,
+    silhouette: 'pear',
+    aspectRatio: 13 / 8.5,
     evidence: 'catalogue',
-    recommendedStyle: 'coral',
-    textureCrop: { focalX: 0.53, focalY: 0.55, zoom: 2.25 },
+    recommendedStyle: 'aurora',
+    textureCrop: { focalX: 0.52, focalY: 0.5, zoom: 2.45 },
     photoFit: 'estimated',
   },
 }

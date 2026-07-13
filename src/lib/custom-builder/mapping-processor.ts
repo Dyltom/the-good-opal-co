@@ -4,7 +4,7 @@ import type { Product } from '@/types/payload-types'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { BUILDER_PHOTO_ANALYSIS_VERSION } from './mapping-lifecycle'
-import { classifyOpalListing } from './opal-visual'
+import { classifyOpalListing, isAvailableOpalListing } from './opal-visual'
 import { analyzeOpalRaster } from './photo-analysis'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
@@ -214,13 +214,16 @@ export async function processBuilderMappings(
         continue
       }
       const productName = typeof product.name === 'string' ? product.name : ''
-      if (classifyOpalListing(productName) !== 'individual') {
+      if (
+        !isAvailableOpalListing(productName) ||
+        classifyOpalListing(productName) !== 'individual'
+      ) {
         await updateProduct(payload, id, {
           builderMappingAnalyzedImageHash: imageHash,
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
           builderPhotoAnalysisConfidence: null,
           builderMappingAnalysisError:
-            'Automatic crop mapping skipped for a multi-stone or specimen listing',
+            'Automatic crop mapping skipped for a non-individual or non-opal listing',
         })
         summary.nonIndividual += 1
         continue

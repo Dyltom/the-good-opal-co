@@ -142,7 +142,6 @@ describe('custom builder opal visual profiles', () => {
     'lightning-ridge-semi-black-opal-1-40-cts',
     'lightning-ridge-semi-black-opal-5-50-cts',
     'coober-pedy-white-opal-6-35-cts',
-    'queensland-boulder-opal-20-cts',
     'mintabie-semi-black-opal-6-80-cts',
     'coober-pedy-white-opal-2-30-cts-copy',
     'lightning-ridge-white-opal-1-70-cts-2',
@@ -155,6 +154,17 @@ describe('custom builder opal visual profiles', () => {
       focalY: expect.any(Number),
       zoom: expect.any(Number),
     })
+  })
+
+  test('treats the rough Queensland 20 ct piece as a specimen, not a ring cabochon', () => {
+    expect(classifyOpalListing('Queensland Boulder Opal 20 cts')).toBe('specimen')
+    expect(
+      createOpalVisualProfile(
+        'queensland-boulder-opal-20-cts',
+        'Queensland Boulder Opal 20 cts',
+        'boulder-opal'
+      ).visual.textureCrop
+    ).toBeUndefined()
   })
 
   test('keeps multi-stone listings on a representative material render', () => {
@@ -188,7 +198,7 @@ describe('custom builder opal visual profiles', () => {
     )
 
     expect(profile.visual.photoFit).toBe('estimated')
-    expect(profile.visual.textureCrop).toEqual({ focalX: 0.52, focalY: 0.5, zoom: 3.2 })
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.372, focalY: 0.506, zoom: 6.12 })
   })
 
   test('keeps reviewed photo crops aligned with the complete stone face', () => {
