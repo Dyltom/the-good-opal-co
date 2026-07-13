@@ -81,6 +81,12 @@ describe('opal builder mapping lifecycle', () => {
     expect(first).toMatch(/^[0-9a-f]{16}$/)
     expect(same).toBe(first)
     expect(reordered).not.toBe(first)
+    expect(
+      createBuilderSourceImageHash([
+        { image: { id: 7, filename: 'opal.jpg', updatedAt: '2026-07-12' } },
+        { image: 'unrelated-new-gallery-image' },
+      ])
+    ).toBe(first)
   })
 
   test('tracks Payload focal-point changes as source-image changes', () => {
@@ -134,6 +140,22 @@ describe('opal builder mapping lifecycle', () => {
       builderPhotoFocalY: 0.43,
       builderSilhouette: 'elongated',
       dimensions: { depth: 2, length: 12, width: 6 },
+    })
+  })
+
+  test('maps the explicitly selected gallery image instead of always using the hero image', () => {
+    expect(
+      inferBuilderMapping({
+        builderMappedImageIndex: 1,
+        images: [
+          { image: { focalX: 20, focalY: 30 } },
+          { image: { focalX: 64, focalY: 47 } },
+        ],
+        name: 'Oval opal',
+      })
+    ).toMatchObject({
+      builderPhotoFocalX: 0.64,
+      builderPhotoFocalY: 0.47,
     })
   })
 
@@ -231,6 +253,69 @@ describe('opal builder mapping lifecycle', () => {
     })
     expect(changed.builderMappingInputHash).not.toBe(original.builderMappingInputHash)
     expect(changed.builderMappingSourceImageHash).not.toBe(original.builderMappingSourceImageHash)
+  })
+
+  test('refreshes inferred crop suggestions when the source image changes', () => {
+    const changed = applyBuilderMappingLifecycle(
+      { images: [{ image: { filename: 'replacement.jpg', focalX: 72, focalY: 31 } }] },
+      {
+        builderMappingInputHash: 'old-input',
+        builderMappingMode: 'inferred',
+        builderMappingStatus: 'reviewed',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
+        builderPhotoFocalX: 0.5,
+        builderPhotoFocalY: 0.5,
+        builderPhotoZoom: 3.2,
+        category: 'raw-opals',
+        dimensions: { depth: 2, length: 9, width: 6 },
+        images: [{ image: 'old-media' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      now
+    )
+
+    expect(changed).toMatchObject({
+      builderMappingAnalyzedImageHash: null,
+      builderMappingMode: 'inferred',
+      builderMappingStatus: 'stale',
+      builderPhotoAnalysisVersion: null,
+      builderPhotoAnalysisConfidence: null,
+      builderPhotoFocalX: 0.72,
+      builderPhotoFocalY: 0.31,
+    })
+  })
+
+  test('preserves manual crop values when their source image changes', () => {
+    const original = {
+      builderMappingInputHash: 'old-input',
+      builderMappingMode: 'manual',
+      builderMappingStatus: 'manual',
+      builderMappingVersion: BUILDER_MAPPING_VERSION,
+      builderPhotoFocalX: 0.41,
+      builderPhotoFocalY: 0.62,
+      builderPhotoZoom: 4.7,
+      category: 'raw-opals',
+      dimensions: { depth: 2, length: 9, width: 6 },
+      images: [{ image: 'old-media' }],
+      name: 'Oval white opal',
+      slug: 'white-opal',
+      stoneType: 'white-opal',
+    }
+    const changed = applyBuilderMappingLifecycle(
+      { images: [{ image: { filename: 'replacement.jpg', focalX: 72, focalY: 31 } }] },
+      original,
+      now
+    )
+
+    expect({ ...original, ...changed }).toMatchObject({
+      builderMappingMode: 'manual',
+      builderMappingStatus: 'stale',
+      builderPhotoFocalX: 0.41,
+      builderPhotoFocalY: 0.62,
+      builderPhotoZoom: 4.7,
+    })
   })
 
   test('does not expose pending or stale mappings', () => {

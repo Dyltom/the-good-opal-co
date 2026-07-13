@@ -147,6 +147,19 @@ describe('deployment config', () => {
     expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
   })
 
+  test('Vercel schedules authenticated builder photo mapping with enough runtime', () => {
+    const config = JSON.parse(read('vercel.json')) as {
+      crons?: Array<{ path: string; schedule: string }>
+      functions?: Record<string, { maxDuration?: number }>
+    }
+
+    expect(config.crons).toContainEqual({
+      path: '/api/cron/builder-mappings',
+      schedule: '7,22,37,52 * * * *',
+    })
+    expect(config.functions?.['src/app/api/cron/builder-mappings/route.ts']?.maxDuration).toBe(300)
+  })
+
   test('commerce conversion analytics run in the browser', () => {
     const checkoutAction = read('src/app/(marketing)/checkout/actions.ts')
     const checkoutForm = read('src/app/(marketing)/checkout/checkout-form.tsx')

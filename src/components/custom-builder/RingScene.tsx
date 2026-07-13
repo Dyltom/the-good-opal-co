@@ -403,6 +403,7 @@ function OpalCabochon({
     nextTexture.minFilter = LinearFilter
     nextTexture.magFilter = LinearFilter
     if (crop) {
+      const rotation = (crop.rotation ?? 0) + config.opalRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
       const cropRect = computePlacedPhotoCrop(
         image?.width ?? 1,
@@ -411,11 +412,11 @@ function OpalCabochon({
         crop,
         config
       )
-      const transform = computePhotoTextureTransform(cropRect, width / height, config.opalRotation)
+      const transform = computePhotoTextureTransform(cropRect, width / height, rotation)
       nextTexture.repeat.set(transform.repeatX, transform.repeatY)
       nextTexture.offset.set(transform.offsetX, transform.offsetY)
       nextTexture.center.set(0.5, 0.5)
-      nextTexture.rotation = (-config.opalRotation * Math.PI) / 180
+      nextTexture.rotation = (-rotation * Math.PI) / 180
     }
     nextTexture.needsUpdate = true
     return nextTexture

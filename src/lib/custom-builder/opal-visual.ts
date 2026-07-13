@@ -21,6 +21,7 @@ export interface BuilderVisualFields {
   builderPhotoFocalX?: number | null
   builderPhotoFocalY?: number | null
   builderPhotoZoom?: number | null
+  builderPhotoRotation?: number | null
   dimensions?: {
     width?: number | null
     length?: number | null
@@ -312,6 +313,9 @@ function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undef
       focalX: fields.builderPhotoFocalX,
       focalY: fields.builderPhotoFocalY,
       zoom: fields.builderPhotoZoom,
+      ...(typeof fields.builderPhotoRotation === 'number'
+        ? { rotation: fields.builderPhotoRotation }
+        : {}),
     },
     bodyColour: fields.builderBodyColour,
     flashColours: colours as [string, string, string],
@@ -501,12 +505,11 @@ export function createOpalVisualProfile(
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
       dimensionsMm: managed?.dimensionsMm ?? reviewed?.dimensionsMm ?? dimensionsMm,
-      textureCrop:
-        basePhotoFit === 'reviewed'
+      textureCrop: usesIndividualPhoto
+        ? basePhotoFit === 'reviewed'
           ? baseTextureCrop
-          : usesIndividualPhoto
-            ? estimatedTextureCrop
-            : undefined,
+          : estimatedTextureCrop
+        : undefined,
       photoFit: basePhotoFit ?? (usesIndividualPhoto ? 'estimated' : undefined),
     },
   }

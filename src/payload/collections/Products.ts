@@ -359,6 +359,19 @@ export const Products: CollectionConfig = {
                   'Inference rules version. Version changes make approved mappings stale.',
               },
             },
+            {
+              name: 'builderMappingMode',
+              type: 'select',
+              options: [
+                { label: 'Automatic inference', value: 'inferred' },
+                { label: 'Protected manual mapping', value: 'manual' },
+              ],
+              access: { read: isAdminField },
+              admin: {
+                readOnly: true,
+                description: 'Manual mappings remain protected when product images change.',
+              },
+            },
           ],
         },
         {
@@ -381,6 +394,55 @@ export const Products: CollectionConfig = {
               },
             },
           ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderMappedImageIndex',
+              type: 'number',
+              min: 0,
+              defaultValue: 0,
+              admin: {
+                description: 'Zero-based gallery image used on the 3D opal face.',
+              },
+            },
+            {
+              name: 'builderMappingAnalyzedImageHash',
+              type: 'text',
+              access: { read: isAdminField },
+              admin: {
+                readOnly: true,
+                description: 'Image hash last processed by automatic crop analysis.',
+              },
+            },
+            {
+              name: 'builderPhotoAnalysisVersion',
+              type: 'number',
+              access: { read: isAdminField },
+              admin: { readOnly: true },
+            },
+            {
+              name: 'builderPhotoAnalysisConfidence',
+              type: 'number',
+              min: 0,
+              max: 1,
+              access: { read: isAdminField },
+              admin: {
+                readOnly: true,
+                description: 'Confidence that automatic analysis isolated one opal face.',
+              },
+            },
+          ],
+        },
+        {
+          name: 'builderMappingAnalysisError',
+          type: 'text',
+          access: { read: isAdminField },
+          admin: {
+            readOnly: true,
+            description: 'Last automatic image-analysis failure. Empty after a successful run.',
+          },
         },
         {
           name: 'builderMappingReviewedAt',
@@ -502,6 +564,14 @@ export const Products: CollectionConfig = {
               type: 'number',
               min: 1,
               admin: { description: 'Crop zoom, 1 or greater' },
+            },
+            {
+              name: 'builderPhotoRotation',
+              type: 'number',
+              min: -180,
+              max: 180,
+              defaultValue: 0,
+              admin: { description: 'Base image rotation used before customer adjustments' },
             },
           ],
         },

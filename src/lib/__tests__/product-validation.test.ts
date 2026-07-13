@@ -41,6 +41,8 @@ describe('product commerce validation', () => {
       builderPhotoFocalX: 0.517,
       builderPhotoFocalY: 0.466,
       builderPhotoZoom: 4.74,
+      builderPhotoRotation: 0,
+      builderMappedImageIndex: 0,
       dimensions: { width: 5.3, length: 9.5, depth: 2.5 },
       images: [{ image: 1 }],
     }
@@ -52,6 +54,12 @@ describe('product commerce validation', () => {
     )
     expect(validateBuilderProduct({ ...valid, builderPhotoZoom: 0.5 })).toBe(
       'Builder opals require a reviewed photo crop'
+    )
+    expect(validateBuilderProduct({ ...valid, builderPhotoRotation: 181 })).toBe(
+      'Builder opals require a reviewed photo crop'
+    )
+    expect(validateBuilderProduct({ ...valid, builderMappedImageIndex: 1 })).toBe(
+      'Builder mapped image must reference an existing gallery image'
     )
     expect(validateBuilderProduct({ ...valid, category: 'opal-rings' })).toBe(
       'Builder opals must use the Raw Opals category'

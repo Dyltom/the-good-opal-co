@@ -464,6 +464,10 @@ export interface Product {
    */
   builderMappingVersion?: number | null;
   /**
+   * Manual mappings remain protected when product images change.
+   */
+  builderMappingMode?: ('inferred' | 'manual') | null;
+  /**
    * Changes whenever mapped source image identity or order changes.
    */
   builderMappingSourceImageHash?: string | null;
@@ -471,6 +475,23 @@ export interface Product {
    * Tracks source image, name, opal type, slug, and dimensions.
    */
   builderMappingInputHash?: string | null;
+  /**
+   * Zero-based gallery image used on the 3D opal face.
+   */
+  builderMappedImageIndex?: number | null;
+  /**
+   * Image hash last processed by automatic crop analysis.
+   */
+  builderMappingAnalyzedImageHash?: string | null;
+  builderPhotoAnalysisVersion?: number | null;
+  /**
+   * Confidence that automatic analysis isolated one opal face.
+   */
+  builderPhotoAnalysisConfidence?: number | null;
+  /**
+   * Last automatic image-analysis failure. Empty after a successful run.
+   */
+  builderMappingAnalysisError?: string | null;
   /**
    * Set when mapping is explicitly approved as Reviewed or Manual.
    */
@@ -517,6 +538,10 @@ export interface Product {
    * Crop zoom, 1 or greater
    */
   builderPhotoZoom?: number | null;
+  /**
+   * Base image rotation used before customer adjustments
+   */
+  builderPhotoRotation?: number | null;
   /**
    * Ring size (if applicable)
    */
@@ -1388,8 +1413,14 @@ export interface ProductsSelect<T extends boolean = true> {
   builderMappingStatus?: T;
   builderMappingConfidence?: T;
   builderMappingVersion?: T;
+  builderMappingMode?: T;
   builderMappingSourceImageHash?: T;
   builderMappingInputHash?: T;
+  builderMappedImageIndex?: T;
+  builderMappingAnalyzedImageHash?: T;
+  builderPhotoAnalysisVersion?: T;
+  builderPhotoAnalysisConfidence?: T;
+  builderMappingAnalysisError?: T;
   builderMappingReviewedAt?: T;
   builderMappingNotes?: T;
   builderEligible?: T;
@@ -1403,6 +1434,7 @@ export interface ProductsSelect<T extends boolean = true> {
   builderPhotoFocalX?: T;
   builderPhotoFocalY?: T;
   builderPhotoZoom?: T;
+  builderPhotoRotation?: T;
   ringSize?: T;
   careInstructions?: T;
   certified?: T;

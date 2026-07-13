@@ -270,6 +270,7 @@ describe('custom builder opal visual profiles', () => {
       builderPhotoFocalX: 0.48,
       builderPhotoFocalY: 0.52,
       builderPhotoZoom: 3.4,
+      builderPhotoRotation: -90,
       dimensions: { width: 6, length: 9, depth: 3 },
     }
 
@@ -284,7 +285,7 @@ describe('custom builder opal visual profiles', () => {
       bodyColour: '#173350',
       flashColours: ['#16d7ef', '#43ef8f', '#ffcb42'],
       transmission: 0.08,
-      textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
+      textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4, rotation: -90 },
       dimensionsMm: { width: 6, length: 9, depth: 3 },
     })
   })
@@ -345,5 +346,29 @@ describe('custom builder opal visual profiles', () => {
       silhouette: 'pear',
       textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
     })
+  })
+
+  test('never maps one crop onto a parcel containing multiple opals', () => {
+    const profile = createOpalVisualProfile(
+      'opal-parcel',
+      'Australian opal parcel',
+      'white-opal',
+      {
+        builderMappingStatus: 'reviewed',
+        builderSilhouette: 'oval',
+        builderRecommendedStyle: 'gemini',
+        builderBodyColour: '#dce6df',
+        builderFlashColourPrimary: '#55cfff',
+        builderFlashColourSecondary: '#5bea9a',
+        builderFlashColourAccent: '#ffd34e',
+        builderTransmission: 0.16,
+        builderPhotoFocalX: 0.48,
+        builderPhotoFocalY: 0.52,
+        builderPhotoZoom: 3.4,
+        dimensions: { width: 6, length: 8, depth: 2 },
+      }
+    )
+
+    expect(profile.visual.textureCrop).toBeUndefined()
   })
 })

@@ -79,6 +79,7 @@ export interface BuilderOpal {
       focalX: number
       focalY: number
       zoom: number
+      rotation?: number
     }
     dimensionsMm?: {
       width: number

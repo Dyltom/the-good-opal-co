@@ -28,6 +28,7 @@ import * as migration_20260712_150000_catalogue_builder_approval from './2026071
 import * as migration_20260712_160000_white_opal_crop_alignment from './20260712_160000_white_opal_crop_alignment'
 import * as migration_20260712_161000_stone_only_crop_alignment from './20260712_161000_stone_only_crop_alignment'
 import * as migration_20260712_162000_heart_stone_only_crop from './20260712_162000_heart_stone_only_crop'
+import * as migration_20260713_180000_builder_photo_analysis from './20260713_180000_builder_photo_analysis'
 
 export const migrations = [
   {
@@ -179,5 +180,10 @@ export const migrations = [
     up: migration_20260712_162000_heart_stone_only_crop.up,
     down: migration_20260712_162000_heart_stone_only_crop.down,
     name: '20260712_162000_heart_stone_only_crop',
+  },
+  {
+    up: migration_20260713_180000_builder_photo_analysis.up,
+    down: migration_20260713_180000_builder_photo_analysis.down,
+    name: '20260713_180000_builder_photo_analysis',
   },
 ]

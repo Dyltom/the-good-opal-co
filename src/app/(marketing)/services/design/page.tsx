@@ -109,6 +109,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       dimensions: true,
       builderEligible: true,
       builderMappingStatus: true,
+      builderMappedImageIndex: true,
       builderSilhouette: true,
       builderRecommendedStyle: true,
       builderBodyColour: true,
@@ -119,6 +120,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       builderPhotoFocalX: true,
       builderPhotoFocalY: true,
       builderPhotoZoom: true,
+      builderPhotoRotation: true,
     },
     where: {
       and: [
@@ -130,8 +132,17 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
   })
   const products = result.docs
 
+  const selectedImage = (product: (typeof products)[number]) => {
+    const index =
+      typeof product.builderMappedImageIndex === 'number' &&
+      Number.isInteger(product.builderMappedImageIndex) &&
+      product.builderMappedImageIndex >= 0
+        ? product.builderMappedImageIndex
+        : 0
+    return product.images?.[index]?.image ?? product.images?.[0]?.image
+  }
   const mediaIds = products.flatMap((product) => {
-    const image = product.images?.[0]?.image
+    const image = selectedImage(product)
     return typeof image === 'number' ? [image] : []
   })
   const mediaResult =
@@ -150,8 +161,8 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
   return products
     .filter((product) => isAvailableOpalListing(product.name))
     .flatMap((product): BuilderOpal[] => {
-      const firstImage = product.images?.[0]?.image
-      const image = firstImage ? mediaById.get(String(firstImage)) : undefined
+      const mappedImage = selectedImage(product)
+      const image = mappedImage ? mediaById.get(String(mappedImage)) : undefined
       // Reviewed builder opals have owned, checked-in source photography. Prefer it
       // over Payload's file route so a missing local/ephemeral media file cannot
       // collapse the complete WebGL scene.

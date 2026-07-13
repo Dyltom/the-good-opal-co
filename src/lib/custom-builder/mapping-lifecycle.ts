@@ -3,12 +3,16 @@ import {
   ESTIMATED_OPAL_PHOTO_ZOOM,
   inferBuilderStoneType,
 } from './opal-visual'
+import { OPAL_PHOTO_ANALYSIS_VERSION } from './photo-analysis'
 
-export const BUILDER_MAPPING_VERSION = 4
+export const BUILDER_MAPPING_VERSION = 5
+export const BUILDER_PHOTO_ANALYSIS_VERSION = OPAL_PHOTO_ANALYSIS_VERSION
 
 export const builderMappingStatuses = ['pending', 'reviewed', 'manual', 'stale'] as const
+export const builderMappingModes = ['inferred', 'manual'] as const
 
 export type BuilderMappingStatus = (typeof builderMappingStatuses)[number]
+export type BuilderMappingMode = (typeof builderMappingModes)[number]
 
 type ProductRecord = Record<string, unknown>
 
@@ -194,9 +198,12 @@ function imageIdentity(value: unknown): string | undefined {
   return identity || undefined
 }
 
-function normalizedMediaFocus(value: unknown): { focalX: number; focalY: number } | undefined {
-  const first = Array.isArray(value) ? value[0] : undefined
-  const image = isRecord(first) && 'image' in first ? first.image : first
+function normalizedMediaFocus(
+  value: unknown,
+  imageIndex: number
+): { focalX: number; focalY: number } | undefined {
+  const selected = Array.isArray(value) ? value[imageIndex] : undefined
+  const image = isRecord(selected) && 'image' in selected ? selected.image : selected
   if (!isRecord(image)) return undefined
 
   const normalize = (coordinate: unknown): number | undefined => {
@@ -210,10 +217,11 @@ function normalizedMediaFocus(value: unknown): { focalX: number; focalY: number 
   return focalX === undefined || focalY === undefined ? undefined : { focalX, focalY }
 }
 
-export function createBuilderSourceImageHash(images: unknown): string | undefined {
+export function createBuilderSourceImageHash(images: unknown, imageIndex = 0): string | undefined {
   if (!Array.isArray(images)) return undefined
-  const identities = images.map(imageIdentity).filter((value): value is string => Boolean(value))
-  return identities.length > 0 ? stableHash(JSON.stringify(identities)) : undefined
+  const selected = images[imageIndex] ?? images[0]
+  const identity = imageIdentity(selected)
+  return identity ? stableHash(JSON.stringify({ imageIndex, identity })) : undefined
 }
 
 function explicitShape(name: string): InferredMapping['builderSilhouette'] | undefined {
@@ -261,7 +269,13 @@ export function inferBuilderMapping(product: ProductRecord): InferredMapping {
   )
   const colours = visualProfiles[stoneType] ?? visualProfiles['crystal-opal']!
   const listingKind = classifyOpalListing(name)
-  const mediaFocus = normalizedMediaFocus(product.images)
+  const imageIndex =
+    typeof product.builderMappedImageIndex === 'number' &&
+    Number.isInteger(product.builderMappedImageIndex) &&
+    product.builderMappedImageIndex >= 0
+      ? product.builderMappedImageIndex
+      : 0
+  const mediaFocus = normalizedMediaFocus(product.images, imageIndex)
 
   return {
     ...colours,
@@ -306,12 +320,20 @@ function validStatus(value: unknown): value is BuilderMappingStatus {
   return builderMappingStatuses.includes(value as BuilderMappingStatus)
 }
 
+function validMode(value: unknown): value is BuilderMappingMode {
+  return builderMappingModes.includes(value as BuilderMappingMode)
+}
+
 function mappingInputHash(product: ProductRecord, sourceHash: string | undefined): string {
   const dimensions = dimensionsFrom(product.dimensions)
   const description = richTextContent(product.description)
   return stableHash(
     JSON.stringify({
       dimensions,
+      builderMappedImageIndex:
+        typeof product.builderMappedImageIndex === 'number'
+          ? product.builderMappedImageIndex
+          : 0,
       descriptionDimensions: inferDimensionsFromDescription(product.description) ?? null,
       descriptionShape: explicitShape(description) ?? null,
       name: typeof product.name === 'string' ? product.name.trim() : '',
@@ -370,7 +392,18 @@ export function applyBuilderMappingLifecycle(
     }
   }
 
-  const sourceHash = createBuilderSourceImageHash(product.images)
+  if (
+    typeof product.builderMappedImageIndex !== 'number' ||
+    !Number.isInteger(product.builderMappedImageIndex) ||
+    product.builderMappedImageIndex < 0
+  ) {
+    incoming.builderMappedImageIndex = 0
+    product = mergeProduct(incoming, previous)
+  }
+  const sourceHash = createBuilderSourceImageHash(
+    product.images,
+    product.builderMappedImageIndex as number
+  )
   const inputHash = mappingInputHash(product, sourceHash)
   const inferred = inferBuilderMapping(product)
   const previousStatus = validStatus(previous.builderMappingStatus)
@@ -380,6 +413,14 @@ export function applyBuilderMappingLifecycle(
     ? incoming.builderMappingStatus
     : undefined
   const explicitStatusChange = Boolean(requestedStatus && requestedStatus !== previousStatus)
+  const previousMode = validMode(previous.builderMappingMode)
+    ? previous.builderMappingMode
+    : previousStatus === 'manual'
+      ? 'manual'
+      : 'inferred'
+  const requestedMode = validMode(incoming.builderMappingMode)
+    ? incoming.builderMappingMode
+    : undefined
   const legacyReviewed = !previousStatus && previous.builderEligible === true
   const previousHash =
     typeof previous.builderMappingInputHash === 'string'
@@ -392,6 +433,9 @@ export function applyBuilderMappingLifecycle(
 
   let status: BuilderMappingStatus =
     requestedStatus ?? previousStatus ?? (legacyReviewed ? 'reviewed' : 'pending')
+  let mode: BuilderMappingMode = requestedMode ?? previousMode
+  if (explicitStatusChange && requestedStatus === 'manual') mode = 'manual'
+  if (explicitStatusChange && requestedStatus === 'reviewed') mode = 'inferred'
   if (
     !explicitStatusChange &&
     (inputsChanged || versionChanged) &&
@@ -401,15 +445,30 @@ export function applyBuilderMappingLifecycle(
   }
 
   incoming.builderMappingStatus = status
+  incoming.builderMappingMode = mode
   incoming.builderMappingVersion = BUILDER_MAPPING_VERSION
   incoming.builderMappingConfidence = mappingConfidence(product, sourceHash)
   incoming.builderMappingSourceImageHash = sourceHash ?? null
   incoming.builderMappingInputHash = inputHash
 
+  const refreshInference = mode === 'inferred' && (!previousHash || inputsChanged || versionChanged)
   for (const field of inferredFields) {
-    if (product[field] === null || product[field] === undefined || product[field] === '') {
+    const explicitlyProvided = Object.prototype.hasOwnProperty.call(incoming, field)
+    if (
+      (refreshInference && !explicitlyProvided) ||
+      product[field] === null ||
+      product[field] === undefined ||
+      product[field] === ''
+    ) {
       incoming[field] = inferred[field]
     }
+  }
+
+  if (inputsChanged || versionChanged) {
+    incoming.builderMappingAnalyzedImageHash = null
+    incoming.builderPhotoAnalysisVersion = null
+    incoming.builderPhotoAnalysisConfidence = null
+    incoming.builderMappingAnalysisError = null
   }
 
   if (explicitStatusChange && (status === 'reviewed' || status === 'manual')) {

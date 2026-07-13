@@ -38,7 +38,7 @@ export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFa
 
   useEffect(() => setImageSize(undefined), [opal.imageUrl])
 
-  const rotation = placement?.opalRotation ?? 0
+  const rotation = (opal.visual.textureCrop?.rotation ?? 0) + (placement?.opalRotation ?? 0)
   const coverScale = rotationCoverScale(stoneAspect, rotation)
   const handleLoad: ComponentProps<typeof Image>['onLoad'] = (event) =>
     setImageSize({

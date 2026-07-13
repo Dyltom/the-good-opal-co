@@ -82,7 +82,13 @@ export function validateBuilderProduct(data: unknown): true | string {
     data.builderPhotoFocalY < 0 ||
     data.builderPhotoFocalY > 1 ||
     typeof data.builderPhotoZoom !== 'number' ||
-    data.builderPhotoZoom < 1
+    data.builderPhotoZoom < 1 ||
+    (data.builderPhotoRotation !== undefined &&
+      data.builderPhotoRotation !== null &&
+      (typeof data.builderPhotoRotation !== 'number' ||
+        !Number.isFinite(data.builderPhotoRotation) ||
+        data.builderPhotoRotation < -180 ||
+        data.builderPhotoRotation > 180))
   ) {
     return 'Builder opals require a reviewed photo crop'
   }
@@ -100,6 +106,15 @@ export function validateBuilderProduct(data: unknown): true | string {
   const images = data.images
   if (!Array.isArray(images) || images.length === 0) {
     return 'Builder opals require a reviewed face image'
+  }
+  const imageIndex = data.builderMappedImageIndex ?? 0
+  if (
+    typeof imageIndex !== 'number' ||
+    !Number.isInteger(imageIndex) ||
+    imageIndex < 0 ||
+    imageIndex >= images.length
+  ) {
+    return 'Builder mapped image must reference an existing gallery image'
   }
 
   return true
