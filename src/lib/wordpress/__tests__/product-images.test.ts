@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { parseWordPressProductImages } from '../product-images'
+import { describe, expect, it, vi } from 'vitest'
+import { fetchWordPressProductImages, parseWordPressProductImages } from '../product-images'
 
 describe('WordPress product image import', () => {
   it('maps every source image in Woo order and creates useful fallback alt text', () => {
@@ -66,5 +66,20 @@ describe('WordPress product image import', () => {
         },
       ])
     ).toThrow('Unsupported')
+  })
+
+  it('includes sold products when fetching the source gallery', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: { 'x-wp-totalpages': '1' },
+      })
+    )
+
+    await fetchWordPressProductImages(fetcher)
+
+    const input = fetcher.mock.calls[0]?.[0]
+    expect(new URL(String(input)).searchParams.get('stock_status')).toBe(
+      'instock,outofstock,onbackorder'
+    )
   })
 })

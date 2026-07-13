@@ -75,6 +75,11 @@ describe('WooCommerce catalog sync', () => {
 
     expect(fetcher).toHaveBeenCalledTimes(2)
     expect(products.map((product) => product.wooId)).toEqual([5681, 5676])
+    for (const [input] of fetcher.mock.calls) {
+      expect(new URL(String(input)).searchParams.get('stock_status')).toBe(
+        'instock,outofstock,onbackorder'
+      )
+    }
   })
 
   it('decodes named and numeric HTML entities', () => {

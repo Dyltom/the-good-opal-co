@@ -167,6 +167,7 @@ export async function fetchWooCatalog(
     const url = new URL(baseUrl)
     url.searchParams.set('page', String(page))
     url.searchParams.set('per_page', String(perPage))
+    url.searchParams.set('stock_status', 'instock,outofstock,onbackorder')
 
     const response = await fetcher(url, {
       headers: { accept: 'application/json' },

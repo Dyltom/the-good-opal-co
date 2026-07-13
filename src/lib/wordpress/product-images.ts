@@ -64,6 +64,7 @@ export async function fetchWordPressProductImages(
     const url = new URL('https://goodopalco.com/wp-json/wc/store/v1/products')
     url.searchParams.set('page', String(page))
     url.searchParams.set('per_page', '100')
+    url.searchParams.set('stock_status', 'instock,outofstock,onbackorder')
     const response = await fetcher(url, {
       headers: { accept: 'application/json' },
       signal: AbortSignal.timeout(30_000),
