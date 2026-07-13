@@ -189,6 +189,35 @@ describe('RingConfigurator store opal selection', () => {
     })
   })
 
+  test('returns from a store opal to the selected collection reference', async () => {
+    const user = userEvent.setup()
+    render(<RingConfigurator initialConfig={defaultRingConfig} opals={opals} />)
+
+    await user.click(screen.getByRole('button', { name: /Aurora/i }))
+    await user.click(screen.getByRole('button', { name: /Lightning Ridge black opal/i }))
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('p')).toBe('127')
+      expect(params.get('s')).toBe('oval')
+    })
+
+    const referencePreview = screen.getByRole('button', {
+      name: 'Preview collection reference',
+    })
+    expect(referencePreview.getAttribute('aria-pressed')).toBe('false')
+    await user.click(referencePreview)
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('p')).toBeNull()
+      expect(params.get('y')).toBe('aurora')
+      expect(params.get('s')).toBe('pear')
+    })
+    expect(referencePreview.getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByTestId('ring-preview').getAttribute('data-selected-opal')).toBeNull()
+  })
+
   test('warns instead of silently substituting an unavailable linked opal', () => {
     render(
       <RingConfigurator initialConfig={defaultRingConfig} opals={opals} unavailableOpalRequested />
@@ -314,15 +343,15 @@ describe('RingConfigurator store opal selection', () => {
     render(<RingConfigurator initialConfig={defaultRingConfig} opals={catalogue} />)
 
     const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
-    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(12)
+    expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(12)
     expect(screen.getByText('15 listings found')).not.toBeNull()
 
     await user.click(screen.getByRole('button', { name: 'Show 12 more' }))
-    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(15)
+    expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(15)
 
     await user.type(screen.getByRole('searchbox', { name: 'Search available opals' }), 'parcel')
     await waitFor(() => expect(screen.getByText('1 listing found')).not.toBeNull())
-    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(1)
+    expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(1)
     expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
     expect(screen.getByText('3D shows a representative setting concept')).not.toBeNull()
   })
@@ -346,7 +375,7 @@ describe('RingConfigurator store opal selection', () => {
     const styles = screen.getByRole('group', { name: '2. Choose a collection design' })
     const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
     expect(styles.compareDocumentPosition(picker) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(picker.querySelectorAll('button[aria-pressed]').length).toBe(12)
+    expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(12)
     expect(screen.getByRole('button', { name: /Individual opal 81/i })).not.toBeNull()
   })
 })

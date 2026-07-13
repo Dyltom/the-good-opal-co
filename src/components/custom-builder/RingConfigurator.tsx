@@ -99,10 +99,12 @@ function OpalPicker({
   opals,
   selectedId,
   onSelect,
+  onClear,
 }: {
   opals: readonly BuilderOpal[]
   selectedId?: string
   onSelect: (opal: BuilderOpal) => void
+  onClear: () => void
 }) {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<'all' | BuilderOpal['selectionKind']>('all')
@@ -151,6 +153,19 @@ function OpalPicker({
         listing. Parcels, calibrated sets, and specimens use a representative 3D concept; your
         consultation confirms the individual stone and whether it can be set safely.
       </p>
+      <button
+        type="button"
+        aria-pressed={!selectedId}
+        onClick={onClear}
+        className={cn(
+          'mt-4 inline-flex min-h-11 items-center rounded-full border px-5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2',
+          selectedId
+            ? 'border-charcoal/25 bg-white text-charcoal hover:border-charcoal'
+            : 'border-charcoal bg-charcoal text-cream'
+        )}
+      >
+        Preview collection reference
+      </button>
       <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem]">
         <div>
           <label htmlFor="opal-search" className="sr-only">
@@ -206,6 +221,7 @@ function OpalPicker({
               <button
                 key={opal.id}
                 type="button"
+                data-opal-id={opal.id}
                 aria-pressed={selected}
                 onClick={() => onSelect(opal)}
                 className={cn(
@@ -387,6 +403,15 @@ export function RingConfigurator({
     })
   }
 
+  function clearOpal() {
+    setConfig((current) =>
+      applyRingStyle(
+        { ...current, ...defaultOpalPlacement, opalId: undefined },
+        current.style
+      )
+    )
+  }
+
   async function shareDesign() {
     const url = window.location.href
     try {
@@ -465,7 +490,12 @@ export function RingConfigurator({
                   })
                 }
               />
-              <OpalPicker opals={opals} selectedId={config.opalId} onSelect={selectOpal} />
+              <OpalPicker
+                opals={opals}
+                selectedId={config.opalId}
+                onSelect={selectOpal}
+                onClear={clearOpal}
+              />
 
               {selectedOpal && (
                 <OpalPlacementEditor

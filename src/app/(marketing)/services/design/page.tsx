@@ -1,13 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
-import { RingConfigurator, applyRingStyle, ringConfigFromRecord } from '@/components/custom-builder'
-import {
-  shapeForOpal,
-  styleIds,
-  type BuilderOpal,
-  type RingConfig,
-} from '@/components/custom-builder/config'
+import { RingConfigurator, ringConfigFromRecord } from '@/components/custom-builder'
+import type { BuilderOpal } from '@/components/custom-builder/config'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -21,6 +16,7 @@ import {
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
 import type { Media } from '@/types/payload-types'
+import { resolveInitialBuilderState } from './initial-state'
 
 export const metadata: Metadata = {
   title: 'Design Your Custom Opal Ring | The Good Opal Co',
@@ -219,23 +215,11 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
   const initialConfig = ringConfigFromRecord(
     Object.fromEntries(Object.entries(query).map(([key, value]) => [key, first(value)]))
   )
-  const requestedOpal = opals.find((opal) => opal.id === initialConfig.opalId)
-  const unavailableOpalRequested = Boolean(initialConfig.opalId && !requestedOpal)
-  const initialOpal = initialConfig.opalId ? requestedOpal : opals[0]
-  const requestedStyle = first(query.y)
-  const hasValidRequestedStyle = styleIds.some((style) => style === requestedStyle)
-  const styleId = hasValidRequestedStyle
-    ? initialConfig.style
-    : initialOpal?.visual.recommendedStyle
-  const hydratedConfig: RingConfig = initialOpal
-    ? {
-        ...applyRingStyle(
-          { ...initialConfig, opalId: initialOpal.id, stone: initialOpal.renderStone },
-          styleId ?? initialConfig.style
-        ),
-        shape: shapeForOpal(initialOpal),
-      }
-    : { ...initialConfig, opalId: undefined }
+  const { config: hydratedConfig, unavailableOpalRequested } = resolveInitialBuilderState(
+    initialConfig,
+    opals,
+    first(query.y)
+  )
 
   return (
     <MarketingShell>
