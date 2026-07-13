@@ -48,7 +48,7 @@ import {
   getRingMeasurements,
   getRingShankPathPoints,
   getRenderableOpalDepthMm,
-  getSettingOuterHalfWidth,
+  getSettingShoulderHalfWidth,
   getSettingPlacement,
   getStoneDimensions,
   outlinePoint,
@@ -1008,13 +1008,13 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
     stoneDimensions: dimensions,
   } = getSettingPlacement(config, selectedOpal)
   const [stoneWidth, stoneHeight] = dimensions
-  const settingHalfWidth = useMemo(
+  const shoulderAnchorHalfWidth = useMemo(
     () =>
-      getSettingOuterHalfWidth(
-        { setting: config.setting, shape: config.shape, style: config.style },
+      getSettingShoulderHalfWidth(
+        { shape: config.shape, style: config.style },
         [stoneWidth, stoneHeight]
       ),
-    [config.setting, config.shape, config.style, stoneHeight, stoneWidth]
+    [config.shape, config.style, stoneHeight, stoneWidth]
   )
 
   return (
@@ -1023,7 +1023,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         metal={metal}
         radius={measurements.centreRadius}
         settingBaseY={measurements.outerRadius}
-        settingHalfWidth={settingHalfWidth}
+        settingHalfWidth={shoulderAnchorHalfWidth}
         shoulderDepth={styleProfile.shoulderDepth}
         shoulderRadius={styleProfile.shoulderRadius}
         tubeDepth={styleProfile.shankDepth}

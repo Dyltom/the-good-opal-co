@@ -300,6 +300,25 @@ export function getSettingOuterHalfWidth(
   }).reduce((maximum, value) => Math.max(maximum, value), 0)
 }
 
+/**
+ * Returns the structural cup width used to bury the shank shoulders beneath
+ * the setting. Halo beads are decorative and sit outside this footprint;
+ * anchoring shoulders to their tips makes the head appear detached in profile.
+ */
+export function getSettingShoulderHalfWidth(
+  config: Pick<RingConfig, 'shape' | 'style'>,
+  dimensions: StoneDimensions
+): number {
+  const [width, height] = dimensions
+  const profile = ringStyleGeometryProfiles[config.style]
+  const structuralOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+
+  return Array.from({ length: 720 }, (_, index) => {
+    const angle = (index / 720) * Math.PI * 2
+    return Math.abs(outlinePoint(config.shape, angle, width, height, structuralOffset)[0])
+  }).reduce((maximum, value) => Math.max(maximum, value), 0)
+}
+
 export function getRingShankLandmarks({
   radius,
   settingBaseY,

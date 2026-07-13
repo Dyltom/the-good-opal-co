@@ -15,6 +15,7 @@ import {
   getRingShankPathPoints,
   getRenderableOpalDepthMm,
   getSettingOuterHalfWidth,
+  getSettingShoulderHalfWidth,
   getSettingPlacement,
   getStoneDimensions,
   outlinePoint,
@@ -350,7 +351,8 @@ describe('custom ring geometry contract', () => {
       const referenceDimensions = getStoneDimensions(config)
 
       for (const dimensions of [referenceDimensions, [0.25, 0.3], [1, 1.4]] as const) {
-        const settingHalfWidth = getSettingOuterHalfWidth(config, dimensions)
+        const headHalfWidth = getSettingOuterHalfWidth(config, dimensions)
+        const settingHalfWidth = getSettingShoulderHalfWidth(config, dimensions)
         const pathOptions = {
           radius: measurements.centreRadius,
           settingBaseY: measurements.outerRadius,
@@ -376,6 +378,10 @@ describe('custom ring geometry contract', () => {
         expect(path.joinLeft[1]).toBeGreaterThan(path.transitionLeft[1])
         expect(path.transitionLeft[1]).toBeGreaterThan(path.arcStart[1])
         expect(Math.abs(path.joinLeft[0])).toBeLessThan(settingHalfWidth)
+        expect(settingHalfWidth).toBeLessThanOrEqual(headHalfWidth)
+        if (config.setting === 'beaded') {
+          expect(settingHalfWidth).toBeLessThan(headHalfWidth)
+        }
 
         const curve = new CatmullRomCurve3(
           getRingShankPathPoints(pathOptions).map((point) => new Vector3(...point)),

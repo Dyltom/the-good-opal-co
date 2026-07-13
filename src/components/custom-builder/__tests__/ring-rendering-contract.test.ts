@@ -14,7 +14,8 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('drives each forged shank and shoulder join from its sold-style profile', () => {
-    expect(sceneSource).toContain('getSettingOuterHalfWidth(')
+    expect(sceneSource).toContain('getSettingShoulderHalfWidth(')
+    expect(sceneSource).toContain('shoulderAnchorHalfWidth')
     expect(sceneSource).toContain('getRingShankPathPoints({')
     expect(sceneSource).toContain('shoulderDistance / shoulderBlend')
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), crossSectionPower)')
