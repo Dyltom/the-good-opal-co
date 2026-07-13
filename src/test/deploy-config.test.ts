@@ -31,6 +31,7 @@ describe('deployment config', () => {
 
   test('production media storage token is documented', () => {
     expect(read('.env.example')).toContain('BLOB_READ_WRITE_TOKEN=')
+    expect(read('src/payload.config.ts')).toContain('addRandomSuffix: true')
   })
 
   test('image optimization avoids the legacy AVIF conversion stall', () => {

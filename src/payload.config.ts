@@ -169,6 +169,7 @@ export default buildConfig({
   plugins: [
     vercelBlobStorage({
       enabled: Boolean(blobToken),
+      addRandomSuffix: true,
       collections: {
         media: true,
       },
