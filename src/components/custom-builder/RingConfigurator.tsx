@@ -460,8 +460,8 @@ export function RingConfigurator({
                 value={config.style}
                 onSelect={(style) =>
                   setConfig((current) => {
-                    const stoneShape = selectedOpal ? shapeForOpal(selectedOpal) : current.shape
-                    return { ...applyRingStyle(current, style.id), shape: stoneShape }
+                    const styled = applyRingStyle(current, style.id)
+                    return selectedOpal ? { ...styled, shape: shapeForOpal(selectedOpal) } : styled
                   })
                 }
               />

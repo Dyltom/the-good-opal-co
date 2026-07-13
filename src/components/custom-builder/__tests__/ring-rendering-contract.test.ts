@@ -14,7 +14,8 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('drives each forged shank and shoulder join from its sold-style profile', () => {
-    expect(sceneSource).toContain('shoulderDepth * joinInsetFactor')
+    expect(sceneSource).toContain('getSettingOuterHalfWidth(')
+    expect(sceneSource).toContain('getRingShankPathPoints({')
     expect(sceneSource).toContain('shoulderDistance / shoulderBlend')
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), crossSectionPower)')
     expect(sceneSource).toContain('const acrossBand =')
@@ -35,5 +36,18 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('computePlacedPhotoCrop(')
     expect(sceneSource).toContain('nextTexture.rotation = (-config.opalRotation * Math.PI) / 180')
     expect(sceneSource).toContain('nextTexture.center.set(0.5, 0.5)')
+  })
+
+  test('keeps the physical opal independent from collection-edge variation', () => {
+    expect(sceneSource).toContain('const [x, y] = outlinePoint(shape, angle, width, height)')
+    expect(sceneSource).not.toContain(
+      'const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height)\n      positions.push(x * radius'
+    )
+  })
+
+  test('uses exact catalogue colour and faceted Aurora grains', () => {
+    expect(sceneSource).toContain('<meshBasicMaterial attach="material-0" map={photoTexture}')
+    expect(sceneSource).toContain("config.style === 'aurora'")
+    expect(sceneSource).toContain('<icosahedronGeometry')
   })
 })

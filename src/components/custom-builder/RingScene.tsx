@@ -46,8 +46,12 @@ import {
   getCameraPosition,
   getRingFramingTarget,
   getRingMeasurements,
+  getRingShankPathPoints,
+  getRenderableOpalDepthMm,
+  getSettingOuterHalfWidth,
   getSettingPlacement,
   getStoneDimensions,
+  outlinePoint,
   soldStyleOutlinePoint,
   settingRotationX,
   type CameraVector,
@@ -216,7 +220,6 @@ function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpa
 }
 
 function createCabochonGeometry(
-  style: RingConfig['style'],
   shape: RingConfig['shape'],
   width: number,
   height: number,
@@ -236,7 +239,7 @@ function createCabochonGeometry(
 
     for (let segment = 0; segment < angularSegments; segment += 1) {
       const angle = (segment / angularSegments) * Math.PI * 2
-      const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height)
+      const [x, y] = outlinePoint(shape, angle, width, height)
       positions.push(x * radius, y * radius, z)
       uvs.push(0.5 + (x / width) * radius * 0.5, 0.5 + (y / height) * radius * 0.5)
     }
@@ -269,7 +272,7 @@ function createCabochonGeometry(
   const bottomRimStart = positions.length / 3
   for (let segment = 0; segment < angularSegments; segment += 1) {
     const angle = (segment / angularSegments) * Math.PI * 2
-    const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height)
+    const [x, y] = outlinePoint(shape, angle, width, height)
     positions.push(x, y, baseZ)
     uvs.push(0.5 + (x / width) * 0.5, 0.5 + (y / height) * 0.5)
   }
@@ -366,14 +369,8 @@ function OpalCabochon({
   )
   const geometry = useMemo(
     () =>
-      createCabochonGeometry(
-        config.style,
-        config.shape,
-        width,
-        height,
-        selectedOpal?.visual.dimensionsMm?.depth
-      ),
-    [config.shape, config.style, height, selectedOpal?.visual.dimensionsMm?.depth, width]
+      createCabochonGeometry(config.shape, width, height, getRenderableOpalDepthMm(selectedOpal)),
+    [config.shape, height, selectedOpal, width]
   )
   const palette = opalPalettes[config.stone]
   // Catalogue growth must not make the WebGL scene download every product
@@ -737,7 +734,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const depthProfile = getCabochonDepthProfile(
     width,
     height,
-    selectedOpal?.visual.dimensionsMm?.depth
+    getRenderableOpalDepthMm(selectedOpal)
   )
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025
@@ -831,23 +828,30 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
             thickness={haloSupport.thickness}
             topZ={0.03}
           />
-          {beads.map(({ key, x, y, size, flattening, heightVariation }) => {
-            // Sold Sun & Moon and Aurora rings use individually soldered beads.
-            // Deterministic variation keeps the halo handmade without animating
-            // or changing between renders.
-            return (
-              <mesh
-                castShadow
-                key={key}
-                position={[x, y, 0.048 + heightVariation]}
-                receiveShadow
-                scale={[size, size, flattening]}
-              >
-                <sphereGeometry args={[profile.beadRadius, 14, 14]} />
-                <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
-              </mesh>
-            )
-          })}
+          {beads.map(
+            ({ key, x, y, size, flattening, heightVariation, rotation, stretchX, stretchY }) => {
+              // Sold Sun & Moon and Aurora rings use individually soldered beads.
+              // Deterministic variation keeps the halo handmade without animating
+              // or changing between renders.
+              return (
+                <mesh
+                  castShadow
+                  key={key}
+                  position={[x, y, 0.048 + heightVariation]}
+                  receiveShadow
+                  rotation={[0, 0, rotation]}
+                  scale={[size * stretchX, size * stretchY, flattening]}
+                >
+                  {config.style === 'aurora' ? (
+                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
+                  ) : (
+                    <sphereGeometry args={[profile.beadRadius, 14, 14]} />
+                  )}
+                  <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
+                </mesh>
+              )
+            }
+          )}
         </>
       )}
 
@@ -865,9 +869,9 @@ function RingShank({
   shoulderDepth,
   tubeRadius,
   tubeDepth,
-  joinInsetFactor,
-  joinLiftFactor,
-  shoulderLead,
+  shoulderUnderlap,
+  shoulderJoinDrop,
+  shoulderTransition,
   shoulderBlend,
   crossSectionPower,
   metalRoughness,
@@ -880,42 +884,33 @@ function RingShank({
   shoulderDepth: number
   tubeRadius: number
   tubeDepth: number
-  joinInsetFactor: number
-  joinLiftFactor: number
-  shoulderLead: number
+  shoulderUnderlap: number
+  shoulderJoinDrop: number
+  shoulderTransition: number
   shoulderBlend: number
   crossSectionPower: number
   metalRoughness: number
 }) {
   const curve = useMemo(() => {
-    // Bury the capped shoulder ends beneath the setting. Exposed tube ends read
-    // as decorative collars and make the head appear to float; the sold rings
-    // use a low, continuous solder join hidden below the bezel edge.
-    const joinX = settingHalfWidth - shoulderDepth * joinInsetFactor
-    const joinY = settingBaseY + shoulderDepth * joinLiftFactor
-    const ringPoints = Array.from({ length: 97 }, (_, index) => {
-      const angle = (115 + (310 * index) / 96) * (Math.PI / 180)
-      return new Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0)
-    })
     return new CatmullRomCurve3(
-      [
-        new Vector3(-joinX, joinY, 0),
-        new Vector3(-joinX - shoulderLead, settingBaseY - 0.04, 0),
-        ...ringPoints,
-        new Vector3(joinX + shoulderLead, settingBaseY - 0.04, 0),
-        new Vector3(joinX, joinY, 0),
-      ],
+      getRingShankPathPoints({
+        radius,
+        settingBaseY,
+        settingHalfWidth,
+        shoulderJoinDrop,
+        shoulderTransition,
+        shoulderUnderlap,
+      }).map((point) => new Vector3(...point)),
       false,
       'centripetal'
     )
   }, [
-    joinInsetFactor,
-    joinLiftFactor,
     radius,
     settingBaseY,
     settingHalfWidth,
-    shoulderDepth,
-    shoulderLead,
+    shoulderJoinDrop,
+    shoulderTransition,
+    shoulderUnderlap,
   ])
   const geometry = useMemo(() => {
     const tubularSegments = 160
@@ -1012,12 +1007,15 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
     settingY,
     stoneDimensions: dimensions,
   } = getSettingPlacement(config, selectedOpal)
-  const [stoneWidth] = dimensions
-  const bezelOuterOffset = styleProfile.bezelWallOffset + styleProfile.bezelWallThickness / 2
-  const support = getHaloSupportGeometry(styleProfile)
-  const settingOuterOffset =
-    config.setting === 'beaded' ? support.offset + support.thickness / 2 : bezelOuterOffset
-  const settingHalfWidth = stoneWidth + settingOuterOffset
+  const [stoneWidth, stoneHeight] = dimensions
+  const settingHalfWidth = useMemo(
+    () =>
+      getSettingOuterHalfWidth(
+        { setting: config.setting, shape: config.shape, style: config.style },
+        [stoneWidth, stoneHeight]
+      ),
+    [config.setting, config.shape, config.style, stoneHeight, stoneWidth]
+  )
 
   return (
     <group>
@@ -1030,9 +1028,9 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         shoulderRadius={styleProfile.shoulderRadius}
         tubeDepth={styleProfile.shankDepth}
         tubeRadius={styleProfile.shankRadius}
-        joinInsetFactor={styleProfile.joinInsetFactor}
-        joinLiftFactor={styleProfile.joinLiftFactor}
-        shoulderLead={styleProfile.shoulderLead}
+        shoulderUnderlap={styleProfile.shoulderUnderlap}
+        shoulderJoinDrop={styleProfile.shoulderJoinDrop}
+        shoulderTransition={styleProfile.shoulderTransition}
         shoulderBlend={styleProfile.shoulderBlend}
         crossSectionPower={styleProfile.crossSectionPower}
         metalRoughness={styleProfile.metalRoughness}

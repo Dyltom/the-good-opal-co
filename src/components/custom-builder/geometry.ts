@@ -19,6 +19,17 @@ export interface RingModelBounds {
   top: number
 }
 
+export interface RingShankLandmarks {
+  arcEnd: CameraVector
+  arcStart: CameraVector
+  endAngle: number
+  joinLeft: CameraVector
+  joinRight: CameraVector
+  startAngle: number
+  transitionLeft: CameraVector
+  transitionRight: CameraVector
+}
+
 export const settingRotationX = -Math.PI / 2
 
 export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
@@ -122,7 +133,11 @@ export function getStoneDimensions(
   selectedOpal?: BuilderOpal
 ): StoneDimensions {
   const [width, defaultHeight] = stoneDimensions[config.shape]
-  if (!selectedOpal || selectedOpal.visual.evidence !== 'catalogue') {
+  if (
+    !selectedOpal ||
+    selectedOpal.selectionKind !== 'individual' ||
+    selectedOpal.visual.evidence !== 'catalogue'
+  ) {
     return [width, defaultHeight]
   }
   const compatibleShape =
@@ -136,6 +151,23 @@ export function getStoneDimensions(
     ]
   }
   return [width, Math.min(0.72, Math.max(width, width * selectedOpal.visual.aspectRatio))]
+}
+
+export function getRenderableOpalDepthMm(selectedOpal?: BuilderOpal): number | undefined {
+  const dimensions = selectedOpal?.visual.dimensionsMm
+  if (
+    !selectedOpal ||
+    selectedOpal.selectionKind !== 'individual' ||
+    selectedOpal.visual.evidence !== 'catalogue' ||
+    !dimensions
+  ) {
+    return undefined
+  }
+
+  // Catalogue dimensions sometimes describe parcels or rough depth. A set
+  // cabochon cannot plausibly stand taller than three quarters of its narrow
+  // face, so cap bad legacy data before it produces a tower-like preview.
+  return Math.min(dimensions.depth, Math.min(dimensions.width, dimensions.length) * 0.75)
 }
 
 function baseOutlinePoint(
@@ -211,42 +243,127 @@ export function outlinePoint(
   return [point[0] + normalX * offset, point[1] + normalY * offset]
 }
 
-/**
- * Applies the small, repeatable contour deviations visible in each sold ring.
- * This is deliberately style geometry, not random noise: stone, bezel, cup,
- * seam, and halo must continue to share one manufacturable outline.
- */
+/** Keeps every construction layer on the selected opal's physical boundary. */
 export function soldStyleOutlinePoint(
-  style: RingConfig['style'],
+  _style: RingConfig['style'],
   shape: RingConfig['shape'],
   angle: number,
   width: number,
   height: number,
   offset = 0
 ): readonly [number, number] {
-  const profile = ringStyleGeometryProfiles[style]
-  const point = outlinePoint(shape, angle, width, height, offset)
-  const epsilon = 0.0001
-  const before = outlinePoint(shape, angle - epsilon, width, height, offset)
-  const after = outlinePoint(shape, angle + epsilon, width, height, offset)
-  const tangentX = after[0] - before[0]
-  const tangentY = after[1] - before[1]
-  const tangentLength = Math.hypot(tangentX, tangentY) || 1
-  let normalX = tangentY / tangentLength
-  let normalY = -tangentX / tangentLength
-  if (normalX * point[0] + normalY * point[1] < 0) {
-    normalX *= -1
-    normalY *= -1
+  return outlinePoint(shape, angle, width, height, offset)
+}
+
+export function getSettingOuterHalfWidth(
+  config: Pick<RingConfig, 'setting' | 'shape' | 'style'>,
+  dimensions: StoneDimensions
+): number {
+  const [width, height] = dimensions
+  const profile = ringStyleGeometryProfiles[config.style]
+  if (config.setting === 'beaded') {
+    const beadCount = adaptiveOutlinePointCount(
+      config.shape,
+      width,
+      height,
+      profile.haloOffset,
+      profile.beadPitchMm,
+      config.style
+    )
+    const beads = applyHandmadeBeadVariation(
+      evenlySpacedOutlinePoints(
+        config.shape,
+        width,
+        height,
+        profile.haloOffset,
+        beadCount,
+        profile.haloPhase,
+        config.style
+      ),
+      profile.beadVariation,
+      profile.beadFlattening
+    )
+    return beads.reduce(
+      (maximum, bead) =>
+        Math.max(
+          maximum,
+          Math.abs(bead.x) + profile.beadRadius * bead.size * Math.max(bead.stretchX, bead.stretchY)
+        ),
+      0
+    )
   }
-  const wave =
-    Math.sin(angle * profile.contourWaveFrequency + profile.contourWavePhase) +
-    0.42 * Math.sin(angle * (profile.contourWaveFrequency + 2) - profile.contourWavePhase)
-  const displacement = Math.min(width, height) * profile.contourWave * wave
-  const verticalPosition = height === 0 ? 0 : point[1] / height
+
+  const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+  return Array.from({ length: 720 }, (_, index) => {
+    const angle = (index / 720) * Math.PI * 2
+    return Math.abs(outlinePoint(config.shape, angle, width, height, outerOffset)[0])
+  }).reduce((maximum, value) => Math.max(maximum, value), 0)
+}
+
+export function getRingShankLandmarks({
+  radius,
+  settingBaseY,
+  settingHalfWidth,
+  shoulderJoinDrop,
+  shoulderTransition,
+  shoulderUnderlap,
+}: {
+  radius: number
+  settingBaseY: number
+  settingHalfWidth: number
+  shoulderJoinDrop: number
+  shoulderTransition: number
+  shoulderUnderlap: number
+}): RingShankLandmarks {
+  const requestedJoinX = Math.max(0.05, settingHalfWidth - shoulderUnderlap)
+  const joinX = Math.min(radius * 0.82, requestedJoinX)
+  const arcX = Math.min(radius * 0.88, joinX + shoulderTransition)
+  const upperArcAngle = Math.acos(Math.min(0.92, Math.max(-0.92, arcX / radius)))
+  const startAngle = Math.PI - upperArcAngle
+  const endAngle = Math.PI * 2 + upperArcAngle
+  const joinY = settingBaseY - shoulderJoinDrop
+  const arcY = Math.sqrt(Math.max(0, radius * radius - arcX * arcX))
+  const joinLeft: CameraVector = [-joinX, joinY, 0]
+  const joinRight: CameraVector = [joinX, joinY, 0]
+  const arcStart: CameraVector = [-arcX, arcY, 0]
+  const arcEnd: CameraVector = [arcX, arcY, 0]
+  const transitionProgress = 0.48
+  const transitionLeft: CameraVector = [
+    joinLeft[0] + (arcStart[0] - joinLeft[0]) * transitionProgress,
+    joinLeft[1] + (arcStart[1] - joinLeft[1]) * transitionProgress,
+    0,
+  ]
+  const transitionRight: CameraVector = [-transitionLeft[0], transitionLeft[1], 0]
+
+  return {
+    arcEnd,
+    arcStart,
+    endAngle,
+    joinLeft,
+    joinRight,
+    startAngle,
+    transitionLeft,
+    transitionRight,
+  }
+}
+
+export function getRingShankPathPoints(
+  options: Parameters<typeof getRingShankLandmarks>[0],
+  arcSegments = 96
+): readonly CameraVector[] {
+  const landmarks = getRingShankLandmarks(options)
+  const ringPoints = Array.from({ length: arcSegments + 1 }, (_, index) => {
+    const angle =
+      landmarks.startAngle + ((landmarks.endAngle - landmarks.startAngle) * index) / arcSegments
+    return [options.radius * Math.cos(angle), options.radius * Math.sin(angle), 0] as CameraVector
+  })
 
   return [
-    point[0] + width * profile.contourLean * verticalPosition + normalX * displacement,
-    point[1] + normalY * displacement,
+    landmarks.joinLeft,
+    landmarks.transitionLeft,
+    ...ringPoints,
+    landmarks.transitionRight,
+    landmarks.joinRight,
   ]
 }
 
@@ -336,7 +453,10 @@ export interface HandmadeBeadPoint {
   flattening: number
   heightVariation: number
   key: number
+  rotation: number
   size: number
+  stretchX: number
+  stretchY: number
   x: number
   y: number
 }
@@ -353,6 +473,8 @@ export function applyHandmadeBeadVariation(
     const radialLength = Math.hypot(x, y) || 1
     const radialJitter = (((key * 11) % 9) - 4) * 0.0012 * variation
     const tangentJitter = (((key * 13) % 7) - 3) * 0.0008 * variation
+    const stretchX = 1 + (((key * 7) % 5) - 2) * 0.022 * variation
+    const stretchY = 1 + (((key * 9) % 7) - 3) * 0.016 * variation
 
     return {
       key,
@@ -361,6 +483,9 @@ export function applyHandmadeBeadVariation(
       size,
       flattening,
       heightVariation,
+      rotation: (((key * 17) % 29) / 29) * Math.PI * 2,
+      stretchX,
+      stretchY,
     }
   })
 }
@@ -389,7 +514,7 @@ export function getSettingPlacement(config: RingConfig, selectedOpal?: BuilderOp
   const depthProfile = getCabochonDepthProfile(
     stoneWidth,
     stoneHeight,
-    selectedOpal?.visual.dimensionsMm?.depth
+    getRenderableOpalDepthMm(selectedOpal)
   )
   const settingBottom = depthProfile.baseZ - 0.012
   const settingY = measurements.outerRadius - settingBottom

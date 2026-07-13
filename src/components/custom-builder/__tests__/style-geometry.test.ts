@@ -21,13 +21,13 @@ describe('sold ring style geometry', () => {
     const coral = ringStyleGeometryProfiles.coral
 
     expect(coral).toMatchObject({
-      bezelWallOffset: 0.032,
-      bezelWallThickness: 0.052,
-      bezelLipOffset: 0.01,
+      bezelWallOffset: 0.03,
+      bezelWallThickness: 0.05,
+      bezelLipOffset: 0.006,
       innerSeamRadius: 0.008,
       shankRadius: 0.094,
       shoulderRadius: 0.099,
-      crossSectionPower: 0.9,
+      crossSectionPower: 0.96,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
     expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.11)
@@ -53,8 +53,8 @@ describe('sold ring style geometry', () => {
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon.beadFlattening).toBeLessThan(aurora.beadFlattening)
-    expect(sunMoon).toMatchObject({ beadPitchMm: 1.06, beadRadius: 0.042, haloOffset: 0.095 })
-    expect(aurora).toMatchObject({ beadPitchMm: 1.1, beadRadius: 0.046, haloOffset: 0.086 })
+    expect(sunMoon).toMatchObject({ beadPitchMm: 1.06, beadRadius: 0.042, haloOffset: 0.096 })
+    expect(aurora).toMatchObject({ beadPitchMm: 1.1, beadRadius: 0.046, haloOffset: 0.095 })
   })
 
   test.each([
@@ -71,7 +71,8 @@ describe('sold ring style geometry', () => {
         width,
         height,
         profile.haloOffset,
-        profile.beadPitchMm
+        profile.beadPitchMm,
+        style
       )
 
       expect(count).toBeGreaterThanOrEqual(expectedCount - 2)
@@ -89,7 +90,8 @@ describe('sold ring style geometry', () => {
         0.4,
         0.5,
         profile.haloOffset,
-        profile.beadPitchMm
+        profile.beadPitchMm,
+        style
       )
       const points = evenlySpacedOutlinePoints(
         shape,
@@ -97,7 +99,8 @@ describe('sold ring style geometry', () => {
         0.5,
         profile.haloOffset,
         count,
-        profile.haloPhase
+        profile.haloPhase,
+        style
       )
       const chordPitchMm =
         (points.reduce((sum, point, index) => {
@@ -140,10 +143,19 @@ describe('sold ring style geometry', () => {
         0.4,
         0.5,
         profile.haloOffset,
-        profile.beadPitchMm
+        profile.beadPitchMm,
+        style
       )
       const beads = applyHandmadeBeadVariation(
-        evenlySpacedOutlinePoints(shape, 0.4, 0.5, profile.haloOffset, count, profile.haloPhase),
+        evenlySpacedOutlinePoints(
+          shape,
+          0.4,
+          0.5,
+          profile.haloOffset,
+          count,
+          profile.haloPhase,
+          style
+        ),
         profile.beadVariation,
         profile.beadFlattening
       )
@@ -173,7 +185,8 @@ describe('sold ring style geometry', () => {
         0.4,
         0.5,
         profile.haloOffset,
-        profile.beadPitchMm
+        profile.beadPitchMm,
+        style
       )
       const points = evenlySpacedOutlinePoints(
         shape,
@@ -181,14 +194,20 @@ describe('sold ring style geometry', () => {
         0.5,
         profile.haloOffset,
         count,
-        profile.haloPhase
+        profile.haloPhase,
+        style
       )
-      const point = points[0]!
-      const crown = points[Math.floor(count / 2)]!
+      const point = points.reduce((lowest, candidate) =>
+        candidate.y < lowest.y ? candidate : lowest
+      )
+      const crown = points.reduce((highest, candidate) =>
+        candidate.y > highest.y ? candidate : highest
+      )
 
-      expect(point.x).toBeCloseTo(0, 2)
+      const halfPitch = profile.beadPitchMm / 20
+      expect(Math.abs(point.x)).toBeLessThanOrEqual(halfPitch + 0.005)
       expect(point.y).toBeLessThan(0)
-      expect(crown.x).toBeCloseTo(0, 2)
+      expect(Math.abs(crown.x)).toBeLessThanOrEqual(halfPitch + 0.005)
       expect(crown.y).toBeGreaterThan(0)
     }
   )

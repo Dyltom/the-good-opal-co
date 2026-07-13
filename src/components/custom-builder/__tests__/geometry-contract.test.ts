@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { CatmullRomCurve3, Vector3 } from 'three'
 import {
   cameraPositions,
   cameraUpVectors,
@@ -10,6 +11,10 @@ import {
   getRingFramingTarget,
   getRingMeasurements,
   getRingModelBounds,
+  getRingShankLandmarks,
+  getRingShankPathPoints,
+  getRenderableOpalDepthMm,
+  getSettingOuterHalfWidth,
   getSettingPlacement,
   getStoneDimensions,
   outlinePoint,
@@ -18,6 +23,7 @@ import {
   soldStyleOutlinePoint,
 } from '../geometry'
 import {
+  applyRingStyle,
   defaultRingConfig,
   ringStyleGeometryProfiles,
   ringStyles,
@@ -175,24 +181,14 @@ describe('custom ring geometry contract', () => {
     }
   )
 
-  test('gives sold designs stable handmade contours instead of one generic silhouette', () => {
-    const landmarks = ringStyles.map(({ id, shape }) =>
-      [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((angle) =>
-        soldStyleOutlinePoint(id, shape, angle, 0.4, 0.5).map((value) => Number(value.toFixed(5)))
-      )
-    )
-
-    expect(new Set(landmarks.map((landmark) => JSON.stringify(landmark)))).toHaveLength(
-      ringStyles.length
-    )
+  test('keeps one physical opal boundary through every collection construction', () => {
     for (const style of ringStyles) {
-      const deviations = Array.from({ length: 24 }, (_, index) => {
-        const angle = (index / 24) * Math.PI * 2
+      for (let index = 0; index < 360; index += 1) {
+        const angle = (index / 360) * Math.PI * 2
         const sold = soldStyleOutlinePoint(style.id, style.shape, angle, 0.4, 0.5)
         const generic = outlinePoint(style.shape, angle, 0.4, 0.5)
-        return Math.hypot(sold[0] - generic[0], sold[1] - generic[1])
-      })
-      expect(Math.max(...deviations), style.id).toBeGreaterThan(0.003)
+        expect(sold).toEqual(generic)
+      }
     }
   })
 
@@ -209,6 +205,32 @@ describe('custom ring geometry contract', () => {
         visual: { ...measuredOpal.visual, evidence: 'type-fallback' },
       })
     ).toEqual([0.4, 0.5])
+    expect(
+      getStoneDimensions(defaultRingConfig, {
+        ...measuredOpal,
+        selectionKind: 'parcel',
+      })
+    ).toEqual([0.4, 0.5])
+  })
+
+  test('uses plausible reviewed individual depth and ignores representative listings', () => {
+    expect(getRenderableOpalDepthMm(measuredOpal)).toBe(3.2)
+    expect(
+      getRenderableOpalDepthMm({
+        ...measuredOpal,
+        visual: {
+          ...measuredOpal.visual,
+          dimensionsMm: { width: 4, length: 8, depth: 9 },
+        },
+      })
+    ).toBe(3)
+    expect(getRenderableOpalDepthMm({ ...measuredOpal, selectionKind: 'parcel' })).toBeUndefined()
+    expect(
+      getRenderableOpalDepthMm({
+        ...measuredOpal,
+        visual: { ...measuredOpal.visual, evidence: 'type-fallback' },
+      })
+    ).toBeUndefined()
   })
 
   test('caps visible seat depth while preserving measured dome depth', () => {
@@ -298,11 +320,13 @@ describe('custom ring geometry contract', () => {
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
       expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.85)
-      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.95)
+      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(1)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.1)
       expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.1)
-      expect(profile.joinInsetFactor, style).toBeGreaterThanOrEqual(1)
-      expect(profile.joinLiftFactor, style).toBeLessThanOrEqual(0)
+      expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.06)
+      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.08)
+      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
+      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.035)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
@@ -316,4 +340,58 @@ describe('custom ring geometry contract', () => {
       }
     }
   })
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'keeps the %s shoulder transition monotonic, symmetric, and hidden beneath the head',
+    (style) => {
+      const config = { ...defaultRingConfig, ...applyRingStyle(defaultRingConfig, style) }
+      const profile = ringStyleGeometryProfiles[style]
+      const measurements = getRingMeasurements(config)
+      const referenceDimensions = getStoneDimensions(config)
+
+      for (const dimensions of [referenceDimensions, [0.25, 0.3], [1, 1.4]] as const) {
+        const settingHalfWidth = getSettingOuterHalfWidth(config, dimensions)
+        const pathOptions = {
+          radius: measurements.centreRadius,
+          settingBaseY: measurements.outerRadius,
+          settingHalfWidth,
+          shoulderJoinDrop: profile.shoulderJoinDrop,
+          shoulderTransition: profile.shoulderTransition,
+          shoulderUnderlap: profile.shoulderUnderlap,
+        }
+        const path = getRingShankLandmarks(pathOptions)
+
+        expect(path.joinLeft[0]).toBeCloseTo(-path.joinRight[0], 12)
+        expect(path.transitionLeft[0]).toBeCloseTo(-path.transitionRight[0], 12)
+        expect(path.arcStart[0]).toBeCloseTo(-path.arcEnd[0], 12)
+        expect(path.joinLeft[1]).toBeCloseTo(path.joinRight[1], 12)
+        expect(path.transitionLeft[1]).toBeCloseTo(path.transitionRight[1], 12)
+        expect(path.arcStart[1]).toBeCloseTo(path.arcEnd[1], 12)
+
+        // Moving from the buried left join into the circular shank must never
+        // reverse horizontally or rise. The old overshooting waypoint produced
+        // the hooked shoulders visible in profile.
+        expect(path.joinLeft[0]).toBeGreaterThan(path.transitionLeft[0])
+        expect(path.transitionLeft[0]).toBeGreaterThan(path.arcStart[0])
+        expect(path.joinLeft[1]).toBeGreaterThan(path.transitionLeft[1])
+        expect(path.transitionLeft[1]).toBeGreaterThan(path.arcStart[1])
+        expect(Math.abs(path.joinLeft[0])).toBeLessThan(settingHalfWidth)
+
+        const curve = new CatmullRomCurve3(
+          getRingShankPathPoints(pathOptions).map((point) => new Vector3(...point)),
+          false,
+          'centripetal'
+        )
+        const shoulderSamples = Array.from({ length: 401 }, (_, index) =>
+          curve.getPointAt(index / 400)
+        ).filter((point) => point.x <= 0 && point.y >= path.arcStart[1])
+        for (let index = 1; index < shoulderSamples.length; index += 1) {
+          const previous = shoulderSamples[index - 1]!
+          const current = shoulderSamples[index]!
+          expect(current.x).toBeLessThanOrEqual(previous.x + 0.000_001)
+          expect(current.y).toBeLessThanOrEqual(previous.y + 0.000_001)
+        }
+      }
+    }
+  )
 })

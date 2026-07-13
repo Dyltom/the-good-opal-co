@@ -168,7 +168,7 @@ describe('RingConfigurator store opal selection', () => {
     )
   })
 
-  test('keeps the visual guide stone shape while trying another collection design', async () => {
+  test('uses each collection reference shape until a store opal is selected', async () => {
     const user = userEvent.setup()
     render(<RingConfigurator initialConfig={defaultRingConfig} opals={[]} />)
 
@@ -177,7 +177,15 @@ describe('RingConfigurator store opal selection', () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search)
       expect(params.get('y')).toBe('coral')
-      expect(params.get('s')).toBe('oval')
+      expect(params.get('s')).toBe('cushion')
+    })
+
+    await user.click(screen.getByRole('button', { name: /Aurora/i }))
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('y')).toBe('aurora')
+      expect(params.get('s')).toBe('pear')
     })
   })
 

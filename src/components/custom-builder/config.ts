@@ -109,10 +109,6 @@ export interface RingStyleFit {
 }
 
 export interface RingStyleGeometryProfile {
-  contourLean: number
-  contourWave: number
-  contourWaveFrequency: number
-  contourWavePhase: number
   bezelWallOffset: number
   bezelWallThickness: number
   bezelLipOffset: number
@@ -129,9 +125,9 @@ export interface RingStyleGeometryProfile {
   innerSeamOffset: number
   innerSeamRadius: number
   innerSeamVariation: number
-  joinInsetFactor: number
-  joinLiftFactor: number
-  shoulderLead: number
+  shoulderUnderlap: number
+  shoulderJoinDrop: number
+  shoulderTransition: number
   shoulderBlend: number
   crossSectionPower: number
   metalRoughness: number
@@ -159,14 +155,10 @@ export function getHaloSupportGeometry(
 
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
-    contourLean: 0.012,
-    contourWave: 0.012,
-    contourWaveFrequency: 3,
-    contourWavePhase: 0.55,
-    bezelWallOffset: 0.032,
-    bezelWallThickness: 0.056,
-    bezelLipOffset: 0.014,
-    bezelLipRadius: 0.013,
+    bezelWallOffset: 0.02,
+    bezelWallThickness: 0.04,
+    bezelLipOffset: 0.004,
+    bezelLipRadius: 0.012,
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
@@ -179,11 +171,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.0045,
     innerSeamVariation: 0.001,
-    joinInsetFactor: 1.25,
-    joinLiftFactor: -0.4,
-    shoulderLead: 0.075,
+    shoulderUnderlap: 0.07,
+    shoulderJoinDrop: 0.026,
+    shoulderTransition: 0.04,
     shoulderBlend: 0.08,
-    crossSectionPower: 0.9,
+    crossSectionPower: 1,
     metalRoughness: 0.31,
     shankRadius: 0.102,
     shankDepth: 0.06,
@@ -191,14 +183,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderDepth: 0.066,
   },
   coral: {
-    contourLean: -0.008,
-    contourWave: 0.016,
-    contourWaveFrequency: 3,
-    contourWavePhase: 1.15,
-    bezelWallOffset: 0.032,
-    bezelWallThickness: 0.052,
-    bezelLipOffset: 0.01,
-    bezelLipRadius: 0.014,
+    bezelWallOffset: 0.03,
+    bezelWallThickness: 0.05,
+    bezelLipOffset: 0.006,
+    bezelLipRadius: 0.012,
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
@@ -211,11 +199,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.001,
     innerSeamRadius: 0.008,
     innerSeamVariation: 0.0025,
-    joinInsetFactor: 1.25,
-    joinLiftFactor: -0.4,
-    shoulderLead: 0.065,
+    shoulderUnderlap: 0.07,
+    shoulderJoinDrop: 0.025,
+    shoulderTransition: 0.038,
     shoulderBlend: 0.08,
-    crossSectionPower: 0.9,
+    crossSectionPower: 0.96,
     metalRoughness: 0.31,
     shankRadius: 0.094,
     shankDepth: 0.052,
@@ -223,19 +211,15 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderDepth: 0.058,
   },
   'sun-moon': {
-    contourLean: 0.016,
-    contourWave: 0.014,
-    contourWaveFrequency: 5,
-    contourWavePhase: -0.35,
-    bezelWallOffset: 0.028,
-    bezelWallThickness: 0.05,
-    bezelLipOffset: 0.014,
-    bezelLipRadius: 0.013,
-    haloOffset: 0.095,
+    bezelWallOffset: 0.022,
+    bezelWallThickness: 0.046,
+    bezelLipOffset: 0.004,
+    bezelLipRadius: 0.012,
+    haloOffset: 0.096,
     beadRadius: 0.042,
     beadCount: 34,
     beadPitchMm: 1.06,
-    beadFlattening: 0.68,
+    beadFlattening: 0.66,
     beadRoughness: 0.34,
     beadVariation: 0.55,
     haloPhase: -Math.PI / 2,
@@ -243,11 +227,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.0045,
     innerSeamVariation: 0.001,
-    joinInsetFactor: 1.25,
-    joinLiftFactor: -0.4,
-    shoulderLead: 0.03,
+    shoulderUnderlap: 0.072,
+    shoulderJoinDrop: 0.026,
+    shoulderTransition: 0.042,
     shoulderBlend: 0.075,
-    crossSectionPower: 0.9,
+    crossSectionPower: 0.98,
     metalRoughness: 0.25,
     shankRadius: 0.096,
     shankDepth: 0.05,
@@ -255,15 +239,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderDepth: 0.055,
   },
   aurora: {
-    contourLean: -0.032,
-    contourWave: 0.022,
-    contourWaveFrequency: 3,
-    contourWavePhase: 0.8,
-    bezelWallOffset: 0.028,
-    bezelWallThickness: 0.05,
-    bezelLipOffset: 0.014,
-    bezelLipRadius: 0.013,
-    haloOffset: 0.086,
+    bezelWallOffset: 0.022,
+    bezelWallThickness: 0.046,
+    bezelLipOffset: 0.004,
+    bezelLipRadius: 0.012,
+    haloOffset: 0.095,
     beadRadius: 0.046,
     beadCount: 28,
     beadPitchMm: 1.1,
@@ -275,11 +255,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.0045,
     innerSeamVariation: 0.001,
-    joinInsetFactor: 1.25,
-    joinLiftFactor: -0.4,
-    shoulderLead: 0.03,
+    shoulderUnderlap: 0.075,
+    shoulderJoinDrop: 0.028,
+    shoulderTransition: 0.045,
     shoulderBlend: 0.075,
-    crossSectionPower: 0.9,
+    crossSectionPower: 0.98,
     metalRoughness: 0.25,
     shankRadius: 0.106,
     shankDepth: 0.052,
