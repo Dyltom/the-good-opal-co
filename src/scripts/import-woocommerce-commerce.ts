@@ -11,6 +11,7 @@ import {
   wooOrderCommerceContribution,
   type LegacyCustomerData,
   type LegacyProductData,
+  type WooPrivateProduct,
 } from '@/lib/woocommerce/private-commerce'
 import { loadWooCommerceSnapshotDirectory } from '@/lib/woocommerce/snapshot-file'
 import {
@@ -173,6 +174,30 @@ function payloadPrimaryImageFilename(product: Product): string | undefined {
   return filename ? decodeURIComponent(filename).toLowerCase() : undefined
 }
 
+function productIdentityConfidence(
+  existing: Product,
+  source: WooPrivateProduct,
+  mapped: LegacyProductData,
+  sourceImageIsUnique: boolean,
+  sourceNameIsUnique: boolean
+): number {
+  let score = 0
+  if (existing.legacyWooId === source.id) score += 1_000
+  if (existing.sku === `WP-${source.id}`) score += 500
+  if (existing.sku === mapped.sku) score += 400
+  if (
+    sourceImageIsUnique &&
+    payloadPrimaryImageFilename(existing) === wooPrimaryImageFilename(source)
+  ) {
+    score += 100
+  }
+  if (existing.slug === mapped.slug) score += 50
+  if (sourceNameIsUnique && productNameKey(existing.name) === productNameKey(mapped.name)) {
+    score += 20
+  }
+  return score
+}
+
 async function importCommerce(payload: Payload, apply: boolean): Promise<ImportSummary> {
   const snapshotDirectory = process.env['WOO_SNAPSHOT_DIR']?.trim()
   const adminUsername = process.env['WOO_ADMIN_USERNAME']?.trim()
@@ -278,6 +303,34 @@ async function importCommerce(payload: Payload, apply: boolean): Promise<ImportS
     }
     return { sourceProduct, mapped, existing: strongExisting ?? fallbackCandidates[0] }
   })
+  const collisionPlans = new Map<string, typeof productPlans>()
+  for (const plan of productPlans) {
+    if (!plan.existing) continue
+    const targetId = String(plan.existing.id)
+    collisionPlans.set(targetId, [...(collisionPlans.get(targetId) ?? []), plan])
+  }
+  for (const [targetId, plans] of collisionPlans) {
+    if (plans.length < 2) continue
+    const ranked = plans
+      .map((plan) => ({
+        plan,
+        score: productIdentityConfidence(
+          plan.existing!,
+          plan.sourceProduct,
+          plan.mapped,
+          sourceImageCounts.get(wooPrimaryImageFilename(plan.sourceProduct) ?? '') === 1,
+          sourceNameCounts.get(productNameKey(plan.mapped.name)) === 1
+        ),
+      }))
+      .sort((left, right) => right.score - left.score)
+    const winner = ranked[0]
+    const runnerUp = ranked[1]
+    if (!winner || !runnerUp || winner.score === runnerUp.score) {
+      const details = ranked.map(({ plan, score }) => `${plan.sourceProduct.id}:${score}`).join('/')
+      throw new Error(`Ambiguous WooCommerce identity collision ${details} -> ${targetId}`)
+    }
+    for (const { plan } of ranked.slice(1)) plan.existing = undefined
+  }
   const matchedExistingProductIds = new Set(
     productPlans.flatMap(({ existing }) => (existing ? [String(existing.id)] : []))
   )
