@@ -46,9 +46,19 @@ const legacyGalleryBySlug: Record<string, readonly string[]> = {
 
 function filename(url: string): string {
   try {
-    return new URL(url, 'https://catalogue.local').pathname.split('/').at(-1) ?? url
+    const value = new URL(url, 'https://catalogue.local').pathname.split('/').at(-1) ?? url
+    // Imported Payload media is stored as `wp-<attachment-id>-<filename>`.
+    // Legacy fallbacks keep the original WordPress filename, so compare the
+    // source identity rather than the storage-layer prefix.
+    return decodeURIComponent(value)
+      .replace(/^wp-\d+-/i, '')
+      .replace(/-[a-z0-9]{20,}(?=\.[^.]+$)/i, '')
+      .toLowerCase()
   } catch {
     return url
+      .replace(/^wp-\d+-/i, '')
+      .replace(/-[a-z0-9]{20,}(?=\.[^.]+$)/i, '')
+      .toLowerCase()
   }
 }
 

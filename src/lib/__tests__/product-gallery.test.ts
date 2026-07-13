@@ -14,13 +14,24 @@ describe('legacy product gallery completion', () => {
 
   test('adds missing images and does not duplicate images later imported into CMS', () => {
     const gallery = mergeProductGallery('coral-ring-2', 'Coral Ring 2', [
-      { url: '/api/media/file/20210819_102402-1.jpg', alt: 'CMS image' },
+      { url: '/api/media/file/wp-102402-20210819_102402-1.jpg', alt: 'CMS image' },
     ])
 
     expect(gallery).toEqual([
-      { url: '/api/media/file/20210819_102402-1.jpg', alt: 'CMS image' },
+      { url: '/api/media/file/wp-102402-20210819_102402-1.jpg', alt: 'CMS image' },
       { url: '/images/products/20210819_101705.jpg', alt: 'Coral Ring 2 additional view' },
     ])
+  })
+
+  test('normalizes encoded filenames and attachment prefixes case-insensitively', () => {
+    const gallery = mergeProductGallery('mintabie-carved-heart', 'Mintabie Carved Heart', [
+      {
+        url: '/api/media/file/WP-783-IMG_%30%37%38%33-75NAzcYZKANXEy66zRiHYy7KPXHbg7.JPG',
+        alt: 'CMS image',
+      },
+    ])
+
+    expect(gallery).toHaveLength(1)
   })
 
   test('all fallback assets are deployed from the public product directory', () => {
