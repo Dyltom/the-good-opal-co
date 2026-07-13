@@ -116,6 +116,7 @@ describe('custom ring geometry contract', () => {
     expect(projectedDepth.profile).toBeLessThan(0.2)
     expect(projectedDepth['three-quarter']).toBeGreaterThan(0.5)
     expect(projectedDepth['three-quarter']).toBeLessThan(0.9)
+    expect(cameraPositions['three-quarter']).toEqual([3.2, 5.8, 3])
   })
 
   test('shows the setting long axis in profile instead of looking into its end', () => {
@@ -266,11 +267,13 @@ describe('custom ring geometry contract', () => {
   test('caps both the visible seat and mounted dome independently from loose depth', () => {
     const shallow = getCabochonDepthProfile(0.4, 0.5, 1)
     const deep = getCabochonDepthProfile(0.4, 0.5, 10)
+    const coral = getCabochonDepthProfile(0.5, 0.5, 10, 'coral')
 
     expect(shallow.domeHeight).toBeCloseTo(0.042, 12)
     expect(shallow.girdleZ - shallow.baseZ).toBeCloseTo(0.058, 12)
     expect(deep.domeHeight).toBeCloseTo(0.18, 12)
     expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.08, 12)
+    expect(coral.girdleZ - coral.baseZ).toBeCloseTo(0.06, 12)
   })
 
   test('keeps unmeasured opal crowns visible above each sold setting profile', () => {
@@ -338,6 +341,9 @@ describe('custom ring geometry contract', () => {
     expect(upperRight[0]).toBeLessThanOrEqual(0.83)
     expect(lowerRight[0]).toBeGreaterThanOrEqual(0.53)
     expect(lowerRight[0]).toBeLessThanOrEqual(0.61)
+    const nearTip = outlinePoint('pear', Math.asin(-0.9), 1, 1)
+    expect(nearTip[0]).toBeGreaterThanOrEqual(0.25)
+    expect(nearTip[0]).toBeLessThanOrEqual(0.28)
     expect(outlinePoint('pear', -Math.PI / 2, 1, 1)).toEqual([expect.closeTo(0, 12), -1])
   })
 
@@ -381,10 +387,12 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
       expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.85)
       expect(profile.crossSectionPower, style).toBeLessThanOrEqual(1)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.1)
-      expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.1)
-      expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.06)
-      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.09)
+      expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(1.1)
+      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.15)
+      expect(profile.shoulderBlend, style).toBeGreaterThanOrEqual(0.11)
+      expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.13)
+      expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.11)
+      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.14)
       expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
       expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.035)
 

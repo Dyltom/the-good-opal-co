@@ -42,7 +42,7 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 }
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
-  'three-quarter': [3.4, 5.2, 3.2],
+  'three-quarter': [3.2, 5.8, 3],
   front: [0, 5.8, 0],
   // Look across the band, not into the tip of the setting's long axis. The old
   // end-on view hid pear and elongated crowns behind their bezel or halo.
@@ -183,8 +183,8 @@ function baseOutlinePoint(
 
   if (shape === 'cushion') {
     return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.32) * width,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.32) * height,
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.27) * width,
+      Math.sign(sine) * Math.pow(Math.abs(sine), 0.27) * height,
     ]
   }
   if (shape === 'elongated') {
@@ -202,7 +202,11 @@ function baseOutlinePoint(
     const taper = 0.925 + 0.2 * sine + 0.045 * sine * sine
     // Normalise the quadratic so documented width remains the true extent.
     const pearWidthCorrection = 1.055_526_961_712_104_8
-    return [cosine * width * taper * pearWidthCorrection, sine * height]
+    const finalTipProgress = Math.min(1, Math.max(0, (-sine - 0.72) / 0.28))
+    const smoothTipProgress =
+      finalTipProgress * finalTipProgress * (3 - 2 * finalTipProgress)
+    const tipTaper = 1 - smoothTipProgress * 0.4
+    return [cosine * width * taper * pearWidthCorrection * tipTaper, sine * height]
   }
   if (shape === 'heart') {
     // The catalogue hearts are hand-carved with a broad body, shallow notch,
@@ -614,7 +618,8 @@ export function getCabochonDepthProfile(
     ? Math.min(totalDepth * 0.42, Math.min(width, height) * 0.6, 0.18)
     : Math.min(width, height) * (style ? unmeasuredDomeFactor[style] : 0.22)
   // Most loose-stone depth is hidden inside the handmade cup once set.
-  const visibleSeatDepth = Math.min(Math.max(totalDepth - domeHeight, 0), 0.08)
+  const visibleSeatCap = style === 'coral' ? 0.06 : 0.08
+  const visibleSeatDepth = Math.min(Math.max(totalDepth - domeHeight, 0), visibleSeatCap)
 
   return {
     baseZ: girdleZ - visibleSeatDepth,

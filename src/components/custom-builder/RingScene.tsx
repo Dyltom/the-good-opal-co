@@ -754,7 +754,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   // Sold halo designs need a deeper structural backplate to carry the grain
   // field into the shank. The former paper-thin cup vanished in profile and
   // made the setting look suspended even where the meshes intersected.
-  const settingBaseDrop = config.setting === 'beaded' ? 0.075 : 0.055
+  const settingBaseDrop =
+    config.style === 'coral' ? 0.04 : config.setting === 'beaded' ? 0.075 : 0.055
   const haloSupport = getHaloSupportGeometry(profile)
   const beadCount =
     profile.beadCount > 0 ? getStyleBeadCount(config.style, config.shape, width, height) : 0

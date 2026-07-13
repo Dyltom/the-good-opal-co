@@ -8,6 +8,7 @@ describe('photoreal ring rendering contract', () => {
   test('models a complete low bezel rather than a floating outline', () => {
     expect(sceneSource).toContain('function createSettingBaseGeometry(')
     expect(sceneSource).toContain('<SettingBase')
+    expect(sceneSource).toContain("config.style === 'coral' ? 0.04")
     expect(sceneSource).toContain("config.setting === 'beaded' ? 0.075 : 0.055")
     expect(sceneSource).toContain('bottomZ={bezelBottom - settingBaseDrop}')
     expect(sceneSource).toContain('topZ={depthProfile.baseZ + 0.003}')

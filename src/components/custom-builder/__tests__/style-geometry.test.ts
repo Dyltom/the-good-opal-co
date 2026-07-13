@@ -59,7 +59,7 @@ describe('sold ring style geometry', () => {
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.008,
       shankRadius: 0.094,
-      shoulderRadius: 0.094,
+      shoulderRadius: 0.105,
       crossSectionPower: 0.96,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
@@ -69,8 +69,8 @@ describe('sold ring style geometry', () => {
 
   test('keeps Coral square with constant normal-width setting walls', () => {
     const diagonal = outlinePoint('cushion', Math.PI / 4, 0.5, 0.5)
-    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.885)
-    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.905)
+    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.91)
+    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.92)
 
     for (const angle of [0, Math.PI / 8, Math.PI / 4, (3 * Math.PI) / 8]) {
       const inner = outlinePoint('cushion', angle, 0.5, 0.5)
@@ -88,14 +88,14 @@ describe('sold ring style geometry', () => {
     expect(sunMoon).toMatchObject({
       beadCount: 32,
       beadPitchMm: 1.06,
-      beadRadius: 0.042,
-      haloOffset: 0.104,
+      beadRadius: 0.052,
+      haloOffset: 0.094,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.1,
-      beadRadius: 0.052,
-      haloOffset: 0.114,
+      beadRadius: 0.062,
+      haloOffset: 0.104,
     })
   })
 
