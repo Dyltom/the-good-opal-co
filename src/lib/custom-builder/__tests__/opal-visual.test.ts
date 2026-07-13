@@ -201,6 +201,16 @@ describe('custom builder opal visual profiles', () => {
     expect(profile.visual.textureCrop).toEqual({ focalX: 0.372, focalY: 0.506, zoom: 6.12 })
   })
 
+  test('keeps the photographed hand outside the reviewed 1.70 ct pear face', () => {
+    const profile = createOpalVisualProfile(
+      'lightning-ridge-white-opal-1-70-cts-2',
+      'Lightning Ridge White Opal 1.70 cts',
+      'white-opal'
+    )
+
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.47, focalY: 0.48, zoom: 3.8 })
+  })
+
   test('keeps reviewed photo crops aligned with the complete stone face', () => {
     const white = createOpalVisualProfile(
       'lightning-ridge-white-opal-1-05-cts',
