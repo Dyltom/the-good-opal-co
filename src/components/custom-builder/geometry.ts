@@ -262,14 +262,7 @@ export function getSettingOuterHalfWidth(
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
   if (config.setting === 'beaded') {
-    const beadCount = adaptiveOutlinePointCount(
-      config.shape,
-      width,
-      height,
-      profile.haloOffset,
-      profile.beadPitchMm,
-      config.style
-    )
+    const beadCount = getStyleBeadCount(config.style, config.shape, width, height)
     const beads = applyHandmadeBeadVariation(
       evenlySpacedOutlinePoints(
         config.shape,
@@ -468,6 +461,41 @@ export function adaptiveOutlinePointCount(
   return Math.max(12, Math.round((perimeter * 10) / pitchMm))
 }
 
+/**
+ * Scales a photographed reference grain layout to a different natural-stone
+ * perimeter without discarding the sold design's defining grain count.
+ */
+export function getStyleBeadCount(
+  style: RingConfig['style'],
+  shape: RingConfig['shape'],
+  width: number,
+  height: number
+): number {
+  const profile = ringStyleGeometryProfiles[style]
+  if (profile.beadCount <= 0) return 0
+
+  const referenceShape = style === 'aurora' ? 'pear' : 'oval'
+  const [referenceWidth, referenceHeight] = stoneDimensions[referenceShape]
+  const referenceAdaptiveCount = adaptiveOutlinePointCount(
+    referenceShape,
+    referenceWidth,
+    referenceHeight,
+    profile.haloOffset,
+    profile.beadPitchMm,
+    style
+  )
+  const adaptiveCount = adaptiveOutlinePointCount(
+    shape,
+    width,
+    height,
+    profile.haloOffset,
+    profile.beadPitchMm,
+    style
+  )
+
+  return Math.max(12, Math.round((profile.beadCount * adaptiveCount) / referenceAdaptiveCount))
+}
+
 export interface HandmadeBeadPoint {
   flattening: number
   heightVariation: number
@@ -516,9 +544,15 @@ export function getCabochonDepthProfile(
 ): CabochonDepthProfile {
   const girdleZ = 0.028
   const totalDepth = depthMm ? depthMm * 0.1 : Math.min(width, height) * 0.38
-  const domeHeight = totalDepth * 0.58
+  // A loose listing's total depth includes material hidden inside the cup.
+  // Treating 58% of raw depth as exposed dome made deep opals tower above the
+  // sold low-bezel designs. Preserve the familiar unmeasured reference dome,
+  // but cap measured stones at a conservative 30% of their narrow face.
+  const domeHeight = depthMm
+    ? Math.min(totalDepth * 0.42, Math.min(width, height) * 0.6, 0.18)
+    : Math.min(width, height) * 0.22
   // Most loose-stone depth is hidden inside the handmade cup once set.
-  const visibleSeatDepth = Math.min(totalDepth - domeHeight, 0.07)
+  const visibleSeatDepth = Math.min(Math.max(totalDepth - domeHeight, 0), 0.08)
 
   return {
     baseZ: girdleZ - visibleSeatDepth,

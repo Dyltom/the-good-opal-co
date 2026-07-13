@@ -259,11 +259,11 @@ export function OpalPlacementEditor({
             onChange={(value) => update('opalScale', value)}
           />
           <div className="grid gap-2">
-            <span className="text-xs font-medium text-charcoal">Orientation</span>
+            <span className="text-xs font-medium text-charcoal">Colour orientation</span>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                aria-label="Rotate opal left"
+                aria-label="Rotate opal colour left"
                 onClick={() =>
                   update('opalRotation', clamp(placement.opalRotation - 15, -180, 180))
                 }
@@ -279,7 +279,7 @@ export function OpalPlacementEditor({
               </output>
               <button
                 type="button"
-                aria-label="Rotate opal right"
+                aria-label="Rotate opal colour right"
                 onClick={() =>
                   update('opalRotation', clamp(placement.opalRotation + 15, -180, 180))
                 }

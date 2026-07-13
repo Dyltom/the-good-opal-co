@@ -38,7 +38,6 @@ import {
 } from './config'
 import {
   applyHandmadeBeadVariation,
-  adaptiveOutlinePointCount,
   cameraPositions,
   cameraUpVectors,
   evenlySpacedOutlinePoints,
@@ -48,6 +47,7 @@ import {
   getRingMeasurements,
   getRingShankPathPoints,
   getRenderableOpalDepthMm,
+  getStyleBeadCount,
   getSettingShoulderHalfWidth,
   getSettingPlacement,
   getStoneDimensions,
@@ -748,16 +748,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const settingBaseDrop = config.setting === 'beaded' ? 0.075 : 0.055
   const haloSupport = getHaloSupportGeometry(profile)
   const beadCount =
-    profile.beadCount > 0
-      ? adaptiveOutlinePointCount(
-          config.shape,
-          width,
-          height,
-          profile.haloOffset,
-          profile.beadPitchMm,
-          config.style
-        )
-      : 0
+    profile.beadCount > 0 ? getStyleBeadCount(config.style, config.shape, width, height) : 0
   const beads = useMemo(
     () =>
       applyHandmadeBeadVariation(
@@ -846,11 +837,9 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  {config.style === 'aurora' ? (
-                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
-                  ) : (
-                    <sphereGeometry args={[profile.beadRadius, 14, 14]} />
-                  )}
+                  <sphereGeometry
+                    args={[profile.beadRadius, config.style === 'aurora' ? 12 : 16, 10]}
+                  />
                   <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
                 </mesh>
               )

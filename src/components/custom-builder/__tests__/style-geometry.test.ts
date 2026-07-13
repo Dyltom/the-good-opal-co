@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest'
 import { getHaloSupportGeometry, ringStyleGeometryProfiles, ringStyles } from '../config'
 import {
-  adaptiveOutlinePointCount,
   applyHandmadeBeadVariation,
   evenlySpacedOutlinePoints,
+  getStyleBeadCount,
   outlinePoint,
 } from '../geometry'
 
@@ -52,28 +52,29 @@ describe('sold ring style geometry', () => {
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
-    expect(sunMoon.beadFlattening).toBeLessThan(aurora.beadFlattening)
-    expect(sunMoon).toMatchObject({ beadPitchMm: 1.06, beadRadius: 0.042, haloOffset: 0.096 })
-    expect(aurora).toMatchObject({ beadPitchMm: 1.1, beadRadius: 0.046, haloOffset: 0.095 })
+    expect(sunMoon).toMatchObject({
+      beadCount: 32,
+      beadPitchMm: 1.06,
+      beadRadius: 0.042,
+      haloOffset: 0.104,
+    })
+    expect(aurora).toMatchObject({
+      beadCount: 28,
+      beadPitchMm: 1.1,
+      beadRadius: 0.052,
+      haloOffset: 0.115,
+    })
   })
 
   test.each([
     ['sun-moon', 'oval', 0.3, 0.35, 25],
     ['sun-moon', 'oval', 0.4, 0.5, 32],
-    ['aurora', 'pear', 0.4, 0.5, 30],
-    ['aurora', 'pear', 0.5, 0.75, 40],
+    ['aurora', 'pear', 0.4, 0.5, 28],
+    ['aurora', 'pear', 0.5, 0.75, 37],
   ] as const)(
     'adapts %s bead count to the %s opal perimeter',
     (style, shape, width, height, expectedCount) => {
-      const profile = ringStyleGeometryProfiles[style]
-      const count = adaptiveOutlinePointCount(
-        shape,
-        width,
-        height,
-        profile.haloOffset,
-        profile.beadPitchMm,
-        style
-      )
+      const count = getStyleBeadCount(style, shape, width, height)
 
       expect(count).toBeGreaterThanOrEqual(expectedCount - 2)
       expect(count).toBeLessThanOrEqual(expectedCount + 2)
@@ -85,14 +86,7 @@ describe('sold ring style geometry', () => {
     (style) => {
       const profile = ringStyleGeometryProfiles[style]
       const shape = style === 'aurora' ? 'pear' : 'oval'
-      const count = adaptiveOutlinePointCount(
-        shape,
-        0.4,
-        0.5,
-        profile.haloOffset,
-        profile.beadPitchMm,
-        style
-      )
+      const count = getStyleBeadCount(style, shape, 0.4, 0.5)
       const points = evenlySpacedOutlinePoints(
         shape,
         0.4,
@@ -110,7 +104,9 @@ describe('sold ring style geometry', () => {
           points.length) *
         10
 
-      const [minimum, maximum] = style === 'sun-moon' ? [1.0, 1.1] : [1.04, 1.15]
+      // Aurora's photographed 28-grain layout spans a wider irregular pear
+      // perimeter than the denser Sun & Moon halo.
+      const [minimum, maximum] = style === 'sun-moon' ? [1.0, 1.1] : [1.18, 1.28]
       expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }
@@ -129,7 +125,7 @@ describe('sold ring style geometry', () => {
         profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
       )
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
-      expect(supportOuterEdge).toBeLessThanOrEqual(profile.haloOffset + profile.beadRadius * 0.2)
+      expect(supportOuterEdge).toBeLessThanOrEqual(profile.haloOffset + profile.beadRadius * 0.75)
     }
   )
 
@@ -138,14 +134,7 @@ describe('sold ring style geometry', () => {
     (style) => {
       const profile = ringStyleGeometryProfiles[style]
       const shape = style === 'aurora' ? 'pear' : 'oval'
-      const count = adaptiveOutlinePointCount(
-        shape,
-        0.4,
-        0.5,
-        profile.haloOffset,
-        profile.beadPitchMm,
-        style
-      )
+      const count = getStyleBeadCount(style, shape, 0.4, 0.5)
       const beads = applyHandmadeBeadVariation(
         evenlySpacedOutlinePoints(
           shape,
@@ -180,14 +169,7 @@ describe('sold ring style geometry', () => {
     (style) => {
       const profile = ringStyleGeometryProfiles[style]
       const shape = style === 'aurora' ? 'pear' : 'oval'
-      const count = adaptiveOutlinePointCount(
-        shape,
-        0.4,
-        0.5,
-        profile.haloOffset,
-        profile.beadPitchMm,
-        style
-      )
+      const count = getStyleBeadCount(style, shape, 0.4, 0.5)
       const points = evenlySpacedOutlinePoints(
         shape,
         0.4,

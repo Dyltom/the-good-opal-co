@@ -251,7 +251,7 @@ describe('RingConfigurator store opal selection', () => {
       }),
       { key: 'ArrowRight' }
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Rotate opal right' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rotate opal colour right' }))
 
     await waitFor(() => {
       const preview = screen.getByTestId('ring-preview')

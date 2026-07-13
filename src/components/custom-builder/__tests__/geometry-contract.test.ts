@@ -234,14 +234,14 @@ describe('custom ring geometry contract', () => {
     ).toBeUndefined()
   })
 
-  test('caps visible seat depth while preserving measured dome depth', () => {
+  test('caps both the visible seat and mounted dome independently from loose depth', () => {
     const shallow = getCabochonDepthProfile(0.4, 0.5, 1)
     const deep = getCabochonDepthProfile(0.4, 0.5, 10)
 
-    expect(shallow.domeHeight).toBeCloseTo(0.058, 12)
-    expect(shallow.girdleZ - shallow.baseZ).toBeCloseTo(0.042, 12)
-    expect(deep.domeHeight).toBeCloseTo(0.58, 12)
-    expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.07, 12)
+    expect(shallow.domeHeight).toBeCloseTo(0.042, 12)
+    expect(shallow.girdleZ - shallow.baseZ).toBeCloseTo(0.058, 12)
+    expect(deep.domeHeight).toBeCloseTo(0.18, 12)
+    expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.08, 12)
   })
 
   test.each([

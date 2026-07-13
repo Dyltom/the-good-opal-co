@@ -48,9 +48,9 @@ describe('photoreal ring rendering contract', () => {
     )
   })
 
-  test('uses exact catalogue colour and faceted Aurora grains', () => {
+  test('uses exact catalogue colour and rounded solder grains', () => {
     expect(sceneSource).toContain('<meshBasicMaterial attach="material-0" map={photoTexture}')
-    expect(sceneSource).toContain("config.style === 'aurora'")
-    expect(sceneSource).toContain('<icosahedronGeometry')
+    expect(sceneSource).toContain('<sphereGeometry')
+    expect(sceneSource).not.toContain('<icosahedronGeometry')
   })
 })
