@@ -5,6 +5,7 @@ import {
   cameraUpVectors,
   cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
+  getBezelWallContourPoints,
   getCabochonDepthProfile,
   getCameraPosition,
   getPortraitFramingScale,
@@ -21,7 +22,6 @@ import {
   outlinePoint,
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
-  soldStyleOutlinePoint,
 } from '../geometry'
 import {
   applyRingStyle,
@@ -196,13 +196,28 @@ describe('custom ring geometry contract', () => {
     }
   )
 
-  test('keeps one physical opal boundary through every collection construction', () => {
+  test('keeps one exact inner opal seat through every collection construction', () => {
     for (const style of ringStyles) {
+      const profile = ringStyleGeometryProfiles[style.id]
       for (let index = 0; index < 360; index += 1) {
         const angle = (index / 360) * Math.PI * 2
-        const sold = soldStyleOutlinePoint(style.id, style.shape, angle, 0.4, 0.5)
-        const generic = outlinePoint(style.shape, angle, 0.4, 0.5)
-        expect(sold).toEqual(generic)
+        const contours = getBezelWallContourPoints(
+          style.id,
+          style.shape,
+          angle,
+          0.4,
+          0.5,
+          profile.bezelWallOffset,
+          profile.bezelWallThickness
+        )
+        const exactSeat = outlinePoint(
+          style.shape,
+          angle,
+          0.4,
+          0.5,
+          profile.bezelWallOffset - profile.bezelWallThickness / 2
+        )
+        expect(contours.inner).toEqual(exactSeat)
       }
     }
   })
@@ -313,6 +328,17 @@ describe('custom ring geometry contract', () => {
       expect(expanded.every(Number.isFinite)).toBe(true)
       expect(Math.hypot(expanded[0] - base[0], expanded[1] - base[1])).toBeCloseTo(0.03, 10)
     }
+  })
+
+  test('keeps the sold pear broad through its lower body before the final point', () => {
+    const upperRight = outlinePoint('pear', Math.PI / 4, 1, 1)
+    const lowerRight = outlinePoint('pear', -Math.PI / 4, 1, 1)
+
+    expect(upperRight[0]).toBeGreaterThanOrEqual(0.74)
+    expect(upperRight[0]).toBeLessThanOrEqual(0.83)
+    expect(lowerRight[0]).toBeGreaterThanOrEqual(0.53)
+    expect(lowerRight[0]).toBeLessThanOrEqual(0.61)
+    expect(outlinePoint('pear', -Math.PI / 2, 1, 1)).toEqual([expect.closeTo(0, 12), -1])
   })
 
   test('generates the workbench heart and pear clips from the 3D contour', () => {

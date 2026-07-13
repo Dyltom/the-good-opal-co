@@ -243,7 +243,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.05,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
-    haloOffset: 0.115,
+    haloOffset: 0.114,
     beadRadius: 0.052,
     beadCount: 28,
     beadPitchMm: 1.1,

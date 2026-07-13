@@ -3,6 +3,8 @@ import { getHaloSupportGeometry, ringStyleGeometryProfiles, ringStyles } from '.
 import {
   applyHandmadeBeadVariation,
   evenlySpacedOutlinePoints,
+  getBezelWallContourPoints,
+  getSoldStyleOuterVariation,
   getStyleBeadCount,
   outlinePoint,
 } from '../geometry'
@@ -16,6 +18,37 @@ describe('sold ring style geometry', () => {
       { id: 'aurora', setting: 'beaded', shape: 'pear' },
     ])
   })
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'keeps %s handmade variation outside the exact opal seat',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const shape = style === 'coral' ? 'cushion' : style === 'aurora' ? 'pear' : 'oval'
+      const samples = Array.from({ length: 1024 }, (_, index) => {
+        const angle = (index / 1024) * Math.PI * 2
+        const contours = getBezelWallContourPoints(
+          style,
+          shape,
+          angle,
+          0.4,
+          0.5,
+          profile.bezelWallOffset,
+          profile.bezelWallThickness
+        )
+        return {
+          delta: getSoldStyleOuterVariation(style, angle),
+          thickness: Math.hypot(
+            contours.outer[0] - contours.inner[0],
+            contours.outer[1] - contours.inner[1]
+          ),
+        }
+      })
+
+      expect(Math.max(...samples.map(({ delta }) => delta))).toBeGreaterThan(0)
+      expect(Math.min(...samples.map(({ delta }) => delta))).toBeLessThan(0)
+      expect(Math.min(...samples.map(({ thickness }) => thickness))).toBeGreaterThan(0.035)
+    }
+  )
 
   test('matches Coral to the sold 10 mm square head and low forged shank', () => {
     const coral = ringStyleGeometryProfiles.coral
@@ -62,7 +95,7 @@ describe('sold ring style geometry', () => {
       beadCount: 28,
       beadPitchMm: 1.1,
       beadRadius: 0.052,
-      haloOffset: 0.115,
+      haloOffset: 0.114,
     })
   })
 

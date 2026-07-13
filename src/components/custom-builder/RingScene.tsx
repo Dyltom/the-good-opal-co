@@ -42,6 +42,7 @@ import {
   cameraUpVectors,
   evenlySpacedOutlinePoints,
   getCabochonDepthProfile,
+  getBezelWallContourPoints,
   getCameraPosition,
   getRingFramingTarget,
   getRingMeasurements,
@@ -489,22 +490,17 @@ function createBezelWallGeometry(
 
   for (let segment = 0; segment < segments; segment += 1) {
     const angle = (segment / segments) * Math.PI * 2
-    const [outerX, outerY] = soldStyleOutlinePoint(
+    const { inner, outer } = getBezelWallContourPoints(
       style,
       shape,
       angle,
       width,
       height,
-      offset + thickness / 2
+      offset,
+      thickness
     )
-    const [innerX, innerY] = soldStyleOutlinePoint(
-      style,
-      shape,
-      angle,
-      width,
-      height,
-      offset - thickness / 2
-    )
+    const [outerX, outerY] = outer
+    const [innerX, innerY] = inner
     positions.push(
       outerX,
       outerY,
@@ -711,8 +707,7 @@ function StoneOutline({
           const angle = (index / 72) * Math.PI * 2
           const handmadeOffset =
             edgeVariation * (Math.sin(angle * 3 + 0.4) * 0.65 + Math.sin(angle * 7) * 0.35)
-          const [x, y] = soldStyleOutlinePoint(
-            config.style,
+          const [x, y] = outlinePoint(
             config.shape,
             angle,
             width,
@@ -724,7 +719,7 @@ function StoneOutline({
         true,
         'centripetal'
       ),
-    [config.shape, config.style, edgeVariation, height, offset, width, z]
+    [config.shape, edgeVariation, height, offset, width, z]
   )
 
   return (

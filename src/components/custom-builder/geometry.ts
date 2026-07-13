@@ -196,9 +196,12 @@ function baseOutlinePoint(
     ]
   }
   if (shape === 'pear') {
-    const taper = 0.15 + 0.85 * Math.pow((sine + 1) / 2, 0.65)
-    // Normalise the taper so documented width remains the true rendered width.
-    const pearWidthCorrection = 1.321
+    // Sold Aurora and catalogue teardrops keep a broad lower body until the
+    // final point. A conventional exponential pear pinches the lower diagonal
+    // to 37% of half-width; the photographed pieces sit around 53–61%.
+    const taper = 0.925 + 0.2 * sine + 0.045 * sine * sine
+    // Normalise the quadratic so documented width remains the true extent.
+    const pearWidthCorrection = 1.055_526_961_712_104_8
     return [cosine * width * taper * pearWidthCorrection, sine * height]
   }
   if (shape === 'heart') {
@@ -245,16 +248,62 @@ export function outlinePoint(
   return [point[0] + normalX * offset, point[1] + normalY * offset]
 }
 
-/** Keeps every construction layer on the selected opal's physical boundary. */
+const soldStyleOuterVariation: Record<RingConfig['style'], number> = {
+  gemini: 0.003,
+  coral: 0.005,
+  'sun-moon': 0.003,
+  aurora: 0.001,
+}
+
+export function getSoldStyleOuterVariation(style: RingConfig['style'], angle: number): number {
+  const amplitude = soldStyleOuterVariation[style]
+  if (style === 'gemini') {
+    return amplitude * (Math.sin(angle * 3 + 0.35) * 0.68 + Math.sin(angle * 5 - 0.2) * 0.32)
+  }
+  if (style === 'coral') {
+    return amplitude * (Math.cos(angle * 4 + 0.18) * 0.56 + Math.sin(angle * 3 - 0.4) * 0.44)
+  }
+  if (style === 'sun-moon') {
+    return amplitude * (Math.sin(angle * 5 + 0.2) * 0.72 + Math.sin(angle * 3) * 0.28)
+  }
+  return amplitude * (Math.sin(angle * 3 + 0.5) * 0.64 + Math.sin(angle * 7 - 0.2) * 0.36)
+}
+
+/**
+ * Adds the bounded handmade signature visible in each sold setting to metal
+ * outside the stone. Variation travels only along the opal's local normal, so
+ * it cannot twist or displace the selected stone boundary.
+ */
 export function soldStyleOutlinePoint(
-  _style: RingConfig['style'],
+  style: RingConfig['style'],
   shape: RingConfig['shape'],
   angle: number,
   width: number,
   height: number,
   offset = 0
 ): readonly [number, number] {
-  return outlinePoint(shape, angle, width, height, offset)
+  return outlinePoint(
+    shape,
+    angle,
+    width,
+    height,
+    offset + getSoldStyleOuterVariation(style, angle)
+  )
+}
+
+export function getBezelWallContourPoints(
+  style: RingConfig['style'],
+  shape: RingConfig['shape'],
+  angle: number,
+  width: number,
+  height: number,
+  offset: number,
+  thickness: number
+): { inner: StoneDimensions; outer: StoneDimensions } {
+  return {
+    inner: outlinePoint(shape, angle, width, height, offset - thickness / 2),
+    outer: soldStyleOutlinePoint(style, shape, angle, width, height, offset + thickness / 2),
+  }
 }
 
 export function getSettingOuterHalfWidth(
@@ -291,7 +340,9 @@ export function getSettingOuterHalfWidth(
   const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
   return Array.from({ length: 720 }, (_, index) => {
     const angle = (index / 720) * Math.PI * 2
-    return Math.abs(outlinePoint(config.shape, angle, width, height, outerOffset)[0])
+    return Math.abs(
+      soldStyleOutlinePoint(config.style, config.shape, angle, width, height, outerOffset)[0]
+    )
   }).reduce((maximum, value) => Math.max(maximum, value), 0)
 }
 
@@ -310,7 +361,9 @@ export function getSettingShoulderHalfWidth(
 
   return Array.from({ length: 720 }, (_, index) => {
     const angle = (index / 720) * Math.PI * 2
-    return Math.abs(outlinePoint(config.shape, angle, width, height, structuralOffset)[0])
+    return Math.abs(
+      soldStyleOutlinePoint(config.style, config.shape, angle, width, height, structuralOffset)[0]
+    )
   }).reduce((maximum, value) => Math.max(maximum, value), 0)
 }
 
