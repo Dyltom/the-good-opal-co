@@ -176,8 +176,19 @@ describe('custom builder opal visual profiles', () => {
       { builderMappingStatus: 'reviewed' }
     )
 
-    expect(profile.visual.textureCrop).toEqual({ focalX: 0.5, focalY: 0.5, zoom: 2.25 })
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.5, focalY: 0.5, zoom: 3.2 })
     expect(profile.visual.photoFit).toBe('estimated')
+  })
+
+  test('tightens estimated crops enough to keep photo backgrounds outside the cabochon', () => {
+    const profile = createOpalVisualProfile(
+      'coober-pedy-white-opal-2-30-cts-copy',
+      'Coober Pedy White Opal 2.30 cts',
+      'white-opal'
+    )
+
+    expect(profile.visual.photoFit).toBe('estimated')
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.52, focalY: 0.5, zoom: 3.2 })
   })
 
   test('keeps reviewed photo crops aligned with the complete stone face', () => {

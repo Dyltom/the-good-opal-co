@@ -155,9 +155,9 @@ export function getHaloSupportGeometry(
 
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
-    bezelWallOffset: 0.02,
-    bezelWallThickness: 0.04,
-    bezelLipOffset: 0.004,
+    bezelWallOffset: 0.0185,
+    bezelWallThickness: 0.043,
+    bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
     haloOffset: 0,
     beadRadius: 0,
@@ -183,9 +183,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderDepth: 0.06,
   },
   coral: {
-    bezelWallOffset: 0.03,
-    bezelWallThickness: 0.05,
-    bezelLipOffset: 0.006,
+    bezelWallOffset: 0.025,
+    bezelWallThickness: 0.06,
+    bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
     haloOffset: 0,
     beadRadius: 0,
@@ -212,8 +212,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   },
   'sun-moon': {
     bezelWallOffset: 0.022,
-    bezelWallThickness: 0.046,
-    bezelLipOffset: 0.004,
+    bezelWallThickness: 0.05,
+    bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
     haloOffset: 0.104,
     beadRadius: 0.042,
@@ -240,8 +240,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   },
   aurora: {
     bezelWallOffset: 0.022,
-    bezelWallThickness: 0.046,
-    bezelLipOffset: 0.004,
+    bezelWallThickness: 0.05,
+    bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
     haloOffset: 0.115,
     beadRadius: 0.052,

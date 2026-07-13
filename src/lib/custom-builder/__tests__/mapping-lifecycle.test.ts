@@ -27,7 +27,7 @@ describe('opal builder mapping lifecycle', () => {
       builderFlashColourSecondary: '#38ed91',
       builderPhotoFocalX: 0.5,
       builderPhotoFocalY: 0.5,
-      builderPhotoZoom: 2.25,
+      builderPhotoZoom: 3.2,
       builderRecommendedStyle: 'gemini',
       builderSilhouette: 'elongated',
       builderTransmission: 0.04,

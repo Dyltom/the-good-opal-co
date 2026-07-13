@@ -10,9 +10,11 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('<SettingBase')
     expect(sceneSource).toContain("config.setting === 'beaded' ? 0.075 : 0.055")
     expect(sceneSource).toContain('bottomZ={bezelBottom - settingBaseDrop}')
+    expect(sceneSource).toContain('topZ={depthProfile.baseZ + 0.003}')
     expect(sceneSource).toContain('const bezelCapInnerOffset =')
     expect(sceneSource).toContain('thickness={bezelCapThickness}')
     expect(sceneSource).toContain('finish="patina"')
+    expect(sceneSource).toContain('z={depthProfile.girdleZ + 0.006}')
   })
 
   test('drives each forged shank and shoulder join from its sold-style profile', () => {

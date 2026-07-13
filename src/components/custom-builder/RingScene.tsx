@@ -784,7 +784,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         dimensions={dimensions}
         bottomZ={bezelBottom - settingBaseDrop}
         offset={outerBezelOffset}
-        topZ={bezelBottom + 0.004}
+        topZ={depthProfile.baseZ + 0.003}
       />
       <BezelWall
         config={config}
@@ -807,7 +807,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         dimensions={dimensions}
         offset={profile.innerSeamOffset}
         radius={profile.innerSeamRadius}
-        z={bezelTop + 0.001}
+        z={depthProfile.girdleZ + 0.006}
         finish="patina"
         edgeVariation={profile.innerSeamVariation}
       />

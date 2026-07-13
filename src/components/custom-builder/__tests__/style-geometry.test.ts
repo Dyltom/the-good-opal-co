@@ -21,9 +21,9 @@ describe('sold ring style geometry', () => {
     const coral = ringStyleGeometryProfiles.coral
 
     expect(coral).toMatchObject({
-      bezelWallOffset: 0.03,
-      bezelWallThickness: 0.05,
-      bezelLipOffset: 0.006,
+      bezelWallOffset: 0.025,
+      bezelWallThickness: 0.06,
+      bezelLipOffset: 0.002,
       innerSeamRadius: 0.008,
       shankRadius: 0.094,
       shoulderRadius: 0.094,

@@ -2,6 +2,12 @@ import type { BuilderOpal, RingConfig } from '@/components/custom-builder/config
 
 type VisualProfile = BuilderOpal['visual']
 
+// Estimated catalogue crops should sample the opal face, not attempt to trace
+// an unreviewed stone boundary. A looser crop leaks fingers, bench tops, and
+// shadows into the 3D cabochon when the photographed outline differs slightly
+// from the inferred mesh.
+export const ESTIMATED_OPAL_PHOTO_ZOOM = 3.2
+
 export interface BuilderVisualFields {
   builderEligible?: boolean | null
   builderMappingStatus?: string | null
@@ -480,6 +486,9 @@ export function createOpalVisualProfile(
   const baseTextureCrop =
     managed?.textureCrop ?? reviewed?.textureCrop ?? cataloguePhoto?.textureCrop
   const basePhotoFit = managed?.photoFit ?? reviewed?.photoFit ?? cataloguePhoto?.photoFit
+  const estimatedTextureCrop = baseTextureCrop
+    ? { ...baseTextureCrop, zoom: Math.max(baseTextureCrop.zoom, ESTIMATED_OPAL_PHOTO_ZOOM) }
+    : { focalX: 0.5, focalY: 0.5, zoom: ESTIMATED_OPAL_PHOTO_ZOOM }
   const bodyColour = profile.bodies[seed % profile.bodies.length] ?? profile.bodies[0]!
   const flashColours = profile.flashes[(seed >>> 4) % profile.flashes.length] ?? profile.flashes[0]!
 
@@ -493,8 +502,11 @@ export function createOpalVisualProfile(
       patternSeed: seed,
       dimensionsMm: managed?.dimensionsMm ?? reviewed?.dimensionsMm ?? dimensionsMm,
       textureCrop:
-        baseTextureCrop ??
-        (usesIndividualPhoto ? { focalX: 0.5, focalY: 0.5, zoom: 2.25 } : undefined),
+        basePhotoFit === 'reviewed'
+          ? baseTextureCrop
+          : usesIndividualPhoto
+            ? estimatedTextureCrop
+            : undefined,
       photoFit: basePhotoFit ?? (usesIndividualPhoto ? 'estimated' : undefined),
     },
   }

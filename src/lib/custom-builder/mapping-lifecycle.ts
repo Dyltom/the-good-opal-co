@@ -1,6 +1,10 @@
-import { classifyOpalListing, inferBuilderStoneType } from './opal-visual'
+import {
+  classifyOpalListing,
+  ESTIMATED_OPAL_PHOTO_ZOOM,
+  inferBuilderStoneType,
+} from './opal-visual'
 
-export const BUILDER_MAPPING_VERSION = 3
+export const BUILDER_MAPPING_VERSION = 4
 
 export const builderMappingStatuses = ['pending', 'reviewed', 'manual', 'stale'] as const
 
@@ -263,7 +267,7 @@ export function inferBuilderMapping(product: ProductRecord): InferredMapping {
     ...colours,
     builderPhotoFocalX: mediaFocus?.focalX ?? 0.5,
     builderPhotoFocalY: mediaFocus?.focalY ?? 0.5,
-    builderPhotoZoom: listingKind === 'individual' ? 2.25 : 1.35,
+    builderPhotoZoom: listingKind === 'individual' ? ESTIMATED_OPAL_PHOTO_ZOOM : 1.35,
     builderRecommendedStyle: styleForShape(shape),
     builderSilhouette: shape,
   }
