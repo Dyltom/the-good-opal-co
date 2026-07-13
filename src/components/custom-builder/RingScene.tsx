@@ -742,6 +742,10 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const bezelCapInnerOffset = profile.bezelLipOffset - profile.bezelLipRadius
   const bezelCapThickness = outerBezelOffset - bezelCapInnerOffset
   const bezelCapOffset = bezelCapInnerOffset + bezelCapThickness / 2
+  // Sold halo designs need a deeper structural backplate to carry the grain
+  // field into the shank. The former paper-thin cup vanished in profile and
+  // made the setting look suspended even where the meshes intersected.
+  const settingBaseDrop = config.setting === 'beaded' ? 0.075 : 0.055
   const haloSupport = getHaloSupportGeometry(profile)
   const beadCount =
     profile.beadCount > 0
@@ -787,7 +791,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       <SettingBase
         config={config}
         dimensions={dimensions}
-        bottomZ={bezelBottom - 0.028}
+        bottomZ={bezelBottom - settingBaseDrop}
         offset={outerBezelOffset}
         topZ={bezelBottom + 0.004}
       />
