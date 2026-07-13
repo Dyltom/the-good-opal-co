@@ -7,6 +7,7 @@ import {
   mapWooCustomer,
   mapWooOrder,
   mapWooPrivateProduct,
+  wooPrimaryImageFilename,
   wooOrderCommerceContribution,
   type LegacyCustomerData,
   type LegacyProductData,
@@ -162,6 +163,16 @@ function productNameKey(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '')
 }
 
+function payloadPrimaryImageFilename(product: Product): string | undefined {
+  const relation = product.images?.[0]?.image
+  if (!relation || typeof relation === 'number') return undefined
+  const candidate = relation.legacySourceUrl ?? relation.filename ?? relation.url
+  if (!candidate) return undefined
+  const pathname = candidate.startsWith('http') ? new URL(candidate).pathname : candidate
+  const filename = pathname.split('/').at(-1)
+  return filename ? decodeURIComponent(filename).toLowerCase() : undefined
+}
+
 async function importCommerce(payload: Payload, apply: boolean): Promise<ImportSummary> {
   const snapshotDirectory = process.env['WOO_SNAPSHOT_DIR']?.trim()
   const adminUsername = process.env['WOO_ADMIN_USERNAME']?.trim()
@@ -209,24 +220,51 @@ async function importCommerce(payload: Payload, apply: boolean): Promise<ImportS
       products.length === 1 && products[0] ? [[key, products[0]] as const] : []
     )
   )
+  const productImageBuckets = new Map<string, Product[]>()
+  for (const product of existingProducts) {
+    const filename = payloadPrimaryImageFilename(product)
+    if (!filename) continue
+    productImageBuckets.set(filename, [...(productImageBuckets.get(filename) ?? []), product])
+  }
+  const productsByUniquePrimaryImage = new Map(
+    [...productImageBuckets].flatMap(([filename, products]) =>
+      products.length === 1 && products[0] ? [[filename, products[0]] as const] : []
+    )
+  )
   const productReferences = new Map<number, { id: string | number; slug: string }>()
   const productCounts: ImportCounts = { created: 0, updated: 0, archived: 0, skipped: 0 }
-  const productPlans = snapshot.products.map((sourceProduct) => {
+  const strongProductPlans = snapshot.products.map((sourceProduct) => {
     const mapped = mapWooPrivateProduct(sourceProduct)
+    const primaryImageFilename = wooPrimaryImageFilename(sourceProduct)
     const identityCandidates = [
       productsByLegacyId.get(sourceProduct.id),
       productsBySku.get(`WP-${sourceProduct.id}`),
       productsBySku.get(mapped.sku),
+      primaryImageFilename ? productsByUniquePrimaryImage.get(primaryImageFilename) : undefined,
     ].filter((product): product is Product => product !== undefined)
     const identityIds = new Set(identityCandidates.map((product) => String(product.id)))
     if (identityIds.size > 1) {
       throw new Error(`WooCommerce product ${sourceProduct.id} has conflicting legacy identities`)
     }
-    const existing =
-      identityCandidates[0] ??
-      productsByUniqueName.get(productNameKey(mapped.name)) ??
-      productsBySlug.get(mapped.slug)
-    return { sourceProduct, mapped, existing }
+    return { sourceProduct, mapped, strongExisting: identityCandidates[0] }
+  })
+  const strongMatchedProductIds = new Set(
+    strongProductPlans.flatMap(({ strongExisting }) =>
+      strongExisting ? [String(strongExisting.id)] : []
+    )
+  )
+  const productPlans = strongProductPlans.map(({ sourceProduct, mapped, strongExisting }) => {
+    const slugCandidate = productsBySlug.get(mapped.slug)
+    const nameCandidate = productsByUniqueName.get(productNameKey(mapped.name))
+    const fallbackCandidates = [slugCandidate, nameCandidate].filter(
+      (product): product is Product =>
+        product !== undefined && !strongMatchedProductIds.has(String(product.id))
+    )
+    const fallbackIds = new Set(fallbackCandidates.map((product) => String(product.id)))
+    if (fallbackIds.size > 1) {
+      throw new Error(`WooCommerce product ${sourceProduct.id} has conflicting fallback identities`)
+    }
+    return { sourceProduct, mapped, existing: strongExisting ?? fallbackCandidates[0] }
   })
   const matchedExistingProductIds = new Set(
     productPlans.flatMap(({ existing }) => (existing ? [String(existing.id)] : []))

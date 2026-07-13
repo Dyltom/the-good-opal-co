@@ -84,10 +84,21 @@ explicit `WOO_IMPORT_MODE` (`initial` or `final-delta`) for one controlled
 Production deployment. Use `final-delta` only after checkout on the old store is
 frozen and before checkout on this store opens. The build runs migrations first,
 claims the run ID in the durable Commerce Import Runs ledger, then performs the
-product/order/customer/refund import. A claimed ID can never run again, even when
+product/order/customer/refund import and reconciles every visible WooCommerce
+product gallery by real Woo product/media ID and source order. Existing images
+are refreshed when the source gallery changes; the import no longer treats any
+non-empty image field as proof of freshness. A claimed ID can never run again, even when
 its first attempt failed; inspect that ledger and the partial import before using
 a new ID. Remove all Woo import variables immediately after success and confirm
 the recorded counts in Payload. Never set the import flag for Preview.
+
+While the legacy WooCommerce catalogue remains the merchandising source, set
+`WOO_CATALOG_SYNC_ENABLED=true`. Vercel then reconciles visible products, prices,
+downward stock changes, and ordered galleries every 15 minutes. The recurring
+job refuses to run against synthetic seed identities: complete and verify the
+guarded commerce import first. It never raises stock from Woo because local paid
+orders remain authoritative. Disable and remove this flag once Payload becomes
+the only product-management backend.
 
 To reconcile source and target counts without changing data, temporarily set the
 same Woo credentials plus `WOO_IMPORT_DRY_RUN_ON_DEPLOY=true` for one Production

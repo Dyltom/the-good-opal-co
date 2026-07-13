@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseWordPressProductImages } from '../product-images'
 
 describe('WordPress product image import', () => {
-  it('maps the first safe source image and creates useful fallback alt text', () => {
+  it('maps every source image in Woo order and creates useful fallback alt text', () => {
     expect(
       parseWordPressProductImages([
         {
@@ -15,6 +15,12 @@ describe('WordPress product image import', () => {
               alt: '',
               name: 'IMG_5903',
             },
+            {
+              id: 5680,
+              src: 'https://goodopalco.com/wp-content/uploads/2023/07/IMG_5903-side.jpg',
+              alt: 'Earring profile',
+              name: 'IMG_5903 side',
+            },
           ],
         },
       ])
@@ -22,13 +28,22 @@ describe('WordPress product image import', () => {
       {
         productId: 5676,
         productName: 'Crystal Opal Earrings – Bouquet studs',
-        media: {
-          id: 5679,
-          alt: 'Crystal Opal Earrings – Bouquet studs',
-          mimeType: 'image/jpeg',
-          sourceUrl: 'https://goodopalco.com/wp-content/uploads/2023/07/IMG_5903.jpg',
-          title: 'IMG_5903',
-        },
+        media: [
+          {
+            id: 5679,
+            alt: 'Crystal Opal Earrings – Bouquet studs',
+            mimeType: 'image/jpeg',
+            sourceUrl: 'https://goodopalco.com/wp-content/uploads/2023/07/IMG_5903.jpg',
+            title: 'IMG_5903',
+          },
+          {
+            id: 5680,
+            alt: 'Earring profile',
+            mimeType: 'image/jpeg',
+            sourceUrl: 'https://goodopalco.com/wp-content/uploads/2023/07/IMG_5903-side.jpg',
+            title: 'IMG_5903 side',
+          },
+        ],
       },
     ])
   })

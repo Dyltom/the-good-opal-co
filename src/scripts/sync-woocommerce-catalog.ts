@@ -1,4 +1,6 @@
 import type { Product } from '@/types/payload-types'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { getPayload } from '@/lib/payload'
 import {
   fetchWooCatalog,
@@ -8,7 +10,7 @@ import {
 
 const TENANT_ID = 'good-opal-co'
 
-interface SyncOptions {
+export interface SyncOptions {
   apply: boolean
   archiveMissing: boolean
   restock: boolean
@@ -86,6 +88,7 @@ function createData(product: WooCatalogProduct) {
     featured: false,
     stock: product.inStock ? 1 : 0,
     sku: product.sku,
+    legacyWooId: product.wooId,
     certified: false,
     tenantId: TENANT_ID,
   }
@@ -95,14 +98,18 @@ function updateData(existing: Product, product: WooCatalogProduct, options: Sync
   return {
     name: product.name,
     slug: product.slug,
+    description: richText(product.description),
     price: product.price,
     compareAtPrice: product.compareAtPrice,
+    category: product.category,
+    tags: product.tags.map((tag) => ({ tag })),
     status: 'published' as const,
     stock: reconciledStock(existing.stock, product.inStock, options.restock),
+    legacyWooId: product.wooId,
   }
 }
 
-async function sync(options: SyncOptions): Promise<void> {
+export async function syncWooCatalog(options: SyncOptions) {
   const payload = await getPayload()
   const sourceProducts = await fetchWooCatalog({
     baseUrl: process.env.WOO_STORE_API_URL,
@@ -113,7 +120,20 @@ async function sync(options: SyncOptions): Promise<void> {
       .filter((product) => product.sku?.startsWith('WP-'))
       .map((product) => [product.sku, product])
   )
-  const sourceSkus = new Set(sourceProducts.map((product) => product.sku))
+  const existingByWooId = new Map(
+    allProducts
+      .filter(
+        (product): product is Product & { legacyWooId: number } =>
+          typeof product.legacyWooId === 'number'
+      )
+      .map((product) => [product.legacyWooId, product])
+  )
+  if (existingByWooId.size === 0 && existingBySku.size > 0) {
+    throw new Error(
+      'WooCommerce identity migration required before recurring catalogue sync can run'
+    )
+  }
+  const sourceWooIds = new Set(sourceProducts.map((product) => product.wooId))
   const slugOwners = new Map(allProducts.map((product) => [product.slug, product]))
 
   let created = 0
@@ -121,7 +141,12 @@ async function sync(options: SyncOptions): Promise<void> {
   let archived = 0
 
   for (const sourceProduct of sourceProducts) {
-    const existing = existingBySku.get(sourceProduct.sku)
+    const byWooId = existingByWooId.get(sourceProduct.wooId)
+    const bySku = existingBySku.get(sourceProduct.sku)
+    if (byWooId && bySku && byWooId.id !== bySku.id) {
+      throw new Error(`WooCommerce product ${sourceProduct.wooId} has conflicting identities`)
+    }
+    const existing = byWooId ?? bySku
     const slugOwner = slugOwners.get(sourceProduct.slug)
     if (slugOwner && slugOwner.id !== existing?.id) {
       throw new Error(
@@ -153,9 +178,9 @@ async function sync(options: SyncOptions): Promise<void> {
   }
 
   if (options.archiveMissing) {
-    const missing = [...existingBySku.values()].filter(
-      (product) => product.sku && !sourceSkus.has(product.sku)
-    )
+    const missing = [...existingByWooId.entries()]
+      .filter(([wooId]) => !sourceWooIds.has(wooId))
+      .map(([, product]) => product)
     archived = missing.length
     if (options.apply) {
       for (const product of missing) {
@@ -173,6 +198,7 @@ async function sync(options: SyncOptions): Promise<void> {
   payload.logger.info(
     `WooCommerce catalog sync ${mode}: ${created} create, ${updated} update, ${archived} archive, ${sourceProducts.length} source products.`
   )
+  return { mode, created, updated, archived, sourceProducts: sourceProducts.length }
 }
 
 const options: SyncOptions = {
@@ -181,9 +207,14 @@ const options: SyncOptions = {
   restock: enabled('WOO_SYNC_RESTOCK'),
 }
 
-sync(options)
-  .then(() => process.exit(0))
-  .catch((error: unknown) => {
-    console.error(error)
-    process.exit(1)
-  })
+const invokedAsScript =
+  process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+
+if (invokedAsScript) {
+  syncWooCatalog(options)
+    .then(() => process.exit(0))
+    .catch((error: unknown) => {
+      console.error(error)
+      process.exit(1)
+    })
+}

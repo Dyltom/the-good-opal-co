@@ -80,6 +80,13 @@ const productTaxonomySchema = z.object({
   slug: z.string(),
 })
 
+const productImageSchema = z.object({
+  id: z.number().int().positive(),
+  src: z.url(),
+  name: z.string().default(''),
+  alt: z.string().default(''),
+})
+
 export const wooPrivateProductSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1),
@@ -98,6 +105,7 @@ export const wooPrivateProductSchema = z.object({
   date_modified_gmt: z.string().min(1),
   categories: z.array(productTaxonomySchema),
   tags: z.array(productTaxonomySchema),
+  images: z.array(productImageSchema).default([]),
 })
 
 export const wooRefundSchema = z.object({
@@ -216,6 +224,15 @@ export interface LegacyProductData {
   status: 'published' | 'draft' | 'archived'
   stock: number
   sku: string
+}
+
+export function wooPrimaryImageFilename(
+  product: Pick<WooPrivateProduct, 'images'>
+): string | undefined {
+  const sourceUrl = product.images[0]?.src
+  if (!sourceUrl) return undefined
+  const filename = new URL(sourceUrl).pathname.split('/').at(-1)
+  return filename ? decodeURIComponent(filename).toLowerCase() : undefined
 }
 
 function apiRoot(baseUrl: string): string {

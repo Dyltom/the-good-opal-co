@@ -25,6 +25,10 @@ if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
       ...process.env,
       WOO_IMPORT_APPLY: 'false',
     })
+    run('pnpm', ['import:wordpress-product-images'], {
+      ...process.env,
+      WORDPRESS_PRODUCT_IMAGES_APPLY: 'false',
+    })
   }
   if (vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true') {
     if (!process.env.WOO_IMPORT_RUN_ID?.trim()) {
@@ -39,6 +43,11 @@ if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
     run('pnpm', ['import:woocommerce'], {
       ...process.env,
       WOO_IMPORT_APPLY: 'true',
+    })
+    console.log('[vercel-build] Reconciling ordered WooCommerce product photography.')
+    run('pnpm', ['import:wordpress-product-images'], {
+      ...process.env,
+      WORDPRESS_PRODUCT_IMAGES_APPLY: 'true',
     })
   }
 } else {

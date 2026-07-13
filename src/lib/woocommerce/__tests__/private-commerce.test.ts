@@ -6,6 +6,7 @@ import {
   mapWooOrder,
   mapWooPrivateProduct,
   payloadStatusForWoo,
+  wooPrimaryImageFilename,
   wooCustomerSchema,
   wooOrderCommerceContribution,
   type WooCustomer,
@@ -272,6 +273,14 @@ describe('WooCommerce import mapping', () => {
       date_modified_gmt: '2024-04-05T06:07:08',
       categories: [{ id: 1, name: 'Pendants', slug: 'pendants' }],
       tags: [{ id: 2, name: 'Black opal', slug: 'black-opal' }],
+      images: [
+        {
+          id: 77,
+          src: 'https://goodopalco.com/wp-content/uploads/2024/04/Black%20Opal.JPG',
+          name: 'Black Opal',
+          alt: 'Black opal pendant',
+        },
+      ],
     }
 
     expect(mapWooPrivateProduct(product)).toMatchObject({
@@ -287,5 +296,6 @@ describe('WooCommerce import mapping', () => {
       category: 'opal-necklaces',
       description: 'Natural & bright',
     })
+    expect(wooPrimaryImageFilename(product)).toBe('black opal.jpg')
   })
 })
