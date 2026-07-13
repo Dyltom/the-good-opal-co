@@ -15,6 +15,7 @@ import {
   outlinePoint,
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
+  soldStyleOutlinePoint,
 } from '../geometry'
 import {
   defaultRingConfig,
@@ -148,13 +149,51 @@ describe('custom ring geometry contract', () => {
   test('maps supported ring sizes to physical diameters monotonically', () => {
     const size4 = getRingMeasurements({ ...defaultRingConfig, size: 4 })
     const size13 = getRingMeasurements({ ...defaultRingConfig, size: 13 })
-    const innerDiameter = (measurements: ReturnType<typeof getRingMeasurements>) =>
-      (measurements.centreRadius - 0.085) * 20
+    const innerDiameter = (
+      config: RingConfig,
+      measurements: ReturnType<typeof getRingMeasurements>
+    ) => (measurements.centreRadius - ringStyleGeometryProfiles[config.style].shankDepth) * 20
 
-    expect(innerDiameter(size4)).toBeCloseTo(14.8812, 4)
-    expect(innerDiameter(size13)).toBeCloseTo(22.1964, 4)
+    expect(innerDiameter({ ...defaultRingConfig, size: 4 }, size4)).toBeCloseTo(14.8812, 4)
+    expect(innerDiameter({ ...defaultRingConfig, size: 13 }, size13)).toBeCloseTo(22.1964, 4)
     expect(size13.centreRadius).toBeGreaterThan(size4.centreRadius)
     expect(size13.outerRadius).toBeGreaterThan(size4.outerRadius)
+  })
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'preserves the requested inside diameter for the %s shank',
+    (style) => {
+      const config = { ...defaultRingConfig, style, size: 7 }
+      const measurements = getRingMeasurements(config)
+      const radialThickness = ringStyleGeometryProfiles[style].shankDepth
+
+      expect((measurements.centreRadius - radialThickness) * 20).toBeCloseTo(17.3196, 4)
+      expect((measurements.outerRadius - measurements.centreRadius) * 10).toBeCloseTo(
+        radialThickness * 10,
+        12
+      )
+    }
+  )
+
+  test('gives sold designs stable handmade contours instead of one generic silhouette', () => {
+    const landmarks = ringStyles.map(({ id, shape }) =>
+      [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((angle) =>
+        soldStyleOutlinePoint(id, shape, angle, 0.4, 0.5).map((value) => Number(value.toFixed(5)))
+      )
+    )
+
+    expect(new Set(landmarks.map((landmark) => JSON.stringify(landmark)))).toHaveLength(
+      ringStyles.length
+    )
+    for (const style of ringStyles) {
+      const deviations = Array.from({ length: 24 }, (_, index) => {
+        const angle = (index / 24) * Math.PI * 2
+        const sold = soldStyleOutlinePoint(style.id, style.shape, angle, 0.4, 0.5)
+        const generic = outlinePoint(style.shape, angle, 0.4, 0.5)
+        return Math.hypot(sold[0] - generic[0], sold[1] - generic[1])
+      })
+      expect(Math.max(...deviations), style.id).toBeGreaterThan(0.003)
+    }
   })
 
   test('uses reviewed store measurements only for compatible catalogue silhouettes', () => {
@@ -253,9 +292,9 @@ describe('custom ring geometry contract', () => {
 
     for (const [style, profile] of profiles) {
       expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.075)
-      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.1)
+      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.11)
       expect(profile.shankRadius * 20, style).toBeGreaterThanOrEqual(1.5)
-      expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(2)
+      expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(2.2)
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
       expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.85)

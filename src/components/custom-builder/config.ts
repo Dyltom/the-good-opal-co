@@ -109,6 +109,10 @@ export interface RingStyleFit {
 }
 
 export interface RingStyleGeometryProfile {
+  contourLean: number
+  contourWave: number
+  contourWaveFrequency: number
+  contourWavePhase: number
   bezelWallOffset: number
   bezelWallThickness: number
   bezelLipOffset: number
@@ -155,6 +159,10 @@ export function getHaloSupportGeometry(
 
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
+    contourLean: 0.012,
+    contourWave: 0.012,
+    contourWaveFrequency: 3,
+    contourWavePhase: 0.55,
     bezelWallOffset: 0.032,
     bezelWallThickness: 0.056,
     bezelLipOffset: 0.014,
@@ -177,12 +185,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlend: 0.08,
     crossSectionPower: 0.9,
     metalRoughness: 0.31,
-    shankRadius: 0.098,
+    shankRadius: 0.102,
     shankDepth: 0.06,
-    shoulderRadius: 0.106,
+    shoulderRadius: 0.108,
     shoulderDepth: 0.066,
   },
   coral: {
+    contourLean: -0.008,
+    contourWave: 0.016,
+    contourWaveFrequency: 3,
+    contourWavePhase: 1.15,
     bezelWallOffset: 0.032,
     bezelWallThickness: 0.052,
     bezelLipOffset: 0.01,
@@ -205,12 +217,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlend: 0.08,
     crossSectionPower: 0.9,
     metalRoughness: 0.31,
-    shankRadius: 0.09,
+    shankRadius: 0.094,
     shankDepth: 0.052,
-    shoulderRadius: 0.096,
+    shoulderRadius: 0.099,
     shoulderDepth: 0.058,
   },
   'sun-moon': {
+    contourLean: 0.016,
+    contourWave: 0.014,
+    contourWaveFrequency: 5,
+    contourWavePhase: -0.35,
     bezelWallOffset: 0.028,
     bezelWallThickness: 0.05,
     bezelLipOffset: 0.014,
@@ -233,12 +249,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlend: 0.075,
     crossSectionPower: 0.9,
     metalRoughness: 0.25,
-    shankRadius: 0.082,
+    shankRadius: 0.096,
     shankDepth: 0.05,
-    shoulderRadius: 0.089,
+    shoulderRadius: 0.102,
     shoulderDepth: 0.055,
   },
   aurora: {
+    contourLean: -0.032,
+    contourWave: 0.022,
+    contourWaveFrequency: 3,
+    contourWavePhase: 0.8,
     bezelWallOffset: 0.028,
     bezelWallThickness: 0.05,
     bezelLipOffset: 0.014,
@@ -261,9 +281,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlend: 0.075,
     crossSectionPower: 0.9,
     metalRoughness: 0.25,
-    shankRadius: 0.087,
+    shankRadius: 0.106,
     shankDepth: 0.052,
-    shoulderRadius: 0.094,
+    shoulderRadius: 0.112,
     shoulderDepth: 0.057,
   },
 }

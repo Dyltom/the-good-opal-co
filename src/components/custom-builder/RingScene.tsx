@@ -48,7 +48,7 @@ import {
   getRingMeasurements,
   getSettingPlacement,
   getStoneDimensions,
-  outlinePoint,
+  soldStyleOutlinePoint,
   settingRotationX,
   type CameraVector,
   type StoneDimensions,
@@ -216,6 +216,7 @@ function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpa
 }
 
 function createCabochonGeometry(
+  style: RingConfig['style'],
   shape: RingConfig['shape'],
   width: number,
   height: number,
@@ -235,7 +236,7 @@ function createCabochonGeometry(
 
     for (let segment = 0; segment < angularSegments; segment += 1) {
       const angle = (segment / angularSegments) * Math.PI * 2
-      const [x, y] = outlinePoint(shape, angle, width, height)
+      const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height)
       positions.push(x * radius, y * radius, z)
       uvs.push(0.5 + (x / width) * radius * 0.5, 0.5 + (y / height) * radius * 0.5)
     }
@@ -268,7 +269,7 @@ function createCabochonGeometry(
   const bottomRimStart = positions.length / 3
   for (let segment = 0; segment < angularSegments; segment += 1) {
     const angle = (segment / angularSegments) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, width, height)
+    const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height)
     positions.push(x, y, baseZ)
     uvs.push(0.5 + (x / width) * 0.5, 0.5 + (y / height) * 0.5)
   }
@@ -365,8 +366,14 @@ function OpalCabochon({
   )
   const geometry = useMemo(
     () =>
-      createCabochonGeometry(config.shape, width, height, selectedOpal?.visual.dimensionsMm?.depth),
-    [config.shape, height, selectedOpal?.visual.dimensionsMm?.depth, width]
+      createCabochonGeometry(
+        config.style,
+        config.shape,
+        width,
+        height,
+        selectedOpal?.visual.dimensionsMm?.depth
+      ),
+    [config.shape, config.style, height, selectedOpal?.visual.dimensionsMm?.depth, width]
   )
   const palette = opalPalettes[config.stone]
   // Catalogue growth must not make the WebGL scene download every product
@@ -457,6 +464,7 @@ function OpalCabochon({
 }
 
 function createBezelWallGeometry(
+  style: RingConfig['style'],
   shape: RingConfig['shape'],
   width: number,
   height: number,
@@ -472,8 +480,22 @@ function createBezelWallGeometry(
 
   for (let segment = 0; segment < segments; segment += 1) {
     const angle = (segment / segments) * Math.PI * 2
-    const [outerX, outerY] = outlinePoint(shape, angle, width, height, offset + thickness / 2)
-    const [innerX, innerY] = outlinePoint(shape, angle, width, height, offset - thickness / 2)
+    const [outerX, outerY] = soldStyleOutlinePoint(
+      style,
+      shape,
+      angle,
+      width,
+      height,
+      offset + thickness / 2
+    )
+    const [innerX, innerY] = soldStyleOutlinePoint(
+      style,
+      shape,
+      angle,
+      width,
+      height,
+      offset - thickness / 2
+    )
     positions.push(
       outerX,
       outerY,
@@ -534,6 +556,7 @@ function createBezelWallGeometry(
 }
 
 function createSettingBaseGeometry(
+  style: RingConfig['style'],
   shape: RingConfig['shape'],
   width: number,
   height: number,
@@ -548,7 +571,7 @@ function createSettingBaseGeometry(
 
   for (let segment = 0; segment < segments; segment += 1) {
     const angle = (segment / segments) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, width, height, offset)
+    const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height, offset)
     positions.push(x, y, bottomZ, x, y, topZ)
   }
 
@@ -596,8 +619,9 @@ function SettingBase({
 }) {
   const [width, height] = dimensions
   const geometry = useMemo(
-    () => createSettingBaseGeometry(config.shape, width, height, offset, bottomZ, topZ),
-    [bottomZ, config.shape, height, offset, topZ, width]
+    () =>
+      createSettingBaseGeometry(config.style, config.shape, width, height, offset, bottomZ, topZ),
+    [bottomZ, config.shape, config.style, height, offset, topZ, width]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -627,8 +651,18 @@ function BezelWall({
 }) {
   const [width, height] = dimensions
   const geometry = useMemo(
-    () => createBezelWallGeometry(config.shape, width, height, offset, thickness, bottomZ, topZ),
-    [bottomZ, config.shape, height, offset, thickness, topZ, width]
+    () =>
+      createBezelWallGeometry(
+        config.style,
+        config.shape,
+        width,
+        height,
+        offset,
+        thickness,
+        bottomZ,
+        topZ
+      ),
+    [bottomZ, config.shape, config.style, height, offset, thickness, topZ, width]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -668,13 +702,20 @@ function StoneOutline({
           const angle = (index / 72) * Math.PI * 2
           const handmadeOffset =
             edgeVariation * (Math.sin(angle * 3 + 0.4) * 0.65 + Math.sin(angle * 7) * 0.35)
-          const [x, y] = outlinePoint(config.shape, angle, width, height, offset + handmadeOffset)
+          const [x, y] = soldStyleOutlinePoint(
+            config.style,
+            config.shape,
+            angle,
+            width,
+            height,
+            offset + handmadeOffset
+          )
           return new Vector3(x, y, z)
         }),
         true,
         'centripetal'
       ),
-    [config.shape, edgeVariation, height, offset, width, z]
+    [config.shape, config.style, edgeVariation, height, offset, width, z]
   )
 
   return (
@@ -712,7 +753,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
           width,
           height,
           profile.haloOffset,
-          profile.beadPitchMm
+          profile.beadPitchMm,
+          config.style
         )
       : 0
   const beads = useMemo(
@@ -724,7 +766,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
           height,
           profile.haloOffset,
           beadCount,
-          profile.haloPhase
+          profile.haloPhase,
+          config.style
         ),
         profile.beadVariation,
         profile.beadFlattening
@@ -732,6 +775,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
     [
       beadCount,
       config.shape,
+      config.style,
       height,
       profile.beadFlattening,
       profile.beadVariation,

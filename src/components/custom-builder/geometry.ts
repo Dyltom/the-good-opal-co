@@ -1,4 +1,4 @@
-import type { BuilderOpal, RingConfig } from './config'
+import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
 
 export type StoneDimensions = readonly [width: number, height: number]
 export type CameraVector = readonly [x: number, y: number, z: number]
@@ -108,7 +108,10 @@ export function projectWorldAxisToView(
 export function getRingMeasurements(config: RingConfig): RingMeasurements {
   const insideDiameterMm = 11.63 + 0.8128 * config.size
   const innerRadius = insideDiameterMm / 20
-  const radialThickness = 0.085
+  // RingScene uses one scene unit per 10 mm and shankDepth as the radial
+  // half-thickness. Deriving the centreline from the selected sold style keeps
+  // the requested inside diameter exact instead of silently adding 0.5-0.7 mm.
+  const radialThickness = ringStyleGeometryProfiles[config.style].shankDepth
   const centreRadius = innerRadius + radialThickness
   const outerRadius = centreRadius + radialThickness
   return { centreRadius, outerRadius }
@@ -208,6 +211,45 @@ export function outlinePoint(
   return [point[0] + normalX * offset, point[1] + normalY * offset]
 }
 
+/**
+ * Applies the small, repeatable contour deviations visible in each sold ring.
+ * This is deliberately style geometry, not random noise: stone, bezel, cup,
+ * seam, and halo must continue to share one manufacturable outline.
+ */
+export function soldStyleOutlinePoint(
+  style: RingConfig['style'],
+  shape: RingConfig['shape'],
+  angle: number,
+  width: number,
+  height: number,
+  offset = 0
+): readonly [number, number] {
+  const profile = ringStyleGeometryProfiles[style]
+  const point = outlinePoint(shape, angle, width, height, offset)
+  const epsilon = 0.0001
+  const before = outlinePoint(shape, angle - epsilon, width, height, offset)
+  const after = outlinePoint(shape, angle + epsilon, width, height, offset)
+  const tangentX = after[0] - before[0]
+  const tangentY = after[1] - before[1]
+  const tangentLength = Math.hypot(tangentX, tangentY) || 1
+  let normalX = tangentY / tangentLength
+  let normalY = -tangentX / tangentLength
+  if (normalX * point[0] + normalY * point[1] < 0) {
+    normalX *= -1
+    normalY *= -1
+  }
+  const wave =
+    Math.sin(angle * profile.contourWaveFrequency + profile.contourWavePhase) +
+    0.42 * Math.sin(angle * (profile.contourWaveFrequency + 2) - profile.contourWavePhase)
+  const displacement = Math.min(width, height) * profile.contourWave * wave
+  const verticalPosition = height === 0 ? 0 : point[1] / height
+
+  return [
+    point[0] + width * profile.contourLean * verticalPosition + normalX * displacement,
+    point[1] + normalY * displacement,
+  ]
+}
+
 export function cssSilhouetteClipPath(shape: RingConfig['shape']): string | undefined {
   if (shape !== 'heart' && shape !== 'pear') return undefined
 
@@ -227,11 +269,14 @@ export function evenlySpacedOutlinePoints(
   height: number,
   offset: number,
   count: number,
-  startAngle = 0
+  startAngle = 0,
+  style?: RingConfig['style']
 ): readonly { key: number; x: number; y: number }[] {
   const samples = Array.from({ length: 361 }, (_, index) => {
     const angle = startAngle + (index / 360) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, width, height, offset)
+    const [x, y] = style
+      ? soldStyleOutlinePoint(style, shape, angle, width, height, offset)
+      : outlinePoint(shape, angle, width, height, offset)
     return { x, y }
   })
   const distances = [0]
@@ -267,14 +312,19 @@ export function adaptiveOutlinePointCount(
   width: number,
   height: number,
   offset: number,
-  pitchMm: number
+  pitchMm: number,
+  style?: RingConfig['style']
 ): number {
   if (pitchMm <= 0) return 0
   const samples = 720
   let perimeter = 0
-  let previous = outlinePoint(shape, 0, width, height, offset)
+  const pointAt = (angle: number) =>
+    style
+      ? soldStyleOutlinePoint(style, shape, angle, width, height, offset)
+      : outlinePoint(shape, angle, width, height, offset)
+  let previous = pointAt(0)
   for (let index = 1; index <= samples; index += 1) {
-    const point = outlinePoint(shape, (index / samples) * Math.PI * 2, width, height, offset)
+    const point = pointAt((index / samples) * Math.PI * 2)
     perimeter += Math.hypot(point[0] - previous[0], point[1] - previous[1])
     previous = point
   }

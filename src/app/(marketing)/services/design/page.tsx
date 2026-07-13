@@ -211,7 +211,13 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
 }
 
 export default async function DesignPage({ searchParams }: DesignPageProps) {
-  const [query, opals] = await Promise.all([searchParams, getBuilderOpals()])
+  const [query, opals] = await Promise.all([
+    searchParams,
+    getBuilderOpals().catch((error: unknown) => {
+      console.error('Ring builder catalogue unavailable; rendering design-only fallback', error)
+      return []
+    }),
+  ])
   const initialConfig = ringConfigFromRecord(
     Object.fromEntries(Object.entries(query).map(([key, value]) => [key, first(value)]))
   )

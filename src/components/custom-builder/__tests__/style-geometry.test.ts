@@ -25,8 +25,8 @@ describe('sold ring style geometry', () => {
       bezelWallThickness: 0.052,
       bezelLipOffset: 0.01,
       innerSeamRadius: 0.008,
-      shankRadius: 0.09,
-      shoulderRadius: 0.096,
+      shankRadius: 0.094,
+      shoulderRadius: 0.099,
       crossSectionPower: 0.9,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
