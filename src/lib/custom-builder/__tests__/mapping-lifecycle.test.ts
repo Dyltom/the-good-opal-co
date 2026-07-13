@@ -318,6 +318,36 @@ describe('opal builder mapping lifecycle', () => {
     })
   })
 
+  test('establishes a v5 hash baseline without invalidating a preserved reviewed mapping', () => {
+    const result = applyBuilderMappingLifecycle(
+      { stock: 1 },
+      {
+        builderMappingInputHash: null,
+        builderMappingMode: 'manual',
+        builderMappingStatus: 'reviewed',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
+        builderPhotoFocalX: 0.41,
+        builderPhotoFocalY: 0.62,
+        builderPhotoZoom: 4.7,
+        category: 'raw-opals',
+        dimensions: { depth: 2, length: 9, width: 6 },
+        images: [{ image: 'media-1' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      now
+    )
+
+    expect(result).toMatchObject({
+      builderMappingMode: 'manual',
+      builderMappingStatus: 'reviewed',
+      builderMappingVersion: BUILDER_MAPPING_VERSION,
+    })
+    expect(result.builderMappingInputHash).toMatch(/^[0-9a-f]{16}$/)
+    expect(result).not.toHaveProperty('builderPhotoFocalX')
+  })
+
   test('does not expose pending or stale mappings', () => {
     expect(isBuilderMappingApproved('pending')).toBe(false)
     expect(isBuilderMappingApproved('stale')).toBe(false)
