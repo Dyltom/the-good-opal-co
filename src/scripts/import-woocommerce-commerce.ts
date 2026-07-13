@@ -231,6 +231,14 @@ async function importCommerce(payload: Payload, apply: boolean): Promise<ImportS
       products.length === 1 && products[0] ? [[filename, products[0]] as const] : []
     )
   )
+  const sourceImageCounts = new Map<string, number>()
+  const sourceNameCounts = new Map<string, number>()
+  for (const product of snapshot.products) {
+    const filename = wooPrimaryImageFilename(product)
+    if (filename) sourceImageCounts.set(filename, (sourceImageCounts.get(filename) ?? 0) + 1)
+    const name = productNameKey(product.name)
+    sourceNameCounts.set(name, (sourceNameCounts.get(name) ?? 0) + 1)
+  }
   const productReferences = new Map<number, { id: string | number; slug: string }>()
   const productCounts: ImportCounts = { created: 0, updated: 0, archived: 0, skipped: 0 }
   const strongProductPlans = snapshot.products.map((sourceProduct) => {
@@ -240,7 +248,9 @@ async function importCommerce(payload: Payload, apply: boolean): Promise<ImportS
       productsByLegacyId.get(sourceProduct.id),
       productsBySku.get(`WP-${sourceProduct.id}`),
       productsBySku.get(mapped.sku),
-      primaryImageFilename ? productsByUniquePrimaryImage.get(primaryImageFilename) : undefined,
+      primaryImageFilename && sourceImageCounts.get(primaryImageFilename) === 1
+        ? productsByUniquePrimaryImage.get(primaryImageFilename)
+        : undefined,
     ].filter((product): product is Product => product !== undefined)
     const identityIds = new Set(identityCandidates.map((product) => String(product.id)))
     if (identityIds.size > 1) {
@@ -255,7 +265,9 @@ async function importCommerce(payload: Payload, apply: boolean): Promise<ImportS
   )
   const productPlans = strongProductPlans.map(({ sourceProduct, mapped, strongExisting }) => {
     const slugCandidate = productsBySlug.get(mapped.slug)
-    const nameCandidate = productsByUniqueName.get(productNameKey(mapped.name))
+    const nameKey = productNameKey(mapped.name)
+    const nameCandidate =
+      sourceNameCounts.get(nameKey) === 1 ? productsByUniqueName.get(nameKey) : undefined
     const fallbackCandidates = [slugCandidate, nameCandidate].filter(
       (product): product is Product =>
         product !== undefined && !strongMatchedProductIds.has(String(product.id))
@@ -270,7 +282,17 @@ async function importCommerce(payload: Payload, apply: boolean): Promise<ImportS
     productPlans.flatMap(({ existing }) => (existing ? [String(existing.id)] : []))
   )
   if (matchedExistingProductIds.size !== productPlans.filter(({ existing }) => existing).length) {
-    throw new Error('Multiple WooCommerce products resolve to the same historical product')
+    const collisions = new Map<string, number[]>()
+    for (const { sourceProduct, existing } of productPlans) {
+      if (!existing) continue
+      const targetId = String(existing.id)
+      collisions.set(targetId, [...(collisions.get(targetId) ?? []), sourceProduct.id])
+    }
+    const details = [...collisions]
+      .filter(([, sourceIds]) => sourceIds.length > 1)
+      .map(([targetId, sourceIds]) => `${sourceIds.join('/')} -> ${targetId}`)
+      .join(', ')
+    throw new Error(`Multiple WooCommerce products resolve to one historical product: ${details}`)
   }
   const displacedSlugOwners = new Map<string, Product>()
   for (const { sourceProduct, mapped, existing } of productPlans) {
