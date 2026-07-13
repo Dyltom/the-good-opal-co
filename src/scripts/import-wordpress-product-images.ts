@@ -3,10 +3,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { downloadWordPressMedia, type WordPressFeaturedMedia } from '@/lib/wordpress/content-import'
 import { fetchWordPressProductImages } from '@/lib/wordpress/product-images'
-import {
-  isPostgresUniqueViolation,
-  retrySerializableTransaction,
-} from '@/lib/postgres-retry'
+import { retrySerializableTransaction } from '@/lib/postgres-retry'
 
 const TENANT_ID = 'good-opal-co'
 
@@ -58,10 +55,9 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number
       return created.id
     })
   } catch (error: unknown) {
-    if (!isPostgresUniqueViolation(error)) throw error
-    const concurrentWinnerId = await findExistingMedia(source)
-    if (concurrentWinnerId === undefined) throw error
-    return concurrentWinnerId
+    const persistedMediaId = await findExistingMedia(source)
+    if (persistedMediaId === undefined) throw error
+    return persistedMediaId
   }
 }
 
