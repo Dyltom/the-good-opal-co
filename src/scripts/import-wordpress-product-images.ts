@@ -3,10 +3,14 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { downloadWordPressMedia, type WordPressFeaturedMedia } from '@/lib/wordpress/content-import'
 import { fetchWordPressProductImages } from '@/lib/wordpress/product-images'
+import {
+  isPostgresUniqueViolation,
+  retrySerializableTransaction,
+} from '@/lib/postgres-retry'
 
 const TENANT_ID = 'good-opal-co'
 
-async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number> {
+async function findExistingMedia(source: WordPressFeaturedMedia): Promise<number | undefined> {
   const payload = await getPayload()
   const existing = await payload.find({
     collection: 'media',
@@ -16,24 +20,49 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number
         { legacySourceUrl: { equals: source.sourceUrl } },
       ],
     },
-    limit: 1,
+    limit: 2,
     overrideAccess: true,
   })
-  if (existing.docs[0]) return existing.docs[0].id
+  const matchingIds = [...new Set(existing.docs.map((document) => document.id))]
+  if (matchingIds.length > 1) {
+    throw new Error(
+      `Legacy media identity conflict for WordPress attachment ${source.id}; resolve duplicate ID/source URL records before importing`
+    )
+  }
+  return existing.docs[0]?.id
+}
 
-  const created = await payload.create({
-    collection: 'media',
-    data: {
-      legacyWordPressId: source.id,
-      legacySourceUrl: source.sourceUrl,
-      alt: source.alt,
-      caption: source.title,
-      tenantId: TENANT_ID,
-    },
-    file: await downloadWordPressMedia(source),
-    overrideAccess: true,
-  })
-  return created.id
+async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number> {
+  const payload = await getPayload()
+  const existingId = await findExistingMedia(source)
+  if (existingId !== undefined) return existingId
+
+  const file = await downloadWordPressMedia(source)
+  try {
+    return await retrySerializableTransaction(async () => {
+      const afterConflictId = await findExistingMedia(source)
+      if (afterConflictId !== undefined) return afterConflictId
+
+      const created = await payload.create({
+        collection: 'media',
+        data: {
+          legacyWordPressId: source.id,
+          legacySourceUrl: source.sourceUrl,
+          alt: source.alt,
+          caption: source.title,
+          tenantId: TENANT_ID,
+        },
+        file,
+        overrideAccess: true,
+      })
+      return created.id
+    })
+  } catch (error: unknown) {
+    if (!isPostgresUniqueViolation(error)) throw error
+    const concurrentWinnerId = await findExistingMedia(source)
+    if (concurrentWinnerId === undefined) throw error
+    return concurrentWinnerId
+  }
 }
 
 export async function importProductImages(apply = false) {
@@ -66,13 +95,16 @@ export async function importProductImages(apply = false) {
     changed += 1
     if (!apply) continue
 
-    const mediaIds = await Promise.all(source.media.map(findOrCreateMedia))
-    await payload.update({
-      collection: 'products',
-      id: product.id,
-      data: { images: mediaIds.map((image) => ({ image })) },
-      overrideAccess: true,
-    })
+    const mediaIds: number[] = []
+    for (const media of source.media) mediaIds.push(await findOrCreateMedia(media))
+    await retrySerializableTransaction(() =>
+      payload.update({
+        collection: 'products',
+        id: product.id,
+        data: { images: mediaIds.map((image) => ({ image })) },
+        overrideAccess: true,
+      })
+    )
   }
 
   payload.logger.info(

@@ -49,6 +49,15 @@ if (vercelEnvironment === 'production' || vercelEnvironment === 'preview') {
       ...process.env,
       WORDPRESS_PRODUCT_IMAGES_APPLY: 'true',
     })
+  } else if (
+    vercelEnvironment === 'production' &&
+    process.env.WORDPRESS_PRODUCT_IMAGES_ON_DEPLOY === 'true'
+  ) {
+    console.log('[vercel-build] Running gallery-only WordPress product photography reconciliation.')
+    run('pnpm', ['import:wordpress-product-images'], {
+      ...process.env,
+      WORDPRESS_PRODUCT_IMAGES_APPLY: 'true',
+    })
   }
 } else {
   console.log('[vercel-build] Skipping database migrations outside Vercel deployments.')

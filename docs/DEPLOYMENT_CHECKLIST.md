@@ -32,6 +32,7 @@ Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
 - [ ] Catalog imported or migrated; no empty storefront.
 - [ ] Every published item has verified image, price, stock, description, category, origin/treatment facts, and certificate state.
 - [ ] No stale item is accidentally published from legacy seed data.
+- [ ] Remove one-shot `WOO_IMPORT_*` and `WORDPRESS_PRODUCT_IMAGES_ON_DEPLOY` variables after a verified import deployment.
 
 ## Revenue flows
 

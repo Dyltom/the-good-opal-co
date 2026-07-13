@@ -138,6 +138,8 @@ describe('deployment config', () => {
     expect(buildScript).toContain('WOO_IMPORT_RUN_ID is required')
     expect(buildScript).toContain('WOO_IMPORT_MODE must be initial or final-delta')
     expect(buildScript).toContain("WOO_IMPORT_APPLY: 'true'")
+    expect(buildScript).toContain("process.env.WORDPRESS_PRODUCT_IMAGES_ON_DEPLOY === 'true'")
+    expect(buildScript).toContain("WORDPRESS_PRODUCT_IMAGES_APPLY: 'true'")
     expect(buildScript.indexOf("['payload', 'migrate']")).toBeLessThan(
       buildScript.indexOf("['build']")
     )
