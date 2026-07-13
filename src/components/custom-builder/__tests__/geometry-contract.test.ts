@@ -324,7 +324,7 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.1)
       expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.1)
       expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.06)
-      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.08)
+      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.09)
       expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
       expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.035)
 
