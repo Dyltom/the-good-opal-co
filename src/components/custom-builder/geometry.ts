@@ -540,17 +540,24 @@ export function applyHandmadeBeadVariation(
 export function getCabochonDepthProfile(
   width: number,
   height: number,
-  depthMm?: number
+  depthMm?: number,
+  style?: RingConfig['style']
 ): CabochonDepthProfile {
   const girdleZ = 0.028
   const totalDepth = depthMm ? depthMm * 0.1 : Math.min(width, height) * 0.38
+  const unmeasuredDomeFactor: Record<RingConfig['style'], number> = {
+    aurora: 0.31,
+    coral: 0.22,
+    gemini: 0.29,
+    'sun-moon': 0.27,
+  }
   // A loose listing's total depth includes material hidden inside the cup.
   // Treating 58% of raw depth as exposed dome made deep opals tower above the
   // sold low-bezel designs. Preserve the familiar unmeasured reference dome,
   // but cap measured stones at a conservative 30% of their narrow face.
   const domeHeight = depthMm
     ? Math.min(totalDepth * 0.42, Math.min(width, height) * 0.6, 0.18)
-    : Math.min(width, height) * 0.22
+    : Math.min(width, height) * (style ? unmeasuredDomeFactor[style] : 0.22)
   // Most loose-stone depth is hidden inside the handmade cup once set.
   const visibleSeatDepth = Math.min(Math.max(totalDepth - domeHeight, 0), 0.08)
 
@@ -567,7 +574,8 @@ export function getSettingPlacement(config: RingConfig, selectedOpal?: BuilderOp
   const depthProfile = getCabochonDepthProfile(
     stoneWidth,
     stoneHeight,
-    getRenderableOpalDepthMm(selectedOpal)
+    getRenderableOpalDepthMm(selectedOpal),
+    config.style
   )
   const settingBottom = depthProfile.baseZ - 0.012
   const settingY = measurements.outerRadius - settingBottom

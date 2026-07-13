@@ -223,12 +223,18 @@ function createCabochonGeometry(
   shape: RingConfig['shape'],
   width: number,
   height: number,
-  depthMm?: number
+  depthMm?: number,
+  style?: RingConfig['style']
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const radialSegments = 18
   const angularSegments = 72
-  const { baseZ, domeHeight, girdleZ } = getCabochonDepthProfile(width, height, depthMm)
+  const { baseZ, domeHeight, girdleZ } = getCabochonDepthProfile(
+    width,
+    height,
+    depthMm,
+    style
+  )
   const positions: number[] = [0, 0, girdleZ + domeHeight]
   const uvs: number[] = [0.5, 0.5]
   const indices: number[] = []
@@ -369,8 +375,14 @@ function OpalCabochon({
   )
   const geometry = useMemo(
     () =>
-      createCabochonGeometry(config.shape, width, height, getRenderableOpalDepthMm(selectedOpal)),
-    [config.shape, height, selectedOpal, width]
+      createCabochonGeometry(
+        config.shape,
+        width,
+        height,
+        getRenderableOpalDepthMm(selectedOpal),
+        config.style
+      ),
+    [config.shape, config.style, height, selectedOpal, width]
   )
   const palette = opalPalettes[config.stone]
   // Catalogue growth must not make the WebGL scene download every product
@@ -734,7 +746,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const depthProfile = getCabochonDepthProfile(
     width,
     height,
-    getRenderableOpalDepthMm(selectedOpal)
+    getRenderableOpalDepthMm(selectedOpal),
+    config.style
   )
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025

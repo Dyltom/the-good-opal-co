@@ -244,6 +244,25 @@ describe('custom ring geometry contract', () => {
     expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.08, 12)
   })
 
+  test('keeps unmeasured opal crowns visible above each sold setting profile', () => {
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'gemini').domeHeight).toBeCloseTo(
+      0.116,
+      12
+    )
+    expect(getCabochonDepthProfile(0.5, 0.5, undefined, 'coral').domeHeight).toBeCloseTo(
+      0.11,
+      12
+    )
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'sun-moon').domeHeight).toBeCloseTo(
+      0.108,
+      12
+    )
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(
+      0.124,
+      12
+    )
+  })
+
   test.each([
     ['round', 0.42, 0.42],
     ['oval', 0.4, 0.5],
