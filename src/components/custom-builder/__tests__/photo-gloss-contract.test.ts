@@ -8,8 +8,8 @@ describe('catalogue opal gloss contract', () => {
   test('physically lights catalogue pixels and layers restrained white specular', () => {
     expect(sceneSource).toContain('<meshPhysicalMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
-    expect(sceneSource).toContain('clearcoat={0.82}')
-    expect(sceneSource).toContain('specularIntensity={0.68}')
+    expect(sceneSource).toContain('clearcoat={0.38}')
+    expect(sceneSource).toContain('specularIntensity={0.32}')
     expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
     expect(sceneSource).toContain('<ProductPhotoGloss geometry={geometry} />')
@@ -21,7 +21,7 @@ describe('catalogue opal gloss contract', () => {
   })
 
   test('keeps gloss restrained and independent from animation time', () => {
-    expect(sceneSource).toContain('float alpha = min(0.13, highlight * 0.1 + edgeSheen * 0.025)')
+    expect(sceneSource).toContain('float alpha = min(0.06, highlight * 0.045 + edgeSheen * 0.012)')
     expect(sceneSource).toContain('vec3 shellPosition = position + normal * 0.0015')
     expect(sceneSource).not.toMatch(/photoGloss(?:Vertex|Fragment)Shader[\s\S]*uTime/)
     expect(sceneSource).toContain("frameloop={allowMotion ? 'always' : 'demand'}")

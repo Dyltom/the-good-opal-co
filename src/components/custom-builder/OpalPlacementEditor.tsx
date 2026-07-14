@@ -14,6 +14,7 @@ import { defaultOpalPlacement, ringStyleGeometryProfiles } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
 import {
   applyHandmadeBeadVariation,
+  coalesceOverlappingHaloBeads,
   cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
   getStyleBeadCount,
@@ -110,36 +111,36 @@ function OpalSettingDecoration({
     height,
     opal.visual.contour
   )
-  const beads = useMemo(
-    () =>
-      applyHandmadeBeadVariation(
-        evenlySpacedOutlinePoints(
-          opal.visual.silhouette,
-          width,
-          height,
-          profile.haloOffset,
-          beadCount,
-          profile.haloPhase,
-          style,
-          opal.visual.contour
-        ),
-        profile.beadVariation,
-        profile.beadFlattening,
-        profile.beadAsymmetry
+  const beads = useMemo(() => {
+    const variedBeads = applyHandmadeBeadVariation(
+      evenlySpacedOutlinePoints(
+        opal.visual.silhouette,
+        width,
+        height,
+        profile.haloOffset,
+        beadCount,
+        profile.haloPhase,
+        style,
+        opal.visual.contour
       ),
-    [
-      beadCount,
-      height,
-      opal.visual.contour,
-      opal.visual.silhouette,
-      profile.beadFlattening,
-      profile.beadAsymmetry,
       profile.beadVariation,
-      profile.haloOffset,
-      profile.haloPhase,
-      style,
-    ]
-  )
+      profile.beadFlattening,
+      profile.beadAsymmetry
+    )
+    return coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius)
+  }, [
+    beadCount,
+    height,
+    opal.visual.contour,
+    opal.visual.silhouette,
+    profile.beadRadius,
+    profile.beadFlattening,
+    profile.beadAsymmetry,
+    profile.beadVariation,
+    profile.haloOffset,
+    profile.haloPhase,
+    style,
+  ])
 
   if (beads.length === 0) return null
 
@@ -484,7 +485,10 @@ export function OpalPlacementEditor({
                 aria-label="Rotate opal colour left"
                 disabled={displayedRotation <= -rotationLimit}
                 onClick={() =>
-                  update('opalRotation', clamp(displayedRotation - 15, -rotationLimit, rotationLimit))
+                  update(
+                    'opalRotation',
+                    clamp(displayedRotation - 15, -rotationLimit, rotationLimit)
+                  )
                 }
                 className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -501,7 +505,10 @@ export function OpalPlacementEditor({
                 aria-label="Rotate opal colour right"
                 disabled={displayedRotation >= rotationLimit}
                 onClick={() =>
-                  update('opalRotation', clamp(displayedRotation + 15, -rotationLimit, rotationLimit))
+                  update(
+                    'opalRotation',
+                    clamp(displayedRotation + 15, -rotationLimit, rotationLimit)
+                  )
                 }
                 className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
               >

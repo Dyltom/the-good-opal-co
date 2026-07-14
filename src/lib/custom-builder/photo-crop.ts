@@ -30,9 +30,13 @@ const placementPositionLimit = 0.45
 const placementScaleLimit = 2.25
 const maximumCustomerRotation = 45
 const maximumTextureZoom = 12
+const maximumInteractiveTextureZoom = 7.5
 
 export function getPhotoPlacementScaleMax(baseZoom: number): number {
-  return Math.max(1, Math.min(placementScaleLimit, 12 / Math.max(1, baseZoom)))
+  return Math.max(
+    1,
+    Math.min(placementScaleLimit, maximumInteractiveTextureZoom / Math.max(1, baseZoom))
+  )
 }
 
 /**

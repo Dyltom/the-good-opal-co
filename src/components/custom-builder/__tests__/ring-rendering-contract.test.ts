@@ -92,9 +92,9 @@ describe('photoreal ring rendering contract', () => {
   test('uses physically lit catalogue colour and fused style-specific solder grains', () => {
     expect(sceneSource).toContain('<meshPhysicalMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
-    expect(sceneSource).toContain('clearcoat={0.82}')
-    expect(sceneSource).toContain('roughness={0.18}')
-    expect(sceneSource).toContain('specularIntensity={0.68}')
+    expect(sceneSource).toContain('clearcoat={0.38}')
+    expect(sceneSource).toContain('roughness={0.24}')
+    expect(sceneSource).toContain('specularIntensity={0.32}')
     expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).toContain("profile.beadPrimitive === 'rounded-granule'")
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')

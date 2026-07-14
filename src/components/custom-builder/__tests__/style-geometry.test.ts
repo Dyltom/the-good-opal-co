@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { getHaloSupportGeometry, ringStyleGeometryProfiles, ringStyles } from '../config'
 import {
   applyHandmadeBeadVariation,
+  coalesceOverlappingHaloBeads,
   evenlySpacedOutlinePoints,
   getBezelWallContourPoints,
   getCabochonDepthProfile,
@@ -167,8 +168,8 @@ describe('sold ring style geometry', () => {
     const rounded = Array.from({ length: 40 }, (_, key) => getSolderGrainTone(key, false))
     const organic = Array.from({ length: 28 }, (_, key) => getSolderGrainTone(key, true))
 
-    expect(Math.min(...rounded)).toBeCloseTo(0.92, 12)
-    expect(Math.max(...rounded)).toBeCloseTo(1.04, 12)
+    expect(Math.min(...rounded)).toBeCloseTo(0.84, 12)
+    expect(Math.max(...rounded)).toBeCloseTo(0.96, 12)
     expect(Math.min(...organic)).toBeCloseTo(0.82, 12)
     expect(Math.max(...organic)).toBeCloseTo(1.09, 12)
     expect(new Set(organic)).toHaveLength(7)
@@ -255,6 +256,40 @@ describe('sold ring style geometry', () => {
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }
   )
+
+  test.each(['sun-moon', 'aurora'] as const)(
+    'coalesces the %s halo where an adapted heart cleft folds grains together',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const count = getStyleBeadCount(style, 'heart', 0.4, 0.5)
+      const varied = applyHandmadeBeadVariation(
+        evenlySpacedOutlinePoints(
+          'heart',
+          0.4,
+          0.5,
+          profile.haloOffset,
+          count,
+          profile.haloPhase,
+          style
+        ),
+        profile.beadVariation,
+        profile.beadFlattening,
+        profile.beadAsymmetry
+      )
+      const beads = coalesceOverlappingHaloBeads(varied, profile.beadRadius)
+      const gaps = beads.map((bead, index) => {
+        const next = beads[(index + 1) % beads.length]!
+        return (
+          Math.hypot(next.x - bead.x, next.y - bead.y) -
+          profile.beadRadius * bead.size -
+          profile.beadRadius * next.size
+        )
+      })
+
+      expect(beads.length).toBeLessThan(varied.length)
+      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
+    }
+  )
   test.each(['sun-moon', 'aurora'] as const)(
     'supports the %s soldered beads with a continuous backplate',
     (style) => {
@@ -271,9 +306,7 @@ describe('sold ring style geometry', () => {
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
       expect(profile.haloSupportCoverage).toBeGreaterThanOrEqual(0.8)
       expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.82)
-      expect(supportOuterEdge).toBeGreaterThanOrEqual(
-        profile.haloOffset + profile.beadRadius * 0.8
-      )
+      expect(supportOuterEdge).toBeGreaterThanOrEqual(profile.haloOffset + profile.beadRadius * 0.8)
     }
   )
 
@@ -486,10 +519,7 @@ describe('sold ring style geometry', () => {
         .map(({ outer }) => Math.hypot(outer[0], outer[1]))
       expect(Math.max(...crestRadii)).toBeGreaterThan(Math.max(...valleyRadii))
       expect(Math.min(...valleyRadii)).toBeGreaterThan(
-        Math.min(
-          ...beads.map(({ x, y }) => Math.hypot(x, y))
-        ) -
-          profile.beadRadius * 0.6
+        Math.min(...beads.map(({ x, y }) => Math.hypot(x, y))) - profile.beadRadius * 0.6
       )
     }
   )

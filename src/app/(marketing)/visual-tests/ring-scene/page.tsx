@@ -115,9 +115,12 @@ function selectedOpalForFixture(fixture: (typeof fixtures)[number]): BuilderOpal
   return fixtureOpals.heart
 }
 
-function configForFixture(requestedStyle: RingConfig['style'], fixture: (typeof fixtures)[number]) {
+function configForFixture(
+  requestedStyle: RingConfig['style'] | undefined,
+  fixture: (typeof fixtures)[number]
+) {
   const selectedOpal = selectedOpalForFixture(fixture)
-  const style = selectedOpal?.visual.recommendedStyle ?? requestedStyle
+  const style = requestedStyle ?? selectedOpal?.visual.recommendedStyle ?? defaultRingConfig.style
   const config = applyRingStyle(defaultRingConfig, style)
   if (!selectedOpal) return config
   const placed = fixture.endsWith('-placed') || fixture === 'placed'
@@ -142,17 +145,12 @@ export default async function RingSceneVisualHarnessPage({ searchParams }: Visua
   if (process.env.ENABLE_RING_VISUAL_HARNESS !== '1') notFound()
 
   const query = await searchParams
-  const style = enumParam(styleIds, first(query.style), 'gemini')
+  const requestedStyle = first(query.style)
+  const style = enumParam(styleIds, requestedStyle, 'gemini')
   const view = enumParam(views, first(query.view), 'front')
   const fixture = enumParam(fixtures, first(query.fixture), 'none')
-  const config = configForFixture(style, fixture)
+  const config = configForFixture(requestedStyle ? style : undefined, fixture)
   const selectedOpal = selectedOpalForFixture(fixture)
 
-  return (
-    <RingSceneVisualHarness
-      config={config}
-      selectedOpal={selectedOpal}
-      view={view}
-    />
-  )
+  return <RingSceneVisualHarness config={config} selectedOpal={selectedOpal} view={view} />
 }

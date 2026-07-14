@@ -5,11 +5,18 @@ import {
   computePlacedPhotoCrop,
   computePhotoTextureTransform,
   constrainPhotoPlacementRotation,
+  getPhotoPlacementScaleMax,
   getPhotoPlacementRotationLimit,
   rotationCoverScale,
 } from '../photo-crop'
 
 describe('custom builder photo crops', () => {
+  test('preserves identifying play-of-colour while allowing a useful crop adjustment', () => {
+    expect(getPhotoPlacementScaleMax(3.2)).toBe(2.25)
+    expect(getPhotoPlacementScaleMax(4.74)).toBeCloseTo(7.5 / 4.74)
+    expect(getPhotoPlacementScaleMax(8)).toBe(1)
+  })
+
   test.each([
     [1839, 1920, 1 / 1.23, { focalX: 0.501, focalY: 0.493, zoom: 3.61 }],
     [1920, 1865, 1 / 1.16, { focalX: 0.504, focalY: 0.487, zoom: 4.81 }],

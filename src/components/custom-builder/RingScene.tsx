@@ -37,6 +37,7 @@ import {
   applyHandmadeBeadVariation,
   cameraPositions,
   cameraUpVectors,
+  coalesceOverlappingHaloBeads,
   evenlySpacedOutlinePoints,
   getBezelWallContourPoints,
   getBezelLipContactZ,
@@ -445,7 +446,7 @@ const photoGlossFragmentShader = /* glsl */ `
     vec3 halfDirection = normalize(galleryLight + viewDirection);
     float highlight = pow(max(dot(normal, halfDirection), 0.0), 54.0);
     float edgeSheen = pow(1.0 - max(dot(normal, viewDirection), 0.0), 5.0);
-    float alpha = min(0.13, highlight * 0.1 + edgeSheen * 0.025);
+    float alpha = min(0.06, highlight * 0.045 + edgeSheen * 0.012);
     gl_FragColor = vec4(vec3(1.0), alpha);
   }
 `
@@ -569,18 +570,24 @@ function OpalCabochon({
             attach="material-0"
             map={photoTexture}
             color="#ffffff"
-            clearcoat={0.82}
-            clearcoatRoughness={0.055}
-            envMapIntensity={0.72}
+            clearcoat={0.38}
+            clearcoatRoughness={0.12}
+            envMapIntensity={0.35}
             ior={1.44}
             metalness={0}
-            roughness={0.18}
-            specularIntensity={0.68}
+            roughness={0.24}
+            specularIntensity={0.32}
             toneMapped={false}
           />
-          <meshBasicMaterial
+          <meshPhysicalMaterial
             attach="material-1"
             color={selectedOpal?.visual.bodyColour ?? palette.body}
+            clearcoat={0.24}
+            clearcoatRoughness={0.18}
+            envMapIntensity={0.35}
+            metalness={0}
+            roughness={0.3}
+            specularIntensity={0.3}
           />
         </mesh>
         <ProductPhotoGloss geometry={geometry} />
@@ -1175,37 +1182,37 @@ function Setting({
     profile.beadCount > 0
       ? getStyleBeadCount(config.style, config.shape, width, height, contour)
       : 0
-  const beads = useMemo(
-    () =>
-      applyHandmadeBeadVariation(
-        evenlySpacedOutlinePoints(
-          config.shape,
-          width,
-          height,
-          profile.haloOffset,
-          beadCount,
-          profile.haloPhase,
-          config.style,
-          contour
-        ),
-        profile.beadVariation,
-        profile.beadFlattening,
-        profile.beadAsymmetry
+  const beads = useMemo(() => {
+    const variedBeads = applyHandmadeBeadVariation(
+      evenlySpacedOutlinePoints(
+        config.shape,
+        width,
+        height,
+        profile.haloOffset,
+        beadCount,
+        profile.haloPhase,
+        config.style,
+        contour
       ),
-    [
-      beadCount,
-      config.shape,
-      config.style,
-      contour,
-      height,
-      profile.beadFlattening,
-      profile.beadAsymmetry,
       profile.beadVariation,
-      profile.haloOffset,
-      profile.haloPhase,
-      width,
-    ]
-  )
+      profile.beadFlattening,
+      profile.beadAsymmetry
+    )
+    return coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius)
+  }, [
+    beadCount,
+    config.shape,
+    config.style,
+    contour,
+    height,
+    profile.beadRadius,
+    profile.beadFlattening,
+    profile.beadAsymmetry,
+    profile.beadVariation,
+    profile.haloOffset,
+    profile.haloPhase,
+    width,
+  ])
   const haloSupportContour = useMemo(
     () =>
       getGrainDerivedHaloSupportOutline({
@@ -1298,16 +1305,11 @@ function Setting({
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  <mesh
-                    position={[0, 0, -profile.beadRadius * 0.38]}
-                    scale={[1.07, 1.07, 0.34]}
-                  >
+                  <mesh position={[0, 0, -profile.beadRadius * 0.38]} scale={[1.07, 1.07, 0.34]}>
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 16, 10]} />
                     )}
-                    {isOrganicGrain && (
-                      <sphereGeometry args={[profile.beadRadius, 10, 7]} />
-                    )}
+                    {isOrganicGrain && <sphereGeometry args={[profile.beadRadius, 10, 7]} />}
                     <SolderSupportMaterial metal={config.metal} />
                   </mesh>
                   <mesh castShadow receiveShadow>

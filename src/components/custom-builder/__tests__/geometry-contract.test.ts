@@ -30,8 +30,8 @@ import {
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
   stoneDimensions,
+  opalSettleApproachLift,
   opalSettleDurationSeconds,
-  opalSettleClearance,
   type CabochonDepthProfile,
   type CameraVector,
 } from '../geometry'
@@ -148,12 +148,14 @@ describe('custom ring geometry contract', () => {
       const bezelTop = depthProfile.girdleZ + 0.025
       const startOffset = getOpalSettleStartOffset(depthProfile, bezelTop)
       const bezelClearance = bezelTop - depthProfile.baseZ
-      const samples = Array.from({ length: 25 }, (_, index) =>
-        getOpalSettleTransform((index / 24) * opalSettleDurationSeconds, startOffset).offsetZ
+      const samples = Array.from(
+        { length: 25 },
+        (_, index) =>
+          getOpalSettleTransform((index / 24) * opalSettleDurationSeconds, startOffset).offsetZ
       )
 
-      expect(startOffset).toBeCloseTo(bezelClearance + opalSettleClearance, 12)
-      expect(startOffset).toBeGreaterThan(bezelClearance)
+      expect(startOffset).toBeLessThanOrEqual(opalSettleApproachLift)
+      expect(startOffset).toBeLessThan(bezelClearance)
       for (let index = 1; index < samples.length; index += 1) {
         expect(samples[index]!).toBeLessThanOrEqual(samples[index - 1]!)
         expect(samples[index]!).toBeGreaterThanOrEqual(0)

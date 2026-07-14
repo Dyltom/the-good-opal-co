@@ -121,7 +121,9 @@ test.describe('custom ring render fidelity', () => {
       )
     })
 
-    test(`${silhouette} catalogue opal stays covered after customer placement`, async ({ page }) => {
+    test(`${silhouette} catalogue opal stays covered after customer placement`, async ({
+      page,
+    }) => {
       test.setTimeout(60_000)
       await expectRingSnapshot(
         page,
@@ -130,4 +132,22 @@ test.describe('custom ring render fidelity', () => {
       )
     })
   }
+
+  test('keeps adapted Sun & Moon grains clear of a heart cleft', async ({ page }) => {
+    test.setTimeout(60_000)
+    await expectRingSnapshot(
+      page,
+      'fixture=heart&style=sun-moon&view=front',
+      'ring-photo-heart-sun-moon.png'
+    )
+  })
+
+  test('seats an adapted heart continuously inside the Sun & Moon cup', async ({ page }) => {
+    test.setTimeout(60_000)
+    await expectRingSnapshot(
+      page,
+      'fixture=heart&style=sun-moon&view=profile',
+      'ring-photo-heart-sun-moon-profile.png'
+    )
+  })
 })

@@ -20,10 +20,12 @@ export interface CabochonDepthProfile {
 // without making the bezel appear to cut materially into the opal.
 export const bezelLipCompression = 0.002
 
-export const opalSettleDurationSeconds = 0.48
-// One scene unit is 10 mm. Start two tenths of a millimetre clear of the bezel
-// crown so the selected stone travels into its seat instead of through metal.
-export const opalSettleClearance = 0.02
+export const opalSettleDurationSeconds = 0.3
+// One scene unit is 10 mm. Keep the approach inside the formed bezel instead
+// of lifting the entire stone above its rim. The previous clear-the-crown drop
+// exposed a dark air band and read as a floating sticker in top and profile
+// views. Two tenths of a millimetre still communicates the final seating move.
+export const opalSettleApproachLift = 0.02
 
 export interface OpalSettleTransform {
   offsetZ: number
@@ -42,11 +44,8 @@ export function getOpalSettleTransform(
 ): OpalSettleTransform {
   if (reduceMotion) return { offsetZ: 0, settled: true }
 
-  const progress = Math.min(
-    1,
-    Math.max(0, elapsedSeconds / opalSettleDurationSeconds)
-  )
-  const eased = 1 - Math.pow(1 - progress, 5)
+  const progress = Math.min(1, Math.max(0, elapsedSeconds / opalSettleDurationSeconds))
+  const eased = 1 - Math.pow(1 - progress, 3)
 
   return {
     offsetZ: Math.max(0, startOffset) * (1 - eased),
@@ -58,7 +57,8 @@ export function getOpalSettleStartOffset(
   depthProfile: CabochonDepthProfile,
   bezelTop: number
 ): number {
-  return Math.max(0, bezelTop - depthProfile.baseZ) + opalSettleClearance
+  const availableSeatDepth = Math.max(0, bezelTop - depthProfile.baseZ)
+  return Math.min(opalSettleApproachLift, availableSeatDepth)
 }
 
 export interface RingMeasurements {
@@ -897,10 +897,7 @@ export function getShoulderBlendProgress(
  * Values stay close to one so tarnish breaks the perfect PBR highlight without
  * changing the selected metal colour or obscuring the ring silhouette.
  */
-export function getForgedMetalTone(
-  curveProgress: number,
-  crossSectionProgress: number
-): number {
+export function getForgedMetalTone(curveProgress: number, crossSectionProgress: number): number {
   const along = Math.min(1, Math.max(0, curveProgress))
   const around = Math.min(1, Math.max(0, crossSectionProgress))
   return (
@@ -912,7 +909,7 @@ export function getForgedMetalTone(
 
 /** Tarnish variation observed across individually soldered halo grains. */
 export function getSolderGrainTone(key: number, organic: boolean): number {
-  return organic ? 0.82 + ((key * 11) % 7) * 0.045 : 0.92 + ((key * 7) % 5) * 0.03
+  return organic ? 0.82 + ((key * 11) % 7) * 0.045 : 0.84 + ((key * 7) % 5) * 0.03
 }
 
 export function cssSilhouetteClipPath(
@@ -1050,6 +1047,45 @@ export interface HandmadeBeadPoint {
   stretchY: number
   x: number
   y: number
+}
+
+/**
+ * Concave silhouettes can fold two arc-length samples onto the same physical
+ * spot. Keep one outward grain for that solder cluster instead of rendering a
+ * stack of intersecting spheres in heart clefts or other tight indentations.
+ * Ordinary handmade contact and slight solder overlap remain unchanged.
+ */
+export function coalesceOverlappingHaloBeads(
+  beads: readonly HandmadeBeadPoint[],
+  beadRadius: number,
+  minimumGap = -0.012
+): readonly HandmadeBeadPoint[] {
+  if (beads.length < 2 || beadRadius <= 0) return beads
+
+  const result: HandmadeBeadPoint[] = []
+  const gap = (left: HandmadeBeadPoint, right: HandmadeBeadPoint) =>
+    Math.hypot(right.x - left.x, right.y - left.y) -
+    beadRadius * left.size -
+    beadRadius * right.size
+  const outward = (left: HandmadeBeadPoint, right: HandmadeBeadPoint) =>
+    Math.hypot(left.x, left.y) >= Math.hypot(right.x, right.y) ? left : right
+
+  for (const bead of beads) {
+    const previous = result.at(-1)
+    if (previous && gap(previous, bead) < minimumGap) {
+      result[result.length - 1] = outward(previous, bead)
+    } else {
+      result.push(bead)
+    }
+  }
+
+  while (result.length > 1 && gap(result.at(-1)!, result[0]!) < minimumGap) {
+    const merged = outward(result.at(-1)!, result[0]!)
+    result.pop()
+    result[0] = merged
+  }
+
+  return result
 }
 
 export function applyHandmadeBeadVariation(

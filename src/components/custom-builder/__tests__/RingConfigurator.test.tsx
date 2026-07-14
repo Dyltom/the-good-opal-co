@@ -176,9 +176,9 @@ describe('RingConfigurator store opal selection', () => {
 
     expect(document.querySelector('[data-opal-setting-decoration="aurora"]')).not.toBeNull()
     expect(document.querySelectorAll('[data-opal-setting-grain]').length).toBeGreaterThan(20)
-    expect(
-      document.querySelector('[data-opal-setting-support]')?.getAttribute('class')
-    ).toContain('rounded-[50%]')
+    expect(document.querySelector('[data-opal-setting-support]')?.getAttribute('class')).toContain(
+      'rounded-[50%]'
+    )
     expect(
       document.querySelector<HTMLElement>('[data-opal-setting-support]')?.style.background
     ).toContain('rgb(32, 33, 29)')
@@ -257,9 +257,9 @@ describe('RingConfigurator store opal selection', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByTestId('ring-preview').getAttribute('data-opal-scale')).toBe('1.2')
-      expect(screen.getByRole('slider', { name: 'Zoom' })).toHaveProperty('value', '1.2')
-      expect(new URLSearchParams(window.location.search).get('ps')).toBe('1.2')
+      expect(screen.getByTestId('ring-preview').getAttribute('data-opal-scale')).toBe('1')
+      expect(screen.getByRole('slider', { name: 'Zoom' })).toHaveProperty('value', '1')
+      expect(new URLSearchParams(window.location.search).get('ps')).toBeNull()
     })
   })
 
