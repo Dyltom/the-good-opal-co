@@ -172,10 +172,29 @@ describe('WooCommerce catalogue mutation retries', () => {
   test('stages a new product at draft with zero stock until its gallery succeeds', async () => {
     mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
     mocks.create.mockResolvedValue({ id: 91 })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Exact product copy',
+        inStock: true,
+        name: 'New opal parcel',
+        price: 95,
+        sku: 'WP-5681',
+        slug: 'new-opal-parcel',
+        stockQuantity: 7,
+        tags: ['opal'],
+        wooId: 5681,
+      },
+    ])
 
     await expect(
       syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
-    ).resolves.toMatchObject({ created: 1, createdWooIds: [5681] })
+    ).resolves.toMatchObject({
+      created: 1,
+      createdWooIds: [5681],
+      sourceStockByWooId: { 5681: 7 },
+    })
 
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'draft', stock: 0 }) })

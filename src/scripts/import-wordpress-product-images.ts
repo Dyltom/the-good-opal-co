@@ -91,6 +91,7 @@ async function findExistingMedia(source: WordPressFeaturedMedia): Promise<Media 
 
 interface MediaReconciliation {
   changed: boolean
+  contentHash: string
   id: number
 }
 
@@ -99,11 +100,14 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
   const existing = await findExistingMedia(source)
   if (existing && mediaMatchesSource(existing, source)) {
     const sourceFile = await downloadWordPressMedia(source)
+    const sourceContentHash = mediaContentHash(sourceFile.data)
     const ownedBytes = await downloadOwnedMediaBytes(existing)
     const contentMatches =
-      ownedBytes !== undefined && mediaContentHash(ownedBytes) === mediaContentHash(sourceFile.data)
+      ownedBytes !== undefined && mediaContentHash(ownedBytes) === sourceContentHash
     const metadataMatches = mediaMetadataMatches(existing, source)
-    if (contentMatches && metadataMatches) return { changed: false, id: existing.id }
+    if (contentMatches && metadataMatches) {
+      return { changed: false, contentHash: sourceContentHash, id: existing.id }
+    }
 
     const refreshed = await retrySerializableTransaction(() =>
       payload.update({
@@ -120,10 +124,11 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
         overrideAccess: true,
       })
     )
-    return { changed: true, id: refreshed.id }
+    return { changed: true, contentHash: sourceContentHash, id: refreshed.id }
   }
 
   const file = await downloadWordPressMedia(source)
+  const sourceContentHash = mediaContentHash(file.data)
   if (existing) {
     const refreshed = await retrySerializableTransaction(() =>
       payload.update({
@@ -140,13 +145,15 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
         overrideAccess: true,
       })
     )
-    return { changed: true, id: refreshed.id }
+    return { changed: true, contentHash: sourceContentHash, id: refreshed.id }
   }
 
   try {
     return await retrySerializableTransaction(async () => {
       const afterConflict = await findExistingMedia(source)
-      if (afterConflict !== undefined) return { changed: false, id: afterConflict.id }
+      if (afterConflict !== undefined) {
+        return { changed: false, contentHash: sourceContentHash, id: afterConflict.id }
+      }
 
       const created = await payload.create({
         collection: 'media',
@@ -160,12 +167,12 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
         file,
         overrideAccess: true,
       })
-      return { changed: true, id: created.id }
+      return { changed: true, contentHash: sourceContentHash, id: created.id }
     })
   } catch (error: unknown) {
     const persistedMedia = await findExistingMedia(source)
     if (!persistedMedia || !mediaMatchesSource(persistedMedia, source)) throw error
-    return { changed: false, id: persistedMedia.id }
+    return { changed: false, contentHash: sourceContentHash, id: persistedMedia.id }
   }
 }
 
@@ -173,6 +180,7 @@ export interface ImportProductImagesOptions {
   expectedProductCount?: number
   expectedWooIds?: readonly number[]
   publishWooIds?: readonly number[]
+  publishStockByWooId?: Readonly<Record<number, number>>
 }
 
 function sourceIdentity(source: WordPressFeaturedMedia): string {
@@ -212,6 +220,7 @@ export async function importProductImages(
   let changed = 0
   let published = 0
   let quarantined = 0
+  let mappingRequeued = 0
 
   // Quarantine removed galleries before any network download can fail. New
   // products are already staged draft/stock-zero by the catalogue phase.
@@ -247,6 +256,8 @@ export async function importProductImages(
       source.media.length > 0 &&
       (publishWooIds.has(source.productId) ||
         (product.status === 'draft' && (product.images?.length ?? 0) === 0))
+    const publishStock =
+      options.publishStockByWooId?.[source.productId] ?? (source.inStock ? 1 : 0)
     if (!apply) {
       if (alreadyCurrent && !shouldQuarantine && !shouldPublish) continue
       changed += 1
@@ -278,10 +289,22 @@ export async function importProductImages(
       existingMediaIds.length === mediaIds.length &&
       existingMediaIds.every((id, index) => id === mediaIds[index])
     const mediaChanged = reconciledMedia.some(({ changed: didChange }) => didChange)
-    if (!mediaChanged && galleryCurrent && !shouldPublish) continue
+    const mappedImageIndex =
+      typeof product.builderMappedImageIndex === 'number' &&
+      Number.isInteger(product.builderMappedImageIndex) &&
+      product.builderMappedImageIndex >= 0
+        ? product.builderMappedImageIndex
+        : 0
+    const mappedSource = reconciledMedia[mappedImageIndex] ?? reconciledMedia[0]
+    const builderMappingSourceChanged =
+      product.category === 'raw-opals' &&
+      typeof product.builderMappingAnalyzedImageHash === 'string' &&
+      Boolean(mappedSource) &&
+      product.builderMappingAnalyzedImageHash !== mappedSource?.contentHash
+    if (!mediaChanged && galleryCurrent && !shouldPublish && !builderMappingSourceChanged) continue
     changed += 1
 
-    if (!galleryCurrent || shouldPublish) {
+    if (!galleryCurrent || shouldPublish || builderMappingSourceChanged) {
       await retrySerializableTransaction(() =>
         payload.update({
           collection: 'products',
@@ -289,24 +312,40 @@ export async function importProductImages(
           data: {
             ...(!galleryCurrent ? { images: mediaIds.map((image) => ({ image })) } : {}),
             ...(shouldPublish
-              ? { status: 'published' as const, stock: source.inStock ? 1 : 0 }
+              ? { status: 'published' as const, stock: publishStock }
+              : {}),
+            ...(builderMappingSourceChanged
+              ? {
+                  builderEligible: false,
+                  builderContourCandidate: null,
+                  builderMappingAnalyzedImageHash: null,
+                  builderMappingAnalysisError: null,
+                  builderPhotoAnalysisConfidence: null,
+                  builderPhotoAnalysisVersion: null,
+                  ...(product.builderMappingStatus === 'reviewed' ||
+                  product.builderMappingStatus === 'manual'
+                    ? { builderMappingStatus: 'stale' as const }
+                    : {}),
+                }
               : {}),
           },
           overrideAccess: true,
         })
       )
     }
+    if (builderMappingSourceChanged) mappingRequeued += 1
     if (shouldPublish) published += 1
   }
 
   payload.logger.info(
-    `WordPress product image import ${apply ? 'applied' : 'dry run'}: ${changed} changed, ${published} published, ${quarantined} quarantined, ${missing} unmatched, ${sourceImages.length} source products.`
+    `WordPress product image import ${apply ? 'applied' : 'dry run'}: ${changed} changed, ${published} published, ${quarantined} quarantined, ${mappingRequeued} builder mapping requeued, ${missing} unmatched, ${sourceImages.length} source products.`
   )
   return {
     mode: apply ? 'applied' : 'dry run',
     changed,
     published,
     quarantined,
+    mappingRequeued,
     missing,
     sourceProducts: sourceImages.length,
   }

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getPayload } from '@/lib/payload'
 import { downloadWordPressMedia } from '@/lib/wordpress/content-import'
@@ -415,6 +416,96 @@ describe('WordPress product image script', () => {
     )
   })
 
+  it('requeues a reviewed raw-opal mapping when selected source bytes change', async () => {
+    const sourceUrl = 'https://goodopalco.com/wp-content/uploads/2021/09/opal.jpg'
+    const oldBytes = Buffer.from([1])
+    const newBytes = Buffer.from([2])
+    const media = {
+      id: 211,
+      alt: 'Opal',
+      caption: 'Opal',
+      legacyWordPressId: 5350,
+      legacySourceUrl: sourceUrl,
+      tenantId: 'good-opal-co',
+      url: '/api/media/file/opal.jpg',
+    }
+    const find = vi.fn(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'products'
+          ? [
+              {
+                id: 44,
+                builderEligible: true,
+                builderMappedImageIndex: 0,
+                builderMappingAnalyzedImageHash: createHash('sha256')
+                  .update(oldBytes)
+                  .digest('hex'),
+                builderMappingStatus: 'reviewed',
+                category: 'raw-opals',
+                images: [{ image: media }],
+                status: 'published',
+                stock: 1,
+              },
+            ]
+          : [media],
+    }))
+    const update = vi.fn(async ({ collection }: { collection: string }) => ({
+      id: collection === 'media' ? 211 : 44,
+    }))
+    vi.mocked(getPayload).mockResolvedValue({
+      create: vi.fn(),
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'Opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'Opal',
+            mimeType: 'image/jpeg',
+            sourceUrl,
+            title: 'Opal',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockResolvedValue({
+      name: 'wp-5350-opal.jpg',
+      data: newBytes,
+      mimetype: 'image/jpeg',
+      size: 1,
+    })
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://shop.example.com')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(oldBytes)))
+
+    await expect(importProductImages(true)).resolves.toMatchObject({
+      changed: 1,
+      mappingRequeued: 1,
+    })
+
+    expect(update).toHaveBeenCalledTimes(2)
+    expect(update).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        collection: 'products',
+        data: expect.objectContaining({
+          builderContourCandidate: null,
+          builderEligible: false,
+          builderMappingAnalyzedImageHash: null,
+          builderMappingAnalysisError: null,
+          builderMappingStatus: 'stale',
+          builderPhotoAnalysisVersion: null,
+        }),
+        id: 44,
+      })
+    )
+  })
+
   it('does not re-upload owned media when source and owned byte hashes match', async () => {
     const sourceUrl = 'https://goodopalco.com/wp-content/uploads/2021/09/opal.jpg'
     const media = {
@@ -429,7 +520,18 @@ describe('WordPress product image script', () => {
     const find = vi.fn(async ({ collection }: { collection: string }) => ({
       docs:
         collection === 'products'
-          ? [{ id: 44, images: [{ image: media }], status: 'published', stock: 1 }]
+          ? [
+              {
+                id: 44,
+                builderMappingAnalyzedImageHash: createHash('sha256')
+                  .update(Buffer.from([7, 8, 9]))
+                  .digest('hex'),
+                category: 'raw-opals',
+                images: [{ image: media }],
+                status: 'published',
+                stock: 1,
+              },
+            ]
           : [media],
     }))
     const update = vi.fn()
@@ -570,12 +672,15 @@ describe('WordPress product image script', () => {
     })
 
     await expect(
-      importProductImages(true, { publishWooIds: [4481] })
+      importProductImages(true, {
+        publishWooIds: [4481],
+        publishStockByWooId: { 4481: 7 },
+      })
     ).resolves.toMatchObject({ published: 1 })
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'products',
-        data: { images: [{ image: 211 }], status: 'published', stock: 1 },
+        data: { images: [{ image: 211 }], status: 'published', stock: 7 },
         id: 44,
       })
     )

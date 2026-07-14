@@ -23,6 +23,7 @@ describe('WooCommerce catalogue cron', () => {
     vi.stubEnv('WOO_CATALOG_SYNC_ENABLED', 'true')
     syncWooCatalog.mockResolvedValue({
       createdWooIds: [],
+      sourceStockByWooId: { 5000: 3, 5001: 1 },
       sourceProducts: 2,
       sourceWooIds: [5000, 5001],
       updated: 2,
@@ -64,10 +65,12 @@ describe('WooCommerce catalogue cron', () => {
       expectedProductCount: 2,
       expectedWooIds: [5000, 5001],
       publishWooIds: [],
+      publishStockByWooId: { 5000: 3, 5001: 1 },
     })
     await expect(response.json()).resolves.toEqual({
       catalog: {
         createdWooIds: [],
+        sourceStockByWooId: { 5000: 3, 5001: 1 },
         sourceProducts: 2,
         sourceWooIds: [5000, 5001],
         updated: 2,

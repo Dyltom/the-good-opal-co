@@ -159,6 +159,12 @@ export async function syncWooCatalog(options: SyncOptions) {
 
   let created = 0
   const createdWooIds: number[] = []
+  const sourceStockByWooId = Object.fromEntries(
+    sourceProducts.map((product) => [
+      product.wooId,
+      reconciledStock(0, product.inStock, true, product.stockQuantity),
+    ])
+  )
   let updated = 0
   let archived = 0
 
@@ -231,6 +237,7 @@ export async function syncWooCatalog(options: SyncOptions) {
     mode,
     created,
     createdWooIds,
+    sourceStockByWooId,
     sourceWooIds: [...sourceWooIds].sort((left, right) => left - right),
     updated,
     archived,

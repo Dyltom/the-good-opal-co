@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         expectedProductCount: catalog.sourceProducts,
         expectedWooIds: catalog.sourceWooIds,
         publishWooIds: catalog.createdWooIds,
+        publishStockByWooId: catalog.sourceStockByWooId,
       })
     )
     return NextResponse.json({ catalog, images })
