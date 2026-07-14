@@ -203,7 +203,7 @@ describe('custom builder opal visual profiles', () => {
     [
       'mintabie-dark-opal-heart-055-cts',
       'Mintabie Dark Opal heart 0.55 cts',
-      { focalX: 0.49, focalY: 0.48, zoom: 3 },
+      { focalX: 0.4875, focalY: 0.532, zoom: 3.2 },
     ],
     [
       'mintabie-dark-opal-heart-070cts',
@@ -218,6 +218,18 @@ describe('custom builder opal visual profiles', () => {
       photoFit: 'reviewed',
       textureCrop,
     })
+  })
+
+  test('uses the isolated 0.55 ct heart edge instead of exposing source velvet', () => {
+    const profile = createOpalVisualProfile(
+      'mintabie-carved-heart',
+      'Mintabie Dark Opal heart 0.55 cts',
+      'white-opal'
+    )
+
+    expect(profile.visual.contour?.radii).toHaveLength(96)
+    expect(Math.min(...(profile.visual.contour?.radii ?? []))).toBeLessThan(0.75)
+    expect(Math.max(...(profile.visual.contour?.radii ?? []))).toBeGreaterThan(1.2)
   })
 
   test.each([

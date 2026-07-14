@@ -97,7 +97,7 @@ const fixtures: Record<string, CatalogueFixture> = {
   'mintabie-carved-heart': {
     expectedSource: 'image',
     filename: 'IMG_0774.jpg',
-    hint: { focalX: 0.49, focalY: 0.48, rotation: 0, zoom: 1.85 },
+    hint: { focalX: 0.4875, focalY: 0.532, rotation: 0, zoom: 3.2 },
     shapeHint: 'heart',
     stoneAspect: 5.5 / 6,
   },

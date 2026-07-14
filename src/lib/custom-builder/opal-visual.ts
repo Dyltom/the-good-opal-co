@@ -1,5 +1,5 @@
 import type { BuilderOpal, RingConfig } from '@/components/custom-builder/config'
-import { parseBuilderStoneContour } from './stone-contour'
+import { parseBuilderStoneContour, type BuilderStoneContourV1 } from './stone-contour'
 
 type VisualProfile = BuilderOpal['visual']
 
@@ -8,6 +8,26 @@ type VisualProfile = BuilderOpal['visual']
 // shadows into the 3D cabochon when the photographed outline differs slightly
 // from the inferred mesh.
 export const ESTIMATED_OPAL_PHOTO_ZOOM = 3.2
+
+// Pixel-isolated from the reviewed IMG_0774 source (analysis v3, confidence
+// 0.946). The generic heart outline includes black velvet above this hand-cut
+// stone's shallow lobes, so the exact source contour is required for a clean
+// preview while Payload's durable candidate is still being populated.
+const mintabieHeart055Contour = {
+  version: 1,
+  radii: [
+    0.9008, 0.9255, 0.9418, 1.0081, 1.022, 1.0605, 1.1089, 1.1329, 1.1655, 1.1774,
+    1.181, 1.2022, 1.2022, 1.199, 1.189, 1.17, 1.1455, 1.1131, 1.0732, 0.975, 0.8914,
+    0.7998, 0.7431, 0.7431, 0.7792, 0.8475, 0.9125, 0.9985, 1.0251, 1.0427, 1.0592,
+    1.0816, 1.1004, 1.12, 1.1251, 1.1251, 1.1325, 1.1325, 1.1318, 1.1224, 1.1096,
+    1.0918, 1.0696, 1.0541, 1.0281, 0.9926, 0.964, 0.926, 0.8928, 0.8577, 0.8371,
+    0.8139, 0.7883, 0.7764, 0.7615, 0.7532, 0.7511, 0.7487, 0.7487, 0.7502, 0.7588,
+    0.7655, 0.7771, 0.7897, 0.7992, 0.8149, 0.8334, 0.8562, 0.8852, 0.918, 0.9606,
+    0.9931, 0.9931, 0.9749, 0.9387, 0.9069, 0.8713, 0.8445, 0.8213, 0.8054, 0.7897,
+    0.7771, 0.7665, 0.7588, 0.7502, 0.7458, 0.7458, 0.7475, 0.7507, 0.7615, 0.7704,
+    0.7841, 0.8077, 0.8308, 0.8514, 0.8739,
+  ],
+} satisfies BuilderStoneContourV1
 
 export interface BuilderVisualFields {
   builderEligible?: boolean | null
@@ -131,7 +151,13 @@ const cataloguePhotoProfiles: Record<
   string,
   Pick<
     VisualProfile,
-    'silhouette' | 'aspectRatio' | 'evidence' | 'recommendedStyle' | 'textureCrop' | 'photoFit'
+    | 'silhouette'
+    | 'aspectRatio'
+    | 'evidence'
+    | 'recommendedStyle'
+    | 'textureCrop'
+    | 'photoFit'
+    | 'contour'
   >
 > = {
   'mintabie-dark-opal-heart-055-cts': {
@@ -139,9 +165,8 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 6 / 5.5,
     evidence: 'catalogue',
     recommendedStyle: 'coral',
-    // The source includes black velvet immediately above the hand-carved
-    // lobes. Keep that background outside the generic heart mesh.
-    textureCrop: { focalX: 0.49, focalY: 0.48, zoom: 3 },
+    contour: mintabieHeart055Contour,
+    textureCrop: { focalX: 0.4875, focalY: 0.532, zoom: 3.2 },
     photoFit: 'reviewed',
   },
   'mintabie-dark-opal-heart-070cts': {
