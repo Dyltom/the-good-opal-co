@@ -40,8 +40,10 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
     .toBe(true)
 
   await page.locator('summary').filter({ hasText: 'Fine position' }).click()
-  await page.getByRole('slider', { name: 'Horizontal' }).fill('0.18')
   await page.getByRole('slider', { name: 'Zoom' }).fill('1.35')
+  const horizontalPosition = page.getByRole('slider', { name: 'Horizontal' })
+  await expect(horizontalPosition).toBeEnabled()
+  await horizontalPosition.fill('0.18')
   await page.getByRole('slider', { name: 'Rotation' }).fill('25')
   await expect(page).toHaveURL(/[?&]px=0\.18/)
   await expect(page).toHaveURL(/[?&]ps=1\.35/)
