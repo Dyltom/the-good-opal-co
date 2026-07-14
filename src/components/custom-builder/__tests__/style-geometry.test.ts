@@ -340,6 +340,28 @@ describe('sold ring style geometry', () => {
     expect(metal[0]?.radialProgress).toBeGreaterThan(patina.at(-1)?.radialProgress ?? 1)
   })
 
+  test.each([
+    ['gemini', 0.16],
+    ['sun-moon', 0.18],
+    ['aurora', 0.2],
+  ] as const)('gives %s its photographed narrow oxidized burnish seam', (style, seamExtent) => {
+    const profile = ringStyleGeometryProfiles[style]
+    const knots = profile.bezelLipProfile
+    const patina = knots.filter(({ finish }) => finish === 'patina')
+    const metal = knots.filter(({ finish }) => finish === 'metal')
+    const innerOffset = profile.bezelLipOffset - profile.bezelLipRadius
+    const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+    const seamWidthMm = (outerOffset - innerOffset) * seamExtent * 10
+
+    expect(patina).toHaveLength(2)
+    expect(patina[0]?.radialProgress).toBe(0)
+    expect(patina.at(-1)?.radialProgress).toBe(seamExtent)
+    expect(metal[0]?.radialProgress).toBeGreaterThan(seamExtent)
+    expect(seamWidthMm).toBeGreaterThanOrEqual(0.07)
+    expect(seamWidthMm).toBeLessThanOrEqual(0.11)
+    expect(knots.at(-1)?.radialProgress).toBe(1)
+  })
+
   test.each(['sun-moon', 'aurora'] as const)(
     'derives the %s solder web from the varied grain footprints',
     (style) => {

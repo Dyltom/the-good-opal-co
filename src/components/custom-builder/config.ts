@@ -175,8 +175,8 @@ export function getHaloSupportGeometry(
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
     bezelLipProfile: [
-      { radialProgress: 0, heightOffset: 0, finish: 'metal' },
-      { radialProgress: 0.16, heightOffset: 0.003, finish: 'metal' },
+      { radialProgress: 0, heightOffset: 0, finish: 'patina' },
+      { radialProgress: 0.16, heightOffset: 0.003, finish: 'patina' },
       { radialProgress: 0.46, heightOffset: 0.002, finish: 'metal' },
       { radialProgress: 0.78, heightOffset: -0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
@@ -263,8 +263,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   },
   'sun-moon': {
     bezelLipProfile: [
-      { radialProgress: 0, heightOffset: 0, finish: 'metal' },
-      { radialProgress: 0.18, heightOffset: 0.002, finish: 'metal' },
+      { radialProgress: 0, heightOffset: 0, finish: 'patina' },
+      { radialProgress: 0.18, heightOffset: 0.002, finish: 'patina' },
       { radialProgress: 0.52, heightOffset: 0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
@@ -306,8 +306,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   },
   aurora: {
     bezelLipProfile: [
-      { radialProgress: 0, heightOffset: 0, finish: 'metal' },
-      { radialProgress: 0.2, heightOffset: 0.002, finish: 'metal' },
+      { radialProgress: 0, heightOffset: 0, finish: 'patina' },
+      { radialProgress: 0.2, heightOffset: 0.002, finish: 'patina' },
       { radialProgress: 0.58, heightOffset: 0, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.006, finish: 'metal' },
     ],
