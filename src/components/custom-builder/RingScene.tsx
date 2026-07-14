@@ -245,7 +245,6 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
-      flatShading={organic}
       metalness={0.91}
       roughness={organic ? Math.max(0.55, roughness * 0.9) : Math.max(0.44, roughness * 0.82)}
       clearcoat={0.01}
@@ -258,7 +257,7 @@ function SolderGrainMaterial({
 function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
   const colour =
     metal === 'sterling-silver'
-      ? '#34352f'
+      ? '#454640'
       : metal === '14k-gold' || metal === '18k-gold'
         ? '#765728'
         : metal === 'rose-gold'
@@ -1319,9 +1318,9 @@ function Setting({
         <>
           <HaloSupport
             config={config}
-            bottomZ={bezelBottom}
+            bottomZ={Math.max(bezelBottom, 0.008)}
             contour={haloSupportContour}
-            topZ={0.034}
+            topZ={0.026}
           />
           {beads.map(
             ({ key, x, y, size, flattening, heightVariation, rotation, stretchX, stretchY }) => {
@@ -1348,7 +1347,7 @@ function Setting({
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <icosahedronGeometry args={[profile.beadRadius, 1]} />
+                      <icosahedronGeometry args={[profile.beadRadius, 2]} />
                     )}
                     <SolderGrainMaterial
                       organic={usesHandmadeSurface}

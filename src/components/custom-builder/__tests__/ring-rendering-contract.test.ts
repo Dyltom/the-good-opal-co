@@ -100,7 +100,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain("profile.beadPrimitive === 'rounded-granule'")
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')
     expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
-    expect(sceneSource).toContain('<icosahedronGeometry args={[profile.beadRadius, 1]} />')
+    expect(sceneSource).toContain('<icosahedronGeometry args={[profile.beadRadius, 2]} />')
     expect(sceneSource).not.toContain('lobeOffset')
     expect(sceneSource).toContain(
       'rotation={usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined}'
@@ -112,7 +112,9 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('organic ? 1.14 : 1.26')
     expect(sceneSource).toContain('organic={usesHandmadeSurface}')
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
-    expect(sceneSource).toContain('flatShading={organic}')
+    expect(sceneSource).not.toContain('flatShading={organic}')
+    expect(sceneSource).toContain('bottomZ={Math.max(bezelBottom, 0.008)}')
+    expect(sceneSource).toContain('topZ={0.026}')
     expect(sceneSource).not.toContain('position={[0, 0, -profile.beadRadius * 0.38]}')
     expect(sceneSource).not.toContain('scale={[1.07, 1.07, 0.34]}')
     expect(sceneSource).not.toContain('auroraGrainColours')

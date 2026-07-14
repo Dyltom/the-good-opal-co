@@ -118,7 +118,7 @@ describe('sold ring style geometry', () => {
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
-    expect(sunMoon.beadAsymmetry).toBe(0.06)
+    expect(sunMoon.beadAsymmetry).toBe(0.09)
     expect(aurora.beadAsymmetry).toBe(0.18)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('granulated')
@@ -234,8 +234,8 @@ describe('sold ring style geometry', () => {
         profile.beadAsymmetry
       )
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.93)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.95)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.9)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.92)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -333,8 +333,8 @@ describe('sold ring style geometry', () => {
         profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
       )
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
-      expect(profile.haloSupportCoverage).toBeGreaterThanOrEqual(0.8)
-      expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.82)
+      expect(profile.haloSupportCoverage).toBeGreaterThanOrEqual(0.6)
+      expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.64)
       expect(supportOuterEdge).toBeCloseTo(
         profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
       )

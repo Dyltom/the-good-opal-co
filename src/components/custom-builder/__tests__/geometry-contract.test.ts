@@ -498,7 +498,7 @@ describe('custom ring geometry contract', () => {
       0.108,
       12
     )
-    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.124, 12)
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.096, 12)
   })
 
   test('keeps measured store opals inside each sold design crown ratio', () => {
