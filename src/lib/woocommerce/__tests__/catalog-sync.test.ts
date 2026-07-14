@@ -57,9 +57,11 @@ describe('WooCommerce catalog sync', () => {
     expect(reconciledStock(4, false, false)).toBe(0)
   })
 
-  it('uses authenticated managed quantity as stock truth', () => {
+  it('accepts authenticated stock reductions without resurrecting locally sold stock', () => {
     expect(reconciledStock(5, true, false, 3)).toBe(3)
-    expect(reconciledStock(0, true, false, 8)).toBe(8)
+    expect(reconciledStock(0, true, false, 8)).toBe(0)
+    expect(reconciledStock(3, true, false, 8)).toBe(3)
+    expect(reconciledStock(0, true, true, 8)).toBe(8)
     expect(reconciledStock(8, false, false, 8)).toBe(0)
     expect(reconciledStock(8, true, false, null)).toBe(8)
   })

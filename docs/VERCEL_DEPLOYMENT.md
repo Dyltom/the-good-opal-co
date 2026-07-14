@@ -97,12 +97,15 @@ While the legacy WooCommerce catalogue remains the merchandising source, set
 `WOO_CATALOG_SYNC_ENABLED=true`. Vercel then reconciles visible products, prices,
 stock changes, and ordered galleries every 15 minutes. Add a read-only WooCommerce
 REST key as `WOO_CONSUMER_KEY` plus `WOO_CONSUMER_SECRET` to reconcile exact managed
-quantities; without both credentials the safe public Store API fallback can only
-reconcile in-stock versus out-of-stock state and never increases local stock. The
-recurring job refuses to run against synthetic seed identities: complete and verify
-the guarded commerce import first. While authenticated quantity sync is enabled,
-WooCommerce is authoritative for product stock. Disable and remove the sync flag and
-credentials once Payload becomes the only product-management backend.
+reductions; source increases never raise local stock because a paid local order must
+not be undone by the legacy storefront. Without both credentials the safe public
+Store API fallback can only reconcile in-stock versus out-of-stock state and likewise
+never increases local stock. The recurring job refuses to run against synthetic seed
+identities: complete and verify the guarded commerce import first. During cutover,
+stock is the lower of Payload's local quantity and WooCommerce's authenticated
+quantity. Intentional replenishment must be entered in Payload. Disable and remove
+the sync flag and credentials once Payload becomes the only product-management
+backend.
 
 To reconcile source and target counts without changing data, temporarily set the
 same Woo credentials plus `WOO_IMPORT_DRY_RUN_ON_DEPLOY=true` for one Production

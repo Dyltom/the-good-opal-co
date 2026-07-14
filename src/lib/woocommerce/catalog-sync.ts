@@ -161,7 +161,9 @@ export function reconciledStock(
   sourceQuantity?: number | null
 ): number {
   if (!sourceInStock) return 0
-  if (sourceQuantity !== undefined && sourceQuantity !== null) return sourceQuantity
+  if (sourceQuantity !== undefined && sourceQuantity !== null) {
+    return restock ? sourceQuantity : Math.min(Math.max(0, currentStock ?? 0), sourceQuantity)
+  }
   if (restock) return 1
   return Math.max(0, currentStock ?? 0)
 }

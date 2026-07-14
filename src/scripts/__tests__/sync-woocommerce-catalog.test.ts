@@ -21,7 +21,9 @@ vi.mock('@/lib/woocommerce/catalog-sync', () => ({
     !inStock
       ? 0
       : sourceQuantity !== undefined && sourceQuantity !== null
-        ? sourceQuantity
+        ? restock
+          ? sourceQuantity
+          : Math.min(Math.max(0, stock ?? 0), sourceQuantity)
         : restock
           ? 1
           : Math.max(0, stock ?? 0),
@@ -121,6 +123,46 @@ describe('WooCommerce catalogue mutation retries', () => {
     })
     expect(mocks.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ stock: 3 }) })
+    )
+  })
+
+  test('does not resurrect locally sold inventory from a higher Woo quantity', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          images: [{ image: 211 }],
+          legacyWooId: 5681,
+          name: 'Sold opal',
+          price: 95,
+          sku: 'WP-5681',
+          slug: 'sold-opal',
+          stock: 0,
+        },
+      ],
+      hasNextPage: false,
+    })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'One-off opal sold locally',
+        inStock: true,
+        name: 'Sold opal',
+        price: 95,
+        sku: 'WP-5681',
+        slug: 'sold-opal',
+        stockQuantity: 1,
+        tags: ['opal'],
+        wooId: 5681,
+      },
+    ])
+    mocks.update.mockResolvedValue({ id: 42 })
+
+    await syncWooCatalog({ apply: true, archiveMissing: false, restock: false })
+
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ stock: 0 }) })
     )
   })
 
