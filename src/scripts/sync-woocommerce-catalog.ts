@@ -2,6 +2,7 @@ import type { Product } from '@/types/payload-types'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getPayload } from '@/lib/payload'
+import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import {
   fetchWooCatalog,
   reconciledStock,
@@ -160,19 +161,23 @@ export async function syncWooCatalog(options: SyncOptions) {
     }
 
     if (existing) {
-      await payload.update({
-        collection: 'products',
-        id: existing.id,
-        data: updateData(existing, sourceProduct, options),
-        overrideAccess: true,
-      })
+      await retrySerializableTransaction(() =>
+        payload.update({
+          collection: 'products',
+          id: existing.id,
+          data: updateData(existing, sourceProduct, options),
+          overrideAccess: true,
+        })
+      )
       updated += 1
     } else {
-      await payload.create({
-        collection: 'products',
-        data: createData(sourceProduct),
-        overrideAccess: true,
-      })
+      await retrySerializableTransaction(() =>
+        payload.create({
+          collection: 'products',
+          data: createData(sourceProduct),
+          overrideAccess: true,
+        })
+      )
       created += 1
     }
   }
@@ -184,12 +189,14 @@ export async function syncWooCatalog(options: SyncOptions) {
     archived = missing.length
     if (options.apply) {
       for (const product of missing) {
-        await payload.update({
-          collection: 'products',
-          id: product.id,
-          data: { status: 'archived', stock: 0 },
-          overrideAccess: true,
-        })
+        await retrySerializableTransaction(() =>
+          payload.update({
+            collection: 'products',
+            id: product.id,
+            data: { status: 'archived', stock: 0 },
+            overrideAccess: true,
+          })
+        )
       }
     }
   }

@@ -70,4 +70,15 @@ describe('WooCommerce catalogue cron', () => {
     expect(response.status).toBe(500)
     expect(importProductImages).not.toHaveBeenCalled()
   })
+
+  it('retries image reconciliation after a Postgres serialization conflict', async () => {
+    importProductImages
+      .mockRejectedValueOnce({ code: '40001' })
+      .mockResolvedValueOnce({ changed: 1 })
+
+    const response = await GET(request())
+
+    expect(response.status).toBe(200)
+    expect(importProductImages).toHaveBeenCalledTimes(2)
+  })
 })

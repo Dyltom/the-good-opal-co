@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
+import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import { importProductImages } from '@/scripts/import-wordpress-product-images'
 import { syncWooCatalog } from '@/scripts/sync-woocommerce-catalog'
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
       // A paid local order must never be undone by the legacy storefront.
       restock: false,
     })
-    const images = await importProductImages(true)
+    const images = await retrySerializableTransaction(() => importProductImages(true))
     return NextResponse.json({ catalog, images })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown WooCommerce sync error'
