@@ -594,6 +594,14 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
     expect(
       createOpalVisualProfile(
+        'mintabie-semi-black-opal-1-35-cts',
+        'Mintabie Semi Black Opal 1.35 cts',
+        'black-opal',
+        { ...fields, builderPhotoAnalysisConfidence: 0.692 }
+      ).visual.contour
+    ).toBeUndefined()
+    expect(
+      createOpalVisualProfile(
         'lightning-ridge-black-opal-6-30ct',
         'Lightning Ridge Black Opal 6.30ct',
         'black-opal',

@@ -309,7 +309,7 @@ function auditedImageCandidate(
     !visuallyAuditedImageCandidateSlugs.has(reviewedSlug) ||
     !contour ||
     typeof confidence !== 'number' ||
-    confidence < 0.68 ||
+    confidence < 0.9 ||
     Math.abs(confidence - 0.7) < 0.0001 ||
     typeof focalX !== 'number' ||
     focalX < 0 ||
