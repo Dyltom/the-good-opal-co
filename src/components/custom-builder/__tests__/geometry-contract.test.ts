@@ -533,9 +533,8 @@ describe('custom ring geometry contract', () => {
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
         expect(profile.beadPitchMm, style).toBeGreaterThan(0)
-        expect(profile.beadFlattening, style).toBeLessThanOrEqual(
-          profile.beadShape === 'nugget' ? 0.6 : 0.5
-        )
+        expect(profile.beadFlattening, style).toBeGreaterThanOrEqual(0.6)
+        expect(profile.beadFlattening, style).toBeLessThanOrEqual(0.7)
         expect(profile.haloOffset - profile.beadRadius, style).toBeGreaterThan(
           profile.bezelLipOffset
         )

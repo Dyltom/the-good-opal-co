@@ -73,8 +73,8 @@ describe('sold ring style geometry', () => {
 
   test('keeps Coral square with constant normal-width setting walls', () => {
     const diagonal = outlinePoint('cushion', Math.PI / 4, 0.5, 0.5)
-    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.86)
-    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.87)
+    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.88)
+    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.9)
 
     for (const angle of [0, Math.PI / 8, Math.PI / 4, (3 * Math.PI) / 8]) {
       const inner = outlinePoint('cushion', angle, 0.5, 0.5)
@@ -83,36 +83,36 @@ describe('sold ring style geometry', () => {
     }
   })
 
-  test('distinguishes rounded Sun and Moon granules from larger Aurora nuggets', () => {
+  test('distinguishes rounded Sun and Moon grains from organic Aurora granules', () => {
     const sunMoon = ringStyleGeometryProfiles['sun-moon']
     const aurora = ringStyleGeometryProfiles.aurora
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
-    expect(sunMoon.beadAsymmetry).toBe(0.08)
-    expect(aurora.beadAsymmetry).toBe(0.18)
+    expect(sunMoon.beadAsymmetry).toBe(0.06)
+    expect(aurora.beadAsymmetry).toBe(0.14)
     expect(sunMoon.beadShape).toBe('granulated')
-    expect(aurora.beadShape).toBe('nugget')
+    expect(aurora.beadShape).toBe('granulated')
     expect(sunMoon.beadPrimitive).toBe('rounded-granule')
-    expect(aurora.beadPrimitive).toBe('rough-nugget')
+    expect(aurora.beadPrimitive).toBe('organic-granule')
     expect(ringStyleGeometryProfiles.gemini.beadPrimitive).toBe('none')
     expect(ringStyleGeometryProfiles.coral.beadPrimitive).toBe('none')
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 0.84,
-      beadRadius: 0.04,
-      haloOffset: 0.099,
+      beadRadius: 0.043,
+      haloOffset: 0.09,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.047,
-      haloOffset: 0.095,
+      beadRadius: 0.05,
+      haloOffset: 0.091,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
-    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.139, 12)
-    expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.142, 12)
+    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
+    expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
@@ -155,8 +155,8 @@ describe('sold ring style geometry', () => {
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.81)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.83)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.85)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.87)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -191,8 +191,8 @@ describe('sold ring style geometry', () => {
         profile.beadAsymmetry
       )
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.91)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.93)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.93)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.95)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -255,8 +255,11 @@ describe('sold ring style geometry', () => {
         profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
       )
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
-      expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.6)
-      expect(supportOuterEdge).toBeLessThanOrEqual(profile.haloOffset + profile.beadRadius * 0.6)
+      expect(profile.haloSupportCoverage).toBeGreaterThanOrEqual(0.8)
+      expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.82)
+      expect(supportOuterEdge).toBeGreaterThanOrEqual(
+        profile.haloOffset + profile.beadRadius * 0.8
+      )
     }
   )
 

@@ -125,8 +125,8 @@ export interface RingStyleGeometryProfile {
   beadFlattening: number
   beadAsymmetry: number
   beadRoughness: number
-  beadShape: 'granulated' | 'none' | 'nugget'
-  beadPrimitive: 'none' | 'rounded-granule' | 'rough-nugget'
+  beadShape: 'granulated' | 'none'
+  beadPrimitive: 'none' | 'organic-granule' | 'rounded-granule'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -276,18 +276,18 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.04,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
-    haloOffset: 0.099,
-    beadRadius: 0.04,
+    haloOffset: 0.09,
+    beadRadius: 0.043,
     beadCount: 40,
     beadPitchMm: 0.84,
-    beadFlattening: 0.48,
-    beadAsymmetry: 0.08,
-    beadRoughness: 0.62,
+    beadFlattening: 0.68,
+    beadAsymmetry: 0.06,
+    beadRoughness: 0.5,
     beadShape: 'granulated',
     beadPrimitive: 'rounded-granule',
-    beadVariation: 1.3,
+    beadVariation: 1.1,
     haloPhase: -Math.PI / 2,
-    haloSupportCoverage: 0.58,
+    haloSupportCoverage: 0.8,
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.018,
     innerSeamVariation: 0.001,
@@ -320,18 +320,18 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.042,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
-    haloOffset: 0.095,
-    beadRadius: 0.047,
+    haloOffset: 0.091,
+    beadRadius: 0.05,
     beadCount: 28,
     beadPitchMm: 1.12,
-    beadFlattening: 0.58,
-    beadAsymmetry: 0.18,
-    beadRoughness: 0.6,
-    beadShape: 'nugget',
-    beadPrimitive: 'rough-nugget',
-    beadVariation: 1.9,
+    beadFlattening: 0.64,
+    beadAsymmetry: 0.14,
+    beadRoughness: 0.56,
+    beadShape: 'granulated',
+    beadPrimitive: 'organic-granule',
+    beadVariation: 1.55,
     haloPhase: -Math.PI / 2,
-    haloSupportCoverage: 0.6,
+    haloSupportCoverage: 0.82,
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.02,
     innerSeamVariation: 0.001,
@@ -476,7 +476,7 @@ export const ringStyles: readonly RingStyleOption[] = [
   {
     id: 'aurora',
     label: 'Aurora',
-    detail: 'Larger irregular silver grains around the stone',
+    detail: 'Handmade pearl-like silver granules around a low pear bezel',
     shape: 'pear',
     setting: 'beaded',
     band: 'classic',

@@ -46,7 +46,7 @@ describe('photoreal ring rendering contract', () => {
 
   test('uses colour-managed PBR metals without a visible contact-shadow plane', () => {
     expect(sceneSource).toContain('metalness={0.96}')
-    expect(sceneSource).toContain('envMapIntensity={1.3}')
+    expect(sceneSource).toContain('envMapIntensity={1.4}')
     expect(sceneSource).toContain('gl.toneMapping = ACESFilmicToneMapping')
     expect(sceneSource).toContain('shadows={{ type: PCFShadowMap }}')
     expect(sceneSource).toContain('<Environment resolution={256}>')
@@ -70,25 +70,25 @@ describe('photoreal ring rendering contract', () => {
     )
   })
 
-  test('uses exact catalogue colour and style-specific solder grains', () => {
+  test('uses exact catalogue colour and fused style-specific solder grains', () => {
     expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).toContain("profile.beadPrimitive === 'rounded-granule'")
-    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 16, 12]} />')
-    expect(sceneSource).toContain("profile.beadPrimitive === 'rough-nugget'")
-    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 8, 6]} />')
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')
+    expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 12, 9]} />')
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius * 0.42, 10, 8]} />')
     expect(sceneSource).toContain('<SolderGrainMaterial')
-    expect(sceneSource).toContain("if (style !== 'aurora')")
     expect(sceneSource).toMatch(
-      /style !== 'aurora'[\s\S]*<MetalMaterial metal=\{metal\}[\s\S]*color=\{colour\}[\s\S]*flatShading/
+      /function SolderGrainMaterial[\s\S]*<MetalMaterial metal=\{metal\} roughness=\{roughness\}/
     )
-    expect(sceneSource).toContain('metalness={0.94}')
-    expect(sceneSource).toContain('envMapIntensity={1.08}')
+    expect(sceneSource).not.toContain('auroraGrainColours')
+    expect(sceneSource).not.toContain('flatShading\n      metalness={0.94}')
     expect(sceneSource).toContain('getGrainDerivedHaloSupportOutline({')
     expect(sceneSource).toContain('<HaloSupport')
     expect(sceneSource).toMatch(
-      /function HaloSupport[\s\S]*<PatinaMaterial metal=\{config\.metal\}/
+      /function HaloSupport[\s\S]*<SolderSupportMaterial metal=\{config\.metal\}/
     )
   })
 })

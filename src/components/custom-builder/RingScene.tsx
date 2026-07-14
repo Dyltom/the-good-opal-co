@@ -74,21 +74,12 @@ interface RingSceneProps {
 }
 
 const metalColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#eeeae2',
+  'sterling-silver': '#f5f2eb',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
   'rose-gold': '#bd806e',
   platinum: '#e4e3df',
-}
-
-const auroraGrainColours: Record<RingConfig['metal'], readonly string[]> = {
-  'sterling-silver': ['#aaa9a2', '#bab7ad', '#979b97', '#c3bdb2'],
-  '14k-gold': ['#bd9745', '#d0a74d', '#ad8739', '#d8b25b'],
-  '18k-gold': ['#c99d3e', '#d9ac4b', '#b88d34', '#e0b85d'],
-  'white-gold': ['#b3b2ac', '#c2beb7', '#a2a6a3', '#cbc6bd'],
-  'rose-gold': ['#aa776b', '#bd8678', '#9c6b61', '#c79180'],
-  platinum: ['#b5b7b4', '#c4c3bd', '#a5aaa8', '#ccc9c1'],
 }
 
 const opalPalettes: Record<
@@ -186,10 +177,10 @@ function MetalMaterial({
       color={metalColours[metal]}
       flatShading={flatShading}
       metalness={0.96}
-      roughness={isSterlingSilver ? Math.max(0.43, roughness) : roughness}
+      roughness={isSterlingSilver ? Math.max(0.38, roughness) : roughness}
       clearcoat={0.02}
       clearcoatRoughness={0.44}
-      envMapIntensity={1.3}
+      envMapIntensity={1.4}
       vertexColors={vertexColors}
     />
   )
@@ -208,34 +199,26 @@ function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
 }
 
 function SolderGrainMaterial({
-  grainKey,
   metal,
   roughness,
-  style,
 }: {
-  grainKey: number
   metal: RingConfig['metal']
   roughness: number
-  style: RingConfig['style']
 }) {
-  if (style !== 'aurora') {
-    return <MetalMaterial metal={metal} roughness={roughness} />
-  }
+  return <MetalMaterial metal={metal} roughness={roughness} />
+}
 
-  const palette = auroraGrainColours[metal]
-  const colour = palette[(grainKey * 7) % palette.length]
+function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
+  const colour =
+    metal === 'sterling-silver'
+      ? '#5a574f'
+      : metal === '14k-gold' || metal === '18k-gold'
+        ? '#765728'
+        : metal === 'rose-gold'
+          ? '#76524a'
+          : '#666662'
 
-  return (
-    <meshPhysicalMaterial
-      color={colour}
-      flatShading
-      metalness={0.94}
-      roughness={roughness}
-      clearcoat={0.01}
-      clearcoatRoughness={0.8}
-      envMapIntensity={1.08}
-    />
-  )
+  return <meshStandardMaterial color={colour} metalness={0.72} roughness={0.68} />
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -1057,7 +1040,7 @@ function HaloSupport({
 
   return (
     <mesh castShadow geometry={geometry} receiveShadow>
-      <PatinaMaterial metal={config.metal} />
+      <SolderSupportMaterial metal={config.metal} />
     </mesh>
   )
 }
@@ -1169,18 +1152,16 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         outerOffset={outerBezelOffset}
         topZ={bezelTop + profile.bezelLipRadius * 0.18}
       />
-      {config.style !== 'coral' && (
-        <BezelWall
-          config={config}
-          dimensions={dimensions}
-          bottomZ={patinaGroove.bottomZ}
-          finish="patina"
-          offset={profile.innerSeamOffset}
-          thickness={patinaGroove.thickness}
-          topZ={patinaGroove.topZ}
-          contour={contour}
-        />
-      )}
+      <BezelWall
+        config={config}
+        dimensions={dimensions}
+        bottomZ={patinaGroove.bottomZ}
+        finish="patina"
+        offset={profile.innerSeamOffset}
+        thickness={patinaGroove.thickness}
+        topZ={patinaGroove.topZ}
+        contour={contour}
+      />
 
       {config.setting === 'beaded' && (
         <>
@@ -1195,28 +1176,45 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
               // Sold Sun & Moon and Aurora rings use individually soldered beads.
               // Deterministic variation keeps the halo handmade without animating
               // or changing between renders.
+              const lobeAngle = (((key * 17) % 31) / 31) * Math.PI * 2
+              const lobeOffset = profile.beadRadius * 0.68
               return (
-                <mesh
-                  castShadow
+                <group
                   key={key}
                   position={[x, y, 0.041 + heightVariation]}
-                  receiveShadow
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  {profile.beadPrimitive === 'rounded-granule' && (
-                    <sphereGeometry args={[profile.beadRadius, 16, 12]} />
+                  <mesh castShadow receiveShadow>
+                    {profile.beadPrimitive === 'rounded-granule' && (
+                      <sphereGeometry args={[profile.beadRadius, 20, 14]} />
+                    )}
+                    {profile.beadPrimitive === 'organic-granule' && (
+                      <sphereGeometry args={[profile.beadRadius, 12, 9]} />
+                    )}
+                    <SolderGrainMaterial
+                      metal={config.metal}
+                      roughness={profile.beadRoughness}
+                    />
+                  </mesh>
+                  {profile.beadPrimitive === 'organic-granule' && (
+                    <mesh
+                      castShadow
+                      position={[
+                        Math.cos(lobeAngle) * lobeOffset,
+                        Math.sin(lobeAngle) * lobeOffset,
+                        -profile.beadRadius * 0.08,
+                      ]}
+                      receiveShadow
+                    >
+                      <sphereGeometry args={[profile.beadRadius * 0.42, 10, 8]} />
+                      <SolderGrainMaterial
+                        metal={config.metal}
+                        roughness={profile.beadRoughness}
+                      />
+                    </mesh>
                   )}
-                  {profile.beadPrimitive === 'rough-nugget' && (
-                    <sphereGeometry args={[profile.beadRadius, 8, 6]} />
-                  )}
-                  <SolderGrainMaterial
-                    grainKey={key}
-                    metal={config.metal}
-                    roughness={profile.beadRoughness}
-                    style={config.style}
-                  />
-                </mesh>
+                </group>
               )
             }
           )}
