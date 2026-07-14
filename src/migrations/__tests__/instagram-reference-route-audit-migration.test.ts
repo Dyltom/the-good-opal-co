@@ -1,4 +1,6 @@
 import type { MigrateDownArgs, MigrateUpArgs } from '@payloadcms/db-postgres'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, test, vi } from 'vitest'
 import { ringDesignSourceReferenceSchema } from '../../lib/custom-builder/ring-design-reference'
 import {
@@ -33,5 +35,20 @@ describe('Instagram reference route audit migration', () => {
 
     expect(upExecute).toHaveBeenCalledTimes(1)
     expect(downExecute).toHaveBeenCalledTimes(1)
+  })
+
+  test('casts interpolated JSON metadata so PostgreSQL can infer parameter types', () => {
+    const migrationSource = readFileSync(
+      resolve(
+        process.cwd(),
+        'src/migrations/20260715_010500_instagram_reference_route_audit.ts'
+      ),
+      'utf8'
+    )
+
+    expect(migrationSource).toContain(
+      'instagramReferenceRouteAudit.verificationLevel}::text'
+    )
+    expect(migrationSource).toContain('instagramReferenceRouteAudit.verifiedAt}::text')
   })
 })

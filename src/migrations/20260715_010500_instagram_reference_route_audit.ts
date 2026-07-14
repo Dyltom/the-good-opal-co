@@ -21,8 +21,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
                 '/',
                 1
               ),
-              'verificationLevel', ${instagramReferenceRouteAudit.verificationLevel},
-              'verifiedAt', ${instagramReferenceRouteAudit.verifiedAt}
+              'verificationLevel', ${instagramReferenceRouteAudit.verificationLevel}::text,
+              'verifiedAt', ${instagramReferenceRouteAudit.verifiedAt}::text
             )
             ELSE reference
           END
