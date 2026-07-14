@@ -58,8 +58,8 @@ describe('sold ring style geometry', () => {
     const coral = ringStyleGeometryProfiles.coral
 
     expect(coral).toMatchObject({
-      bezelWallOffset: 0.025,
-      bezelWallThickness: 0.046,
+      bezelWallOffset: 0.031,
+      bezelWallThickness: 0.058,
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
@@ -67,8 +67,8 @@ describe('sold ring style geometry', () => {
       crossSectionPower: 0.76,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
-    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.09)
-    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.11)
+    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.12)
+    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.13)
   })
 
   test('keeps Coral square with constant normal-width setting walls', () => {
@@ -83,16 +83,20 @@ describe('sold ring style geometry', () => {
     }
   })
 
-  test('distinguishes fused Sun and Moon granules from larger Aurora nuggets', () => {
+  test('distinguishes faceted Sun and Moon granules from larger Aurora nuggets', () => {
     const sunMoon = ringStyleGeometryProfiles['sun-moon']
     const aurora = ringStyleGeometryProfiles.aurora
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
-    expect(sunMoon.beadAsymmetry).toBe(0.06)
-    expect(aurora.beadAsymmetry).toBe(0.16)
+    expect(sunMoon.beadAsymmetry).toBe(0.08)
+    expect(aurora.beadAsymmetry).toBe(0.26)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('nugget')
+    expect(sunMoon.beadPrimitive).toBe('soft-faceted')
+    expect(aurora.beadPrimitive).toBe('soft-faceted')
+    expect(ringStyleGeometryProfiles.gemini.beadPrimitive).toBe('none')
+    expect(ringStyleGeometryProfiles.coral.beadPrimitive).toBe('none')
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 0.84,
@@ -153,8 +157,8 @@ describe('sold ring style geometry', () => {
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.83)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.85)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.73)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.75)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -189,7 +193,8 @@ describe('sold ring style geometry', () => {
         profile.beadAsymmetry
       )
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.93)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.91)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.93)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -375,16 +380,25 @@ describe('sold ring style geometry', () => {
     const metal = knots.filter(({ finish }) => finish === 'metal')
 
     expect(patina).toHaveLength(3)
-    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.12)
+    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.08)
     expect(Math.max(...metal.map(({ heightOffset }) => heightOffset)) * 10).toBe(0.01)
     expect(metal[0]?.radialProgress).toBeGreaterThan(patina.at(-1)?.radialProgress ?? 1)
     const profile = ringStyleGeometryProfiles.coral
     const innerOffset = profile.bezelLipOffset - profile.bezelLipRadius
     const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
-    const moatWidthMm =
-      (outerOffset - innerOffset) * (patina.at(-1)?.radialProgress ?? 0) * 10
-    expect(moatWidthMm).toBeGreaterThanOrEqual(0.39)
-    expect(moatWidthMm).toBeLessThanOrEqual(0.4)
+    const lastPatinaOffset =
+      innerOffset + (outerOffset - innerOffset) * (patina.at(-1)?.radialProgress ?? 0)
+    const firstMetalOffset =
+      innerOffset + (outerOffset - innerOffset) * (metal[0]?.radialProgress ?? 1)
+    const visibleMoatWidthMm = Math.max(0, lastPatinaOffset) * 10
+    const brightRailWidthMm = (outerOffset - firstMetalOffset) * 10
+
+    // Measure only the moat outside the stone edge. Counting the lip's hidden
+    // underlap produced a false positive while the production moat looked lost.
+    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.42)
+    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.43)
+    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.13)
+    expect(brightRailWidthMm).toBeLessThanOrEqual(0.14)
   })
 
   test.each([

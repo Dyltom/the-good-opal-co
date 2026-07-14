@@ -125,6 +125,7 @@ export interface RingStyleGeometryProfile {
   beadAsymmetry: number
   beadRoughness: number
   beadShape: 'granulated' | 'none' | 'nugget'
+  beadPrimitive: 'none' | 'soft-faceted'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -193,6 +194,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadAsymmetry: 0,
     beadRoughness: 0.34,
     beadShape: 'none',
+    beadPrimitive: 'none',
     beadVariation: 0,
     haloPhase: 0,
     haloSupportCoverage: 0,
@@ -220,13 +222,13 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   coral: {
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
-      { radialProgress: 0.3, heightOffset: -0.012, finish: 'patina' },
-      { radialProgress: 0.68, heightOffset: -0.012, finish: 'patina' },
-      { radialProgress: 0.74, heightOffset: 0.001, finish: 'metal' },
+      { radialProgress: 0.3, heightOffset: -0.008, finish: 'patina' },
+      { radialProgress: 0.75, heightOffset: -0.008, finish: 'patina' },
+      { radialProgress: 0.81, heightOffset: 0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.003, finish: 'metal' },
     ],
-    bezelWallOffset: 0.025,
-    bezelWallThickness: 0.046,
+    bezelWallOffset: 0.031,
+    bezelWallThickness: 0.058,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
     haloOffset: 0,
@@ -237,6 +239,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadAsymmetry: 0,
     beadRoughness: 0.34,
     beadShape: 'none',
+    beadPrimitive: 'none',
     beadVariation: 0,
     haloPhase: 0,
     haloSupportCoverage: 0,
@@ -277,10 +280,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 40,
     beadPitchMm: 0.84,
     beadFlattening: 0.48,
-    beadAsymmetry: 0.06,
-    beadRoughness: 0.55,
+    beadAsymmetry: 0.08,
+    beadRoughness: 0.62,
     beadShape: 'granulated',
-    beadVariation: 1.05,
+    beadPrimitive: 'soft-faceted',
+    beadVariation: 1.3,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.58,
     innerSeamOffset: 0.003,
@@ -320,9 +324,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.58,
-    beadAsymmetry: 0.16,
+    beadAsymmetry: 0.26,
     beadRoughness: 0.74,
     beadShape: 'nugget',
+    beadPrimitive: 'soft-faceted',
     beadVariation: 1.9,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.6,

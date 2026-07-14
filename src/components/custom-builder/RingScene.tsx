@@ -189,6 +189,7 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
+      flatShading
       metalness={0.82}
       roughness={roughness}
       clearcoat={0.01}
@@ -1164,10 +1165,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  {profile.beadShape === 'granulated' ? (
-                    <sphereGeometry args={[profile.beadRadius, 10, 8]} />
-                  ) : (
-                    <sphereGeometry args={[profile.beadRadius, 10, 6]} />
+                  {profile.beadPrimitive === 'soft-faceted' && (
+                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
                   )}
                   <SolderGrainMaterial
                     grainKey={key}

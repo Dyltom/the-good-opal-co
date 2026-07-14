@@ -12,7 +12,7 @@ const soldReferences = {
   },
   coral: {
     bandWidthMm: [1.55, 1.7],
-    headWidthMm: [10.9, 11.1],
+    headWidthMm: [11.2, 11.35],
     setting: 'bezel',
     shape: 'cushion',
     stoneMm: [10, 10],
