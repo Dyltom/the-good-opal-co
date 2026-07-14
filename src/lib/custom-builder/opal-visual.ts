@@ -86,10 +86,10 @@ const reviewedProfiles: Record<
     photoFit: 'reviewed',
   },
   'mintabie-semi-black-opal-1-05-cts': {
-    silhouette: 'oval',
+    silhouette: 'cushion',
     aspectRatio: 1.3,
     evidence: 'catalogue',
-    recommendedStyle: 'gemini',
+    recommendedStyle: 'coral',
     textureCrop: { focalX: 0.504, focalY: 0.487, zoom: 4.81 },
     bodyColour: '#a8c4b8',
     dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
@@ -157,10 +157,10 @@ const cataloguePhotoProfiles: Record<
     photoFit: 'reviewed',
   },
   'lightning-ridge-black-opal-6-30ct': {
-    silhouette: 'pear',
+    silhouette: 'cushion',
     aspectRatio: 1.3,
     evidence: 'catalogue',
-    recommendedStyle: 'aurora',
+    recommendedStyle: 'coral',
     textureCrop: { focalX: 0.452, focalY: 0.537, zoom: 3.2 },
     photoFit: 'estimated',
   },
@@ -169,16 +169,16 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 2.25,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 4.75 },
-    photoFit: 'estimated',
+    textureCrop: { focalX: 0.465, focalY: 0.52, zoom: 10 },
+    photoFit: 'reviewed',
   },
   'lightning-ridge-semi-black-opal-1-40-cts': {
     silhouette: 'oval',
     aspectRatio: 1.5,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 4.75 },
-    photoFit: 'estimated',
+    textureCrop: { focalX: 0.45, focalY: 0.52, zoom: 8 },
+    photoFit: 'reviewed',
   },
   'lightning-ridge-semi-black-opal-5-50-cts': {
     silhouette: 'elongated',
@@ -205,28 +205,28 @@ const cataloguePhotoProfiles: Record<
     photoFit: 'estimated',
   },
   'mintabie-semi-black-opal-6-80-cts': {
-    silhouette: 'elongated',
+    silhouette: 'pear',
     aspectRatio: 1.55,
     evidence: 'catalogue',
-    recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.5, focalY: 0.53, zoom: 3.75 },
-    photoFit: 'estimated',
+    recommendedStyle: 'aurora',
+    textureCrop: { focalX: 0.525, focalY: 0.52, zoom: 6.5 },
+    photoFit: 'reviewed',
   },
   'coober-pedy-white-opal-2-30-cts-copy': {
     silhouette: 'oval',
     aspectRatio: 1.2,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.43, focalY: 0.43, zoom: 4.6 },
-    photoFit: 'estimated',
+    textureCrop: { focalX: 0.48, focalY: 0.48, zoom: 6 },
+    photoFit: 'reviewed',
   },
   'lightning-ridge-white-opal-1-70-cts-2': {
     silhouette: 'pear',
     aspectRatio: 13 / 8.5,
     evidence: 'catalogue',
     recommendedStyle: 'aurora',
-    textureCrop: { focalX: 0.505, focalY: 0.48, zoom: 3.8 },
-    photoFit: 'estimated',
+    textureCrop: { focalX: 0.55, focalY: 0.48, zoom: 5.5 },
+    photoFit: 'reviewed',
   },
 }
 
@@ -237,14 +237,30 @@ const reviewedSlugAliases: Record<string, keyof typeof reviewedProfiles> = {
   'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
 }
 
-const reviewedPhotoBySlug: Record<keyof typeof reviewedProfiles, string> = {
+const reviewedPhotoBySlug: Record<string, string> = {
   'lightning-ridge-white-opal-1-05-cts': '/images/products/20211104_234659-1-1.jpg',
   'mintabie-semi-black-opal-1-05-cts': '/images/products/20210923_174046.jpg',
   'mintabie-semi-black-opal-1-35-cts': '/images/products/20210923_173846-1.jpg',
   'queensland-crystal-pipe-opal-1-45-cts': '/images/products/20211012_173649.jpg',
+  'mintabie-dark-opal-heart-055-cts': '/images/products/IMG_0774.jpg',
+  'mintabie-dark-opal-heart-070cts': '/images/products/IMG_0779.jpg',
+  'coober-pedy-carved-heart-1-ct': '/images/products/heartthing-1.jpg',
+  'large-queensland-boulder-opal-teardrop-4-cts': '/images/products/20211104_230316.jpg',
+  'lightning-ridge-black-opal-1-45-cts': '/images/products/20211129_164200-1-1.jpg',
+  'lightning-ridge-semi-black-opal-1-40-cts':
+    '/images/products/Screenshot_20211129-234455_Gallery.jpg',
+  'mintabie-semi-black-opal-6-80-cts': '/images/products/20210523_092426-1.jpg',
+  'coober-pedy-white-opal-2-30-cts-copy': '/images/products/20210606_144434.jpg',
+  'lightning-ridge-white-opal-1-70-cts-2': '/images/products/20211104_231959.jpg',
 }
 
-export function reviewedOpalImageUrl(slug: string): string | undefined {
+export function reviewedOpalImageUrl(
+  slug: string,
+  mappingStatus?: string | null
+): string | undefined {
+  if (mappingStatus !== undefined && mappingStatus !== 'reviewed' && mappingStatus !== 'manual') {
+    return undefined
+  }
   const reviewedSlug = reviewedSlugAliases[slug] ?? slug
   return reviewedPhotoBySlug[reviewedSlug]
 }
@@ -269,10 +285,7 @@ function cmsReviewedProfile(
   fallbackAspectRatio?: number
 ): VisualProfile | undefined {
   const mappingApproved =
-    fields?.builderMappingStatus === undefined ||
-    fields.builderMappingStatus === null ||
-    fields.builderMappingStatus === 'reviewed' ||
-    fields.builderMappingStatus === 'manual'
+    fields?.builderMappingStatus === 'reviewed' || fields?.builderMappingStatus === 'manual'
   if (!fields || !mappingApproved) {
     return undefined
   }
@@ -480,12 +493,19 @@ export function createOpalVisualProfile(
   const cataloguePhoto = cataloguePhotoProfiles[slug]
   const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
   const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
+  const mappingApproved =
+    !fields ||
+    fields.builderMappingStatus === 'reviewed' ||
+    fields.builderMappingStatus === 'manual'
+  const approvedReviewed = mappingApproved ? reviewed : undefined
+  const approvedCataloguePhoto = mappingApproved ? cataloguePhoto : undefined
   const dimensionsMm = completeDimensions(fields)
-  const baseVisual = managed ?? reviewed ?? cataloguePhoto ?? silhouette
+  const baseVisual = managed ?? approvedReviewed ?? approvedCataloguePhoto ?? silhouette
   const usesIndividualPhoto = classifyOpalListing(name) === 'individual'
   const baseTextureCrop =
-    managed?.textureCrop ?? reviewed?.textureCrop ?? cataloguePhoto?.textureCrop
-  const basePhotoFit = managed?.photoFit ?? reviewed?.photoFit ?? cataloguePhoto?.photoFit
+    managed?.textureCrop ?? approvedReviewed?.textureCrop ?? approvedCataloguePhoto?.textureCrop
+  const basePhotoFit =
+    managed?.photoFit ?? approvedReviewed?.photoFit ?? approvedCataloguePhoto?.photoFit
   const estimatedTextureCrop = baseTextureCrop
     ? { ...baseTextureCrop, zoom: Math.max(baseTextureCrop.zoom, ESTIMATED_OPAL_PHOTO_ZOOM) }
     : { focalX: 0.5, focalY: 0.5, zoom: ESTIMATED_OPAL_PHOTO_ZOOM }
@@ -496,11 +516,11 @@ export function createOpalVisualProfile(
     renderStone: profile.renderStone,
     visual: {
       ...baseVisual,
-      bodyColour: managed?.bodyColour ?? reviewed?.bodyColour ?? bodyColour,
+      bodyColour: managed?.bodyColour ?? approvedReviewed?.bodyColour ?? bodyColour,
       flashColours: managed?.flashColours ?? flashColours,
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
-      dimensionsMm: managed?.dimensionsMm ?? reviewed?.dimensionsMm ?? dimensionsMm,
+      dimensionsMm: managed?.dimensionsMm ?? approvedReviewed?.dimensionsMm ?? dimensionsMm,
       textureCrop: usesIndividualPhoto
         ? basePhotoFit === 'reviewed'
           ? baseTextureCrop

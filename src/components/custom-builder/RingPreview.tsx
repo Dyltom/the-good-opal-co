@@ -138,7 +138,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
                 )}
                 <p className="mt-1 text-[0.65rem] leading-4 text-cream/60">
                   {selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
-                    ? `Reviewed ${selectedOpal.visual.silhouette} profile · actual product photo on stone`
+                    ? `Reviewed photo crop · ${selectedOpal.visual.silhouette} setting concept`
                     : selectedOpal.visual.textureCrop
                       ? 'Listing photo mapped to an estimated setting profile · visual guide only'
                       : selectedOpal.selectionKind === 'individual'

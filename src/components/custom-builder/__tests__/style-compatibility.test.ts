@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { getRingStyleFit, type BuilderOpal, type RingConfig } from '../config'
 
-function opal(silhouette: RingConfig['shape']): Pick<BuilderOpal, 'visual'> {
+function opal(
+  silhouette: RingConfig['shape'],
+  dimensionsMm?: BuilderOpal['visual']['dimensionsMm']
+): Pick<BuilderOpal, 'visual'> {
   return {
     visual: {
       silhouette,
@@ -12,6 +15,7 @@ function opal(silhouette: RingConfig['shape']): Pick<BuilderOpal, 'visual'> {
       patternSeed: 1,
       evidence: 'catalogue',
       recommendedStyle: 'gemini',
+      dimensionsMm,
     },
   }
 }
@@ -31,5 +35,22 @@ describe('sold ring style adaptation', () => {
     ['aurora', 'heart', 'adapted'],
   ] as const)('%s with %s is %s', (style, silhouette, fit) => {
     expect(getRingStyleFit(style, opal(silhouette)).kind).toBe(fit)
+  })
+
+  test('labels an unmeasured shape match as a reference silhouette only', () => {
+    expect(getRingStyleFit('gemini', opal('oval'))).toEqual({
+      kind: 'original',
+      label: 'Reference silhouette',
+    })
+  })
+
+  test('reserves reference proportions for measured stones close to the sold reference', () => {
+    expect(getRingStyleFit('gemini', opal('oval', { width: 8.2, length: 10.5, depth: 3 }))).toEqual(
+      { kind: 'original', label: 'Reference proportions' }
+    )
+    expect(getRingStyleFit('gemini', opal('oval', { width: 6, length: 7, depth: 3 }))).toEqual({
+      kind: 'adapted',
+      label: 'Adapted proportions',
+    })
   })
 })

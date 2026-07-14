@@ -9,6 +9,7 @@ import {
   getCabochonDepthProfile,
   getCameraPosition,
   getPortraitFramingScale,
+  getPatinaSeamCentreZ,
   getRingFramingTarget,
   getRingMeasurements,
   getRingModelBounds,
@@ -155,6 +156,15 @@ describe('custom ring geometry contract', () => {
     expect(placement.depthProfile.girdleZ).toBeGreaterThan(placement.depthProfile.baseZ)
   })
 
+  test('recesses the patina seam into the stone seat instead of raising a dark cord', () => {
+    const girdleZ = 0.028
+    const radius = 0.008
+    const centreZ = getPatinaSeamCentreZ(girdleZ, radius)
+
+    expect(centreZ + radius).toBeLessThanOrEqual(girdleZ + 0.0005)
+    expect(centreZ - radius).toBeLessThan(girdleZ)
+  })
+
   test('centres every camera on the actual model bounds', () => {
     for (const size of [4, 7, 13]) {
       const config = { ...defaultRingConfig, size }
@@ -277,22 +287,13 @@ describe('custom ring geometry contract', () => {
   })
 
   test('keeps unmeasured opal crowns visible above each sold setting profile', () => {
-    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'gemini').domeHeight).toBeCloseTo(
-      0.116,
-      12
-    )
-    expect(getCabochonDepthProfile(0.5, 0.5, undefined, 'coral').domeHeight).toBeCloseTo(
-      0.11,
-      12
-    )
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'gemini').domeHeight).toBeCloseTo(0.116, 12)
+    expect(getCabochonDepthProfile(0.5, 0.5, undefined, 'coral').domeHeight).toBeCloseTo(0.11, 12)
     expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'sun-moon').domeHeight).toBeCloseTo(
       0.108,
       12
     )
-    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(
-      0.124,
-      12
-    )
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.124, 12)
   })
 
   test.each([

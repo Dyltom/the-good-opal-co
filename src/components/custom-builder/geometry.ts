@@ -203,8 +203,7 @@ function baseOutlinePoint(
     // Normalise the quadratic so documented width remains the true extent.
     const pearWidthCorrection = 1.055_526_961_712_104_8
     const finalTipProgress = Math.min(1, Math.max(0, (-sine - 0.72) / 0.28))
-    const smoothTipProgress =
-      finalTipProgress * finalTipProgress * (3 - 2 * finalTipProgress)
+    const smoothTipProgress = finalTipProgress * finalTipProgress * (3 - 2 * finalTipProgress)
     const tipTaper = 1 - smoothTipProgress * 0.4
     return [cosine * width * taper * pearWidthCorrection * tipTaper, sine * height]
   }
@@ -626,6 +625,10 @@ export function getCabochonDepthProfile(
     domeHeight,
     girdleZ,
   }
+}
+
+export function getPatinaSeamCentreZ(girdleZ: number, seamRadius: number): number {
+  return girdleZ - seamRadius + 0.0005
 }
 
 export function getSettingPlacement(config: RingConfig, selectedOpal?: BuilderOpal) {

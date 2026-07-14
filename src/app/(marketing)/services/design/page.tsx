@@ -167,7 +167,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       // over Payload's file route so a missing local/ephemeral media file cannot
       // collapse the complete WebGL scene.
       const imageUrl =
-        reviewedOpalImageUrl(product.slug) ??
+        reviewedOpalImageUrl(product.slug, product.builderMappingStatus) ??
         resolveMediaUrl(image?.url) ??
         ownedProductImageUrl(product.slug) ??
         productImageFallback(image?.filename)

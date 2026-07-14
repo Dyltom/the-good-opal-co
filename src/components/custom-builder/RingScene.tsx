@@ -44,6 +44,7 @@ import {
   getCabochonDepthProfile,
   getBezelWallContourPoints,
   getCameraPosition,
+  getPatinaSeamCentreZ,
   getRingFramingTarget,
   getRingMeasurements,
   getRingShankPathPoints,
@@ -230,12 +231,7 @@ function createCabochonGeometry(
   const geometry = new BufferGeometry()
   const radialSegments = 18
   const angularSegments = 72
-  const { baseZ, domeHeight, girdleZ } = getCabochonDepthProfile(
-    width,
-    height,
-    depthMm,
-    style
-  )
+  const { baseZ, domeHeight, girdleZ } = getCabochonDepthProfile(width, height, depthMm, style)
   const positions: number[] = [0, 0, girdleZ + domeHeight]
   const uvs: number[] = [0.5, 0.5]
   const indices: number[] = []
@@ -708,13 +704,7 @@ function StoneOutline({
           const angle = (index / 72) * Math.PI * 2
           const handmadeOffset =
             edgeVariation * (Math.sin(angle * 3 + 0.4) * 0.65 + Math.sin(angle * 7) * 0.35)
-          const [x, y] = outlinePoint(
-            config.shape,
-            angle,
-            width,
-            height,
-            offset + handmadeOffset
-          )
+          const [x, y] = outlinePoint(config.shape, angle, width, height, offset + handmadeOffset)
           return new Vector3(x, y, z)
         }),
         true,
@@ -817,7 +807,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         dimensions={dimensions}
         offset={profile.innerSeamOffset}
         radius={profile.innerSeamRadius}
-        z={depthProfile.girdleZ + 0.006}
+        z={getPatinaSeamCentreZ(depthProfile.girdleZ, profile.innerSeamRadius)}
         finish="patina"
         edgeVariation={profile.innerSeamVariation}
       />
@@ -1013,10 +1003,10 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
   const [stoneWidth, stoneHeight] = dimensions
   const shoulderAnchorHalfWidth = useMemo(
     () =>
-      getSettingShoulderHalfWidth(
-        { shape: config.shape, style: config.style },
-        [stoneWidth, stoneHeight]
-      ),
+      getSettingShoulderHalfWidth({ shape: config.shape, style: config.style }, [
+        stoneWidth,
+        stoneHeight,
+      ]),
     [config.shape, config.style, stoneHeight, stoneWidth]
   )
 

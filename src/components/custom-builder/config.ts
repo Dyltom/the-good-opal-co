@@ -379,11 +379,27 @@ export function getRingStyleFit(
 ): RingStyleFit {
   const style = ringStyles.find((option) => option.id === styleId) ?? ringStyles[0]!
   const silhouette = opal.visual.silhouette
-  const original = style.shape === silhouette
+  if (style.shape !== silhouette) {
+    return { kind: 'adapted', label: `Adapted to ${silhouette} opal` }
+  }
 
-  return original
+  const dimensions = opal.visual.dimensionsMm
+  if (!dimensions) return { kind: 'original', label: 'Reference silhouette' }
+
+  const referenceDimensions: Record<RingConfig['style'], readonly [number, number]> = {
+    aurora: [8, 10],
+    coral: [10, 10],
+    gemini: [8, 10],
+    'sun-moon': [8, 10],
+  }
+  const [referenceWidth, referenceLength] = referenceDimensions[style.id]
+  const withinReferenceProportions =
+    Math.abs(dimensions.width / referenceWidth - 1) <= 0.1 &&
+    Math.abs(dimensions.length / referenceLength - 1) <= 0.1
+
+  return withinReferenceProportions
     ? { kind: 'original', label: 'Reference proportions' }
-    : { kind: 'adapted', label: `Adapted to ${silhouette} opal` }
+    : { kind: 'adapted', label: 'Adapted proportions' }
 }
 
 export function shapeForOpal(opal: BuilderOpal): RingConfig['shape'] {

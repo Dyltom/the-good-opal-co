@@ -27,6 +27,49 @@ describe('custom builder photo crops', () => {
     }
   )
 
+  test.each([
+    {
+      focus: { focalX: 0.465, focalY: 0.52, zoom: 10 },
+      image: [1920, 1883],
+      safe: { bottom: 0.64, left: 0.41, right: 0.52, top: 0.4 },
+      stoneAspect: 1 / 2.25,
+    },
+    {
+      focus: { focalX: 0.45, focalY: 0.52, zoom: 8 },
+      image: [990, 1123],
+      safe: { bottom: 0.63, left: 0.32, right: 0.55, top: 0.35 },
+      stoneAspect: 1 / 1.5,
+    },
+    {
+      focus: { focalX: 0.525, focalY: 0.52, zoom: 6.5 },
+      image: [1783, 1920],
+      safe: { bottom: 0.64, left: 0.44, right: 0.61, top: 0.4 },
+      stoneAspect: 1 / 1.55,
+    },
+    {
+      focus: { focalX: 0.48, focalY: 0.48, zoom: 6 },
+      image: [1743, 1920],
+      safe: { bottom: 0.58, left: 0.39, right: 0.57, top: 0.38 },
+      stoneAspect: 1 / 1.2,
+    },
+    {
+      focus: { focalX: 0.55, focalY: 0.48, zoom: 5.5 },
+      image: [1901, 1920],
+      safe: { bottom: 0.63, left: 0.45, right: 0.65, top: 0.33 },
+      stoneAspect: 8.5 / 13,
+    },
+  ] as const)(
+    'keeps a manually reviewed crop inside measured stone-face pixels',
+    ({ focus, image, safe, stoneAspect }) => {
+      const crop = computePhotoCrop(image[0], image[1], stoneAspect, focus)
+
+      expect(crop.left).toBeGreaterThanOrEqual(safe.left)
+      expect(crop.top).toBeGreaterThanOrEqual(safe.top)
+      expect(crop.left + crop.width).toBeLessThanOrEqual(safe.right)
+      expect(crop.top + crop.height).toBeLessThanOrEqual(safe.bottom)
+    }
+  )
+
   test('falls back to the complete image for invalid measurements', () => {
     expect(computePhotoCrop(0, 0, 0, { focalX: 0.5, focalY: 0.5, zoom: 0 })).toEqual({
       left: 0,
@@ -84,19 +127,20 @@ describe('custom builder photo crops', () => {
     'uses the full pan range monotonically without dead zones at zoom %s',
     (zoom) => {
       const positions = [-0.45, -0.3, -0.15, 0, 0.15, 0.3, 0.45]
-      const leftEdges = positions.map((opalPositionX) =>
-        computePlacedPhotoCrop(
-          1200,
-          1000,
-          0.8,
-          { focalX: 0.5, focalY: 0.5, zoom },
-          {
-            opalPositionX,
-            opalPositionY: 0,
-            opalScale: 1,
-            opalRotation: 0,
-          }
-        ).left
+      const leftEdges = positions.map(
+        (opalPositionX) =>
+          computePlacedPhotoCrop(
+            1200,
+            1000,
+            0.8,
+            { focalX: 0.5, focalY: 0.5, zoom },
+            {
+              opalPositionX,
+              opalPositionY: 0,
+              opalScale: 1,
+              opalRotation: 0,
+            }
+          ).left
       )
 
       for (let index = 1; index < leftEdges.length; index += 1) {

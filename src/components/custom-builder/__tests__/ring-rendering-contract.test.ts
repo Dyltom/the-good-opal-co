@@ -15,7 +15,9 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('const bezelCapInnerOffset =')
     expect(sceneSource).toContain('thickness={bezelCapThickness}')
     expect(sceneSource).toContain('finish="patina"')
-    expect(sceneSource).toContain('z={depthProfile.girdleZ + 0.006}')
+    expect(sceneSource).toContain(
+      'z={getPatinaSeamCentreZ(depthProfile.girdleZ, profile.innerSeamRadius)}'
+    )
   })
 
   test('drives each forged shank and shoulder join from its sold-style profile', () => {
@@ -40,9 +42,7 @@ describe('photoreal ring rendering contract', () => {
 
   test('applies customer crop placement to the photographed opal texture', () => {
     expect(sceneSource).toContain('computePlacedPhotoCrop(')
-    expect(sceneSource).toContain(
-      'const rotation = (crop.rotation ?? 0) + config.opalRotation'
-    )
+    expect(sceneSource).toContain('const rotation = (crop.rotation ?? 0) + config.opalRotation')
     expect(sceneSource).toContain('nextTexture.rotation = (-rotation * Math.PI) / 180')
     expect(sceneSource).toContain('nextTexture.center.set(0.5, 0.5)')
   })

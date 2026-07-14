@@ -193,7 +193,7 @@ export function OpalPlacementEditor({
             </div>
             <div className="flex flex-wrap justify-end gap-2">
               <span className="rounded-full border border-cream/20 px-3 py-1 text-[0.68rem] text-cream/75">
-                {opal.visual.photoFit === 'reviewed' ? 'Maker-reviewed crop' : 'Auto-fitted colour'}
+                {opal.visual.photoFit === 'reviewed' ? 'Reviewed photo crop' : 'Auto-fitted colour'}
               </span>
               <span className="rounded-full border border-cream/20 px-3 py-1 text-[0.68rem] text-cream/75">
                 {styleLabels[style]}
