@@ -550,7 +550,9 @@ export function getRingStyleFit(
   }
 
   const dimensions = opal.visual.dimensionsMm
-  if (!dimensions) return { kind: 'original', label: 'Reference silhouette' }
+  if (!dimensions) {
+    return { kind: 'original', label: 'Concept scale — measurements pending' }
+  }
 
   const referenceDimensions: Record<RingConfig['style'], readonly [number, number]> = {
     aurora: [8, 10],

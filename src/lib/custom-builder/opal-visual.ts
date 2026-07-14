@@ -462,6 +462,36 @@ const typeProfiles: Record<
     ],
     transmission: 0.02,
   },
+  'fire-opal': {
+    renderStone: 'sunset',
+    bodies: ['#d55a32', '#e27838', '#bd432d'],
+    flashes: [
+      ['#ffbf38', '#ff7046', '#f6e75a', '#55df9d'],
+      ['#ff8b3d', '#ffd54a', '#ee554b', '#7ce3b4'],
+      ['#ffc04d', '#f05f47', '#e8df57', '#5bd6cb'],
+    ],
+    transmission: 0.12,
+  },
+  'matrix-opal': {
+    renderStone: 'lightning',
+    bodies: ['#3b2d29', '#49362e', '#2e2927'],
+    flashes: [
+      ['#2bcfe5', '#51df89', '#f2b740', '#e95c55'],
+      ['#3c82f5', '#48d9b0', '#e4cc48', '#f16e49'],
+      ['#56cfe2', '#74de69', '#ec9548', '#8b70ed'],
+    ],
+    transmission: 0.01,
+  },
+  'opal-doublet': {
+    renderStone: 'lightning',
+    bodies: ['#0a1d29', '#122936', '#172331'],
+    flashes: [
+      ['#1cdbec', '#44ef8a', '#385dff', '#ffcf45'],
+      ['#278cf7', '#42dfb7', '#ae6fff', '#f05d79'],
+      ['#22c9e5', '#60e276', '#ffb43f', '#566aff'],
+    ],
+    transmission: 0.015,
+  },
 }
 
 function hashString(value: string): number {

@@ -37,10 +37,10 @@ describe('sold ring style adaptation', () => {
     expect(getRingStyleFit(style, opal(silhouette)).kind).toBe(fit)
   })
 
-  test('labels an unmeasured shape match as a reference silhouette only', () => {
+  test('labels an unmeasured shape match as concept scale', () => {
     expect(getRingStyleFit('gemini', opal('oval'))).toEqual({
       kind: 'original',
-      label: 'Reference silhouette',
+      label: 'Concept scale — measurements pending',
     })
   })
 

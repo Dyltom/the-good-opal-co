@@ -547,13 +547,18 @@ export function getGrainDerivedHaloSupportOutline({
     const midpointX = bead.x + next.x
     const midpointY = bead.y + next.y
     const valleyAngle = Math.atan2(midpointY, midpointX)
+    // The sold Sun & Moon and Aurora settings show a continuous solder web
+    // between neighbouring grains. Carry the support through each valley far
+    // enough to join the flattened bead backs without filling the visible
+    // scallop between their outer faces.
+    const valleySupportCoverage = 0.62
     const valleyOuter = soldStyleOutlinePoint(
       style,
       shape,
       valleyAngle,
       width,
       height,
-      haloOffset + beadRadius * coverage * 0.16,
+      haloOffset + beadRadius * coverage * valleySupportCoverage,
       contour
     )
     const valleyInner = soldStyleOutlinePoint(

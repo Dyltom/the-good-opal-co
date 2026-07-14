@@ -471,6 +471,12 @@ describe('sold ring style geometry', () => {
         .filter((_, index) => index % 2 === 1)
         .map(({ outer }) => Math.hypot(outer[0], outer[1]))
       expect(Math.max(...crestRadii)).toBeGreaterThan(Math.max(...valleyRadii))
+      expect(Math.min(...valleyRadii)).toBeGreaterThan(
+        Math.min(
+          ...beads.map(({ x, y }) => Math.hypot(x, y))
+        ) -
+          profile.beadRadius * 0.6
+      )
     }
   )
 

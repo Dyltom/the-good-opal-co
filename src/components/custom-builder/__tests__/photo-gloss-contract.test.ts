@@ -5,9 +5,11 @@ import { describe, expect, test } from 'vitest'
 const sceneSource = readFileSync(resolve(__dirname, '../RingScene.tsx'), 'utf8')
 
 describe('catalogue opal gloss contract', () => {
-  test('preserves catalogue pixels and layers restrained view-dependent white specular', () => {
-    expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
+  test('physically lights catalogue pixels and layers restrained white specular', () => {
+    expect(sceneSource).toContain('<meshPhysicalMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
+    expect(sceneSource).toContain('clearcoat={0.82}')
+    expect(sceneSource).toContain('specularIntensity={0.68}')
     expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).not.toContain('emissiveMap={photoTexture}')
     expect(sceneSource).toContain('<ProductPhotoGloss geometry={geometry} />')

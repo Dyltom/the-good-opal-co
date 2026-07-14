@@ -521,10 +521,17 @@ function OpalCabochon({
     return (
       <group>
         <mesh castShadow geometry={geometry} receiveShadow>
-          <meshBasicMaterial
+          <meshPhysicalMaterial
             attach="material-0"
             map={photoTexture}
             color="#ffffff"
+            clearcoat={0.82}
+            clearcoatRoughness={0.055}
+            envMapIntensity={0.72}
+            ior={1.44}
+            metalness={0}
+            roughness={0.18}
+            specularIntensity={0.68}
             toneMapped={false}
           />
           <meshBasicMaterial

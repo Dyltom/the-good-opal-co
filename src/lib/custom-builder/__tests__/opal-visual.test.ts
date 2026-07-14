@@ -361,6 +361,21 @@ describe('custom builder opal visual profiles', () => {
     expect(second.visual.patternSeed).not.toBe(first.visual.patternSeed)
   })
 
+  test.each([
+    ['fire-opal', 'sunset'],
+    ['matrix-opal', 'lightning'],
+    ['opal-doublet', 'lightning'],
+  ] as const)('uses a dedicated %s render profile', (stoneType, renderStone) => {
+    const profile = createOpalVisualProfile(
+      `catalogue-${stoneType}`,
+      `Australian ${stoneType}`,
+      stoneType
+    )
+
+    expect(profile.renderStone).toBe(renderStone)
+    expect(profile.visual.transmission).not.toBe(0.26)
+  })
+
   test('keeps complete catalogue measurements without pretending a visual was reviewed', () => {
     const profile = createOpalVisualProfile('catalogue-opal', 'Australian opal', 'white-opal', {
       dimensions: { width: 6, length: 8, depth: 3 },
