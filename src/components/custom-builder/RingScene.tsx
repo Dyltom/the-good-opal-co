@@ -50,6 +50,7 @@ import {
   getPatinaGrooveProfile,
   getProfiledBezelLipRings,
   getRingFramingTarget,
+  getRingShankCapTopology,
   getRingShankCurve,
   getSolderGrainTone,
   getShoulderBlendProgress,
@@ -1482,6 +1483,17 @@ function RingShank({
         )
       }
     }
+
+    const capTopology = getRingShankCapTopology(tubularSegments, radialSegments)
+    const startPoint = curve.getPointAt(0)
+    const endPoint = curve.getPointAt(1)
+    positions.push(startPoint.x, startPoint.y, startPoint.z, endPoint.x, endPoint.y, endPoint.z)
+    for (const progress of [0, 1]) {
+      const tone = getForgedMetalTone(progress, 0)
+      forgedColour.copy(baseMetalColour).multiplyScalar(tone)
+      colours.push(forgedColour.r, forgedColour.g, forgedColour.b)
+    }
+    indices.push(...capTopology.indices)
 
     const nextGeometry = new BufferGeometry()
     nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))

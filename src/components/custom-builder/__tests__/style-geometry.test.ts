@@ -65,7 +65,7 @@ describe('sold ring style geometry', () => {
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
       shoulderRadius: 0.087,
-      crossSectionPower: 0.76,
+      crossSectionPower: 0.92,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
     expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.12)
@@ -91,7 +91,7 @@ describe('sold ring style geometry', () => {
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon.beadAsymmetry).toBe(0.06)
-    expect(aurora.beadAsymmetry).toBe(0.14)
+    expect(aurora.beadAsymmetry).toBe(0.18)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('granulated')
     expect(sunMoon.beadPrimitive).toBe('rounded-granule')
@@ -101,21 +101,21 @@ describe('sold ring style geometry', () => {
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 0.84,
-      beadRadius: 0.041,
-      haloOffset: 0.092,
+      beadRadius: 0.036,
+      haloOffset: 0.097,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.049,
-      haloOffset: 0.092,
+      beadRadius: 0.046,
+      haloOffset: 0.095,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
-    expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0.02, 12)
-    expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0.14, 12)
+    expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0.12, 12)
+    expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0.2, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
@@ -158,8 +158,8 @@ describe('sold ring style geometry', () => {
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.85)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.87)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.81)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.83)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 

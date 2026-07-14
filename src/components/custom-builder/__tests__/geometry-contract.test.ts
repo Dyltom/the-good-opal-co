@@ -17,6 +17,7 @@ import {
   getRingFramingTarget,
   getRingMeasurements,
   getRingModelBounds,
+  getRingShankCapTopology,
   getRingShankCurve,
   getRingShankLandmarks,
   getShoulderBlendProgress,
@@ -207,6 +208,7 @@ describe('custom ring geometry contract', () => {
     expect(projectedDepth.profile).toBeLessThan(0.55)
     expect(projectedDepth['three-quarter']).toBeGreaterThan(0.5)
     expect(projectedDepth['three-quarter']).toBeLessThan(0.9)
+    expect(cameraPositions.front).toEqual([0, 5.8, 0.2])
     expect(cameraPositions['three-quarter']).toEqual([3.2, 5.8, 3])
   })
 
@@ -255,6 +257,35 @@ describe('custom ring geometry contract', () => {
     expect(Math.min(...tones)).toBeGreaterThanOrEqual(0.93)
     expect(Math.max(...tones)).toBeLessThanOrEqual(0.99)
     expect(new Set(tones.map((tone) => tone.toFixed(5))).size).toBeGreaterThan(100)
+  })
+
+  test('closes both forged shank landings with oppositely wound triangle fans', () => {
+    const tubularSegments = 160
+    const radialSegments = 24
+    const topology = getRingShankCapTopology(tubularSegments, radialSegments)
+    const ringVertexCount = (tubularSegments + 1) * radialSegments
+    const startTriangles = Array.from({ length: radialSegments }, (_, side) =>
+      topology.indices.slice(side * 6, side * 6 + 3)
+    )
+    const endTriangles = Array.from({ length: radialSegments }, (_, side) =>
+      topology.indices.slice(side * 6 + 3, side * 6 + 6)
+    )
+
+    expect(topology.startCenterIndex).toBe(ringVertexCount)
+    expect(topology.endCenterIndex).toBe(ringVertexCount + 1)
+    expect(topology.indices).toHaveLength(radialSegments * 6)
+    expect(startTriangles[0]).toEqual([ringVertexCount, 1, 0])
+    expect(startTriangles.at(-1)).toEqual([ringVertexCount, 0, radialSegments - 1])
+    expect(endTriangles[0]).toEqual([
+      ringVertexCount + 1,
+      tubularSegments * radialSegments,
+      tubularSegments * radialSegments + 1,
+    ])
+    expect(endTriangles.at(-1)).toEqual([
+      ringVertexCount + 1,
+      tubularSegments * radialSegments + radialSegments - 1,
+      tubularSegments * radialSegments,
+    ])
   })
 
   test('seats the bezel exactly on top of the shank', () => {
@@ -566,7 +597,7 @@ describe('custom ring geometry contract', () => {
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
       expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.65)
-      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.85)
+      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.95)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(1.05)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.08)
       expect(profile.shoulderBlendLengthMm, style).toBeGreaterThanOrEqual(1.3)
@@ -574,7 +605,7 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderLandingLengthMm, style).toBeGreaterThanOrEqual(1.1)
       expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
       expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
-      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.18)
+      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.19)
       expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
       expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.035)
 

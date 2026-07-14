@@ -29,6 +29,9 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('getSettingShoulderHalfWidth(')
     expect(sceneSource).toContain('shoulderAnchorHalfWidth')
     expect(sceneSource).toContain('getRingShankCurve({')
+    expect(sceneSource).toContain('getRingShankCapTopology(tubularSegments, radialSegments)')
+    expect(sceneSource).toContain('positions.push(startPoint.x, startPoint.y, startPoint.z')
+    expect(sceneSource).toContain('indices.push(...capTopology.indices)')
     expect(sceneSource).toContain(
       'getShoulderBlendProgress(progress, curveLength, shoulderBlendLengthMm)'
     )

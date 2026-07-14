@@ -108,9 +108,10 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
   'three-quarter': [3.2, 5.8, 3],
-  // A small elevation keeps the circular shank readable behind the setting;
-  // an exact face-on camera reduced the forged band to two tube end-caps.
-  front: [0, 5.8, 0.45],
+  // Sold face-on photographs show one slim shoulder on each side of the head.
+  // Keep only enough elevation to retain a soft edge highlight; the previous
+  // 0.45 elevation exposed both shank faces as two horizontal rails.
+  front: [0, 5.8, 0.2],
   // The old end-on profile collapsed the ring into a vertical stick and turned
   // the opal sideways. This oblique side elevation keeps the stone upright,
   // reveals cup depth, and shows enough of the shank loop to read as a ring.
@@ -595,6 +596,42 @@ export function getDShankCrossSection(
     radial: Math.sign(cosine) * Math.pow(Math.abs(cosine), radialPower),
     axial: Math.sign(sine) * Math.pow(Math.abs(sine), outerPower),
   }
+}
+
+export interface RingShankCapTopology {
+  endCenterIndex: number
+  indices: readonly number[]
+  startCenterIndex: number
+}
+
+/**
+ * Closes the two ends of the custom shank mesh. The first fan faces opposite
+ * the curve tangent and the second faces with it, keeping both solder landings
+ * solid when a setting does not completely occlude their end faces.
+ */
+export function getRingShankCapTopology(
+  tubularSegments: number,
+  radialSegments: number
+): RingShankCapTopology {
+  const ringVertexCount = (tubularSegments + 1) * radialSegments
+  const startCenterIndex = ringVertexCount
+  const endCenterIndex = ringVertexCount + 1
+  const endRingStart = tubularSegments * radialSegments
+  const indices: number[] = []
+
+  for (let side = 0; side < radialSegments; side += 1) {
+    const nextSide = (side + 1) % radialSegments
+    indices.push(
+      startCenterIndex,
+      nextSide,
+      side,
+      endCenterIndex,
+      endRingStart + side,
+      endRingStart + nextSide
+    )
+  }
+
+  return { endCenterIndex, indices, startCenterIndex }
 }
 
 /**
