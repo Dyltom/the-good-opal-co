@@ -771,7 +771,7 @@ describe('custom builder opal visual profiles', () => {
   })
 
   test.each([
-    ['lightning-ridge-black-opal-6-30ct', 'cushion', 'coral'],
+    ['lightning-ridge-black-opal-6-30ct', 'pear', 'aurora'],
     ['mintabie-semi-black-opal-1-05-cts', 'cushion', 'coral'],
     ['mintabie-semi-black-opal-6-80-cts', 'pear', 'aurora'],
   ] as const)(

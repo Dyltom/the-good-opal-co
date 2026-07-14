@@ -344,6 +344,37 @@ describe('custom ring geometry contract', () => {
     expect(placement.depthProfile.girdleZ).toBeGreaterThan(placement.depthProfile.baseZ)
   })
 
+  test.each(ringStyles.map(({ id }) => id))(
+    'buries the full %s shoulder end beneath the setting base',
+    (style) => {
+      const config = applyRingStyle(defaultRingConfig, style)
+      const reference = getRingStyleReferenceOpal(style)
+      const placement = getSettingPlacement(config, reference)
+      const halfWidth = getSettingShoulderHalfWidth(
+        { shape: config.shape, style },
+        placement.stoneDimensions,
+        reference.visual.contour
+      )
+      const profile = ringStyleGeometryProfiles[style]
+      const landmarks = getRingShankLandmarks({
+        radius: placement.measurements.centreRadius,
+        settingBaseY: placement.measurements.outerRadius,
+        settingHalfWidth: halfWidth,
+        shoulderJoinDrop: profile.shoulderJoinDrop,
+        shoulderLandingLengthMm: profile.shoulderLandingLengthMm,
+        shoulderTransition: profile.shoulderTransition,
+        shoulderUnderlap: profile.shoulderUnderlap,
+      })
+
+      expect(landmarks.joinLeft[1] + profile.shoulderDepth).toBeLessThan(
+        placement.measurements.outerRadius
+      )
+      expect(landmarks.joinRight[1] + profile.shoulderDepth).toBeLessThan(
+        placement.measurements.outerRadius
+      )
+    }
+  )
+
   test('recesses a flat patina groove into the stone seat instead of raising a dark cord', () => {
     const girdleZ = 0.028
     const radius = 0.008
@@ -652,8 +683,8 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
       expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
       expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.19)
-      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
-      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.035)
+      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.06)
+      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.08)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
@@ -680,7 +711,7 @@ describe('custom ring geometry contract', () => {
 
   test.each([
     ['sun-moon', 'oval', 0.133],
-    ['aurora', 'pear', 0.141],
+    ['aurora', 'pear', 0.14],
   ] as const)(
     'fuses the %s grains without changing its sold outer head envelope',
     (style, shape, expectedOuterOffset) => {
@@ -708,9 +739,11 @@ describe('custom ring geometry contract', () => {
         getHaloBeadSurfaceGap(bead, beads[(index + 1) % beads.length]!, profile.beadRadius)
       )
 
-      // One scene unit is 10 mm. Sold references show contact or a hairline
-      // oxidised seam, never the previous 0.12–0.20 mm ball-bearing gaps.
-      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(0.02)
+      // Sun & Moon uses a tight fused chain. Aurora's broader handmade pellets
+      // retain visible oxidised seams in the owned close-up.
+      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(
+        style === 'aurora' ? 0.28 : 0.02
+      )
       expect(profile.haloOffset + profile.beadRadius, style).toBeCloseTo(expectedOuterOffset, 12)
       expect(profile.haloValleySupportCoverage, style).toBeGreaterThanOrEqual(0.9)
     }

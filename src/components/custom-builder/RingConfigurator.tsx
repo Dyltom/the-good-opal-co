@@ -327,22 +327,35 @@ function RingStylePicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Try every design with your selected opal. Each reference is a photographed Good Opal Co
-        ring. {mappingDescription} Your maker confirms the natural outline, measurements, final
-        seat, and whether the physical stone can be set safely.
+        Start with the design that suits the selected outline. Each reference is a photographed
+        Good Opal Co ring; incompatible settings stay unavailable instead of stretching the stone
+        into a misleading shape. {mappingDescription} Your maker confirms measurements, final seat,
+        and whether the physical stone can be set safely.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
           const selected = style.id === value
           const fit = selectedOpal ? getRingStyleFit(style.id, selectedOpal) : undefined
+          const incompatible = fit?.kind === 'incompatible'
+          const fitBadge =
+            fit?.kind === 'original'
+              ? 'Reference shape'
+              : fit?.kind === 'concept'
+                ? 'Concept fit'
+                : fit?.kind === 'incompatible'
+                  ? 'Not suitable'
+                  : fit
+                    ? 'Adapted'
+                    : undefined
           return (
             <button
               key={style.id}
               type="button"
               aria-pressed={selected}
+              disabled={incompatible}
               onClick={() => onSelect(style)}
               className={cn(
-                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.99]',
+                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50',
                 selected
                   ? 'border-charcoal shadow-md'
                   : 'border-warm-grey/80 hover:border-charcoal/45'
@@ -365,16 +378,16 @@ function RingStylePicker({
               <span className="block p-3">
                 <span className="flex items-start justify-between gap-2">
                   <span className="block text-sm font-medium">{style.label}</span>
-                  {fit && (
+                  {fitBadge && (
                     <span
                       className={cn(
                         'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em]',
-                        fit.kind === 'original'
+                        fit?.kind === 'original'
                           ? 'bg-opal-emerald/10 text-opal-emerald-dark'
                           : 'bg-cream text-charcoal-light'
                       )}
                     >
-                      {fit.kind === 'original' ? 'Reference shape' : 'Adapted'}
+                      {fitBadge}
                     </span>
                   )}
                 </span>
@@ -400,7 +413,14 @@ export function RingConfigurator({
   opals,
   unavailableOpalRequested = false,
 }: RingConfiguratorProps) {
-  const [config, setConfig] = useState(initialConfig)
+  const [config, setConfig] = useState(() => {
+    const initialOpal = opals.find((opal) => opal.id === initialConfig.opalId)
+    if (!initialOpal || getRingStyleFit(initialConfig.style, initialOpal).kind !== 'incompatible') {
+      return initialConfig
+    }
+    const styled = applyRingStyle(initialConfig, initialOpal.visual.recommendedStyle)
+    return { ...styled, shape: shapeForOpal(initialOpal) }
+  })
   const [shareStatus, setShareStatus] = useState('')
   const selectedOpal = useMemo(
     () => opals.find((opal) => opal.id === config.opalId),
@@ -412,6 +432,13 @@ export function RingConfigurator({
     selectedOpal.visual.textureCrop
   )
   const placementScaleMax = getPhotoPlacementScaleMax(selectedOpal?.visual.textureCrop?.zoom ?? 1)
+  useEffect(() => {
+    if (!selectedOpal || getRingStyleFit(config.style, selectedOpal).kind !== 'incompatible') return
+    setConfig((current) => {
+      const styled = applyRingStyle(current, selectedOpal.visual.recommendedStyle)
+      return { ...styled, shape: shapeForOpal(selectedOpal) }
+    })
+  }, [config.style, selectedOpal])
   useEffect(() => {
     if (!hasEditableOpalPhoto) return
     setConfig((current) => {
@@ -452,7 +479,7 @@ export function RingConfigurator({
         opalId: opal.id,
         stone: opal.renderStone,
       }
-      const styled = applyRingStyle(next, current.style)
+      const styled = applyRingStyle(next, opal.visual.recommendedStyle)
       return { ...styled, shape: shapeForOpal(opal) }
     })
   }

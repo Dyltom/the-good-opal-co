@@ -22,6 +22,7 @@ vi.mock('next/dynamic', () => ({
           data-opal-position-x={config.opalPositionX}
           data-opal-scale={config.opalScale}
           data-opal-rotation={config.opalRotation}
+          data-style={config.style}
         />
       )
     },
@@ -137,6 +138,28 @@ describe('RingConfigurator store opal selection', () => {
     expect(consultationParams.get('product')).toContain('Coober Pedy crystal opal')
   })
 
+  test('switches to the selected stone recommended setting', async () => {
+    const user = userEvent.setup()
+    const cushionOpal: BuilderOpal = {
+      ...opals[1]!,
+      id: '305',
+      name: 'Coober Pedy cushion opal',
+      slug: 'coober-pedy-cushion-opal',
+      visual: {
+        ...opals[1]!.visual,
+        silhouette: 'cushion',
+        recommendedStyle: 'coral',
+      },
+    }
+    render(<RingConfigurator initialConfig={defaultRingConfig} opals={[...opals, cushionOpal]} />)
+
+    await user.click(screen.getByRole('button', { name: /Coober Pedy cushion opal/i }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('ring-preview').getAttribute('data-style')).toBe('coral')
+    })
+  })
+
   test('does not offer no-op crop controls for an estimated or representative listing', () => {
     const estimated = {
       ...opals[0],
@@ -158,8 +181,7 @@ describe('RingConfigurator store opal selection', () => {
     expect(screen.getByText('4. Ring size (US)')).not.toBeNull()
   })
 
-  test('renders the crop workbench inside the selected sold-style setting', async () => {
-    const user = userEvent.setup()
+  test('normalizes an incompatible legacy design to the stone recommendation', async () => {
     render(
       <RingConfigurator
         initialConfig={{
@@ -174,21 +196,11 @@ describe('RingConfigurator store opal selection', () => {
       />
     )
 
-    expect(document.querySelector('[data-opal-setting-decoration="aurora"]')).not.toBeNull()
-    expect(document.querySelectorAll('[data-opal-setting-grain]').length).toBeGreaterThan(20)
-    expect(document.querySelector('[data-opal-setting-support]')?.getAttribute('class')).toContain(
-      'rounded-[50%]'
-    )
-    expect(
-      document.querySelector<HTMLElement>('[data-opal-setting-support]')?.style.background
-    ).toContain('rgb(32, 33, 29)')
-
-    await user.click(screen.getByRole('button', { name: /Coral/i }))
-
     await waitFor(() => {
-      expect(document.querySelector('[data-opal-setting-seat="coral"]')).not.toBeNull()
-      expect(document.querySelector('[data-opal-setting-decoration]')).toBeNull()
+      expect(screen.getByTestId('ring-preview').getAttribute('data-style')).toBe('gemini')
     })
+    expect(screen.getByRole('button', { name: /Aurora/i })).toHaveProperty('disabled', true)
+    expect(screen.getByRole('button', { name: /Coral/i })).toHaveProperty('disabled', true)
   })
 
   test('adds safe zoom when fine-positioning from the reviewed crop', async () => {
@@ -278,7 +290,7 @@ describe('RingConfigurator store opal selection', () => {
     })
   })
 
-  test('lets every opal try every collection design and preserves it across stone changes', async () => {
+  test('offers only settings that preserve the selected outline', async () => {
     const user = userEvent.setup()
     render(
       <RingConfigurator
@@ -290,14 +302,14 @@ describe('RingConfigurator store opal selection', () => {
     const aurora = screen.getByRole('button', { name: /Aurora/i })
     const coral = screen.getByRole('button', { name: /Coral/i })
     const sunMoon = screen.getByRole('button', { name: /Sun & Moon/i })
-    expect(aurora.hasAttribute('disabled')).toBe(false)
-    expect(coral.hasAttribute('disabled')).toBe(false)
+    expect(aurora.hasAttribute('disabled')).toBe(true)
+    expect(coral.hasAttribute('disabled')).toBe(true)
     expect(sunMoon.hasAttribute('disabled')).toBe(false)
 
-    await user.click(aurora)
+    await user.click(sunMoon)
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search)
-      expect(params.get('y')).toBe('aurora')
+      expect(params.get('y')).toBe('sun-moon')
       expect(params.get('s')).toBe('oval')
     })
 
@@ -305,12 +317,10 @@ describe('RingConfigurator store opal selection', () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search)
       expect(params.get('p')).toBe('204')
-      expect(params.get('y')).toBe('aurora')
+      expect(params.get('y')).toBe('gemini')
       expect(params.get('s')).toBe('oval')
     })
-    expect(screen.getByRole('button', { name: /Aurora/i }).textContent).toContain(
-      'Adapted to oval opal'
-    )
+    expect(screen.getByRole('button', { name: /Aurora/i }).textContent).toContain('Not suitable')
   })
 
   test('uses each collection reference shape until a store opal is selected', async () => {
@@ -334,7 +344,7 @@ describe('RingConfigurator store opal selection', () => {
     })
   })
 
-  test('returns from a store opal to the selected collection reference', async () => {
+  test('returns from a store opal to its recommended collection design', async () => {
     const user = userEvent.setup()
     render(<RingConfigurator initialConfig={defaultRingConfig} opals={opals} />)
 
@@ -356,8 +366,8 @@ describe('RingConfigurator store opal selection', () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search)
       expect(params.get('p')).toBeNull()
-      expect(params.get('y')).toBe('aurora')
-      expect(params.get('s')).toBe('pear')
+      expect(params.get('y')).toBe('gemini')
+      expect(params.get('s')).toBe('oval')
     })
     expect(referencePreview.getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByTestId('ring-preview').getAttribute('data-selected-opal')).toBeNull()

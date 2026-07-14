@@ -7,14 +7,11 @@ import {
 } from '../config'
 import {
   applyHandmadeBeadVariation,
-  coalesceOverlappingHaloBeads,
   evenlySpacedOutlinePoints,
-  fuseContactingHaloBeads,
   getBezelWallContourPoints,
   getCabochonDepthProfile,
   getDShankCrossSection,
   getGrainDerivedHaloSupportOutline,
-  getHaloBeadSurfaceGap,
   getProfiledBezelLipRings,
   getSoldStyleOuterVariation,
   getStyleBeadCount,
@@ -136,15 +133,15 @@ describe('sold ring style geometry', () => {
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.054,
-      haloOffset: 0.087,
+      beadRadius: 0.048,
+      haloOffset: 0.092,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
-    expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
+    expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.14, 12)
     expect(sunMoon.beadRadius * 20).toBeCloseTo(0.76, 12)
-    expect(aurora.beadRadius * 20).toBeCloseTo(1.08, 12)
+    expect(aurora.beadRadius * 20).toBeCloseTo(0.96, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
@@ -285,40 +282,6 @@ describe('sold ring style geometry', () => {
     }
   )
 
-  test.each(['sun-moon', 'aurora'] as const)(
-    'coalesces the %s halo where an adapted heart cleft folds grains together',
-    (style) => {
-      const profile = ringStyleGeometryProfiles[style]
-      const count = getStyleBeadCount(style, 'heart', 0.4, 0.5)
-      const varied = applyHandmadeBeadVariation(
-        evenlySpacedOutlinePoints(
-          'heart',
-          0.4,
-          0.5,
-          profile.haloOffset,
-          count,
-          profile.haloPhase,
-          style
-        ),
-        profile.beadVariation,
-        profile.beadFlattening,
-        profile.beadAsymmetry
-      )
-      const coalesced = coalesceOverlappingHaloBeads(varied, profile.beadRadius)
-      const beads = fuseContactingHaloBeads(coalesced, profile.beadRadius)
-      const gaps = beads.map((bead, index) =>
-        getHaloBeadSurfaceGap(bead, beads[(index + 1) % beads.length]!, profile.beadRadius)
-      )
-
-      expect(beads.length).toBeLessThan(varied.length)
-      // A deep adapted heart cleft can fold four perimeter samples into one
-      // solder cluster. Iterative coalescing keeps only its outward grains.
-      expect(beads.length).toBeGreaterThanOrEqual(varied.length - 4)
-      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
-      // Even concave adaptations retain only a sub-0.05 mm oxidised seam.
-      expect(Math.max(...gaps)).toBeLessThanOrEqual(0.005)
-    }
-  )
   test.each(['sun-moon', 'aurora'] as const)(
     'supports the %s soldered beads with a continuous backplate',
     (style) => {

@@ -22,25 +22,32 @@ function opal(
 
 describe('sold ring style adaptation', () => {
   test.each([
-    ['gemini', 'oval', 'original'],
-    ['gemini', 'elongated', 'adapted'],
-    ['gemini', 'cushion', 'adapted'],
-    ['coral', 'cushion', 'original'],
-    ['coral', 'oval', 'adapted'],
-    ['coral', 'heart', 'adapted'],
-    ['sun-moon', 'oval', 'original'],
-    ['sun-moon', 'elongated', 'adapted'],
-    ['aurora', 'pear', 'original'],
-    ['aurora', 'oval', 'adapted'],
-    ['aurora', 'heart', 'adapted'],
+    ['gemini', 'oval', 'concept'],
+    ['gemini', 'elongated', 'concept'],
+    ['gemini', 'cushion', 'incompatible'],
+    ['coral', 'cushion', 'concept'],
+    ['coral', 'oval', 'incompatible'],
+    ['coral', 'heart', 'concept'],
+    ['sun-moon', 'oval', 'concept'],
+    ['sun-moon', 'elongated', 'incompatible'],
+    ['aurora', 'pear', 'concept'],
+    ['aurora', 'oval', 'incompatible'],
+    ['aurora', 'heart', 'incompatible'],
   ] as const)('%s with %s is %s', (style, silhouette, fit) => {
     expect(getRingStyleFit(style, opal(silhouette)).kind).toBe(fit)
   })
 
   test('labels an unmeasured shape match as concept scale', () => {
     expect(getRingStyleFit('gemini', opal('oval'))).toEqual({
-      kind: 'original',
-      label: 'Concept scale — measurements pending',
+      kind: 'concept',
+      label: 'Recommended concept · measurements pending',
+    })
+  })
+
+  test('blocks settings that cannot preserve the photographed outline', () => {
+    expect(getRingStyleFit('aurora', opal('oval'))).toEqual({
+      kind: 'incompatible',
+      label: 'Needs a different setting for this oval outline',
     })
   })
 

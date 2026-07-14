@@ -108,7 +108,7 @@ export interface RingStyleOption extends ConfigOption<RingConfig['style']> {
 }
 
 export interface RingStyleFit {
-  kind: 'original' | 'adapted'
+  kind: 'original' | 'adapted' | 'concept' | 'incompatible'
   label: string
 }
 
@@ -270,7 +270,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.145,
     visibleSeatCap: 0.036,
     shoulderUnderlap: 0.18,
-    shoulderJoinDrop: 0.022,
+    // Bury the full shoulder section beneath the cup. The old 0.22 mm drop
+    // left the capped shank ends visible beside the bezel in face-on views.
+    shoulderJoinDrop: 0.072,
     shoulderTransition: 0.04,
     shoulderBlendLengthMm: 1.4,
     shoulderLandingLengthMm: 1.2,
@@ -321,7 +323,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.11,
     visibleSeatCap: 0.06,
     shoulderUnderlap: 0.17,
-    shoulderJoinDrop: 0.02,
+    shoulderJoinDrop: 0.065,
     shoulderTransition: 0.038,
     shoulderBlendLengthMm: 1.3,
     shoulderLandingLengthMm: 1.1,
@@ -373,7 +375,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.135,
     visibleSeatCap: 0.044,
     shoulderUnderlap: 0.18,
-    shoulderJoinDrop: 0.022,
+    shoulderJoinDrop: 0.069,
     shoulderTransition: 0.042,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
@@ -403,8 +405,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     ...auroraBezelSeat,
     // Aurora's granules are broad and handmade, but the sold ring does not use
     // the oversized pearl-like balls produced by a full 1 mm sphere.
-    haloOffset: 0.087,
-    beadRadius: 0.054,
+    haloOffset: 0.092,
+    beadRadius: 0.048,
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.6,
@@ -424,7 +426,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.12,
     visibleSeatCap: 0.028,
     shoulderUnderlap: 0.19,
-    shoulderJoinDrop: 0.024,
+    shoulderJoinDrop: 0.071,
     shoulderTransition: 0.045,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
@@ -631,13 +633,35 @@ export function getRingStyleFit(
 ): RingStyleFit {
   const style = ringStyles.find((option) => option.id === styleId) ?? ringStyles[0]!
   const silhouette = opal.visual.silhouette
-  if (style.shape !== silhouette) {
-    return { kind: 'adapted', label: `Adapted to ${silhouette} opal` }
+  const compatibleSilhouettes: Record<
+    RingConfig['style'],
+    readonly BuilderOpal['visual']['silhouette'][]
+  > = {
+    gemini: ['oval', 'elongated', 'round'],
+    coral: ['cushion', 'heart', 'round'],
+    'sun-moon': ['oval', 'round'],
+    aurora: ['pear'],
+  }
+  if (!compatibleSilhouettes[style.id].includes(silhouette)) {
+    return {
+      kind: 'incompatible',
+      label: `Needs a different setting for this ${silhouette} outline`,
+    }
   }
 
   const dimensions = opal.visual.dimensionsMm
   if (!dimensions) {
-    return { kind: 'original', label: 'Concept scale — measurements pending' }
+    return {
+      kind: 'concept',
+      label:
+        style.id === opal.visual.recommendedStyle
+          ? 'Recommended concept · measurements pending'
+          : 'Compatible concept · measurements pending',
+    }
+  }
+
+  if (style.shape !== silhouette) {
+    return { kind: 'adapted', label: `Adapted to ${silhouette} opal` }
   }
 
   const referenceDimensions: Record<RingConfig['style'], readonly [number, number]> = {

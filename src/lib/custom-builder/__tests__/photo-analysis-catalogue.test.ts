@@ -21,7 +21,7 @@ const fixtures: Record<string, CatalogueFixture> = {
     expectedSource: 'image',
     filename: '20211129_164004-1-1.jpg',
     hint: { focalX: 0.452, focalY: 0.537, rotation: 0, zoom: 3.2 },
-    shapeHint: 'cushion',
+    shapeHint: 'pear',
   },
   'lightning-ridge-black-opal-1-45-cts': {
     expectedSource: 'reviewed-fallback',
@@ -33,7 +33,7 @@ const fixtures: Record<string, CatalogueFixture> = {
     expectedSource: 'reviewed-fallback',
     filename: 'Screenshot_20211129-234455_Gallery.jpg',
     hint: { focalX: 0.45, focalY: 0.52, rotation: 0, zoom: 8 },
-    shapeHint: 'oval',
+    shapeHint: 'elongated',
   },
   'lightning-ridge-semi-black-opal-5-50-cts': {
     expectedSource: 'image',
@@ -45,7 +45,7 @@ const fixtures: Record<string, CatalogueFixture> = {
     expectedSource: 'reviewed-fallback',
     filename: '20211129_164407-1-1.jpg',
     hint: { focalX: 0.5, focalY: 0.52, rotation: 0, zoom: 3.35 },
-    shapeHint: 'oval',
+    shapeHint: 'cushion',
   },
   'mintabie-semi-black-opal-6-80-cts': {
     expectedSource: 'reviewed-fallback',

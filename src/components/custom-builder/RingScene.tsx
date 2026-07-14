@@ -17,6 +17,7 @@ import {
   PCFShadowMap,
   RepeatWrapping,
   SRGBColorSpace,
+  SphereGeometry,
   type Group,
   Vector3,
 } from 'three'
@@ -281,6 +282,37 @@ function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
           : '#666662'
 
   return <meshStandardMaterial color={colour} metalness={0.72} roughness={0.68} />
+}
+
+function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
+  const geometry = useMemo(() => {
+    const nextGeometry = new SphereGeometry(radius, 14 + (seed % 3), 9)
+    const positions = nextGeometry.getAttribute('position')
+    const point = new Vector3()
+
+    for (let index = 0; index < positions.count; index += 1) {
+      point.fromBufferAttribute(positions, index)
+      const length = point.length() || 1
+      const nx = point.x / length
+      const ny = point.y / length
+      const nz = point.z / length
+      const deformation =
+        1 +
+        Math.sin(nx * 7.1 + seed * 0.73) * 0.032 +
+        Math.sin(ny * 9.3 - seed * 0.41) * 0.024 +
+        Math.sin(nz * 6.7 + nx * 2.8 + seed * 0.29) * 0.02
+      point.multiplyScalar(deformation)
+      positions.setXYZ(index, point.x, point.y, point.z)
+    }
+
+    positions.needsUpdate = true
+    nextGeometry.computeVertexNormals()
+    nextGeometry.computeBoundingSphere()
+    return nextGeometry
+  }, [radius, seed])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+  return <primitive attach="geometry" object={geometry} />
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -1344,7 +1376,6 @@ function Setting({
               // Deterministic variation keeps the halo handmade without animating
               // or changing between renders.
               const usesHandmadeSurface = profile.beadShape === 'granulated'
-              const facetedGrain = profile.beadPrimitive === 'organic-granule'
               const solderTone = getSolderGrainTone(key, usesHandmadeSurface)
               const grainTiltX = ((((key * 13) % 7) - 3) / 3) * 0.16
               const grainTiltY = ((((key * 17) % 9) - 4) / 4) * 0.14
@@ -1359,21 +1390,17 @@ function Setting({
                     castShadow
                     receiveShadow
                     rotation={
-                      facetedGrain
-                        ? [Math.PI / 2 + grainTiltX, grainTiltY, 0]
-                        : usesHandmadeSurface
-                          ? [grainTiltX, grainTiltY, 0]
-                          : undefined
+                      usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined
                     }
                   >
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <sphereGeometry args={[profile.beadRadius, 8 + (key % 3), 5]} />
+                      <OrganicSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
                     <SolderGrainMaterial
-                      faceted={facetedGrain}
+                      faceted={false}
                       organic={usesHandmadeSurface}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
