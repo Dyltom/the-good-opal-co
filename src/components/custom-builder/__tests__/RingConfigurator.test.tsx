@@ -179,6 +179,9 @@ describe('RingConfigurator store opal selection', () => {
     expect(
       document.querySelector('[data-opal-setting-support]')?.getAttribute('class')
     ).toContain('rounded-[50%]')
+    expect(
+      document.querySelector<HTMLElement>('[data-opal-setting-support]')?.style.background
+    ).toContain('rgb(44, 45, 41)')
 
     await user.click(screen.getByRole('button', { name: /Coral/i }))
 

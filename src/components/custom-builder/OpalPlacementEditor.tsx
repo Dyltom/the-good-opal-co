@@ -60,6 +60,15 @@ const metalColours: Record<RingConfig['metal'], string> = {
   platinum: '#e4e3df',
 }
 
+const patinaColours: Record<RingConfig['metal'], string> = {
+  'sterling-silver': '#2c2d29',
+  '14k-gold': '#6b4b22',
+  '18k-gold': '#6b4b22',
+  'white-gold': '#575a59',
+  'rose-gold': '#704a42',
+  platinum: '#575a59',
+}
+
 const styleLabels: Record<RingConfig['style'], string> = {
   aurora: 'Aurora halo',
   coral: 'Coral clean bezel',
@@ -131,11 +140,11 @@ function OpalSettingDecoration({
       <span
         data-opal-setting-support
         className={cn(
-          'absolute bg-[#31312c] shadow-[0_10px_22px_rgb(0_0_0/0.55)]',
+          'absolute shadow-[0_8px_18px_rgb(0_0_0/0.42)]',
           silhouetteClass(opal.visual.silhouette)
         )}
         style={{
-          background: `linear-gradient(135deg, ${metalColours[metal]}, #77766f 44%, #292a26 78%)`,
+          background: `linear-gradient(145deg, ${patinaColours[metal]}, #20211e 72%)`,
           clipPath,
           inset: `-${supportInset}`,
         }}
