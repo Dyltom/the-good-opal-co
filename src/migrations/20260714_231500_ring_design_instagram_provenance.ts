@@ -143,7 +143,7 @@ export const instagramReferenceUrls = Object.values(ringDesignInstagramReference
 
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-    WITH evidence(style, references) AS (
+    WITH evidence(style, reference_batch) AS (
       VALUES
         ('gemini'::enum_ring_designs_style, ${JSON.stringify(ringDesignInstagramReferences.gemini)}::jsonb),
         ('coral'::enum_ring_designs_style, ${JSON.stringify(ringDesignInstagramReferences.coral)}::jsonb),
@@ -154,7 +154,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     SET source_references = COALESCE(design.source_references, '[]'::jsonb) || COALESCE(
       (
         SELECT jsonb_agg(candidate.reference)
-        FROM jsonb_array_elements(evidence.references) AS candidate(reference)
+        FROM jsonb_array_elements(evidence.reference_batch) AS candidate(reference)
         WHERE NOT EXISTS (
           SELECT 1
           FROM jsonb_array_elements(COALESCE(design.source_references, '[]'::jsonb))

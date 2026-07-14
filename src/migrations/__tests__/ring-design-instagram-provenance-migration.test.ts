@@ -51,6 +51,20 @@ describe('ring design Instagram provenance migration', () => {
     expect(downExecute).toHaveBeenCalledTimes(1)
   })
 
+  test('does not use a PostgreSQL reserved word as the evidence column name', () => {
+    const migration = readFileSync(
+      resolve(
+        process.cwd(),
+        'src/migrations/20260714_231500_ring_design_instagram_provenance.ts'
+      ),
+      'utf8'
+    )
+
+    expect(migration).toContain('WITH evidence(style, reference_batch)')
+    expect(migration).toContain('jsonb_array_elements(evidence.reference_batch)')
+    expect(migration).not.toContain('WITH evidence(style, references)')
+  })
+
   test('keeps the unnamed 2023 pear construction outside builder styles', () => {
     const manifest = JSON.parse(
       readFileSync(resolve(process.cwd(), 'docs/ring-design-candidates.json'), 'utf8')
