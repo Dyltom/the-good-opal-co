@@ -105,6 +105,12 @@ describe('builder mapping processor', () => {
       failed: 0,
       manual: 0,
       nonIndividual: 0,
+      selectedState: {
+        currentVersion: 0,
+        withCandidate: 0,
+        withError: 0,
+        withHash: 0,
+      },
       unchanged: 0,
     })
 
@@ -257,6 +263,12 @@ describe('builder mapping processor', () => {
       failed: 0,
       manual: 1,
       nonIndividual: 0,
+      selectedState: {
+        currentVersion: 1,
+        withCandidate: 1,
+        withError: 0,
+        withHash: 1,
+      },
       unchanged: 1,
     })
     expect(mocks.analyzeOpalRaster).toHaveBeenCalledTimes(1)
@@ -290,6 +302,12 @@ describe('builder mapping processor', () => {
       failed: 1,
       manual: 0,
       nonIndividual: 0,
+      selectedState: {
+        currentVersion: 0,
+        withCandidate: 0,
+        withError: 0,
+        withHash: 0,
+      },
       unchanged: 0,
     })
     expect(mocks.update).toHaveBeenCalledWith({
@@ -441,6 +459,12 @@ describe('builder mapping processor', () => {
       failed: 0,
       manual: 0,
       nonIndividual: 0,
+      selectedState: {
+        currentVersion: 0,
+        withCandidate: 0,
+        withError: 0,
+        withHash: 0,
+      },
       unchanged: 1,
     })
     expect(mocks.update).toHaveBeenCalledWith({

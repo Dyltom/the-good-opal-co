@@ -30,6 +30,12 @@ export interface BuilderMappingBatchResult {
   failed: number
   manual: number
   nonIndividual: number
+  selectedState: {
+    currentVersion: number
+    withCandidate: number
+    withError: number
+    withHash: number
+  }
   unchanged: number
 }
 
@@ -238,6 +244,24 @@ export async function processBuilderMappings(
     failed: 0,
     manual: 0,
     nonIndividual: 0,
+    selectedState: {
+      currentVersion: result.docs.filter(
+        (document) => document.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
+      ).length,
+      withCandidate: result.docs.filter((document) =>
+        Boolean(parseBuilderStoneContour(document.builderContourCandidate))
+      ).length,
+      withError: result.docs.filter(
+        (document) =>
+          typeof document.builderMappingAnalysisError === 'string' &&
+          document.builderMappingAnalysisError.length > 0
+      ).length,
+      withHash: result.docs.filter(
+        (document) =>
+          typeof document.builderMappingAnalyzedImageHash === 'string' &&
+          document.builderMappingAnalyzedImageHash.length > 0
+      ).length,
+    },
     unchanged: 0,
   }
 
