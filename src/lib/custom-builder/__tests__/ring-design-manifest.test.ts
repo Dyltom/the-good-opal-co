@@ -111,6 +111,12 @@ describe('ring design render manifest boundary', () => {
     ],
     ['invalid model source', { modelDefinition: { source: 'guess', version: 'v2' } }],
     ['empty model version', { modelDefinition: { source: 'procedural', version: '' } }],
+    ['scanned model without an asset', { modelDefinition: { source: 'scanned', version: 'v2' } }],
+    [
+      'artist-authored model without an asset',
+      { modelDefinition: { source: 'artist-authored', version: 'v2' } },
+    ],
+    ['hybrid model without an asset', { modelDefinition: { source: 'hybrid', version: 'v2' } }],
     [
       'invalid asset URL',
       { modelDefinition: { assetUrl: '/rings/gemini.glb', source: 'hybrid', version: 'v2' } },

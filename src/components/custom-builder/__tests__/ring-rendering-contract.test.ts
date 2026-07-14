@@ -112,9 +112,9 @@ describe('photoreal ring rendering contract', () => {
     )
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.18 : organic \? 0\.96 : 1\.26\}/
+      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.18 : organic \? 1\.2 : 1\.26\}/
     )
-    expect(sceneSource).toContain('faceted ? 1.18 : organic ? 0.96 : 1.26')
+    expect(sceneSource).toContain('faceted ? 1.18 : organic ? 1.2 : 1.26')
     expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
@@ -130,5 +130,10 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toMatch(
       /function HaloSupport[\s\S]*<SolderSupportMaterial metal=\{config\.metal\}/
     )
+    expect(sceneSource).toContain('function createSolderBridgeGeometry')
+    expect(sceneSource).toContain('function SolderBridges')
+    expect(sceneSource).toContain('<SolderBridges')
+    expect(sceneSource).toContain('radius={profile.beadBridgeRadius}')
+    expect(sceneSource).toContain('z={profile.beadBridgeZ}')
   })
 })

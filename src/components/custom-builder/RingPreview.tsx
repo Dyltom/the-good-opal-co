@@ -12,6 +12,7 @@ import type { RingView } from './RingScene'
 interface RingPreviewProps {
   config: RingConfig
   description: string
+  makerApproved?: boolean
   selectedOpal?: BuilderOpal
 }
 
@@ -30,7 +31,12 @@ const views: readonly { accessibleLabel: string; id: RingView; label: string }[]
   { id: 'profile', label: 'Profile', accessibleLabel: 'Profile view' },
 ]
 
-export function RingPreview({ config, description, selectedOpal }: RingPreviewProps) {
+export function RingPreview({
+  config,
+  description,
+  makerApproved = false,
+  selectedOpal,
+}: RingPreviewProps) {
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
   const [motionEnabled, setMotionEnabled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -95,7 +101,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
           <p className="sr-only">{description}</p>
         </div>
         <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-charcoal">
-          Concept
+          {makerApproved ? 'Maker-approved reference' : 'Concept'}
         </span>
       </div>
 

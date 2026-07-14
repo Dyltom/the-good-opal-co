@@ -807,11 +807,18 @@ export function getSettingOuterHalfWidth(
       profile.beadTangentialStretchMax
     )
     return beads.reduce(
-      (maximum, bead) =>
-        Math.max(
-          maximum,
-          Math.abs(bead.x) + profile.beadRadius * bead.size * Math.max(bead.stretchX, bead.stretchY)
-        ),
+      (maximum, bead) => {
+        const semiX = profile.beadRadius * bead.size * bead.stretchX
+        const semiY = profile.beadRadius * bead.size * bead.stretchY
+        // Rendered grains rotate their stretched ellipse around Z. Use the
+        // ellipse support in world X instead of the larger semi-axis, which
+        // overstated tangentially fused Aurora grains as extra head width.
+        const xSupport = Math.hypot(
+          semiX * Math.cos(bead.rotation),
+          semiY * Math.sin(bead.rotation)
+        )
+        return Math.max(maximum, Math.abs(bead.x) + xSupport)
+      },
       0
     )
   }

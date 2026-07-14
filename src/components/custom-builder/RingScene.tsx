@@ -69,6 +69,7 @@ import {
   type CabochonDepthProfile,
   type CameraVector,
   type HaloSupportContourPoint,
+  type HandmadeBeadPoint,
   type StoneDimensions,
 } from './geometry'
 import { applyForgedNormalVariation } from './forged-surface'
@@ -233,12 +234,12 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#858680',
-    '14k-gold': '#81652e',
-    '18k-gold': '#8e6b2c',
-    'white-gold': '#858680',
-    'rose-gold': '#7d5149',
-    platinum: '#888985',
+    'sterling-silver': '#c4c1b9',
+    '14k-gold': '#ad873c',
+    '18k-gold': '#b78d38',
+    'white-gold': '#bdbbb5',
+    'rose-gold': '#a86f63',
+    platinum: '#c0bfbb',
   }
   const facetedSolderColour: Record<RingConfig['metal'], string> = {
     'sterling-silver': '#969690',
@@ -266,7 +267,7 @@ function SolderGrainMaterial({
       }
       clearcoat={0.01}
       clearcoatRoughness={0.68}
-      envMapIntensity={faceted ? 1.18 : organic ? 0.96 : 1.26}
+      envMapIntensity={faceted ? 1.18 : organic ? 1.2 : 1.26}
     />
   )
 }
@@ -282,6 +283,19 @@ function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
           : '#666662'
 
   return <meshStandardMaterial color={colour} metalness={0.72} roughness={0.68} />
+}
+
+function SolderBridgeMaterial({ metal }: { metal: RingConfig['metal'] }) {
+  const colour =
+    metal === 'sterling-silver'
+      ? '#777873'
+      : metal === '14k-gold' || metal === '18k-gold'
+        ? '#967035'
+        : metal === 'rose-gold'
+          ? '#94655b'
+          : '#8f908c'
+
+  return <meshStandardMaterial color={colour} metalness={0.84} roughness={0.56} />
 }
 
 function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
@@ -1226,6 +1240,77 @@ function HaloSupport({
   )
 }
 
+function createSolderBridgeGeometry(
+  beads: readonly HandmadeBeadPoint[],
+  radius: number,
+  z: number
+): BufferGeometry {
+  const geometry = new BufferGeometry()
+  const positions: number[] = []
+  const indices: number[] = []
+  const radialSegments = 10
+
+  beads.forEach((start, bridgeIndex) => {
+    const end = beads[(bridgeIndex + 1) % beads.length]
+    if (!end) return
+    const dx = end.x - start.x
+    const dy = end.y - start.y
+    const length = Math.hypot(dx, dy)
+    if (length <= 0) return
+    const normalX = -dy / length
+    const normalY = dx / length
+    const vertexStart = positions.length / 3
+
+    for (const point of [start, end]) {
+      for (let segment = 0; segment < radialSegments; segment += 1) {
+        const angle = (segment / radialSegments) * Math.PI * 2
+        const across = Math.cos(angle) * radius
+        positions.push(
+          point.x + normalX * across,
+          point.y + normalY * across,
+          z + Math.sin(angle) * radius * 0.4
+        )
+      }
+    }
+
+    for (let segment = 0; segment < radialSegments; segment += 1) {
+      const next = (segment + 1) % radialSegments
+      const startCurrent = vertexStart + segment
+      const startNext = vertexStart + next
+      const endCurrent = vertexStart + radialSegments + segment
+      const endNext = vertexStart + radialSegments + next
+      indices.push(startCurrent, endCurrent, endNext, startCurrent, endNext, startNext)
+    }
+  })
+
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
+function SolderBridges({
+  beads,
+  metal,
+  radius,
+  z,
+}: {
+  beads: readonly HandmadeBeadPoint[]
+  metal: RingConfig['metal']
+  radius: number
+  z: number
+}) {
+  const geometry = useMemo(() => createSolderBridgeGeometry(beads, radius, z), [beads, radius, z])
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  return (
+    <mesh castShadow geometry={geometry} receiveShadow>
+      <SolderBridgeMaterial metal={metal} />
+    </mesh>
+  )
+}
+
 function Setting({
   animateOpalPlacement,
   config,
@@ -1374,6 +1459,14 @@ function Setting({
             contour={haloSupportContour}
             topZ={0.026}
           />
+          {profile.beadBridgeRadius > 0 && (
+            <SolderBridges
+              beads={beads}
+              metal={config.metal}
+              radius={profile.beadBridgeRadius}
+              z={profile.beadBridgeZ}
+            />
+          )}
           {beads.map(
             ({ key, x, y, size, flattening, heightVariation, rotation, stretchX, stretchY }) => {
               // Sold Sun & Moon and Aurora rings use individually soldered beads.

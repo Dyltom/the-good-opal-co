@@ -8,11 +8,21 @@ import {
   validateRingDesignReference,
 } from './ring-design-reference'
 
-const ringDesignRuntimeModelSchema = ringDesignModelDefinitionSchema.pick({
-  assetUrl: true,
-  source: true,
-  version: true,
-})
+const ringDesignRuntimeModelSchema = ringDesignModelDefinitionSchema
+  .pick({
+    assetUrl: true,
+    source: true,
+    version: true,
+  })
+  .superRefine((model, context) => {
+    if (model.source !== 'procedural' && !model.assetUrl) {
+      context.addIssue({
+        code: 'custom',
+        message: `${model.source} models require an asset URL`,
+        path: ['assetUrl'],
+      })
+    }
+  })
 
 const ringDesignApprovalSchema = z.object({
   approvedAt: z.string().datetime({ offset: true }),
@@ -56,7 +66,7 @@ export function parseRingDesignRenderManifest(value: unknown): RingDesignRenderM
   if (validateRingDesignReference(parsed.data) !== true) return null
 
   const { approvedAt, approvalNotes, id, modelDefinition, name, slug, style } = parsed.data
-  return ringDesignRenderManifestSchema.parse({
+  const manifest = ringDesignRenderManifestSchema.safeParse({
     id,
     name,
     slug,
@@ -71,6 +81,7 @@ export function parseRingDesignRenderManifest(value: unknown): RingDesignRenderM
       notes: approvalNotes,
     },
   })
+  return manifest.success ? manifest.data : null
 }
 
 /**

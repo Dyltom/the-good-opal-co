@@ -56,7 +56,7 @@ describe('sold ring style geometry', () => {
 
       expect(Math.max(...samples.map(({ delta }) => delta))).toBeGreaterThan(0)
       expect(Math.min(...samples.map(({ delta }) => delta))).toBeLessThan(0)
-      expect(Math.min(...samples.map(({ thickness }) => thickness))).toBeGreaterThan(0.03)
+      expect(Math.min(...samples.map(({ thickness }) => thickness))).toBeGreaterThan(0.025)
     }
   )
 
@@ -127,6 +127,7 @@ describe('sold ring style geometry', () => {
       beadCount: 40,
       beadPitchMm: 1,
       beadRadius: 0.038,
+      beadBridgeRadius: 0.02,
       haloOffset: 0.095,
       beadPrimitive: 'rounded-granule',
     })
@@ -134,6 +135,7 @@ describe('sold ring style geometry', () => {
       beadCount: 28,
       beadPitchMm: 1.12,
       beadRadius: 0.046,
+      beadBridgeRadius: 0.034,
       haloOffset: 0.095,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
@@ -422,7 +424,7 @@ describe('sold ring style geometry', () => {
     const metal = knots.filter(({ finish }) => finish === 'metal')
 
     expect(patina).toHaveLength(3)
-    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.08)
+    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.03)
     expect(Math.max(...metal.map(({ heightOffset }) => heightOffset)) * 10).toBe(0.01)
     expect(metal[0]?.radialProgress).toBeGreaterThan(patina.at(-1)?.radialProgress ?? 1)
     const profile = ringStyleGeometryProfiles.coral

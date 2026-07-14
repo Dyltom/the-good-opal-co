@@ -30,6 +30,7 @@ const RingPreview = dynamic(() => import('./RingPreview').then((module) => modul
 })
 
 interface RingConfiguratorProps {
+  approvedProceduralStyles?: readonly RingConfig['style'][]
   initialConfig: RingConfig
   opals: readonly BuilderOpal[]
   unavailableOpalRequested?: boolean
@@ -171,9 +172,9 @@ function OpalPicker({
       <legend className="font-serif text-xl font-medium">3. Choose an available opal</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
         Start with individual stones: their exact listing photo maps onto the preview. Every
-        published, in-stock listing remains available. Parcels, calibrated sets, and specimens use
-        a representative 3D concept; your consultation confirms the individual stone and whether
-        it can be set safely.
+        published, in-stock listing remains available. Parcels, calibrated sets, and specimens use a
+        representative 3D concept; your consultation confirms the individual stone and whether it
+        can be set safely.
       </p>
       <button
         type="button"
@@ -331,10 +332,10 @@ function RingStylePicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Start with the design that suits the selected outline. Each reference is a photographed
-        Good Opal Co ring; incompatible settings stay unavailable instead of stretching the stone
-        into a misleading shape. {mappingDescription} Your maker confirms measurements, final seat,
-        and whether the physical stone can be set safely.
+        Start with the design that suits the selected outline. Each reference is a photographed Good
+        Opal Co ring; incompatible settings stay unavailable instead of stretching the stone into a
+        misleading shape. {mappingDescription} Your maker confirms measurements, final seat, and
+        whether the physical stone can be set safely.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
@@ -413,6 +414,7 @@ function RingStylePicker({
 }
 
 export function RingConfigurator({
+  approvedProceduralStyles = [],
   initialConfig,
   opals,
   unavailableOpalRequested = false,
@@ -458,6 +460,13 @@ export function RingConfigurator({
     () => describeRingConfig(config, selectedOpal?.name),
     [config, selectedOpal?.name]
   )
+  const referenceStyle = ringStyles.find((style) => style.id === config.style)
+  const makerApproved =
+    approvedProceduralStyles.includes(config.style) &&
+    config.shape === referenceStyle?.shape &&
+    config.setting === referenceStyle.setting &&
+    config.band === referenceStyle.band &&
+    (!selectedOpal || getRingStyleFit(config.style, selectedOpal).kind === 'original')
   const isStartingDesign = useMemo(
     () => JSON.stringify(config) === JSON.stringify(initialConfig),
     [config, initialConfig]
@@ -532,7 +541,12 @@ export function RingConfigurator({
       <div className="grid lg:grid-cols-[minmax(0,1.12fr)_minmax(25rem,0.88fr)]">
         <div className="min-w-0 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:self-start">
           <ViewerErrorBoundary>
-            <RingPreview config={config} description={description} selectedOpal={selectedOpal} />
+            <RingPreview
+              config={config}
+              description={description}
+              makerApproved={makerApproved}
+              selectedOpal={selectedOpal}
+            />
           </ViewerErrorBoundary>
         </div>
 

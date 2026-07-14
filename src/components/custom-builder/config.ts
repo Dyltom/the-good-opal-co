@@ -15,6 +15,17 @@ export const settingIds = ['bezel', 'beaded'] as const
 export const bandIds = ['classic'] as const
 export const styleIds = ['gemini', 'coral', 'sun-moon', 'aurora'] as const
 
+/**
+ * Identity of the procedural geometry currently rendered by RingScene. Maker
+ * approval applies only when Payload names this exact version for the style.
+ */
+export const proceduralRingModelVersions: Readonly<Record<(typeof styleIds)[number], string>> = {
+  gemini: 'procedural-v2',
+  coral: 'procedural-v2',
+  'sun-moon': 'procedural-v2',
+  aurora: 'procedural-v2',
+}
+
 export const ringConfigSchema = z.object({
   metal: z.enum(metalIds),
   stone: z.enum(stoneIds),
@@ -129,6 +140,10 @@ export interface RingStyleGeometryProfile {
   beadRoughness: number
   /** Required neighbouring solder overlap in scene units (10 mm each). */
   beadMinimumOverlap: number
+  /** Low solder meniscus joining neighbouring grains, in scene units. */
+  beadBridgeRadius: number
+  /** Height of the solder meniscus centre above the setting datum. */
+  beadBridgeZ: number
   /** Maximum filing/stretch along the halo tangent; preserves radial head size. */
   beadTangentialStretchMax: number
   beadShape: 'granulated' | 'none'
@@ -207,10 +222,10 @@ export function getHaloSupportGeometry(
 const geminiBezelSeat = {
   bezelLipOffset: 0.002,
   bezelLipRadius: 0.012,
-  // Conservative lower edge of two owned top-photo measurements. Keeps the
-  // inner wall 0.01 mm clear while restoring Gemini's visible handmade rail.
-  bezelWallOffset: 0.033,
-  bezelWallThickness: 0.064,
+  // The draft CMS evidence records an 8.75 mm head around an 8 mm stone. Keep
+  // the wall just clear of the stone and leave the broad inflated rail behind.
+  bezelWallOffset: 0.02,
+  bezelWallThickness: 0.036,
   patinaSeatReveal: 0.008,
 } satisfies BezelSeatGeometry
 
@@ -261,6 +276,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadAsymmetry: 0,
     beadRoughness: 0.34,
     beadMinimumOverlap: 0,
+    beadBridgeRadius: 0,
+    beadBridgeZ: 0,
     beadTangentialStretchMax: 1,
     beadShape: 'none',
     beadPrimitive: 'none',
@@ -297,10 +314,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   coral: {
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
-      { radialProgress: 0.3, heightOffset: -0.008, finish: 'patina' },
+      { radialProgress: 0.3, heightOffset: -0.003, finish: 'patina' },
       {
         radialProgress: getPatinaSeatProgress(coralBezelSeat),
-        heightOffset: -0.008,
+        heightOffset: -0.003,
         finish: 'patina',
         stoneReveal: coralBezelSeat.patinaSeatReveal,
       },
@@ -316,6 +333,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadAsymmetry: 0,
     beadRoughness: 0.34,
     beadMinimumOverlap: 0,
+    beadBridgeRadius: 0,
+    beadBridgeZ: 0,
     beadTangentialStretchMax: 1,
     beadShape: 'none',
     beadPrimitive: 'none',
@@ -370,6 +389,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadAsymmetry: 0.09,
     beadRoughness: 0.56,
     beadMinimumOverlap: 0.004,
+    beadBridgeRadius: 0.02,
+    beadBridgeZ: 0.03,
     beadTangentialStretchMax: 1.35,
     beadShape: 'granulated',
     beadPrimitive: 'rounded-granule',
@@ -422,8 +443,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadFlattening: 0.56,
     beadAsymmetry: 0.18,
     beadRoughness: 0.62,
-    beadMinimumOverlap: 0.001,
-    beadTangentialStretchMax: 1.14,
+    beadMinimumOverlap: 0.004,
+    beadBridgeRadius: 0.034,
+    beadBridgeZ: 0.03,
+    beadTangentialStretchMax: 1.4,
     beadShape: 'granulated',
     beadPrimitive: 'organic-granule',
     beadVariation: 1.55,

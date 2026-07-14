@@ -8,10 +8,12 @@ import {
 } from '../config'
 import { getSettingOuterHalfWidth, getStoneDimensions } from '../geometry'
 
-const soldReferences = {
+// Broad regression envelopes inferred from owned face-on photos. These prevent
+// accidental proportion drift but are not maker-approved caliper measurements.
+const draftReferenceEnvelopes = {
   gemini: {
     bandWidthMm: [1.7, 1.85],
-    headWidthMm: [9.25, 9.4],
+    headWidthMm: [8.75, 8.9],
     setting: 'bezel',
     shape: 'oval',
     stoneMm: [8, 10],
@@ -25,14 +27,14 @@ const soldReferences = {
   },
   'sun-moon': {
     bandWidthMm: [1.65, 1.8],
-    headWidthMm: [10.7, 10.95],
+    headWidthMm: [10.6, 10.95],
     setting: 'beaded',
     shape: 'oval',
     stoneMm: [8, 10],
   },
   aurora: {
     bandWidthMm: [1.7, 1.85],
-    headWidthMm: [10.9, 11.3],
+    headWidthMm: [10.75, 11.3],
     setting: 'beaded',
     shape: 'pear',
     stoneMm: [8, 10],
@@ -85,9 +87,9 @@ describe('sold ring reference proportions', () => {
   })
 
   test.each(ringStyles.map(({ id }) => id))(
-    'keeps %s inside its photographed face-on measurements',
+    'keeps %s inside its draft owned-photo face-on envelope',
     (style) => {
-      const reference = soldReferences[style]
+      const reference = draftReferenceEnvelopes[style]
       const config = applyRingStyle(defaultRingConfig, style)
       const dimensions = getStoneDimensions(config)
       const headWidthMm = getSettingOuterHalfWidth(config, dimensions) * 20

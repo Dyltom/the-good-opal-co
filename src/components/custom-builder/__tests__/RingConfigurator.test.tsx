@@ -9,9 +9,11 @@ vi.mock('next/dynamic', () => ({
   default: () =>
     function RingPreviewStub({
       config,
+      makerApproved,
       selectedOpal,
     }: {
       config: typeof defaultRingConfig
+      makerApproved?: boolean
       selectedOpal?: BuilderOpal
     }) {
       return (
@@ -23,6 +25,7 @@ vi.mock('next/dynamic', () => ({
           data-opal-scale={config.opalScale}
           data-opal-rotation={config.opalRotation}
           data-style={config.style}
+          data-maker-approved={makerApproved ? 'true' : 'false'}
         />
       )
     },
@@ -100,6 +103,29 @@ const opals: BuilderOpal[] = [
 describe('RingConfigurator store opal selection', () => {
   beforeEach(() => {
     window.history.replaceState(null, '', '/services/design')
+  })
+
+  test('limits maker approval to the exact reference model, not adapted opal concepts', () => {
+    const { unmount } = render(
+      <RingConfigurator
+        approvedProceduralStyles={['gemini']}
+        initialConfig={defaultRingConfig}
+        opals={opals}
+      />
+    )
+
+    expect(screen.getByTestId('ring-preview').getAttribute('data-maker-approved')).toBe('true')
+    unmount()
+
+    render(
+      <RingConfigurator
+        approvedProceduralStyles={['gemini']}
+        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id }}
+        opals={opals}
+      />
+    )
+
+    expect(screen.getByTestId('ring-preview').getAttribute('data-maker-approved')).toBe('false')
   })
 
   test('keeps the selected store product and its render palette in shared and enquiry URLs', async () => {
