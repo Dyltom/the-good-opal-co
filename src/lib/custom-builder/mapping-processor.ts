@@ -34,6 +34,9 @@ export interface BuilderMappingBatchResult {
     currentAnalyses: number
     eligible: number
     failedCurrent: number
+    individualFailures: Array<{ error: string; slug: string }>
+    reviewCandidates: string[]
+    skippedCurrent: number
     total: number
   }
   failed: number
@@ -259,6 +262,9 @@ export async function processBuilderMappings(
       currentAnalyses: 0,
       eligible: 0,
       failedCurrent: 0,
+      individualFailures: [],
+      reviewCandidates: [],
+      skippedCurrent: 0,
       total: 0,
     },
     failed: 0,
@@ -440,11 +446,18 @@ export async function processBuilderMappings(
   summary.coverage.total = coverage.docs.length
   for (const document of coverage.docs) {
     const name = typeof document.name === 'string' ? document.name : ''
-    if (isAvailableOpalListing(name) && classifyOpalListing(name) === 'individual') {
+    const isAvailableIndividual =
+      isAvailableOpalListing(name) && classifyOpalListing(name) === 'individual'
+    if (isAvailableIndividual) {
       summary.coverage.availableIndividuals += 1
     }
     if (parseBuilderStoneContour(document.builderContour)) summary.coverage.activeContours += 1
-    if (parseBuilderStoneContour(document.builderContourCandidate)) summary.coverage.candidates += 1
+    if (parseBuilderStoneContour(document.builderContourCandidate)) {
+      summary.coverage.candidates += 1
+      if (isAvailableIndividual && typeof document.slug === 'string') {
+        summary.coverage.reviewCandidates.push(document.slug)
+      }
+    }
     if (document.builderEligible === true) summary.coverage.eligible += 1
     if (
       document.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
@@ -453,12 +466,22 @@ export async function processBuilderMappings(
     ) {
       summary.coverage.currentAnalyses += 1
     }
-    if (
+    const currentError =
       document.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
       typeof document.builderMappingAnalysisError === 'string' &&
       document.builderMappingAnalysisError.length > 0
-    ) {
-      summary.coverage.failedCurrent += 1
+        ? document.builderMappingAnalysisError
+        : undefined
+    if (currentError) {
+      if (isAvailableIndividual) {
+        summary.coverage.failedCurrent += 1
+        summary.coverage.individualFailures.push({
+          error: currentError,
+          slug: typeof document.slug === 'string' ? document.slug : String(document.id),
+        })
+      } else {
+        summary.coverage.skippedCurrent += 1
+      }
     }
   }
 
