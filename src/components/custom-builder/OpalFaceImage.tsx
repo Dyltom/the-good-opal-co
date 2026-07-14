@@ -10,10 +10,12 @@ import {
   rotationCoverScale,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement } from './config'
+import { cssSilhouetteClipPath } from './geometry'
 
 interface OpalFaceImageProps {
   alt: string
   className?: string
+  clipToStone?: boolean
   eager?: boolean
   opal: BuilderOpal
   placement?: OpalPlacement
@@ -23,6 +25,7 @@ interface OpalFaceImageProps {
 export function OpalFaceImage({
   alt,
   className,
+  clipToStone = false,
   eager = false,
   opal,
   placement,
@@ -57,6 +60,19 @@ export function OpalFaceImage({
   )
   const rotation = (opal.visual.textureCrop?.rotation ?? 0) + customerRotation
   const coverScale = rotationCoverScale(stoneAspect, rotation)
+  const silhouetteClipPath = clipToStone
+    ? cssSilhouetteClipPath(opal.visual.silhouette, opal.visual.contour)
+    : undefined
+  const silhouetteClass = clipToStone
+    ? {
+        cushion: 'rounded-[22%]',
+        elongated: 'rounded-[50%]',
+        heart: '',
+        oval: 'rounded-[50%]',
+        pear: '',
+        round: 'rounded-full',
+      }[opal.visual.silhouette]
+    : undefined
   const handleLoad: ComponentProps<typeof Image>['onLoad'] = (event) =>
     setImageSize({
       height: event.currentTarget.naturalHeight,
@@ -77,10 +93,11 @@ export function OpalFaceImage({
 
   return (
     <div
-      className={cn('relative overflow-hidden bg-cream/10', className)}
+      className={cn('relative overflow-hidden bg-cream/10', silhouetteClass, className)}
       aria-busy={!crop}
       data-opal-photo-state={crop ? 'ready' : 'loading'}
-      style={{ aspectRatio: stoneAspect }}
+      style={{ aspectRatio: stoneAspect, clipPath: silhouetteClipPath }}
+      data-opal-photo-shape={clipToStone ? opal.visual.silhouette : undefined}
     >
       <div className={cn('absolute', !crop && 'inset-0')} style={cropStyle}>
         <Image

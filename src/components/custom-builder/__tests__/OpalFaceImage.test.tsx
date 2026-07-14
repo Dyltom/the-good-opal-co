@@ -43,6 +43,21 @@ const placement: OpalPlacement = {
 }
 
 describe('OpalFaceImage', () => {
+  test('optionally carries one stone silhouette from the picker into the preview', () => {
+    const { rerender } = render(
+      <OpalFaceImage alt="Loose opal" clipToStone opal={opal} sizes="160px" />
+    )
+
+    const image = screen.getByRole('img', { name: 'Loose opal' })
+    const frame = image.parentElement?.parentElement
+    expect(frame?.getAttribute('data-opal-photo-shape')).toBe('oval')
+    expect(frame?.className).toContain('rounded-[50%]')
+
+    rerender(<OpalFaceImage alt="Loose opal" opal={opal} sizes="160px" />)
+    expect(frame?.getAttribute('data-opal-photo-shape')).toBeNull()
+    expect(frame?.className).not.toContain('rounded-[50%]')
+  })
+
   test('reveals one stable image only after its exact crop is ready', () => {
     const { rerender } = render(
       <OpalFaceImage alt="Selected opal" eager opal={opal} placement={placement} sizes="360px" />

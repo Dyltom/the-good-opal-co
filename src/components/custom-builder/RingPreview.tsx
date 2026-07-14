@@ -129,8 +129,13 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
                   opal={selectedOpal}
                   placement={opalPlacementFromConfig(config)}
                   alt=""
+                  clipToStone={selectedOpal.selectionKind === 'individual'}
                   sizes="112px"
-                  className="h-full w-auto rounded-md"
+                  className={
+                    selectedOpal.selectionKind === 'individual'
+                      ? 'h-full w-auto'
+                      : 'h-full w-auto rounded-md'
+                  }
                 />
               </div>
               <div className="min-w-0">

@@ -257,8 +257,12 @@ function OpalPicker({
                   <OpalFaceImage
                     opal={opal}
                     alt=""
+                    clipToStone={opal.selectionKind === 'individual'}
                     sizes="(max-width: 640px) 36vw, 190px"
-                    className="h-[88%] w-auto rounded-md shadow-[0_6px_18px_rgb(0_0_0/0.28)] transition-transform duration-300 ease-out group-hover:scale-[1.025]"
+                    className={cn(
+                      'h-[88%] w-auto shadow-[0_6px_18px_rgb(0_0_0/0.28)] transition-transform duration-300 ease-out group-hover:scale-[1.025]',
+                      opal.selectionKind !== 'individual' && 'rounded-md'
+                    )}
                   />
                   {selected && (
                     <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-charcoal text-cream shadow-sm">
