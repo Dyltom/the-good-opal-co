@@ -4,7 +4,11 @@ import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useMemo, useRef, useState } from 'react'
 import { Move, RotateCcw, RotateCw, SlidersHorizontal, Undo2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
+import {
+  constrainPhotoPlacementRotation,
+  getPhotoPlacementRotationLimit,
+  getPhotoPlacementScaleMax,
+} from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
 import { defaultOpalPlacement, ringStyleGeometryProfiles } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
@@ -33,7 +37,6 @@ interface DragState extends OpalPlacement {
 
 const limits = {
   position: 0.45,
-  rotation: 180,
   scaleMin: 1,
 } as const
 
@@ -237,6 +240,14 @@ export function OpalPlacementEditor({
   const baseZoom = opal.visual.textureCrop?.zoom ?? 1
   const scaleMax = getPhotoPlacementScaleMax(baseZoom)
   const displayedScale = Math.min(placement.opalScale, scaleMax)
+  const stoneAspect = 1 / opal.visual.aspectRatio
+  const rotationLimit = getPhotoPlacementRotationLimit(stoneAspect, baseZoom, displayedScale)
+  const displayedRotation = constrainPhotoPlacementRotation(
+    stoneAspect,
+    baseZoom,
+    displayedScale,
+    placement.opalRotation
+  )
   const canPan = displayedScale > limits.scaleMin && scaleMax > limits.scaleMin
   const isDefaultPlacement =
     placement.opalPositionX === defaultOpalPlacement.opalPositionX &&
@@ -405,7 +416,7 @@ export function OpalPlacementEditor({
                   >
                     <OpalFaceImage
                       opal={opal}
-                      placement={placement}
+                      placement={{ ...placement, opalRotation: displayedRotation }}
                       alt=""
                       eager
                       sizes="360px"
@@ -453,6 +464,12 @@ export function OpalPlacementEditor({
               onChange({
                 ...placement,
                 opalScale: value,
+                opalRotation: constrainPhotoPlacementRotation(
+                  stoneAspect,
+                  baseZoom,
+                  value,
+                  placement.opalRotation
+                ),
                 ...(placement.opalScale <= limits.scaleMin || value === limits.scaleMin
                   ? { opalPositionX: 0, opalPositionY: 0 }
                   : {}),
@@ -465,9 +482,9 @@ export function OpalPlacementEditor({
               <button
                 type="button"
                 aria-label="Rotate opal colour left"
-                disabled={placement.opalRotation <= -limits.rotation}
+                disabled={displayedRotation <= -rotationLimit}
                 onClick={() =>
-                  update('opalRotation', clamp(placement.opalRotation - 15, -180, 180))
+                  update('opalRotation', clamp(displayedRotation - 15, -rotationLimit, rotationLimit))
                 }
                 className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -475,16 +492,16 @@ export function OpalPlacementEditor({
               </button>
               <output
                 className="grid min-h-11 place-items-center rounded-lg bg-cream text-sm tabular-nums text-charcoal"
-                aria-label={`Rotation ${placement.opalRotation}`}
+                aria-label={`Rotation ${displayedRotation}`}
               >
-                {Math.round(placement.opalRotation)}°
+                {Math.round(displayedRotation)}°
               </output>
               <button
                 type="button"
                 aria-label="Rotate opal colour right"
-                disabled={placement.opalRotation >= limits.rotation}
+                disabled={displayedRotation >= rotationLimit}
                 onClick={() =>
-                  update('opalRotation', clamp(placement.opalRotation + 15, -180, 180))
+                  update('opalRotation', clamp(displayedRotation + 15, -rotationLimit, rotationLimit))
                 }
                 className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -523,11 +540,12 @@ export function OpalPlacementEditor({
               />
               <RangeControl
                 label="Rotation"
-                min={-limits.rotation}
-                max={limits.rotation}
+                min={-rotationLimit}
+                max={rotationLimit}
                 step={5}
-                value={placement.opalRotation}
-                valueText={`${Math.round(placement.opalRotation)}°`}
+                value={displayedRotation}
+                valueText={`${Math.round(displayedRotation)}°`}
+                disabled={rotationLimit === 0}
                 onChange={(value) => update('opalRotation', value)}
               />
             </div>

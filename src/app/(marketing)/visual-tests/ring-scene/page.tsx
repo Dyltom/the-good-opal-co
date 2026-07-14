@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import {
   applyRingStyle,
   defaultRingConfig,
+  shapeForOpal,
   styleIds,
   type BuilderOpal,
   type RingConfig,
@@ -18,33 +19,58 @@ export const metadata: Metadata = {
 }
 
 const views = ['front', 'profile'] as const satisfies readonly RingView[]
-const fixtures = ['none', 'reviewed', 'placed'] as const
+const fixtures = [
+  'none',
+  'reviewed',
+  'placed',
+  'elongated',
+  'elongated-placed',
+  'pear',
+  'pear-placed',
+  'heart',
+  'heart-placed',
+] as const
 
-const reviewedOpalSlug = 'lightning-ridge-white-opal-1-05-cts'
-const reviewedOpalName = 'Lightning Ridge White Opal 1.05 cts'
-const reviewedOpalProfile = createOpalVisualProfile(
-  reviewedOpalSlug,
-  reviewedOpalName,
-  'white-opal'
-)
-const reviewedOpalImage = reviewedOpalImageUrl(reviewedOpalSlug)
+function visualOpal(slug: string, name: string, stoneType: string): BuilderOpal {
+  const imageUrl = reviewedOpalImageUrl(slug)
+  if (!imageUrl) throw new Error(`Missing reviewed visual-test photo for ${slug}`)
 
-if (!reviewedOpalImage) {
-  throw new Error(`Missing reviewed visual-test photo for ${reviewedOpalSlug}`)
+  return {
+    id: `visual-${slug}`,
+    imageAlt: name,
+    imageUrl,
+    name,
+    price: 0,
+    selectionKind: 'individual',
+    slug,
+    stoneType,
+    stoneTypeLabel: stoneType,
+    ...createOpalVisualProfile(slug, name, stoneType),
+  }
 }
 
-const reviewedOpal: BuilderOpal = {
-  id: 'visual-reviewed-opal',
-  imageAlt: reviewedOpalName,
-  imageUrl: reviewedOpalImage,
-  name: reviewedOpalName,
-  price: 0,
-  selectionKind: 'individual',
-  slug: reviewedOpalSlug,
-  stoneType: 'white-opal',
-  stoneTypeLabel: 'White opal',
-  ...reviewedOpalProfile,
-}
+const fixtureOpals = {
+  reviewed: visualOpal(
+    'lightning-ridge-white-opal-1-05-cts',
+    'Lightning Ridge White Opal 1.05 cts',
+    'white-opal'
+  ),
+  elongated: visualOpal(
+    'lightning-ridge-black-opal-1-45-cts',
+    'Lightning Ridge Black Opal 1.45 cts',
+    'black-opal'
+  ),
+  pear: visualOpal(
+    'large-queensland-boulder-opal-teardrop-4-cts',
+    'Large Queensland Boulder Opal Teardrop 4 cts',
+    'boulder-opal'
+  ),
+  heart: visualOpal(
+    'mintabie-dark-opal-heart-055-cts',
+    'Mintabie Dark Opal Heart 0.55 cts',
+    'black-opal'
+  ),
+} as const
 
 interface VisualHarnessPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -64,27 +90,35 @@ function enumParam<const Values extends readonly string[]>(
   notFound()
 }
 
-function configForFixture(
-  requestedStyle: RingConfig['style'],
-  fixture: (typeof fixtures)[number]
-): RingConfig {
-  const style = fixture === 'none' ? requestedStyle : 'gemini'
+function selectedOpalForFixture(fixture: (typeof fixtures)[number]): BuilderOpal | undefined {
+  if (fixture === 'none') return undefined
+  if (fixture === 'reviewed' || fixture === 'placed') return fixtureOpals.reviewed
+  if (fixture.startsWith('elongated')) return fixtureOpals.elongated
+  if (fixture.startsWith('pear')) return fixtureOpals.pear
+  return fixtureOpals.heart
+}
+
+function configForFixture(requestedStyle: RingConfig['style'], fixture: (typeof fixtures)[number]) {
+  const selectedOpal = selectedOpalForFixture(fixture)
+  const style = selectedOpal?.visual.recommendedStyle ?? requestedStyle
   const config = applyRingStyle(defaultRingConfig, style)
-  if (fixture === 'none') return config
+  if (!selectedOpal) return config
+  const placed = fixture.endsWith('-placed') || fixture === 'placed'
 
   return {
     ...config,
-    opalId: reviewedOpal.id,
-    stone: reviewedOpal.renderStone,
-    ...(fixture === 'placed'
+    opalId: selectedOpal.id,
+    shape: shapeForOpal(selectedOpal),
+    stone: selectedOpal.renderStone,
+    ...(placed
       ? {
-          opalPositionX: 0.3,
-          opalPositionY: -0.22,
-          opalRotation: 30,
-          opalScale: 1.45,
+          opalPositionX: 0.24,
+          opalPositionY: -0.18,
+          opalRotation: 25,
+          opalScale: selectedOpal.visual.silhouette === 'elongated' ? 1.2 : 1.4,
         }
       : {}),
-  }
+  } satisfies RingConfig
 }
 
 export default async function RingSceneVisualHarnessPage({ searchParams }: VisualHarnessPageProps) {
@@ -95,11 +129,12 @@ export default async function RingSceneVisualHarnessPage({ searchParams }: Visua
   const view = enumParam(views, first(query.view), 'front')
   const fixture = enumParam(fixtures, first(query.fixture), 'none')
   const config = configForFixture(style, fixture)
+  const selectedOpal = selectedOpalForFixture(fixture)
 
   return (
     <RingSceneVisualHarness
       config={config}
-      selectedOpal={fixture === 'none' ? undefined : reviewedOpal}
+      selectedOpal={selectedOpal}
       view={view}
     />
   )

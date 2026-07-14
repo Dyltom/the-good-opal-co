@@ -4,6 +4,8 @@ import {
   computePhotoCrop,
   computePlacedPhotoCrop,
   computePhotoTextureTransform,
+  constrainPhotoPlacementRotation,
+  getPhotoPlacementRotationLimit,
   rotationCoverScale,
 } from '../photo-crop'
 
@@ -90,6 +92,17 @@ describe('custom builder photo crops', () => {
     expect(rotationCoverScale(1, 45)).toBeCloseTo(Math.SQRT2)
     expect(rotationCoverScale(0.8, 90)).toBeCloseTo(1.25)
     expect(rotationCoverScale(0, 45)).toBe(1)
+  })
+
+  test('limits elongated customer rotation before it exceeds audited source detail', () => {
+    const available = getPhotoPlacementRotationLimit(1 / 2.25, 10, 1)
+    const maximumZoom = getPhotoPlacementRotationLimit(1 / 2.25, 10, 1.2)
+
+    expect(available).toBeGreaterThan(0)
+    expect(available).toBeLessThan(15)
+    expect(maximumZoom).toBe(0)
+    expect(constrainPhotoPlacementRotation(1 / 2.25, 10, 1, 30)).toBe(available)
+    expect(getPhotoPlacementRotationLimit(0.8, 3.4, 1.4)).toBe(45)
   })
 
   test('keeps the selected crop centre fixed when Three.js rotates the texture', () => {

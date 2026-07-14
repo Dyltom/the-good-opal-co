@@ -139,7 +139,9 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 6 / 5.5,
     evidence: 'catalogue',
     recommendedStyle: 'coral',
-    textureCrop: { focalX: 0.49, focalY: 0.48, zoom: 1.85 },
+    // The source includes black velvet immediately above the hand-carved
+    // lobes. Keep that background outside the generic heart mesh.
+    textureCrop: { focalX: 0.49, focalY: 0.48, zoom: 3 },
     photoFit: 'reviewed',
   },
   'mintabie-dark-opal-heart-070cts': {

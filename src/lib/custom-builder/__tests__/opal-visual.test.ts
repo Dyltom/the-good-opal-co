@@ -203,7 +203,7 @@ describe('custom builder opal visual profiles', () => {
     [
       'mintabie-dark-opal-heart-055-cts',
       'Mintabie Dark Opal heart 0.55 cts',
-      { focalX: 0.49, focalY: 0.48, zoom: 1.85 },
+      { focalX: 0.49, focalY: 0.48, zoom: 3 },
     ],
     [
       'mintabie-dark-opal-heart-070cts',

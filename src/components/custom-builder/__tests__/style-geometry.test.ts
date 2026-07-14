@@ -10,6 +10,7 @@ import {
   getProfiledBezelLipRings,
   getSoldStyleOuterVariation,
   getStyleBeadCount,
+  getSolderGrainTone,
   outlinePoint,
 } from '../geometry'
 
@@ -100,19 +101,21 @@ describe('sold ring style geometry', () => {
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 0.84,
-      beadRadius: 0.043,
-      haloOffset: 0.09,
+      beadRadius: 0.041,
+      haloOffset: 0.092,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.05,
-      haloOffset: 0.091,
+      beadRadius: 0.049,
+      haloOffset: 0.092,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
+    expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0.02, 12)
+    expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0.14, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
@@ -158,6 +161,17 @@ describe('sold ring style geometry', () => {
     expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.85)
     expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.87)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
+  })
+
+  test('gives solder grains bounded deterministic tarnish variation', () => {
+    const rounded = Array.from({ length: 40 }, (_, key) => getSolderGrainTone(key, false))
+    const organic = Array.from({ length: 28 }, (_, key) => getSolderGrainTone(key, true))
+
+    expect(Math.min(...rounded)).toBeCloseTo(0.92, 12)
+    expect(Math.max(...rounded)).toBeCloseTo(1.04, 12)
+    expect(Math.min(...organic)).toBeCloseTo(0.82, 12)
+    expect(Math.max(...organic)).toBeCloseTo(1.09, 12)
+    expect(new Set(organic)).toHaveLength(7)
   })
 
   test('keeps Sun and Moon granules near-round, fused, and deterministically handmade', () => {

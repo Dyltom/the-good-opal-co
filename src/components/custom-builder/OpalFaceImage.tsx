@@ -4,7 +4,11 @@ import Image from 'next/image'
 import type { ComponentProps } from 'react'
 import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
-import { computePlacedPhotoCrop, rotationCoverScale } from '@/lib/custom-builder/photo-crop'
+import {
+  computePlacedPhotoCrop,
+  constrainPhotoPlacementRotation,
+  rotationCoverScale,
+} from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement } from './config'
 
 interface OpalFaceImageProps {
@@ -43,7 +47,15 @@ export function OpalFaceImage({
     )
   }, [currentImageSize, opal.visual.textureCrop, placement, stoneAspect])
 
-  const rotation = (opal.visual.textureCrop?.rotation ?? 0) + (placement?.opalRotation ?? 0)
+  const baseZoom = opal.visual.textureCrop?.zoom ?? 1
+  const placementScale = placement?.opalScale ?? 1
+  const customerRotation = constrainPhotoPlacementRotation(
+    stoneAspect,
+    baseZoom,
+    placementScale,
+    placement?.opalRotation ?? 0
+  )
+  const rotation = (opal.visual.textureCrop?.rotation ?? 0) + customerRotation
   const coverScale = rotationCoverScale(stoneAspect, rotation)
   const handleLoad: ComponentProps<typeof Image>['onLoad'] = (event) =>
     setImageSize({

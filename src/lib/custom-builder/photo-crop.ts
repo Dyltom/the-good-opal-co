@@ -28,6 +28,8 @@ export interface PhotoTextureTransform {
 
 const placementPositionLimit = 0.45
 const placementScaleLimit = 2.25
+const maximumCustomerRotation = 45
+const maximumTextureZoom = 12
 
 export function getPhotoPlacementScaleMax(baseZoom: number): number {
   return Math.max(1, Math.min(placementScaleLimit, 12 / Math.max(1, baseZoom)))
@@ -46,6 +48,43 @@ export function rotationCoverScale(stoneAspect: number, rotationDegrees: number)
   const cosine = Math.abs(Math.cos(radians))
 
   return Math.max(cosine + sine / stoneAspect, cosine + sine * stoneAspect)
+}
+
+/**
+ * Limits customer rotation before an elongated photo would need more source
+ * magnification than the builder's audited 12x ceiling. The source's reviewed
+ * orientation remains intact; this governs only the optional colour adjustment.
+ */
+export function getPhotoPlacementRotationLimit(
+  stoneAspect: number,
+  baseZoom: number,
+  placementScale: number
+): number {
+  if (stoneAspect <= 0 || baseZoom < 1 || placementScale < 1) return 0
+  const availableCoverScale = maximumTextureZoom / (baseZoom * placementScale)
+  if (availableCoverScale <= 1) return 0
+  if (rotationCoverScale(stoneAspect, maximumCustomerRotation) <= availableCoverScale) {
+    return maximumCustomerRotation
+  }
+
+  let lower = 0
+  let upper = maximumCustomerRotation
+  for (let iteration = 0; iteration < 32; iteration += 1) {
+    const middle = (lower + upper) / 2
+    if (rotationCoverScale(stoneAspect, middle) <= availableCoverScale) lower = middle
+    else upper = middle
+  }
+  return Math.floor(lower * 10) / 10
+}
+
+export function constrainPhotoPlacementRotation(
+  stoneAspect: number,
+  baseZoom: number,
+  placementScale: number,
+  rotationDegrees: number
+): number {
+  const limit = getPhotoPlacementRotationLimit(stoneAspect, baseZoom, placementScale)
+  return clamp(rotationDegrees, -limit, limit)
 }
 
 /**

@@ -108,4 +108,26 @@ test.describe('custom ring render fidelity', () => {
     test.setTimeout(60_000)
     await expectRingSnapshot(page, 'fixture=placed&view=front', 'ring-photo-placed.png')
   })
+
+  for (const silhouette of ['elongated', 'pear', 'heart'] as const) {
+    test(`${silhouette} catalogue opal keeps its reviewed face inside the setting`, async ({
+      page,
+    }) => {
+      test.setTimeout(60_000)
+      await expectRingSnapshot(
+        page,
+        `fixture=${silhouette}&view=front`,
+        `ring-photo-${silhouette}.png`
+      )
+    })
+
+    test(`${silhouette} catalogue opal stays covered after customer placement`, async ({ page }) => {
+      test.setTimeout(60_000)
+      await expectRingSnapshot(
+        page,
+        `fixture=${silhouette}-placed&view=front`,
+        `ring-photo-${silhouette}-placed.png`
+      )
+    })
+  }
 })

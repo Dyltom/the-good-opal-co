@@ -23,6 +23,7 @@ import {
 import {
   computePlacedPhotoCrop,
   computePhotoTextureTransform,
+  constrainPhotoPlacementRotation,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 import {
@@ -45,10 +46,12 @@ import {
   getForgedMetalTone,
   getGrainDerivedHaloSupportOutline,
   getOpalSettleTransform,
+  getOpalSettleStartOffset,
   getPatinaGrooveProfile,
   getProfiledBezelLipRings,
   getRingFramingTarget,
   getRingShankCurve,
+  getSolderGrainTone,
   getShoulderBlendProgress,
   getRenderableOpalDepthMm,
   getStyleBeadCount,
@@ -202,13 +205,47 @@ function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
 }
 
 function SolderGrainMaterial({
+  organic,
   metal,
   roughness,
+  tone,
 }: {
+  organic: boolean
   metal: RingConfig['metal']
   roughness: number
+  tone: number
 }) {
-  return <MetalMaterial metal={metal} roughness={roughness} />
+  const solderColour: Record<RingConfig['metal'], string> = {
+    'sterling-silver': '#c7c2b8',
+    '14k-gold': '#b99342',
+    '18k-gold': '#c49a3d',
+    'white-gold': '#c7c4bb',
+    'rose-gold': '#ad7565',
+    platinum: '#cbc9c3',
+  }
+  const organicSolderColour: Record<RingConfig['metal'], string> = {
+    'sterling-silver': '#aaa69d',
+    '14k-gold': '#997a37',
+    '18k-gold': '#a98235',
+    'white-gold': '#aaa8a1',
+    'rose-gold': '#956458',
+    platinum: '#afada8',
+  }
+
+  const colour = new Color((organic ? organicSolderColour : solderColour)[metal]).multiplyScalar(
+    tone
+  )
+
+  return (
+    <meshPhysicalMaterial
+      color={colour}
+      metalness={0.91}
+      roughness={organic ? Math.max(0.64, roughness) : roughness}
+      clearcoat={0.01}
+      clearcoatRoughness={0.74}
+      envMapIntensity={organic ? 0.82 : 0.92}
+    />
+  )
 }
 
 function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
@@ -479,7 +516,13 @@ function OpalCabochon({
   useLayoutEffect(() => {
     const crop = selectedOpal?.visual.textureCrop
     if (crop) {
-      const rotation = (crop.rotation ?? 0) + config.opalRotation
+      const customerRotation = constrainPhotoPlacementRotation(
+        width / height,
+        crop.zoom,
+        config.opalScale,
+        config.opalRotation
+      )
+      const rotation = (crop.rotation ?? 0) + customerRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
       const cropRect = computePlacedPhotoCrop(
         image?.width ?? 1,
@@ -579,30 +622,35 @@ function SettlingOpalCabochon({
   config,
   dimensions,
   selectedOpal,
+  settleStartOffset,
   transitionKey,
 }: {
   animate: boolean
   config: RingConfig
   dimensions: StoneDimensions
   selectedOpal?: BuilderOpal
+  settleStartOffset: number
   transitionKey: string
 }) {
   const group = useRef<Group>(null)
-  const elapsed = useRef(animate ? 0 : Number.POSITIVE_INFINITY)
+  const elapsed = useRef(Number.POSITIVE_INFINITY)
+  const previousTransitionKey = useRef(transitionKey)
   const { invalidate } = useThree()
 
   useLayoutEffect(() => {
-    elapsed.current = animate ? 0 : Number.POSITIVE_INFINITY
-    const transform = getOpalSettleTransform(0, !animate)
+    const shouldAnimate = animate && previousTransitionKey.current !== transitionKey
+    previousTransitionKey.current = transitionKey
+    elapsed.current = shouldAnimate ? 0 : Number.POSITIVE_INFINITY
+    const transform = getOpalSettleTransform(0, settleStartOffset, !shouldAnimate)
     group.current?.position.set(0, 0, transform.offsetZ)
-    if (animate) invalidate()
-  }, [animate, invalidate, transitionKey])
+    if (shouldAnimate) invalidate()
+  }, [animate, invalidate, settleStartOffset, transitionKey])
 
   useFrame((_, delta) => {
     if (!group.current || !Number.isFinite(elapsed.current)) return
 
     elapsed.current += Math.min(delta, 0.05)
-    const transform = getOpalSettleTransform(elapsed.current)
+    const transform = getOpalSettleTransform(elapsed.current, settleStartOffset)
     group.current.position.z = transform.offsetZ
 
     if (transform.settled) elapsed.current = Number.POSITIVE_INFINITY
@@ -1238,15 +1286,29 @@ function Setting({
               // Sold Sun & Moon and Aurora rings use individually soldered beads.
               // Deterministic variation keeps the halo handmade without animating
               // or changing between renders.
+              const isOrganicGrain = profile.beadPrimitive === 'organic-granule'
+              const solderTone = getSolderGrainTone(key, isOrganicGrain)
               const lobeAngle = (((key * 17) % 31) / 31) * Math.PI * 2
-              const lobeOffset = profile.beadRadius * 0.68
+              const lobeOffset = profile.beadRadius * 0.62
               return (
                 <group
                   key={key}
-                  position={[x, y, 0.041 + heightVariation]}
+                  position={[x, y, 0.036 + heightVariation]}
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
+                  <mesh
+                    position={[0, 0, -profile.beadRadius * 0.38]}
+                    scale={[1.07, 1.07, 0.34]}
+                  >
+                    {profile.beadPrimitive === 'rounded-granule' && (
+                      <sphereGeometry args={[profile.beadRadius, 16, 10]} />
+                    )}
+                    {isOrganicGrain && (
+                      <sphereGeometry args={[profile.beadRadius, 10, 7]} />
+                    )}
+                    <SolderSupportMaterial metal={config.metal} />
+                  </mesh>
                   <mesh castShadow receiveShadow>
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
@@ -1255,11 +1317,13 @@ function Setting({
                       <sphereGeometry args={[profile.beadRadius, 12, 9]} />
                     )}
                     <SolderGrainMaterial
+                      organic={isOrganicGrain}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
+                      tone={solderTone}
                     />
                   </mesh>
-                  {profile.beadPrimitive === 'organic-granule' && (
+                  {isOrganicGrain && (
                     <mesh
                       castShadow
                       position={[
@@ -1269,10 +1333,12 @@ function Setting({
                       ]}
                       receiveShadow
                     >
-                      <sphereGeometry args={[profile.beadRadius * 0.42, 10, 8]} />
+                      <sphereGeometry args={[profile.beadRadius * 0.3, 9, 7]} />
                       <SolderGrainMaterial
+                        organic
                         metal={config.metal}
                         roughness={profile.beadRoughness}
+                        tone={solderTone}
                       />
                     </mesh>
                   )}
@@ -1288,6 +1354,7 @@ function Setting({
         config={config}
         dimensions={dimensions}
         selectedOpal={selectedOpal}
+        settleStartOffset={getOpalSettleStartOffset(depthProfile, bezelTop)}
         transitionKey={transitionKey}
       />
     </group>

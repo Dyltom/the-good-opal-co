@@ -55,7 +55,8 @@ describe('photoreal ring rendering contract', () => {
 
   test('applies customer crop placement to the photographed opal texture', () => {
     expect(sceneSource).toContain('computePlacedPhotoCrop(')
-    expect(sceneSource).toContain('const rotation = (crop.rotation ?? 0) + config.opalRotation')
+    expect(sceneSource).toContain('constrainPhotoPlacementRotation(')
+    expect(sceneSource).toContain('const rotation = (crop.rotation ?? 0) + customerRotation')
     expect(sceneSource).toContain('const [m00, m01, m02, m10, m11, m12] = transform.matrix')
     expect(sceneSource).toContain('photoTexture.matrix.set(m00, m01, m02, m10, m11, m12, 0, 0, 1)')
     expect(sceneSource).toContain('}, [sourcePhoto])')
@@ -66,6 +67,12 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).not.toContain('key={renderedOpal.id}')
     expect(sceneSource).not.toContain('group.current.scale.set(')
     expect(sceneSource).toContain('group.current.position.z = transform.offsetZ')
+    expect(sceneSource).toContain(
+      'settleStartOffset={getOpalSettleStartOffset(depthProfile, bezelTop)}'
+    )
+    expect(sceneSource).toContain(
+      'const shouldAnimate = animate && previousTransitionKey.current !== transitionKey'
+    )
     expect(sceneSource).toContain('else invalidate()')
     expect(sceneSource).toContain('animateOpalPlacement={!reduceMotion}')
   })
@@ -90,10 +97,19 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')
     expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 12, 9]} />')
-    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius * 0.42, 10, 8]} />')
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius * 0.3, 9, 7]} />')
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*<MetalMaterial metal=\{metal\} roughness=\{roughness\}/
+      /function SolderGrainMaterial[\s\S]*organicSolderColour[\s\S]*envMapIntensity=\{organic \? 0\.82 : 0\.92\}/
+    )
+    expect(sceneSource).toContain('organic ? 0.82 : 0.92')
+    expect(sceneSource).toContain('organic={isOrganicGrain}')
+    expect(sceneSource).toContain('getSolderGrainTone(key, isOrganicGrain)')
+    expect(sceneSource).not.toContain('flatShading={isOrganicGrain}')
+    expect(sceneSource).toContain('position={[0, 0, -profile.beadRadius * 0.38]}')
+    expect(sceneSource).toContain('scale={[1.07, 1.07, 0.34]}')
+    expect(sceneSource).toMatch(
+      /position=\{\[0, 0, -profile\.beadRadius \* 0\.38\]\}[\s\S]*<SolderSupportMaterial metal=\{config\.metal\}/
     )
     expect(sceneSource).not.toContain('auroraGrainColours')
     expect(sceneSource).not.toContain('flatShading\n      metalness={0.94}')

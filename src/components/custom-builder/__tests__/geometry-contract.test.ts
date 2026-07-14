@@ -11,6 +11,7 @@ import {
   getCameraPosition,
   getForgedMetalTone,
   getOpalSettleTransform,
+  getOpalSettleStartOffset,
   getPortraitFramingScale,
   getPatinaGrooveProfile,
   getRingFramingTarget,
@@ -29,7 +30,7 @@ import {
   rotateSettingVectorToWorld,
   stoneDimensions,
   opalSettleDurationSeconds,
-  opalSettleLift,
+  opalSettleClearance,
   type CabochonDepthProfile,
   type CameraVector,
 } from '../geometry'
@@ -117,25 +118,48 @@ function sampleRenderedCabochonSurfaceZ(
 
 describe('custom ring geometry contract', () => {
   test('settles a selected opal with its fitted face footprint unchanged', () => {
-    expect(getOpalSettleTransform(0)).toEqual({
-      offsetZ: opalSettleLift,
+    const startOffset = 0.081
+    expect(getOpalSettleTransform(0, startOffset)).toEqual({
+      offsetZ: startOffset,
       settled: false,
     })
 
-    const halfway = getOpalSettleTransform(opalSettleDurationSeconds / 2)
+    const halfway = getOpalSettleTransform(opalSettleDurationSeconds / 2, startOffset)
     expect(halfway.offsetZ).toBeGreaterThan(0)
-    expect(halfway.offsetZ).toBeLessThan(opalSettleLift)
-    expect(opalSettleLift * 10).toBeLessThanOrEqual(0.3)
+    expect(halfway.offsetZ).toBeLessThan(startOffset)
 
-    expect(getOpalSettleTransform(opalSettleDurationSeconds)).toEqual({
+    expect(getOpalSettleTransform(opalSettleDurationSeconds, startOffset)).toEqual({
       offsetZ: 0,
       settled: true,
     })
-    expect(getOpalSettleTransform(0, true)).toEqual({
+    expect(getOpalSettleTransform(0, startOffset, true)).toEqual({
       offsetZ: 0,
       settled: true,
     })
   })
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'starts the %s opal clear of its bezel and settles monotonically without bounce',
+    (style) => {
+      const config = applyRingStyle(defaultRingConfig, style)
+      const [width, height] = getStoneDimensions(config)
+      const depthProfile = getCabochonDepthProfile(width, height, undefined, style)
+      const bezelTop = depthProfile.girdleZ + 0.025
+      const startOffset = getOpalSettleStartOffset(depthProfile, bezelTop)
+      const bezelClearance = bezelTop - depthProfile.baseZ
+      const samples = Array.from({ length: 25 }, (_, index) =>
+        getOpalSettleTransform((index / 24) * opalSettleDurationSeconds, startOffset).offsetZ
+      )
+
+      expect(startOffset).toBeCloseTo(bezelClearance + opalSettleClearance, 12)
+      expect(startOffset).toBeGreaterThan(bezelClearance)
+      for (let index = 1; index < samples.length; index += 1) {
+        expect(samples[index]!).toBeLessThanOrEqual(samples[index - 1]!)
+        expect(samples[index]!).toBeGreaterThanOrEqual(0)
+      }
+      expect(samples.at(-1)).toBe(0)
+    }
+  )
 
   test('mounts the opal face outward and its long axis upright', () => {
     const faceNormal = rotateSettingVectorToWorld([0, 0, 1])

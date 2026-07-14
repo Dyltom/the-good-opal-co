@@ -276,8 +276,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.04,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
-    haloOffset: 0.09,
-    beadRadius: 0.043,
+    // Preserve the sold head envelope while leaving the hairline oxidized
+    // crevices visible between the smaller Sun & Moon grains.
+    haloOffset: 0.092,
+    beadRadius: 0.041,
     beadCount: 40,
     beadPitchMm: 0.84,
     beadFlattening: 0.68,
@@ -320,8 +322,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.042,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
-    haloOffset: 0.091,
-    beadRadius: 0.05,
+    // Aurora's granules are broad and handmade, but the sold ring does not use
+    // the oversized pearl-like balls produced by a full 1 mm sphere.
+    haloOffset: 0.092,
+    beadRadius: 0.049,
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.64,

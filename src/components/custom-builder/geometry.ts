@@ -20,11 +20,10 @@ export interface CabochonDepthProfile {
 // without making the bezel appear to cut materially into the opal.
 export const bezelLipCompression = 0.002
 
-export const opalSettleDurationSeconds = 0.32
-// One scene unit is 10 mm. Keep the selected stone close enough to its bezel
-// that the transition reads as the final press into the seat, not a loose gem
-// floating above the finished ring.
-export const opalSettleLift = 0.028
+export const opalSettleDurationSeconds = 0.48
+// One scene unit is 10 mm. Start two tenths of a millimetre clear of the bezel
+// crown so the selected stone travels into its seat instead of through metal.
+export const opalSettleClearance = 0.02
 
 export interface OpalSettleTransform {
   offsetZ: number
@@ -38,6 +37,7 @@ export interface OpalSettleTransform {
  */
 export function getOpalSettleTransform(
   elapsedSeconds: number,
+  startOffset: number,
   reduceMotion = false
 ): OpalSettleTransform {
   if (reduceMotion) return { offsetZ: 0, settled: true }
@@ -49,9 +49,16 @@ export function getOpalSettleTransform(
   const eased = 1 - Math.pow(1 - progress, 5)
 
   return {
-    offsetZ: opalSettleLift * (1 - eased),
+    offsetZ: Math.max(0, startOffset) * (1 - eased),
     settled: progress >= 1,
   }
+}
+
+export function getOpalSettleStartOffset(
+  depthProfile: CabochonDepthProfile,
+  bezelTop: number
+): number {
+  return Math.max(0, bezelTop - depthProfile.baseZ) + opalSettleClearance
 }
 
 export interface RingMeasurements {
@@ -864,6 +871,11 @@ export function getForgedMetalTone(
     Math.sin(along * Math.PI * 10 + 0.35) * 0.02 +
     Math.sin(around * Math.PI * 6 + along * Math.PI * 2 - 0.4) * 0.01
   )
+}
+
+/** Tarnish variation observed across individually soldered halo grains. */
+export function getSolderGrainTone(key: number, organic: boolean): number {
+  return organic ? 0.82 + ((key * 11) % 7) * 0.045 : 0.92 + ((key * 7) % 5) * 0.03
 }
 
 export function cssSilhouetteClipPath(
