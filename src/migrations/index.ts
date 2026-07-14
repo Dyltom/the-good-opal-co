@@ -42,6 +42,7 @@ import * as migration_20260714_224500_ring_design_references from './20260714_22
 import * as migration_20260714_231500_ring_design_instagram_provenance from './20260714_231500_ring_design_instagram_provenance'
 import * as migration_20260715_010500_instagram_reference_route_audit from './20260715_010500_instagram_reference_route_audit'
 import * as migration_20260715_034500_ring_reference_checks from './20260715_034500_ring_reference_checks'
+import * as migration_20260715_042500_instagram_content_review from './20260715_042500_instagram_content_review'
 
 export const migrations = [
   {
@@ -263,5 +264,10 @@ export const migrations = [
     up: migration_20260715_034500_ring_reference_checks.up,
     down: migration_20260715_034500_ring_reference_checks.down,
     name: '20260715_034500_ring_reference_checks',
+  },
+  {
+    up: migration_20260715_042500_instagram_content_review.up,
+    down: migration_20260715_042500_instagram_content_review.down,
+    name: '20260715_042500_instagram_content_review',
   },
 ]
