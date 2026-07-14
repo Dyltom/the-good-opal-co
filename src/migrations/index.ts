@@ -32,6 +32,7 @@ import * as migration_20260713_180000_builder_photo_analysis from './20260713_18
 import * as migration_20260714_090000_preserve_reviewed_builder_mappings from './20260714_090000_preserve_reviewed_builder_mappings'
 import * as migration_20260714_093000_audited_opal_photo_mapping from './20260714_093000_audited_opal_photo_mapping'
 import * as migration_20260714_100000_correct_170_opal_crop from './20260714_100000_correct_170_opal_crop'
+import * as migration_20260714_101000_correct_230_opal_crop from './20260714_101000_correct_230_opal_crop'
 
 export const migrations = [
   {
@@ -203,5 +204,10 @@ export const migrations = [
     up: migration_20260714_100000_correct_170_opal_crop.up,
     down: migration_20260714_100000_correct_170_opal_crop.down,
     name: '20260714_100000_correct_170_opal_crop',
+  },
+  {
+    up: migration_20260714_101000_correct_230_opal_crop.up,
+    down: migration_20260714_101000_correct_230_opal_crop.down,
+    name: '20260714_101000_correct_230_opal_crop',
   },
 ]

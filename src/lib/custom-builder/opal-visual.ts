@@ -217,7 +217,7 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 1.2,
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
-    textureCrop: { focalX: 0.372, focalY: 0.506, zoom: 6.12 },
+    textureCrop: { focalX: 0.43, focalY: 0.43, zoom: 4.6 },
     photoFit: 'estimated',
   },
   'lightning-ridge-white-opal-1-70-cts-2': {

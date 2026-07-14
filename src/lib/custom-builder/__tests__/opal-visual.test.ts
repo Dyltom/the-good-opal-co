@@ -198,7 +198,7 @@ describe('custom builder opal visual profiles', () => {
     )
 
     expect(profile.visual.photoFit).toBe('estimated')
-    expect(profile.visual.textureCrop).toEqual({ focalX: 0.372, focalY: 0.506, zoom: 6.12 })
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.43, focalY: 0.43, zoom: 4.6 })
   })
 
   test('keeps the photographed hand outside the reviewed 1.70 ct pear face', () => {
