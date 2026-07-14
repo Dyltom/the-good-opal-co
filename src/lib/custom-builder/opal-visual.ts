@@ -90,7 +90,7 @@ const reviewedProfiles: Record<
     aspectRatio: 1.3,
     evidence: 'catalogue',
     recommendedStyle: 'coral',
-    textureCrop: { focalX: 0.504, focalY: 0.487, zoom: 4.81 },
+    textureCrop: { focalX: 0.524, focalY: 0.519, zoom: 6.3 },
     bodyColour: '#a8c4b8',
     dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
     photoFit: 'reviewed',

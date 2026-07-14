@@ -339,6 +339,7 @@ describe('custom builder opal visual profiles', () => {
       aspectRatio: 1.3,
       recommendedStyle: 'coral',
       dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
+      textureCrop: { focalX: 0.524, focalY: 0.519, zoom: 6.3 },
     })
   })
 

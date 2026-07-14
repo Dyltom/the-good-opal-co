@@ -35,6 +35,12 @@ describe('custom builder photo crops', () => {
       stoneAspect: 1 / 2.25,
     },
     {
+      focus: { focalX: 0.524, focalY: 0.519, zoom: 6.3 },
+      image: [1920, 1865],
+      safe: { bottom: 0.63, left: 0.44, right: 0.61, top: 0.41 },
+      stoneAspect: 5 / 6.5,
+    },
+    {
       focus: { focalX: 0.45, focalY: 0.52, zoom: 8 },
       image: [990, 1123],
       safe: { bottom: 0.63, left: 0.32, right: 0.55, top: 0.35 },
