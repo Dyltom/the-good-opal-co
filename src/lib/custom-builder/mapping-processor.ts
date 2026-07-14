@@ -439,6 +439,10 @@ export async function processBuilderMappings(
         channels: raster.info.channels,
         data: raster.data,
         height: raster.info.height,
+        ...(typeof product.builderSilhouette === 'string' &&
+        opalShapeHints.has(product.builderSilhouette as OpalShapeHint)
+          ? { shapeHint: product.builderSilhouette as OpalShapeHint }
+          : {}),
         ...(protectsActiveMapping ? reviewedAnalysisHints(product) : {}),
         stoneAspect: stoneAspect(product),
         width: raster.info.width,

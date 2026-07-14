@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { BUILDER_PHOTO_ANALYSIS_VERSION } from '@/lib/custom-builder/mapping-lifecycle'
 
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
@@ -30,7 +31,7 @@ const product = {
   builderMappedImageIndex: 0,
   builderContourCandidate: contour,
   builderMappingAnalyzedImageHash: 'a'.repeat(64),
-  builderPhotoAnalysisVersion: 3,
+  builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
   builderPhotoAnalysisConfidence: 0.81,
   builderPhotoCandidateFocalX: 0.42,
   builderPhotoCandidateFocalY: 0.57,
@@ -138,7 +139,7 @@ describe('adopt builder candidate admin route', () => {
     })
     expect(result.candidate).toMatchObject({
       adoptable: true,
-      analysisVersion: 3,
+      analysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
       confidence: 0.81,
       contour,
       crop: { focalX: 0.42, focalY: 0.57, rotation: -12, zoom: 3.4 },
@@ -295,7 +296,10 @@ describe('adopt builder candidate admin route', () => {
   })
 
   test('rejects a candidate produced by an older analysis version', async () => {
-    mocks.findByID.mockResolvedValue({ ...product, builderPhotoAnalysisVersion: 2 })
+    mocks.findByID.mockResolvedValue({
+      ...product,
+      builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION - 1,
+    })
 
     const response = await POST(request(), { params: Promise.resolve({ id: '42' }) })
 

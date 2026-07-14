@@ -6,7 +6,7 @@ import {
   type BuilderStoneContourV1,
 } from './stone-contour'
 
-export const OPAL_PHOTO_ANALYSIS_VERSION = 3
+export const OPAL_PHOTO_ANALYSIS_VERSION = 4
 
 export type OpalShapeHint = 'cushion' | 'elongated' | 'heart' | 'oval' | 'pear' | 'round'
 
@@ -416,6 +416,53 @@ function normalizeHalfTurn(degrees: number): number {
   return normalized
 }
 
+function normalizeFullTurn(degrees: number): number {
+  let normalized = degrees
+  while (normalized > 180) normalized -= 360
+  while (normalized <= -180) normalized += 360
+  return normalized
+}
+
+function halfTurnContour(contour: BuilderStoneContourV1): BuilderStoneContourV1 {
+  const half = contour.radii.length / 2
+  return {
+    version: BUILDER_STONE_CONTOUR_VERSION,
+    radii: contour.radii.map((_, index) => contour.radii[(index + half) % contour.radii.length]!),
+  }
+}
+
+function contourDifference(left: BuilderStoneContourV1, right: BuilderStoneContourV1): number {
+  return (
+    left.radii.reduce((total, radius, index) => total + Math.abs(radius - right.radii[index]!), 0) /
+    left.radii.length
+  )
+}
+
+/**
+ * PCA resolves a long axis but cannot distinguish its two directions. Hearts
+ * and pears have semantic polarity, so compare the traced boundary with the
+ * named-shape template and rotate both contour and source photo by 180° when
+ * the opposite direction is materially closer. Ambiguous outlines stay as
+ * photographed for review instead of receiving a speculative flip.
+ */
+function resolveSemanticHalfTurn(
+  contour: BuilderStoneContourV1,
+  shapeHint: OpalShapeHint | undefined
+): { contour: BuilderStoneContourV1; rotationOffset: 0 | 180 } {
+  if (shapeHint !== 'heart' && shapeHint !== 'pear') {
+    return { contour, rotationOffset: 0 }
+  }
+  const canonical = canonicalShapeContour(shapeHint)
+  if (!canonical) return { contour, rotationOffset: 0 }
+
+  const flipped = halfTurnContour(contour)
+  const uprightDifference = contourDifference(contour, canonical)
+  const flippedDifference = contourDifference(flipped, canonical)
+  return flippedDifference + 0.015 < uprightDifference
+    ? { contour: flipped, rotationOffset: 180 }
+    : { contour, rotationOffset: 0 }
+}
+
 /**
  * Estimates one conservative crop from border contrast without image codecs or
  * network access. The result is deterministic for identical raster bytes.
@@ -499,10 +546,10 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
   // auto-rotate when measured dimensions establish a clear long axis.
   const hasUnambiguousLongAxis =
     measuredStoneAspect === undefined || measuredStoneAspect < 0.8 || measuredStoneAspect > 1.25
-  const rotation =
-    hasUnambiguousLongAxis && Math.abs(measuredRotation) >= 60 ? measuredRotation : 0
-  const contour = extractContour(component, input.width, input.height, rotation)
-  if (!contour) return undefined
+  const rotation = hasUnambiguousLongAxis && Math.abs(measuredRotation) >= 60 ? measuredRotation : 0
+  const extractedContour = extractContour(component, input.width, input.height, rotation)
+  if (!extractedContour) return undefined
+  const orientedContour = resolveSemanticHalfTurn(extractedContour.contour, input.shapeHint)
 
   const objectWidth = component.maximumX - component.minimumX + 1
   const objectHeight = component.maximumY - component.minimumY + 1
@@ -540,19 +587,19 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
       areaStrength * 0.2 +
       centrality * 0.15 +
       clamp(solidity, 0, 1) * 0.1 +
-      contour.angularCoverage * 0.15 +
-      contour.smoothness * 0.1,
+      extractedContour.angularCoverage * 0.15 +
+      extractedContour.smoothness * 0.1,
     0,
     1
   )
 
   if (confidence < 0.35) return undefined
   return {
-    contour: contour.contour,
+    contour: orientedContour.contour,
     focalX: clamp((component.minimumX + component.maximumX + 1) / 2 / input.width, 0, 1),
     focalY: clamp((component.minimumY + component.maximumY + 1) / 2 / input.height, 0, 1),
     zoom,
-    rotation: clamp(rotation, -90, 90),
+    rotation: normalizeFullTurn(rotation + orientedContour.rotationOffset),
     confidence,
   }
 }

@@ -89,6 +89,7 @@ describe('builder mapping processor', () => {
           builderMappedImageIndex: 1,
           builderMappingMode: 'inferred',
           builderMappingStatus: 'pending',
+          builderSilhouette: 'elongated',
           dimensions: { length: 9, width: 6 },
           name: 'Lightning Ridge black opal',
           images: [
@@ -148,6 +149,7 @@ describe('builder mapping processor', () => {
       channels: 3,
       data: Buffer.from([5, 10, 15, 20, 25, 30]),
       height: 1,
+      shapeHint: 'elongated',
       stoneAspect: 6 / 9,
       width: 2,
     })

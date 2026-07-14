@@ -41,6 +41,42 @@ function ellipseRaster({
   return { channels, data, height, width }
 }
 
+function asymmetricShapeRaster({
+  shape,
+  upsideDown,
+}: {
+  shape: 'heart' | 'pear'
+  upsideDown: boolean
+}) {
+  const width = 180
+  const height = 180
+  const channels = 3 as const
+  const data = new Uint8ClampedArray(width * height * channels)
+  const background = [238, 234, 226] as const
+  const stone = [22, 83, 96] as const
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const normalizedX = (x + 0.5 - width / 2) / 54
+      const modelY = (height / 2 - y - 0.5) / 58
+      const normalizedY = upsideDown ? -modelY : modelY
+      const inside =
+        shape === 'heart'
+          ? (normalizedX ** 2 + normalizedY ** 2 - 1) ** 3 - normalizedX ** 2 * normalizedY ** 3 <=
+            0
+          : Math.abs(normalizedX) <=
+            Math.sqrt(Math.max(0, 1 - normalizedY ** 2)) * (0.72 + normalizedY * 0.25)
+      const colour = inside ? stone : background
+      const offset = (y * width + x) * channels
+      data[offset] = colour[0]
+      data[offset + 1] = colour[1]
+      data[offset + 2] = colour[2]
+    }
+  }
+
+  return { channels, data, height, width }
+}
+
 describe('opal photo crop analysis', () => {
   test('finds a centred vertical stone against its border colour', () => {
     const analysis = analyzeOpalRaster({
@@ -55,7 +91,7 @@ describe('opal photo crop analysis', () => {
       stoneAspect: 24 / 44,
     })
 
-    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(3)
+    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(4)
     expect(analysis).toBeDefined()
     expect(parseBuilderStoneContour(analysis?.contour)?.radii).toHaveLength(
       BUILDER_STONE_CONTOUR_SAMPLE_COUNT
@@ -124,6 +160,28 @@ describe('opal photo crop analysis', () => {
     expect(analysis).toBeDefined()
     expect(analysis?.rotation).toBe(0)
   })
+
+  test.each(['heart', 'pear'] as const)(
+    'uses the %s silhouette to resolve an upside-down source photo',
+    (shape) => {
+      const upright = analyzeOpalRaster({
+        ...asymmetricShapeRaster({ shape, upsideDown: false }),
+        shapeHint: shape,
+        stoneAspect: shape === 'heart' ? 0.96 : 0.72,
+      })
+      const upsideDown = analyzeOpalRaster({
+        ...asymmetricShapeRaster({ shape, upsideDown: true }),
+        shapeHint: shape,
+        stoneAspect: shape === 'heart' ? 0.96 : 0.72,
+      })
+
+      expect(upright).toBeDefined()
+      expect(upsideDown).toBeDefined()
+      expect(upright?.rotation).toBe(0)
+      expect(Math.abs(upsideDown?.rotation ?? 0)).toBe(180)
+      expect(upsideDown?.contour.radii).toEqual(upright?.contour.radii)
+    }
+  )
 
   test('prefers the substantial component near centre over a corner distraction', () => {
     const raster = ellipseRaster({
