@@ -685,4 +685,125 @@ describe('WordPress product image script', () => {
       })
     )
   })
+
+  it('does not publish staged stock from the unauthenticated gallery availability flag', async () => {
+    const find = vi.fn(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'products'
+          ? [{ id: 44, images: [], status: 'draft', stock: 0 }]
+          : [],
+    }))
+    const create = vi.fn().mockResolvedValue({ id: 211 })
+    const update = vi.fn().mockResolvedValue({ id: 44 })
+    vi.mocked(getPayload).mockResolvedValue({
+      create,
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'New opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'New opal',
+            mimeType: 'image/jpeg',
+            sourceUrl: 'https://goodopalco.com/wp-content/uploads/2021/09/new-opal.jpg',
+            title: 'New opal',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockResolvedValue({
+      name: 'wp-5350-new-opal.jpg',
+      data: Buffer.from([3]),
+      mimetype: 'image/jpeg',
+      size: 1,
+    })
+
+    await expect(importProductImages(true)).resolves.toMatchObject({ published: 0 })
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'products',
+        data: { images: [{ image: 211 }] },
+        id: 44,
+      })
+    )
+  })
+
+  it('recovers a staged product using exact authenticated stock on a later cron run', async () => {
+    const find = vi.fn(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'products'
+          ? [{ id: 44, images: [], status: 'draft', stock: 0 }]
+          : [],
+    }))
+    const create = vi.fn().mockResolvedValue({ id: 211 })
+    const update = vi.fn().mockResolvedValue({ id: 44 })
+    vi.mocked(getPayload).mockResolvedValue({
+      create,
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'New opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'New opal',
+            mimeType: 'image/jpeg',
+            sourceUrl: 'https://goodopalco.com/wp-content/uploads/2021/09/new-opal.jpg',
+            title: 'New opal',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockResolvedValue({
+      name: 'wp-5350-new-opal.jpg',
+      data: Buffer.from([3]),
+      mimetype: 'image/jpeg',
+      size: 1,
+    })
+
+    await expect(
+      importProductImages(true, { publishStockByWooId: { 4481: 7 } })
+    ).resolves.toMatchObject({ published: 1 })
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'products',
+        data: { images: [{ image: 211 }], status: 'published', stock: 7 },
+        id: 44,
+      })
+    )
+  })
+
+  it('refuses an explicit publish without exact authenticated stock', async () => {
+    const update = vi.fn()
+    vi.mocked(getPayload).mockResolvedValue({
+      create: vi.fn(),
+      find: vi.fn(),
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'New opal',
+        media: [],
+      },
+    ])
+
+    await expect(
+      importProductImages(true, { publishWooIds: [4481] })
+    ).rejects.toThrow('without exact authenticated stock')
+    expect(update).not.toHaveBeenCalled()
+  })
 })

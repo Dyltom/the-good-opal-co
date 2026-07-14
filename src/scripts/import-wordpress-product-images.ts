@@ -216,6 +216,14 @@ export async function importProductImages(
     }
   }
   const publishWooIds = new Set(options.publishWooIds ?? [])
+  for (const wooId of publishWooIds) {
+    const stock = options.publishStockByWooId?.[wooId]
+    if (!Number.isSafeInteger(stock) || (stock ?? -1) < 0) {
+      throw new Error(
+        `Refusing to publish WooCommerce product ${wooId} without exact authenticated stock`
+      )
+    }
+  }
   let missing = 0
   let changed = 0
   let published = 0
@@ -252,12 +260,14 @@ export async function importProductImages(
     const shouldQuarantine =
       source.media.length === 0 &&
       (!alreadyCurrent || product.status !== 'draft' || (product.stock ?? 0) !== 0)
+    const publishStock = options.publishStockByWooId?.[source.productId]
+    const hasExactPublishStock =
+      Number.isSafeInteger(publishStock) && (publishStock ?? -1) >= 0
     const shouldPublish =
       source.media.length > 0 &&
+      hasExactPublishStock &&
       (publishWooIds.has(source.productId) ||
         (product.status === 'draft' && (product.images?.length ?? 0) === 0))
-    const publishStock =
-      options.publishStockByWooId?.[source.productId] ?? (source.inStock ? 1 : 0)
     if (!apply) {
       if (alreadyCurrent && !shouldQuarantine && !shouldPublish) continue
       changed += 1
@@ -312,7 +322,7 @@ export async function importProductImages(
           data: {
             ...(!galleryCurrent ? { images: mediaIds.map((image) => ({ image })) } : {}),
             ...(shouldPublish
-              ? { status: 'published' as const, stock: publishStock }
+              ? { status: 'published' as const, stock: publishStock! }
               : {}),
             ...(builderMappingSourceChanged
               ? {
