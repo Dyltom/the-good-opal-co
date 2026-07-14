@@ -26,6 +26,7 @@ import { InventoryReservations } from './payload/collections/InventoryReservatio
 import { CustomQuotes } from './payload/collections/CustomQuotes.ts'
 import { CustomQuoteEvents } from './payload/collections/CustomQuoteEvents.ts'
 import { RingDesigns } from './payload/collections/RingDesigns.ts'
+import { RingReferenceChecks } from './payload/collections/RingReferenceChecks.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -146,6 +147,7 @@ export default buildConfig({
     CustomQuotes,
     CustomQuoteEvents,
     RingDesigns,
+    RingReferenceChecks,
   ],
   editor: lexicalEditor({}),
   email: resendAdapter({

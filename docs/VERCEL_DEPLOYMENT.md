@@ -46,6 +46,7 @@ Optional:
 
 ```text
 NEXT_PUBLIC_GA_MEASUREMENT_ID
+RING_REFERENCE_AUDIT_ENABLED
 ```
 
 `NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate separate `PAYLOAD_SECRET`, `QUOTE_LINK_SECRET`, and `CRON_SECRET` values from at least 32 random bytes each; never reuse them. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret.
@@ -106,6 +107,13 @@ stock is the lower of Payload's local quantity and WooCommerce's authenticated
 quantity. Intentional replenishment must be entered in Payload. Disable and remove
 the sync flag and credentials once Payload becomes the only product-management
 backend.
+
+After the `ring-reference-checks` migration has deployed, set
+`RING_REFERENCE_AUDIT_ENABLED=true` to record one append-only route-health check per
+Instagram design reference each UTC day. The job requests only canonical post/reel
+routes, follows no redirects, stores no response body, and never treats route
+availability as proof that the post content matches the ring. Keep design records in
+draft until calibrated captures, physical measurements, and maker approval exist.
 
 To reconcile source and target counts without changing data, temporarily set the
 same Woo credentials plus `WOO_IMPORT_DRY_RUN_ON_DEPLOY=true` for one Production

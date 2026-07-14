@@ -83,6 +83,7 @@ export interface Config {
     'custom-quotes': CustomQuote;
     'custom-quote-events': CustomQuoteEvent;
     'ring-designs': RingDesign;
+    'ring-reference-checks': RingReferenceCheck;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -106,6 +107,7 @@ export interface Config {
     'custom-quotes': CustomQuotesSelect<false> | CustomQuotesSelect<true>;
     'custom-quote-events': CustomQuoteEventsSelect<false> | CustomQuoteEventsSelect<true>;
     'ring-designs': RingDesignsSelect<false> | RingDesignsSelect<true>;
+    'ring-reference-checks': RingReferenceChecksSelect<false> | RingReferenceChecksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1143,7 +1145,7 @@ export interface RingDesign {
   style: 'gemini' | 'coral' | 'sun-moon' | 'aurora';
   status: 'draft' | 'published' | 'archived';
   /**
-   * Versioned source records: assetPath, sourceType, view, productSlug/sourceUrl, observedAt, and notes.
+   * Versioned source records: assetPath, sourceType, view, productSlug/sourceUrl, publication observation, verification level/date, account handle, and notes.
    */
   sourceReferences:
     | {
@@ -1187,6 +1189,28 @@ export interface RingDesign {
    * Name the physical master, remaining tolerances, and who approved it.
    */
   approvalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Append-only Instagram reference availability evidence for ring designs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ring-reference-checks".
+ */
+export interface RingReferenceCheck {
+  id: number;
+  checkKey: string;
+  ringDesign?: (number | null) | RingDesign;
+  candidateKey?: string | null;
+  sourceUrl: string;
+  accountHandle: string;
+  shortcode: string;
+  checkedAt: string;
+  outcome: 'available' | 'redirected' | 'not-found' | 'rate-limited' | 'blocked' | 'error';
+  httpStatus?: number | null;
+  resolvedUrl?: string | null;
+  durationMs?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1277,6 +1301,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ring-designs';
         value: number | RingDesign;
+      } | null)
+    | ({
+        relationTo: 'ring-reference-checks';
+        value: number | RingReferenceCheck;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1898,6 +1926,25 @@ export interface RingDesignsSelect<T extends boolean = true> {
   makerApproved?: T;
   approvedAt?: T;
   approvalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ring-reference-checks_select".
+ */
+export interface RingReferenceChecksSelect<T extends boolean = true> {
+  checkKey?: T;
+  ringDesign?: T;
+  candidateKey?: T;
+  sourceUrl?: T;
+  accountHandle?: T;
+  shortcode?: T;
+  checkedAt?: T;
+  outcome?: T;
+  httpStatus?: T;
+  resolvedUrl?: T;
+  durationMs?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -34,6 +34,7 @@ Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
 - [ ] No stale item is accidentally published from legacy seed data.
 - [ ] Remove one-shot `WOO_IMPORT_*` and `WORDPRESS_PRODUCT_IMAGES_ON_DEPLOY` variables after a verified import deployment.
 - [ ] `/api/cron/builder-mappings` runs with `CRON_SECRET`; new/changed individual opals receive a pending crop proposal, low-confidence images stay unapproved, and manual mappings remain unchanged.
+- [ ] `/api/cron/ring-reference-audit` runs with `CRON_SECRET`; one daily append-only check exists per governed Instagram route and route availability is not presented as model approval.
 
 ## Revenue flows
 
