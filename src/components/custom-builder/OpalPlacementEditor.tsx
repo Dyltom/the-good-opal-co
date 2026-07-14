@@ -333,7 +333,7 @@ export function OpalPlacementEditor({
               onLostPointerCapture={stopDrag}
               onKeyDown={nudge}
               className={cn(
-                'relative mx-auto w-[58%] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light sm:w-[52%]',
+                'group relative mx-auto w-[58%] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[52%]',
                 isDragging ? 'cursor-grabbing' : canPan ? 'cursor-grab' : 'cursor-default'
               )}
               style={{
@@ -349,7 +349,7 @@ export function OpalPlacementEditor({
               />
               <div
                 className={cn(
-                  'absolute inset-0 z-10 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)]',
+                  'absolute inset-0 z-10 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)] group-focus-visible:drop-shadow-[0_0_5px_rgb(129_221_231/0.95)]',
                   bezelPadding,
                   silhouetteClass(opal.visual.silhouette)
                 )}
