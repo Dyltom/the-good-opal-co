@@ -61,6 +61,17 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('}, [sourcePhoto])')
   })
 
+  test('settles opals without remounting or changing their measured depth', () => {
+    expect(sceneSource).toContain('transitionKey={renderedOpal.id}')
+    expect(sceneSource).not.toContain('key={renderedOpal.id}')
+    expect(sceneSource).toContain(
+      'group.current.scale.set(transform.scaleXY, transform.scaleXY, 1)'
+    )
+    expect(sceneSource).toContain('group.current.position.z = transform.offsetZ')
+    expect(sceneSource).toContain('else invalidate()')
+    expect(sceneSource).toContain('animateOpalPlacement={!reduceMotion}')
+  })
+
   test('keeps the physical opal independent from collection-edge variation', () => {
     expect(sceneSource).toContain(
       'const [x, y] = outlinePoint(shape, angle, width, height, 0, contour)'

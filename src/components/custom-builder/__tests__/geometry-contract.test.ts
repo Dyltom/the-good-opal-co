@@ -10,6 +10,7 @@ import {
   getCabochonDepthProfile,
   getCameraPosition,
   getForgedMetalTone,
+  getOpalSettleTransform,
   getPortraitFramingScale,
   getPatinaGrooveProfile,
   getRingFramingTarget,
@@ -27,6 +28,9 @@ import {
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
   stoneDimensions,
+  opalSettleDurationSeconds,
+  opalSettleLift,
+  opalSettleStartScale,
   type CabochonDepthProfile,
   type CameraVector,
 } from '../geometry'
@@ -113,6 +117,31 @@ function sampleRenderedCabochonSurfaceZ(
 }
 
 describe('custom ring geometry contract', () => {
+  test('settles a selected opal without scaling its measured depth axis', () => {
+    expect(getOpalSettleTransform(0)).toEqual({
+      offsetZ: opalSettleLift,
+      scaleXY: opalSettleStartScale,
+      settled: false,
+    })
+
+    const halfway = getOpalSettleTransform(opalSettleDurationSeconds / 2)
+    expect(halfway.offsetZ).toBeGreaterThan(0)
+    expect(halfway.offsetZ).toBeLessThan(opalSettleLift)
+    expect(halfway.scaleXY).toBeGreaterThan(opalSettleStartScale)
+    expect(halfway.scaleXY).toBeLessThan(1)
+
+    expect(getOpalSettleTransform(opalSettleDurationSeconds)).toEqual({
+      offsetZ: 0,
+      scaleXY: 1,
+      settled: true,
+    })
+    expect(getOpalSettleTransform(0, true)).toEqual({
+      offsetZ: 0,
+      scaleXY: 1,
+      settled: true,
+    })
+  })
+
   test('mounts the opal face outward and its long axis upright', () => {
     const faceNormal = rotateSettingVectorToWorld([0, 0, 1])
     const longStoneAxis = rotateSettingVectorToWorld([0, 1, 0])

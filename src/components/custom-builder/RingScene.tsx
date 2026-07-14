@@ -17,6 +17,7 @@ import {
   PCFShadowMap,
   RepeatWrapping,
   SRGBColorSpace,
+  type Group,
   Vector3,
 } from 'three'
 import {
@@ -43,6 +44,7 @@ import {
   getDShankCrossSection,
   getForgedMetalTone,
   getGrainDerivedHaloSupportOutline,
+  getOpalSettleTransform,
   getPatinaGrooveProfile,
   getProfiledBezelLipRings,
   getRingFramingTarget,
@@ -69,6 +71,7 @@ interface RingSceneProps {
   allowMotion: boolean
   onContextLost: () => void
   onRenderReady?: () => void
+  reduceMotion?: boolean
   selectedOpal?: BuilderOpal
   view: RingView
 }
@@ -564,6 +567,50 @@ function OpalCabochon({
   )
 }
 
+function SettlingOpalCabochon({
+  animate,
+  config,
+  dimensions,
+  selectedOpal,
+  transitionKey,
+}: {
+  animate: boolean
+  config: RingConfig
+  dimensions: StoneDimensions
+  selectedOpal?: BuilderOpal
+  transitionKey: string
+}) {
+  const group = useRef<Group>(null)
+  const elapsed = useRef(animate ? 0 : Number.POSITIVE_INFINITY)
+  const { invalidate } = useThree()
+
+  useLayoutEffect(() => {
+    elapsed.current = animate ? 0 : Number.POSITIVE_INFINITY
+    const transform = getOpalSettleTransform(0, !animate)
+    group.current?.position.set(0, 0, transform.offsetZ)
+    group.current?.scale.set(transform.scaleXY, transform.scaleXY, 1)
+    if (animate) invalidate()
+  }, [animate, invalidate, transitionKey])
+
+  useFrame((_, delta) => {
+    if (!group.current || !Number.isFinite(elapsed.current)) return
+
+    elapsed.current += Math.min(delta, 0.05)
+    const transform = getOpalSettleTransform(elapsed.current)
+    group.current.position.z = transform.offsetZ
+    group.current.scale.set(transform.scaleXY, transform.scaleXY, 1)
+
+    if (transform.settled) elapsed.current = Number.POSITIVE_INFINITY
+    else invalidate()
+  })
+
+  return (
+    <group ref={group}>
+      <OpalCabochon config={config} dimensions={dimensions} selectedOpal={selectedOpal} />
+    </group>
+  )
+}
+
 function createBezelWallGeometry(
   style: RingConfig['style'],
   shape: RingConfig['shape'],
@@ -1045,7 +1092,17 @@ function HaloSupport({
   )
 }
 
-function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
+function Setting({
+  animateOpalPlacement,
+  config,
+  selectedOpal,
+  transitionKey,
+}: {
+  animateOpalPlacement: boolean
+  config: RingConfig
+  selectedOpal?: BuilderOpal
+  transitionKey: string
+}) {
   const dimensions = getStoneDimensions(config, selectedOpal)
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
@@ -1221,7 +1278,13 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         </>
       )}
 
-      <OpalCabochon config={config} dimensions={dimensions} selectedOpal={selectedOpal} />
+      <SettlingOpalCabochon
+        animate={animateOpalPlacement}
+        config={config}
+        dimensions={dimensions}
+        selectedOpal={selectedOpal}
+        transitionKey={transitionKey}
+      />
     </group>
   )
 }
@@ -1377,7 +1440,17 @@ function RingShank({
   )
 }
 
-function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
+function RingModel({
+  animateOpalPlacement,
+  config,
+  selectedOpal,
+  transitionKey,
+}: {
+  animateOpalPlacement: boolean
+  config: RingConfig
+  selectedOpal?: BuilderOpal
+  transitionKey: string
+}) {
   const metal = config.metal
   const styleProfile = ringStyleGeometryProfiles[config.style]
   const {
@@ -1419,7 +1492,12 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
       />
 
       <group position={[0, settingY, 0]} rotation={[settingRotationX, 0, 0]}>
-        <Setting config={config} selectedOpal={selectedOpal} />
+        <Setting
+          animateOpalPlacement={animateOpalPlacement}
+          config={config}
+          selectedOpal={selectedOpal}
+          transitionKey={transitionKey}
+        />
       </group>
     </group>
   )
@@ -1430,6 +1508,7 @@ export function RingScene({
   allowMotion,
   onContextLost,
   onRenderReady,
+  reduceMotion = false,
   selectedOpal,
   view,
 }: RingSceneProps) {
@@ -1479,7 +1558,12 @@ export function RingScene({
       <CameraPreset target={framingTarget} view={view} />
       {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}
 
-      <RingModel config={config} selectedOpal={renderedOpal} />
+      <RingModel
+        animateOpalPlacement={!reduceMotion}
+        config={config}
+        selectedOpal={renderedOpal}
+        transitionKey={renderedOpal.id}
+      />
 
       <Environment resolution={256}>
         <Lightformer

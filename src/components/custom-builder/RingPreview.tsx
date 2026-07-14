@@ -56,6 +56,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
           selectedOpal={selectedOpal}
           allowMotion={motionEnabled}
           onContextLost={() => setWebGlAvailable(false)}
+          reduceMotion={prefersReducedMotion}
           view={view}
         />
       ) : (
