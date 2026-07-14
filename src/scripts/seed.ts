@@ -2,6 +2,7 @@ import { access } from 'node:fs/promises'
 import path from 'node:path'
 import { getPayload } from '@/lib/payload'
 import { PRODUCTS, type Product as FallbackProduct } from '@/data/products'
+import { syntheticBuilderMappingForSeed } from './seed-product'
 
 type ProductCategory =
   | 'opal-rings'
@@ -128,8 +129,11 @@ async function seed() {
     }
     const category = categoryFor(product)
     const testStock = publish && product.available ? 1 : 0
-    const trustedBuilderMapping =
-      category === 'raw-opals' ? { builderMappingStatus: 'reviewed' as const } : {}
+    const trustedBuilderMapping = syntheticBuilderMappingForSeed(
+      product.name,
+      category,
+      useSyntheticTestStock
+    )
     await payload.create({
       collection: 'products',
       data: {
