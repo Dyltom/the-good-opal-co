@@ -45,7 +45,7 @@ describe('ring design reference governance', () => {
     ).toBe('A maker must approve this design before it can be published')
   })
 
-  test('rejects product photography presented as calibrated model evidence', () => {
+  test('does not count supporting product photography as calibrated model evidence', () => {
     expect(
       validateRingDesignReference({
         approvalNotes: 'Checked against the physical master ring.',
@@ -58,7 +58,34 @@ describe('ring design reference governance', () => {
         ),
         status: 'published',
       })
-    ).toBe('Published designs may only claim fidelity from calibrated reference captures')
+    ).toBe('Published designs require calibrated top reference views')
+  })
+
+  test('preserves Instagram and product provenance beside complete calibrated evidence', () => {
+    expect(
+      validateRingDesignReference({
+        approvalNotes: 'Checked against the physical master ring.',
+        approvedAt: '2026-07-14T00:00:00.000Z',
+        makerApproved: true,
+        measurements: completeMeasurements,
+        modelDefinition: { source: 'hybrid', version: 'gemini-v2' },
+        sourceReferences: [
+          ...completeReferences,
+          {
+            assetPath: '/images/products/20210819_101941.jpg',
+            sourceType: 'product-gallery',
+            view: 'three-quarter',
+          },
+          {
+            assetPath: 'instagram://thegoodopalco/p/CXdU2-NPh8e',
+            sourceType: 'instagram',
+            sourceUrl: 'https://www.instagram.com/thegoodopalco/p/CXdU2-NPh8e/',
+            view: 'top',
+          },
+        ],
+        status: 'published',
+      })
+    ).toBe(true)
   })
 
   test('accepts a measured, versioned, fully photographed maker-approved design', () => {

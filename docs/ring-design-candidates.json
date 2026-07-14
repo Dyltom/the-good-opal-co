@@ -9,6 +9,11 @@
       "sourceType": "instagram",
       "sourceUrl": "https://www.instagram.com/thegoodopalco/p/CtEHPylykK3/",
       "postedAt": "2023-06-04",
+      "routeAudit": {
+        "accountHandle": "@thegoodopalco",
+        "verificationLevel": "route-available",
+        "verifiedAt": "2026-07-14T15:05:00.000Z"
+      },
       "views": [
         {
           "slide": 1,

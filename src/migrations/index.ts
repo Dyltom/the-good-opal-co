@@ -40,6 +40,7 @@ import * as migration_20260714_105000_builder_stone_contours from './20260714_10
 import * as migration_20260714_180000_builder_candidate_crop from './20260714_180000_builder_candidate_crop'
 import * as migration_20260714_224500_ring_design_references from './20260714_224500_ring_design_references'
 import * as migration_20260714_231500_ring_design_instagram_provenance from './20260714_231500_ring_design_instagram_provenance'
+import * as migration_20260715_010500_instagram_reference_route_audit from './20260715_010500_instagram_reference_route_audit'
 
 export const migrations = [
   {
@@ -251,5 +252,10 @@ export const migrations = [
     up: migration_20260714_231500_ring_design_instagram_provenance.up,
     down: migration_20260714_231500_ring_design_instagram_provenance.down,
     name: '20260714_231500_ring_design_instagram_provenance',
+  },
+  {
+    up: migration_20260715_010500_instagram_reference_route_audit.up,
+    down: migration_20260715_010500_instagram_reference_route_audit.down,
+    name: '20260715_010500_instagram_reference_route_audit',
   },
 ]

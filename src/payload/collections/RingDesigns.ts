@@ -59,7 +59,7 @@ export const RingDesigns: CollectionConfig = {
       defaultValue: [],
       admin: {
         description:
-          'Versioned source records: assetPath, sourceType, view, productSlug/sourceUrl, observedAt, and notes.',
+          'Versioned source records: assetPath, sourceType, view, productSlug/sourceUrl, publication observation, verification level/date, account handle, and notes.',
       },
     },
     {

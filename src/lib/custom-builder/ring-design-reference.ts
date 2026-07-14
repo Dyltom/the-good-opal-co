@@ -4,12 +4,21 @@ export const ringDesignStyles = ['gemini', 'coral', 'sun-moon', 'aurora'] as con
 export const ringReferenceViews = ['top', 'three-quarter', 'profile', 'underside'] as const
 
 export const ringDesignSourceReferenceSchema = z.object({
+  accountHandle: z
+    .string()
+    .trim()
+    .regex(/^@[A-Za-z0-9._]+$/)
+    .optional(),
   assetPath: z.string().trim().min(1),
   notes: z.string().trim().max(1_000).optional(),
   observedAt: z.string().datetime().optional(),
   productSlug: z.string().trim().min(1).optional(),
   sourceType: z.enum(['product-gallery', 'instagram', 'calibrated-capture']),
   sourceUrl: z.string().url().optional(),
+  verificationLevel: z
+    .enum(['route-available', 'content-reviewed', 'asset-snapshotted'])
+    .optional(),
+  verifiedAt: z.string().datetime().optional(),
   view: z.enum(ringReferenceViews),
 })
 
@@ -80,13 +89,16 @@ export function validateRingDesignReference(
     return 'Published designs require maker approval notes'
   }
 
-  const capturedViews = new Set(references.data.map(({ view }) => view))
+  // Product-gallery and Instagram references remain useful provenance, but
+  // only calibrated captures may prove physical fidelity. Keep both kinds in
+  // the record and evaluate publication coverage from the calibrated subset.
+  const calibratedReferences = references.data.filter(
+    ({ sourceType }) => sourceType === 'calibrated-capture'
+  )
+  const capturedViews = new Set(calibratedReferences.map(({ view }) => view))
   const missingViews = requiredViews.filter((view) => !capturedViews.has(view))
   if (missingViews.length > 0) {
     return `Published designs require calibrated ${missingViews.join(', ')} reference views`
-  }
-  if (!references.data.every(({ sourceType }) => sourceType === 'calibrated-capture')) {
-    return 'Published designs may only claim fidelity from calibrated reference captures'
   }
 
   if (!ringDesignMeasurementsSchema.safeParse(document.measurements).success) {
