@@ -145,10 +145,10 @@ export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', Came
   // Keep only enough elevation to retain a soft edge highlight; the previous
   // 0.45 elevation exposed both shank faces as two horizontal rails.
   front: [0, 5.8, 0.2],
-  // The old end-on profile collapsed the ring into a vertical stick and turned
-  // the opal sideways. This oblique side elevation keeps the stone upright,
-  // reveals cup depth, and shows enough of the shank loop to read as a ring.
-  profile: [5.8, 2.6, 1.8],
+  // Look mostly along the ring-plane normal so the head stays physically above
+  // the shank. Retaining a smaller X/Y component reveals the cup and a sliver
+  // of opal face without rotating the finished ring onto its side.
+  profile: [1.8, 2.6, 5.8],
 }
 
 export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
@@ -156,7 +156,9 @@ export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', Came
   // The setting rotation maps its local long axis to world -Z. Keeping -Z as
   // screen-up avoids the near-parallel Y-up singularity in the face-on view.
   front: [0, 0, -1],
-  profile: [0, 0, -1],
+  // A profile is an elevation of the finished ring: world Y must remain screen
+  // up so the stone reads as seated on top of the shank, not attached sideways.
+  profile: [0, 1, 0],
 }
 
 interface ContourBounds {

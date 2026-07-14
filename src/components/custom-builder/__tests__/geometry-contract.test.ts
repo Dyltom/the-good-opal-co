@@ -42,6 +42,7 @@ import {
 import {
   applyRingStyle,
   defaultRingConfig,
+  getRingStyleReferenceOpal,
   ringStyleGeometryProfiles,
   ringStyles,
   type BuilderOpal,
@@ -226,26 +227,57 @@ describe('custom ring geometry contract', () => {
     expect(cameraPositions['three-quarter']).toEqual([3.2, 5.8, 3])
   })
 
-  test('keeps the opal upright and reveals the ring loop in profile', () => {
-    const target = getRingFramingTarget(defaultRingConfig)
+  test('keeps the setting above the shank and reveals the opal edge in profile', () => {
+    const settingNormal = rotateSettingVectorToWorld([0, 0, 1])
     const longStoneAxis = rotateSettingVectorToWorld([0, 1, 0])
     const ringPlaneNormal: CameraVector = [0, 0, 1]
-    const stoneProjection = projectWorldAxisToView(
-      longStoneAxis,
-      cameraPositions.profile,
-      target,
-      cameraUpVectors.profile
-    )
-    const ringProjection = projectWorldAxisToView(
-      ringPlaneNormal,
-      cameraPositions.profile,
-      target,
-      cameraUpVectors.profile
-    )
+    const cases = [
+      ...ringStyles.map(({ id }) => {
+        const config = applyRingStyle(defaultRingConfig, id)
+        return { config, opal: getRingStyleReferenceOpal(id), label: id }
+      }),
+      {
+        config: {
+          ...applyRingStyle(defaultRingConfig, 'gemini'),
+          shape: 'elongated',
+        } satisfies RingConfig,
+        opal: measuredOpal,
+        label: measuredOpal.slug,
+      },
+    ]
 
-    expect(Math.abs(stoneProjection.horizontal)).toBeLessThan(0.05)
-    expect(Math.abs(stoneProjection.vertical)).toBeGreaterThan(0.9)
-    expect(Math.abs(ringProjection.depth)).toBeGreaterThan(0.25)
+    for (const { config, label, opal } of cases) {
+      const target = getRingFramingTarget(config, opal)
+      const settingProjection = projectWorldAxisToView(
+        settingNormal,
+        cameraPositions.profile,
+        target,
+        cameraUpVectors.profile
+      )
+      const stoneProjection = projectWorldAxisToView(
+        longStoneAxis,
+        cameraPositions.profile,
+        target,
+        cameraUpVectors.profile
+      )
+      const ringProjection = projectWorldAxisToView(
+        ringPlaneNormal,
+        cameraPositions.profile,
+        target,
+        cameraUpVectors.profile
+      )
+
+      // The setting normal is physical world Y. It must remain visually vertical
+      // so every style's head sits above its shoulders rather than beside them.
+      expect(Math.abs(settingProjection.horizontal), label).toBeLessThan(0.01)
+      expect(settingProjection.vertical, label).toBeGreaterThan(0.9)
+      // Profile should show mostly the opal edge and ring loop, with enough
+      // obliqueness to retain a readable sliver of the selected stone face.
+      expect(Math.abs(stoneProjection.depth), label).toBeGreaterThan(0.8)
+      expect(Math.abs(ringProjection.depth), label).toBeGreaterThan(0.8)
+      expect(Math.abs(settingProjection.depth), label).toBeGreaterThan(0.3)
+      expect(Math.abs(settingProjection.depth), label).toBeLessThan(0.5)
+    }
   })
 
   test('scales portrait cameras without changing the selected view direction ratios', () => {
