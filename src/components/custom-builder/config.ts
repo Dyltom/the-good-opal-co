@@ -118,6 +118,8 @@ export interface RingStyleGeometryProfile {
   bezelWallThickness: number
   bezelLipOffset: number
   bezelLipRadius: number
+  /** Oxidized seat visible outside the stone edge, in scene units (10 mm each). */
+  patinaSeatReveal: number
   haloOffset: number
   beadRadius: number
   beadCount: number
@@ -159,6 +161,27 @@ export interface BezelLipProfileKnot {
   finish: 'metal' | 'patina'
   heightOffset: number
   radialProgress: number
+  /** Exact offset from the stone contour; bypasses handmade outer-rail variation. */
+  stoneReveal?: number
+}
+
+type BezelSeatGeometry = Pick<
+  RingStyleGeometryProfile,
+  | 'bezelLipOffset'
+  | 'bezelLipRadius'
+  | 'bezelWallOffset'
+  | 'bezelWallThickness'
+  | 'patinaSeatReveal'
+>
+
+/** Places the patina-to-metal transition by its visible width outside the stone. */
+export function getPatinaSeatProgress(profile: BezelSeatGeometry): number {
+  const innerOffset = profile.bezelLipOffset - profile.bezelLipRadius
+  const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+  const crownWidth = outerOffset - innerOffset
+  if (crownWidth <= 0) return 0
+
+  return Math.min(1, Math.max(0, (profile.patinaSeatReveal - innerOffset) / crownWidth))
 }
 
 export function getHaloSupportGeometry(
@@ -177,19 +200,53 @@ export function getHaloSupportGeometry(
   }
 }
 
+const geminiBezelSeat = {
+  bezelLipOffset: 0.002,
+  bezelLipRadius: 0.012,
+  bezelWallOffset: 0.0185,
+  bezelWallThickness: 0.036,
+  patinaSeatReveal: 0.008,
+} satisfies BezelSeatGeometry
+
+const coralBezelSeat = {
+  bezelLipOffset: 0.002,
+  bezelLipRadius: 0.012,
+  bezelWallOffset: 0.031,
+  bezelWallThickness: 0.058,
+  patinaSeatReveal: 0.0425,
+} satisfies BezelSeatGeometry
+
+const sunMoonBezelSeat = {
+  bezelLipOffset: 0.002,
+  bezelLipRadius: 0.012,
+  bezelWallOffset: 0.022,
+  bezelWallThickness: 0.04,
+  patinaSeatReveal: 0.008,
+} satisfies BezelSeatGeometry
+
+const auroraBezelSeat = {
+  bezelLipOffset: 0.002,
+  bezelLipRadius: 0.012,
+  bezelWallOffset: 0.022,
+  bezelWallThickness: 0.042,
+  patinaSeatReveal: 0.01,
+} satisfies BezelSeatGeometry
+
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
-      { radialProgress: 0.16, heightOffset: 0.003, finish: 'patina' },
+      {
+        radialProgress: getPatinaSeatProgress(geminiBezelSeat),
+        heightOffset: 0.003,
+        finish: 'patina',
+        stoneReveal: geminiBezelSeat.patinaSeatReveal,
+      },
       { radialProgress: 0.46, heightOffset: 0.002, finish: 'metal' },
       { radialProgress: 0.78, heightOffset: -0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
-    bezelWallOffset: 0.0185,
-    bezelWallThickness: 0.036,
-    bezelLipOffset: 0.002,
-    bezelLipRadius: 0.012,
+    ...geminiBezelSeat,
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
@@ -230,14 +287,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
       { radialProgress: 0.3, heightOffset: -0.008, finish: 'patina' },
-      { radialProgress: 0.75, heightOffset: -0.008, finish: 'patina' },
+      {
+        radialProgress: getPatinaSeatProgress(coralBezelSeat),
+        heightOffset: -0.008,
+        finish: 'patina',
+        stoneReveal: coralBezelSeat.patinaSeatReveal,
+      },
       { radialProgress: 0.81, heightOffset: 0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.003, finish: 'metal' },
     ],
-    bezelWallOffset: 0.031,
-    bezelWallThickness: 0.058,
-    bezelLipOffset: 0.002,
-    bezelLipRadius: 0.012,
+    ...coralBezelSeat,
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
@@ -277,14 +336,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   'sun-moon': {
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
-      { radialProgress: 0.18, heightOffset: 0.002, finish: 'patina' },
+      {
+        radialProgress: getPatinaSeatProgress(sunMoonBezelSeat),
+        heightOffset: 0.002,
+        finish: 'patina',
+        stoneReveal: sunMoonBezelSeat.patinaSeatReveal,
+      },
       { radialProgress: 0.52, heightOffset: 0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
-    bezelWallOffset: 0.022,
-    bezelWallThickness: 0.04,
-    bezelLipOffset: 0.002,
-    bezelLipRadius: 0.012,
+    ...sunMoonBezelSeat,
     // Preserve the sold head envelope while leaving the hairline oxidized
     // crevices visible between the smaller Sun & Moon grains.
     haloOffset: 0.091,
@@ -326,14 +387,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
   aurora: {
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
-      { radialProgress: 0.2, heightOffset: 0.002, finish: 'patina' },
+      {
+        radialProgress: getPatinaSeatProgress(auroraBezelSeat),
+        heightOffset: 0.002,
+        finish: 'patina',
+        stoneReveal: auroraBezelSeat.patinaSeatReveal,
+      },
       { radialProgress: 0.58, heightOffset: 0, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.006, finish: 'metal' },
     ],
-    bezelWallOffset: 0.022,
-    bezelWallThickness: 0.042,
-    bezelLipOffset: 0.002,
-    bezelLipRadius: 0.012,
+    ...auroraBezelSeat,
     // Aurora's granules are broad and handmade, but the sold ring does not use
     // the oversized pearl-like balls produced by a full 1 mm sphere.
     haloOffset: 0.085,

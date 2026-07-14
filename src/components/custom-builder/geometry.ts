@@ -512,14 +512,21 @@ export function getProfiledBezelLipRings({
   const outer = soldStyleOutlinePoint(style, shape, angle, width, height, outerOffset, contour)
   const contactZ = getBezelLipContactZ(shape, angle, width, height, inner, depthProfile, contour)
 
-  return profile.map((knot, index) => ({
-    finish: knot.finish,
-    point: [
-      inner[0] + (outer[0] - inner[0]) * knot.radialProgress,
-      inner[1] + (outer[1] - inner[1]) * knot.radialProgress,
-    ],
-    z: index === 0 ? contactZ : topZ + knot.heightOffset,
-  }))
+  return profile.map((knot, index) => {
+    const point =
+      knot.stoneReveal === undefined
+        ? ([
+            inner[0] + (outer[0] - inner[0]) * knot.radialProgress,
+            inner[1] + (outer[1] - inner[1]) * knot.radialProgress,
+          ] satisfies StoneDimensions)
+        : outlinePoint(shape, angle, width, height, knot.stoneReveal, contour)
+
+    return {
+      finish: knot.finish,
+      point,
+      z: index === 0 ? contactZ : topZ + knot.heightOffset,
+    }
+  })
 }
 
 function ellipseRadiusAtAngle(
@@ -772,13 +779,7 @@ export function getSettingOuterHalfWidth(
   const profile = ringStyleGeometryProfiles[config.style]
   if (config.setting === 'beaded') {
     const haloContour = getHaloStoneContour(contour)
-    const beadCount = getStyleBeadCount(
-      config.style,
-      config.shape,
-      width,
-      height,
-      haloContour
-    )
+    const beadCount = getStyleBeadCount(config.style, config.shape, width, height, haloContour)
     const variedBeads = applyHandmadeBeadVariation(
       evenlySpacedOutlinePoints(
         config.shape,
@@ -1253,10 +1254,7 @@ export function fuseContactingHaloBeads(
       size: Math.max(0.45, bead.size * sizeScales[index]!),
       stretchX: Math.min(
         1.55,
-        Math.max(
-          0.62,
-          bead.stretchX + adjustments[index]! / Math.max(1, adjustmentCounts[index]!)
-        )
+        Math.max(0.62, bead.stretchX + adjustments[index]! / Math.max(1, adjustmentCounts[index]!))
       ),
     }))
   }

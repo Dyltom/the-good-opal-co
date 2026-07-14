@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { getHaloSupportGeometry, ringStyleGeometryProfiles, ringStyles } from '../config'
+import {
+  getHaloSupportGeometry,
+  getPatinaSeatProgress,
+  ringStyleGeometryProfiles,
+  ringStyles,
+} from '../config'
 import {
   applyHandmadeBeadVariation,
   coalesceOverlappingHaloBeads,
@@ -451,25 +456,54 @@ describe('sold ring style geometry', () => {
   })
 
   test.each([
-    ['gemini', 0.16],
-    ['sun-moon', 0.18],
-    ['aurora', 0.2],
-  ] as const)('gives %s its photographed narrow oxidized burnish seam', (style, seamExtent) => {
+    ['gemini', 0.008],
+    ['sun-moon', 0.008],
+    ['aurora', 0.01],
+  ] as const)('gives %s its photographed visible oxidized stone seat', (style, expectedReveal) => {
     const profile = ringStyleGeometryProfiles[style]
     const knots = profile.bezelLipProfile
     const patina = knots.filter(({ finish }) => finish === 'patina')
     const metal = knots.filter(({ finish }) => finish === 'metal')
     const innerOffset = profile.bezelLipOffset - profile.bezelLipRadius
     const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
-    const seamWidthMm = (outerOffset - innerOffset) * seamExtent * 10
+    const seamExtent = getPatinaSeatProgress(profile)
+    const visibleSeatReveal =
+      innerOffset + (outerOffset - innerOffset) * (patina.at(-1)?.radialProgress ?? 0)
+    const shape = style === 'aurora' ? 'pear' : 'oval'
+    const width = 0.4
+    const height = 0.5
 
     expect(patina).toHaveLength(2)
     expect(patina[0]?.radialProgress).toBe(0)
     expect(patina.at(-1)?.radialProgress).toBe(seamExtent)
     expect(metal[0]?.radialProgress).toBeGreaterThan(seamExtent)
-    expect(seamWidthMm).toBeGreaterThanOrEqual(0.07)
-    expect(seamWidthMm).toBeLessThanOrEqual(0.11)
+    expect(profile.patinaSeatReveal).toBe(expectedReveal)
+    expect(patina.at(-1)?.stoneReveal).toBe(expectedReveal)
+    expect(visibleSeatReveal).toBeCloseTo(expectedReveal, 12)
+    expect(visibleSeatReveal * 10).toBeGreaterThanOrEqual(0.08)
+    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(0.1)
     expect(knots.at(-1)?.radialProgress).toBe(1)
+
+    for (let index = 0; index < 72; index += 1) {
+      const angle = (index / 72) * Math.PI * 2
+      const rings = getProfiledBezelLipRings({
+        angle,
+        depthProfile: getCabochonDepthProfile(width, height, undefined, style),
+        height,
+        innerOffset,
+        outerOffset,
+        profile: knots,
+        shape,
+        style,
+        topZ: 0.05,
+        width,
+      })
+      const expectedPoint = outlinePoint(shape, angle, width, height, expectedReveal)
+      const actualPoint = rings[patina.length - 1]?.point
+
+      expect(actualPoint?.[0]).toBeCloseTo(expectedPoint[0], 12)
+      expect(actualPoint?.[1]).toBeCloseTo(expectedPoint[1], 12)
+    }
   })
 
   test.each(['sun-moon', 'aurora'] as const)(
