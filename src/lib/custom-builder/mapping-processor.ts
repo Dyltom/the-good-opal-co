@@ -287,17 +287,27 @@ export async function processBuilderMappings(
           or: [
             {
               and: [
-                { builderMappingAnalysisError: { exists: false } },
+                {
+                  or: [
+                    { builderMappingAnalysisError: { exists: false } },
+                    { builderMappingAnalysisError: { equals: null } },
+                    { builderMappingAnalysisError: { equals: '' } },
+                  ],
+                },
                 {
                   or: [
                     { builderMappingAnalyzedImageHash: { exists: false } },
+                    { builderMappingAnalyzedImageHash: { equals: null } },
+                    { builderMappingAnalyzedImageHash: { equals: '' } },
                     { builderPhotoAnalysisVersion: { exists: false } },
+                    { builderPhotoAnalysisVersion: { equals: null } },
                     {
                       builderPhotoAnalysisVersion: {
                         not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
                       },
                     },
                     { builderContourCandidate: { exists: false } },
+                    { builderContourCandidate: { equals: null } },
                   ],
                 },
               ],

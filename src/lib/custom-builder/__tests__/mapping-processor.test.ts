@@ -140,10 +140,18 @@ describe('builder mapping processor', () => {
               or: expect.arrayContaining([
                 {
                   and: [
-                    { builderMappingAnalysisError: { exists: false } },
+                    {
+                      or: expect.arrayContaining([
+                        { builderMappingAnalysisError: { exists: false } },
+                        { builderMappingAnalysisError: { equals: null } },
+                      ]),
+                    },
                     {
                       or: expect.arrayContaining([
                         { builderContourCandidate: { exists: false } },
+                        { builderContourCandidate: { equals: null } },
+                        { builderMappingAnalyzedImageHash: { equals: null } },
+                        { builderPhotoAnalysisVersion: { equals: null } },
                       ]),
                     },
                   ],
