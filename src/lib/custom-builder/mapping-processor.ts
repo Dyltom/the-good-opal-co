@@ -6,10 +6,11 @@ import { resolveMediaUrl } from '@/lib/media-url'
 import { BUILDER_PHOTO_ANALYSIS_VERSION } from './mapping-lifecycle'
 import { classifyOpalListing, isAvailableOpalListing } from './opal-visual'
 import { analyzeOpalRaster } from './photo-analysis'
+import { parseBuilderStoneContour } from './stone-contour'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
 const ANALYSIS_EDGE_PX = 640
-const MINIMUM_ANALYSIS_CONFIDENCE = 0.65
+const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.75
 
 type PayloadClient = Awaited<ReturnType<typeof getPayload>>
 type ProductRecord = Record<string, unknown>
@@ -129,14 +130,28 @@ function finiteBetween(value: unknown, minimum: number, maximum: number, field: 
 async function updateProduct(
   payload: PayloadClient,
   id: number | string,
-  data: ProductRecord
-): Promise<void> {
+  data: ProductRecord,
+  expectedUpdatedAt: string | undefined
+): Promise<boolean> {
+  if (expectedUpdatedAt) {
+    const result = await payload.update({
+      collection: 'products',
+      where: {
+        and: [{ id: { equals: id } }, { updatedAt: { equals: expectedUpdatedAt } }],
+      },
+      data: data as Partial<Product>,
+      overrideAccess: true,
+    })
+    return result.docs.length === 1
+  }
+
   await payload.update({
     collection: 'products',
     id,
     data: data as Partial<Product>,
     overrideAccess: true,
   })
+  return true
 }
 
 export async function processBuilderMappings(
@@ -153,13 +168,6 @@ export async function processBuilderMappings(
     where: {
       and: [
         { category: { equals: 'raw-opals' } },
-        { builderMappingStatus: { in: ['pending', 'stale'] } },
-        {
-          or: [
-            { builderMappingMode: { not_equals: 'manual' } },
-            { builderMappingMode: { exists: false } },
-          ],
-        },
         {
           or: [
             { builderMappingAnalyzedImageHash: { exists: false } },
@@ -168,6 +176,12 @@ export async function processBuilderMappings(
               builderPhotoAnalysisVersion: {
                 not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
               },
+            },
+            {
+              and: [
+                { builderContourCandidate: { exists: false } },
+                { builderMappingAnalysisError: { exists: false } },
+              ],
             },
           ],
         },
@@ -191,12 +205,14 @@ export async function processBuilderMappings(
       summary.failed += 1
       continue
     }
-    if (product.builderMappingMode === 'manual') {
-      summary.manual += 1
-      continue
-    }
+    const expectedUpdatedAt =
+      typeof product.updatedAt === 'string' ? product.updatedAt : undefined
+    const protectsActiveMapping =
+      product.builderMappingMode === 'manual' ||
+      product.builderMappingStatus === 'manual' ||
+      product.builderMappingStatus === 'reviewed'
+    if (product.builderMappingMode === 'manual') summary.manual += 1
 
-    let analyzedImageHash: string | undefined
     let analysisConfidence: number | undefined
     try {
       const media = await resolveMappedMedia(payload, product)
@@ -205,10 +221,10 @@ export async function processBuilderMappings(
 
       const source = await fetchImage(imageUrl)
       const imageHash = createHash('sha256').update(source).digest('hex')
-      analyzedImageHash = imageHash
       const alreadyAnalyzed =
         product.builderMappingAnalyzedImageHash === imageHash &&
-        product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
+        product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
+        Boolean(parseBuilderStoneContour(product.builderContourCandidate))
       if (alreadyAnalyzed) {
         summary.unchanged += 1
         continue
@@ -218,13 +234,22 @@ export async function processBuilderMappings(
         !isAvailableOpalListing(productName) ||
         classifyOpalListing(productName) !== 'individual'
       ) {
-        await updateProduct(payload, id, {
-          builderMappingAnalyzedImageHash: imageHash,
-          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
-          builderPhotoAnalysisConfidence: null,
-          builderMappingAnalysisError:
-            'Automatic crop mapping skipped for a non-individual or non-opal listing',
-        })
+        const updated = await updateProduct(
+          payload,
+          id,
+          {
+            builderMappingAnalyzedImageHash: imageHash,
+            builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+            builderPhotoAnalysisConfidence: null,
+            builderMappingAnalysisError:
+              'Automatic crop mapping skipped for a non-individual or non-opal listing',
+          },
+          expectedUpdatedAt
+        )
+        if (!updated) {
+          summary.unchanged += 1
+          continue
+        }
         summary.nonIndividual += 1
         continue
       }
@@ -253,33 +278,59 @@ export async function processBuilderMappings(
       })
       if (!analysis) throw new Error('Opal face could not be isolated from the source image')
       analysisConfidence = finiteBetween(analysis.confidence, 0, 1, 'confidence')
-      if (analysisConfidence < MINIMUM_ANALYSIS_CONFIDENCE) {
-        throw new Error('Opal photo analysis confidence is too low for automatic crop mapping')
-      }
+      const candidate = parseBuilderStoneContour(analysis.contour)
+      if (!candidate) throw new Error('Image analysis returned an invalid opal contour')
+      const mayActivateContour =
+        !protectsActiveMapping &&
+        (product.builderMappingStatus === 'pending' || product.builderMappingStatus === 'stale') &&
+        analysisConfidence >= MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+      const analysisError =
+        analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+          ? 'Opal contour confidence is too low for automatic activation'
+          : null
 
-      await updateProduct(payload, id, {
-        builderPhotoFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
-        builderPhotoFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
-        builderPhotoZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
-        builderPhotoRotation: finiteBetween(analysis.rotation, -180, 180, 'rotation'),
-        builderMappingAnalyzedImageHash: imageHash,
-        builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
-        builderPhotoAnalysisConfidence: analysisConfidence,
-        builderMappingAnalysisError: null,
-      })
+      const updated = await updateProduct(
+        payload,
+        id,
+        {
+          ...(mayActivateContour
+            ? {
+                builderContour: candidate,
+                builderContourSourceImageHash: imageHash,
+                builderPhotoFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
+                builderPhotoFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
+                builderPhotoZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
+                builderPhotoRotation: finiteBetween(analysis.rotation, -180, 180, 'rotation'),
+              }
+            : {}),
+          builderContourCandidate: candidate,
+          builderMappingAnalyzedImageHash: imageHash,
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+          builderPhotoAnalysisConfidence: analysisConfidence,
+          builderMappingAnalysisError: analysisError,
+        },
+        expectedUpdatedAt
+      )
+      if (!updated) {
+        summary.unchanged += 1
+        continue
+      }
       summary.analyzed += 1
     } catch (error: unknown) {
+      const updated = await updateProduct(
+        payload,
+        id,
+        {
+          builderPhotoAnalysisConfidence: analysisConfidence ?? null,
+          builderMappingAnalysisError: conciseError(error),
+        },
+        expectedUpdatedAt
+      )
+      if (!updated) {
+        summary.unchanged += 1
+        continue
+      }
       summary.failed += 1
-      await updateProduct(payload, id, {
-        ...(analyzedImageHash
-          ? {
-              builderMappingAnalyzedImageHash: analyzedImageHash,
-              builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
-              builderPhotoAnalysisConfidence: analysisConfidence ?? null,
-            }
-          : {}),
-        builderMappingAnalysisError: conciseError(error),
-      })
     }
   }
 

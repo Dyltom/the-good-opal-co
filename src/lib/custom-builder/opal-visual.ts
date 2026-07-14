@@ -1,4 +1,5 @@
 import type { BuilderOpal, RingConfig } from '@/components/custom-builder/config'
+import { parseBuilderStoneContour } from './stone-contour'
 
 type VisualProfile = BuilderOpal['visual']
 
@@ -22,6 +23,9 @@ export interface BuilderVisualFields {
   builderPhotoFocalY?: number | null
   builderPhotoZoom?: number | null
   builderPhotoRotation?: number | null
+  builderContour?: unknown
+  builderContourSourceImageHash?: string | null
+  builderMappingAnalyzedImageHash?: string | null
   dimensions?: {
     width?: number | null
     length?: number | null
@@ -293,6 +297,11 @@ function cmsReviewedProfile(
   const silhouette = fields.builderSilhouette
   const recommendedStyle = fields.builderRecommendedStyle
   const dimensionsMm = completeDimensions(fields)
+  const contour =
+    fields.builderContourSourceImageHash &&
+    fields.builderContourSourceImageHash === fields.builderMappingAnalyzedImageHash
+      ? parseBuilderStoneContour(fields.builderContour)
+      : undefined
   const colours = [
     fields.builderFlashColourPrimary,
     fields.builderFlashColourSecondary,
@@ -334,6 +343,7 @@ function cmsReviewedProfile(
     transmission: fields.builderTransmission,
     patternSeed: 0,
     photoFit: 'reviewed',
+    contour,
     dimensionsMm,
   }
 }

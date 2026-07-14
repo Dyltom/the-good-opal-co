@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 
 export const metalIds = [
   'sterling-silver',
@@ -74,6 +75,7 @@ export interface BuilderOpal {
     patternSeed: number
     evidence: 'catalogue' | 'type-fallback'
     photoFit?: 'reviewed' | 'estimated'
+    contour?: BuilderStoneContourV1
     recommendedStyle: RingConfig['style']
     textureCrop?: {
       focalX: number

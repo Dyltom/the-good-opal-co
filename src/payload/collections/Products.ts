@@ -10,6 +10,7 @@ import {
   applyBuilderMappingLifecycle,
   builderMappingNeedsReview,
 } from '../../lib/custom-builder/mapping-lifecycle.ts'
+import { validateBuilderStoneContour } from '../../lib/custom-builder/stone-contour.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -442,6 +443,38 @@ export const Products: CollectionConfig = {
           admin: {
             readOnly: true,
             description: 'Last automatic image-analysis failure. Empty after a successful run.',
+          },
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderContour',
+              type: 'json',
+              validate: validateBuilderStoneContour,
+              admin: {
+                description:
+                  'Approved normalized 96-sample stone boundary. Automatic analysis never overwrites reviewed or manual values.',
+              },
+            },
+            {
+              name: 'builderContourCandidate',
+              type: 'json',
+              validate: validateBuilderStoneContour,
+              access: { read: isAdminField },
+              admin: {
+                readOnly: true,
+                description: 'Latest automatic contour candidate awaiting visual review.',
+              },
+            },
+          ],
+        },
+        {
+          name: 'builderContourSourceImageHash',
+          type: 'text',
+          admin: {
+            readOnly: true,
+            description: 'SHA-256 of the source bytes used by the approved contour.',
           },
         },
         {

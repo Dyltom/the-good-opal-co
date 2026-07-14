@@ -121,6 +121,9 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       builderPhotoFocalY: true,
       builderPhotoZoom: true,
       builderPhotoRotation: true,
+      builderContour: true,
+      builderContourSourceImageHash: true,
+      builderMappingAnalyzedImageHash: true,
     },
     where: {
       and: [

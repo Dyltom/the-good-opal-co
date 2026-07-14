@@ -147,10 +147,7 @@ describe('opal builder mapping lifecycle', () => {
     expect(
       inferBuilderMapping({
         builderMappedImageIndex: 1,
-        images: [
-          { image: { focalX: 20, focalY: 30 } },
-          { image: { focalX: 64, focalY: 47 } },
-        ],
+        images: [{ image: { focalX: 20, focalY: 30 } }, { image: { focalX: 64, focalY: 47 } }],
         name: 'Oval opal',
       })
     ).toMatchObject({
@@ -248,6 +245,7 @@ describe('opal builder mapping lifecycle', () => {
     )
 
     expect(changed).toMatchObject({
+      builderContourCandidate: null,
       builderEligible: false,
       builderMappingStatus: 'stale',
     })
@@ -277,6 +275,7 @@ describe('opal builder mapping lifecycle', () => {
     )
 
     expect(changed).toMatchObject({
+      builderContourCandidate: null,
       builderMappingAnalyzedImageHash: null,
       builderMappingMode: 'inferred',
       builderMappingStatus: 'stale',
@@ -346,6 +345,56 @@ describe('opal builder mapping lifecycle', () => {
     })
     expect(result.builderMappingInputHash).toMatch(/^[0-9a-f]{16}$/)
     expect(result).not.toHaveProperty('builderPhotoFocalX')
+  })
+
+  test('records analyzed-image provenance when an admin adopts a contour', () => {
+    const contour = { version: 1, radii: Array.from({ length: 96 }, () => 1) }
+    const result = applyBuilderMappingLifecycle(
+      { builderContour: contour, builderMappingStatus: 'manual' },
+      {
+        builderMappingAnalyzedImageHash: 'source-sha-256',
+        builderMappingMode: 'inferred',
+        builderMappingStatus: 'pending',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
+        category: 'raw-opals',
+        dimensions: { depth: 2, length: 9, width: 6 },
+        images: [{ image: 'media-1' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      now
+    )
+
+    expect(result.builderContour).toBe(contour)
+    expect(result.builderContourSourceImageHash).toBe('source-sha-256')
+    expect(result.builderMappingMode).toBe('manual')
+  })
+
+  test('preserves explicit contour provenance from the automatic analyzer', () => {
+    const contour = { version: 1, radii: Array.from({ length: 96 }, () => 1) }
+    const result = applyBuilderMappingLifecycle(
+      {
+        builderContour: contour,
+        builderContourSourceImageHash: 'new-source-sha-256',
+        builderMappingAnalyzedImageHash: 'new-source-sha-256',
+      },
+      {
+        builderMappingAnalyzedImageHash: 'old-source-sha-256',
+        builderMappingMode: 'inferred',
+        builderMappingStatus: 'pending',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
+        category: 'raw-opals',
+        dimensions: { depth: 2, length: 9, width: 6 },
+        images: [{ image: 'media-1' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      now
+    )
+
+    expect(result.builderContourSourceImageHash).toBe('new-source-sha-256')
   })
 
   test('does not expose pending or stale mappings', () => {

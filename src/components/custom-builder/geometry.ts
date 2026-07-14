@@ -1,4 +1,5 @@
 import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
+import { contourRadiusAt, type BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 
 export type StoneDimensions = readonly [width: number, height: number]
 export type CameraVector = readonly [x: number, y: number, z: number]
@@ -176,10 +177,16 @@ function baseOutlinePoint(
   shape: RingConfig['shape'],
   angle: number,
   width: number,
-  height: number
+  height: number,
+  contour?: BuilderStoneContourV1
 ): readonly [number, number] {
   const cosine = Math.cos(angle)
   const sine = Math.sin(angle)
+
+  if (contour) {
+    const radius = contourRadiusAt(contour, angle)
+    return [cosine * radius * width, sine * radius * height]
+  }
 
   if (shape === 'cushion') {
     return [
@@ -226,9 +233,10 @@ export function outlinePoint(
   angle: number,
   width: number,
   height: number,
-  offset = 0
+  offset = 0,
+  contour?: BuilderStoneContourV1
 ): readonly [number, number] {
-  const point = baseOutlinePoint(shape, angle, width, height)
+  const point = baseOutlinePoint(shape, angle, width, height, contour)
   if (offset === 0) return point
 
   // Expand along the local surface normal. Scaling both axes by `offset`
@@ -236,8 +244,8 @@ export function outlinePoint(
   // on Coral's squared cushion. A sampled tangent keeps every setting wall a
   // physically consistent width across all supported silhouettes.
   const epsilon = 0.0001
-  const before = baseOutlinePoint(shape, angle - epsilon, width, height)
-  const after = baseOutlinePoint(shape, angle + epsilon, width, height)
+  const before = baseOutlinePoint(shape, angle - epsilon, width, height, contour)
+  const after = baseOutlinePoint(shape, angle + epsilon, width, height, contour)
   const tangentX = after[0] - before[0]
   const tangentY = after[1] - before[1]
   const length = Math.hypot(tangentX, tangentY) || 1
@@ -283,14 +291,16 @@ export function soldStyleOutlinePoint(
   angle: number,
   width: number,
   height: number,
-  offset = 0
+  offset = 0,
+  contour?: BuilderStoneContourV1
 ): readonly [number, number] {
   return outlinePoint(
     shape,
     angle,
     width,
     height,
-    offset + getSoldStyleOuterVariation(style, angle)
+    offset + getSoldStyleOuterVariation(style, angle),
+    contour
   )
 }
 
@@ -301,22 +311,32 @@ export function getBezelWallContourPoints(
   width: number,
   height: number,
   offset: number,
-  thickness: number
+  thickness: number,
+  contour?: BuilderStoneContourV1
 ): { inner: StoneDimensions; outer: StoneDimensions } {
   return {
-    inner: outlinePoint(shape, angle, width, height, offset - thickness / 2),
-    outer: soldStyleOutlinePoint(style, shape, angle, width, height, offset + thickness / 2),
+    inner: outlinePoint(shape, angle, width, height, offset - thickness / 2, contour),
+    outer: soldStyleOutlinePoint(
+      style,
+      shape,
+      angle,
+      width,
+      height,
+      offset + thickness / 2,
+      contour
+    ),
   }
 }
 
 export function getSettingOuterHalfWidth(
   config: Pick<RingConfig, 'setting' | 'shape' | 'style'>,
-  dimensions: StoneDimensions
+  dimensions: StoneDimensions,
+  contour?: BuilderStoneContourV1
 ): number {
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
   if (config.setting === 'beaded') {
-    const beadCount = getStyleBeadCount(config.style, config.shape, width, height)
+    const beadCount = getStyleBeadCount(config.style, config.shape, width, height, contour)
     const beads = applyHandmadeBeadVariation(
       evenlySpacedOutlinePoints(
         config.shape,
@@ -325,7 +345,8 @@ export function getSettingOuterHalfWidth(
         profile.haloOffset,
         beadCount,
         profile.haloPhase,
-        config.style
+        config.style,
+        contour
       ),
       profile.beadVariation,
       profile.beadFlattening
@@ -344,7 +365,15 @@ export function getSettingOuterHalfWidth(
   return Array.from({ length: 720 }, (_, index) => {
     const angle = (index / 720) * Math.PI * 2
     return Math.abs(
-      soldStyleOutlinePoint(config.style, config.shape, angle, width, height, outerOffset)[0]
+      soldStyleOutlinePoint(
+        config.style,
+        config.shape,
+        angle,
+        width,
+        height,
+        outerOffset,
+        contour
+      )[0]
     )
   }).reduce((maximum, value) => Math.max(maximum, value), 0)
 }
@@ -356,7 +385,8 @@ export function getSettingOuterHalfWidth(
  */
 export function getSettingShoulderHalfWidth(
   config: Pick<RingConfig, 'shape' | 'style'>,
-  dimensions: StoneDimensions
+  dimensions: StoneDimensions,
+  contour?: BuilderStoneContourV1
 ): number {
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
@@ -365,7 +395,15 @@ export function getSettingShoulderHalfWidth(
   return Array.from({ length: 720 }, (_, index) => {
     const angle = (index / 720) * Math.PI * 2
     return Math.abs(
-      soldStyleOutlinePoint(config.style, config.shape, angle, width, height, structuralOffset)[0]
+      soldStyleOutlinePoint(
+        config.style,
+        config.shape,
+        angle,
+        width,
+        height,
+        structuralOffset,
+        contour
+      )[0]
     )
   }).reduce((maximum, value) => Math.max(maximum, value), 0)
 }
@@ -437,12 +475,16 @@ export function getRingShankPathPoints(
   ]
 }
 
-export function cssSilhouetteClipPath(shape: RingConfig['shape']): string | undefined {
-  if (shape !== 'heart' && shape !== 'pear') return undefined
+export function cssSilhouetteClipPath(
+  shape: RingConfig['shape'],
+  contour?: BuilderStoneContourV1
+): string | undefined {
+  if (!contour && shape !== 'heart' && shape !== 'pear') return undefined
 
-  const points = Array.from({ length: 72 }, (_, index) => {
-    const angle = (index / 72) * Math.PI * 2
-    const [x, y] = outlinePoint(shape, angle, 1, 1)
+  const pointCount = contour?.radii.length ?? 72
+  const points = Array.from({ length: pointCount }, (_, index) => {
+    const angle = (index / pointCount) * Math.PI * 2
+    const [x, y] = outlinePoint(shape, angle, 1, 1, 0, contour)
     const cssX = Math.round((x + 1) * 50_000) / 1000
     const cssY = Math.round((1 - y) * 50_000) / 1000
     return `${cssX}% ${cssY}%`
@@ -457,13 +499,14 @@ export function evenlySpacedOutlinePoints(
   offset: number,
   count: number,
   startAngle = 0,
-  style?: RingConfig['style']
+  style?: RingConfig['style'],
+  contour?: BuilderStoneContourV1
 ): readonly { key: number; x: number; y: number }[] {
   const samples = Array.from({ length: 361 }, (_, index) => {
     const angle = startAngle + (index / 360) * Math.PI * 2
     const [x, y] = style
-      ? soldStyleOutlinePoint(style, shape, angle, width, height, offset)
-      : outlinePoint(shape, angle, width, height, offset)
+      ? soldStyleOutlinePoint(style, shape, angle, width, height, offset, contour)
+      : outlinePoint(shape, angle, width, height, offset, contour)
     return { x, y }
   })
   const distances = [0]
@@ -500,15 +543,16 @@ export function adaptiveOutlinePointCount(
   height: number,
   offset: number,
   pitchMm: number,
-  style?: RingConfig['style']
+  style?: RingConfig['style'],
+  contour?: BuilderStoneContourV1
 ): number {
   if (pitchMm <= 0) return 0
   const samples = 720
   let perimeter = 0
   const pointAt = (angle: number) =>
     style
-      ? soldStyleOutlinePoint(style, shape, angle, width, height, offset)
-      : outlinePoint(shape, angle, width, height, offset)
+      ? soldStyleOutlinePoint(style, shape, angle, width, height, offset, contour)
+      : outlinePoint(shape, angle, width, height, offset, contour)
   let previous = pointAt(0)
   for (let index = 1; index <= samples; index += 1) {
     const point = pointAt((index / samples) * Math.PI * 2)
@@ -527,7 +571,8 @@ export function getStyleBeadCount(
   style: RingConfig['style'],
   shape: RingConfig['shape'],
   width: number,
-  height: number
+  height: number,
+  contour?: BuilderStoneContourV1
 ): number {
   const profile = ringStyleGeometryProfiles[style]
   if (profile.beadCount <= 0) return 0
@@ -548,7 +593,8 @@ export function getStyleBeadCount(
     height,
     profile.haloOffset,
     profile.beadPitchMm,
-    style
+    style,
+    contour
   )
 
   return Math.max(12, Math.round((profile.beadCount * adaptiveCount) / referenceAdaptiveCount))

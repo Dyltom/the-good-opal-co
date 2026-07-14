@@ -527,6 +527,37 @@ describe('custom builder opal visual profiles', () => {
     expect(profile.visual.textureCrop).toEqual({ focalX: 0.5, focalY: 0.5, zoom: 3.2 })
   })
 
+  test('uses an approved contour only while it matches the analyzed source image', () => {
+    const contour = { version: 1, radii: Array.from({ length: 96 }, () => 1) }
+    const fields = {
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'oval',
+      builderRecommendedStyle: 'gemini',
+      builderBodyColour: '#dce6df',
+      builderFlashColourPrimary: '#55cfff',
+      builderFlashColourSecondary: '#5bea9a',
+      builderFlashColourAccent: '#ffd34e',
+      builderTransmission: 0.16,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      builderContour: contour,
+      builderContourSourceImageHash: 'current-image',
+      builderMappingAnalyzedImageHash: 'current-image',
+      dimensions: { width: 6, length: 8, depth: 2 },
+    }
+
+    expect(
+      createOpalVisualProfile('mapped-opal', 'Mapped opal', 'white-opal', fields).visual.contour
+    ).toEqual(contour)
+    expect(
+      createOpalVisualProfile('mapped-opal', 'Mapped opal', 'white-opal', {
+        ...fields,
+        builderMappingAnalyzedImageHash: 'replacement-image',
+      }).visual.contour
+    ).toBeUndefined()
+  })
+
   test.each([
     ['lightning-ridge-black-opal-6-30ct', 'cushion', 'coral'],
     ['mintabie-semi-black-opal-1-05-cts', 'cushion', 'coral'],

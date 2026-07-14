@@ -51,7 +51,9 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('keeps the physical opal independent from collection-edge variation', () => {
-    expect(sceneSource).toContain('const [x, y] = outlinePoint(shape, angle, width, height)')
+    expect(sceneSource).toContain(
+      'const [x, y] = outlinePoint(shape, angle, width, height, 0, contour)'
+    )
     expect(sceneSource).not.toContain(
       'const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height)\n      positions.push(x * radius'
     )

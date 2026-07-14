@@ -32,12 +32,13 @@ vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 vi.mock('sharp', () => ({ default: mocks.sharp }))
 vi.mock('../photo-analysis', () => ({
   analyzeOpalRaster: mocks.analyzeOpalRaster,
-  OPAL_PHOTO_ANALYSIS_VERSION: 1,
+  OPAL_PHOTO_ANALYSIS_VERSION: 2,
 }))
 
 import { processBuilderMappings } from '../mapping-processor'
 
 const imageBytes = new Uint8Array([1, 3, 3, 7])
+const contour = { version: 1 as const, radii: Array.from({ length: 96 }, () => 1) }
 
 describe('builder mapping processor', () => {
   beforeEach(() => {
@@ -54,6 +55,7 @@ describe('builder mapping processor', () => {
     })
     mocks.analyzeOpalRaster.mockReturnValue({
       confidence: 0.91,
+      contour,
       focalX: 0.42,
       focalY: 0.57,
       rotation: -12,
@@ -62,11 +64,13 @@ describe('builder mapping processor', () => {
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://example.com')
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(imageBytes, {
-          headers: { 'content-type': 'image/jpeg' },
-          status: 200,
-        })
+      vi.fn().mockImplementation(async () =>
+        Promise.resolve(
+          new Response(imageBytes, {
+            headers: { 'content-type': 'image/jpeg' },
+            status: 200,
+          })
+        )
       )
     )
   })
@@ -111,12 +115,16 @@ describe('builder mapping processor', () => {
         limit: 25,
         where: expect.objectContaining({
           and: expect.arrayContaining([
-            {
-              or: [
-                { builderMappingMode: { not_equals: 'manual' } },
-                { builderMappingMode: { exists: false } },
-              ],
-            },
+            expect.objectContaining({
+              or: expect.arrayContaining([
+                {
+                  and: [
+                    { builderContourCandidate: { exists: false } },
+                    { builderMappingAnalysisError: { exists: false } },
+                  ],
+                },
+              ]),
+            }),
           ]),
         }),
       })
@@ -138,6 +146,9 @@ describe('builder mapping processor', () => {
       data: expect.objectContaining({
         builderMappingAnalysisError: null,
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        builderContour: contour,
+        builderContourCandidate: contour,
+        builderContourSourceImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderPhotoAnalysisConfidence: 0.91,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         builderPhotoFocalX: 0.42,
@@ -149,13 +160,14 @@ describe('builder mapping processor', () => {
     })
   })
 
-  test('does not repeat current analysis and never changes manual mappings', async () => {
+  test('does not repeat current candidates and analyzes manual mappings without changing active values', async () => {
     const currentHash = createHash('sha256').update(imageBytes).digest('hex')
     mocks.find.mockResolvedValue({
       docs: [
         {
           id: 42,
           builderMappingAnalyzedImageHash: currentHash,
+          builderContourCandidate: contour,
           builderMappingMode: 'inferred',
           builderMappingStatus: 'pending',
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
@@ -167,20 +179,29 @@ describe('builder mapping processor', () => {
           builderMappingMode: 'manual',
           builderMappingStatus: 'stale',
           images: [{ image: { id: 8, url: '/manual.jpg' } }],
+          name: 'Manual Lightning Ridge black opal',
         },
       ],
     })
 
     await expect(processBuilderMappings()).resolves.toEqual({
-      analyzed: 0,
+      analyzed: 1,
       checked: 2,
       failed: 0,
       manual: 1,
       nonIndividual: 0,
       unchanged: 1,
     })
-    expect(mocks.analyzeOpalRaster).not.toHaveBeenCalled()
-    expect(mocks.update).not.toHaveBeenCalled()
+    expect(mocks.analyzeOpalRaster).toHaveBeenCalledTimes(1)
+    expect(mocks.update).toHaveBeenCalledTimes(1)
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.id).toBe(43)
+    expect(update?.data).toMatchObject({
+      builderContourCandidate: contour,
+      builderMappingAnalysisError: null,
+    })
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
   })
 
   test('records an analysis error for retry without aborting the batch', async () => {
@@ -207,9 +228,60 @@ describe('builder mapping processor', () => {
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
       id: 42,
-      data: { builderMappingAnalysisError: 'Mapped product image is unavailable' },
+      data: {
+        builderMappingAnalysisError: 'Mapped product image is unavailable',
+        builderPhotoAnalysisConfidence: null,
+      },
       overrideAccess: true,
     })
+  })
+
+  test('generates a candidate for a reviewed mapping without overwriting its approved contour or crop', async () => {
+    const approvedContour = {
+      version: 1 as const,
+      radii: Array.from({ length: 96 }, (_, index) => (index === 0 ? 1.1 : 1)),
+    }
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 44,
+          builderContour: approvedContour,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'reviewed',
+          builderPhotoFocalX: 0.33,
+          images: [{ image: { id: 9, url: '/reviewed.jpg' } }],
+          name: 'Reviewed Lightning Ridge black opal',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({ builderContourCandidate: contour })
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderContourSourceImageHash')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
+  })
+
+  test('protects an active contour when legacy status is manual but mode is inconsistent', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 45,
+          builderContour: contour,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'manual',
+          images: [{ image: { id: 10, url: '/manual-status.jpg' } }],
+          name: 'Manual status Lightning Ridge opal',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({ builderContourCandidate: contour })
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
   })
 
   test('records low-confidence analysis without applying an unsafe crop', async () => {
@@ -226,20 +298,21 @@ describe('builder mapping processor', () => {
     })
     mocks.analyzeOpalRaster.mockReturnValue({
       confidence: 0.4,
+      contour,
       focalX: 0.42,
       focalY: 0.57,
       rotation: -12,
       zoom: 3.4,
     })
 
-    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 0, failed: 1 })
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
       id: 42,
       data: {
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
-        builderMappingAnalysisError:
-          'Opal photo analysis confidence is too low for automatic crop mapping',
+        builderContourCandidate: contour,
+        builderMappingAnalysisError: 'Opal contour confidence is too low for automatic activation',
         builderPhotoAnalysisConfidence: 0.4,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
       },
@@ -248,6 +321,7 @@ describe('builder mapping processor', () => {
     const update = mocks.update.mock.calls[0]?.[0]
     expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
     expect(update?.data).not.toHaveProperty('builderPhotoRotation')
+    expect(update?.data).not.toHaveProperty('builderContour')
   })
 
   test('records an unisolated photo without applying crop coordinates', async () => {
@@ -269,11 +343,45 @@ describe('builder mapping processor', () => {
       collection: 'products',
       id: 42,
       data: {
-        builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderMappingAnalysisError: 'Opal face could not be isolated from the source image',
         builderPhotoAnalysisConfidence: null,
-        builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
       },
+      overrideAccess: true,
+    })
+  })
+
+  test('does not overwrite a product changed while its image was being analyzed', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 46,
+          updatedAt: '2026-07-14T01:00:00.000Z',
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 11, url: '/changed.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    mocks.update.mockResolvedValue({ docs: [] })
+
+    await expect(processBuilderMappings()).resolves.toEqual({
+      analyzed: 0,
+      checked: 1,
+      failed: 0,
+      manual: 0,
+      nonIndividual: 0,
+      unchanged: 1,
+    })
+    expect(mocks.update).toHaveBeenCalledWith({
+      collection: 'products',
+      where: {
+        and: [
+          { id: { equals: 46 } },
+          { updatedAt: { equals: '2026-07-14T01:00:00.000Z' } },
+        ],
+      },
+      data: expect.objectContaining({ builderContourCandidate: contour }),
       overrideAccess: true,
     })
   })

@@ -36,6 +36,7 @@ import * as migration_20260714_101000_correct_230_opal_crop from './20260714_101
 import * as migration_20260714_102000_remove_170_photo_edge from './20260714_102000_remove_170_photo_edge'
 import * as migration_20260714_103000_remove_remaining_opal_photo_edges from './20260714_103000_remove_remaining_opal_photo_edges'
 import * as migration_20260714_104000_correct_mintabie_cushion_crop from './20260714_104000_correct_mintabie_cushion_crop'
+import * as migration_20260714_105000_builder_stone_contours from './20260714_105000_builder_stone_contours'
 
 export const migrations = [
   {
@@ -227,5 +228,10 @@ export const migrations = [
     up: migration_20260714_104000_correct_mintabie_cushion_crop.up,
     down: migration_20260714_104000_correct_mintabie_cushion_crop.down,
     name: '20260714_104000_correct_mintabie_cushion_crop',
+  },
+  {
+    up: migration_20260714_105000_builder_stone_contours.up,
+    down: migration_20260714_105000_builder_stone_contours.down,
+    name: '20260714_105000_builder_stone_contours',
   },
 ]

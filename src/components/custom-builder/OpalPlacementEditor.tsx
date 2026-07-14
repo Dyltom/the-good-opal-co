@@ -109,7 +109,7 @@ export function OpalPlacementEditor({
   const aperture = useRef<HTMLDivElement>(null)
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const clipPath = cssSilhouetteClipPath(opal.visual.silhouette)
+  const clipPath = cssSilhouetteClipPath(opal.visual.silhouette, opal.visual.contour)
 
   function update<K extends keyof OpalPlacement>(key: K, value: OpalPlacement[K]) {
     onChange({ ...placement, [key]: value })

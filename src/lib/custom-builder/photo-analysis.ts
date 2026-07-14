@@ -1,6 +1,12 @@
 import { rotationCoverScale } from './photo-crop'
+import {
+  BUILDER_STONE_CONTOUR_SAMPLE_COUNT,
+  BUILDER_STONE_CONTOUR_VERSION,
+  parseBuilderStoneContour,
+  type BuilderStoneContourV1,
+} from './stone-contour'
 
-export const OPAL_PHOTO_ANALYSIS_VERSION = 1
+export const OPAL_PHOTO_ANALYSIS_VERSION = 2
 
 export interface OpalRasterInput {
   channels?: 3 | 4
@@ -12,6 +18,7 @@ export interface OpalRasterInput {
 
 export interface OpalPhotoAnalysis {
   confidence: number
+  contour: BuilderStoneContourV1
   focalX: number
   focalY: number
   rotation: number
@@ -36,6 +43,7 @@ interface Component {
 
 const maximumPixels = 16_000_000
 const minimumContrast = 12 * 12
+const fullTurn = Math.PI * 2
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value))
@@ -183,7 +191,7 @@ function componentCentroid(component: Component, width: number): readonly [numbe
   let totalX = 0
   let totalY = 0
   for (const pixel of component.indices) {
-    totalX += pixel % width + 0.5
+    totalX += (pixel % width) + 0.5
     totalY += Math.floor(pixel / width) + 0.5
   }
   return [totalX / component.indices.length, totalY / component.indices.length]
@@ -209,6 +217,185 @@ function selectComponent(
     }
   }
   return selected
+}
+
+function dilate(mask: Uint8Array, width: number, height: number): Uint8Array {
+  const result = new Uint8Array(mask.length)
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = y * width + x
+      let foreground = 0
+      for (let deltaY = -1; deltaY <= 1 && foreground === 0; deltaY += 1) {
+        for (let deltaX = -1; deltaX <= 1; deltaX += 1) {
+          const sampleX = x + deltaX
+          const sampleY = y + deltaY
+          if (
+            sampleX >= 0 &&
+            sampleX < width &&
+            sampleY >= 0 &&
+            sampleY < height &&
+            mask[sampleY * width + sampleX] === 1
+          ) {
+            foreground = 1
+            break
+          }
+        }
+      }
+      result[index] = foreground
+    }
+  }
+  return result
+}
+
+function erode(mask: Uint8Array, width: number, height: number): Uint8Array {
+  const result = new Uint8Array(mask.length)
+  for (let y = 1; y < height - 1; y += 1) {
+    for (let x = 1; x < width - 1; x += 1) {
+      let foreground = 1
+      for (let deltaY = -1; deltaY <= 1 && foreground === 1; deltaY += 1) {
+        for (let deltaX = -1; deltaX <= 1; deltaX += 1) {
+          if (mask[(y + deltaY) * width + x + deltaX] === 0) {
+            foreground = 0
+            break
+          }
+        }
+      }
+      result[y * width + x] = foreground
+    }
+  }
+  return result
+}
+
+function cleanMask(mask: Uint8Array, width: number, height: number): Uint8Array {
+  const closed = erode(dilate(mask, width, height), width, height)
+  return dilate(erode(closed, width, height), width, height)
+}
+
+interface ContourExtraction {
+  angularCoverage: number
+  contour: BuilderStoneContourV1
+  smoothness: number
+}
+
+function circularlyFill(values: readonly (number | undefined)[]): number[] | undefined {
+  const known = values.flatMap((value, index) => (value === undefined ? [] : [index]))
+  if (known.length === 0) return undefined
+
+  return values.map((value, index) => {
+    if (value !== undefined) return value
+
+    let previousDistance = 1
+    while (values[(index - previousDistance + values.length) % values.length] === undefined) {
+      previousDistance += 1
+    }
+    let nextDistance = 1
+    while (values[(index + nextDistance) % values.length] === undefined) nextDistance += 1
+    const previous = values[(index - previousDistance + values.length) % values.length]!
+    const next = values[(index + nextDistance) % values.length]!
+    return previous + (next - previous) * (previousDistance / (previousDistance + nextDistance))
+  })
+}
+
+function medianOfThree(first: number, second: number, third: number): number {
+  return [first, second, third].sort((left, right) => left - right)[1]!
+}
+
+function extractContour(
+  component: Component,
+  width: number,
+  height: number,
+  rotationDegrees: number
+): ContourExtraction | undefined {
+  const selectedMask = new Uint8Array(width * height)
+  for (const pixel of component.indices) selectedMask[pixel] = 1
+
+  const centreX = (component.minimumX + component.maximumX + 1) / 2
+  const centreY = (component.minimumY + component.maximumY + 1) / 2
+  const halfWidth = Math.max(1, (component.maximumX - component.minimumX + 1) / 2)
+  const halfHeight = Math.max(1, (component.maximumY - component.minimumY + 1) / 2)
+  const radians = (-rotationDegrees * Math.PI) / 180
+  const cosine = Math.cos(radians)
+  const sine = Math.sin(radians)
+  const boundary: Array<readonly [number, number]> = []
+
+  for (const pixel of component.indices) {
+    const x = pixel % width
+    const y = Math.floor(pixel / width)
+    const isBoundary =
+      x === 0 ||
+      x === width - 1 ||
+      y === 0 ||
+      y === height - 1 ||
+      selectedMask[pixel - 1] === 0 ||
+      selectedMask[pixel + 1] === 0 ||
+      selectedMask[pixel - width] === 0 ||
+      selectedMask[pixel + width] === 0
+    if (!isBoundary) continue
+
+    const normalizedX = (x + 0.5 - centreX) / halfWidth
+    const normalizedY = (centreY - y - 0.5) / halfHeight
+    boundary.push([
+      normalizedX * cosine - normalizedY * sine,
+      normalizedX * sine + normalizedY * cosine,
+    ])
+  }
+  if (boundary.length < BUILDER_STONE_CONTOUR_SAMPLE_COUNT / 2) return undefined
+
+  const minimumX = Math.min(...boundary.map(([x]) => x))
+  const maximumX = Math.max(...boundary.map(([x]) => x))
+  const minimumY = Math.min(...boundary.map(([, y]) => y))
+  const maximumY = Math.max(...boundary.map(([, y]) => y))
+  const normalizedCentreX = (minimumX + maximumX) / 2
+  const normalizedCentreY = (minimumY + maximumY) / 2
+  const normalizedHalfWidth = (maximumX - minimumX) / 2
+  const normalizedHalfHeight = (maximumY - minimumY) / 2
+  if (normalizedHalfWidth <= 0 || normalizedHalfHeight <= 0) return undefined
+
+  const bins: Array<number | undefined> = Array.from({
+    length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT,
+  })
+  for (const [rawX, rawY] of boundary) {
+    const x = (rawX - normalizedCentreX) / normalizedHalfWidth
+    const y = (rawY - normalizedCentreY) / normalizedHalfHeight
+    const angle = (Math.atan2(y, x) + fullTurn) % fullTurn
+    const index = Math.min(
+      BUILDER_STONE_CONTOUR_SAMPLE_COUNT - 1,
+      Math.floor((angle / fullTurn) * BUILDER_STONE_CONTOUR_SAMPLE_COUNT)
+    )
+    const radius = Math.hypot(x, y)
+    bins[index] = Math.max(bins[index] ?? 0, radius)
+  }
+
+  const populatedBins = bins.filter((radius) => radius !== undefined).length
+  const angularCoverage = populatedBins / BUILDER_STONE_CONTOUR_SAMPLE_COUNT
+  if (angularCoverage < 0.45) return undefined
+  const filled = circularlyFill(bins)
+  if (!filled) return undefined
+  const smoothed = filled.map((radius, index) =>
+    medianOfThree(
+      filled[(index - 1 + filled.length) % filled.length]!,
+      radius,
+      filled[(index + 1) % filled.length]!
+    )
+  )
+  const radii = smoothed.map((radius) => Math.round(clamp(radius, 0.05, 1.75) * 10_000) / 10_000)
+  const meanDelta =
+    radii.reduce(
+      (sum, radius, index) => sum + Math.abs(radius - radii[(index + 1) % radii.length]!),
+      0
+    ) / radii.length
+
+  const parsedContour = parseBuilderStoneContour({
+    version: BUILDER_STONE_CONTOUR_VERSION,
+    radii,
+  })
+  if (!parsedContour) return undefined
+
+  return {
+    angularCoverage,
+    contour: parsedContour,
+    smoothness: 1 - clamp(meanDelta / 0.12, 0, 1),
+  }
 }
 
 function normalizeHalfTurn(degrees: number): number {
@@ -255,7 +442,12 @@ export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | u
     if ((contrasts[pixel] ?? 0) >= threshold) mask[pixel] = 1
   }
 
-  const component = selectComponent(findComponents(mask, input.width, input.height), input.width, input.height)
+  const cleanedMask = cleanMask(mask, input.width, input.height)
+  const component = selectComponent(
+    findComponents(cleanedMask, input.width, input.height),
+    input.width,
+    input.height
+  )
   if (!component) return undefined
   const [centreX, centreY] = componentCentroid(component, input.width)
 
@@ -264,7 +456,7 @@ export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | u
   let covarianceXY = 0
   let contrastTotal = 0
   for (const pixel of component.indices) {
-    const x = pixel % input.width + 0.5 - centreX
+    const x = (pixel % input.width) + 0.5 - centreX
     const y = Math.floor(pixel / input.width) + 0.5 - centreY
     covarianceXX += x * x
     covarianceYY += y * y
@@ -283,17 +475,28 @@ export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | u
   const majorAxisAngle = 0.5 * Math.atan2(2 * covarianceXY, covarianceXX - covarianceYY)
   const targetAngle = input.stoneAspect !== undefined && input.stoneAspect > 1.08 ? 0 : Math.PI / 2
   const measuredRotation =
-    anisotropy < 0.12
-      ? 0
-      : normalizeHalfTurn(((targetAngle - majorAxisAngle) * 180) / Math.PI)
+    anisotropy < 0.12 ? 0 : normalizeHalfTurn(((targetAngle - majorAxisAngle) * 180) / Math.PI)
   // Colour patches can pull PCA a few dozen degrees inside an otherwise
   // upright opal. Auto-correct only unmistakable sideways photography; finer
   // artistic alignment remains reviewable in Payload and the builder editor.
-  const rotation = Math.abs(measuredRotation) >= 60 ? measuredRotation : 0
+  const measuredStoneAspect =
+    input.stoneAspect !== undefined && Number.isFinite(input.stoneAspect)
+      ? input.stoneAspect
+      : undefined
+  // Near-square cushions and hearts have ambiguous PCA axes: a broad heart can
+  // be fractionally wider than tall while already photographed upright. Only
+  // auto-rotate when measured dimensions establish a clear long axis.
+  const hasUnambiguousLongAxis =
+    measuredStoneAspect === undefined || measuredStoneAspect < 0.8 || measuredStoneAspect > 1.25
+  const rotation =
+    hasUnambiguousLongAxis && Math.abs(measuredRotation) >= 60 ? measuredRotation : 0
+  const contour = extractContour(component, input.width, input.height, rotation)
+  if (!contour) return undefined
 
   const objectWidth = component.maximumX - component.minimumX + 1
   const objectHeight = component.maximumY - component.minimumY + 1
-  const detectedMinorMajor = Math.min(objectWidth, objectHeight) / Math.max(objectWidth, objectHeight)
+  const detectedMinorMajor =
+    Math.min(objectWidth, objectHeight) / Math.max(objectWidth, objectHeight)
   const stoneAspect =
     input.stoneAspect !== undefined && Number.isFinite(input.stoneAspect) && input.stoneAspect > 0
       ? clamp(input.stoneAspect, 0.2, 5)
@@ -305,30 +508,38 @@ export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | u
   const usableMinorFraction =
     Math.min(objectWidth / input.width, objectHeight / input.height) * 0.84
   const desiredEffectiveZoom = Math.max(3.2, 1 / Math.max(usableMinorFraction, 1 / 12))
-  const zoom = clamp(
-    desiredEffectiveZoom / rotationCoverScale(stoneAspect, rotation),
-    1,
-    12
-  )
+  const zoom = clamp(desiredEffectiveZoom / rotationCoverScale(stoneAspect, rotation), 1, 12)
 
   const areaFraction = component.indices.length / pixels
   const boundingArea = objectWidth * objectHeight
   const solidity = boundingArea > 0 ? component.indices.length / boundingArea : 0
-  const centreDistance = Math.hypot((centreX / input.width - 0.5) * 2, (centreY / input.height - 0.5) * 2)
+  const centreDistance = Math.hypot(
+    (centreX / input.width - 0.5) * 2,
+    (centreY / input.height - 0.5) * 2
+  )
   const centrality = 1 - clamp(centreDistance / 1.1, 0, 1)
-  const areaStrength = Math.min(clamp(areaFraction / 0.035, 0, 1), clamp((0.9 - areaFraction) / 0.2, 0, 1))
+  const areaStrength = Math.min(
+    clamp(areaFraction / 0.035, 0, 1),
+    clamp((0.9 - areaFraction) / 0.2, 0, 1)
+  )
   const meanContrast = contrastTotal / component.indices.length
   const contrastStrength = clamp((meanContrast - threshold) / Math.max(threshold * 2.5, 1), 0, 1)
   const confidence = clamp(
-    contrastStrength * 0.4 + areaStrength * 0.25 + centrality * 0.2 + clamp(solidity, 0, 1) * 0.15,
+    contrastStrength * 0.3 +
+      areaStrength * 0.2 +
+      centrality * 0.15 +
+      clamp(solidity, 0, 1) * 0.1 +
+      contour.angularCoverage * 0.15 +
+      contour.smoothness * 0.1,
     0,
     1
   )
 
   if (confidence < 0.35) return undefined
   return {
-    focalX: clamp(centreX / input.width, 0, 1),
-    focalY: clamp(centreY / input.height, 0, 1),
+    contour: contour.contour,
+    focalX: clamp((component.minimumX + component.maximumX + 1) / 2 / input.width, 0, 1),
+    focalY: clamp((component.minimumY + component.maximumY + 1) / 2 / input.height, 0, 1),
     zoom,
     rotation: clamp(rotation, -90, 90),
     confidence,

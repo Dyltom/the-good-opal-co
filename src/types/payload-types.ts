@@ -493,6 +493,34 @@ export interface Product {
    */
   builderMappingAnalysisError?: string | null;
   /**
+   * Approved normalized 96-sample stone boundary. Automatic analysis never overwrites reviewed or manual values.
+   */
+  builderContour?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Latest automatic contour candidate awaiting visual review.
+   */
+  builderContourCandidate?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * SHA-256 of the source bytes used by the approved contour.
+   */
+  builderContourSourceImageHash?: string | null;
+  /**
    * Set when mapping is explicitly approved as Reviewed or Manual.
    */
   builderMappingReviewedAt?: string | null;
@@ -1421,6 +1449,9 @@ export interface ProductsSelect<T extends boolean = true> {
   builderPhotoAnalysisVersion?: T;
   builderPhotoAnalysisConfidence?: T;
   builderMappingAnalysisError?: T;
+  builderContour?: T;
+  builderContourCandidate?: T;
+  builderContourSourceImageHash?: T;
   builderMappingReviewedAt?: T;
   builderMappingNotes?: T;
   builderEligible?: T;

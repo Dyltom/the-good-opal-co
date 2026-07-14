@@ -464,7 +464,16 @@ export function applyBuilderMappingLifecycle(
     }
   }
 
+  if (
+    Object.prototype.hasOwnProperty.call(incoming, 'builderContour') &&
+    !Object.prototype.hasOwnProperty.call(incoming, 'builderContourSourceImageHash') &&
+    typeof product.builderMappingAnalyzedImageHash === 'string'
+  ) {
+    incoming.builderContourSourceImageHash = product.builderMappingAnalyzedImageHash
+  }
+
   if (inputsChanged || versionChanged) {
+    incoming.builderContourCandidate = null
     incoming.builderMappingAnalyzedImageHash = null
     incoming.builderPhotoAnalysisVersion = null
     incoming.builderPhotoAnalysisConfidence = null

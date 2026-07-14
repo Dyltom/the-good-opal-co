@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { analyzeOpalRaster, OPAL_PHOTO_ANALYSIS_VERSION } from '../photo-analysis'
+import { BUILDER_STONE_CONTOUR_SAMPLE_COUNT, parseBuilderStoneContour } from '../stone-contour'
 
 type Colour = readonly [number, number, number, number?]
 
@@ -43,12 +44,22 @@ function ellipseRaster({
 describe('opal photo crop analysis', () => {
   test('finds a centred vertical stone against its border colour', () => {
     const analysis = analyzeOpalRaster({
-      ...ellipseRaster({ width: 160, height: 140, centreX: 80, centreY: 70, radiusX: 24, radiusY: 44 }),
+      ...ellipseRaster({
+        width: 160,
+        height: 140,
+        centreX: 80,
+        centreY: 70,
+        radiusX: 24,
+        radiusY: 44,
+      }),
       stoneAspect: 24 / 44,
     })
 
-    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(1)
+    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(2)
     expect(analysis).toBeDefined()
+    expect(parseBuilderStoneContour(analysis?.contour)?.radii).toHaveLength(
+      BUILDER_STONE_CONTOUR_SAMPLE_COUNT
+    )
     expect(analysis?.focalX).toBeCloseTo(0.5, 2)
     expect(analysis?.focalY).toBeCloseTo(0.5, 2)
     expect(analysis?.zoom).toBeGreaterThanOrEqual(3.2)
@@ -79,7 +90,14 @@ describe('opal photo crop analysis', () => {
 
   test('rotates a horizontal stone toward a vertical aperture', () => {
     const analysis = analyzeOpalRaster({
-      ...ellipseRaster({ width: 180, height: 140, centreX: 90, centreY: 70, radiusX: 46, radiusY: 18 }),
+      ...ellipseRaster({
+        width: 180,
+        height: 140,
+        centreX: 90,
+        centreY: 70,
+        radiusX: 46,
+        radiusY: 18,
+      }),
       stoneAspect: 18 / 46,
     })
 
@@ -87,10 +105,35 @@ describe('opal photo crop analysis', () => {
     expect(Math.abs(analysis?.rotation ?? 0)).toBeCloseTo(90, 4)
     expect(analysis?.focalX).toBeCloseTo(0.5, 2)
     expect(analysis?.focalY).toBeCloseTo(0.5, 2)
+    expect(analysis?.contour.radii).toHaveLength(BUILDER_STONE_CONTOUR_SAMPLE_COUNT)
+  })
+
+  test('does not rotate an upright near-square heart or cushion from an ambiguous PCA axis', () => {
+    const analysis = analyzeOpalRaster({
+      ...ellipseRaster({
+        width: 160,
+        height: 140,
+        centreX: 80,
+        centreY: 70,
+        radiusX: 36,
+        radiusY: 30,
+      }),
+      stoneAspect: 0.92,
+    })
+
+    expect(analysis).toBeDefined()
+    expect(analysis?.rotation).toBe(0)
   })
 
   test('prefers the substantial component near centre over a corner distraction', () => {
-    const raster = ellipseRaster({ width: 180, height: 160, centreX: 96, centreY: 82, radiusX: 25, radiusY: 42 })
+    const raster = ellipseRaster({
+      width: 180,
+      height: 160,
+      centreX: 96,
+      centreY: 82,
+      radiusX: 25,
+      radiusY: 42,
+    })
     for (let y = 10; y < 22; y += 1) {
       for (let x = 12; x < 27; x += 1) {
         const offset = (y * raster.width + x) * raster.channels
@@ -107,9 +150,42 @@ describe('opal photo crop analysis', () => {
     expect(analysis?.focalY).toBeCloseTo(82 / 160, 2)
   })
 
+  test('persists an asymmetric freeform boundary instead of reducing it to a named shape', () => {
+    const raster = ellipseRaster({
+      width: 180,
+      height: 160,
+      centreX: 90,
+      centreY: 80,
+      radiusX: 30,
+      radiusY: 45,
+    })
+    for (let y = 68; y < 91; y += 1) {
+      for (let x = 116; x < 133; x += 1) {
+        const offset = (y * raster.width + x) * raster.channels
+        raster.data[offset] = 22
+        raster.data[offset + 1] = 83
+        raster.data[offset + 2] = 96
+      }
+    }
+
+    const analysis = analyzeOpalRaster({ ...raster, stoneAspect: 30 / 45 })
+    const parsed = parseBuilderStoneContour(analysis?.contour)
+
+    expect(parsed).toBeDefined()
+    expect(parsed?.radii).toHaveLength(BUILDER_STONE_CONTOUR_SAMPLE_COUNT)
+    expect(Math.max(...parsed!.radii) - Math.min(...parsed!.radii)).toBeGreaterThan(0.12)
+  })
+
   test('returns bounded deterministic output for a stone near an image edge', () => {
     const input = {
-      ...ellipseRaster({ width: 120, height: 100, centreX: 91, centreY: 62, radiusX: 17, radiusY: 28 }),
+      ...ellipseRaster({
+        width: 120,
+        height: 100,
+        centreX: 91,
+        centreY: 62,
+        radiusX: 17,
+        radiusY: 28,
+      }),
       stoneAspect: 0.01,
     }
     const first = analyzeOpalRaster(input)
@@ -127,6 +203,7 @@ describe('opal photo crop analysis', () => {
     expect(first?.rotation).toBeLessThanOrEqual(90)
     expect(first?.confidence).toBeGreaterThanOrEqual(0)
     expect(first?.confidence).toBeLessThanOrEqual(1)
+    expect(first?.contour).toEqual(second?.contour)
   })
 
   test('returns undefined for uniform or malformed rasters', () => {
@@ -134,6 +211,8 @@ describe('opal photo crop analysis', () => {
       analyzeOpalRaster({ data: new Uint8Array(48 * 48 * 3).fill(120), width: 48, height: 48 })
     ).toBeUndefined()
     expect(analyzeOpalRaster({ data: new Uint8Array(12), width: 48, height: 48 })).toBeUndefined()
-    expect(analyzeOpalRaster({ data: new Uint8Array(7 * 7 * 3), width: 7, height: 7 })).toBeUndefined()
+    expect(
+      analyzeOpalRaster({ data: new Uint8Array(7 * 7 * 3), width: 7, height: 7 })
+    ).toBeUndefined()
   })
 })
