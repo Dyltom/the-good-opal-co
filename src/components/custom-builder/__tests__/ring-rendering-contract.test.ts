@@ -66,7 +66,7 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('settles opals without remounting or pulling their contour away from the bezel', () => {
-    expect(sceneSource).toContain('transitionKey={renderedOpal.id}')
+    expect(sceneSource).toContain('transitionKey={opalTransitionKey}')
     expect(sceneSource).not.toContain('key={renderedOpal.id}')
     expect(sceneSource).not.toContain('group.current.scale.set(')
     expect(sceneSource).not.toContain('group.current.rotation')
@@ -101,7 +101,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')
     expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
     expect(sceneSource).toContain('function OrganicSolderGeometry')
-    expect(sceneSource).toContain('new SphereGeometry(radius, 14 + (seed % 3), 9)')
+    expect(sceneSource).toContain('new SphereGeometry(radius, 12 + (seed % 3), 7)')
     expect(sceneSource).toContain(
       '<OrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
@@ -112,10 +112,10 @@ describe('photoreal ring rendering contract', () => {
     )
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.18 : organic \? 1\.14 : 1\.26\}/
+      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.18 : organic \? 0\.96 : 1\.26\}/
     )
-    expect(sceneSource).toContain('faceted ? 1.18 : organic ? 1.14 : 1.26')
-    expect(sceneSource).toContain('organic={usesHandmadeSurface}')
+    expect(sceneSource).toContain('faceted ? 1.18 : organic ? 0.96 : 1.26')
+    expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
     expect(sceneSource).not.toContain('flatShading={faceted}')

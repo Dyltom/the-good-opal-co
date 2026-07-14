@@ -233,12 +233,12 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#b9b6af',
-    '14k-gold': '#997a37',
-    '18k-gold': '#a98235',
-    'white-gold': '#aaa8a1',
-    'rose-gold': '#956458',
-    platinum: '#afada8',
+    'sterling-silver': '#858680',
+    '14k-gold': '#81652e',
+    '18k-gold': '#8e6b2c',
+    'white-gold': '#858680',
+    'rose-gold': '#7d5149',
+    platinum: '#888985',
   }
   const facetedSolderColour: Record<RingConfig['metal'], string> = {
     'sterling-silver': '#969690',
@@ -256,7 +256,7 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
-      metalness={faceted ? 0.74 : 0.91}
+      metalness={faceted ? 0.74 : organic ? 0.88 : 0.91}
       roughness={
         faceted
           ? Math.max(0.5, roughness * 0.85)
@@ -266,7 +266,7 @@ function SolderGrainMaterial({
       }
       clearcoat={0.01}
       clearcoatRoughness={0.68}
-      envMapIntensity={faceted ? 1.18 : organic ? 1.14 : 1.26}
+      envMapIntensity={faceted ? 1.18 : organic ? 0.96 : 1.26}
     />
   )
 }
@@ -286,7 +286,7 @@ function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
 
 function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
   const geometry = useMemo(() => {
-    const nextGeometry = new SphereGeometry(radius, 14 + (seed % 3), 9)
+    const nextGeometry = new SphereGeometry(radius, 12 + (seed % 3), 7)
     const positions = nextGeometry.getAttribute('position')
     const point = new Vector3()
 
@@ -298,9 +298,9 @@ function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number 
       const nz = point.z / length
       const deformation =
         1 +
-        Math.sin(nx * 7.1 + seed * 0.73) * 0.032 +
-        Math.sin(ny * 9.3 - seed * 0.41) * 0.024 +
-        Math.sin(nz * 6.7 + nx * 2.8 + seed * 0.29) * 0.02
+        Math.sin(nx * 7.1 + seed * 0.73) * 0.06 +
+        Math.sin(ny * 9.3 - seed * 0.41) * 0.045 +
+        Math.sin(nz * 6.7 + nx * 2.8 + seed * 0.29) * 0.035
       point.multiplyScalar(deformation)
       positions.setXYZ(index, point.x, point.y, point.z)
     }
@@ -1274,7 +1274,9 @@ function Setting({
     )
     return fuseContactingHaloBeads(
       coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius),
-      profile.beadRadius
+      profile.beadRadius,
+      profile.beadMinimumOverlap,
+      profile.beadTangentialStretchMax
     )
   }, [
     beadCount,
@@ -1285,6 +1287,8 @@ function Setting({
     profile.beadRadius,
     profile.beadFlattening,
     profile.beadAsymmetry,
+    profile.beadMinimumOverlap,
+    profile.beadTangentialStretchMax,
     profile.beadVariation,
     profile.haloOffset,
     profile.haloPhase,
@@ -1401,7 +1405,7 @@ function Setting({
                     )}
                     <SolderGrainMaterial
                       faceted={false}
-                      organic={usesHandmadeSurface}
+                      organic={profile.beadPrimitive === 'organic-granule'}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
                       tone={solderTone}
@@ -1683,6 +1687,17 @@ export function RingScene({
     () => JSON.stringify([config, renderedOpal, view]),
     [config, renderedOpal, view]
   )
+  const opalTransitionKey = useMemo(
+    () =>
+      JSON.stringify([
+        renderedOpal.id,
+        config.style,
+        config.shape,
+        renderedOpal.visual.contour?.version,
+        renderedOpal.visual.contour?.radii,
+      ]),
+    [config.shape, config.style, renderedOpal]
+  )
 
   return (
     <Canvas
@@ -1720,7 +1735,7 @@ export function RingScene({
         animateOpalPlacement={!reduceMotion}
         config={config}
         selectedOpal={renderedOpal}
-        transitionKey={renderedOpal.id}
+        transitionKey={opalTransitionKey}
       />
 
       <Environment resolution={256}>

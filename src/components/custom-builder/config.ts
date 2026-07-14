@@ -127,6 +127,10 @@ export interface RingStyleGeometryProfile {
   beadFlattening: number
   beadAsymmetry: number
   beadRoughness: number
+  /** Required neighbouring solder overlap in scene units (10 mm each). */
+  beadMinimumOverlap: number
+  /** Maximum filing/stretch along the halo tangent; preserves radial head size. */
+  beadTangentialStretchMax: number
   beadShape: 'granulated' | 'none'
   beadPrimitive: 'none' | 'organic-granule' | 'rounded-granule'
   beadVariation: number
@@ -256,6 +260,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadFlattening: 0.7,
     beadAsymmetry: 0,
     beadRoughness: 0.34,
+    beadMinimumOverlap: 0,
+    beadTangentialStretchMax: 1,
     beadShape: 'none',
     beadPrimitive: 'none',
     beadVariation: 0,
@@ -309,6 +315,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadFlattening: 0.7,
     beadAsymmetry: 0,
     beadRoughness: 0.34,
+    beadMinimumOverlap: 0,
+    beadTangentialStretchMax: 1,
     beadShape: 'none',
     beadPrimitive: 'none',
     beadVariation: 0,
@@ -361,6 +369,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadFlattening: 0.62,
     beadAsymmetry: 0.09,
     beadRoughness: 0.56,
+    beadMinimumOverlap: 0.004,
+    beadTangentialStretchMax: 1.35,
     beadShape: 'granulated',
     beadPrimitive: 'rounded-granule',
     beadVariation: 1.45,
@@ -405,13 +415,15 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     ...auroraBezelSeat,
     // Aurora's granules are broad and handmade, but the sold ring does not use
     // the oversized pearl-like balls produced by a full 1 mm sphere.
-    haloOffset: 0.092,
-    beadRadius: 0.048,
+    haloOffset: 0.095,
+    beadRadius: 0.046,
     beadCount: 28,
     beadPitchMm: 1.12,
-    beadFlattening: 0.6,
+    beadFlattening: 0.56,
     beadAsymmetry: 0.18,
     beadRoughness: 0.62,
+    beadMinimumOverlap: 0.001,
+    beadTangentialStretchMax: 1.14,
     beadShape: 'granulated',
     beadPrimitive: 'organic-granule',
     beadVariation: 1.55,

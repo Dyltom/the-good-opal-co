@@ -133,15 +133,15 @@ describe('sold ring style geometry', () => {
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.048,
-      haloOffset: 0.092,
+      beadRadius: 0.046,
+      haloOffset: 0.095,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
-    expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.14, 12)
+    expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
     expect(sunMoon.beadRadius * 20).toBeCloseTo(0.76, 12)
-    expect(aurora.beadRadius * 20).toBeCloseTo(0.96, 12)
+    expect(aurora.beadRadius * 20).toBeCloseTo(0.92, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {

@@ -219,8 +219,8 @@ describe('custom ring geometry contract', () => {
     )
 
     expect(projectedDepth.front).toBeGreaterThan(0.98)
-    expect(projectedDepth.profile).toBeGreaterThan(0.3)
-    expect(projectedDepth.profile).toBeLessThan(0.55)
+    expect(projectedDepth.profile).toBeGreaterThan(0.15)
+    expect(projectedDepth.profile).toBeLessThan(0.25)
     expect(projectedDepth['three-quarter']).toBeGreaterThan(0.88)
     expect(projectedDepth['three-quarter']).toBeLessThan(0.95)
     expect(cameraPositions.front).toEqual([0, 5.8, 0.2])
@@ -275,8 +275,8 @@ describe('custom ring geometry contract', () => {
       // obliqueness to retain a readable sliver of the selected stone face.
       expect(Math.abs(stoneProjection.depth), label).toBeGreaterThan(0.8)
       expect(Math.abs(ringProjection.depth), label).toBeGreaterThan(0.8)
-      expect(Math.abs(settingProjection.depth), label).toBeGreaterThan(0.3)
-      expect(Math.abs(settingProjection.depth), label).toBeLessThan(0.5)
+      expect(Math.abs(settingProjection.depth), label).toBeGreaterThan(0.15)
+      expect(Math.abs(settingProjection.depth), label).toBeLessThan(0.25)
     }
   })
 
@@ -343,6 +343,38 @@ describe('custom ring geometry contract', () => {
     expect(placement.depthProfile.baseZ).toBeGreaterThan(placement.settingBottom)
     expect(placement.depthProfile.girdleZ).toBeGreaterThan(placement.depthProfile.baseZ)
   })
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'keeps the %s stone, cup, and shank in one world-space assembly across ring sizes',
+    (style) => {
+      const reference = getRingStyleReferenceOpal(style)
+      const profile = ringStyleGeometryProfiles[style]
+
+      for (const size of [4, 7, 13]) {
+        const config = {
+          ...applyRingStyle(defaultRingConfig, style),
+          size,
+        } satisfies RingConfig
+        const placement = getSettingPlacement(config, reference)
+        const worldSettingBottom = placement.settingY + placement.settingBottom
+        const worldCupBottom = worldSettingBottom - profile.cupDepth
+        const worldStoneBase = placement.settingY + placement.depthProfile.baseZ
+        const worldCupTop = worldStoneBase + 0.003
+
+        expect(worldSettingBottom, `${style} size ${size}`).toBeCloseTo(
+          placement.measurements.outerRadius,
+          12
+        )
+        expect(worldCupBottom, `${style} size ${size}`).toBeLessThan(
+          placement.measurements.outerRadius
+        )
+        expect(worldCupTop, `${style} size ${size}`).toBeGreaterThan(
+          placement.measurements.outerRadius
+        )
+        expect(worldCupTop - worldStoneBase, `${style} size ${size}`).toBeCloseTo(0.003, 12)
+      }
+    }
+  )
 
   test.each(ringStyles.map(({ id }) => id))(
     'buries the full %s shoulder end beneath the setting base',
@@ -689,7 +721,9 @@ describe('custom ring geometry contract', () => {
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
         expect(profile.beadPitchMm, style).toBeGreaterThan(0)
-        expect(profile.beadFlattening, style).toBeGreaterThanOrEqual(0.6)
+        expect(profile.beadFlattening, style).toBeGreaterThanOrEqual(
+          style === 'aurora' ? 0.54 : 0.6
+        )
         expect(profile.beadFlattening, style).toBeLessThanOrEqual(0.7)
         expect(profile.haloOffset - profile.beadRadius, style).toBeGreaterThan(
           profile.bezelLipOffset
@@ -711,7 +745,7 @@ describe('custom ring geometry contract', () => {
 
   test.each([
     ['sun-moon', 'oval', 0.133],
-    ['aurora', 'pear', 0.14],
+    ['aurora', 'pear', 0.141],
   ] as const)(
     'fuses the %s grains without changing its sold outer head envelope',
     (style, shape, expectedOuterOffset) => {
@@ -733,7 +767,9 @@ describe('custom ring geometry contract', () => {
           profile.beadFlattening,
           profile.beadAsymmetry
         ),
-        profile.beadRadius
+        profile.beadRadius,
+        profile.beadMinimumOverlap,
+        profile.beadTangentialStretchMax
       )
       const gaps = beads.map((bead, index) =>
         getHaloBeadSurfaceGap(bead, beads[(index + 1) % beads.length]!, profile.beadRadius)

@@ -20,12 +20,11 @@ export interface CabochonDepthProfile {
 // without making the bezel appear to cut materially into the opal.
 export const bezelLipCompression = 0.002
 
-export const opalSettleDurationSeconds = 0.32
-// One scene unit is 10 mm. Keep the approach inside the formed bezel instead
-// of lifting the entire stone above its rim. The previous clear-the-crown drop
-// exposed a dark air band and read as a floating sticker in top and profile
-// views. Two tenths of a millimetre still communicates the final seating move.
-export const opalSettleApproachLift = 0.02
+export const opalSettleDurationSeconds = 0.58
+// One scene unit is 10 mm. The selected stone starts no more than 0.8 mm above
+// its final seat: enough to read as deliberate placement without turning the
+// preview into an exploded technical diagram.
+export const opalSettleApproachLift = 0.08
 
 export interface OpalSettleTransform {
   offsetZ: number
@@ -49,9 +48,11 @@ export function getOpalSettleTransform(
   // seat. The previous ease-out completed 87.5% of the travel by halfway, which
   // looked like a snap followed by a nearly static tail.
   const eased = progress ** 3 * (progress * (progress * 6 - 15) + 10)
+  if (progress >= 1) return { offsetZ: 0, settled: true }
 
+  const remaining = 1 - eased
   return {
-    offsetZ: Math.max(0, startOffset) * (1 - eased),
+    offsetZ: Math.max(0, startOffset) * remaining,
     settled: progress >= 1,
   }
 }
@@ -61,7 +62,7 @@ export function getOpalSettleStartOffset(
   bezelTop: number
 ): number {
   const availableSeatDepth = Math.max(0, bezelTop - depthProfile.baseZ)
-  return Math.min(opalSettleApproachLift, availableSeatDepth)
+  return Math.min(opalSettleApproachLift, Math.max(0, availableSeatDepth - 0.001))
 }
 
 export interface RingMeasurements {
@@ -147,10 +148,10 @@ export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', Came
   // Keep only enough elevation to retain a soft edge highlight; the previous
   // 0.45 elevation exposed both shank faces as two horizontal rails.
   front: [0, 5.8, 0.2],
-  // Look mostly along the ring-plane normal so the head stays physically above
-  // the shank. Retaining a smaller X/Y component reveals the cup and a sliver
-  // of opal face without rotating the finished ring onto its side.
-  profile: [1.8, 2.6, 5.8],
+  // A true elevation should prove how the cabochon meets its cup. Retain only
+  // a slight face component and a small lateral offset for depth; the previous
+  // 39%-face-on camera made a correctly seated stone read as a tilted plate.
+  profile: [1.5, 1.15, 6.2],
 }
 
 export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
@@ -801,7 +802,9 @@ export function getSettingOuterHalfWidth(
     )
     const beads = fuseContactingHaloBeads(
       coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius),
-      profile.beadRadius
+      profile.beadRadius,
+      profile.beadMinimumOverlap,
+      profile.beadTangentialStretchMax
     )
     return beads.reduce(
       (maximum, bead) =>
@@ -1211,7 +1214,8 @@ export function coalesceOverlappingHaloBeads(
 export function fuseContactingHaloBeads(
   beads: readonly HandmadeBeadPoint[],
   beadRadius: number,
-  minimumOverlap = 0.006
+  minimumOverlap = 0.006,
+  maximumTangentialStretch = 1.55
 ): readonly HandmadeBeadPoint[] {
   if (beads.length < 2 || beadRadius <= 0) return beads
 
@@ -1228,7 +1232,7 @@ export function fuseContactingHaloBeads(
     return {
       ...bead,
       rotation: tangentAngle,
-      stretchX: Math.min(1.55, Math.max(bead.stretchX, requiredStretch)),
+      stretchX: Math.min(maximumTangentialStretch, Math.max(bead.stretchX, requiredStretch)),
       stretchY: Math.min(1.04, bead.stretchY),
     }
   })
@@ -1273,7 +1277,7 @@ export function fuseContactingHaloBeads(
       ...bead,
       size: Math.max(0.45, bead.size * sizeScales[index]!),
       stretchX: Math.min(
-        1.55,
+        maximumTangentialStretch,
         Math.max(0.62, bead.stretchX + adjustments[index]! / Math.max(1, adjustmentCounts[index]!))
       ),
     }))
