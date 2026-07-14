@@ -252,7 +252,7 @@ function OpalPicker({
                   )}
                 </span>
                 <span className="block p-3">
-                  <span className="mb-1 block text-[0.65rem] font-medium uppercase tracking-[0.1em] text-opal-electric-accessible">
+                  <span className="mb-1 block text-xs font-medium uppercase tracking-[0.1em] text-opal-electric-accessible">
                     {kindLabel}
                   </span>
                   <span className="line-clamp-2 block text-sm font-medium leading-5">
@@ -268,7 +268,7 @@ function OpalPicker({
                     </span>
                   )}
                   {opal.selectionKind !== 'individual' && (
-                    <span className="mt-1 block text-[0.65rem] leading-4 text-charcoal-light">
+                    <span className="mt-1 block text-xs leading-4 text-charcoal-light">
                       3D shows a representative setting concept
                     </span>
                   )}
@@ -305,8 +305,9 @@ function RingStylePicker({
       <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
         Try every design with your selected opal. Each reference is a photographed Good Opal Co
-        ring; the preview keeps your stone’s real silhouette and adapts that design’s bezel, trim,
-        and shank around it. Your maker still confirms whether the physical stone can be set safely.
+        ring; the preview maps your photographed opal face into a proportion-matched setting
+        concept. Your maker confirms the natural outline, final seat, and whether the physical stone
+        can be set safely.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
@@ -345,7 +346,7 @@ function RingStylePicker({
                   {fit && (
                     <span
                       className={cn(
-                        'shrink-0 rounded-full px-2 py-0.5 text-[0.58rem] font-medium uppercase tracking-[0.08em]',
+                        'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em]',
                         fit.kind === 'original'
                           ? 'bg-opal-emerald/10 text-opal-emerald-dark'
                           : 'bg-cream text-charcoal-light'
@@ -359,7 +360,7 @@ function RingStylePicker({
                   {style.detail}
                 </span>
                 {fit && (
-                  <span className="mt-2 block text-[0.65rem] leading-4 text-charcoal-light">
+                  <span className="mt-2 block text-xs leading-4 text-charcoal-light">
                     {fit.label}
                   </span>
                 )}

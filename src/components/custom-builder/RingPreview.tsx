@@ -34,18 +34,26 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
   const [motionEnabled, setMotionEnabled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [zoomEnabled, setZoomEnabled] = useState(false)
   const [view, setView] = useState<RingView>('front')
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const desktop = window.matchMedia('(min-width: 640px)')
     setPrefersReducedMotion(media.matches)
     setMotionEnabled(false)
     setWebGlAvailable(supportsWebGl())
+    setZoomEnabled(desktop.matches)
     const updateMotion = () => {
       setPrefersReducedMotion(media.matches)
       if (media.matches) setMotionEnabled(false)
     }
     media.addEventListener('change', updateMotion)
-    return () => media.removeEventListener('change', updateMotion)
+    const updateZoom = () => setZoomEnabled(desktop.matches)
+    desktop.addEventListener('change', updateZoom)
+    return () => {
+      media.removeEventListener('change', updateMotion)
+      desktop.removeEventListener('change', updateZoom)
+    }
   }, [])
 
   return (
@@ -58,6 +66,7 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
           onContextLost={() => setWebGlAvailable(false)}
           reduceMotion={prefersReducedMotion}
           view={view}
+          zoomEnabled={zoomEnabled}
         />
       ) : (
         <div className="absolute inset-0">
@@ -125,24 +134,24 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
                 />
               </div>
               <div className="min-w-0">
-                <p className="text-[0.65rem] uppercase tracking-[0.12em] text-opal-light">
+                <p className="text-xs uppercase tracking-[0.12em] text-opal-light">
                   {selectedOpal.selectionKind === 'individual'
                     ? 'Selected opal face'
                     : 'Selected listing photo'}
                 </p>
                 <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
-                <p className="mt-1 text-[0.65rem] text-cream/70">
+                <p className="mt-1 text-xs text-cream/70">
                   {selectedOpal.stoneTypeLabel}
                   {selectedOpal.weight ? ` · ${selectedOpal.weight} ct` : ''}
                 </p>
                 {selectedOpal.visual.dimensionsMm && (
-                  <p className="mt-1 text-[0.65rem] text-cream/70">
+                  <p className="mt-1 text-xs text-cream/70">
                     {selectedOpal.visual.dimensionsMm.width} ×{' '}
                     {selectedOpal.visual.dimensionsMm.length} ×{' '}
                     {selectedOpal.visual.dimensionsMm.depth} mm
                   </p>
                 )}
-                <p className="mt-1 text-[0.65rem] leading-4 text-cream/60">
+                <p className="mt-1 text-xs leading-4 text-cream/60">
                   {selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
                     ? `Reviewed photo crop · ${selectedOpal.visual.silhouette} setting concept`
                     : selectedOpal.visual.textureCrop

@@ -82,6 +82,7 @@ interface RingSceneProps {
   reduceMotion?: boolean
   selectedOpal?: BuilderOpal
   view: RingView
+  zoomEnabled?: boolean
 }
 
 const metalColours: Record<RingConfig['metal'], string> = {
@@ -221,7 +222,7 @@ function SolderGrainMaterial({
   tone: number
 }) {
   const solderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#aaa69d',
+    'sterling-silver': '#c0bdb5',
     '14k-gold': '#b99342',
     '18k-gold': '#c49a3d',
     'white-gold': '#c7c4bb',
@@ -229,7 +230,7 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#8f8b83',
+    'sterling-silver': '#b7b3aa',
     '14k-gold': '#997a37',
     '18k-gold': '#a98235',
     'white-gold': '#aaa8a1',
@@ -244,11 +245,12 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
+      flatShading={organic}
       metalness={0.91}
-      roughness={organic ? Math.max(0.72, roughness) : Math.max(0.64, roughness)}
+      roughness={organic ? Math.max(0.56, roughness) : Math.max(0.48, roughness)}
       clearcoat={0.01}
-      clearcoatRoughness={0.74}
-      envMapIntensity={organic ? 0.82 : 0.92}
+      clearcoatRoughness={0.68}
+      envMapIntensity={organic ? 1.08 : 1.18}
     />
   )
 }
@@ -256,7 +258,7 @@ function SolderGrainMaterial({
 function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
   const colour =
     metal === 'sterling-silver'
-      ? '#5a574f'
+      ? '#34352f'
       : metal === '14k-gold' || metal === '18k-gold'
         ? '#765728'
         : metal === 'rose-gold'
@@ -1344,12 +1346,24 @@ function Setting({
                     {isOrganicGrain && <sphereGeometry args={[profile.beadRadius, 10, 7]} />}
                     <SolderSupportMaterial metal={config.metal} />
                   </mesh>
-                  <mesh castShadow receiveShadow>
+                  <mesh
+                    castShadow
+                    receiveShadow
+                    rotation={isOrganicGrain ? [Math.PI / 2, 0, 0] : undefined}
+                  >
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <sphereGeometry args={[profile.beadRadius, 18, 12]} />
+                      <cylinderGeometry
+                        args={[
+                          profile.beadRadius * 0.86,
+                          profile.beadRadius,
+                          profile.beadRadius * 1.5,
+                          7,
+                          1,
+                        ]}
+                      />
                     )}
                     <SolderGrainMaterial
                       organic={isOrganicGrain}
@@ -1638,6 +1652,7 @@ export function RingScene({
   reduceMotion = false,
   selectedOpal,
   view,
+  zoomEnabled = true,
 }: RingSceneProps) {
   const background = useMemo(() => new Color('#24241f'), [])
   const renderedOpal = useMemo(
@@ -1739,7 +1754,7 @@ export function RingScene({
         makeDefault
         target={framingTarget}
         enablePan={false}
-        enableZoom
+        enableZoom={zoomEnabled}
         minDistance={4.8}
         maxDistance={8.5}
         autoRotate={allowMotion}

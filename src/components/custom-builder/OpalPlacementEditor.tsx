@@ -344,16 +344,16 @@ export function OpalPlacementEditor({
         <div className="grid gap-5 bg-[#171714] p-4 text-cream sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-[0.68rem] font-medium uppercase tracking-[0.14em] text-opal-light">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-opal-light">
                 Stone workbench
               </p>
               <p className="mt-1 line-clamp-1 text-sm text-cream/75">{opal.name}</p>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
-              <span className="rounded-full border border-cream/20 px-3 py-1 text-[0.68rem] text-cream/75">
+              <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
                 {opal.visual.photoFit === 'reviewed' ? 'Reviewed photo crop' : 'Auto-fitted colour'}
               </span>
-              <span className="rounded-full border border-cream/20 px-3 py-1 text-[0.68rem] text-cream/75">
+              <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
                 {styleLabels[style]}
               </span>
             </div>
@@ -440,7 +440,7 @@ export function OpalPlacementEditor({
             </div>
             <output
               aria-live="polite"
-              className="pointer-events-none absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-[0.68rem] text-cream/85"
+              className="pointer-events-none absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
             >
               <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
               {canPan
@@ -559,7 +559,7 @@ export function OpalPlacementEditor({
           </details>
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-warm-grey/70 pt-3 sm:col-span-2">
-            <p className="max-w-[37ch] text-[0.68rem] leading-4 text-charcoal-light">
+            <p className="max-w-[37ch] text-xs leading-4 text-charcoal-light">
               Visual guide only. Your maker confirms colour bar, inclusions, stability, and yield.
             </p>
             <button

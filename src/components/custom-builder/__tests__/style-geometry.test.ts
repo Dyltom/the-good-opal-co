@@ -108,9 +108,9 @@ describe('sold ring style geometry', () => {
     expect(ringStyleGeometryProfiles.coral.beadPrimitive).toBe('none')
     expect(sunMoon).toMatchObject({
       beadCount: 40,
-      beadPitchMm: 0.84,
-      beadRadius: 0.042,
-      haloOffset: 0.091,
+      beadPitchMm: 1,
+      beadRadius: 0.05,
+      haloOffset: 0.14,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
@@ -120,7 +120,7 @@ describe('sold ring style geometry', () => {
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
-    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
+    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.19, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
     expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0, 12)
     expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0, 12)
@@ -175,10 +175,10 @@ describe('sold ring style geometry', () => {
     const rounded = Array.from({ length: 40 }, (_, key) => getSolderGrainTone(key, false))
     const organic = Array.from({ length: 28 }, (_, key) => getSolderGrainTone(key, true))
 
-    expect(Math.min(...rounded)).toBeCloseTo(0.84, 12)
-    expect(Math.max(...rounded)).toBeCloseTo(0.96, 12)
-    expect(Math.min(...organic)).toBeCloseTo(0.82, 12)
-    expect(Math.max(...organic)).toBeCloseTo(1.09, 12)
+    expect(Math.min(...rounded)).toBeCloseTo(0.92, 12)
+    expect(Math.max(...rounded)).toBeCloseTo(1, 12)
+    expect(Math.min(...organic)).toBeCloseTo(0.9, 12)
+    expect(Math.max(...organic)).toBeCloseTo(1.032, 12)
     expect(new Set(organic)).toHaveLength(7)
   })
 
@@ -258,7 +258,7 @@ describe('sold ring style geometry', () => {
 
       // Aurora's photographed 28-grain layout spans a wider irregular pear
       // perimeter than the denser Sun & Moon halo.
-      const [minimum, maximum] = style === 'sun-moon' ? [0.83, 0.9] : [1.12, 1.24]
+      const [minimum, maximum] = style === 'sun-moon' ? [0.9, 1.05] : [1.12, 1.24]
       expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }
@@ -290,7 +290,9 @@ describe('sold ring style geometry', () => {
       )
 
       expect(beads.length).toBeLessThan(varied.length)
-      expect(beads.length).toBeGreaterThanOrEqual(varied.length - 2)
+      // A deep adapted heart cleft can fold four perimeter samples into one
+      // solder cluster. Iterative coalescing keeps only its outward grains.
+      expect(beads.length).toBeGreaterThanOrEqual(varied.length - 4)
       expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
       // Even concave adaptations retain only a sub-0.05 mm oxidised seam.
       expect(Math.max(...gaps)).toBeLessThanOrEqual(0.005)
@@ -312,7 +314,9 @@ describe('sold ring style geometry', () => {
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
       expect(profile.haloSupportCoverage).toBeGreaterThanOrEqual(0.8)
       expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.82)
-      expect(supportOuterEdge).toBeGreaterThanOrEqual(profile.haloOffset + profile.beadRadius * 0.8)
+      expect(supportOuterEdge).toBeCloseTo(
+        profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
+      )
     }
   )
 
@@ -347,7 +351,7 @@ describe('sold ring style geometry', () => {
 
       // Handmade soldered grains should touch or very slightly overlap rather
       // than read as disconnected stones.
-      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
+      expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.015)
       expect(Math.max(...gaps)).toBeLessThanOrEqual(style === 'aurora' ? 0.04 : 0.035)
     }
   )

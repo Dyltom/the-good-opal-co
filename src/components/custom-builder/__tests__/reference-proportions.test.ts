@@ -11,7 +11,7 @@ import { getSettingOuterHalfWidth, getStoneDimensions } from '../geometry'
 const soldReferences = {
   gemini: {
     bandWidthMm: [1.7, 1.85],
-    headWidthMm: [8.65, 8.85],
+    headWidthMm: [9.25, 9.4],
     setting: 'bezel',
     shape: 'oval',
     stoneMm: [8, 10],
@@ -25,7 +25,7 @@ const soldReferences = {
   },
   'sun-moon': {
     bandWidthMm: [1.65, 1.8],
-    headWidthMm: [10.65, 10.95],
+    headWidthMm: [11.75, 12.15],
     setting: 'beaded',
     shape: 'oval',
     stoneMm: [8, 10],

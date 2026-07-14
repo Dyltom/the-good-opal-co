@@ -203,8 +203,10 @@ export function getHaloSupportGeometry(
 const geminiBezelSeat = {
   bezelLipOffset: 0.002,
   bezelLipRadius: 0.012,
-  bezelWallOffset: 0.0185,
-  bezelWallThickness: 0.036,
+  // Conservative lower edge of two owned top-photo measurements. Keeps the
+  // inner wall 0.01 mm clear while restoring Gemini's visible handmade rail.
+  bezelWallOffset: 0.033,
+  bezelWallThickness: 0.064,
   patinaSeatReveal: 0.008,
 } satisfies BezelSeatGeometry
 
@@ -346,12 +348,12 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
     ...sunMoonBezelSeat,
-    // Preserve the sold head envelope while leaving the hairline oxidized
-    // crevices visible between the smaller Sun & Moon grains.
-    haloOffset: 0.091,
-    beadRadius: 0.042,
+    // Forty owned-reference grains span an approximately 12 mm-wide head.
+    // Keep their oxidized seams visible instead of pulling the halo inward.
+    haloOffset: 0.14,
+    beadRadius: 0.05,
     beadCount: 40,
-    beadPitchMm: 0.84,
+    beadPitchMm: 1,
     beadFlattening: 0.68,
     beadAsymmetry: 0.06,
     beadRoughness: 0.56,

@@ -679,7 +679,7 @@ describe('custom ring geometry contract', () => {
   })
 
   test.each([
-    ['sun-moon', 'oval', 0.133],
+    ['sun-moon', 'oval', 0.19],
     ['aurora', 'pear', 0.141],
   ] as const)(
     'fuses the %s grains without changing its sold outer head envelope',
@@ -711,10 +711,7 @@ describe('custom ring geometry contract', () => {
       // One scene unit is 10 mm. Sold references show contact or a hairline
       // oxidised seam, never the previous 0.12–0.20 mm ball-bearing gaps.
       expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(0.02)
-      expect(profile.haloOffset + profile.beadRadius, style).toBeCloseTo(
-        expectedOuterOffset,
-        12
-      )
+      expect(profile.haloOffset + profile.beadRadius, style).toBeCloseTo(expectedOuterOffset, 12)
       expect(profile.haloValleySupportCoverage, style).toBeGreaterThanOrEqual(0.9)
     }
   )

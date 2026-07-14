@@ -990,7 +990,7 @@ export function getForgedMetalTone(curveProgress: number, crossSectionProgress: 
 
 /** Tarnish variation observed across individually soldered halo grains. */
 export function getSolderGrainTone(key: number, organic: boolean): number {
-  return organic ? 0.82 + ((key * 11) % 7) * 0.045 : 0.84 + ((key * 7) % 5) * 0.03
+  return organic ? 0.9 + ((key * 11) % 7) * 0.022 : 0.92 + ((key * 7) % 5) * 0.02
 }
 
 export function cssSilhouetteClipPath(
@@ -1143,46 +1143,62 @@ export function coalesceOverlappingHaloBeads(
 ): readonly HandmadeBeadPoint[] {
   if (beads.length < 2 || beadRadius <= 0) return beads
 
-  return beads.filter((bead, index) => {
-    const previous = beads[(index - 1 + beads.length) % beads.length]!
-    const next = beads[(index + 1) % beads.length]!
-    const duplicateThreshold = beadRadius * 0.5
-    const beadRadiusFromOrigin = Math.hypot(bead.x, bead.y)
-    const shouldKeepNearDuplicate = (other: HandmadeBeadPoint) => {
-      const otherRadiusFromOrigin = Math.hypot(other.x, other.y)
+  let coalesced = [...beads]
+  for (let pass = 0; pass < beads.length; pass += 1) {
+    const previousPass = coalesced
+    coalesced = previousPass.filter((bead, index) => {
+      const previous = previousPass[(index - 1 + previousPass.length) % previousPass.length]!
+      const next = previousPass[(index + 1) % previousPass.length]!
+      const duplicateThreshold = beadRadius * 0.5
+      const beadRadiusFromOrigin = Math.hypot(bead.x, bead.y)
+      const shouldKeepNearDuplicate = (other: HandmadeBeadPoint) => {
+        const otherRadiusFromOrigin = Math.hypot(other.x, other.y)
+        return (
+          beadRadiusFromOrigin > otherRadiusFromOrigin ||
+          (beadRadiusFromOrigin === otherRadiusFromOrigin && bead.key < other.key)
+        )
+      }
+      if (
+        Math.hypot(bead.x - previous.x, bead.y - previous.y) < duplicateThreshold &&
+        !shouldKeepNearDuplicate(previous)
+      ) {
+        return false
+      }
+      if (
+        Math.hypot(bead.x - next.x, bead.y - next.y) < duplicateThreshold &&
+        !shouldKeepNearDuplicate(next)
+      ) {
+        return false
+      }
+      if (
+        (Math.hypot(bead.x - previous.x, bead.y - previous.y) < duplicateThreshold &&
+          shouldKeepNearDuplicate(previous)) ||
+        (Math.hypot(bead.x - next.x, bead.y - next.y) < duplicateThreshold &&
+          shouldKeepNearDuplicate(next))
+      ) {
+        return true
+      }
+
+      const incomingX = bead.x - previous.x
+      const incomingY = bead.y - previous.y
+      const outgoingX = next.x - bead.x
+      const outgoingY = next.y - bead.y
+      const pathReverses = incomingX * outgoingX + incomingY * outgoingY < 0
+      if (!pathReverses) return true
+
+      // Remove only a folded-back sample such as a heart cleft. Ordinary close
+      // contact on a valid irregular opal contour must remain a grain, otherwise
+      // a chain of removals can open a visible unsupported gap.
       return (
-        beadRadiusFromOrigin > otherRadiusFromOrigin ||
-        (beadRadiusFromOrigin === otherRadiusFromOrigin && bead.key < other.key)
+        (getHaloBeadSurfaceGap(previous, bead, beadRadius) >= minimumGap &&
+          getHaloBeadSurfaceGap(bead, next, beadRadius) >= minimumGap) ||
+        getHaloBeadSurfaceGap(previous, next, beadRadius) > 0.005
       )
-    }
-    if (
-      Math.hypot(bead.x - previous.x, bead.y - previous.y) < duplicateThreshold &&
-      !shouldKeepNearDuplicate(previous)
-    ) {
-      return false
-    }
-    if (
-      Math.hypot(bead.x - next.x, bead.y - next.y) < duplicateThreshold &&
-      !shouldKeepNearDuplicate(next)
-    ) {
-      return false
-    }
+    })
+    if (coalesced.length === previousPass.length || coalesced.length < 3) break
+  }
 
-    const incomingX = bead.x - previous.x
-    const incomingY = bead.y - previous.y
-    const outgoingX = next.x - bead.x
-    const outgoingY = next.y - bead.y
-    const pathReverses = incomingX * outgoingX + incomingY * outgoingY < 0
-    if (!pathReverses) return true
-
-    // Remove only a folded-back sample such as a heart cleft. Ordinary close
-    // contact on a valid irregular opal contour must remain a grain, otherwise
-    // a chain of removals can open a visible unsupported gap.
-    return (
-      getHaloBeadSurfaceGap(previous, bead, beadRadius) >= minimumGap &&
-      getHaloBeadSurfaceGap(bead, next, beadRadius) >= minimumGap
-    )
-  })
+  return coalesced
 }
 
 /**
@@ -1222,7 +1238,7 @@ export function fuseContactingHaloBeads(
   // without changing the opal seat or bezel.
   const targetGap = -Math.max(0, minimumOverlap)
   const minimumAllowedGap = -0.018
-  for (let pass = 0; pass < 28; pass += 1) {
+  for (let pass = 0; pass < 64; pass += 1) {
     const adjustments = Array.from({ length: fused.length }, () => 0)
     const adjustmentCounts = Array.from({ length: fused.length }, () => 0)
     const sizeScales = Array.from({ length: fused.length }, () => 1)
