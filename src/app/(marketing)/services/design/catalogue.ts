@@ -13,12 +13,7 @@ export function shouldIncludeBuilderCatalogueProduct(product: BuilderCataloguePr
   if (!isAvailableOpalListing(product.name)) return false
   if (classifyOpalListing(product.name) !== 'individual') return true
 
-  return (
-    product.builderMappingStatus === undefined ||
-    product.builderMappingStatus === null ||
-    product.builderMappingStatus === 'reviewed' ||
-    product.builderMappingStatus === 'manual'
-  )
+  return product.builderMappingStatus === 'reviewed' || product.builderMappingStatus === 'manual'
 }
 
 export function resolveBuilderCatalogueImageUrl(

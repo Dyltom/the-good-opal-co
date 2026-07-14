@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
+import { processBuilderMappings } from '@/lib/custom-builder/mapping-processor'
 import { importProductImages } from '@/scripts/import-wordpress-product-images'
 import { syncWooCatalog } from '@/scripts/sync-woocommerce-catalog'
 
@@ -36,7 +37,11 @@ export async function GET(request: NextRequest) {
         publishStockByWooId: catalog.sourceStockByWooId,
       })
     )
-    return NextResponse.json({ catalog, images })
+    // The image import can create a new raw-opal listing or mark an approved
+    // mapping stale. Analyze that exact post-import state in the same guarded
+    // pipeline so no individual stone reaches the builder before review.
+    const builderMappings = await processBuilderMappings({ limit: 25 })
+    return NextResponse.json({ builderMappings, catalog, images })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown WooCommerce sync error'
     console.error('WooCommerce recurring catalogue sync failed', error)

@@ -53,8 +53,20 @@ describe('design page initial state', () => {
     ).toBe(false)
     expect(
       shouldIncludeBuilderCatalogueProduct({
+        builderMappingStatus: null,
+        name: 'Unmapped Lightning Ridge black opal',
+      })
+    ).toBe(false)
+    expect(
+      shouldIncludeBuilderCatalogueProduct({
         builderMappingStatus: 'reviewed',
         name: 'Reviewed Lightning Ridge black opal',
+      })
+    ).toBe(true)
+    expect(
+      shouldIncludeBuilderCatalogueProduct({
+        builderMappingStatus: 'manual',
+        name: 'Manually mapped Lightning Ridge black opal',
       })
     ).toBe(true)
     expect(

@@ -1,13 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 
-const { importProductImages, syncWooCatalog } = vi.hoisted(() => ({
+const { importProductImages, processBuilderMappings, syncWooCatalog } = vi.hoisted(() => ({
   importProductImages: vi.fn(),
+  processBuilderMappings: vi.fn(),
   syncWooCatalog: vi.fn(),
 }))
 
 vi.mock('@/scripts/sync-woocommerce-catalog', () => ({ syncWooCatalog }))
 vi.mock('@/scripts/import-wordpress-product-images', () => ({ importProductImages }))
+vi.mock('@/lib/custom-builder/mapping-processor', () => ({ processBuilderMappings }))
 
 import { GET } from '../route'
 
@@ -29,6 +31,7 @@ describe('WooCommerce catalogue cron', () => {
       updated: 2,
     })
     importProductImages.mockResolvedValue({ changed: 1 })
+    processBuilderMappings.mockResolvedValue({ analyzed: 1, checked: 1 })
   })
 
   afterEach(() => {
@@ -67,7 +70,9 @@ describe('WooCommerce catalogue cron', () => {
       publishWooIds: [],
       publishStockByWooId: { 5000: 3, 5001: 1 },
     })
+    expect(processBuilderMappings).toHaveBeenCalledWith({ limit: 25 })
     await expect(response.json()).resolves.toEqual({
+      builderMappings: { analyzed: 1, checked: 1 },
       catalog: {
         createdWooIds: [],
         sourceStockByWooId: { 5000: 3, 5001: 1 },
@@ -86,6 +91,16 @@ describe('WooCommerce catalogue cron', () => {
 
     expect(response.status).toBe(500)
     expect(importProductImages).not.toHaveBeenCalled()
+    expect(processBuilderMappings).not.toHaveBeenCalled()
+  })
+
+  it('does not analyze builder mappings before image reconciliation succeeds', async () => {
+    importProductImages.mockRejectedValue(new Error('image import failed'))
+
+    const response = await GET(request())
+
+    expect(response.status).toBe(500)
+    expect(processBuilderMappings).not.toHaveBeenCalled()
   })
 
   it('retries image reconciliation after a Postgres serialization conflict', async () => {

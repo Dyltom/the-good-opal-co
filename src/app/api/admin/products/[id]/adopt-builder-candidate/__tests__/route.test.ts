@@ -91,17 +91,17 @@ describe('adopt builder candidate admin route', () => {
     })
   })
 
-  test('adopts an audited candidate but does not expose an incomplete product', async () => {
+  test('enables an audited visual concept without fabricating physical dimensions', async () => {
     mocks.findByID.mockResolvedValue({ ...product, dimensions: null })
 
     const response = await POST(request(), { params: Promise.resolve({ id: '42' }) })
     const result = (await response.json()) as { builderEligible: boolean; message: string }
 
     expect(response.status).toBe(200)
-    expect(result.builderEligible).toBe(false)
-    expect(result.message).toContain('positive width, length, and depth')
+    expect(result.builderEligible).toBe(true)
+    expect(result.message).toBe('Candidate adopted and enabled in the ring builder.')
     expect(mocks.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ builderEligible: false }) })
+      expect.objectContaining({ data: expect.objectContaining({ builderEligible: true }) })
     )
   })
 
