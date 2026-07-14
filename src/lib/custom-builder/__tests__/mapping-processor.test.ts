@@ -119,8 +119,22 @@ describe('builder mapping processor', () => {
               or: expect.arrayContaining([
                 {
                   and: [
-                    { builderContourCandidate: { exists: false } },
                     { builderMappingAnalysisError: { exists: false } },
+                    {
+                      or: expect.arrayContaining([
+                        { builderContourCandidate: { exists: false } },
+                      ]),
+                    },
+                  ],
+                },
+                {
+                  and: [
+                    { builderMappingAnalysisError: { exists: true } },
+                    {
+                      builderPhotoAnalysisVersion: {
+                        not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
+                      },
+                    },
                   ],
                 },
               ]),
@@ -284,6 +298,7 @@ describe('builder mapping processor', () => {
       data: {
         builderMappingAnalysisError: 'Mapped product image is unavailable',
         builderPhotoAnalysisConfidence: null,
+        builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
       },
       overrideAccess: true,
     })
@@ -396,8 +411,10 @@ describe('builder mapping processor', () => {
       collection: 'products',
       id: 42,
       data: {
+        builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderMappingAnalysisError: 'Opal face could not be isolated from the source image',
         builderPhotoAnalysisConfidence: null,
+        builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
       },
       overrideAccess: true,
     })

@@ -199,17 +199,31 @@ export async function processBuilderMappings(
         { category: { equals: 'raw-opals' } },
         {
           or: [
-            { builderMappingAnalyzedImageHash: { exists: false } },
-            { builderPhotoAnalysisVersion: { exists: false } },
             {
-              builderPhotoAnalysisVersion: {
-                not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
-              },
+              and: [
+                { builderMappingAnalysisError: { exists: false } },
+                {
+                  or: [
+                    { builderMappingAnalyzedImageHash: { exists: false } },
+                    { builderPhotoAnalysisVersion: { exists: false } },
+                    {
+                      builderPhotoAnalysisVersion: {
+                        not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
+                      },
+                    },
+                    { builderContourCandidate: { exists: false } },
+                  ],
+                },
+              ],
             },
             {
               and: [
-                { builderContourCandidate: { exists: false } },
-                { builderMappingAnalysisError: { exists: false } },
+                { builderMappingAnalysisError: { exists: true } },
+                {
+                  builderPhotoAnalysisVersion: {
+                    not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
+                  },
+                },
               ],
             },
           ],
@@ -243,13 +257,14 @@ export async function processBuilderMappings(
     if (product.builderMappingMode === 'manual') summary.manual += 1
 
     let analysisConfidence: number | undefined
+    let imageHash: string | undefined
     try {
       const media = await resolveMappedMedia(payload, product)
       const imageUrl = absoluteMediaUrl(media?.url)
       if (!imageUrl) throw new Error('Mapped product image is unavailable')
 
       const source = await fetchImage(imageUrl)
-      const imageHash = createHash('sha256').update(source).digest('hex')
+      imageHash = createHash('sha256').update(source).digest('hex')
       const alreadyAnalyzed =
         product.builderMappingAnalyzedImageHash === imageHash &&
         product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
@@ -350,7 +365,9 @@ export async function processBuilderMappings(
         payload,
         id,
         {
+          ...(imageHash ? { builderMappingAnalyzedImageHash: imageHash } : {}),
           builderPhotoAnalysisConfidence: analysisConfidence ?? null,
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
           builderMappingAnalysisError: conciseError(error),
         },
         expectedUpdatedAt
