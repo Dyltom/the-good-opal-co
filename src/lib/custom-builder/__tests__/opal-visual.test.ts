@@ -232,6 +232,25 @@ describe('custom builder opal visual profiles', () => {
     expect(Math.max(...(profile.visual.contour?.radii ?? []))).toBeGreaterThan(1.2)
   })
 
+  test('does not pair the audited heart contour with a legacy contour-less CMS crop', () => {
+    const profile = createOpalVisualProfile(
+      'mintabie-carved-heart',
+      'Mintabie Dark Opal heart 0.55 cts',
+      'white-opal',
+      {
+        builderMappingStatus: 'reviewed',
+        builderSilhouette: 'heart',
+        builderPhotoFocalX: 0.49,
+        builderPhotoFocalY: 0.48,
+        builderPhotoZoom: 1.85,
+        builderPhotoRotation: 0,
+      }
+    )
+
+    expect(profile.visual.contour?.radii).toHaveLength(96)
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.4875, focalY: 0.532, zoom: 3.2 })
+  })
+
   test.each([
     'lightning-ridge-black-opal-6-30ct',
     'lightning-ridge-semi-black-opal-5-50-cts',

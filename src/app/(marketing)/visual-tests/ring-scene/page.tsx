@@ -9,7 +9,11 @@ import {
   type RingConfig,
 } from '@/components/custom-builder/config'
 import type { RingView } from '@/components/custom-builder/RingScene'
-import { createOpalVisualProfile, reviewedOpalImageUrl } from '@/lib/custom-builder/opal-visual'
+import {
+  createOpalVisualProfile,
+  reviewedOpalImageUrl,
+  type BuilderVisualFields,
+} from '@/lib/custom-builder/opal-visual'
 import { RingSceneVisualHarness } from './RingSceneVisualHarness'
 
 export const dynamic = 'force-dynamic'
@@ -31,7 +35,12 @@ const fixtures = [
   'heart-placed',
 ] as const
 
-function visualOpal(slug: string, name: string, stoneType: string): BuilderOpal {
+function visualOpal(
+  slug: string,
+  name: string,
+  stoneType: string,
+  fields?: BuilderVisualFields
+): BuilderOpal {
   const imageUrl = reviewedOpalImageUrl(slug)
   if (!imageUrl) throw new Error(`Missing reviewed visual-test photo for ${slug}`)
 
@@ -45,7 +54,7 @@ function visualOpal(slug: string, name: string, stoneType: string): BuilderOpal 
     slug,
     stoneType,
     stoneTypeLabel: stoneType,
-    ...createOpalVisualProfile(slug, name, stoneType),
+    ...createOpalVisualProfile(slug, name, stoneType, fields),
   }
 }
 
@@ -68,7 +77,15 @@ const fixtureOpals = {
   heart: visualOpal(
     'mintabie-dark-opal-heart-055-cts',
     'Mintabie Dark Opal Heart 0.55 cts',
-    'black-opal'
+    'black-opal',
+    {
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'heart',
+      builderPhotoFocalX: 0.49,
+      builderPhotoFocalY: 0.48,
+      builderPhotoZoom: 1.85,
+      builderPhotoRotation: 0,
+    }
   ),
 } as const
 

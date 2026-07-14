@@ -643,13 +643,26 @@ export function createOpalVisualProfile(
   const baseVisual = managed ?? approvedReviewed ?? approvedCataloguePhoto ?? silhouette
   const baseContour =
     'contour' in baseVisual ? parseBuilderStoneContour(baseVisual.contour) : undefined
+  // A contour and its photo crop are one calibration. Never combine a stale
+  // CMS crop with a different outline: prefer a complete reviewed CMS pair,
+  // then an analyzed candidate pair, then the audited catalogue fallback.
+  const pairedContourProfile = managed?.contour
+    ? managed
+    : imageCandidate?.contour
+      ? imageCandidate
+      : approvedCataloguePhoto?.contour
+        ? approvedCataloguePhoto
+        : undefined
+  const pairedContour = parseBuilderStoneContour(pairedContourProfile?.contour)
   const usesIndividualPhoto = classifyOpalListing(name) === 'individual'
   const baseTextureCrop =
+    pairedContourProfile?.textureCrop ??
     managed?.textureCrop ??
     imageCandidate?.textureCrop ??
     approvedReviewed?.textureCrop ??
     approvedCataloguePhoto?.textureCrop
   const basePhotoFit =
+    pairedContourProfile?.photoFit ??
     managed?.photoFit ??
     imageCandidate?.photoFit ??
     approvedReviewed?.photoFit ??
@@ -668,7 +681,7 @@ export function createOpalVisualProfile(
       flashColours: managed?.flashColours ?? flashColours,
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
-      contour: managed?.contour ?? imageCandidate?.contour ?? baseContour,
+      contour: pairedContour ?? baseContour,
       dimensionsMm: managed?.dimensionsMm ?? approvedReviewed?.dimensionsMm ?? dimensionsMm,
       textureCrop: usesIndividualPhoto
         ? basePhotoFit === 'reviewed'
