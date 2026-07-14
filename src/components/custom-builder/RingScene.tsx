@@ -2,9 +2,9 @@
 
 /* eslint-disable react/no-unknown-property -- React Three Fiber JSX maps these props to Three.js objects. */
 
-import { useEffect, useLayoutEffect, useMemo } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Environment, Lightformer, OrbitControls, useTexture } from '@react-three/drei'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   ACESFilmicToneMapping,
   AdditiveBlending,
@@ -67,6 +67,7 @@ interface RingSceneProps {
   config: RingConfig
   allowMotion: boolean
   onContextLost: () => void
+  onRenderReady?: () => void
   selectedOpal?: BuilderOpal
   view: RingView
 }
@@ -126,6 +127,43 @@ function CameraPreset({ target, view }: { target: CameraVector; view: RingView }
     camera.updateProjectionMatrix()
     invalidate()
   }, [camera, invalidate, size.height, size.width, target, view])
+
+  return null
+}
+
+function RenderReadySignal({ onReady }: { onReady: () => void }) {
+  const { invalidate } = useThree()
+  const frameCount = useRef(0)
+  const readyFrame = useRef<number | null>(null)
+  const signalled = useRef(false)
+  const onReadyRef = useRef(onReady)
+
+  useEffect(() => {
+    onReadyRef.current = onReady
+  }, [onReady])
+
+  useEffect(() => {
+    invalidate()
+    return () => {
+      if (readyFrame.current !== null) window.cancelAnimationFrame(readyFrame.current)
+    }
+  }, [invalidate])
+
+  useFrame(() => {
+    if (signalled.current) return
+
+    frameCount.current += 1
+    if (frameCount.current < 4) {
+      invalidate()
+      return
+    }
+
+    signalled.current = true
+    readyFrame.current = window.requestAnimationFrame(() => {
+      readyFrame.current = null
+      onReadyRef.current()
+    })
+  })
 
   return null
 }
@@ -1389,6 +1427,7 @@ export function RingScene({
   config,
   allowMotion,
   onContextLost,
+  onRenderReady,
   selectedOpal,
   view,
 }: RingSceneProps) {
@@ -1396,6 +1435,10 @@ export function RingScene({
   const framingTarget = useMemo(
     () => getRingFramingTarget(config, selectedOpal),
     [config, selectedOpal]
+  )
+  const renderSignature = useMemo(
+    () => JSON.stringify([config, selectedOpal, view]),
+    [config, selectedOpal, view]
   )
 
   return (
@@ -1428,6 +1471,7 @@ export function RingScene({
       <pointLight position={[0, -2, 3]} intensity={0.42} color="#fff1de" />
 
       <CameraPreset target={framingTarget} view={view} />
+      {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}
 
       <RingModel config={config} selectedOpal={selectedOpal} />
 

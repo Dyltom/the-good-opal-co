@@ -9,9 +9,14 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8412',
-    launchOptions: process.env.CI
-      ? { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl'] }
-      : undefined,
+    launchOptions: {
+      args: [
+        '--use-gl=angle',
+        '--use-angle=swiftshader',
+        '--enable-webgl',
+        '--enable-unsafe-swiftshader',
+      ],
+    },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -34,7 +39,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: 'pnpm dev',
+        command: 'ENABLE_RING_VISUAL_HARNESS=1 pnpm dev',
         url: 'http://localhost:8412/api/health',
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
