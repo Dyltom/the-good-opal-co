@@ -11,6 +11,7 @@ import {
   builderMappingNeedsReview,
 } from '../../lib/custom-builder/mapping-lifecycle.ts'
 import { validateBuilderStoneContour } from '../../lib/custom-builder/stone-contour.ts'
+import { BUILDER_MEDIA_REPLACEMENT_CONTEXT } from '../../lib/custom-builder/media-mapping-invalidation.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -33,8 +34,10 @@ export const Products: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [
-      ({ data, originalDoc }) =>
-        applyBuilderMappingLifecycle(data, originalDoc, new Date().toISOString()),
+      ({ context, data, originalDoc }) =>
+        context[BUILDER_MEDIA_REPLACEMENT_CONTEXT]
+          ? data
+          : applyBuilderMappingLifecycle(data, originalDoc, new Date().toISOString()),
       ({ data, originalDoc }) => {
         const result = validateBuilderProduct(data, originalDoc)
         if (result !== true) throw new Error(result)

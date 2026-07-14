@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
+import { invalidateBuilderMappingsForMediaReplacement } from '../../lib/custom-builder/media-mapping-invalidation.ts'
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -12,6 +13,9 @@ export const Media: CollectionConfig = {
   admin: {
     useAsTitle: 'alt',
     defaultColumns: ['alt', 'filename', 'mimeType', 'filesize', 'updatedAt'],
+  },
+  hooks: {
+    afterChange: [invalidateBuilderMappingsForMediaReplacement],
   },
   upload: {
     staticDir: 'media',
