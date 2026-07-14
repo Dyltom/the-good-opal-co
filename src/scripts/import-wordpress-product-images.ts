@@ -1,4 +1,5 @@
 import type { Media } from '@/types/payload-types'
+import { createHash } from 'node:crypto'
 import { getPayload } from '@/lib/payload'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -7,9 +8,63 @@ import { fetchWordPressProductImages } from '@/lib/wordpress/product-images'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
 
 const TENANT_ID = 'good-opal-co'
+const MAX_OWNED_MEDIA_BYTES = 15 * 1024 * 1024
 
 function mediaMatchesSource(media: Media, source: WordPressFeaturedMedia): boolean {
   return media.legacyWordPressId === source.id && media.legacySourceUrl === source.sourceUrl
+}
+
+function mediaMetadataMatches(media: Media, source: WordPressFeaturedMedia): boolean {
+  return (
+    media.alt === source.alt &&
+    (media.caption ?? '') === source.title &&
+    media.tenantId === TENANT_ID
+  )
+}
+
+function mediaContentHash(data: Buffer): string {
+  return createHash('sha256').update(data).digest('hex')
+}
+
+function applicationOrigin(): string | undefined {
+  const vercelUrl = process.env.VERCEL_URL?.trim()
+  if (vercelUrl) return `https://${vercelUrl}`
+  return process.env.NEXT_PUBLIC_APP_URL?.trim()
+}
+
+function ownedMediaDownloadUrl(media: Media): URL | undefined {
+  if (!media.url) return undefined
+  try {
+    const parsed = new URL(media.url, applicationOrigin())
+    if (parsed.pathname.startsWith('/api/media/file/')) {
+      const origin = applicationOrigin()
+      return origin ? new URL(`${parsed.pathname}${parsed.search}`, origin) : undefined
+    }
+    if (
+      parsed.protocol === 'https:' &&
+      parsed.hostname.toLowerCase().endsWith('.blob.vercel-storage.com')
+    ) {
+      return parsed
+    }
+  } catch {
+    return undefined
+  }
+  return undefined
+}
+
+async function downloadOwnedMediaBytes(media: Media): Promise<Buffer | undefined> {
+  const url = ownedMediaDownloadUrl(media)
+  if (!url) return undefined
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(30_000) })
+    if (!response.ok) return undefined
+    const declaredLength = Number(response.headers.get('content-length') ?? 0)
+    if (declaredLength > MAX_OWNED_MEDIA_BYTES) return undefined
+    const data = Buffer.from(await response.arrayBuffer())
+    return data.byteLength > 0 && data.byteLength <= MAX_OWNED_MEDIA_BYTES ? data : undefined
+  } catch {
+    return undefined
+  }
 }
 
 async function findExistingMedia(source: WordPressFeaturedMedia): Promise<Media | undefined> {
@@ -34,11 +89,38 @@ async function findExistingMedia(source: WordPressFeaturedMedia): Promise<Media 
   return existing.docs[0]
 }
 
-async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number> {
+interface MediaReconciliation {
+  changed: boolean
+  id: number
+}
+
+async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaReconciliation> {
   const payload = await getPayload()
   const existing = await findExistingMedia(source)
   if (existing && mediaMatchesSource(existing, source)) {
-    return existing.id
+    const sourceFile = await downloadWordPressMedia(source)
+    const ownedBytes = await downloadOwnedMediaBytes(existing)
+    const contentMatches =
+      ownedBytes !== undefined && mediaContentHash(ownedBytes) === mediaContentHash(sourceFile.data)
+    const metadataMatches = mediaMetadataMatches(existing, source)
+    if (contentMatches && metadataMatches) return { changed: false, id: existing.id }
+
+    const refreshed = await retrySerializableTransaction(() =>
+      payload.update({
+        collection: 'media',
+        id: existing.id,
+        data: {
+          legacyWordPressId: source.id,
+          legacySourceUrl: source.sourceUrl,
+          alt: source.alt,
+          caption: source.title,
+          tenantId: TENANT_ID,
+        },
+        ...(!contentMatches ? { file: sourceFile } : {}),
+        overrideAccess: true,
+      })
+    )
+    return { changed: true, id: refreshed.id }
   }
 
   const file = await downloadWordPressMedia(source)
@@ -58,13 +140,13 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number
         overrideAccess: true,
       })
     )
-    return refreshed.id
+    return { changed: true, id: refreshed.id }
   }
 
   try {
     return await retrySerializableTransaction(async () => {
       const afterConflict = await findExistingMedia(source)
-      if (afterConflict !== undefined) return afterConflict.id
+      if (afterConflict !== undefined) return { changed: false, id: afterConflict.id }
 
       const created = await payload.create({
         collection: 'media',
@@ -78,12 +160,12 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<number
         file,
         overrideAccess: true,
       })
-      return created.id
+      return { changed: true, id: created.id }
     })
   } catch (error: unknown) {
     const persistedMedia = await findExistingMedia(source)
     if (!persistedMedia || !mediaMatchesSource(persistedMedia, source)) throw error
-    return persistedMedia.id
+    return { changed: false, id: persistedMedia.id }
   }
 }
 
@@ -165,11 +247,15 @@ export async function importProductImages(
       source.media.length > 0 &&
       (publishWooIds.has(source.productId) ||
         (product.status === 'draft' && (product.images?.length ?? 0) === 0))
-    if (alreadyCurrent && !shouldQuarantine && !shouldPublish) continue
-    changed += 1
-    if (!apply) continue
+    if (!apply) {
+      if (alreadyCurrent && !shouldQuarantine && !shouldPublish) continue
+      changed += 1
+      continue
+    }
 
     if (source.media.length === 0) {
+      if (!shouldQuarantine) continue
+      changed += 1
       await retrySerializableTransaction(() =>
         payload.update({
           collection: 'products',
@@ -182,27 +268,34 @@ export async function importProductImages(
       continue
     }
 
-    const mediaIds: number[] = alreadyCurrent
-      ? (product.images ?? []).flatMap(({ image }) =>
-          typeof image === 'number' ? [image] : image?.id ? [image.id] : []
-        )
-      : []
-    if (!alreadyCurrent) {
-      for (const media of source.media) mediaIds.push(await findOrCreateMedia(media))
-    }
-    await retrySerializableTransaction(() =>
-      payload.update({
-        collection: 'products',
-        id: product.id,
-        data: {
-          ...(!alreadyCurrent ? { images: mediaIds.map((image) => ({ image })) } : {}),
-          ...(shouldPublish
-            ? { status: 'published' as const, stock: source.inStock ? 1 : 0 }
-            : {}),
-        },
-        overrideAccess: true,
-      })
+    const reconciledMedia: MediaReconciliation[] = []
+    for (const media of source.media) reconciledMedia.push(await findOrCreateMedia(media))
+    const mediaIds = reconciledMedia.map(({ id }) => id)
+    const existingMediaIds = (product.images ?? []).flatMap(({ image }) =>
+      typeof image === 'number' ? [image] : image?.id ? [image.id] : []
     )
+    const galleryCurrent =
+      existingMediaIds.length === mediaIds.length &&
+      existingMediaIds.every((id, index) => id === mediaIds[index])
+    const mediaChanged = reconciledMedia.some(({ changed: didChange }) => didChange)
+    if (!mediaChanged && galleryCurrent && !shouldPublish) continue
+    changed += 1
+
+    if (!galleryCurrent || shouldPublish) {
+      await retrySerializableTransaction(() =>
+        payload.update({
+          collection: 'products',
+          id: product.id,
+          data: {
+            ...(!galleryCurrent ? { images: mediaIds.map((image) => ({ image })) } : {}),
+            ...(shouldPublish
+              ? { status: 'published' as const, stock: source.inStock ? 1 : 0 }
+              : {}),
+          },
+          overrideAccess: true,
+        })
+      )
+    }
     if (shouldPublish) published += 1
   }
 

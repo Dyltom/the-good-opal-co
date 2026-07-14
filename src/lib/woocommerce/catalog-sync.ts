@@ -27,6 +27,14 @@ const wooProductSchema = z.object({
 
 const wooProductPageSchema = z.array(wooProductSchema)
 
+const wooStockProductSchema = z.object({
+  id: z.number().int().positive(),
+  stock_quantity: z.number().int().nonnegative().nullable(),
+  stock_status: z.enum(['instock', 'outofstock', 'onbackorder']),
+})
+
+const wooStockProductPageSchema = z.array(wooStockProductSchema)
+
 type WooProduct = z.infer<typeof wooProductSchema>
 
 export type ProductCategory =
@@ -47,10 +55,13 @@ export interface WooCatalogProduct {
   category: ProductCategory
   tags: string[]
   inStock: boolean
+  stockQuantity?: number | null
 }
 
 export interface CatalogFetchOptions {
   baseUrl?: string
+  consumerKey?: string
+  consumerSecret?: string
   fetcher?: typeof fetch
   perPage?: number
 }
@@ -146,11 +157,68 @@ export function parseWooProductPage(input: unknown): WooCatalogProduct[] {
 export function reconciledStock(
   currentStock: number | null | undefined,
   sourceInStock: boolean,
-  restock: boolean
+  restock: boolean,
+  sourceQuantity?: number | null
 ): number {
   if (!sourceInStock) return 0
+  if (sourceQuantity !== undefined && sourceQuantity !== null) return sourceQuantity
   if (restock) return 1
   return Math.max(0, currentStock ?? 0)
+}
+
+function authenticatedProductsUrl(storeApiUrl: string): URL {
+  const url = new URL(storeApiUrl)
+  url.pathname = '/wp-json/wc/v3/products'
+  url.search = ''
+  url.hash = ''
+  return url
+}
+
+async function fetchAuthenticatedStock(
+  productIds: readonly number[],
+  options: Required<Pick<CatalogFetchOptions, 'consumerKey' | 'consumerSecret' | 'fetcher'>> & {
+    baseUrl: string
+    perPage: number
+  }
+): Promise<Map<number, { inStock: boolean; stockQuantity: number | null }>> {
+  const stockByWooId = new Map<number, { inStock: boolean; stockQuantity: number | null }>()
+  const authorization = `Basic ${Buffer.from(
+    `${options.consumerKey}:${options.consumerSecret}`
+  ).toString('base64')}`
+
+  for (let start = 0; start < productIds.length; start += options.perPage) {
+    const batch = productIds.slice(start, start + options.perPage)
+    const url = authenticatedProductsUrl(options.baseUrl)
+    url.searchParams.set('include', batch.join(','))
+    url.searchParams.set('per_page', String(options.perPage))
+    url.searchParams.set('status', 'any')
+
+    const response = await options.fetcher(url, {
+      headers: {
+        accept: 'application/json',
+        authorization,
+      },
+      signal: AbortSignal.timeout(30_000),
+    })
+    if (!response.ok) {
+      throw new Error(`WooCommerce authenticated stock request failed (${response.status})`)
+    }
+
+    for (const product of wooStockProductPageSchema.parse(await response.json())) {
+      if (stockByWooId.has(product.id)) {
+        throw new Error('WooCommerce authenticated stock response returned duplicate product IDs')
+      }
+      stockByWooId.set(product.id, {
+        inStock: product.stock_status !== 'outofstock',
+        stockQuantity: product.stock_quantity,
+      })
+    }
+  }
+
+  if (stockByWooId.size !== productIds.length || productIds.some((id) => !stockByWooId.has(id))) {
+    throw new Error('WooCommerce authenticated stock response omitted catalogue products')
+  }
+  return stockByWooId
 }
 
 export async function fetchWooCatalog(
@@ -198,5 +266,26 @@ export async function fetchWooCatalog(
     throw new Error('WooCommerce catalog returned duplicate product IDs')
   }
 
-  return [...unique.values()]
+  const products = [...unique.values()]
+  const consumerKey = options.consumerKey?.trim()
+  const consumerSecret = options.consumerSecret?.trim()
+  if (Boolean(consumerKey) !== Boolean(consumerSecret)) {
+    throw new Error('WooCommerce stock credentials must include both key and secret')
+  }
+  if (!consumerKey || !consumerSecret || products.length === 0) return products
+
+  const stockByWooId = await fetchAuthenticatedStock(
+    products.map((product) => product.wooId),
+    {
+      baseUrl,
+      consumerKey,
+      consumerSecret,
+      fetcher,
+      perPage: Math.min(perPage, 100),
+    }
+  )
+  return products.map((product) => ({
+    ...product,
+    ...stockByWooId.get(product.wooId),
+  }))
 }

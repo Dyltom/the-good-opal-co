@@ -108,7 +108,9 @@ function updateData(existing: Product, product: WooCatalogProduct, options: Sync
     category: product.category,
     tags: product.tags.map((tag) => ({ tag })),
     status: hasOwnedImage ? ('published' as const) : ('draft' as const),
-    stock: hasOwnedImage ? reconciledStock(existing.stock, product.inStock, options.restock) : 0,
+    stock: hasOwnedImage
+      ? reconciledStock(existing.stock, product.inStock, options.restock, product.stockQuantity)
+      : 0,
     legacyWooId: product.wooId,
   }
 }
@@ -117,6 +119,8 @@ export async function syncWooCatalog(options: SyncOptions) {
   const payload = await getPayload()
   const sourceProducts = await fetchWooCatalog({
     baseUrl: process.env.WOO_STORE_API_URL,
+    consumerKey: process.env.WOO_CONSUMER_KEY,
+    consumerSecret: process.env.WOO_CONSUMER_SECRET,
   })
   const allProducts = await findAllProducts()
   const existingBySku = new Map(

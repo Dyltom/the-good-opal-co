@@ -12,8 +12,19 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 vi.mock('@/lib/woocommerce/catalog-sync', () => ({
   fetchWooCatalog: mocks.fetchWooCatalog,
-  reconciledStock: (stock: number | null | undefined, inStock: boolean, restock: boolean) =>
-    !inStock ? 0 : restock ? 1 : Math.max(0, stock ?? 0),
+  reconciledStock: (
+    stock: number | null | undefined,
+    inStock: boolean,
+    restock: boolean,
+    sourceQuantity?: number | null
+  ) =>
+    !inStock
+      ? 0
+      : sourceQuantity !== undefined && sourceQuantity !== null
+        ? sourceQuantity
+        : restock
+          ? 1
+          : Math.max(0, stock ?? 0),
 }))
 
 import { syncWooCatalog } from '../sync-woocommerce-catalog'
@@ -66,6 +77,51 @@ describe('WooCommerce catalogue mutation retries', () => {
 
     expect(mocks.update).toHaveBeenCalledTimes(2)
     expect(mocks.create).not.toHaveBeenCalled()
+  })
+
+  test('writes exact authenticated Woo stock quantity for an imaged product', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          images: [{ image: 211 }],
+          legacyWooId: 5681,
+          name: 'Existing opal',
+          price: 95,
+          sku: 'WP-5681',
+          slug: 'existing-opal',
+          stock: 5,
+        },
+      ],
+      hasNextPage: false,
+    })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Exact product copy',
+        inStock: true,
+        name: 'Existing opal',
+        price: 95,
+        sku: 'WP-5681',
+        slug: 'existing-opal',
+        stockQuantity: 3,
+        tags: ['opal'],
+        wooId: 5681,
+      },
+    ])
+    mocks.update.mockResolvedValue({ id: 42 })
+
+    await syncWooCatalog({ apply: true, archiveMissing: false, restock: false })
+
+    expect(mocks.fetchWooCatalog).toHaveBeenCalledWith({
+      baseUrl: undefined,
+      consumerKey: undefined,
+      consumerSecret: undefined,
+    })
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ stock: 3 }) })
+    )
   })
 
   test('refuses an empty source snapshot before mutating managed products', async () => {

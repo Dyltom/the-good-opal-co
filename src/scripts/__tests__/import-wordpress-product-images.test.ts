@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getPayload } from '@/lib/payload'
 import { downloadWordPressMedia } from '@/lib/wordpress/content-import'
 import { fetchWordPressProductImages } from '@/lib/wordpress/product-images'
@@ -10,6 +10,10 @@ vi.mock('@/lib/wordpress/product-images', () => ({ fetchWordPressProductImages: 
 
 describe('WordPress product image script', () => {
   beforeEach(() => vi.clearAllMocks())
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
+  })
 
   it('recovers a media row committed before a post-create hook error', async () => {
     let mediaLookup = 0
@@ -222,13 +226,7 @@ describe('WordPress product image script', () => {
         id: 211,
       })
     )
-    expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'products',
-        data: { images: [{ image: 211 }] },
-        id: 44,
-      })
-    )
+    expect(update).toHaveBeenCalledTimes(1)
   })
 
   it('reconciles attachment order even when the media records are unchanged', async () => {
@@ -243,10 +241,26 @@ describe('WordPress product image script', () => {
               id: 44,
               images: [
                 {
-                  image: { id: 211, legacyWordPressId: 5350, legacySourceUrl: firstUrl },
+                  image: {
+                    id: 211,
+                    alt: 'First',
+                    caption: 'First',
+                    legacyWordPressId: 5350,
+                    legacySourceUrl: firstUrl,
+                    tenantId: 'good-opal-co',
+                    url: '/api/media/file/first.jpg',
+                  },
                 },
                 {
-                  image: { id: 212, legacyWordPressId: 5351, legacySourceUrl: secondUrl },
+                  image: {
+                    id: 212,
+                    alt: 'Second',
+                    caption: 'Second',
+                    legacyWordPressId: 5351,
+                    legacySourceUrl: secondUrl,
+                    tenantId: 'good-opal-co',
+                    url: '/api/media/file/second.jpg',
+                  },
                 },
               ],
               status: 'published',
@@ -259,8 +273,24 @@ describe('WordPress product image script', () => {
       return {
         docs: [
           mediaLookup === 1
-            ? { id: 212, legacyWordPressId: 5351, legacySourceUrl: secondUrl }
-            : { id: 211, legacyWordPressId: 5350, legacySourceUrl: firstUrl },
+            ? {
+                id: 212,
+                alt: 'Second',
+                caption: 'Second',
+                legacyWordPressId: 5351,
+                legacySourceUrl: secondUrl,
+                tenantId: 'good-opal-co',
+                url: '/api/media/file/second.jpg',
+              }
+            : {
+                id: 211,
+                alt: 'First',
+                caption: 'First',
+                legacyWordPressId: 5350,
+                legacySourceUrl: firstUrl,
+                tenantId: 'good-opal-co',
+                url: '/api/media/file/first.jpg',
+              },
         ],
       }
     })
@@ -294,10 +324,25 @@ describe('WordPress product image script', () => {
         ],
       },
     ])
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://shop.example.com')
+    vi.mocked(downloadWordPressMedia).mockImplementation(async (media) => ({
+      name: `wp-${media.id}.jpg`,
+      data: Buffer.from([media.id === 5350 ? 1 : 2]),
+      mimetype: 'image/jpeg',
+      size: 1,
+    }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: URL | RequestInfo) =>
+        new Response(Buffer.from([String(input).includes('first.jpg') ? 1 : 2]), {
+          headers: { 'content-type': 'image/jpeg' },
+        })
+      )
+    )
 
     await importProductImages(true)
 
-    expect(downloadWordPressMedia).not.toHaveBeenCalled()
+    expect(downloadWordPressMedia).toHaveBeenCalledTimes(2)
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'products',
@@ -305,6 +350,185 @@ describe('WordPress product image script', () => {
         id: 44,
       })
     )
+  })
+
+  it('refreshes owned bytes when attachment ID and source URL stay unchanged', async () => {
+    const sourceUrl = 'https://goodopalco.com/wp-content/uploads/2021/09/opal.jpg'
+    const media = {
+      id: 211,
+      alt: 'Opal',
+      caption: 'Opal',
+      legacyWordPressId: 5350,
+      legacySourceUrl: sourceUrl,
+      tenantId: 'good-opal-co',
+      url: '/api/media/file/opal.jpg',
+    }
+    const find = vi.fn(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'products'
+          ? [{ id: 44, images: [{ image: media }], status: 'published', stock: 1 }]
+          : [media],
+    }))
+    const update = vi.fn(async ({ collection }: { collection: string }) => ({
+      id: collection === 'media' ? 211 : 44,
+    }))
+    vi.mocked(getPayload).mockResolvedValue({
+      create: vi.fn(),
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'Opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'Opal',
+            mimeType: 'image/jpeg',
+            sourceUrl,
+            title: 'Opal',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockResolvedValue({
+      name: 'wp-5350-opal.jpg',
+      data: Buffer.from([2]),
+      mimetype: 'image/jpeg',
+      size: 1,
+    })
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://shop.example.com')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(Buffer.from([1]))))
+
+    await expect(importProductImages(true)).resolves.toMatchObject({ changed: 1 })
+
+    expect(update).toHaveBeenCalledTimes(1)
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'media',
+        file: expect.objectContaining({ data: Buffer.from([2]) }),
+        id: 211,
+      })
+    )
+  })
+
+  it('does not re-upload owned media when source and owned byte hashes match', async () => {
+    const sourceUrl = 'https://goodopalco.com/wp-content/uploads/2021/09/opal.jpg'
+    const media = {
+      id: 211,
+      alt: 'Opal',
+      caption: 'Opal',
+      legacyWordPressId: 5350,
+      legacySourceUrl: sourceUrl,
+      tenantId: 'good-opal-co',
+      url: '/api/media/file/opal.jpg',
+    }
+    const find = vi.fn(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'products'
+          ? [{ id: 44, images: [{ image: media }], status: 'published', stock: 1 }]
+          : [media],
+    }))
+    const update = vi.fn()
+    vi.mocked(getPayload).mockResolvedValue({
+      create: vi.fn(),
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'Opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'Opal',
+            mimeType: 'image/jpeg',
+            sourceUrl,
+            title: 'Opal',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockResolvedValue({
+      name: 'wp-5350-opal.jpg',
+      data: Buffer.from([7, 8, 9]),
+      mimetype: 'image/jpeg',
+      size: 3,
+    })
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://shop.example.com')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(Buffer.from([7, 8, 9]))))
+
+    await expect(importProductImages(true)).resolves.toMatchObject({ changed: 0 })
+
+    expect(downloadWordPressMedia).toHaveBeenCalledTimes(1)
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('updates source metadata without re-uploading unchanged bytes', async () => {
+    const sourceUrl = 'https://goodopalco.com/wp-content/uploads/2021/09/opal.jpg'
+    const media = {
+      id: 211,
+      alt: 'Old alt',
+      caption: 'Old title',
+      legacyWordPressId: 5350,
+      legacySourceUrl: sourceUrl,
+      tenantId: 'good-opal-co',
+      url: '/api/media/file/opal.jpg',
+    }
+    const find = vi.fn(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'products'
+          ? [{ id: 44, images: [{ image: media }], status: 'published', stock: 1 }]
+          : [media],
+    }))
+    const update = vi.fn().mockResolvedValue({ id: 211 })
+    vi.mocked(getPayload).mockResolvedValue({
+      create: vi.fn(),
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'Opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'New alt',
+            mimeType: 'image/jpeg',
+            sourceUrl,
+            title: 'New title',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockResolvedValue({
+      name: 'wp-5350-opal.jpg',
+      data: Buffer.from([7, 8, 9]),
+      mimetype: 'image/jpeg',
+      size: 3,
+    })
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://shop.example.com')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(Buffer.from([7, 8, 9]))))
+
+    await importProductImages(true)
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'media',
+        data: expect.objectContaining({ alt: 'New alt', caption: 'New title' }),
+        id: 211,
+      })
+    )
+    expect(update.mock.calls[0]?.[0]).not.toHaveProperty('file')
   })
 
   it('publishes a staged product only after its owned gallery succeeds', async () => {

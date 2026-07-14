@@ -57,6 +57,13 @@ describe('WooCommerce catalog sync', () => {
     expect(reconciledStock(4, false, false)).toBe(0)
   })
 
+  it('uses authenticated managed quantity as stock truth', () => {
+    expect(reconciledStock(5, true, false, 3)).toBe(3)
+    expect(reconciledStock(0, true, false, 8)).toBe(8)
+    expect(reconciledStock(8, false, false, 8)).toBe(0)
+    expect(reconciledStock(8, true, false, null)).toBe(8)
+  })
+
   it('fetches every advertised page', async () => {
     const fetcher = vi.fn<typeof fetch>()
     fetcher
@@ -80,6 +87,83 @@ describe('WooCommerce catalog sync', () => {
         'instock,outofstock,onbackorder'
       )
     }
+  })
+
+  it('overlays exact stock through authenticated REST without putting secrets in the URL', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([wooProduct]), {
+          headers: { 'x-wp-totalpages': '1' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([{ id: 5681, stock_quantity: 5, stock_status: 'instock' }])
+        )
+      )
+
+    const products = await fetchWooCatalog({
+      consumerKey: 'ck_read_only',
+      consumerSecret: 'cs_private',
+      fetcher,
+    })
+
+    expect(products[0]).toMatchObject({ inStock: true, stockQuantity: 5, wooId: 5681 })
+    const [stockInput, stockInit] = fetcher.mock.calls[1] ?? []
+    const stockUrl = new URL(String(stockInput))
+    expect(stockUrl.pathname).toBe('/wp-json/wc/v3/products')
+    expect(stockUrl.searchParams.get('include')).toBe('5681')
+    expect(stockUrl.toString()).not.toContain('ck_read_only')
+    expect(stockUrl.toString()).not.toContain('cs_private')
+    expect(new Headers(stockInit?.headers).get('authorization')).toBe(
+      `Basic ${Buffer.from('ck_read_only:cs_private').toString('base64')}`
+    )
+  })
+
+  it('preserves public fallback when both stock credentials are absent', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(JSON.stringify([wooProduct]), {
+        headers: { 'x-wp-totalpages': '1' },
+      })
+    )
+
+    const products = await fetchWooCatalog({ fetcher })
+
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    expect(products[0]).not.toHaveProperty('stockQuantity')
+  })
+
+  it('rejects partial stock credentials before making an authenticated request', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(
+      new Response(JSON.stringify([wooProduct]), {
+        headers: { 'x-wp-totalpages': '1' },
+      })
+    )
+
+    await expect(
+      fetchWooCatalog({ consumerKey: 'ck_without_secret', fetcher })
+    ).rejects.toThrow('must include both key and secret')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('refuses an incomplete authenticated stock snapshot', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([wooProduct]), {
+          headers: { 'x-wp-totalpages': '1' },
+        })
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify([])))
+
+    await expect(
+      fetchWooCatalog({
+        consumerKey: 'ck_read_only',
+        consumerSecret: 'cs_private',
+        fetcher,
+      })
+    ).rejects.toThrow('omitted catalogue products')
   })
 
   it('decodes named and numeric HTML entities', () => {

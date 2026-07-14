@@ -94,11 +94,14 @@ the recorded counts in Payload. Never set the import flag for Preview.
 
 While the legacy WooCommerce catalogue remains the merchandising source, set
 `WOO_CATALOG_SYNC_ENABLED=true`. Vercel then reconciles visible products, prices,
-downward stock changes, and ordered galleries every 15 minutes. The recurring
-job refuses to run against synthetic seed identities: complete and verify the
-guarded commerce import first. It never raises stock from Woo because local paid
-orders remain authoritative. Disable and remove this flag once Payload becomes
-the only product-management backend.
+stock changes, and ordered galleries every 15 minutes. Add a read-only WooCommerce
+REST key as `WOO_CONSUMER_KEY` plus `WOO_CONSUMER_SECRET` to reconcile exact managed
+quantities; without both credentials the safe public Store API fallback can only
+reconcile in-stock versus out-of-stock state and never increases local stock. The
+recurring job refuses to run against synthetic seed identities: complete and verify
+the guarded commerce import first. While authenticated quantity sync is enabled,
+WooCommerce is authoritative for product stock. Disable and remove the sync flag and
+credentials once Payload becomes the only product-management backend.
 
 To reconcile source and target counts without changing data, temporarily set the
 same Woo credentials plus `WOO_IMPORT_DRY_RUN_ON_DEPLOY=true` for one Production
