@@ -36,8 +36,9 @@ import {
   cameraPositions,
   cameraUpVectors,
   evenlySpacedOutlinePoints,
-  getCabochonDepthProfile,
   getBezelWallContourPoints,
+  getBezelLipContactZ,
+  getCabochonDepthProfile,
   getCameraPosition,
   getPatinaGrooveProfile,
   getRingFramingTarget,
@@ -50,6 +51,7 @@ import {
   outlinePoint,
   soldStyleOutlinePoint,
   settingRotationX,
+  type CabochonDepthProfile,
   type CameraVector,
   type StoneDimensions,
 } from './geometry'
@@ -498,7 +500,8 @@ function createBezelWallGeometry(
   thickness: number,
   bottomZ: number,
   topZ: number,
-  contour?: BuilderStoneContourV1
+  contour?: BuilderStoneContourV1,
+  lipContactProfile?: CabochonDepthProfile
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const segments = 96
@@ -519,6 +522,9 @@ function createBezelWallGeometry(
     )
     const [outerX, outerY] = outer
     const [innerX, innerY] = inner
+    const innerBottomZ = lipContactProfile
+      ? getBezelLipContactZ(shape, angle, width, height, inner, lipContactProfile, contour)
+      : bottomZ
     positions.push(
       outerX,
       outerY,
@@ -528,7 +534,7 @@ function createBezelWallGeometry(
       topZ,
       innerX,
       innerY,
-      bottomZ,
+      innerBottomZ,
       innerX,
       innerY,
       topZ
@@ -697,6 +703,7 @@ function BezelWall({
   thickness,
   topZ,
   contour,
+  lipContactProfile,
 }: {
   config: RingConfig
   dimensions: StoneDimensions
@@ -706,6 +713,7 @@ function BezelWall({
   thickness: number
   topZ: number
   contour?: BuilderStoneContourV1
+  lipContactProfile?: CabochonDepthProfile
 }) {
   const [width, height] = dimensions
   const geometry = useMemo(
@@ -719,9 +727,21 @@ function BezelWall({
         thickness,
         bottomZ,
         topZ,
-        contour
+        contour,
+        lipContactProfile
       ),
-    [bottomZ, config.shape, config.style, contour, height, offset, thickness, topZ, width]
+    [
+      bottomZ,
+      config.shape,
+      config.style,
+      contour,
+      height,
+      lipContactProfile,
+      offset,
+      thickness,
+      topZ,
+      width,
+    ]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -741,11 +761,10 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
   const contour = selectedOpal?.visual.contour
-  const depthProfile = getCabochonDepthProfile(
-    width,
-    height,
-    getRenderableOpalDepthMm(selectedOpal),
-    config.style
+  const depthMm = getRenderableOpalDepthMm(selectedOpal)
+  const depthProfile = useMemo(
+    () => getCabochonDepthProfile(width, height, depthMm, config.style),
+    [config.style, depthMm, height, width]
   )
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025
@@ -817,6 +836,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         thickness={bezelCapThickness}
         topZ={bezelTop + profile.bezelLipRadius * 0.18}
         contour={contour}
+        lipContactProfile={depthProfile}
       />
       <BezelWall
         config={config}
@@ -942,8 +962,7 @@ function RingShank({
         1 +
         Math.sin(progress * Math.PI * 10 + 0.35) * shankForgedVariation +
         Math.sin(progress * Math.PI * 22 - 0.4) * shankForgedVariation * 0.35
-      const localHalfWidth =
-        (shoulderRadius + (tubeRadius - shoulderRadius) * blend) * widthForge
+      const localHalfWidth = (shoulderRadius + (tubeRadius - shoulderRadius) * blend) * widthForge
       // Keep radial depth nominal so forged surface variation cannot shrink the
       // selected ring's exact inside diameter.
       const localHalfDepth = shoulderDepth + (tubeDepth - shoulderDepth) * blend

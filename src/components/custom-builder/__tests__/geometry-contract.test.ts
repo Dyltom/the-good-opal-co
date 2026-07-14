@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import { CatmullRomCurve3, Vector3 } from 'three'
 import {
+  bezelLipCompression,
   cameraPositions,
   cameraUpVectors,
   cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
+  getBezelLipContactZ,
   getBezelWallContourPoints,
   getCabochonDepthProfile,
   getCameraPosition,
@@ -23,6 +25,8 @@ import {
   outlinePoint,
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
+  stoneDimensions,
+  type CabochonDepthProfile,
   type CameraVector,
 } from '../geometry'
 import {
@@ -70,6 +74,41 @@ function sampledExtents(shape: RingConfig['shape'], width: number, height: numbe
     minY: Math.min(...ys),
     maxY: Math.max(...ys),
   }
+}
+
+function sampleRenderedCabochonSurfaceZ(
+  shape: RingConfig['shape'],
+  width: number,
+  height: number,
+  point: readonly [number, number],
+  depthProfile: CabochonDepthProfile
+): number {
+  const targetAngle = Math.atan2(point[1], point[0])
+  let bestBoundary: readonly [number, number] = [width, 0]
+  let bestError = Number.POSITIVE_INFINITY
+
+  // Independent high-resolution sampling of the radial mesh construction in
+  // RingScene. This deliberately does not call the contact solver.
+  for (let index = 0; index < 8192; index += 1) {
+    const boundary = outlinePoint(shape, (index / 8192) * Math.PI * 2, width, height)
+    const boundaryAngle = Math.atan2(boundary[1], boundary[0])
+    const error = Math.abs(
+      Math.atan2(Math.sin(boundaryAngle - targetAngle), Math.cos(boundaryAngle - targetAngle))
+    )
+    if (error < bestError) {
+      bestBoundary = boundary
+      bestError = error
+    }
+  }
+
+  const radialProgress = Math.min(
+    1,
+    Math.hypot(point[0], point[1]) / Math.hypot(bestBoundary[0], bestBoundary[1])
+  )
+  return (
+    depthProfile.girdleZ +
+    depthProfile.domeHeight * Math.pow(Math.max(0, 1 - radialProgress ** 2), 0.72)
+  )
 }
 
 describe('custom ring geometry contract', () => {
@@ -265,6 +304,22 @@ describe('custom ring geometry contract', () => {
     ).toEqual([0.4, 0.5])
   })
 
+  test('preserves a catalogue silhouette aspect when an unmeasured stone needs scaling', () => {
+    const dimensions = getStoneDimensions(defaultRingConfig, {
+      ...measuredOpal,
+      visual: {
+        ...measuredOpal.visual,
+        aspectRatio: 2.25,
+        dimensionsMm: undefined,
+        silhouette: 'elongated',
+      },
+    })
+
+    expect(dimensions[0]).toBeCloseTo(0.32, 12)
+    expect(dimensions[1]).toBeCloseTo(0.72, 12)
+    expect(dimensions[1] / dimensions[0]).toBeCloseTo(2.25, 12)
+  })
+
   test('uses plausible reviewed individual depth and ignores representative listings', () => {
     expect(getRenderableOpalDepthMm(measuredOpal)).toBe(3.2)
     expect(
@@ -305,6 +360,57 @@ describe('custom ring geometry contract', () => {
       12
     )
     expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.124, 12)
+  })
+
+  test('keeps measured store opals inside each sold design crown ratio', () => {
+    const gemini = getCabochonDepthProfile(0.3, 0.35, 3, 'gemini')
+    const coral = getCabochonDepthProfile(0.25, 0.325, 3.5, 'coral')
+    const sunMoon = getCabochonDepthProfile(0.3, 0.35, 3, 'sun-moon')
+    const aurora = getCabochonDepthProfile(0.3, 0.35, 3, 'aurora')
+
+    expect(gemini.domeHeight).toBeCloseTo(0.087, 12)
+    expect(coral.domeHeight).toBeCloseTo(0.055, 12)
+    expect(gemini.girdleZ - gemini.baseZ).toBeCloseTo(0.036, 12)
+    expect(coral.girdleZ - coral.baseZ).toBeCloseTo(0.06, 12)
+    expect(sunMoon.girdleZ - sunMoon.baseZ).toBeCloseTo(0.044, 12)
+    expect(aurora.girdleZ - aurora.baseZ).toBeCloseTo(0.028, 12)
+    expect(getCabochonDepthProfile(0.35, 0.4, 3.5, 'gemini').domeHeight).toBeCloseTo(0.1015, 12)
+    expect(getCabochonDepthProfile(0.265, 0.475, 2.5, 'gemini').domeHeight).toBeCloseTo(0.07685, 12)
+  })
+
+  test('seats every bezel lip against the cabochon surface without visible gaps', () => {
+    const shapes = Object.keys(stoneDimensions) as RingConfig['shape'][]
+
+    for (const style of ringStyles.map(({ id }) => id)) {
+      const profile = ringStyleGeometryProfiles[style]
+      for (const shape of shapes) {
+        const [width, height] = stoneDimensions[shape]
+        const depthProfile = getCabochonDepthProfile(width, height, 3.5, style)
+        const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+        const innerOffset = profile.bezelLipOffset - profile.bezelLipRadius
+        const thickness = outerBezelOffset - innerOffset
+        const offset = innerOffset + thickness / 2
+
+        for (let index = 0; index < 36; index += 1) {
+          const angle = (index / 36) * Math.PI * 2
+          const { inner } = getBezelWallContourPoints(
+            style,
+            shape,
+            angle,
+            width,
+            height,
+            offset,
+            thickness
+          )
+          const contactZ = getBezelLipContactZ(shape, angle, width, height, inner, depthProfile)
+          const surfaceZ = sampleRenderedCabochonSurfaceZ(shape, width, height, inner, depthProfile)
+
+          expect(surfaceZ - contactZ).toBeCloseTo(bezelLipCompression, 3)
+          expect(contactZ).toBeGreaterThanOrEqual(depthProfile.girdleZ - bezelLipCompression)
+          expect(contactZ).toBeLessThan(depthProfile.girdleZ + depthProfile.domeHeight)
+        }
+      }
+    }
   })
 
   test.each([

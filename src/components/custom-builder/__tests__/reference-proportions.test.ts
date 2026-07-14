@@ -45,6 +45,7 @@ describe('sold ring reference proportions', () => {
       const bandWidthMm = profile.shankRadius * 20
       const innerWallClearanceMm = (profile.bezelWallOffset - profile.bezelWallThickness / 2) * 10
       const lipOverlapMm = (profile.bezelLipRadius - profile.bezelLipOffset) * 10
+      const crownRatio = profile.domeHeightRatio
 
       expect(config.shape).toBe(reference.shape)
       expect(config.setting).toBe(reference.setting)
@@ -59,6 +60,8 @@ describe('sold ring reference proportions', () => {
       expect(innerWallClearanceMm).toBeLessThanOrEqual(0.025)
       expect(lipOverlapMm).toBeGreaterThanOrEqual(0.08)
       expect(lipOverlapMm).toBeLessThanOrEqual(0.12)
+      expect(crownRatio).toBeGreaterThanOrEqual(style === 'coral' ? 0.1 : 0.13)
+      expect(crownRatio).toBeLessThanOrEqual(style === 'aurora' ? 0.16 : 0.15)
     }
   )
 })

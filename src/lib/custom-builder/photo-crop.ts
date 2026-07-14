@@ -27,6 +27,11 @@ export interface PhotoTextureTransform {
 }
 
 const placementPositionLimit = 0.45
+const placementScaleLimit = 2.25
+
+export function getPhotoPlacementScaleMax(baseZoom: number): number {
+  return Math.max(1, Math.min(placementScaleLimit, 12 / Math.max(1, baseZoom)))
+}
 
 /**
  * Rotating a rectangular photo inside a fixed stone aperture exposes its
@@ -146,13 +151,12 @@ export function computePlacedPhotoCrop(
 ): NormalizedPhotoCrop {
   const positionX = clamp((placement?.opalPositionX ?? 0) / placementPositionLimit, -1, 1)
   const positionY = clamp((placement?.opalPositionY ?? 0) / placementPositionLimit, -1, 1)
-  // Panning a face-on photo without enlarging it exposes pixels outside the
-  // reviewed stone crop. Add only the cover zoom required by the requested
-  // movement, then keep the sampled rectangle inside that approved crop.
-  const panCoverScale = 1 + Math.max(Math.abs(positionX), Math.abs(positionY))
   const scaledFocus = {
     ...crop,
-    zoom: clamp(crop.zoom * Math.max(placement?.opalScale ?? 1, panCoverScale), 1, 12),
+    // Panning must never change magnification behind the customer's back.
+    // At 1× the reviewed crop is locked; explicit zoom creates safe travel
+    // inside that same approved face region.
+    zoom: clamp(crop.zoom * (placement?.opalScale ?? 1), 1, 12),
   }
   const base = computePhotoCrop(imageWidth, imageHeight, stoneAspect, scaledFocus)
   if (!placement) return base

@@ -63,7 +63,9 @@ const opals: BuilderOpal[] = [
       transmission: 0.035,
       patternSeed: 127,
       evidence: 'type-fallback',
+      photoFit: 'reviewed',
       recommendedStyle: 'gemini',
+      textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 3.2 },
     },
   },
   {
@@ -87,7 +89,9 @@ const opals: BuilderOpal[] = [
       transmission: 0.26,
       patternSeed: 204,
       evidence: 'type-fallback',
+      photoFit: 'reviewed',
       recommendedStyle: 'gemini',
+      textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 3.2 },
     },
   },
 ]
@@ -131,6 +135,99 @@ describe('RingConfigurator store opal selection', () => {
       stone: 'blue-green',
     })
     expect(consultationParams.get('product')).toContain('Coober Pedy crystal opal')
+  })
+
+  test('does not offer no-op crop controls for an estimated or representative listing', () => {
+    const estimated = {
+      ...opals[0],
+      visual: {
+        ...opals[0]!.visual,
+        photoFit: 'estimated' as const,
+        textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 3.2 },
+      },
+    }
+
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: estimated.id, stone: estimated.renderStone }}
+        opals={[estimated]}
+      />
+    )
+
+    expect(screen.queryByRole('group', { name: /Adjust the photo crop/i })).toBeNull()
+    expect(screen.getByText('4. Ring size (US)')).not.toBeNull()
+  })
+
+  test('requires explicit usable zoom before storing photo position', async () => {
+    render(
+      <RingConfigurator
+        initialConfig={{
+          ...defaultRingConfig,
+          opalId: opals[0].id,
+          opalPositionX: 0.45,
+          opalScale: 1,
+          stone: opals[0].renderStone,
+        }}
+        opals={opals}
+      />
+    )
+
+    expect(screen.getByRole('slider', { name: 'Horizontal' })).toHaveProperty('disabled', true)
+    fireEvent.change(screen.getByRole('slider', { name: 'Zoom' }), {
+      target: { value: '1.2' },
+    })
+
+    await waitFor(() => {
+      const preview = screen.getByTestId('ring-preview')
+      expect(preview.getAttribute('data-opal-position-x')).toBe('0')
+      expect(preview.getAttribute('data-opal-scale')).toBe('1.2')
+    })
+  })
+
+  test('disables impossible extra zoom for an already maximum-detail crop', () => {
+    const maximumDetail = {
+      ...opals[0]!,
+      visual: { ...opals[0]!.visual, textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 12 } },
+    }
+
+    render(
+      <RingConfigurator
+        initialConfig={{
+          ...defaultRingConfig,
+          opalId: maximumDetail.id,
+          stone: maximumDetail.renderStone,
+        }}
+        opals={[maximumDetail]}
+      />
+    )
+
+    expect(screen.getByRole('slider', { name: 'Zoom' })).toHaveProperty('disabled', true)
+    expect(screen.getByText('Maximum photo detail')).not.toBeNull()
+  })
+
+  test('normalizes over-limit zoom from an old shared design', async () => {
+    const highBaseZoom = {
+      ...opals[0]!,
+      visual: { ...opals[0]!.visual, textureCrop: { focalX: 0.5, focalY: 0.5, zoom: 10 } },
+    }
+
+    render(
+      <RingConfigurator
+        initialConfig={{
+          ...defaultRingConfig,
+          opalId: highBaseZoom.id,
+          opalScale: 2.25,
+          stone: highBaseZoom.renderStone,
+        }}
+        opals={[highBaseZoom]}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('ring-preview').getAttribute('data-opal-scale')).toBe('1.2')
+      expect(screen.getByRole('slider', { name: 'Zoom' })).toHaveProperty('value', '1.2')
+      expect(new URLSearchParams(window.location.search).get('ps')).toBe('1.2')
+    })
   })
 
   test('preserves unrelated query state and the hash while updating the design URL', async () => {
@@ -250,11 +347,11 @@ describe('RingConfigurator store opal selection', () => {
       />
     )
 
-    fireEvent.change(screen.getByRole('slider', { name: 'Horizontal' }), {
-      target: { value: '0.2' },
-    })
     fireEvent.change(screen.getByRole('slider', { name: 'Zoom' }), {
       target: { value: '1.4' },
+    })
+    fireEvent.change(screen.getByRole('slider', { name: 'Horizontal' }), {
+      target: { value: '0.2' },
     })
     fireEvent.change(screen.getByRole('slider', { name: 'Rotation' }), {
       target: { value: '35' },
@@ -284,7 +381,12 @@ describe('RingConfigurator store opal selection', () => {
   test('supports direct keyboard positioning and simple rotation controls', async () => {
     render(
       <RingConfigurator
-        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
+        initialConfig={{
+          ...defaultRingConfig,
+          opalId: opals[0].id,
+          opalScale: 1.25,
+          stone: opals[0].renderStone,
+        }}
         opals={opals}
       />
     )
@@ -310,7 +412,12 @@ describe('RingConfigurator store opal selection', () => {
   test('maps one aperture-centre drag to the full placement range with concise URLs', async () => {
     render(
       <RingConfigurator
-        initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
+        initialConfig={{
+          ...defaultRingConfig,
+          opalId: opals[0].id,
+          opalScale: 1.25,
+          stone: opals[0].renderStone,
+        }}
         opals={opals}
       />
     )

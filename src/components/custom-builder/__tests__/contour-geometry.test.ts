@@ -18,12 +18,13 @@ const contour: BuilderStoneContourV1 = {
 
 describe('per-opal contour geometry', () => {
   test('uses the photographed asymmetric boundary instead of the generic silhouette', () => {
-    const right = outlinePoint('oval', 0, 0.4, 0.5, 0, contour)
-    const left = outlinePoint('oval', Math.PI, 0.4, 0.5, 0, contour)
-    const genericRight = outlinePoint('oval', 0, 0.4, 0.5)
+    const diagonal = outlinePoint('oval', 0.7, 0.4, 0.5, 0, contour)
+    const opposite = outlinePoint('oval', 0.7 + Math.PI, 0.4, 0.5, 0, contour)
+    const generic = outlinePoint('oval', 0.7, 0.4, 0.5)
 
-    expect(right[0]).not.toBeCloseTo(Math.abs(left[0]))
-    expect(right[0]).not.toBeCloseTo(genericRight[0])
+    expect(diagonal[0]).not.toBeCloseTo(Math.abs(opposite[0]), 3)
+    expect(diagonal[1]).not.toBeCloseTo(Math.abs(opposite[1]), 3)
+    expect(diagonal[0]).not.toBeCloseTo(generic[0], 3)
   })
 
   test('uses one contour for stone seat, bezel wall, halo path, and shoulder anchor', () => {
@@ -37,7 +38,9 @@ describe('per-opal contour geometry', () => {
 
     expect(wall.outer.every(Number.isFinite)).toBe(true)
     expect(wall.inner.every(Number.isFinite)).toBe(true)
-    expect(Math.hypot(wall.outer[0] - wall.inner[0], wall.outer[1] - wall.inner[1])).toBeGreaterThan(0)
+    expect(
+      Math.hypot(wall.outer[0] - wall.inner[0], wall.outer[1] - wall.inner[1])
+    ).toBeGreaterThan(0)
     expect(halo).toHaveLength(30)
     expect(halo.every(({ x, y }) => Number.isFinite(x) && Number.isFinite(y))).toBe(true)
     expect(shoulder).toBeGreaterThan(0.35)
@@ -48,5 +51,20 @@ describe('per-opal contour geometry', () => {
 
     expect(clip).toMatch(/^polygon\(.+\)$/)
     expect(clip?.split(',')).toHaveLength(96)
+  })
+
+  test('normalizes an approved contour to the stone documented dimensions', () => {
+    const points = Array.from({ length: 960 }, (_, index) =>
+      outlinePoint('oval', (index / 960) * Math.PI * 2, 0.4, 0.5, 0, contour)
+    )
+    const xs = points.map(([x]) => x)
+    const ys = points.map(([, y]) => y)
+
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(0.8, 3)
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(1, 3)
+    expect(Math.min(...xs)).toBeGreaterThanOrEqual(-0.401)
+    expect(Math.max(...xs)).toBeLessThanOrEqual(0.401)
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(-0.501)
+    expect(Math.max(...ys)).toBeLessThanOrEqual(0.501)
   })
 })

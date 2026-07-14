@@ -130,6 +130,8 @@ export interface RingStyleGeometryProfile {
   innerSeamVariation: number
   cupDepth: number
   cupTaper: number
+  domeHeightRatio: number
+  visibleSeatCap: number
   shoulderUnderlap: number
   shoulderJoinDrop: number
   shoulderTransition: number
@@ -177,8 +179,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.018,
     innerSeamVariation: 0.001,
-    cupDepth: 0.045,
+    cupDepth: 0.048,
     cupTaper: 0.022,
+    domeHeightRatio: 0.145,
+    visibleSeatCap: 0.036,
     shoulderUnderlap: 0.16,
     shoulderJoinDrop: 0.022,
     shoulderTransition: 0.04,
@@ -210,6 +214,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.0025,
     cupDepth: 0.035,
     cupTaper: 0.02,
+    domeHeightRatio: 0.11,
+    visibleSeatCap: 0.06,
     shoulderUnderlap: 0.15,
     shoulderJoinDrop: 0.02,
     shoulderTransition: 0.038,
@@ -241,6 +247,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.001,
     cupDepth: 0.06,
     cupTaper: 0.026,
+    domeHeightRatio: 0.135,
+    visibleSeatCap: 0.044,
     shoulderUnderlap: 0.16,
     shoulderJoinDrop: 0.022,
     shoulderTransition: 0.042,
@@ -272,6 +280,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.001,
     cupDepth: 0.065,
     cupTaper: 0.03,
+    domeHeightRatio: 0.155,
+    visibleSeatCap: 0.028,
     shoulderUnderlap: 0.17,
     shoulderJoinDrop: 0.024,
     shoulderTransition: 0.045,

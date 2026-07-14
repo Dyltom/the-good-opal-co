@@ -163,7 +163,7 @@ describe('custom builder photo crops', () => {
           {
             opalPositionX,
             opalPositionY: 0,
-            opalScale: 1,
+            opalScale: 1.5,
             opalRotation: 0,
           }
         )
@@ -177,12 +177,23 @@ describe('custom builder photo crops', () => {
         expect(crop.left).toBeGreaterThanOrEqual(safe.left - 1e-12)
         expect(crop.top).toBeGreaterThanOrEqual(safe.top - 1e-12)
         expect(crop.left + crop.width).toBeLessThanOrEqual(safe.left + safe.width + 1e-12)
-        expect(crop.top + crop.height).toBeLessThanOrEqual(
-          safe.top + safe.height + 1e-12
-        )
+        expect(crop.top + crop.height).toBeLessThanOrEqual(safe.top + safe.height + 1e-12)
       }
       expect(crops[0]!.left + crops[0]!.width).toBeCloseTo(safe.left + safe.width, 12)
       expect(crops.at(-1)!.left).toBeCloseTo(safe.left, 12)
     }
   )
+
+  test('never adds hidden zoom when moving a photo at its reviewed scale', () => {
+    const focus = { focalX: 0.5, focalY: 0.5, zoom: 4 }
+    const reviewed = computePhotoCrop(1200, 1000, 0.8, focus)
+    const moved = computePlacedPhotoCrop(1200, 1000, 0.8, focus, {
+      opalPositionX: 0.45,
+      opalPositionY: -0.45,
+      opalScale: 1,
+      opalRotation: 0,
+    })
+
+    expect(moved).toEqual(reviewed)
+  })
 })

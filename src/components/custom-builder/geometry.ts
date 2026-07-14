@@ -10,6 +10,10 @@ export interface CabochonDepthProfile {
   girdleZ: number
 }
 
+// Two hundredths of a millimetre: enough overlap to avoid a visible light gap
+// without making the bezel appear to cut materially into the opal.
+export const bezelLipCompression = 0.002
+
 export interface RingMeasurements {
   centreRadius: number
   outerRadius: number
@@ -59,6 +63,50 @@ export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', Came
   // screen-up avoids the near-parallel Y-up singularity in the face-on view.
   front: [0, 0, -1],
   profile: [0, 0, -1],
+}
+
+interface ContourBounds {
+  bottom: number
+  left: number
+  right: number
+  top: number
+}
+
+const contourBoundsCache = new WeakMap<BuilderStoneContourV1, ContourBounds>()
+
+function contourBounds(contour: BuilderStoneContourV1): ContourBounds {
+  const cached = contourBoundsCache.get(contour)
+  if (cached) return cached
+
+  const bounds = contour.radii.reduce<ContourBounds>(
+    (current, radius, index) => {
+      const angle = (index / contour.radii.length) * Math.PI * 2
+      const x = Math.cos(angle) * radius
+      const y = Math.sin(angle) * radius
+      return {
+        bottom: Math.min(current.bottom, y),
+        left: Math.min(current.left, x),
+        right: Math.max(current.right, x),
+        top: Math.max(current.top, y),
+      }
+    },
+    { bottom: Number.POSITIVE_INFINITY, left: Number.POSITIVE_INFINITY, right: 0, top: 0 }
+  )
+  contourBoundsCache.set(contour, bounds)
+  return bounds
+}
+
+function normalizedContourPoint(
+  contour: BuilderStoneContourV1,
+  angle: number
+): readonly [number, number] {
+  const radius = contourRadiusAt(contour, angle)
+  const rawX = Math.cos(angle) * radius
+  const rawY = Math.sin(angle) * radius
+  const bounds = contourBounds(contour)
+  const width = bounds.right - bounds.left || 1
+  const height = bounds.top - bounds.bottom || 1
+  return [((rawX - bounds.left) / width) * 2 - 1, ((rawY - bounds.bottom) / height) * 2 - 1]
 }
 
 export function getPortraitFramingScale(width: number, height: number): number {
@@ -156,7 +204,9 @@ export function getStoneDimensions(
       selectedOpal.visual.dimensionsMm.length * 0.05,
     ]
   }
-  return [width, Math.min(0.72, Math.max(width, width * selectedOpal.visual.aspectRatio))]
+  const desiredHeight = Math.max(width, width * selectedOpal.visual.aspectRatio)
+  const scale = Math.min(1, 0.72 / desiredHeight)
+  return [width * scale, desiredHeight * scale]
 }
 
 export function getRenderableOpalDepthMm(selectedOpal?: BuilderOpal): number | undefined {
@@ -187,8 +237,8 @@ function baseOutlinePoint(
   const sine = Math.sin(angle)
 
   if (contour) {
-    const radius = contourRadiusAt(contour, angle)
-    return [cosine * radius * width, sine * radius * height]
+    const [x, y] = normalizedContourPoint(contour, angle)
+    return [x * width, y * height]
   }
 
   if (shape === 'cushion') {
@@ -329,6 +379,68 @@ export function getBezelWallContourPoints(
       contour
     ),
   }
+}
+
+/**
+ * Samples the same radial cabochon surface used by RingScene at the bezel's
+ * inner edge. This lets the lip follow every supported silhouette instead of
+ * floating at one fixed height or intersecting low crowns.
+ */
+export function getBezelLipContactZ(
+  shape: RingConfig['shape'],
+  angle: number,
+  width: number,
+  height: number,
+  innerPoint: StoneDimensions,
+  depthProfile: CabochonDepthProfile,
+  contour?: BuilderStoneContourV1
+): number {
+  const targetAngle = Math.atan2(innerPoint[1], innerPoint[0])
+  const sampleCount = 192
+  const sampleStep = (Math.PI * 2) / sampleCount
+  let bestAngle = angle
+  let bestError = Number.POSITIVE_INFINITY
+
+  const alignmentError = (candidateAngle: number) => {
+    const boundary = outlinePoint(shape, candidateAngle, width, height, 0, contour)
+    const boundaryAngle = Math.atan2(boundary[1], boundary[0])
+    return Math.abs(
+      Math.atan2(Math.sin(boundaryAngle - targetAngle), Math.cos(boundaryAngle - targetAngle))
+    )
+  }
+
+  // Normal offsets are not radial for ellipses, asymmetric contours, pears,
+  // or hearts. Find the cabochon parameter whose radial mesh line passes
+  // through the lip point, then refine it to sub-segment accuracy.
+  for (let index = 0; index < sampleCount; index += 1) {
+    const candidateAngle = (index / sampleCount) * Math.PI * 2
+    const error = alignmentError(candidateAngle)
+    if (error < bestError) {
+      bestAngle = candidateAngle
+      bestError = error
+    }
+  }
+
+  let lower = bestAngle - sampleStep
+  let upper = bestAngle + sampleStep
+  for (let iteration = 0; iteration < 24; iteration += 1) {
+    const first = lower + (upper - lower) / 3
+    const second = upper - (upper - lower) / 3
+    if (alignmentError(first) <= alignmentError(second)) upper = second
+    else lower = first
+  }
+
+  const boundary = outlinePoint(shape, (lower + upper) / 2, width, height, 0, contour)
+  const boundaryRadius = Math.hypot(boundary[0], boundary[1])
+  const radialProgress = Math.min(
+    1,
+    Math.max(0, boundaryRadius > 0 ? Math.hypot(innerPoint[0], innerPoint[1]) / boundaryRadius : 1)
+  )
+  const surfaceZ =
+    depthProfile.girdleZ +
+    depthProfile.domeHeight * Math.pow(Math.max(0, 1 - radialProgress ** 2), 0.72)
+
+  return surfaceZ - bezelLipCompression
 }
 
 export function getSettingOuterHalfWidth(
@@ -652,21 +764,21 @@ export function getCabochonDepthProfile(
 ): CabochonDepthProfile {
   const girdleZ = 0.028
   const totalDepth = depthMm ? depthMm * 0.1 : Math.min(width, height) * 0.38
-  const unmeasuredDomeFactor: Record<RingConfig['style'], number> = {
-    aurora: 0.31,
-    coral: 0.22,
-    gemini: 0.29,
-    'sun-moon': 0.27,
-  }
+  const profile = style ? ringStyleGeometryProfiles[style] : undefined
+  const styleDomeCap = profile
+    ? Math.min(width, height) * 2 * profile.domeHeightRatio
+    : Number.POSITIVE_INFINITY
   // A loose listing's total depth includes material hidden inside the cup.
   // Treating 58% of raw depth as exposed dome made deep opals tower above the
-  // sold low-bezel designs. Preserve the familiar unmeasured reference dome,
-  // but cap measured stones at a conservative 30% of their narrow face.
+  // sold low-bezel designs. Cap both measured and reference stones to the
+  // crown ratio observed for the selected sold collection design.
   const domeHeight = depthMm
-    ? Math.min(totalDepth * 0.42, Math.min(width, height) * 0.6, 0.18)
-    : Math.min(width, height) * (style ? unmeasuredDomeFactor[style] : 0.22)
+    ? Math.min(totalDepth * 0.42, styleDomeCap, 0.18)
+    : profile
+      ? styleDomeCap
+      : Math.min(width, height) * 0.22
   // Most loose-stone depth is hidden inside the handmade cup once set.
-  const visibleSeatCap = style === 'coral' ? 0.06 : 0.08
+  const visibleSeatCap = profile?.visibleSeatCap ?? 0.08
   const visibleSeatDepth = Math.min(Math.max(totalDepth - domeHeight, 0), visibleSeatCap)
 
   return {

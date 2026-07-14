@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Check, ExternalLink, RotateCcw, Share2 } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
+import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
 import {
   applyRingStyle,
   defaultOpalPlacement,
@@ -382,6 +383,23 @@ export function RingConfigurator({
     () => opals.find((opal) => opal.id === config.opalId),
     [config.opalId, opals]
   )
+  const hasEditableOpalPhoto = Boolean(
+    selectedOpal?.selectionKind === 'individual' &&
+    selectedOpal.visual.photoFit === 'reviewed' &&
+    selectedOpal.visual.textureCrop
+  )
+  const placementScaleMax = getPhotoPlacementScaleMax(selectedOpal?.visual.textureCrop?.zoom ?? 1)
+  useEffect(() => {
+    if (!hasEditableOpalPhoto) return
+    setConfig((current) => {
+      if (current.opalScale <= placementScaleMax) return current
+      return {
+        ...current,
+        opalScale: placementScaleMax,
+        ...(placementScaleMax === 1 ? { opalPositionX: 0, opalPositionY: 0 } : {}),
+      }
+    })
+  }, [hasEditableOpalPhoto, placementScaleMax])
   const description = useMemo(
     () => describeRingConfig(config, selectedOpal?.name),
     [config, selectedOpal?.name]
@@ -517,7 +535,7 @@ export function RingConfigurator({
                 onClear={clearOpal}
               />
 
-              {selectedOpal && (
+              {selectedOpal && hasEditableOpalPhoto && (
                 <OpalPlacementEditor
                   metal={config.metal}
                   opal={selectedOpal}
@@ -533,7 +551,9 @@ export function RingConfigurator({
               )}
 
               <fieldset>
-                <legend className="font-serif text-xl font-medium">5. Ring size (US)</legend>
+                <legend className="font-serif text-xl font-medium">
+                  {hasEditableOpalPhoto ? '5. Ring size (US)' : '4. Ring size (US)'}
+                </legend>
                 <div className="mt-3 flex items-center gap-4">
                   <select
                     value={config.size}
