@@ -102,6 +102,15 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings({ limit: 999 })).resolves.toEqual({
       analyzed: 1,
       checked: 1,
+      coverage: {
+        activeContours: 0,
+        availableIndividuals: 1,
+        candidates: 0,
+        currentAnalyses: 0,
+        eligible: 0,
+        failedCurrent: 0,
+        total: 1,
+      },
       failed: 0,
       manual: 0,
       nonIndividual: 0,
@@ -260,6 +269,15 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toEqual({
       analyzed: 1,
       checked: 2,
+      coverage: {
+        activeContours: 0,
+        availableIndividuals: 2,
+        candidates: 1,
+        currentAnalyses: 1,
+        eligible: 0,
+        failedCurrent: 0,
+        total: 2,
+      },
       failed: 0,
       manual: 1,
       nonIndividual: 0,
@@ -299,6 +317,15 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toEqual({
       analyzed: 0,
       checked: 1,
+      coverage: {
+        activeContours: 0,
+        availableIndividuals: 1,
+        candidates: 0,
+        currentAnalyses: 0,
+        eligible: 0,
+        failedCurrent: 0,
+        total: 1,
+      },
       failed: 1,
       manual: 0,
       nonIndividual: 0,
@@ -456,6 +483,15 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toEqual({
       analyzed: 0,
       checked: 1,
+      coverage: {
+        activeContours: 0,
+        availableIndividuals: 1,
+        candidates: 0,
+        currentAnalyses: 0,
+        eligible: 0,
+        failedCurrent: 0,
+        total: 1,
+      },
       failed: 0,
       manual: 0,
       nonIndividual: 0,

@@ -27,6 +27,15 @@ export interface ProcessBuilderMappingsOptions {
 export interface BuilderMappingBatchResult {
   analyzed: number
   checked: number
+  coverage: {
+    activeContours: number
+    availableIndividuals: number
+    candidates: number
+    currentAnalyses: number
+    eligible: number
+    failedCurrent: number
+    total: number
+  }
   failed: number
   manual: number
   nonIndividual: number
@@ -241,6 +250,15 @@ export async function processBuilderMappings(
   const summary: BuilderMappingBatchResult = {
     analyzed: 0,
     checked: result.docs.length,
+    coverage: {
+      activeContours: 0,
+      availableIndividuals: 0,
+      candidates: 0,
+      currentAnalyses: 0,
+      eligible: 0,
+      failedCurrent: 0,
+      total: 0,
+    },
     failed: 0,
     manual: 0,
     nonIndividual: 0,
@@ -401,6 +419,38 @@ export async function processBuilderMappings(
         continue
       }
       summary.failed += 1
+    }
+  }
+
+  const coverage = await payload.find({
+    collection: 'products',
+    depth: 0,
+    limit: 1000,
+    overrideAccess: true,
+    where: { category: { equals: 'raw-opals' } },
+  })
+  summary.coverage.total = coverage.docs.length
+  for (const document of coverage.docs) {
+    const name = typeof document.name === 'string' ? document.name : ''
+    if (isAvailableOpalListing(name) && classifyOpalListing(name) === 'individual') {
+      summary.coverage.availableIndividuals += 1
+    }
+    if (parseBuilderStoneContour(document.builderContour)) summary.coverage.activeContours += 1
+    if (parseBuilderStoneContour(document.builderContourCandidate)) summary.coverage.candidates += 1
+    if (document.builderEligible === true) summary.coverage.eligible += 1
+    if (
+      document.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
+      typeof document.builderMappingAnalyzedImageHash === 'string' &&
+      document.builderMappingAnalyzedImageHash.length > 0
+    ) {
+      summary.coverage.currentAnalyses += 1
+    }
+    if (
+      document.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
+      typeof document.builderMappingAnalysisError === 'string' &&
+      document.builderMappingAnalysisError.length > 0
+    ) {
+      summary.coverage.failedCurrent += 1
     }
   }
 
