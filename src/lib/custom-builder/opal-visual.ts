@@ -247,16 +247,14 @@ const reviewedSlugAliases: Record<string, keyof typeof reviewedProfiles> = {
   'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
 }
 
-// These six source photographs produced real pixel-isolated contours during
-// the July 2026 catalogue audit. Keep this allow-list separate from automatic
-// activation: other candidates still require maker review, and the analyser's
-// exact 0.70 canonical fallback must never masquerade as a traced stone edge.
+// These three source photographs produced pixel-isolated contours that also
+// passed a live rendered-fit audit in July 2026. Keep this allow-list separate
+// from automatic activation: other candidates still require maker review, and
+// the analyser's exact 0.70 canonical fallback must never masquerade as a
+// traced stone edge.
 const visuallyAuditedImageCandidateSlugs = new Set([
   'lightning-ridge-black-opal-6-30ct',
-  'lightning-ridge-semi-black-opal-5-50-cts',
-  'lightning-ridge-white-opal-1-05-cts',
   'mintabie-dark-opal-heart-055-cts',
-  'mintabie-semi-black-opal-1-35-cts',
   'queensland-crystal-pipe-opal-1-45-cts',
 ])
 

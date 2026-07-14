@@ -568,24 +568,24 @@ describe('custom builder opal visual profiles', () => {
     const fields = {
       builderMappingStatus: 'manual',
       builderContourCandidate: contour,
-      builderPhotoAnalysisConfidence: 0.692,
-      builderPhotoCandidateFocalX: 0.498,
-      builderPhotoCandidateFocalY: 0.466,
-      builderPhotoCandidateZoom: 4.344,
+      builderPhotoAnalysisConfidence: 0.954,
+      builderPhotoCandidateFocalX: 0.454,
+      builderPhotoCandidateFocalY: 0.554,
+      builderPhotoCandidateZoom: 3.2,
       builderPhotoCandidateRotation: 0,
     }
 
     expect(
       createOpalVisualProfile(
-        'mintabie-semi-black-opal-1-35-cts',
-        'Mintabie Semi Black Opal 1.35 cts',
+        'lightning-ridge-black-opal-6-30ct',
+        'Lightning Ridge Black Opal 6.30ct',
         'black-opal',
         fields
       ).visual
     ).toMatchObject({
       contour,
       photoFit: 'reviewed',
-      textureCrop: { focalX: 0.498, focalY: 0.466, rotation: 0, zoom: 4.344 },
+      textureCrop: { focalX: 0.454, focalY: 0.554, rotation: 0, zoom: 3.2 },
     })
 
     expect(
@@ -594,8 +594,8 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
     expect(
       createOpalVisualProfile(
-        'mintabie-semi-black-opal-1-35-cts',
-        'Mintabie Semi Black Opal 1.35 cts',
+        'lightning-ridge-black-opal-6-30ct',
+        'Lightning Ridge Black Opal 6.30ct',
         'black-opal',
         { ...fields, builderPhotoAnalysisConfidence: 0.7 }
       ).visual.contour

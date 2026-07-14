@@ -75,7 +75,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).toContain("profile.beadShape === 'granulated'")
-    expect(sceneSource).toContain('<icosahedronGeometry args={[profile.beadRadius, 0]} />')
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 10, 8]} />')
     expect(sceneSource).toContain('<icosahedronGeometry args={[profile.beadRadius, 1]} />')
     expect(sceneSource).toContain('flatShading')
     expect(sceneSource).toContain('getGrainDerivedHaloSupportOutline({')

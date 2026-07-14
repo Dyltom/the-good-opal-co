@@ -1126,7 +1126,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
                   {profile.beadShape === 'granulated' ? (
-                    <icosahedronGeometry args={[profile.beadRadius, 0]} />
+                    <sphereGeometry args={[profile.beadRadius, 10, 8]} />
                   ) : (
                     <icosahedronGeometry args={[profile.beadRadius, 1]} />
                   )}
