@@ -107,17 +107,14 @@ describe('photoreal ring rendering contract', () => {
     )
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*organicSolderColour[\s\S]*envMapIntensity=\{organic \? 1\.08 : 1\.18\}/
+      /function SolderGrainMaterial[\s\S]*organicSolderColour[\s\S]*envMapIntensity=\{organic \? 1\.3 : 1\.38\}/
     )
-    expect(sceneSource).toContain('organic ? 1.08 : 1.18')
+    expect(sceneSource).toContain('organic ? 1.3 : 1.38')
     expect(sceneSource).toContain('organic={isOrganicGrain}')
     expect(sceneSource).toContain('getSolderGrainTone(key, isOrganicGrain)')
     expect(sceneSource).toContain('flatShading={organic}')
-    expect(sceneSource).toContain('position={[0, 0, -profile.beadRadius * 0.38]}')
-    expect(sceneSource).toContain('scale={[1.07, 1.07, 0.34]}')
-    expect(sceneSource).toMatch(
-      /position=\{\[0, 0, -profile\.beadRadius \* 0\.38\]\}[\s\S]*<SolderSupportMaterial metal=\{config\.metal\}/
-    )
+    expect(sceneSource).not.toContain('position={[0, 0, -profile.beadRadius * 0.38]}')
+    expect(sceneSource).not.toContain('scale={[1.07, 1.07, 0.34]}')
     expect(sceneSource).not.toContain('auroraGrainColours')
     expect(sceneSource).not.toContain('flatShading\n      metalness={0.94}')
     expect(sceneSource).toContain('getGrainDerivedHaloSupportOutline({')

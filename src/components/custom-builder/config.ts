@@ -280,7 +280,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shankRadius: 0.088,
     shankDepth: 0.055,
     // Sold face-on references taper into the bezel instead of flaring at it.
-    shoulderRadius: 0.084,
+    shoulderRadius: 0.074,
     shoulderDepth: 0.057,
     shankForgedVariation: 0.012,
     surfaceNormalVariation: 0.075,
@@ -330,7 +330,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     metalRoughness: 0.31,
     shankRadius: 0.082,
     shankDepth: 0.047,
-    shoulderRadius: 0.078,
+    shoulderRadius: 0.06,
     shoulderDepth: 0.049,
     shankForgedVariation: 0.016,
     surfaceNormalVariation: 0.09,
@@ -351,8 +351,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     ...sunMoonBezelSeat,
     // Forty owned-reference grains span an approximately 12 mm-wide head.
     // Keep their oxidized seams visible instead of pulling the halo inward.
-    haloOffset: 0.14,
-    beadRadius: 0.05,
+    // The sold trim uses small solder grains on a dark web, not a pearl-sized
+    // necklace. Move the slimmer grains outward to preserve the 12 mm head.
+    haloOffset: 0.147,
+    beadRadius: 0.043,
     beadCount: 40,
     beadPitchMm: 1,
     beadFlattening: 0.68,
@@ -360,7 +362,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadRoughness: 0.56,
     beadShape: 'granulated',
     beadPrimitive: 'rounded-granule',
-    beadVariation: 1.1,
+    beadVariation: 1.3,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.8,
     haloValleySupportCoverage: 0.9,
@@ -381,7 +383,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     metalRoughness: 0.25,
     shankRadius: 0.086,
     shankDepth: 0.05,
-    shoulderRadius: 0.082,
+    shoulderRadius: 0.069,
     shoulderDepth: 0.052,
     shankForgedVariation: 0.013,
     surfaceNormalVariation: 0.095,
@@ -432,7 +434,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     metalRoughness: 0.25,
     shankRadius: 0.089,
     shankDepth: 0.052,
-    shoulderRadius: 0.085,
+    shoulderRadius: 0.072,
     shoulderDepth: 0.054,
     shankForgedVariation: 0.017,
     surfaceNormalVariation: 0.1,

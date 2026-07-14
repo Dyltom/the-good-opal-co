@@ -140,7 +140,9 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 }
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
-  'three-quarter': [3.2, 5.8, 3],
+  // Owned three-quarter photographs retain most of the opal face. The old
+  // 37-degree view turned the setting into a narrow signboard.
+  'three-quarter': [2.2, 6.6, 1.6],
   // Sold face-on photographs show one slim shoulder on each side of the head.
   // Keep only enough elevation to retain a soft edge highlight; the previous
   // 0.45 elevation exposed both shank faces as two horizontal rails.
@@ -412,8 +414,8 @@ export function outlinePoint(
 }
 
 const soldStyleOuterVariation: Record<RingConfig['style'], number> = {
-  gemini: 0.003,
-  coral: 0.005,
+  gemini: 0.008,
+  coral: 0.0097,
   'sun-moon': 0.003,
   aurora: 0.001,
 }

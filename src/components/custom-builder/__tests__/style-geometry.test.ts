@@ -72,7 +72,7 @@ describe('sold ring style geometry', () => {
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
-      shoulderRadius: 0.078,
+      shoulderRadius: 0.06,
       crossSectionPower: 0.92,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
@@ -89,10 +89,10 @@ describe('sold ring style geometry', () => {
         ])
       )
     ).toEqual({
-      aurora: 0.085,
-      coral: 0.078,
-      gemini: 0.084,
-      'sun-moon': 0.082,
+      aurora: 0.072,
+      coral: 0.06,
+      gemini: 0.074,
+      'sun-moon': 0.069,
     })
 
     for (const profile of Object.values(ringStyleGeometryProfiles)) {
@@ -129,8 +129,8 @@ describe('sold ring style geometry', () => {
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 1,
-      beadRadius: 0.05,
-      haloOffset: 0.14,
+      beadRadius: 0.043,
+      haloOffset: 0.147,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
@@ -142,7 +142,7 @@ describe('sold ring style geometry', () => {
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.19, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
-    expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0, 12)
+    expect(sunMoon.beadRadius * 20).toBeCloseTo(0.86, 12)
     expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0, 12)
   })
 

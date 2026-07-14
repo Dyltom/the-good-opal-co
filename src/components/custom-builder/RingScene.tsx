@@ -222,7 +222,7 @@ function SolderGrainMaterial({
   tone: number
 }) {
   const solderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#c0bdb5',
+    'sterling-silver': '#d0cdc5',
     '14k-gold': '#b99342',
     '18k-gold': '#c49a3d',
     'white-gold': '#c7c4bb',
@@ -230,7 +230,7 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#b7b3aa',
+    'sterling-silver': '#c8c4bb',
     '14k-gold': '#997a37',
     '18k-gold': '#a98235',
     'white-gold': '#aaa8a1',
@@ -247,10 +247,10 @@ function SolderGrainMaterial({
       color={colour}
       flatShading={organic}
       metalness={0.91}
-      roughness={organic ? Math.max(0.56, roughness) : Math.max(0.48, roughness)}
+      roughness={organic ? Math.max(0.44, roughness * 0.72) : Math.max(0.4, roughness * 0.78)}
       clearcoat={0.01}
       clearcoatRoughness={0.68}
-      envMapIntensity={organic ? 1.08 : 1.18}
+      envMapIntensity={organic ? 1.3 : 1.38}
     />
   )
 }
@@ -1339,13 +1339,6 @@ function Setting({
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  <mesh position={[0, 0, -profile.beadRadius * 0.38]} scale={[1.07, 1.07, 0.34]}>
-                    {profile.beadPrimitive === 'rounded-granule' && (
-                      <sphereGeometry args={[profile.beadRadius, 16, 10]} />
-                    )}
-                    {isOrganicGrain && <sphereGeometry args={[profile.beadRadius, 10, 7]} />}
-                    <SolderSupportMaterial metal={config.metal} />
-                  </mesh>
                   <mesh
                     castShadow
                     receiveShadow
