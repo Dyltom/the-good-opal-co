@@ -76,5 +76,6 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('<dodecahedronGeometry')
     expect(sceneSource).toContain('getGrainDerivedHaloSupportOutline({')
     expect(sceneSource).toContain('<HaloSupport')
+    expect(sceneSource).toMatch(/function HaloSupport[\s\S]*<PatinaMaterial metal=\{config\.metal\}/)
   })
 })

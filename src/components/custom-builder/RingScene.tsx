@@ -971,7 +971,7 @@ function HaloSupport({
 
   return (
     <mesh castShadow geometry={geometry} receiveShadow>
-      <MetalMaterial metal={config.metal} roughness={0.43} />
+      <PatinaMaterial metal={config.metal} />
     </mesh>
   )
 }

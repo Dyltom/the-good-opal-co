@@ -262,8 +262,8 @@ function baseOutlinePoint(
 
   if (shape === 'cushion') {
     return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.27) * width,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.27) * height,
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.42) * width,
+      Math.sign(sine) * Math.pow(Math.abs(sine), 0.42) * height,
     ]
   }
   if (shape === 'elongated') {
@@ -516,7 +516,7 @@ export function getGrainDerivedHaloSupportOutline({
       valleyAngle,
       width,
       height,
-      haloOffset + beadRadius * coverage * 0.42,
+      haloOffset + beadRadius * coverage * 0.16,
       contour
     )
     const valleyInner = soldStyleOutlinePoint(

@@ -73,8 +73,8 @@ describe('sold ring style geometry', () => {
 
   test('keeps Coral square with constant normal-width setting walls', () => {
     const diagonal = outlinePoint('cushion', Math.PI / 4, 0.5, 0.5)
-    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.91)
-    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.92)
+    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.86)
+    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.87)
 
     for (const angle of [0, Math.PI / 8, Math.PI / 4, (3 * Math.PI) / 8]) {
       const inner = outlinePoint('cushion', angle, 0.5, 0.5)
@@ -164,7 +164,8 @@ describe('sold ring style geometry', () => {
         profile.haloOffset + profile.beadRadius * profile.haloSupportCoverage
       )
       expect(supportOuterEdge).toBeLessThan(beadOuterEdge)
-      expect(supportOuterEdge).toBeLessThanOrEqual(profile.haloOffset + profile.beadRadius * 0.75)
+      expect(profile.haloSupportCoverage).toBeLessThanOrEqual(0.6)
+      expect(supportOuterEdge).toBeLessThanOrEqual(profile.haloOffset + profile.beadRadius * 0.6)
     }
   )
 
