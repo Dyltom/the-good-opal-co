@@ -443,16 +443,11 @@ function OpalCabochon({
     return (
       <group>
         <mesh castShadow geometry={geometry} receiveShadow>
-          <meshStandardMaterial
+          <meshBasicMaterial
             attach="material-0"
             map={photoTexture}
             color="#ffffff"
-            emissive="#ffffff"
-            emissiveMap={photoTexture}
-            emissiveIntensity={0.025}
-            envMapIntensity={0.65}
-            metalness={0}
-            roughness={0.28}
+            toneMapped={false}
           />
           <meshBasicMaterial
             attach="material-1"

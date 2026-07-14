@@ -60,8 +60,9 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('uses exact catalogue colour and rounded solder grains', () => {
-    expect(sceneSource).toContain('<meshStandardMaterial')
-    expect(sceneSource).toContain('emissiveMap={photoTexture}')
+    expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
+    expect(sceneSource).toContain('map={photoTexture}')
+    expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).toContain('<sphereGeometry')
     expect(sceneSource).not.toContain('<icosahedronGeometry')
   })
