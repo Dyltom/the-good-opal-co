@@ -97,6 +97,15 @@ test.describe('custom ring render fidelity', () => {
       test.setTimeout(60_000)
       await expectRingSnapshot(page, `style=${style}&view=profile`, `ring-${style}-profile.png`)
     })
+
+    test(`${style} preserves its construction at three-quarter view`, async ({ page }) => {
+      test.setTimeout(60_000)
+      await expectRingSnapshot(
+        page,
+        `style=${style}&view=three-quarter`,
+        `ring-${style}-three-quarter.png`
+      )
+    })
   }
 
   test('maps the reviewed listing crop onto the opal face', async ({ page }) => {
