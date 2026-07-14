@@ -180,16 +180,14 @@ function imageIdentity(value: unknown): string | undefined {
   if (typeof image === 'string' || typeof image === 'number') return String(image)
   if (!isRecord(image)) return undefined
 
+  // Payload can expose the same relationship as an ID in write hooks and as a
+  // populated media object in reads. Prefer the relationship ID so analysis
+  // writes cannot invalidate themselves merely because query depth changed.
+  if (typeof image.id === 'string' || typeof image.id === 'number') return String(image.id)
+
   const identity = [
-    image.id,
-    image.updatedAt,
     image.filename,
     image.url,
-    image.filesize,
-    image.width,
-    image.height,
-    image.focalX,
-    image.focalY,
   ]
     .filter((part) => typeof part === 'string' || typeof part === 'number')
     .map(String)

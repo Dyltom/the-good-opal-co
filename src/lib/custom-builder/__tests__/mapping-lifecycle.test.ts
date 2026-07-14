@@ -89,15 +89,22 @@ describe('opal builder mapping lifecycle', () => {
     ).toBe(first)
   })
 
-  test('tracks Payload focal-point changes as source-image changes', () => {
-    const centred = createBuilderSourceImageHash([
-      { image: { id: 7, filename: 'opal.jpg', focalX: 50, focalY: 50 } },
-    ])
-    const adjusted = createBuilderSourceImageHash([
-      { image: { id: 7, filename: 'opal.jpg', focalX: 62, focalY: 44 } },
+  test('uses the same source identity for an id and its populated Payload relationship', () => {
+    const relationship = createBuilderSourceImageHash([{ image: 7 }])
+    const populated = createBuilderSourceImageHash([
+      {
+        image: {
+          id: 7,
+          filename: 'opal.jpg',
+          focalX: 62,
+          focalY: 44,
+          updatedAt: '2026-07-12',
+          url: '/api/media/file/opal.jpg',
+        },
+      },
     ])
 
-    expect(adjusted).not.toBe(centred)
+    expect(populated).toBe(relationship)
   })
 
   test('recovers single-opal dimensions from legacy rich text regardless of axis order', () => {
