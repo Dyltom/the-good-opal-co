@@ -40,6 +40,7 @@ import {
   getCabochonDepthProfile,
   getCameraPosition,
   getDShankCrossSection,
+  getForgedMetalTone,
   getGrainDerivedHaloSupportOutline,
   getPatinaGrooveProfile,
   getProfiledBezelLipRings,
@@ -121,21 +122,27 @@ function CameraPreset({ target, view }: { target: CameraVector; view: RingView }
 }
 
 function MetalMaterial({
+  flatShading = false,
   metal,
   roughness = 0.22,
+  vertexColors = false,
 }: {
+  flatShading?: boolean
   metal: RingConfig['metal']
   roughness?: number
+  vertexColors?: boolean
 }) {
   const isSterlingSilver = metal === 'sterling-silver'
   return (
     <meshPhysicalMaterial
       color={metalColours[metal]}
+      flatShading={flatShading}
       metalness={0.96}
-      roughness={isSterlingSilver ? Math.max(0.38, roughness) : roughness}
-      clearcoat={0.04}
-      clearcoatRoughness={0.36}
-      envMapIntensity={1.55}
+      roughness={isSterlingSilver ? Math.max(0.43, roughness) : roughness}
+      clearcoat={0.02}
+      clearcoatRoughness={0.44}
+      envMapIntensity={1.3}
+      vertexColors={vertexColors}
     />
   )
 }
@@ -143,13 +150,13 @@ function MetalMaterial({
 function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
   const shadowColour =
     metal === 'sterling-silver'
-      ? '#2c2d29'
+      ? '#20211d'
       : metal === '14k-gold' || metal === '18k-gold'
         ? '#6b4b22'
         : metal === 'rose-gold'
           ? '#704a42'
           : '#575a59'
-  return <meshStandardMaterial color={shadowColour} metalness={0.72} roughness={0.62} />
+  return <meshStandardMaterial color={shadowColour} metalness={0.58} roughness={0.72} />
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -944,9 +951,9 @@ function ProfiledBezelLip({
       />
       <meshStandardMaterial
         attach="material-1"
-        color={config.metal === 'sterling-silver' ? '#242621' : '#65451f'}
-        metalness={0.72}
-        roughness={0.68}
+        color={config.metal === 'sterling-silver' ? '#171814' : '#65451f'}
+        metalness={0.56}
+        roughness={0.78}
       />
     </mesh>
   )
@@ -1118,12 +1125,16 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  {profile.beadShape === 'rounded' ? (
-                    <sphereGeometry args={[profile.beadRadius, 16, 10]} />
+                  {profile.beadShape === 'granulated' ? (
+                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
                   ) : (
-                    <dodecahedronGeometry args={[profile.beadRadius, 1]} />
+                    <dodecahedronGeometry args={[profile.beadRadius, 0]} />
                   )}
-                  <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
+                  <MetalMaterial
+                    flatShading
+                    metal={config.metal}
+                    roughness={profile.beadRoughness}
+                  />
                 </mesh>
               )
             }
@@ -1197,7 +1208,10 @@ function RingShank({
     const radialSegments = 24
     const curveLength = curve.getLength()
     const positions: number[] = []
+    const colours: number[] = []
     const indices: number[] = []
+    const baseMetalColour = new Color(metalColours[metal])
+    const forgedColour = new Color()
 
     for (let segment = 0; segment <= tubularSegments; segment += 1) {
       const progress = segment / tubularSegments
@@ -1233,6 +1247,9 @@ function RingShank({
           point.y + inPlaneNormal.y * acrossBand * localHalfDepth,
           point.z + throughBand * localHalfWidth
         )
+        const tone = getForgedMetalTone(progress, side / radialSegments)
+        forgedColour.copy(baseMetalColour).multiplyScalar(tone)
+        colours.push(forgedColour.r, forgedColour.g, forgedColour.b)
       }
     }
 
@@ -1254,6 +1271,7 @@ function RingShank({
 
     const nextGeometry = new BufferGeometry()
     nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+    nextGeometry.setAttribute('color', new Float32BufferAttribute(colours, 3))
     nextGeometry.setIndex(indices)
     nextGeometry.computeVertexNormals()
     nextGeometry.computeBoundingSphere()
@@ -1261,6 +1279,7 @@ function RingShank({
   }, [
     crossSectionPower,
     curve,
+    metal,
     shoulderBlendLengthMm,
     shoulderDepth,
     shoulderRadius,
@@ -1274,7 +1293,7 @@ function RingShank({
 
   return (
     <mesh castShadow geometry={geometry} receiveShadow>
-      <MetalMaterial metal={metal} roughness={metalRoughness} />
+      <MetalMaterial metal={metal} roughness={metalRoughness} vertexColors />
     </mesh>
   )
 }

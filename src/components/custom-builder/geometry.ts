@@ -130,7 +130,10 @@ function normalizedContourPoint(
 
 export function getPortraitFramingScale(width: number, height: number): number {
   const aspectRatio = width / Math.max(1, height)
-  return Math.min(1.7, Math.max(1, 0.92 / aspectRatio))
+  // Portrait canvases still need extra distance for the full shank, but the
+  // old 1.7 cap reduced the jewellery to a thumbnail on phones. A 1.32 cap
+  // keeps the three-quarter loop clear while making the stone inspectable.
+  return Math.min(1.32, Math.max(1, 0.72 / aspectRatio))
 }
 
 export function getCameraPosition(
@@ -804,6 +807,24 @@ export function getShoulderBlendProgress(
   const clampedProgress = Math.min(1, Math.max(0, curveProgress))
   const endpointDistanceMm = Math.min(clampedProgress, 1 - clampedProgress) * curveLength * 10
   return Math.min(1, endpointDistanceMm / shoulderBlendLengthMm)
+}
+
+/**
+ * Deterministic low-contrast tone variation for the forged shank surface.
+ * Values stay close to one so tarnish breaks the perfect PBR highlight without
+ * changing the selected metal colour or obscuring the ring silhouette.
+ */
+export function getForgedMetalTone(
+  curveProgress: number,
+  crossSectionProgress: number
+): number {
+  const along = Math.min(1, Math.max(0, curveProgress))
+  const around = Math.min(1, Math.max(0, crossSectionProgress))
+  return (
+    0.96 +
+    Math.sin(along * Math.PI * 10 + 0.35) * 0.02 +
+    Math.sin(around * Math.PI * 6 + along * Math.PI * 2 - 0.4) * 0.01
+  )
 }
 
 export function cssSilhouetteClipPath(

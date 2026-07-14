@@ -61,7 +61,7 @@ const metalColours: Record<RingConfig['metal'], string> = {
 }
 
 const patinaColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#2c2d29',
+  'sterling-silver': '#20211d',
   '14k-gold': '#6b4b22',
   '18k-gold': '#6b4b22',
   'white-gold': '#575a59',
@@ -159,7 +159,7 @@ function OpalSettingDecoration({
             data-opal-setting-grain
             className={cn(
               'absolute block -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_34%_28%,#f3f1e9_0%,#b6b5ae_34%,#585954_70%,#262722_100%)] shadow-[0_1px_2px_rgb(0_0_0/0.75)]',
-              profile.beadShape === 'angular' ? 'rounded-[38%]' : 'rounded-full'
+              profile.beadShape === 'nugget' ? 'rounded-[38%]' : 'rounded-[46%]'
             )}
             style={{
               height: `${diameter}%`,

@@ -9,6 +9,7 @@ import {
   getBezelWallContourPoints,
   getCabochonDepthProfile,
   getCameraPosition,
+  getForgedMetalTone,
   getPortraitFramingScale,
   getPatinaGrooveProfile,
   getRingFramingTarget,
@@ -185,14 +186,27 @@ describe('custom ring geometry contract', () => {
 
   test('scales portrait cameras without changing the selected view direction ratios', () => {
     expect(getPortraitFramingScale(1200, 800)).toBe(1)
-    expect(getPortraitFramingScale(390, 844)).toBe(1.7)
-    expect(getPortraitFramingScale(768, 1024)).toBeCloseTo(1.226_667, 5)
+    expect(getPortraitFramingScale(390, 844)).toBe(1.32)
+    expect(getPortraitFramingScale(768, 1024)).toBe(1)
 
     const landscape = getCameraPosition('three-quarter', 1200, 800)
     const portrait = getCameraPosition('three-quarter', 390, 844)
     portrait.forEach((coordinate, index) => {
-      expect(coordinate / landscape[index]!).toBeCloseTo(1.7, 12)
+      expect(coordinate / landscape[index]!).toBeCloseTo(1.32, 12)
     })
+  })
+
+  test('keeps forged metal tone variation subtle and deterministic', () => {
+    const tones = Array.from({ length: 161 }, (_, curveIndex) =>
+      Array.from({ length: 24 }, (_, crossSectionIndex) =>
+        getForgedMetalTone(curveIndex / 160, crossSectionIndex / 24)
+      )
+    ).flat()
+
+    expect(getForgedMetalTone(0.4, 0.7)).toBe(getForgedMetalTone(0.4, 0.7))
+    expect(Math.min(...tones)).toBeGreaterThanOrEqual(0.93)
+    expect(Math.max(...tones)).toBeLessThanOrEqual(0.99)
+    expect(new Set(tones.map((tone) => tone.toFixed(5))).size).toBeGreaterThan(100)
   })
 
   test('seats the bezel exactly on top of the shank', () => {

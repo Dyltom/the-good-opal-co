@@ -124,7 +124,7 @@ export interface RingStyleGeometryProfile {
   beadFlattening: number
   beadAsymmetry: number
   beadRoughness: number
-  beadShape: 'angular' | 'none' | 'rounded'
+  beadShape: 'granulated' | 'none' | 'nugget'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -221,8 +221,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipProfile: [
       { radialProgress: 0, heightOffset: 0, finish: 'patina' },
       { radialProgress: 0.28, heightOffset: -0.008, finish: 'patina' },
-      { radialProgress: 0.48, heightOffset: -0.008, finish: 'patina' },
-      { radialProgress: 0.63, heightOffset: 0.001, finish: 'metal' },
+      { radialProgress: 0.58, heightOffset: -0.008, finish: 'patina' },
+      { radialProgress: 0.68, heightOffset: 0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.003, finish: 'metal' },
     ],
     bezelWallOffset: 0.025,
@@ -272,15 +272,15 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelWallThickness: 0.04,
     bezelLipOffset: 0.002,
     bezelLipRadius: 0.012,
-    haloOffset: 0.095,
-    beadRadius: 0.044,
+    haloOffset: 0.093,
+    beadRadius: 0.046,
     beadCount: 36,
     beadPitchMm: 0.93,
     beadFlattening: 0.48,
-    beadAsymmetry: 0,
-    beadRoughness: 0.48,
-    beadShape: 'rounded',
-    beadVariation: 0.9,
+    beadAsymmetry: 0.06,
+    beadRoughness: 0.55,
+    beadShape: 'granulated',
+    beadVariation: 1.05,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.58,
     innerSeamOffset: 0.003,
@@ -320,9 +320,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.42,
-    beadAsymmetry: 0.24,
-    beadRoughness: 0.52,
-    beadShape: 'angular',
+    beadAsymmetry: 0.1,
+    beadRoughness: 0.6,
+    beadShape: 'nugget',
     beadVariation: 1.7,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.6,
@@ -381,7 +381,7 @@ export const shapes: readonly ConfigOption<RingConfig['shape']>[] = [
 
 export const settings: readonly ConfigOption<RingConfig['setting']>[] = [
   { id: 'bezel', label: 'Full bezel', detail: 'Continuous protective rim' },
-  { id: 'beaded', label: 'Bezel with bead halo', detail: 'Full bezel and handmade silver pearls' },
+  { id: 'beaded', label: 'Bezel with grain halo', detail: 'Full bezel and handmade silver grains' },
 ]
 
 export const bands: readonly ConfigOption<RingConfig['band']>[] = [
