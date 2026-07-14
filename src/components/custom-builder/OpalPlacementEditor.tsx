@@ -222,7 +222,7 @@ export function OpalPlacementEditor({
   placement,
   style,
 }: OpalPlacementEditorProps) {
-  const aperture = useRef<HTMLDivElement>(null)
+  const cropViewport = useRef<HTMLDivElement>(null)
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const baseZoom = opal.visual.textureCrop?.zoom ?? 1
@@ -240,7 +240,7 @@ export function OpalPlacementEditor({
   function startDrag(event: ReactPointerEvent<HTMLDivElement>) {
     if (!canPan) return
     const bounds =
-      aperture.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect()
+      cropViewport.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect()
     event.currentTarget.setPointerCapture(event.pointerId)
     drag.current = {
       ...placement,
@@ -333,7 +333,6 @@ export function OpalPlacementEditor({
 
           <div className="relative grid min-h-[20rem] select-none place-items-center overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_center,rgb(255_255_255/0.075),transparent_58%)] p-8 sm:min-h-[24rem]">
             <div
-              ref={aperture}
               data-opal-placement-aperture
               role="group"
               tabIndex={canPan ? 0 : -1}
@@ -380,6 +379,8 @@ export function OpalPlacementEditor({
                   style={{ clipPath }}
                 >
                   <div
+                    ref={cropViewport}
+                    data-opal-placement-crop-viewport
                     className={cn(
                       'relative h-full w-full overflow-hidden bg-charcoal',
                       silhouetteClass(opal.visual.silhouette)
@@ -390,6 +391,7 @@ export function OpalPlacementEditor({
                       opal={opal}
                       placement={placement}
                       alt=""
+                      eager
                       sizes="360px"
                       className="h-full w-full"
                     />

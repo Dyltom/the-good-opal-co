@@ -460,8 +460,12 @@ describe('RingConfigurator store opal selection', () => {
     })
     const aperture = placement
     expect(aperture.hasAttribute('data-opal-placement-aperture')).toBe(true)
+    const cropViewport = aperture.querySelector(
+      '[data-opal-placement-crop-viewport]'
+    ) as HTMLDivElement
+    expect(cropViewport).not.toBeNull()
     Object.defineProperty(placement, 'setPointerCapture', { value: vi.fn() })
-    vi.spyOn(aperture!, 'getBoundingClientRect').mockReturnValue({
+    vi.spyOn(cropViewport, 'getBoundingClientRect').mockReturnValue({
       bottom: 300,
       height: 200,
       left: 100,

@@ -32,6 +32,7 @@ export function RingSceneVisualHarness({
         config={config}
         onContextLost={handleContextLost}
         onRenderReady={handleRenderReady}
+        reduceMotion
         selectedOpal={selectedOpal}
         view={view}
       />

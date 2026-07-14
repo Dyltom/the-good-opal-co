@@ -13,12 +13,20 @@ import type { BuilderOpal, OpalPlacement } from './config'
 interface OpalFaceImageProps {
   alt: string
   className?: string
+  eager?: boolean
   opal: BuilderOpal
   placement?: OpalPlacement
   sizes: string
 }
 
-export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFaceImageProps) {
+export function OpalFaceImage({
+  alt,
+  className,
+  eager = false,
+  opal,
+  placement,
+  sizes,
+}: OpalFaceImageProps) {
   const [imageSize, setImageSize] = useState<{ width: number; height: number }>()
   const stoneAspect = 1 / opal.visual.aspectRatio
   const crop = useMemo(
@@ -63,13 +71,21 @@ export function OpalFaceImage({ alt, className, opal, placement, sizes }: OpalFa
             width: `${100 / crop.width}%`,
           }}
         >
-          <Image src={opal.imageUrl} alt={alt} fill sizes={sizes} onLoad={handleLoad} />
+          <Image
+            src={opal.imageUrl}
+            alt={alt}
+            fill
+            loading={eager ? 'eager' : undefined}
+            sizes={sizes}
+            onLoad={handleLoad}
+          />
         </div>
       ) : (
         <Image
           src={opal.imageUrl}
           alt={alt}
           fill
+          loading={eager ? 'eager' : undefined}
           sizes={sizes}
           className="object-cover"
           style={{ transform: `rotate(${rotation}deg) scale(${coverScale})` }}

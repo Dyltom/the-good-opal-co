@@ -25,6 +25,20 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page).toHaveURL(/[?&]p=\d+/)
   await expect(page.getByRole('link', { name: 'View selected loose opal' })).toBeVisible()
 
+  const placementAperture = page.locator('[data-opal-placement-aperture]')
+  await placementAperture.scrollIntoViewIfNeeded()
+  const placementImage = placementAperture.locator('img')
+  await expect(placementImage).toHaveAttribute('loading', 'eager')
+  await expect
+    .poll(
+      () =>
+        placementImage.evaluate(
+          (image) => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0
+        ),
+      { timeout: 15_000 }
+    )
+    .toBe(true)
+
   await page.locator('summary').filter({ hasText: 'Fine position' }).click()
   await page.getByRole('slider', { name: 'Horizontal' }).fill('0.18')
   await page.getByRole('slider', { name: 'Zoom' }).fill('1.35')

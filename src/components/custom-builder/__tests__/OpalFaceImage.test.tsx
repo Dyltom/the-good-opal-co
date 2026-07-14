@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { createElement } from 'react'
 import { describe, expect, test, vi } from 'vitest'
@@ -44,9 +44,28 @@ const placement: OpalPlacement = {
 
 describe('OpalFaceImage', () => {
   test('combines reviewed photo rotation with customer placement rotation', () => {
-    render(<OpalFaceImage alt="Selected opal" opal={opal} placement={placement} />)
+    render(
+      <OpalFaceImage
+        alt="Selected opal"
+        eager
+        opal={opal}
+        placement={placement}
+        sizes="360px"
+      />
+    )
 
     const image = screen.getByRole('img', { name: 'Selected opal' }) as HTMLImageElement
+    expect(image.getAttribute('loading')).toBe('eager')
     expect(image.style.transform).toContain('rotate(-75deg)')
+
+    Object.defineProperties(image, {
+      naturalHeight: { configurable: true, value: 1920 },
+      naturalWidth: { configurable: true, value: 1839 },
+    })
+    fireEvent.load(image)
+
+    const croppedImage = screen.getByRole('img', { name: 'Selected opal' })
+    expect(croppedImage.parentElement?.className).toContain('absolute')
+    expect(croppedImage.parentElement?.style.width).not.toBe('')
   })
 })
