@@ -20,7 +20,7 @@ export interface CabochonDepthProfile {
 // without making the bezel appear to cut materially into the opal.
 export const bezelLipCompression = 0.002
 
-export const opalSettleDurationSeconds = 0.3
+export const opalSettleDurationSeconds = 0.32
 // One scene unit is 10 mm. Keep the approach inside the formed bezel instead
 // of lifting the entire stone above its rim. The previous clear-the-crown drop
 // exposed a dark air band and read as a floating sticker in top and profile
@@ -45,7 +45,10 @@ export function getOpalSettleTransform(
   if (reduceMotion) return { offsetZ: 0, settled: true }
 
   const progress = Math.min(1, Math.max(0, elapsedSeconds / opalSettleDurationSeconds))
-  const eased = 1 - Math.pow(1 - progress, 3)
+  // Smootherstep preserves the physical read of a stone being guided into its
+  // seat. The previous ease-out completed 87.5% of the travel by halfway, which
+  // looked like a snap followed by a nearly static tail.
+  const eased = progress ** 3 * (progress * (progress * 6 - 15) + 10)
 
   return {
     offsetZ: Math.max(0, startOffset) * (1 - eased),

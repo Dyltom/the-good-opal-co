@@ -69,6 +69,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('transitionKey={renderedOpal.id}')
     expect(sceneSource).not.toContain('key={renderedOpal.id}')
     expect(sceneSource).not.toContain('group.current.scale.set(')
+    expect(sceneSource).not.toContain('group.current.rotation')
     expect(sceneSource).toContain('group.current.position.z = transform.offsetZ')
     expect(sceneSource).toContain(
       'settleStartOffset={getOpalSettleStartOffset(depthProfile, bezelTop)}'

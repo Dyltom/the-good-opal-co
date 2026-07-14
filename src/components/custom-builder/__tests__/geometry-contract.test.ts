@@ -130,8 +130,12 @@ describe('custom ring geometry contract', () => {
     })
 
     const halfway = getOpalSettleTransform(opalSettleDurationSeconds / 2, startOffset)
-    expect(halfway.offsetZ).toBeGreaterThan(0)
-    expect(halfway.offsetZ).toBeLessThan(startOffset)
+    expect(halfway.offsetZ).toBeCloseTo(startOffset / 2, 12)
+
+    const opening = getOpalSettleTransform(opalSettleDurationSeconds * 0.1, startOffset)
+    const contact = getOpalSettleTransform(opalSettleDurationSeconds * 0.9, startOffset)
+    expect(opening.offsetZ).toBeGreaterThan(startOffset * 0.99)
+    expect(contact.offsetZ).toBeLessThan(startOffset * 0.01)
 
     expect(getOpalSettleTransform(opalSettleDurationSeconds, startOffset)).toEqual({
       offsetZ: 0,
@@ -144,7 +148,7 @@ describe('custom ring geometry contract', () => {
   })
 
   test.each(ringStyles.map(({ id }) => id))(
-    'starts the %s opal clear of its bezel and settles monotonically without bounce',
+    'starts the %s opal inside its formed bezel and settles monotonically without bounce',
     (style) => {
       const config = applyRingStyle(defaultRingConfig, style)
       const [width, height] = getStoneDimensions(config)
@@ -164,6 +168,10 @@ describe('custom ring geometry contract', () => {
         expect(samples[index]!).toBeLessThanOrEqual(samples[index - 1]!)
         expect(samples[index]!).toBeGreaterThanOrEqual(0)
       }
+
+      const travel = samples.slice(1).map((sample, index) => samples[index]! - sample)
+      expect(travel[1]!).toBeGreaterThan(travel[0]!)
+      expect(travel.at(-1)!).toBeLessThan(travel.at(-2)!)
       expect(samples.at(-1)).toBe(0)
     }
   )
