@@ -105,7 +105,11 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE INDEX "ring_designs_created_at_idx" ON "ring_designs" ("created_at");
     CREATE INDEX "payload_locked_documents_rels_ring_designs_id_idx"
       ON "payload_locked_documents_rels" ("ring_designs_id");
+  `)
 
+  // Keep parameterized seed data in one prepared statement. node-postgres
+  // rejects parameters when the same statement contains multiple SQL commands.
+  await db.execute(sql`
     INSERT INTO "ring_designs"
       ("name", "slug", "style", "source_references", "measurements", "model_definition")
     VALUES
