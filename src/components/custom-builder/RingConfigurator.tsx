@@ -135,7 +135,7 @@ function OpalPicker({
     () =>
       opals.filter(
         (opal) =>
-          (kind === 'all' || opal.selectionKind === kind) &&
+          (Boolean(deferredQuery) || kind === 'all' || opal.selectionKind === kind) &&
           (!deferredQuery ||
             `${opal.name} ${opal.stoneTypeLabel} ${opal.originLabel ?? ''}`
               .toLocaleLowerCase()
@@ -315,14 +315,21 @@ function RingStylePicker({
   value: RingConfig['style']
   onSelect: (style: RingStyleOption) => void
 }) {
+  const usesExactListingPhoto =
+    selectedOpal?.selectionKind === 'individual' && Boolean(selectedOpal.visual.textureCrop)
+  const mappingDescription = usesExactListingPhoto
+    ? 'The preview maps the selected listing photo into the setting concept.'
+    : selectedOpal
+      ? 'This multi-stone listing uses a representative setting concept.'
+      : 'Select an individual stone to map its listing photo into the setting concept.'
+
   return (
     <fieldset>
       <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
         Try every design with your selected opal. Each reference is a photographed Good Opal Co
-        ring; the preview maps your photographed opal face into a setting concept. Your maker
-        confirms the natural outline, measurements, final seat, and whether the physical stone can
-        be set safely.
+        ring. {mappingDescription} Your maker confirms the natural outline, measurements, final
+        seat, and whether the physical stone can be set safely.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {

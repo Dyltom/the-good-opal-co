@@ -1,4 +1,9 @@
 import type { BuilderOpal, RingConfig } from '@/components/custom-builder/config'
+import {
+  hasBuilderDimensionValue,
+  parseBuilderPhotoCrop,
+  parseBuilderDimensions,
+} from '@/lib/product-validation'
 import { parseBuilderStoneContour, type BuilderStoneContourV1 } from './stone-contour'
 
 type VisualProfile = BuilderOpal['visual']
@@ -331,36 +336,25 @@ function auditedImageCandidate(
   const focalY = fields?.builderPhotoCandidateFocalY
   const zoom = fields?.builderPhotoCandidateZoom
   const rotation = fields?.builderPhotoCandidateRotation
+  const candidateCrop = parseBuilderPhotoCrop(focalX, focalY, zoom, rotation)
 
   if (
     !mappingApproved ||
     !visuallyAuditedImageCandidateSlugs.has(reviewedSlug) ||
     !contour ||
     typeof confidence !== 'number' ||
+    !Number.isFinite(confidence) ||
     confidence < 0.9 ||
+    confidence > 1 ||
     Math.abs(confidence - 0.7) < 0.0001 ||
-    typeof focalX !== 'number' ||
-    focalX < 0 ||
-    focalX > 1 ||
-    typeof focalY !== 'number' ||
-    focalY < 0 ||
-    focalY > 1 ||
-    typeof zoom !== 'number' ||
-    zoom < 1 ||
-    zoom > 12 ||
-    (rotation !== null && rotation !== undefined && typeof rotation !== 'number')
+    !candidateCrop
   ) {
     return undefined
   }
 
   return {
     contour,
-    textureCrop: {
-      focalX,
-      focalY,
-      zoom,
-      ...(typeof rotation === 'number' ? { rotation } : {}),
-    },
+    textureCrop: candidateCrop,
     photoFit: 'reviewed',
   }
 }
@@ -389,6 +383,12 @@ function cmsReviewedProfile(
   const silhouette = fields.builderSilhouette
   const recommendedStyle = fields.builderRecommendedStyle
   const dimensionsMm = completeDimensions(fields)
+  const reviewedCrop = parseBuilderPhotoCrop(
+    fields.builderPhotoFocalX,
+    fields.builderPhotoFocalY,
+    fields.builderPhotoZoom,
+    fields.builderPhotoRotation
+  )
   const contour =
     fields.builderContourSourceImageHash &&
     fields.builderContourSourceImageHash === fields.builderMappingAnalyzedImageHash
@@ -412,25 +412,8 @@ function cmsReviewedProfile(
     !Number.isFinite(fields.builderTransmission) ||
     fields.builderTransmission < 0 ||
     fields.builderTransmission > 1 ||
-    typeof fields.builderPhotoFocalX !== 'number' ||
-    !Number.isFinite(fields.builderPhotoFocalX) ||
-    fields.builderPhotoFocalX < 0 ||
-    fields.builderPhotoFocalX > 1 ||
-    typeof fields.builderPhotoFocalY !== 'number' ||
-    !Number.isFinite(fields.builderPhotoFocalY) ||
-    fields.builderPhotoFocalY < 0 ||
-    fields.builderPhotoFocalY > 1 ||
-    typeof fields.builderPhotoZoom !== 'number' ||
-    !Number.isFinite(fields.builderPhotoZoom) ||
-    fields.builderPhotoZoom < 1 ||
-    fields.builderPhotoZoom > 12 ||
-    (fields.builderPhotoRotation !== null &&
-      fields.builderPhotoRotation !== undefined &&
-      (typeof fields.builderPhotoRotation !== 'number' ||
-        !Number.isFinite(fields.builderPhotoRotation) ||
-        fields.builderPhotoRotation < -180 ||
-        fields.builderPhotoRotation > 180)) ||
-    (fields.dimensions !== null && fields.dimensions !== undefined && !dimensionsMm) ||
+    !reviewedCrop ||
+    (hasBuilderDimensionValue(fields.dimensions) && !dimensionsMm) ||
     (!dimensionsMm &&
       (!fallbackAspectRatio || !Number.isFinite(fallbackAspectRatio) || fallbackAspectRatio <= 0))
   ) {
@@ -442,14 +425,7 @@ function cmsReviewedProfile(
     aspectRatio: dimensionsMm ? dimensionsMm.length / dimensionsMm.width : fallbackAspectRatio!,
     evidence: 'catalogue',
     recommendedStyle: recommendedStyle as RingConfig['style'],
-    textureCrop: {
-      focalX: fields.builderPhotoFocalX,
-      focalY: fields.builderPhotoFocalY,
-      zoom: fields.builderPhotoZoom,
-      ...(typeof fields.builderPhotoRotation === 'number'
-        ? { rotation: fields.builderPhotoRotation }
-        : {}),
-    },
+    textureCrop: reviewedCrop,
     bodyColour: fields.builderBodyColour,
     flashColours: colours as [string, string, string],
     transmission: fields.builderTransmission,
@@ -620,26 +596,7 @@ function inferSilhouette(
 function completeDimensions(
   fields?: BuilderVisualFields
 ): VisualProfile['dimensionsMm'] | undefined {
-  const dimensions = fields?.dimensions
-  if (
-    typeof dimensions?.width !== 'number' ||
-    typeof dimensions.length !== 'number' ||
-    typeof dimensions.depth !== 'number' ||
-    !Number.isFinite(dimensions.width) ||
-    !Number.isFinite(dimensions.length) ||
-    !Number.isFinite(dimensions.depth) ||
-    dimensions.width <= 0 ||
-    dimensions.length <= 0 ||
-    dimensions.depth <= 0
-  ) {
-    return undefined
-  }
-
-  return {
-    width: dimensions.width,
-    length: dimensions.length,
-    depth: dimensions.depth,
-  }
+  return parseBuilderDimensions(fields?.dimensions)
 }
 
 export function createOpalVisualProfile(

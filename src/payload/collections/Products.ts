@@ -643,7 +643,8 @@ export const Products: CollectionConfig = {
               name: 'builderPhotoZoom',
               type: 'number',
               min: 1,
-              admin: { description: 'Crop zoom, 1 or greater' },
+              max: 12,
+              admin: { description: 'Crop zoom, from 1 to 12' },
             },
             {
               name: 'builderPhotoRotation',

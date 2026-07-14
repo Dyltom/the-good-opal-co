@@ -55,6 +55,12 @@ describe('product commerce validation', () => {
     expect(validateBuilderProduct({ ...valid, builderPhotoZoom: 0.5 })).toBe(
       'Builder opals require a reviewed photo crop'
     )
+    expect(validateBuilderProduct({ ...valid, builderPhotoZoom: 13 })).toBe(
+      'Builder opals require a reviewed photo crop'
+    )
+    expect(validateBuilderProduct({ ...valid, builderPhotoFocalX: Number.NaN })).toBe(
+      'Builder opals require a reviewed photo crop'
+    )
     expect(validateBuilderProduct({ ...valid, builderPhotoRotation: 181 })).toBe(
       'Builder opals require a reviewed photo crop'
     )

@@ -27,6 +27,73 @@ function isPositiveNumber(value: unknown): boolean {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
 }
 
+export const BUILDER_PHOTO_ZOOM_MAX = 12
+
+export function parseBuilderPhotoCrop(
+  focalX: unknown,
+  focalY: unknown,
+  zoom: unknown,
+  rotation?: unknown
+): { focalX: number; focalY: number; zoom: number; rotation?: number } | undefined {
+  if (
+    typeof focalX !== 'number' ||
+    !Number.isFinite(focalX) ||
+    focalX < 0 ||
+    focalX > 1 ||
+    typeof focalY !== 'number' ||
+    !Number.isFinite(focalY) ||
+    focalY < 0 ||
+    focalY > 1 ||
+    typeof zoom !== 'number' ||
+    !Number.isFinite(zoom) ||
+    zoom < 1 ||
+    zoom > BUILDER_PHOTO_ZOOM_MAX ||
+    (rotation !== undefined &&
+      rotation !== null &&
+      (typeof rotation !== 'number' ||
+        !Number.isFinite(rotation) ||
+        rotation < -180 ||
+        rotation > 180))
+  ) {
+    return undefined
+  }
+
+  return {
+    focalX,
+    focalY,
+    zoom,
+    ...(typeof rotation === 'number' ? { rotation } : {}),
+  }
+}
+
+export function hasBuilderDimensionValue(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    [value.width, value.length, value.depth].some(
+      (dimension) => dimension !== undefined && dimension !== null && dimension !== ''
+    )
+  )
+}
+
+export function parseBuilderDimensions(
+  value: unknown
+): { width: number; length: number; depth: number } | undefined {
+  if (
+    !isRecord(value) ||
+    !isPositiveNumber(value.width) ||
+    !isPositiveNumber(value.length) ||
+    !isPositiveNumber(value.depth)
+  ) {
+    return undefined
+  }
+
+  return {
+    width: value.width as number,
+    length: value.length as number,
+    depth: value.depth as number,
+  }
+}
+
 export function validateHexColour(value: unknown): true | string {
   if (value === null || value === undefined || value === '') return true
   return typeof value === 'string' && hexColourPattern.test(value)
@@ -82,44 +149,29 @@ export function validateBuilderProduct(data: unknown, originalData?: unknown): t
 
   if (
     typeof data.builderTransmission !== 'number' ||
+    !Number.isFinite(data.builderTransmission) ||
     data.builderTransmission < 0 ||
     data.builderTransmission > 1
   ) {
     return 'Builder transmission must be between 0 and 1'
   }
   if (
-    typeof data.builderPhotoFocalX !== 'number' ||
-    data.builderPhotoFocalX < 0 ||
-    data.builderPhotoFocalX > 1 ||
-    typeof data.builderPhotoFocalY !== 'number' ||
-    data.builderPhotoFocalY < 0 ||
-    data.builderPhotoFocalY > 1 ||
-    typeof data.builderPhotoZoom !== 'number' ||
-    data.builderPhotoZoom < 1 ||
-    (data.builderPhotoRotation !== undefined &&
-      data.builderPhotoRotation !== null &&
-      (typeof data.builderPhotoRotation !== 'number' ||
-        !Number.isFinite(data.builderPhotoRotation) ||
-        data.builderPhotoRotation < -180 ||
-        data.builderPhotoRotation > 180))
+    !parseBuilderPhotoCrop(
+      data.builderPhotoFocalX,
+      data.builderPhotoFocalY,
+      data.builderPhotoZoom,
+      data.builderPhotoRotation
+    )
   ) {
     return 'Builder opals require a reviewed photo crop'
   }
 
   const dimensions = data.dimensions
-  const hasDimensionValue =
-    isRecord(dimensions) &&
-    [dimensions.width, dimensions.length, dimensions.depth].some(
-      (value) => value !== undefined && value !== null && value !== ''
-    )
+  const hasDimensionValue = hasBuilderDimensionValue(dimensions)
   if (
     dimensions !== undefined &&
     dimensions !== null &&
-    (!isRecord(dimensions) ||
-      (hasDimensionValue &&
-        (!isPositiveNumber(dimensions.width) ||
-          !isPositiveNumber(dimensions.length) ||
-          !isPositiveNumber(dimensions.depth))))
+    (!isRecord(dimensions) || (hasDimensionValue && !parseBuilderDimensions(dimensions)))
   ) {
     return 'Builder opals require positive width, length, and depth measurements'
   }

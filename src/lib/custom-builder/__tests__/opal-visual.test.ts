@@ -478,6 +478,26 @@ describe('custom builder opal visual profiles', () => {
     expect(profile.visual.photoFit).toBeUndefined()
   })
 
+  test('treats an all-empty legacy dimensions group as absent', () => {
+    const fields = {
+      builderEligible: true,
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'oval',
+      builderRecommendedStyle: 'gemini',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      dimensions: { width: null, length: null, depth: null },
+    }
+
+    expect(isBuilderEligibleOpal('legacy-opal', 'Legacy opal', fields)).toBe(true)
+  })
+
   test.each([
     ['transmission below range', { builderTransmission: -0.01 }],
     ['transmission above range', { builderTransmission: 1.01 }],
@@ -730,6 +750,24 @@ describe('custom builder opal visual profiles', () => {
         { ...fields, builderPhotoAnalysisConfidence: 0.7 }
       ).visual.contour
     ).toBeUndefined()
+
+    for (const invalid of [
+      { builderPhotoAnalysisConfidence: Number.NaN },
+      { builderPhotoAnalysisConfidence: 1.01 },
+      { builderPhotoCandidateFocalX: Number.NaN },
+      { builderPhotoCandidateFocalY: 1.01 },
+      { builderPhotoCandidateZoom: Number.POSITIVE_INFINITY },
+      { builderPhotoCandidateRotation: 181 },
+    ]) {
+      expect(
+        createOpalVisualProfile(
+          'lightning-ridge-black-opal-6-30ct',
+          'Lightning Ridge Black Opal 6.30ct',
+          'black-opal',
+          { ...fields, ...invalid }
+        ).visual.contour
+      ).toBeUndefined()
+    }
   })
 
   test.each([
