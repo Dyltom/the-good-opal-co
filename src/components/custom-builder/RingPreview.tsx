@@ -24,10 +24,10 @@ function supportsWebGl(): boolean {
   }
 }
 
-const views: readonly { id: RingView; label: string }[] = [
-  { id: 'three-quarter', label: '3/4' },
-  { id: 'front', label: 'Top' },
-  { id: 'profile', label: 'Profile' },
+const views: readonly { accessibleLabel: string; id: RingView; label: string }[] = [
+  { id: 'three-quarter', label: '3/4', accessibleLabel: 'Three-quarter view' },
+  { id: 'front', label: 'Top', accessibleLabel: 'Top view' },
+  { id: 'profile', label: 'Profile', accessibleLabel: 'Profile view' },
 ]
 
 export function RingPreview({ config, description, selectedOpal }: RingPreviewProps) {
@@ -90,14 +90,19 @@ export function RingPreview({ config, description, selectedOpal }: RingPreviewPr
       </div>
 
       {webGlAvailable && (
-        <div className="absolute right-5 top-20 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 sm:right-7 sm:top-24">
+        <div
+          role="group"
+          aria-label="Ring preview angle"
+          className="absolute right-5 top-20 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 sm:right-7 sm:top-24"
+        >
           {views.map((option) => (
             <button
               key={option.id}
               type="button"
               onClick={() => setView(option.id)}
+              aria-label={option.accessibleLabel}
               aria-pressed={view === option.id}
-              className="min-h-9 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
+              className="min-h-11 min-w-11 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
             >
               {option.label}
             </button>

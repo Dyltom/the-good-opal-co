@@ -19,6 +19,7 @@ export interface NormalizedPhotoCrop {
 }
 
 export interface PhotoTextureTransform {
+  matrix: readonly [number, number, number, number, number, number]
   offsetX: number
   offsetY: number
   repeatX: number
@@ -51,13 +52,32 @@ export function computePhotoTextureTransform(
   stoneAspect: number,
   rotationDegrees: number
 ): PhotoTextureTransform {
-  const coverScale = rotationCoverScale(stoneAspect, rotationDegrees)
+  const normalizedAspect = stoneAspect > 0 ? stoneAspect : 1
+  const coverScale = rotationCoverScale(normalizedAspect, rotationDegrees)
+  const repeatX = crop.width / coverScale
+  const repeatY = crop.height / coverScale
+  const offsetX = crop.left + crop.width / 2 - 0.5
+  const offsetY = 0.5 - crop.top - crop.height / 2
+  // CSS rotates the source photograph in physical pixels. A plain Three.js
+  // texture rotation instead turns normalized UVs, which distorts the angle on
+  // non-square stones. These aspect-corrected cross terms keep editor and 3D
+  // sampling identical.
+  const radians = (-rotationDegrees * Math.PI) / 180
+  const cosine = Math.cos(radians)
+  const sine = Math.sin(radians)
+  const m00 = repeatX * cosine
+  const m01 = (repeatX * sine) / normalizedAspect
+  const m10 = -repeatY * sine * normalizedAspect
+  const m11 = repeatY * cosine
+  const sourceCentreX = 0.5 + offsetX
+  const sourceCentreY = 0.5 + offsetY
 
   return {
-    offsetX: crop.left + crop.width / 2 - 0.5,
-    offsetY: 0.5 - crop.top - crop.height / 2,
-    repeatX: crop.width / coverScale,
-    repeatY: crop.height / coverScale,
+    matrix: [m00, m01, sourceCentreX - (m00 + m01) / 2, m10, m11, sourceCentreY - (m10 + m11) / 2],
+    offsetX,
+    offsetY,
+    repeatX,
+    repeatY,
   }
 }
 
@@ -124,29 +144,26 @@ export function computePlacedPhotoCrop(
   crop: PhotoCropFocus,
   placement?: PhotoPlacementAdjustment
 ): NormalizedPhotoCrop {
+  const positionX = clamp((placement?.opalPositionX ?? 0) / placementPositionLimit, -1, 1)
+  const positionY = clamp((placement?.opalPositionY ?? 0) / placementPositionLimit, -1, 1)
+  // Panning a face-on photo without enlarging it exposes pixels outside the
+  // reviewed stone crop. Add only the cover zoom required by the requested
+  // movement, then keep the sampled rectangle inside that approved crop.
+  const panCoverScale = 1 + Math.max(Math.abs(positionX), Math.abs(positionY))
   const scaledFocus = {
     ...crop,
-    zoom: clamp(crop.zoom * (placement?.opalScale ?? 1), 1, 12),
+    zoom: clamp(crop.zoom * Math.max(placement?.opalScale ?? 1, panCoverScale), 1, 12),
   }
   const base = computePhotoCrop(imageWidth, imageHeight, stoneAspect, scaledFocus)
   if (!placement) return base
 
-  const minimumX = base.width / 2
-  const maximumX = 1 - minimumX
-  const minimumY = base.height / 2
-  const maximumY = 1 - minimumY
+  const safe = computePhotoCrop(imageWidth, imageHeight, stoneAspect, crop)
+  const minimumX = safe.left + base.width / 2
+  const maximumX = safe.left + safe.width - base.width / 2
+  const minimumY = safe.top + base.height / 2
+  const maximumY = safe.top + safe.height - base.height / 2
   const baseX = clamp(crop.focalX, minimumX, maximumX)
   const baseY = clamp(crop.focalY, minimumY, maximumY)
-  const positionX = clamp(
-    placement.opalPositionX / placementPositionLimit,
-    -1,
-    1
-  )
-  const positionY = clamp(
-    placement.opalPositionY / placementPositionLimit,
-    -1,
-    1
-  )
   const centreX =
     positionX >= 0
       ? baseX - positionX * (baseX - minimumX)

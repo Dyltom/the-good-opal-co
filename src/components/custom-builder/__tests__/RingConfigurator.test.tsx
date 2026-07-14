@@ -133,6 +133,21 @@ describe('RingConfigurator store opal selection', () => {
     expect(consultationParams.get('product')).toContain('Coober Pedy crystal opal')
   })
 
+  test('preserves unrelated query state and the hash while updating the design URL', async () => {
+    const user = userEvent.setup()
+    window.history.replaceState(null, '', '/services/design?utm_source=studio#builder')
+    render(<RingConfigurator initialConfig={defaultRingConfig} opals={opals} />)
+
+    await user.click(screen.getByRole('button', { name: /Coral/i }))
+
+    await waitFor(() => {
+      const params = new URLSearchParams(window.location.search)
+      expect(params.get('utm_source')).toBe('studio')
+      expect(params.get('y')).toBe('coral')
+      expect(window.location.hash).toBe('#builder')
+    })
+  })
+
   test('lets every opal try every collection design and preserves it across stone changes', async () => {
     const user = userEvent.setup()
     render(
@@ -274,22 +289,25 @@ describe('RingConfigurator store opal selection', () => {
       />
     )
 
-    fireEvent.keyDown(
-      screen.getByRole('group', {
-        name: /Adjust approximate cut placement/i,
-      }),
-      { key: 'ArrowRight' }
-    )
+    const placement = screen.getByRole('group', {
+      name: /Adjust the photo crop/i,
+    })
+    for (let index = 0; index < 6; index += 1) {
+      fireEvent.keyDown(placement, { key: 'ArrowRight' })
+    }
     fireEvent.click(screen.getByRole('button', { name: 'Rotate opal colour right' }))
 
     await waitFor(() => {
       const preview = screen.getByTestId('ring-preview')
-      expect(preview.getAttribute('data-opal-position-x')).toBe('0.01')
+      expect(preview.getAttribute('data-opal-position-x')).toBe('0.06')
       expect(preview.getAttribute('data-opal-rotation')).toBe('15')
+      expect(new URLSearchParams(window.location.search).get('px')).toBe('0.06')
     })
+    expect(placement.className).toContain('touch-none')
+    expect(placement.parentElement?.className).not.toContain('touch-none')
   })
 
-  test('keeps direct drag coordinates concise in shared URLs', async () => {
+  test('maps one aperture-centre drag to the full placement range with concise URLs', async () => {
     render(
       <RingConfigurator
         initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
@@ -298,27 +316,30 @@ describe('RingConfigurator store opal selection', () => {
     )
 
     const placement = screen.getByRole('group', {
-      name: /Adjust approximate cut placement/i,
+      name: /Adjust the photo crop/i,
     })
+    const aperture = placement
+    expect(aperture.hasAttribute('data-opal-placement-aperture')).toBe(true)
     Object.defineProperty(placement, 'setPointerCapture', { value: vi.fn() })
-    vi.spyOn(placement, 'getBoundingClientRect').mockReturnValue({
-      bottom: 400,
-      height: 300,
+    vi.spyOn(aperture!, 'getBoundingClientRect').mockReturnValue({
+      bottom: 300,
+      height: 200,
       left: 100,
-      right: 400,
+      right: 300,
       top: 100,
-      width: 300,
+      width: 200,
       x: 100,
       y: 100,
       toJSON: () => ({}),
     })
 
-    fireEvent.pointerDown(placement, { clientX: 150, clientY: 150, pointerId: 1 })
-    fireEvent.pointerMove(placement, { clientX: 173.456, clientY: 167.891, pointerId: 1 })
+    fireEvent.pointerDown(placement, { clientX: 200, clientY: 200, pointerId: 1 })
+    fireEvent.pointerMove(placement, { clientX: 300, clientY: 200, pointerId: 1 })
 
     await waitFor(() => {
       const position = new URLSearchParams(window.location.search).get('px')
       expect(position).toMatch(/^-?\d+(?:\.\d{1,3})?$/)
+      expect(position).toBe('0.45')
     })
   })
 

@@ -25,7 +25,7 @@ export const ringConfigSchema = z.object({
   opalId: z.string().trim().max(30).optional(),
   opalPositionX: z.number().min(-0.45).max(0.45),
   opalPositionY: z.number().min(-0.45).max(0.45),
-  opalScale: z.number().min(0.75).max(2.25),
+  opalScale: z.number().min(1).max(2.25),
   opalRotation: z.number().min(-180).max(180),
 })
 
@@ -452,6 +452,16 @@ export function ringConfigToSearchParams(config: RingConfig): URLSearchParams {
   return params
 }
 
+export function mergeRingConfigSearchParams(
+  existing: URLSearchParams,
+  config: RingConfig
+): URLSearchParams {
+  const merged = new URLSearchParams(existing)
+  for (const key of Object.values(queryKeys)) merged.delete(key)
+  for (const [key, value] of ringConfigToSearchParams(config)) merged.set(key, value)
+  return merged
+}
+
 export function ringConfigFromRecord(values: Record<string, string | undefined>): RingConfig {
   function optionValue<T extends string>(
     options: readonly T[],
@@ -496,7 +506,7 @@ export function ringConfigFromRecord(values: Record<string, string | undefined>)
       -0.45,
       0.45
     ),
-    opalScale: boundedNumber(values[queryKeys.opalScale], defaultRingConfig.opalScale, 0.75, 2.25),
+    opalScale: boundedNumber(values[queryKeys.opalScale], defaultRingConfig.opalScale, 1, 2.25),
     opalRotation: boundedNumber(
       values[queryKeys.opalRotation],
       defaultRingConfig.opalRotation,

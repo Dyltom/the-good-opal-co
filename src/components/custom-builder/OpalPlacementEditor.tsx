@@ -29,7 +29,7 @@ const limits = {
   position: 0.45,
   rotation: 180,
   scaleMax: 2.25,
-  scaleMin: 0.75,
+  scaleMin: 1,
 } as const
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -106,6 +106,7 @@ export function OpalPlacementEditor({
   placement,
   style,
 }: OpalPlacementEditorProps) {
+  const aperture = useRef<HTMLDivElement>(null)
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const clipPath = cssSilhouetteClipPath(opal.visual.silhouette)
@@ -115,7 +116,8 @@ export function OpalPlacementEditor({
   }
 
   function startDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    const bounds = event.currentTarget.getBoundingClientRect()
+    const bounds =
+      aperture.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect()
     event.currentTarget.setPointerCapture(event.pointerId)
     drag.current = {
       ...placement,
@@ -136,14 +138,14 @@ export function OpalPlacementEditor({
       ...placement,
       opalPositionX: roundPlacement(
         clamp(
-          start.opalPositionX + ((event.clientX - start.x) / start.width) * 0.7,
+          start.opalPositionX + ((event.clientX - start.x) / start.width) * limits.position * 2,
           -limits.position,
           limits.position
         )
       ),
       opalPositionY: roundPlacement(
         clamp(
-          start.opalPositionY + ((event.clientY - start.y) / start.height) * 0.7,
+          start.opalPositionY + ((event.clientY - start.y) / start.height) * limits.position * 2,
           -limits.position,
           limits.position
         )
@@ -169,17 +171,21 @@ export function OpalPlacementEditor({
     else return
 
     event.preventDefault()
-    next.opalPositionX = clamp(next.opalPositionX, -limits.position, limits.position)
-    next.opalPositionY = clamp(next.opalPositionY, -limits.position, limits.position)
+    next.opalPositionX = roundPlacement(
+      clamp(next.opalPositionX, -limits.position, limits.position)
+    )
+    next.opalPositionY = roundPlacement(
+      clamp(next.opalPositionY, -limits.position, limits.position)
+    )
     onChange(next)
   }
 
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">4. Position colour and cut</legend>
+      <legend className="font-serif text-xl font-medium">4. Adjust the opal photo crop</legend>
       <p className="mt-2 max-w-[62ch] text-sm leading-6 text-charcoal-light">
-        Move the real listing photo beneath your chosen setting. Place the strongest colour where
-        you want it to appear, then fine-tune only if needed.
+        Slide the exact listing photo beneath the cut outline. This changes the colour shown in the
+        concept, not the physical stone or setting engineering.
       </p>
 
       <div className="mt-4 overflow-hidden rounded-xl border border-warm-grey/80 bg-white shadow-[0_10px_30px_rgb(31_30_25/0.06)]">
@@ -201,25 +207,24 @@ export function OpalPlacementEditor({
             </div>
           </div>
 
-          <div
-            role="group"
-            tabIndex={0}
-            aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
-            aria-roledescription="opal photo placement"
-            aria-label={`Adjust approximate cut placement for ${opal.name}. Drag the image or use the controls.`}
-            onPointerDown={startDrag}
-            onPointerMove={moveDrag}
-            onPointerUp={stopDrag}
-            onPointerCancel={stopDrag}
-            onKeyDown={nudge}
-            className={cn(
-              'relative grid min-h-[20rem] touch-none select-none place-items-center overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_center,rgb(255_255_255/0.075),transparent_58%)] p-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light sm:min-h-[24rem]',
-              isDragging ? 'cursor-grabbing' : 'cursor-grab'
-            )}
-          >
+          <div className="relative grid min-h-[20rem] select-none place-items-center overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_center,rgb(255_255_255/0.075),transparent_58%)] p-8 sm:min-h-[24rem]">
             <div
+              ref={aperture}
+              data-opal-placement-aperture
+              role="group"
+              tabIndex={0}
+              aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown"
+              aria-roledescription="opal photo crop"
+              aria-label={`Adjust the photo crop for ${opal.name}. Drag to move the colour. Arrow keys nudge by one percent; Shift plus an arrow nudges by five percent. Horizontal ${placement.opalPositionX.toFixed(2)}, vertical ${placement.opalPositionY.toFixed(2)}.`}
+              onPointerDown={startDrag}
+              onPointerMove={moveDrag}
+              onPointerUp={stopDrag}
+              onPointerCancel={stopDrag}
+              onLostPointerCapture={stopDrag}
+              onKeyDown={nudge}
               className={cn(
-                'relative mx-auto w-[58%] p-[5px] shadow-[0_18px_36px_rgb(0_0_0/0.48)] sm:w-[52%]',
+                'relative mx-auto w-[58%] touch-none p-[5px] shadow-[0_18px_36px_rgb(0_0_0/0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light sm:w-[52%]',
+                isDragging ? 'cursor-grabbing' : 'cursor-grab',
                 style === 'sun-moon' && 'outline outline-dotted outline-[5px] outline-offset-[5px]',
                 style === 'aurora' && 'outline outline-dotted outline-[8px] outline-offset-[6px]',
                 silhouetteClass(opal.visual.silhouette)
@@ -246,11 +251,26 @@ export function OpalPlacementEditor({
                   sizes="360px"
                   className="h-full w-full"
                 />
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'pointer-events-none absolute inset-0 z-10 transition-opacity',
+                    isDragging ? 'opacity-100' : 'opacity-0'
+                  )}
+                >
+                  <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-cream/45" />
+                  <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-cream/45" />
+                  <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cream/70 bg-black-rich/25" />
+                </span>
               </div>
             </div>
-            <span className="pointer-events-none absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-[0.68rem] text-cream/85">
-              <Move aria-hidden="true" className="h-3.5 w-3.5" /> Drag colour · arrows nudge
-            </span>
+            <output
+              aria-live="polite"
+              className="pointer-events-none absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-[0.68rem] text-cream/85"
+            >
+              <Move aria-hidden="true" className="h-3.5 w-3.5" /> X{' '}
+              {placement.opalPositionX.toFixed(2)} · Y {placement.opalPositionY.toFixed(2)}
+            </output>
           </div>
         </div>
 
@@ -339,7 +359,7 @@ export function OpalPlacementEditor({
               onClick={() => onChange(defaultOpalPlacement)}
               className="inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
             >
-              <ZoomIn aria-hidden="true" className="h-4 w-4" /> Recommended view
+              <ZoomIn aria-hidden="true" className="h-4 w-4" /> Reset photo crop
             </button>
           </div>
         </div>

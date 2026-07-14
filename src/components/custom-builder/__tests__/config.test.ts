@@ -4,6 +4,7 @@ import {
   describeRingConfig,
   metalIds,
   metals,
+  mergeRingConfigSearchParams,
   ringStyleGeometryProfiles,
   ringConfigFromRecord,
   ringConfigToSearchParams,
@@ -42,6 +43,17 @@ describe('custom ring configuration', () => {
 
   test('rejects tampered or incomplete URL state', () => {
     expect(ringConfigFromRecord({ m: 'plastic', z: '999' })).toEqual(defaultRingConfig)
+  })
+
+  test('updates builder-owned URL state without deleting unrelated parameters', () => {
+    const merged = mergeRingConfigSearchParams(
+      new URLSearchParams('utm_source=studio&m=plastic&px=0.4'),
+      defaultRingConfig
+    )
+
+    expect(merged.get('utm_source')).toBe('studio')
+    expect(merged.get('m')).toBe(defaultRingConfig.metal)
+    expect(merged.has('px')).toBe(false)
   })
 
   test('rejects unsafe customer photo placement values', () => {

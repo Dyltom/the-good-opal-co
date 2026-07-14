@@ -2,14 +2,8 @@
 
 /* eslint-disable react/no-unknown-property -- React Three Fiber JSX maps these props to Three.js objects. */
 
-import { useEffect, useMemo } from 'react'
-import {
-  ContactShadows,
-  Environment,
-  Lightformer,
-  OrbitControls,
-  useTexture,
-} from '@react-three/drei'
+import { useEffect, useLayoutEffect, useMemo } from 'react'
+import { Environment, Lightformer, OrbitControls, useTexture } from '@react-three/drei'
 import { Canvas, useThree } from '@react-three/fiber'
 import {
   ACESFilmicToneMapping,
@@ -46,7 +40,6 @@ import {
   getCameraPosition,
   getPatinaGrooveProfile,
   getRingFramingTarget,
-  getRingMeasurements,
   getRingShankPathPoints,
   getRenderableOpalDepthMm,
   getStyleBeadCount,
@@ -386,7 +379,6 @@ function OpalCabochon({
   // image. The selected listing is the only possible texture source.
   const sourcePhoto = useTexture(selectedOpal?.imageUrl ?? '/images/products/20210923_172817.jpg')
   const photoTexture = useMemo(() => {
-    const crop = selectedOpal?.visual.textureCrop
     const nextTexture = sourcePhoto.clone()
     nextTexture.colorSpace = SRGBColorSpace
     nextTexture.wrapS = ClampToEdgeWrapping
@@ -398,6 +390,13 @@ function OpalCabochon({
     nextTexture.generateMipmaps = false
     nextTexture.minFilter = LinearFilter
     nextTexture.magFilter = LinearFilter
+    nextTexture.matrixAutoUpdate = false
+    nextTexture.needsUpdate = true
+    return nextTexture
+  }, [sourcePhoto])
+
+  useLayoutEffect(() => {
+    const crop = selectedOpal?.visual.textureCrop
     if (crop) {
       const rotation = (crop.rotation ?? 0) + config.opalRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
@@ -406,17 +405,30 @@ function OpalCabochon({
         image?.height ?? 1,
         width / height,
         crop,
-        config
+        {
+          opalPositionX: config.opalPositionX,
+          opalPositionY: config.opalPositionY,
+          opalRotation: config.opalRotation,
+          opalScale: config.opalScale,
+        }
       )
       const transform = computePhotoTextureTransform(cropRect, width / height, rotation)
-      nextTexture.repeat.set(transform.repeatX, transform.repeatY)
-      nextTexture.offset.set(transform.offsetX, transform.offsetY)
-      nextTexture.center.set(0.5, 0.5)
-      nextTexture.rotation = (-rotation * Math.PI) / 180
+      const [m00, m01, m02, m10, m11, m12] = transform.matrix
+      photoTexture.matrix.set(m00, m01, m02, m10, m11, m12, 0, 0, 1)
+    } else {
+      photoTexture.matrix.identity()
     }
-    nextTexture.needsUpdate = true
-    return nextTexture
-  }, [config, height, selectedOpal?.visual.textureCrop, sourcePhoto, width])
+  }, [
+    config.opalPositionX,
+    config.opalPositionY,
+    config.opalRotation,
+    config.opalScale,
+    height,
+    photoTexture,
+    selectedOpal?.visual.textureCrop,
+    sourcePhoto.image,
+    width,
+  ])
 
   useEffect(() => () => texture.dispose(), [texture])
   useEffect(() => () => photoTexture.dispose(), [photoTexture])
@@ -428,7 +440,18 @@ function OpalCabochon({
     return (
       <group>
         <mesh castShadow geometry={geometry} receiveShadow>
-          <meshBasicMaterial attach="material-0" map={photoTexture} toneMapped={false} />
+          <meshStandardMaterial
+            attach="material-0"
+            map={photoTexture}
+            color="#ffffff"
+            emissive="#ffffff"
+            emissiveMap={photoTexture}
+            emissiveIntensity={0.12}
+            envMapIntensity={0.55}
+            metalness={0}
+            roughness={0.3}
+            toneMapped={false}
+          />
           <meshBasicMaterial
             attach="material-1"
             color={selectedOpal?.visual.bodyColour ?? palette.body}
@@ -999,7 +1022,6 @@ export function RingScene({
   view,
 }: RingSceneProps) {
   const background = useMemo(() => new Color('#171815'), [])
-  const measurements = getRingMeasurements(config)
   const framingTarget = useMemo(
     () => getRingFramingTarget(config, selectedOpal),
     [config, selectedOpal]
@@ -1039,6 +1061,13 @@ export function RingScene({
       <RingModel config={config} selectedOpal={selectedOpal} />
 
       <Environment resolution={256}>
+        <Lightformer
+          form="rect"
+          intensity={1.15}
+          color="#f2f0eb"
+          position={[0, 0, 4.5]}
+          scale={[8, 8, 1]}
+        />
         <Lightformer form="rect" intensity={5.5} position={[0, 4, -4]} scale={[5, 1.1, 1]} />
         <Lightformer
           form="rect"
@@ -1074,13 +1103,6 @@ export function RingScene({
         />
       </Environment>
 
-      <ContactShadows
-        position={[0, -measurements.outerRadius - 0.08, 0]}
-        opacity={0.46}
-        scale={4}
-        blur={2.15}
-        far={4}
-      />
       <OrbitControls
         makeDefault
         target={framingTarget}

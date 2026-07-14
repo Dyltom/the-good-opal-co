@@ -100,6 +100,22 @@ describe('custom builder photo crops', () => {
     expect(0.5 - transform.offsetY).toBeCloseTo(crop.top + crop.height / 2)
     expect(transform.repeatX).toBeLessThan(crop.width)
     expect(transform.repeatY).toBeLessThan(crop.height)
+    const [m00, m01, m02, m10, m11, m12] = transform.matrix
+    expect(m00 * 0.5 + m01 * 0.5 + m02).toBeCloseTo(crop.left + crop.width / 2)
+    expect(m10 * 0.5 + m11 * 0.5 + m12).toBeCloseTo(1 - crop.top - crop.height / 2)
+  })
+
+  test('rotates non-square stone photos in physical pixels instead of distorted UV space', () => {
+    const transform = computePhotoTextureTransform(
+      { left: 0.2, top: 0.15, width: 0.2, height: 0.5 },
+      0.5,
+      90
+    )
+    const [, m01, , m10] = transform.matrix
+
+    expect(Math.abs(m01)).toBeCloseTo(transform.repeatX / 0.5)
+    expect(Math.abs(m10)).toBeCloseTo(transform.repeatY * 0.5)
+    expect(Math.abs(m01)).not.toBeCloseTo(transform.repeatX)
   })
 
   test('applies customer placement without allowing the source focus outside the image', () => {
@@ -130,30 +146,43 @@ describe('custom builder photo crops', () => {
   })
 
   test.each([1.5, 2.25, 4])(
-    'uses the full pan range monotonically without dead zones at zoom %s',
+    'uses the full safe face range monotonically without exposing source background at zoom %s',
     (zoom) => {
       const positions = [-0.45, -0.3, -0.15, 0, 0.15, 0.3, 0.45]
-      const leftEdges = positions.map(
-        (opalPositionX) =>
-          computePlacedPhotoCrop(
-            1200,
-            1000,
-            0.8,
-            { focalX: 0.5, focalY: 0.5, zoom },
-            {
-              opalPositionX,
-              opalPositionY: 0,
-              opalScale: 1,
-              opalRotation: 0,
-            }
-          ).left
+      const safe = computePhotoCrop(1200, 1000, 0.8, {
+        focalX: 0.5,
+        focalY: 0.5,
+        zoom,
+      })
+      const crops = positions.map((opalPositionX) =>
+        computePlacedPhotoCrop(
+          1200,
+          1000,
+          0.8,
+          { focalX: 0.5, focalY: 0.5, zoom },
+          {
+            opalPositionX,
+            opalPositionY: 0,
+            opalScale: 1,
+            opalRotation: 0,
+          }
+        )
       )
+      const centres = crops.map((crop) => crop.left + crop.width / 2)
 
-      for (let index = 1; index < leftEdges.length; index += 1) {
-        expect(leftEdges[index]!).toBeLessThan(leftEdges[index - 1]!)
+      for (let index = 1; index < centres.length; index += 1) {
+        expect(centres[index]!).toBeLessThan(centres[index - 1]!)
       }
-      expect(leftEdges[0]).toBeGreaterThan(0)
-      expect(leftEdges.at(-1)).toBeCloseTo(0, 12)
+      for (const crop of crops) {
+        expect(crop.left).toBeGreaterThanOrEqual(safe.left - 1e-12)
+        expect(crop.top).toBeGreaterThanOrEqual(safe.top - 1e-12)
+        expect(crop.left + crop.width).toBeLessThanOrEqual(safe.left + safe.width + 1e-12)
+        expect(crop.top + crop.height).toBeLessThanOrEqual(
+          safe.top + safe.height + 1e-12
+        )
+      }
+      expect(crops[0]!.left + crops[0]!.width).toBeCloseTo(safe.left + safe.width, 12)
+      expect(crops.at(-1)!.left).toBeCloseTo(safe.left, 12)
     }
   )
 })

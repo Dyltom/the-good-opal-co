@@ -12,9 +12,9 @@ import {
   describeRingConfig,
   getRingStyleFit,
   metals,
+  mergeRingConfigSearchParams,
   ringStyles,
   shapeForOpal,
-  ringConfigToSearchParams,
 } from './config'
 import type { BuilderOpal, ConfigOption, RingConfig, RingStyleOption } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
@@ -40,6 +40,12 @@ interface OptionGroupProps<K extends keyof RingConfig> {
   options: readonly ConfigOption<Extract<RingConfig[K], string>>[]
   value: RingConfig[K]
   onChange: (key: K, value: RingConfig[K]) => void
+}
+
+function designUrlForConfig(config: RingConfig): URL {
+  const url = new URL(window.location.href)
+  url.search = mergeRingConfigSearchParams(url.searchParams, config).toString()
+  return url
 }
 
 function OptionGroup<K extends keyof RingConfig>({
@@ -380,10 +386,17 @@ export function RingConfigurator({
     () => describeRingConfig(config, selectedOpal?.name),
     [config, selectedOpal?.name]
   )
+  const isStartingDesign = useMemo(
+    () => JSON.stringify(config) === JSON.stringify(initialConfig),
+    [config, initialConfig]
+  )
 
   useEffect(() => {
-    const params = ringConfigToSearchParams(config)
-    window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
+    const timeout = window.setTimeout(() => {
+      const url = designUrlForConfig(config)
+      window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
+    }, 80)
+    return () => window.clearTimeout(timeout)
   }, [config])
 
   function updateConfig<K extends keyof RingConfig>(key: K, value: RingConfig[K]) {
@@ -405,26 +418,33 @@ export function RingConfigurator({
 
   function clearOpal() {
     setConfig((current) =>
-      applyRingStyle(
-        { ...current, ...defaultOpalPlacement, opalId: undefined },
-        current.style
-      )
+      applyRingStyle({ ...current, ...defaultOpalPlacement, opalId: undefined }, current.style)
     )
   }
 
   async function shareDesign() {
-    const url = window.location.href
+    const url = designUrlForConfig(config)
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`)
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'My Good Opal Co ring concept', text: description, url })
+        await navigator.share({
+          title: 'My Good Opal Co ring concept',
+          text: description,
+          url: url.toString(),
+        })
         setShareStatus('Design shared.')
       } else {
-        await navigator.clipboard.writeText(url)
+        await navigator.clipboard.writeText(url.toString())
         setShareStatus('Design link copied.')
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      setShareStatus('Could not copy automatically. Copy the address from your browser.')
+      try {
+        await navigator.clipboard.writeText(url.toString())
+        setShareStatus('Design link copied.')
+      } catch {
+        setShareStatus('Could not copy automatically. Copy the address from your browser.')
+      }
     }
   }
 
@@ -576,11 +596,12 @@ export function RingConfigurator({
             <button
               type="button"
               onClick={() => setConfig(initialConfig)}
-              className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              disabled={isStartingDesign}
+              className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-45"
             >
-              <RotateCcw aria-hidden="true" className="h-4 w-4" /> Reset design
+              <RotateCcw aria-hidden="true" className="h-4 w-4" /> Restore starting design
             </button>
-            <p className="sr-only" aria-live="polite">
+            <p className="mt-2 min-h-5 text-xs text-charcoal-light" aria-live="polite">
               {shareStatus}
             </p>
           </div>
