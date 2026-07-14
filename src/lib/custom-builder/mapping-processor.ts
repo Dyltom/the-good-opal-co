@@ -212,6 +212,8 @@ export async function processBuilderMappings(
     where: {
       and: [
         { category: { equals: 'raw-opals' } },
+        { status: { equals: 'published' } },
+        { stock: { greater_than: 0 } },
         {
           or: [
             {
@@ -427,7 +429,13 @@ export async function processBuilderMappings(
     depth: 0,
     limit: 1000,
     overrideAccess: true,
-    where: { category: { equals: 'raw-opals' } },
+    where: {
+      and: [
+        { category: { equals: 'raw-opals' } },
+        { status: { equals: 'published' } },
+        { stock: { greater_than: 0 } },
+      ],
+    },
   })
   summary.coverage.total = coverage.docs.length
   for (const document of coverage.docs) {

@@ -130,6 +130,9 @@ describe('builder mapping processor', () => {
         limit: 25,
         where: expect.objectContaining({
           and: expect.arrayContaining([
+            { category: { equals: 'raw-opals' } },
+            { status: { equals: 'published' } },
+            { stock: { greater_than: 0 } },
             expect.objectContaining({
               or: expect.arrayContaining([
                 {
