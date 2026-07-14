@@ -114,9 +114,23 @@ function OpalPicker({
   onClear: () => void
 }) {
   const [query, setQuery] = useState('')
-  const [kind, setKind] = useState<'all' | BuilderOpal['selectionKind']>('all')
+  const [kind, setKind] = useState<'all' | BuilderOpal['selectionKind']>(() => {
+    const selected = opals.find((opal) => opal.id === selectedId)
+    return selected?.selectionKind ?? 'individual'
+  })
   const [visibleCount, setVisibleCount] = useState(12)
   const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase())
+  const kindCounts = useMemo(
+    () =>
+      opals.reduce(
+        (counts, opal) => ({
+          ...counts,
+          [opal.selectionKind]: counts[opal.selectionKind] + 1,
+        }),
+        { individual: 0, assortment: 0, parcel: 0, specimen: 0 }
+      ),
+    [opals]
+  )
   const matchingOpals = useMemo(
     () =>
       opals.filter(
@@ -156,9 +170,10 @@ function OpalPicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">3. Choose an available opal</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Every published, in-stock loose-opal listing is shown. Product photos belong to the exact
-        listing. Parcels, calibrated sets, and specimens use a representative 3D concept; your
-        consultation confirms the individual stone and whether it can be set safely.
+        Start with individual stones: their exact listing photo maps onto the preview. Every
+        published, in-stock listing remains available. Parcels, calibrated sets, and specimens use
+        a representative 3D concept; your consultation confirms the individual stone and whether
+        it can be set safely.
       </p>
       <button
         type="button"
@@ -199,11 +214,11 @@ function OpalPicker({
             }
             className="min-h-12 w-full rounded-lg border border-warm-grey bg-white px-3 text-sm text-charcoal focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
           >
-            <option value="all">All listings</option>
-            <option value="individual">Individual stones</option>
-            <option value="assortment">Calibrated sets</option>
-            <option value="parcel">Parcels</option>
-            <option value="specimen">Specimens</option>
+            <option value="all">All listings ({opals.length})</option>
+            <option value="individual">Individual stones ({kindCounts.individual})</option>
+            <option value="assortment">Calibrated sets ({kindCounts.assortment})</option>
+            <option value="parcel">Parcels ({kindCounts.parcel})</option>
+            <option value="specimen">Specimens ({kindCounts.specimen})</option>
           </select>
         </div>
       </div>
@@ -305,9 +320,9 @@ function RingStylePicker({
       <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
         Try every design with your selected opal. Each reference is a photographed Good Opal Co
-        ring; the preview maps your photographed opal face into a proportion-matched setting
-        concept. Your maker confirms the natural outline, final seat, and whether the physical stone
-        can be set safely.
+        ring; the preview maps your photographed opal face into a setting concept. Your maker
+        confirms the natural outline, measurements, final seat, and whether the physical stone can
+        be set safely.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {

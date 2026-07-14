@@ -450,6 +450,66 @@ describe('custom builder opal visual profiles', () => {
     })
   })
 
+  test('never presents a reviewed parcel mapping as an exact listing-photo preview', () => {
+    const managed = {
+      builderEligible: true,
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'oval',
+      builderRecommendedStyle: 'gemini',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      dimensions: { width: 6, length: 9, depth: 3 },
+    }
+
+    const profile = createOpalVisualProfile(
+      'coober-pedy-colour-parcel',
+      'Coober Pedy colour parcel',
+      'white-opal',
+      managed
+    )
+
+    expect(profile.visual.textureCrop).toBeUndefined()
+    expect(profile.visual.photoFit).toBeUndefined()
+  })
+
+  test.each([
+    ['transmission below range', { builderTransmission: -0.01 }],
+    ['transmission above range', { builderTransmission: 1.01 }],
+    ['focal point below range', { builderPhotoFocalX: -0.01 }],
+    ['focal point above range', { builderPhotoFocalY: 1.01 }],
+    ['zoom below range', { builderPhotoZoom: 0.99 }],
+    ['zoom above range', { builderPhotoZoom: 12.01 }],
+    ['rotation below range', { builderPhotoRotation: -181 }],
+    ['rotation above range', { builderPhotoRotation: 181 }],
+    ['non-finite dimensions', { dimensions: { width: 6, length: 9, depth: Infinity } }],
+  ])('rejects invalid reviewed mapping data: %s', (_case, override) => {
+    const managed = {
+      builderEligible: true,
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'pear',
+      builderRecommendedStyle: 'aurora',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 3.4,
+      builderPhotoRotation: 0,
+      dimensions: { width: 6, length: 9, depth: 3 },
+      ...override,
+    }
+
+    expect(isBuilderEligibleOpal('invalid-mapped-opal', 'Invalid mapped opal', managed)).toBe(false)
+  })
+
   test('does not expose incomplete CMS builder records', () => {
     expect(
       isBuilderEligibleOpal('unfinished-opal', 'Unfinished opal', { builderEligible: true })

@@ -409,10 +409,30 @@ function cmsReviewedProfile(
     !hexColourPattern.test(fields.builderBodyColour) ||
     !colours.every((colour) => typeof colour === 'string' && hexColourPattern.test(colour)) ||
     typeof fields.builderTransmission !== 'number' ||
+    !Number.isFinite(fields.builderTransmission) ||
+    fields.builderTransmission < 0 ||
+    fields.builderTransmission > 1 ||
     typeof fields.builderPhotoFocalX !== 'number' ||
+    !Number.isFinite(fields.builderPhotoFocalX) ||
+    fields.builderPhotoFocalX < 0 ||
+    fields.builderPhotoFocalX > 1 ||
     typeof fields.builderPhotoFocalY !== 'number' ||
+    !Number.isFinite(fields.builderPhotoFocalY) ||
+    fields.builderPhotoFocalY < 0 ||
+    fields.builderPhotoFocalY > 1 ||
     typeof fields.builderPhotoZoom !== 'number' ||
-    (!dimensionsMm && (!fallbackAspectRatio || fallbackAspectRatio <= 0))
+    !Number.isFinite(fields.builderPhotoZoom) ||
+    fields.builderPhotoZoom < 1 ||
+    fields.builderPhotoZoom > 12 ||
+    (fields.builderPhotoRotation !== null &&
+      fields.builderPhotoRotation !== undefined &&
+      (typeof fields.builderPhotoRotation !== 'number' ||
+        !Number.isFinite(fields.builderPhotoRotation) ||
+        fields.builderPhotoRotation < -180 ||
+        fields.builderPhotoRotation > 180)) ||
+    (fields.dimensions !== null && fields.dimensions !== undefined && !dimensionsMm) ||
+    (!dimensionsMm &&
+      (!fallbackAspectRatio || !Number.isFinite(fallbackAspectRatio) || fallbackAspectRatio <= 0))
   ) {
     return undefined
   }
@@ -605,6 +625,9 @@ function completeDimensions(
     typeof dimensions?.width !== 'number' ||
     typeof dimensions.length !== 'number' ||
     typeof dimensions.depth !== 'number' ||
+    !Number.isFinite(dimensions.width) ||
+    !Number.isFinite(dimensions.length) ||
+    !Number.isFinite(dimensions.depth) ||
     dimensions.width <= 0 ||
     dimensions.length <= 0 ||
     dimensions.depth <= 0
@@ -688,7 +711,7 @@ export function createOpalVisualProfile(
           ? baseTextureCrop
           : estimatedTextureCrop
         : undefined,
-      photoFit: basePhotoFit ?? (usesIndividualPhoto ? 'estimated' : undefined),
+      photoFit: usesIndividualPhoto ? (basePhotoFit ?? 'estimated') : undefined,
     },
   }
 }

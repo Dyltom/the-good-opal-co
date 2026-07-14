@@ -509,16 +509,58 @@ describe('RingConfigurator store opal selection', () => {
 
     const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(12)
-    expect(screen.getByText('15 listings found')).not.toBeNull()
+    expect(screen.getByRole('combobox', { name: 'Filter available opals' })).toHaveProperty(
+      'value',
+      'individual'
+    )
+    expect(screen.getByRole('option', { name: 'All listings (15)' })).not.toBeNull()
+    expect(screen.getByRole('option', { name: 'Individual stones (14)' })).not.toBeNull()
+    expect(screen.getByRole('option', { name: 'Parcels (1)' })).not.toBeNull()
+    expect(screen.getByText('14 listings found')).not.toBeNull()
 
     await user.click(screen.getByRole('button', { name: 'Show 12 more' }))
-    expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(15)
+    expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(14)
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Filter available opals' }),
+      'all'
+    )
+    expect(screen.getByText('15 listings found')).not.toBeNull()
 
     await user.type(screen.getByRole('searchbox', { name: 'Search available opals' }), 'parcel')
     await waitFor(() => expect(screen.getByText('1 listing found')).not.toBeNull())
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(1)
     expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
     expect(screen.getByText('3D shows a representative setting concept')).not.toBeNull()
+  })
+
+  test('opens a shared parcel in its own listing type without hiding the selection', () => {
+    const parcel: BuilderOpal = {
+      ...opals[0]!,
+      id: 'parcel-1',
+      name: 'Coober Pedy colour parcel',
+      slug: 'coober-pedy-colour-parcel',
+      selectionKind: 'parcel',
+      visual: {
+        ...opals[0]!.visual,
+        photoFit: undefined,
+        textureCrop: undefined,
+      },
+    }
+
+    render(
+      <RingConfigurator
+        initialConfig={{ ...defaultRingConfig, opalId: parcel.id }}
+        opals={[...opals, parcel]}
+      />
+    )
+
+    expect(screen.getByRole('combobox', { name: 'Filter available opals' })).toHaveProperty(
+      'value',
+      'parcel'
+    )
+    expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
+    expect(screen.queryByRole('button', { name: /Lightning Ridge black opal/i })).toBeNull()
   })
 
   test('pins a linked deep-catalogue opal without rendering every preceding card', () => {
