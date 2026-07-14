@@ -72,12 +72,32 @@ describe('sold ring style geometry', () => {
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
-      shoulderRadius: 0.087,
+      shoulderRadius: 0.078,
       crossSectionPower: 0.92,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
     expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.12)
     expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.13)
+  })
+
+  test('tapers every sold shank into the setting instead of flaring at the join', () => {
+    expect(
+      Object.fromEntries(
+        Object.entries(ringStyleGeometryProfiles).map(([style, profile]) => [
+          style,
+          profile.shoulderRadius,
+        ])
+      )
+    ).toEqual({
+      aurora: 0.085,
+      coral: 0.078,
+      gemini: 0.084,
+      'sun-moon': 0.082,
+    })
+
+    for (const profile of Object.values(ringStyleGeometryProfiles)) {
+      expect(profile.shoulderRadius).toBeLessThan(profile.shankRadius)
+    }
   })
 
   test('keeps Coral square with constant normal-width setting walls', () => {
