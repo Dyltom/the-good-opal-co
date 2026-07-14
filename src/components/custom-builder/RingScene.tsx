@@ -1330,8 +1330,8 @@ function Setting({
               // or changing between renders.
               const isOrganicGrain = profile.beadPrimitive === 'organic-granule'
               const solderTone = getSolderGrainTone(key, isOrganicGrain)
-              const lobeAngle = (((key * 17) % 31) / 31) * Math.PI * 2
-              const lobeOffset = profile.beadRadius * 0.62
+              const grainTiltX = ((((key * 13) % 7) - 3) / 3) * 0.16
+              const grainTiltY = ((((key * 17) % 9) - 4) / 4) * 0.14
               return (
                 <group
                   key={key}
@@ -1349,21 +1349,13 @@ function Setting({
                   <mesh
                     castShadow
                     receiveShadow
-                    rotation={isOrganicGrain ? [Math.PI / 2, 0, 0] : undefined}
+                    rotation={isOrganicGrain ? [grainTiltX, grainTiltY, 0] : undefined}
                   >
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <cylinderGeometry
-                        args={[
-                          profile.beadRadius * 0.86,
-                          profile.beadRadius,
-                          profile.beadRadius * 1.5,
-                          7,
-                          1,
-                        ]}
-                      />
+                      <dodecahedronGeometry args={[profile.beadRadius, 0]} />
                     )}
                     <SolderGrainMaterial
                       organic={isOrganicGrain}
@@ -1372,25 +1364,6 @@ function Setting({
                       tone={solderTone}
                     />
                   </mesh>
-                  {isOrganicGrain && (
-                    <mesh
-                      castShadow
-                      position={[
-                        Math.cos(lobeAngle) * lobeOffset,
-                        Math.sin(lobeAngle) * lobeOffset,
-                        -profile.beadRadius * 0.08,
-                      ]}
-                      receiveShadow
-                    >
-                      <sphereGeometry args={[profile.beadRadius * 0.3, 12, 9]} />
-                      <SolderGrainMaterial
-                        organic
-                        metal={config.metal}
-                        roughness={profile.beadRoughness}
-                        tone={solderTone}
-                      />
-                    </mesh>
-                  )}
                 </group>
               )
             }
