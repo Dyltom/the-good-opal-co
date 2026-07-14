@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 import { getPayload } from '@/lib/payload'
-import { PRODUCTS, type Product as LegacyProduct } from '@/data/products'
+import { PRODUCTS, type Product as FallbackProduct } from '@/data/products'
 
 type ProductCategory =
   | 'opal-rings'
@@ -10,36 +10,13 @@ type ProductCategory =
   | 'opal-bracelets'
   | 'raw-opals'
 
-function categoryFor(product: LegacyProduct): ProductCategory {
+function categoryFor(product: FallbackProduct): ProductCategory {
   const name = product.name.toLowerCase()
   if (name.includes('earring') || name.includes('stud')) return 'opal-earrings'
   if (name.includes('necklace') || name.includes('pendant')) return 'opal-necklaces'
   if (name.includes('bracelet') || name.includes('bangle')) return 'opal-bracelets'
   if (name.includes('ring')) return 'opal-rings'
   return 'raw-opals'
-}
-
-function stoneTypeFor(value?: string) {
-  const values = {
-    'Black Opal': 'black-opal',
-    'Boulder Opal': 'boulder-opal',
-    'Crystal Opal': 'crystal-opal',
-    'White Opal': 'white-opal',
-    Doublet: 'opal-doublet',
-  } as const
-  return value ? values[value as keyof typeof values] : undefined
-}
-
-function originFor(value?: string) {
-  const values = {
-    'Lightning Ridge, NSW': 'lightning-ridge',
-    'Coober Pedy, SA': 'coober-pedy',
-    'Mintabie, SA': 'mintabie',
-    'Andamooka, SA': 'andamooka',
-    Queensland: 'queensland',
-    Australia: 'other-australian',
-  } as const
-  return value ? values[value as keyof typeof values] : undefined
 }
 
 function richText(text: string) {
@@ -105,6 +82,15 @@ async function mediaIdFor(image: string | undefined, name: string): Promise<numb
 async function seed() {
   const payload = await getPayload()
   const publish = process.env.SEED_PUBLISH === 'true'
+  const useSyntheticTestStock = process.env.SEED_TEST_STOCK === 'true'
+  if (useSyntheticTestStock && process.env.CI !== 'true') {
+    throw new Error('SEED_TEST_STOCK is allowed only in CI')
+  }
+  if (publish && !useSyntheticTestStock) {
+    throw new Error(
+      'SEED_PUBLISH requires authenticated exact inventory; SEED_TEST_STOCK is reserved for isolated test databases'
+    )
+  }
   let created = 0
   let published = 0
   let skipped = 0
@@ -118,12 +104,13 @@ async function seed() {
     const existingProduct = existing.docs[0]
     if (existingProduct) {
       if (publish && existingProduct.status === 'draft') {
+        const testStock = product.available ? 1 : 0
         await payload.update({
           collection: 'products',
           id: existingProduct.id,
           data: {
             status: 'published',
-            stock: product.stock,
+            stock: testStock,
           },
         })
         published += 1
@@ -136,10 +123,9 @@ async function seed() {
 
     const mediaId = await mediaIdFor(product.image, product.name)
     const category = categoryFor(product)
+    const testStock = publish && product.available ? 1 : 0
     const trustedBuilderMapping =
-      category === 'raw-opals'
-        ? { builderMappingStatus: 'reviewed' as const }
-        : {}
+      category === 'raw-opals' ? { builderMappingStatus: 'reviewed' as const } : {}
     await payload.create({
       collection: 'products',
       data: {
@@ -148,15 +134,12 @@ async function seed() {
         description: richText(product.description),
         price: product.price,
         compareAtPrice: product.compareAtPrice,
-        stock: publish ? product.stock : 0,
+        stock: testStock,
         status: publish ? 'published' : 'draft',
         featured: product.featured ?? false,
         category,
         ...trustedBuilderMapping,
         images: mediaId ? [{ image: mediaId }] : [],
-        stoneType: stoneTypeFor(product.stoneType),
-        stoneOrigin: originFor(product.origin),
-        weight: product.weight,
         certified: false,
         sku: `WP-${product.id}`,
         tenantId: 'good-opal-co',
@@ -166,7 +149,7 @@ async function seed() {
   }
 
   payload.logger.info(
-    `Seed complete: ${created} created, ${published} existing drafts published, ${skipped} already present. ${publish ? 'Imported catalog is available with source stock.' : 'New products remain drafts with zero stock for review.'}`
+    `Seed complete: ${created} created, ${published} existing drafts published, ${skipped} already present. ${publish ? 'Synthetic test catalogue is available.' : 'New products remain drafts with zero stock for authenticated import.'}`
   )
 }
 

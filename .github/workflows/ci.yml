@@ -49,6 +49,7 @@ jobs:
       - run: pnpm seed
         env:
           SEED_PUBLISH: 'true'
+          SEED_TEST_STOCK: 'true'
       - run: pnpm test:unit --run
       - run: pnpm validate:build
         env:

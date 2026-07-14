@@ -37,6 +37,7 @@
     "seed": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/seed.ts",
     "import:wordpress": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/import-wordpress-content.ts",
     "import:wordpress-product-images": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/import-wordpress-product-images.ts",
+    "fallback:sync:woo": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx scripts/sync-wordpress-product-fallback.ts",
     "catalog:sync:woo": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/sync-woocommerce-catalog.ts",
     "import:woocommerce": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/import-woocommerce-commerce.ts"
   },

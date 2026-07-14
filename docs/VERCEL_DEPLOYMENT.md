@@ -64,16 +64,19 @@ pnpm payload generate:types
 pnpm payload migrate:create descriptive_name
 ```
 
-A fresh database has schema but no sellable catalog. The checked-in seed imports the legacy catalog and matching public product images into Payload/Blob. Its safe default creates drafts with zero stock:
+A fresh database has schema but no sellable catalog. The checked-in seed imports the current public WooCommerce fallback catalogue and matching product images into Payload/Blob. Its safe default creates drafts with zero stock:
 
 ```bash
 pnpm seed
 ```
 
-Review every product, image, description, price, treatment/origin claim, and physical stock count in `/admin`. Only if the imported stock file has been independently verified should it be published during import:
+The public Store API exposes availability but not exact quantity, so the fallback
+never carries sellable stock and `SEED_PUBLISH` is rejected outside isolated CI.
+Run the authenticated WooCommerce import to populate exact inventory before
+publishing. Refresh the checked-in fallback while the legacy store remains live:
 
 ```bash
-SEED_PUBLISH=true pnpm seed
+pnpm fallback:sync:woo
 ```
 
 The seed is idempotent by product slug and does not overwrite existing products.
