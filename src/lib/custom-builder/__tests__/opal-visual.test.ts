@@ -370,7 +370,22 @@ describe('custom builder opal visual profiles', () => {
       aspectRatio: 1.3,
       recommendedStyle: 'coral',
       dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
-      textureCrop: { focalX: 0.524, focalY: 0.519, zoom: 6.3 },
+      textureCrop: { focalX: 0.515, focalY: 0.49, zoom: 7 },
+    })
+  })
+
+  test('matches the tapered Coober Pedy 2.30 stone to the Aurora setting', () => {
+    const cooberPedy = createOpalVisualProfile(
+      'coober-pedy-white-opal-2-30-cts-copy',
+      'Coober Pedy White Opal 2.30 cts',
+      'white-opal'
+    )
+
+    expect(cooberPedy.visual).toMatchObject({
+      silhouette: 'pear',
+      aspectRatio: 1.55,
+      recommendedStyle: 'aurora',
+      textureCrop: { focalX: 0.48, focalY: 0.48, zoom: 6 },
     })
   })
 
@@ -611,7 +626,7 @@ describe('custom builder opal visual profiles', () => {
     )
 
     expect(profile.visual).toMatchObject({
-      aspectRatio: 1.2,
+      aspectRatio: 1.55,
       photoFit: 'reviewed',
       textureCrop: { focalX: 0.48, focalY: 0.48, zoom: 6 },
     })

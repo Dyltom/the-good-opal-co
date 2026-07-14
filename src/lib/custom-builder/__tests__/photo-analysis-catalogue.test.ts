@@ -69,7 +69,7 @@ const fixtures: Record<string, CatalogueFixture> = {
   'mintabie-semi-black-opal-1-05-cts': {
     expectedSource: 'reviewed-fallback',
     filename: '20210923_174046.jpg',
-    hint: { focalX: 0.524, focalY: 0.519, rotation: 0, zoom: 6.3 },
+    hint: { focalX: 0.515, focalY: 0.49, rotation: 0, zoom: 7 },
     shapeHint: 'cushion',
     stoneAspect: 5 / 6.5,
   },

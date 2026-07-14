@@ -45,6 +45,7 @@ import * as migration_20260715_034500_ring_reference_checks from './20260715_034
 import * as migration_20260715_042500_instagram_content_review from './20260715_042500_instagram_content_review'
 import * as migration_20260715_063000_correct_catalogue_stone_shapes from './20260715_063000_correct_catalogue_stone_shapes'
 import * as migration_20260715_070000_builder_candidate_image_selection from './20260715_070000_builder_candidate_image_selection'
+import * as migration_20260715_083000_refine_reviewed_opal_placement from './20260715_083000_refine_reviewed_opal_placement'
 
 export const migrations = [
   {
@@ -281,5 +282,10 @@ export const migrations = [
     up: migration_20260715_070000_builder_candidate_image_selection.up,
     down: migration_20260715_070000_builder_candidate_image_selection.down,
     name: '20260715_070000_builder_candidate_image_selection',
+  },
+  {
+    up: migration_20260715_083000_refine_reviewed_opal_placement.up,
+    down: migration_20260715_083000_refine_reviewed_opal_placement.down,
+    name: '20260715_083000_refine_reviewed_opal_placement',
   },
 ]
