@@ -436,7 +436,7 @@ describe('custom builder opal visual profiles', () => {
     ).toBe(false)
   })
 
-  test('uses an approved mapped photo in the builder without enabling the store CTA', () => {
+  test('enables the store CTA for every complete approved individual mapping', () => {
     const fields = {
       builderEligible: false,
       builderMappingStatus: 'reviewed',
@@ -453,7 +453,7 @@ describe('custom builder opal visual profiles', () => {
       dimensions: { width: 6, length: 8, depth: 2 },
     }
 
-    expect(isBuilderEligibleOpal('mapped-opal', 'Mapped opal', fields)).toBe(false)
+    expect(isBuilderEligibleOpal('mapped-opal', 'Mapped opal', fields)).toBe(true)
     expect(
       createOpalVisualProfile('mapped-opal', 'Mapped opal', 'black-opal', fields).visual
     ).toMatchObject({
@@ -463,24 +463,25 @@ describe('custom builder opal visual profiles', () => {
   })
 
   test('uses reviewed CMS crops when legacy catalogue dimensions are incomplete', () => {
+    const fields = {
+      builderEligible: false,
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'oval',
+      builderRecommendedStyle: 'gemini',
+      builderBodyColour: '#dce6df',
+      builderFlashColourPrimary: '#55cfff',
+      builderFlashColourSecondary: '#5bea9a',
+      builderFlashColourAccent: '#ffd34e',
+      builderTransmission: 0.16,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.48,
+      builderPhotoZoom: 6,
+    }
     const profile = createOpalVisualProfile(
       'coober-pedy-white-opal-2-30-cts-copy',
       'Coober Pedy White Opal 2.30 cts',
       'white-opal',
-      {
-        builderEligible: false,
-        builderMappingStatus: 'reviewed',
-        builderSilhouette: 'oval',
-        builderRecommendedStyle: 'gemini',
-        builderBodyColour: '#dce6df',
-        builderFlashColourPrimary: '#55cfff',
-        builderFlashColourSecondary: '#5bea9a',
-        builderFlashColourAccent: '#ffd34e',
-        builderTransmission: 0.16,
-        builderPhotoFocalX: 0.48,
-        builderPhotoFocalY: 0.48,
-        builderPhotoZoom: 6,
-      }
+      fields
     )
 
     expect(profile.visual).toMatchObject({
@@ -489,6 +490,13 @@ describe('custom builder opal visual profiles', () => {
       textureCrop: { focalX: 0.48, focalY: 0.48, zoom: 6 },
     })
     expect(profile.visual.dimensionsMm).toBeUndefined()
+    expect(
+      isBuilderEligibleOpal(
+        'coober-pedy-white-opal-2-30-cts-copy',
+        'Coober Pedy White Opal 2.30 cts',
+        fields
+      )
+    ).toBe(true)
   })
 
   test('does not describe an unapproved CMS crop as maker-reviewed', () => {
@@ -587,6 +595,14 @@ describe('custom builder opal visual profiles', () => {
       photoFit: 'reviewed',
       textureCrop: { focalX: 0.454, focalY: 0.554, rotation: 0, zoom: 3.2 },
     })
+    expect(
+      createOpalVisualProfile(
+        'mintabie-carved-heart',
+        'Mintabie Dark Opal heart 0.55 cts',
+        'black-opal',
+        fields
+      ).visual.contour
+    ).toEqual(contour)
 
     expect(
       createOpalVisualProfile('unreviewed-opal', 'Unreviewed opal', 'black-opal', fields).visual

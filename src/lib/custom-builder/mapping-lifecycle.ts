@@ -486,9 +486,7 @@ export function applyBuilderMappingLifecycle(
     incoming.builderMappingReviewedAt = now
   }
 
-  if (status === 'pending' || status === 'stale' || !sourceHash) {
-    incoming.builderEligible = false
-  }
+  incoming.builderEligible = (status === 'reviewed' || status === 'manual') && Boolean(sourceHash)
 
   return incoming
 }

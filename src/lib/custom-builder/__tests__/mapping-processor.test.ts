@@ -310,7 +310,7 @@ describe('builder mapping processor', () => {
     expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
   })
 
-  test('records an analysis error for retry without aborting the batch', async () => {
+  test('records a deterministic missing-image error without aborting the batch', async () => {
     mocks.find.mockResolvedValue({
       docs: [
         {
@@ -364,6 +364,58 @@ describe('builder mapping processor', () => {
       },
       overrideAccess: true,
     })
+  })
+
+  test('marks transient source failures retryable without retrying deterministic failures', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/temporarily-unavailable.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 503 })))
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ failed: 1 })
+    expect(mocks.update).toHaveBeenCalledWith({
+      collection: 'products',
+      id: 42,
+      data: expect.objectContaining({
+        builderMappingAnalysisError: 'Retryable source error: Source image request failed (503)',
+        builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+      }),
+      overrideAccess: true,
+    })
+    expect(mocks.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          and: expect.arrayContaining([
+            expect.objectContaining({
+              or: expect.arrayContaining([
+                {
+                  and: [
+                    {
+                      builderMappingAnalysisError: {
+                        contains: 'Retryable source error: ',
+                      },
+                    },
+                    {
+                      builderPhotoAnalysisVersion: {
+                        equals: BUILDER_PHOTO_ANALYSIS_VERSION,
+                      },
+                    },
+                  ],
+                },
+              ]),
+            }),
+          ]),
+        }),
+      })
+    )
   })
 
   test('generates a candidate for a reviewed mapping without overwriting its approved contour or crop', async () => {

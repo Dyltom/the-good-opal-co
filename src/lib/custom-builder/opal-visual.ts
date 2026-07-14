@@ -240,8 +240,9 @@ const cataloguePhotoProfiles: Record<
   },
 }
 
-const reviewedSlugAliases: Record<string, keyof typeof reviewedProfiles> = {
+const reviewedSlugAliases: Readonly<Record<string, string>> = {
   'lightning-ridge-white-opal-105-ct': 'lightning-ridge-white-opal-1-05-cts',
+  'mintabie-carved-heart': 'mintabie-dark-opal-heart-055-cts',
   'mintabie-semi-black-opal-105-cts': 'mintabie-semi-black-opal-1-05-cts',
   'mintabie-semi-black-opal-135-cts': 'mintabie-semi-black-opal-1-35-cts',
   'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
@@ -477,8 +478,15 @@ export function isBuilderEligibleOpal(
   name: string,
   fields?: BuilderVisualFields
 ): boolean {
-  const managed = fields?.builderEligible ? cmsReviewedProfile(fields) : undefined
-  return Boolean(name) && Boolean(managed ?? reviewedProfileFor(slug))
+  if (!name || classifyOpalListing(name) !== 'individual') return false
+
+  const reviewed = reviewedProfileFor(slug)
+  if (!fields) return Boolean(reviewed)
+
+  const cataloguePhoto = cataloguePhotoProfiles[reviewedSlugAliases[slug] ?? slug]
+  const fallbackAspectRatio =
+    reviewed?.aspectRatio ?? cataloguePhoto?.aspectRatio ?? inferSilhouette(name).aspectRatio
+  return Boolean(cmsReviewedProfile(fields, fallbackAspectRatio))
 }
 
 function inferSilhouette(
@@ -564,7 +572,7 @@ export function createOpalVisualProfile(
   const profile = typeProfiles[stoneType] ?? typeProfiles['crystal-opal']!
   const silhouette = inferSilhouette(name)
   const reviewed = reviewedProfileFor(slug)
-  const cataloguePhoto = cataloguePhotoProfiles[slug]
+  const cataloguePhoto = cataloguePhotoProfiles[reviewedSlugAliases[slug] ?? slug]
   const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
   const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
   const imageCandidate = auditedImageCandidate(slug, fields)

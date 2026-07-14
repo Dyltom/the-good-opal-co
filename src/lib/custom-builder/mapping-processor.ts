@@ -11,6 +11,9 @@ import { parseBuilderStoneContour } from './stone-contour'
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
 const ANALYSIS_EDGE_PX = 640
 const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.75
+const RETRYABLE_ANALYSIS_ERROR_PREFIX = 'Retryable source error: '
+
+class RetryableSourceError extends Error {}
 
 type PayloadClient = Awaited<ReturnType<typeof getPayload>>
 type ProductRecord = Record<string, unknown>
@@ -184,12 +187,23 @@ function internalApplicationOrigin(): string | undefined {
 }
 
 async function fetchImage(url: string): Promise<Buffer> {
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: { accept: 'image/*' },
-    signal: AbortSignal.timeout(20_000),
-  })
-  if (!response.ok) throw new Error(`Source image request failed (${response.status})`)
+  let response: Response
+  try {
+    response = await fetch(url, {
+      cache: 'no-store',
+      headers: { accept: 'image/*' },
+      signal: AbortSignal.timeout(20_000),
+    })
+  } catch {
+    throw new RetryableSourceError('Source image request did not complete')
+  }
+  if (!response.ok) {
+    const message = `Source image request failed (${response.status})`
+    if (response.status === 408 || response.status === 429 || response.status >= 500) {
+      throw new RetryableSourceError(message)
+    }
+    throw new Error(message)
+  }
 
   const contentType = response.headers.get('content-type')
   if (contentType && !contentType.toLowerCase().startsWith('image/')) {
@@ -200,7 +214,12 @@ async function fetchImage(url: string): Promise<Buffer> {
     throw new Error('Source image exceeds 25 MB analysis limit')
   }
 
-  const bytes = Buffer.from(await response.arrayBuffer())
+  let bytes: Buffer
+  try {
+    bytes = Buffer.from(await response.arrayBuffer())
+  } catch {
+    throw new RetryableSourceError('Source image download did not complete')
+  }
   if (bytes.length === 0) throw new Error('Source image is empty')
   if (bytes.length > MAX_SOURCE_BYTES) throw new Error('Source image exceeds 25 MB analysis limit')
   return bytes
@@ -208,7 +227,10 @@ async function fetchImage(url: string): Promise<Buffer> {
 
 function conciseError(error: unknown): string {
   const message = error instanceof Error ? error.message : 'Unknown image analysis error'
-  return message.replace(/\s+/g, ' ').trim().slice(0, 500)
+  const concise = message.replace(/\s+/g, ' ').trim().slice(0, 500)
+  return error instanceof RetryableSourceError
+    ? `${RETRYABLE_ANALYSIS_ERROR_PREFIX}${concise}`
+    : concise
 }
 
 function finiteBetween(value: unknown, minimum: number, maximum: number, field: string): number {
@@ -286,6 +308,20 @@ export async function processBuilderMappings(
                 {
                   builderPhotoAnalysisVersion: {
                     not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
+                  },
+                },
+              ],
+            },
+            {
+              and: [
+                {
+                  builderMappingAnalysisError: {
+                    contains: RETRYABLE_ANALYSIS_ERROR_PREFIX,
+                  },
+                },
+                {
+                  builderPhotoAnalysisVersion: {
+                    equals: BUILDER_PHOTO_ANALYSIS_VERSION,
                   },
                 },
               ],

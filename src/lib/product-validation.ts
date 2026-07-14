@@ -34,7 +34,20 @@ export function validateHexColour(value: unknown): true | string {
     : 'Use a six-digit hex colour such as #78c5df'
 }
 
-export function validateBuilderProduct(data: unknown): true | string {
+export function validateBuilderProduct(data: unknown, originalData?: unknown): true | string {
+  if (isRecord(data) && isRecord(originalData)) {
+    data = {
+      ...originalData,
+      ...data,
+      dimensions:
+        isRecord(originalData.dimensions) || isRecord(data.dimensions)
+          ? {
+              ...(isRecord(originalData.dimensions) ? originalData.dimensions : {}),
+              ...(isRecord(data.dimensions) ? data.dimensions : {}),
+            }
+          : (data.dimensions ?? originalData.dimensions),
+    }
+  }
   if (!isRecord(data) || data.builderEligible !== true) return true
 
   if (data.category !== 'raw-opals') {
@@ -95,10 +108,12 @@ export function validateBuilderProduct(data: unknown): true | string {
 
   const dimensions = data.dimensions
   if (
-    !isRecord(dimensions) ||
-    !isPositiveNumber(dimensions.width) ||
-    !isPositiveNumber(dimensions.length) ||
-    !isPositiveNumber(dimensions.depth)
+    dimensions !== undefined &&
+    dimensions !== null &&
+    (!isRecord(dimensions) ||
+      !isPositiveNumber(dimensions.width) ||
+      !isPositiveNumber(dimensions.length) ||
+      !isPositiveNumber(dimensions.depth))
   ) {
     return 'Builder opals require positive width, length, and depth measurements'
   }

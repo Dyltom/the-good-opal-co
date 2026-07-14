@@ -231,6 +231,35 @@ describe('opal builder mapping lifecycle', () => {
     expect(result.builderMappingReviewedAt).toBe(now)
   })
 
+  test('derives builder eligibility from approval and a mapped source image', () => {
+    const approved = applyBuilderMappingLifecycle(
+      { builderEligible: false, builderMappingStatus: 'reviewed' },
+      {
+        builderMappingStatus: 'pending',
+        category: 'raw-opals',
+        images: [{ image: 'media-1' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      now
+    )
+    const pending = applyBuilderMappingLifecycle(
+      { builderEligible: true, builderMappingStatus: 'pending' },
+      {
+        category: 'raw-opals',
+        images: [{ image: 'media-1' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      now
+    )
+
+    expect(approved.builderEligible).toBe(true)
+    expect(pending.builderEligible).toBe(false)
+  })
+
   test('marks an approved mapping stale and hides it after source changes', () => {
     const original = applyBuilderMappingLifecycle(
       {

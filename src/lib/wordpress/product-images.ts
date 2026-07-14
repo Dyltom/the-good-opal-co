@@ -32,6 +32,17 @@ function imageMimeType(sourceUrl: string): string {
   throw new Error(`Unsupported WordPress product image extension: ${sourceUrl}`)
 }
 
+function productImageAlt(productName: string, sourceAlt: string): string {
+  const alt = sourceAlt.trim()
+  if (
+    productName === 'Queensland Boulder Opal 20 cts' &&
+    alt === 'Large Koroit Boulder Opal Specimen 108.65 cts'
+  ) {
+    return productName
+  }
+  return alt || productName
+}
+
 export function parseWordPressProductImages(input: unknown): WordPressProductImages[] {
   return z
     .array(sourceProductSchema)
@@ -44,7 +55,7 @@ export function parseWordPressProductImages(input: unknown): WordPressProductIma
         productName,
         media: product.images.map((image) => ({
           id: image.id,
-          alt: image.alt.trim() || productName,
+          alt: productImageAlt(productName, image.alt),
           mimeType: imageMimeType(image.src),
           sourceUrl: image.src,
           title: image.name || productName,

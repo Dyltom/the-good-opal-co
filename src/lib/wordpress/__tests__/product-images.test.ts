@@ -58,6 +58,26 @@ describe('WordPress product image import', () => {
     ).toEqual([{ inStock: false, productId: 1, productName: 'No image', media: [] }])
   })
 
+  it('repairs the known cross-product alt assignment at the import boundary', () => {
+    const [product] = parseWordPressProductImages([
+      {
+        id: 4543,
+        name: 'Queensland Boulder Opal 20 cts',
+        is_in_stock: true,
+        images: [
+          {
+            id: 4544,
+            src: 'https://goodopalco.com/wp-content/uploads/2021/05/20210505_102859.jpg',
+            alt: 'Large Koroit Boulder Opal Specimen 108.65 cts',
+            name: '20210505_102859',
+          },
+        ],
+      },
+    ])
+
+    expect(product?.media[0]?.alt).toBe('Queensland Boulder Opal 20 cts')
+  })
+
   it('rejects unsupported files', () => {
     expect(() =>
       parseWordPressProductImages([

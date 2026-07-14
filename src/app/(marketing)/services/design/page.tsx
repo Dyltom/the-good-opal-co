@@ -17,6 +17,11 @@ import {
 import { getPayload } from '@/lib/payload'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
+import {
+  builderCatalogueImageAlt,
+  resolveBuilderCatalogueImageUrl,
+  shouldIncludeBuilderCatalogueProduct,
+} from './catalogue'
 
 export const metadata: Metadata = {
   title: 'Design Your Custom Opal Ring | The Good Opal Co',
@@ -140,7 +145,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       ],
     },
   })
-  const products = result.docs
+  const products = result.docs.filter(shouldIncludeBuilderCatalogueProduct)
 
   const selectedImage = (product: (typeof products)[number]) => {
     const index =
@@ -173,14 +178,12 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
     .flatMap((product): BuilderOpal[] => {
       const mappedImage = selectedImage(product)
       const image = mappedImage ? mediaById.get(String(mappedImage)) : undefined
-      // Reviewed builder opals have owned, checked-in source photography. Prefer it
-      // over Payload's file route so a missing local/ephemeral media file cannot
-      // collapse the complete WebGL scene.
-      const imageUrl =
-        reviewedOpalImageUrl(product.slug, product.builderMappingStatus) ??
-        resolveMediaUrl(image?.url) ??
-        ownedProductImageUrl(product.slug) ??
+      const imageUrl = resolveBuilderCatalogueImageUrl(
+        resolveMediaUrl(image?.url),
+        reviewedOpalImageUrl(product.slug, product.builderMappingStatus),
+        ownedProductImageUrl(product.slug),
         productImageFallback(image?.filename)
+      )
       if (!imageUrl) return []
 
       const stoneType = inferBuilderStoneType(product.stoneType, product.name)
@@ -192,7 +195,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
           name: product.name,
           slug: product.slug,
           imageUrl,
-          imageAlt: image?.alt ?? product.name,
+          imageAlt: builderCatalogueImageAlt(product.slug, product.name, image?.alt),
           price: product.price,
           stoneType,
           stoneTypeLabel: stoneTypeLabels[stoneType] ?? 'Australian opal',

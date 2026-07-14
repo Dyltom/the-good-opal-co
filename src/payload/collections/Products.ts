@@ -35,8 +35,8 @@ export const Products: CollectionConfig = {
     beforeValidate: [
       ({ data, originalDoc }) =>
         applyBuilderMappingLifecycle(data, originalDoc, new Date().toISOString()),
-      ({ data }) => {
-        const result = validateBuilderProduct(data)
+      ({ data, originalDoc }) => {
+        const result = validateBuilderProduct(data, originalDoc)
         if (result !== true) throw new Error(result)
         return data
       },

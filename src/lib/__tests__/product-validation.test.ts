@@ -68,6 +68,16 @@ describe('product commerce validation', () => {
       'Builder opals require a reviewed or manually approved mapping'
     )
     expect(validateBuilderProduct({ ...valid, builderMappingStatus: 'manual' })).toBe(true)
+    expect(validateBuilderProduct({ ...valid, dimensions: null })).toBe(true)
+    expect(validateBuilderProduct({ ...valid, dimensions: { width: 5, length: 8 } })).toBe(
+      'Builder opals require positive width, length, and depth measurements'
+    )
+    expect(
+      validateBuilderProduct(
+        { builderEligible: true, builderMappingStatus: 'reviewed' },
+        { ...valid, builderEligible: false }
+      )
+    ).toBe(true)
   })
 
   test.each(['#78c5df', '#FFFFFF', undefined, null, ''])('accepts hex colour value %s', (value) => {
