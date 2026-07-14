@@ -8,7 +8,7 @@ describe('robots policy', () => {
     expect(policy.rules).toEqual([
       expect.objectContaining({
         userAgent: '*',
-        allow: '/',
+        allow: expect.arrayContaining(['/', '/api/media/file/']),
         disallow: expect.arrayContaining([
           '/admin/*',
           '/api/*',

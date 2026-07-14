@@ -15,7 +15,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        // Payload media is public catalogue content even though it is served
+        // through an API route. The longer allow rule wins over `/api/*`.
+        allow: ['/', '/api/media/file/'],
         disallow: [
           '/admin',
           '/admin/*',

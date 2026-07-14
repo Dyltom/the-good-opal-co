@@ -36,6 +36,16 @@ const organizationId = `${APP_URL}/#organization`
 const websiteId = `${APP_URL}/#website`
 const returnPolicyId = `${APP_URL}/returns#policy`
 
+function structuredDataUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined
+
+  try {
+    return new URL(value, `${APP_URL}/`).toString()
+  } catch {
+    return undefined
+  }
+}
+
 export function merchantReturnPolicyStructuredData(): Record<string, unknown> {
   return {
     '@type': 'MerchantReturnPolicy',
@@ -131,7 +141,9 @@ export function productStructuredData(
     '@id': `${productUrl}#product`,
     name: product.name,
     description: product.description,
-    image: product.images,
+    image: product.images
+      .map((image) => structuredDataUrl(image))
+      .filter((image): image is string => Boolean(image)),
     url: productUrl,
     sku: product.sku ?? product.slug,
     category: product.category ?? 'Gemstones',
@@ -218,10 +230,15 @@ interface CollectionJsonLdProps {
   }>
 }
 
-export function CollectionJsonLd({ name, description, url, products }: CollectionJsonLdProps) {
+export function collectionStructuredData({
+  name,
+  description,
+  url,
+  products,
+}: CollectionJsonLdProps): Record<string, unknown> {
   const appUrl = APP_URL
 
-  const data = {
+  return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name,
@@ -237,7 +254,7 @@ export function CollectionJsonLd({ name, description, url, products }: Collectio
           '@type': 'Product',
           name: product.name,
           url: `${appUrl}/store/${product.slug}`,
-          image: product.image,
+          image: structuredDataUrl(product.image),
           offers: {
             '@type': 'Offer',
             priceCurrency: 'AUD',
@@ -247,8 +264,10 @@ export function CollectionJsonLd({ name, description, url, products }: Collectio
       })),
     },
   }
+}
 
-  return <JsonLd data={data} />
+export function CollectionJsonLd(props: CollectionJsonLdProps) {
+  return <JsonLd data={collectionStructuredData(props)} />
 }
 
 /**
@@ -330,7 +349,7 @@ export function courseStructuredData(course: CourseJsonLdProps['course']): Recor
     name: course.name,
     description: course.description,
     url: courseUrl,
-    image: course.image,
+    image: structuredDataUrl(course.image),
     inLanguage: 'en-AU',
     educationalLevel: course.level,
     courseMode: course.format,

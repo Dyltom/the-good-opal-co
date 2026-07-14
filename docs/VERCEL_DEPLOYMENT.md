@@ -28,6 +28,7 @@ Set these for Production. Use isolated test values for Preview and Development.
 DATABASE_URL
 PAYLOAD_SECRET
 QUOTE_LINK_SECRET
+CRON_SECRET
 ADMIN_EMAIL
 NEXT_PUBLIC_APP_URL
 STRIPE_SECRET_KEY
@@ -47,11 +48,11 @@ Optional:
 NEXT_PUBLIC_GA_MEASUREMENT_ID
 ```
 
-`NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate separate `PAYLOAD_SECRET` and `QUOTE_LINK_SECRET` values from at least 32 random bytes each; never reuse them. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret.
+`NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate separate `PAYLOAD_SECRET`, `QUOTE_LINK_SECRET`, and `CRON_SECRET` values from at least 32 random bytes each; never reuse them. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret.
 
 ## Database migrations and catalog
 
-`vercel.json` delegates to `scripts/vercel-build.mjs`. Production builds run committed Payload migrations before `next build`; Preview and Development builds never run migrations. Every environment still needs an isolated database because the running application can write through Payload. Do not run concurrent production deployments. Use a preview database, verify the artifact, then schedule the production deployment.
+`vercel.json` delegates to `scripts/vercel-build.mjs`. Production and Preview builds run committed Payload migrations against their own isolated databases before `next build`; Development builds skip migrations. Never connect Preview to the Production database. Do not run concurrent production deployments. Use a preview database, verify the artifact, then schedule the production deployment.
 
 The original production database was created by Payload development schema sync and contains a legacy `dev` migration marker. Before the first migrated Production build, `scripts/reconcile-production-migration-ledger.mjs` verifies that exact historical schema, transactionally replaces the marker with the five migrations already represented by the database, and then allows Payload to apply the remaining migrations. It is a no-op once durable migration history exists and refuses any unrecognized schema.
 

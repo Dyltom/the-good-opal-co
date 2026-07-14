@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import {
+  collectionStructuredData,
   courseStructuredData,
   organizationStructuredData,
   productStructuredData,
   serializeJsonLd,
 } from '../json-ld'
+import { APP_URL } from '@/lib/constants'
 
 describe('JSON-LD serialization', () => {
   test('escapes script-breaking CMS content while preserving parsed data', () => {
@@ -76,6 +78,50 @@ describe('structured data', () => {
           shippingDestination: { addressCountry: 'AU' },
           shippingRate: { value: 15, currency: 'AUD' },
         },
+      },
+    })
+  })
+
+  test('publishes absolute product and course image URLs', () => {
+    const product = productStructuredData({
+      name: 'Relative-media opal',
+      slug: 'relative-media-opal',
+      description: 'An Australian opal.',
+      price: 245,
+      images: ['/api/media/file/relative-opal.jpg', 'https://cdn.example.com/opal.jpg'],
+      stock: 1,
+    })
+    const course = courseStructuredData({
+      name: 'Read Australian opal',
+      slug: 'read-australian-opal',
+      description: 'A practical public outline.',
+      image: '/api/media/file/course-cover.jpg',
+    })
+
+    expect(product.image).toEqual([
+      `${APP_URL}/api/media/file/relative-opal.jpg`,
+      'https://cdn.example.com/opal.jpg',
+    ])
+    expect(course.image).toBe(`${APP_URL}/api/media/file/course-cover.jpg`)
+
+    const collection = collectionStructuredData({
+      name: 'Loose opals',
+      description: 'Available Australian opals.',
+      url: '/store',
+      products: [
+        {
+          name: 'Collection opal',
+          slug: 'collection-opal',
+          price: 95,
+          image: '/api/media/file/collection-opal.jpg',
+        },
+      ],
+    })
+    expect(collection).toMatchObject({
+      mainEntity: {
+        itemListElement: [
+          { item: { image: `${APP_URL}/api/media/file/collection-opal.jpg` } },
+        ],
       },
     })
   })

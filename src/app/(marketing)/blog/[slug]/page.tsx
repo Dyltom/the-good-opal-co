@@ -114,6 +114,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     : null
   const featuredImage = populatedMedia(post.featuredImage)
   const imageUrl = resolveMediaUrl(featuredImage?.url)
+  const structuredImageUrl = imageUrl ? new URL(imageUrl, APP_URL).toString() : undefined
   const author = populatedAuthor(post.author)
   const categories = populatedCategories(post.categories)
   const tags = populatedTags(post.tags)
@@ -132,10 +133,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     mainEntityOfPage: canonical,
     datePublished: post.publishedAt ?? post.createdAt,
     dateModified: post.updatedAt,
-    image: imageUrl
+    image: structuredImageUrl
       ? {
           '@type': 'ImageObject',
-          url: imageUrl,
+          url: structuredImageUrl,
           caption: featuredImage?.alt || post.title,
         }
       : undefined,
