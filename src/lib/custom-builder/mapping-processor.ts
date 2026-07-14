@@ -387,7 +387,7 @@ export async function processBuilderMappings(
             builderMappingAnalysisError:
               'Automatic crop mapping skipped for a non-individual or non-opal listing',
           },
-          expectedUpdatedAt
+          undefined
         )
         if (!updated) {
           summary.unchanged += 1
@@ -462,7 +462,7 @@ export async function processBuilderMappings(
           ),
           builderMappingAnalysisError: analysisError,
         },
-        expectedUpdatedAt
+        mayActivateContour ? expectedUpdatedAt : undefined
       )
       if (!updated) {
         summary.unchanged += 1
@@ -484,7 +484,7 @@ export async function processBuilderMappings(
           builderPhotoCandidateRotation: null,
           builderMappingAnalysisError: conciseError(error),
         },
-        expectedUpdatedAt
+        undefined
       )
       if (!updated) {
         summary.unchanged += 1

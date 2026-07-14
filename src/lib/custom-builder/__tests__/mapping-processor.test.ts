@@ -560,6 +560,7 @@ describe('builder mapping processor', () => {
       docs: [
         {
           id: 42,
+          updatedAt: '2026-07-14T01:00:00.123456Z',
           builderMappingMode: 'inferred',
           builderMappingStatus: 'pending',
           images: [{ image: { id: 7, url: '/parcel.jpg' } }],
