@@ -160,6 +160,59 @@ describe('builder mapping processor', () => {
     })
   })
 
+  test('fetches application-relative media from the active Vercel deployment', async () => {
+    vi.stubEnv('VERCEL_URL', 'the-good-opal-co-git-main.example.vercel.app')
+    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'the-good-opal-co.example.vercel.app')
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://goodopalco.com')
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/api/media/file/opal.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    expect(fetch).toHaveBeenCalledWith(
+      'https://the-good-opal-co-git-main.example.vercel.app/api/media/file/opal.jpg',
+      expect.objectContaining({ headers: { accept: 'image/*' } })
+    )
+  })
+
+  test('does not rewrite absolute owned-storage media through a Vercel origin', async () => {
+    vi.stubEnv('VERCEL_URL', 'the-good-opal-co-git-main.example.vercel.app')
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [
+            {
+              image: {
+                id: 7,
+                url: 'https://owned.public.blob.vercel-storage.com/opal.jpg',
+              },
+            },
+          ],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    expect(fetch).toHaveBeenCalledWith(
+      'https://owned.public.blob.vercel-storage.com/opal.jpg',
+      expect.objectContaining({ headers: { accept: 'image/*' } })
+    )
+  })
+
   test('does not repeat current candidates and analyzes manual mappings without changing active values', async () => {
     const currentHash = createHash('sha256').update(imageBytes).digest('hex')
     mocks.find.mockResolvedValue({

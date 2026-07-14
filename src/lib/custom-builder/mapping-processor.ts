@@ -86,10 +86,39 @@ function absoluteMediaUrl(value: string | null | undefined): string | undefined 
   try {
     return new URL(resolved).toString()
   } catch {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
-    if (!appUrl) return undefined
-    return new URL(resolved, appUrl).toString()
+    const origin = internalApplicationOrigin()
+    if (!origin) return undefined
+    return new URL(resolved, origin).toString()
   }
+}
+
+function normalizedOrigin(value: string | undefined, defaultProtocol?: 'https:'): string | undefined {
+  const configured = value?.trim()
+  if (!configured) return undefined
+
+  try {
+    const url = new URL(
+      defaultProtocol && !configured.includes('://') ? `${defaultProtocol}//${configured}` : configured
+    )
+    if (url.username || url.password) return undefined
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return undefined
+    return url.origin
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Payload file URLs are application-relative. During a Vercel deployment they
+ * must resolve back to that deployment, not through the public canonical domain
+ * which may still point at a previous platform during DNS migration.
+ */
+function internalApplicationOrigin(): string | undefined {
+  return (
+    normalizedOrigin(process.env.VERCEL_URL, 'https:') ??
+    normalizedOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL, 'https:') ??
+    normalizedOrigin(process.env.NEXT_PUBLIC_APP_URL)
+  )
 }
 
 async function fetchImage(url: string): Promise<Buffer> {
