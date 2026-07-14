@@ -82,6 +82,7 @@ export interface Config {
     'inventory-reservations': InventoryReservation;
     'custom-quotes': CustomQuote;
     'custom-quote-events': CustomQuoteEvent;
+    'ring-designs': RingDesign;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -104,6 +105,7 @@ export interface Config {
     'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
     'custom-quotes': CustomQuotesSelect<false> | CustomQuotesSelect<true>;
     'custom-quote-events': CustomQuoteEventsSelect<false> | CustomQuoteEventsSelect<true>;
+    'ring-designs': RingDesignsSelect<false> | RingDesignsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1129,6 +1131,66 @@ export interface CustomQuoteEvent {
   createdAt: string;
 }
 /**
+ * Physical reference evidence and maker approval for each ring-builder design.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ring-designs".
+ */
+export interface RingDesign {
+  id: number;
+  name: string;
+  slug: string;
+  style: 'gemini' | 'coral' | 'sun-moon' | 'aurora';
+  status: 'draft' | 'published' | 'archived';
+  /**
+   * Versioned source records: assetPath, sourceType, view, productSlug/sourceUrl, observedAt, and notes.
+   */
+  sourceReferences:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Caliper, photogrammetry, or maker-drawing measurements in millimetres. Required before approval.
+   */
+  measurements?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Model source, version, optional asset URL, and notes. Procedural constants alone remain draft evidence.
+   */
+  modelDefinition?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Confirms the rendered construction matches the physical master.
+   */
+  makerApproved?: boolean | null;
+  approvedAt?: string | null;
+  /**
+   * Name the physical master, remaining tolerances, and who approved it.
+   */
+  approvalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1211,6 +1273,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'custom-quote-events';
         value: number | CustomQuoteEvent;
+      } | null)
+    | ({
+        relationTo: 'ring-designs';
+        value: number | RingDesign;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1814,6 +1880,24 @@ export interface CustomQuoteEventsSelect<T extends boolean = true> {
   termsSnapshot?: T;
   termsHash?: T;
   evidence?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ring-designs_select".
+ */
+export interface RingDesignsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  style?: T;
+  status?: T;
+  sourceReferences?: T;
+  measurements?: T;
+  modelDefinition?: T;
+  makerApproved?: T;
+  approvedAt?: T;
+  approvalNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

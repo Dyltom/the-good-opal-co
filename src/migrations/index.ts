@@ -38,6 +38,7 @@ import * as migration_20260714_103000_remove_remaining_opal_photo_edges from './
 import * as migration_20260714_104000_correct_mintabie_cushion_crop from './20260714_104000_correct_mintabie_cushion_crop'
 import * as migration_20260714_105000_builder_stone_contours from './20260714_105000_builder_stone_contours'
 import * as migration_20260714_180000_builder_candidate_crop from './20260714_180000_builder_candidate_crop'
+import * as migration_20260714_224500_ring_design_references from './20260714_224500_ring_design_references'
 
 export const migrations = [
   {
@@ -239,5 +240,10 @@ export const migrations = [
     up: migration_20260714_180000_builder_candidate_crop.up,
     down: migration_20260714_180000_builder_candidate_crop.down,
     name: '20260714_180000_builder_candidate_crop',
+  },
+  {
+    up: migration_20260714_224500_ring_design_references.up,
+    down: migration_20260714_224500_ring_design_references.down,
+    name: '20260714_224500_ring_design_references',
   },
 ]
