@@ -25,8 +25,11 @@ describe('photoreal ring rendering contract', () => {
   test('drives each forged shank and shoulder join from its sold-style profile', () => {
     expect(sceneSource).toContain('getSettingShoulderHalfWidth(')
     expect(sceneSource).toContain('shoulderAnchorHalfWidth')
-    expect(sceneSource).toContain('getRingShankPathPoints({')
-    expect(sceneSource).toContain('shoulderDistance / shoulderBlend')
+    expect(sceneSource).toContain('getRingShankCurve({')
+    expect(sceneSource).toContain(
+      'getShoulderBlendProgress(progress, curveLength, shoulderBlendLengthMm)'
+    )
+    expect(sceneSource).toContain('shoulderLandingLengthMm')
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), crossSectionPower)')
     expect(sceneSource).toContain('const acrossBand =')
     expect(sceneSource).toContain('const throughBand =')
@@ -60,11 +63,12 @@ describe('photoreal ring rendering contract', () => {
     )
   })
 
-  test('uses exact catalogue colour and faceted solder grains', () => {
+  test('uses exact catalogue colour and style-specific solder grains', () => {
     expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('toneMapped={false}')
+    expect(sceneSource).toContain("profile.beadShape === 'rounded'")
+    expect(sceneSource).toContain('<sphereGeometry')
     expect(sceneSource).toContain('<dodecahedronGeometry')
-    expect(sceneSource).not.toContain('<sphereGeometry')
   })
 })

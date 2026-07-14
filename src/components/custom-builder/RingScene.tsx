@@ -10,7 +10,6 @@ import {
   AdditiveBlending,
   BufferGeometry,
   CanvasTexture,
-  CatmullRomCurve3,
   ClampToEdgeWrapping,
   Color,
   Float32BufferAttribute,
@@ -42,7 +41,8 @@ import {
   getCameraPosition,
   getPatinaGrooveProfile,
   getRingFramingTarget,
-  getRingShankPathPoints,
+  getRingShankCurve,
+  getShoulderBlendProgress,
   getRenderableOpalDepthMm,
   getStyleBeadCount,
   getSettingShoulderHalfWidth,
@@ -875,7 +875,11 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  <dodecahedronGeometry args={[profile.beadRadius, 1]} />
+                  {profile.beadShape === 'rounded' ? (
+                    <sphereGeometry args={[profile.beadRadius, 16, 10]} />
+                  ) : (
+                    <dodecahedronGeometry args={[profile.beadRadius, 0]} />
+                  )}
                   <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
                 </mesh>
               )
@@ -901,7 +905,8 @@ function RingShank({
   shoulderUnderlap,
   shoulderJoinDrop,
   shoulderTransition,
-  shoulderBlend,
+  shoulderBlendLengthMm,
+  shoulderLandingLengthMm,
   crossSectionPower,
   shankForgedVariation,
   metalRoughness,
@@ -917,35 +922,35 @@ function RingShank({
   shoulderUnderlap: number
   shoulderJoinDrop: number
   shoulderTransition: number
-  shoulderBlend: number
+  shoulderBlendLengthMm: number
+  shoulderLandingLengthMm: number
   crossSectionPower: number
   shankForgedVariation: number
   metalRoughness: number
 }) {
   const curve = useMemo(() => {
-    return new CatmullRomCurve3(
-      getRingShankPathPoints({
-        radius,
-        settingBaseY,
-        settingHalfWidth,
-        shoulderJoinDrop,
-        shoulderTransition,
-        shoulderUnderlap,
-      }).map((point) => new Vector3(...point)),
-      false,
-      'centripetal'
-    )
+    return getRingShankCurve({
+      radius,
+      settingBaseY,
+      settingHalfWidth,
+      shoulderJoinDrop,
+      shoulderLandingLengthMm,
+      shoulderTransition,
+      shoulderUnderlap,
+    })
   }, [
     radius,
     settingBaseY,
     settingHalfWidth,
     shoulderJoinDrop,
+    shoulderLandingLengthMm,
     shoulderTransition,
     shoulderUnderlap,
   ])
   const geometry = useMemo(() => {
     const tubularSegments = 160
     const radialSegments = 16
+    const curveLength = curve.getLength()
     const positions: number[] = []
     const indices: number[] = []
 
@@ -954,8 +959,7 @@ function RingShank({
       const point = curve.getPointAt(progress)
       const tangent = curve.getTangentAt(progress).normalize()
       const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
-      const shoulderDistance = Math.min(progress, 1 - progress)
-      const blend = Math.min(1, shoulderDistance / shoulderBlend)
+      const blend = getShoulderBlendProgress(progress, curveLength, shoulderBlendLengthMm)
       // Deterministic low-amplitude forging variation breaks the mathematically
       // perfect tube highlight without changing ring size or shoulder joins.
       const widthForge =
@@ -1022,7 +1026,7 @@ function RingShank({
   }, [
     crossSectionPower,
     curve,
-    shoulderBlend,
+    shoulderBlendLengthMm,
     shoulderDepth,
     shoulderRadius,
     shankForgedVariation,
@@ -1072,7 +1076,8 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         shoulderUnderlap={styleProfile.shoulderUnderlap}
         shoulderJoinDrop={styleProfile.shoulderJoinDrop}
         shoulderTransition={styleProfile.shoulderTransition}
-        shoulderBlend={styleProfile.shoulderBlend}
+        shoulderBlendLengthMm={styleProfile.shoulderBlendLengthMm}
+        shoulderLandingLengthMm={styleProfile.shoulderLandingLengthMm}
         crossSectionPower={styleProfile.crossSectionPower}
         shankForgedVariation={styleProfile.shankForgedVariation}
         metalRoughness={styleProfile.metalRoughness}

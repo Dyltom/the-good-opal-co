@@ -59,7 +59,7 @@ describe('sold ring style geometry', () => {
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
-      shoulderRadius: 0.091,
+      shoulderRadius: 0.087,
       crossSectionPower: 0.76,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
@@ -85,6 +85,8 @@ describe('sold ring style geometry', () => {
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
+    expect(sunMoon.beadShape).toBe('rounded')
+    expect(aurora.beadShape).toBe('angular')
     expect(sunMoon).toMatchObject({
       beadCount: 36,
       beadPitchMm: 0.93,

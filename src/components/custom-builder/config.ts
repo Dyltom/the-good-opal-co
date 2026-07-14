@@ -122,6 +122,7 @@ export interface RingStyleGeometryProfile {
   beadPitchMm: number
   beadFlattening: number
   beadRoughness: number
+  beadShape: 'angular' | 'none' | 'rounded'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -135,7 +136,8 @@ export interface RingStyleGeometryProfile {
   shoulderUnderlap: number
   shoulderJoinDrop: number
   shoulderTransition: number
-  shoulderBlend: number
+  shoulderBlendLengthMm: number
+  shoulderLandingLengthMm: number
   crossSectionPower: number
   metalRoughness: number
   shankRadius: number
@@ -173,6 +175,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadPitchMm: 0,
     beadFlattening: 0.7,
     beadRoughness: 0.34,
+    beadShape: 'none',
     beadVariation: 0,
     haloPhase: 0,
     haloSupportCoverage: 0,
@@ -186,12 +189,13 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderUnderlap: 0.16,
     shoulderJoinDrop: 0.022,
     shoulderTransition: 0.04,
-    shoulderBlend: 0.12,
+    shoulderBlendLengthMm: 1.4,
+    shoulderLandingLengthMm: 1.2,
     crossSectionPower: 0.72,
     metalRoughness: 0.31,
     shankRadius: 0.088,
     shankDepth: 0.055,
-    shoulderRadius: 0.098,
+    shoulderRadius: 0.094,
     shoulderDepth: 0.057,
     shankForgedVariation: 0.012,
   },
@@ -206,6 +210,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadPitchMm: 0,
     beadFlattening: 0.7,
     beadRoughness: 0.34,
+    beadShape: 'none',
     beadVariation: 0,
     haloPhase: 0,
     haloSupportCoverage: 0,
@@ -219,12 +224,13 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderUnderlap: 0.15,
     shoulderJoinDrop: 0.02,
     shoulderTransition: 0.038,
-    shoulderBlend: 0.12,
+    shoulderBlendLengthMm: 1.3,
+    shoulderLandingLengthMm: 1.1,
     crossSectionPower: 0.76,
     metalRoughness: 0.31,
     shankRadius: 0.082,
     shankDepth: 0.047,
-    shoulderRadius: 0.091,
+    shoulderRadius: 0.087,
     shoulderDepth: 0.049,
     shankForgedVariation: 0.016,
   },
@@ -239,6 +245,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadPitchMm: 0.93,
     beadFlattening: 0.48,
     beadRoughness: 0.48,
+    beadShape: 'rounded',
     beadVariation: 0.9,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.72,
@@ -252,12 +259,13 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderUnderlap: 0.16,
     shoulderJoinDrop: 0.022,
     shoulderTransition: 0.042,
-    shoulderBlend: 0.12,
+    shoulderBlendLengthMm: 1.5,
+    shoulderLandingLengthMm: 1.3,
     crossSectionPower: 0.72,
     metalRoughness: 0.25,
     shankRadius: 0.086,
     shankDepth: 0.05,
-    shoulderRadius: 0.096,
+    shoulderRadius: 0.092,
     shoulderDepth: 0.052,
     shankForgedVariation: 0.013,
   },
@@ -272,6 +280,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadPitchMm: 1.12,
     beadFlattening: 0.42,
     beadRoughness: 0.52,
+    beadShape: 'angular',
     beadVariation: 1.7,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.75,
@@ -285,12 +294,13 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderUnderlap: 0.17,
     shoulderJoinDrop: 0.024,
     shoulderTransition: 0.045,
-    shoulderBlend: 0.12,
+    shoulderBlendLengthMm: 1.5,
+    shoulderLandingLengthMm: 1.3,
     crossSectionPower: 0.7,
     metalRoughness: 0.25,
     shankRadius: 0.089,
     shankDepth: 0.052,
-    shoulderRadius: 0.099,
+    shoulderRadius: 0.095,
     shoulderDepth: 0.054,
     shankForgedVariation: 0.017,
   },

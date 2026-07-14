@@ -1,3 +1,4 @@
+import { CatmullRomCurve3, CurvePath, LineCurve3, Vector3 } from 'three'
 import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
 import { contourRadiusAt, type BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 
@@ -30,6 +31,8 @@ export interface RingShankLandmarks {
   endAngle: number
   joinLeft: CameraVector
   joinRight: CameraVector
+  landingLeft: CameraVector
+  landingRight: CameraVector
   startAngle: number
   transitionLeft: CameraVector
   transitionRight: CameraVector
@@ -528,6 +531,7 @@ export function getRingShankLandmarks({
   settingBaseY,
   settingHalfWidth,
   shoulderJoinDrop,
+  shoulderLandingLengthMm,
   shoulderTransition,
   shoulderUnderlap,
 }: {
@@ -535,12 +539,20 @@ export function getRingShankLandmarks({
   settingBaseY: number
   settingHalfWidth: number
   shoulderJoinDrop: number
+  shoulderLandingLengthMm: number
   shoulderTransition: number
   shoulderUnderlap: number
 }): RingShankLandmarks {
   const requestedJoinX = Math.max(0.05, settingHalfWidth - shoulderUnderlap)
   const joinX = Math.min(radius * 0.82, requestedJoinX)
-  const arcX = Math.min(radius * 0.88, joinX + shoulderTransition)
+  const requestedLandingX = joinX + shoulderLandingLengthMm / 10
+  // Keep the short horizontal landing beneath the structural cup. This gives
+  // the soldered join a flush face without exposing the shank's end cap.
+  const landingX = Math.min(
+    radius * 0.84,
+    Math.max(joinX, Math.min(requestedLandingX, settingHalfWidth - 0.01))
+  )
+  const arcX = Math.min(radius * 0.88, landingX + shoulderTransition)
   const upperArcAngle = Math.acos(Math.min(0.92, Math.max(-0.92, arcX / radius)))
   const startAngle = Math.PI - upperArcAngle
   const endAngle = Math.PI * 2 + upperArcAngle
@@ -548,12 +560,14 @@ export function getRingShankLandmarks({
   const arcY = Math.sqrt(Math.max(0, radius * radius - arcX * arcX))
   const joinLeft: CameraVector = [-joinX, joinY, 0]
   const joinRight: CameraVector = [joinX, joinY, 0]
+  const landingLeft: CameraVector = [-landingX, joinY, 0]
+  const landingRight: CameraVector = [landingX, joinY, 0]
   const arcStart: CameraVector = [-arcX, arcY, 0]
   const arcEnd: CameraVector = [arcX, arcY, 0]
   const transitionProgress = 0.48
   const transitionLeft: CameraVector = [
-    joinLeft[0] + (arcStart[0] - joinLeft[0]) * transitionProgress,
-    joinLeft[1] + (arcStart[1] - joinLeft[1]) * transitionProgress,
+    landingLeft[0] + (arcStart[0] - landingLeft[0]) * transitionProgress,
+    landingLeft[1] + (arcStart[1] - landingLeft[1]) * transitionProgress,
     0,
   ]
   const transitionRight: CameraVector = [-transitionLeft[0], transitionLeft[1], 0]
@@ -564,6 +578,8 @@ export function getRingShankLandmarks({
     endAngle,
     joinLeft,
     joinRight,
+    landingLeft,
+    landingRight,
     startAngle,
     transitionLeft,
     transitionRight,
@@ -583,11 +599,46 @@ export function getRingShankPathPoints(
 
   return [
     landmarks.joinLeft,
+    landmarks.landingLeft,
     landmarks.transitionLeft,
     ...ringPoints,
     landmarks.transitionRight,
+    landmarks.landingRight,
     landmarks.joinRight,
   ]
+}
+
+/**
+ * Keeps both solder landings truly flat, then blends them into one smooth
+ * centripetal shoulder and circular shank. A single Catmull curve pulls flat
+ * endpoint segments upward by a few hundredths of a millimetre.
+ */
+export function getRingShankCurve(
+  options: Parameters<typeof getRingShankLandmarks>[0],
+  arcSegments = 96
+): CurvePath<Vector3> {
+  const points = getRingShankPathPoints(options, arcSegments).map((point) => new Vector3(...point))
+  const curve = new CurvePath<Vector3>()
+  curve.add(new LineCurve3(points[0]!, points[1]!))
+  curve.add(new CatmullRomCurve3(points.slice(1, -1), false, 'centripetal'))
+  curve.add(new LineCurve3(points.at(-2)!, points.at(-1)!))
+  return curve
+}
+
+/**
+ * Converts an arc-length position on the shank to its shoulder taper progress.
+ * Three.js `getPointAt` uses arc-length progress, so this remains a physical
+ * millimetre measurement across ring sizes and stone-head proportions.
+ */
+export function getShoulderBlendProgress(
+  curveProgress: number,
+  curveLength: number,
+  shoulderBlendLengthMm: number
+): number {
+  if (shoulderBlendLengthMm <= 0) return 1
+  const clampedProgress = Math.min(1, Math.max(0, curveProgress))
+  const endpointDistanceMm = Math.min(clampedProgress, 1 - clampedProgress) * curveLength * 10
+  return Math.min(1, endpointDistanceMm / shoulderBlendLengthMm)
 }
 
 export function cssSilhouetteClipPath(

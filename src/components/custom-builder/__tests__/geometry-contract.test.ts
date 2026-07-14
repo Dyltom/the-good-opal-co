@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'vitest'
-import { CatmullRomCurve3, Vector3 } from 'three'
 import {
   bezelLipCompression,
   cameraPositions,
@@ -15,8 +14,9 @@ import {
   getRingFramingTarget,
   getRingMeasurements,
   getRingModelBounds,
+  getRingShankCurve,
   getRingShankLandmarks,
-  getRingShankPathPoints,
+  getShoulderBlendProgress,
   getRenderableOpalDepthMm,
   getSettingOuterHalfWidth,
   getSettingShoulderHalfWidth,
@@ -505,10 +505,12 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
       expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.65)
       expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.85)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(1.1)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.15)
-      expect(profile.shoulderBlend, style).toBeGreaterThanOrEqual(0.11)
-      expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.13)
+      expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(1.05)
+      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.08)
+      expect(profile.shoulderBlendLengthMm, style).toBeGreaterThanOrEqual(1.3)
+      expect(profile.shoulderBlendLengthMm, style).toBeLessThanOrEqual(1.5)
+      expect(profile.shoulderLandingLengthMm, style).toBeGreaterThanOrEqual(1.1)
+      expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
       expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
       expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.18)
       expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
@@ -549,36 +551,38 @@ describe('custom ring geometry contract', () => {
           settingBaseY: measurements.outerRadius,
           settingHalfWidth,
           shoulderJoinDrop: profile.shoulderJoinDrop,
+          shoulderLandingLengthMm: profile.shoulderLandingLengthMm,
           shoulderTransition: profile.shoulderTransition,
           shoulderUnderlap: profile.shoulderUnderlap,
         }
         const path = getRingShankLandmarks(pathOptions)
 
         expect(path.joinLeft[0]).toBeCloseTo(-path.joinRight[0], 12)
+        expect(path.landingLeft[0]).toBeCloseTo(-path.landingRight[0], 12)
         expect(path.transitionLeft[0]).toBeCloseTo(-path.transitionRight[0], 12)
         expect(path.arcStart[0]).toBeCloseTo(-path.arcEnd[0], 12)
         expect(path.joinLeft[1]).toBeCloseTo(path.joinRight[1], 12)
+        expect(path.landingLeft[1]).toBeCloseTo(path.landingRight[1], 12)
         expect(path.transitionLeft[1]).toBeCloseTo(path.transitionRight[1], 12)
         expect(path.arcStart[1]).toBeCloseTo(path.arcEnd[1], 12)
 
         // Moving from the buried left join into the circular shank must never
         // reverse horizontally or rise. The old overshooting waypoint produced
         // the hooked shoulders visible in profile.
-        expect(path.joinLeft[0]).toBeGreaterThan(path.transitionLeft[0])
+        expect(path.joinLeft[0]).toBeGreaterThan(path.landingLeft[0])
+        expect(path.joinLeft[1]).toBeCloseTo(path.landingLeft[1], 12)
+        expect(path.landingLeft[0]).toBeGreaterThan(path.transitionLeft[0])
         expect(path.transitionLeft[0]).toBeGreaterThan(path.arcStart[0])
         expect(path.joinLeft[1]).toBeGreaterThan(path.transitionLeft[1])
         expect(path.transitionLeft[1]).toBeGreaterThan(path.arcStart[1])
         expect(Math.abs(path.joinLeft[0])).toBeLessThan(settingHalfWidth)
+        expect(Math.abs(path.landingLeft[0])).toBeLessThan(settingHalfWidth)
         expect(settingHalfWidth).toBeLessThanOrEqual(headHalfWidth)
         if (config.setting === 'beaded') {
           expect(settingHalfWidth).toBeLessThan(headHalfWidth)
         }
 
-        const curve = new CatmullRomCurve3(
-          getRingShankPathPoints(pathOptions).map((point) => new Vector3(...point)),
-          false,
-          'centripetal'
-        )
+        const curve = getRingShankCurve(pathOptions)
         const shoulderSamples = Array.from({ length: 401 }, (_, index) =>
           curve.getPointAt(index / 400)
         ).filter((point) => point.x <= 0 && point.y >= path.arcStart[1])
@@ -588,6 +592,42 @@ describe('custom ring geometry contract', () => {
           expect(current.x).toBeLessThanOrEqual(previous.x + 0.000_001)
           expect(current.y).toBeLessThanOrEqual(previous.y + 0.000_001)
         }
+      }
+    }
+  )
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'keeps the %s shoulder taper and buried cap physical across ring sizes',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+
+      for (const size of [4, 7, 13]) {
+        const config = applyRingStyle({ ...defaultRingConfig, size }, style)
+        const measurements = getRingMeasurements(config)
+        const dimensions = getStoneDimensions(config)
+        const settingHalfWidth = getSettingShoulderHalfWidth(config, dimensions)
+        const pathOptions = {
+          radius: measurements.centreRadius,
+          settingBaseY: measurements.outerRadius,
+          settingHalfWidth,
+          shoulderJoinDrop: profile.shoulderJoinDrop,
+          shoulderLandingLengthMm: profile.shoulderLandingLengthMm,
+          shoulderTransition: profile.shoulderTransition,
+          shoulderUnderlap: profile.shoulderUnderlap,
+        }
+        const landmarks = getRingShankLandmarks(pathOptions)
+        const curve = getRingShankCurve(pathOptions)
+        const curveLength = curve.getLength()
+        const blendEndProgress = profile.shoulderBlendLengthMm / 10 / curveLength
+        const landingLengthMm = Math.abs(landmarks.landingLeft[0] - landmarks.joinLeft[0]) * 10
+        const buriedCapDepthMm = (settingHalfWidth - Math.abs(landmarks.joinLeft[0])) * 10
+
+        expect(getShoulderBlendProgress(0, curveLength, profile.shoulderBlendLengthMm)).toBe(0)
+        expect(
+          getShoulderBlendProgress(blendEndProgress, curveLength, profile.shoulderBlendLengthMm)
+        ).toBeCloseTo(1, 12)
+        expect(landingLengthMm).toBeCloseTo(profile.shoulderLandingLengthMm, 12)
+        expect(buriedCapDepthMm).toBeGreaterThanOrEqual(profile.shoulderUnderlap * 10 - 0.001)
       }
     }
   )
