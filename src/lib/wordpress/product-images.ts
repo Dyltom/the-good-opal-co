@@ -11,10 +11,12 @@ const sourceImageSchema = z.object({
 const sourceProductSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1),
+  is_in_stock: z.boolean(),
   images: z.array(sourceImageSchema),
 })
 
 export interface WordPressProductImages {
+  inStock: boolean
   productId: number
   productName: string
   media: WordPressFeaturedMedia[]
@@ -34,34 +36,38 @@ export function parseWordPressProductImages(input: unknown): WordPressProductIma
   return z
     .array(sourceProductSchema)
     .parse(input)
-    .flatMap((product) => {
-      if (product.images.length === 0) return []
+    .map((product) => {
       const productName = decodeWordPressHtml(product.name)
-      return [
-        {
-          productId: product.id,
-          productName,
-          media: product.images.map((image) => ({
-            id: image.id,
-            alt: image.alt.trim() || productName,
-            mimeType: imageMimeType(image.src),
-            sourceUrl: image.src,
-            title: image.name || productName,
-          })),
-        },
-      ]
+      return {
+        inStock: product.is_in_stock,
+        productId: product.id,
+        productName,
+        media: product.images.map((image) => ({
+          id: image.id,
+          alt: image.alt.trim() || productName,
+          mimeType: imageMimeType(image.src),
+          sourceUrl: image.src,
+          title: image.name || productName,
+        })),
+      }
     })
 }
 
-export async function fetchWordPressProductImages(
-  fetcher: typeof fetch = fetch
-): Promise<WordPressProductImages[]> {
+export interface FetchWordPressProductImagesOptions {
+  baseUrl?: string
+  fetcher?: typeof fetch
+}
+
+export async function fetchWordPressProductImages({
+  baseUrl = 'https://goodopalco.com/wp-json/wc/store/v1/products',
+  fetcher = fetch,
+}: FetchWordPressProductImagesOptions = {}): Promise<WordPressProductImages[]> {
   const products: WordPressProductImages[] = []
   let page = 1
   let totalPages: number | null = null
 
   do {
-    const url = new URL('https://goodopalco.com/wp-json/wc/store/v1/products')
+    const url = new URL(baseUrl)
     url.searchParams.set('page', String(page))
     url.searchParams.set('per_page', '100')
     url.searchParams.set('stock_status', 'instock,outofstock,onbackorder')
@@ -82,5 +88,8 @@ export async function fetchWordPressProductImages(
     page += 1
   } while (page <= totalPages)
 
+  if (new Set(products.map((product) => product.productId)).size !== products.length) {
+    throw new Error('WordPress product gallery snapshot returned duplicate product IDs')
+  }
   return products
 }

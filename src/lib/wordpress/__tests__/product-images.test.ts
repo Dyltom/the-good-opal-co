@@ -8,6 +8,7 @@ describe('WordPress product image import', () => {
         {
           id: 5676,
           name: 'Crystal Opal Earrings &#8211; Bouquet studs',
+          is_in_stock: true,
           images: [
             {
               id: 5679,
@@ -26,6 +27,7 @@ describe('WordPress product image import', () => {
       ])
     ).toEqual([
       {
+        inStock: true,
         productId: 5676,
         productName: 'Crystal Opal Earrings – Bouquet studs',
         media: [
@@ -48,13 +50,21 @@ describe('WordPress product image import', () => {
     ])
   })
 
-  it('skips products without images and rejects unsupported files', () => {
-    expect(parseWordPressProductImages([{ id: 1, name: 'No image', images: [] }])).toEqual([])
+  it('retains empty galleries so stale Payload images can be cleared', () => {
+    expect(
+      parseWordPressProductImages([
+        { id: 1, name: 'No image', is_in_stock: false, images: [] },
+      ])
+    ).toEqual([{ inStock: false, productId: 1, productName: 'No image', media: [] }])
+  })
+
+  it('rejects unsupported files', () => {
     expect(() =>
       parseWordPressProductImages([
         {
           id: 2,
           name: 'Vector',
+          is_in_stock: true,
           images: [
             {
               id: 3,
@@ -75,11 +85,31 @@ describe('WordPress product image import', () => {
       })
     )
 
-    await fetchWordPressProductImages(fetcher)
+    await fetchWordPressProductImages({
+      baseUrl: 'https://goodopalco.com/wp-json/wc/store/v1/products',
+      fetcher,
+    })
 
     const input = fetcher.mock.calls[0]?.[0]
     expect(new URL(String(input)).searchParams.get('stock_status')).toBe(
       'instock,outofstock,onbackorder'
+    )
+  })
+
+  it('uses the configured Store API endpoint', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify([]), {
+        headers: { 'x-wp-totalpages': '1' },
+      })
+    )
+
+    await fetchWordPressProductImages({
+      baseUrl: 'https://www.goodopalco.com/custom/store/products',
+      fetcher,
+    })
+
+    expect(String(fetcher.mock.calls[0]?.[0])).toContain(
+      'https://www.goodopalco.com/custom/store/products'
     )
   })
 })

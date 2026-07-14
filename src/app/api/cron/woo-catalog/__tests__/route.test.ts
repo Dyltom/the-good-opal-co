@@ -21,7 +21,12 @@ describe('WooCommerce catalogue cron', () => {
   beforeEach(() => {
     vi.stubEnv('CRON_SECRET', 'cron-test-secret')
     vi.stubEnv('WOO_CATALOG_SYNC_ENABLED', 'true')
-    syncWooCatalog.mockResolvedValue({ updated: 53 })
+    syncWooCatalog.mockResolvedValue({
+      createdWooIds: [],
+      sourceProducts: 2,
+      sourceWooIds: [5000, 5001],
+      updated: 2,
+    })
     importProductImages.mockResolvedValue({ changed: 1 })
   })
 
@@ -55,9 +60,18 @@ describe('WooCommerce catalogue cron', () => {
       archiveMissing: true,
       restock: false,
     })
-    expect(importProductImages).toHaveBeenCalledWith(true)
+    expect(importProductImages).toHaveBeenCalledWith(true, {
+      expectedProductCount: 2,
+      expectedWooIds: [5000, 5001],
+      publishWooIds: [],
+    })
     await expect(response.json()).resolves.toEqual({
-      catalog: { updated: 53 },
+      catalog: {
+        createdWooIds: [],
+        sourceProducts: 2,
+        sourceWooIds: [5000, 5001],
+        updated: 2,
+      },
       images: { changed: 1 },
     })
   })

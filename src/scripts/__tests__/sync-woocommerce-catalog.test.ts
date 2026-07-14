@@ -67,4 +67,62 @@ describe('WooCommerce catalogue mutation retries', () => {
     expect(mocks.update).toHaveBeenCalledTimes(2)
     expect(mocks.create).not.toHaveBeenCalled()
   })
+
+  test('refuses an empty source snapshot before mutating managed products', async () => {
+    mocks.fetchWooCatalog.mockResolvedValue([])
+
+    await expect(
+      syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+    ).rejects.toThrow('empty WooCommerce catalogue snapshot')
+
+    expect(mocks.create).not.toHaveBeenCalled()
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  test('refuses a severe managed-product drop before any stock or archive mutation', async () => {
+    mocks.find.mockResolvedValue({
+      docs: Array.from({ length: 10 }, (_, index) => ({
+        id: index + 1,
+        legacyWooId: 5_000 + index,
+        sku: `WP-${5_000 + index}`,
+        slug: `opal-${index}`,
+        stock: 1,
+      })),
+      hasNextPage: false,
+    })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Only one product unexpectedly returned',
+        inStock: false,
+        name: 'Opal 0',
+        price: 95,
+        sku: 'WP-5000',
+        slug: 'opal-0',
+        tags: [],
+        wooId: 5_000,
+      },
+    ])
+
+    await expect(
+      syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+    ).rejects.toThrow('severe WooCommerce catalogue drop')
+
+    expect(mocks.create).not.toHaveBeenCalled()
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  test('stages a new product at draft with zero stock until its gallery succeeds', async () => {
+    mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
+    mocks.create.mockResolvedValue({ id: 91 })
+
+    await expect(
+      syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+    ).resolves.toMatchObject({ created: 1, createdWooIds: [5681] })
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'draft', stock: 0 }) })
+    )
+  })
 })

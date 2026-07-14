@@ -85,9 +85,11 @@ function createData(product: WooCatalogProduct) {
     compareAtPrice: product.compareAtPrice,
     category: product.category,
     tags: product.tags.map((tag) => ({ tag })),
-    status: 'published' as const,
+    // A gallery reconciliation promotes this only after at least one source
+    // image has been downloaded into owned storage successfully.
+    status: 'draft' as const,
     featured: false,
-    stock: product.inStock ? 1 : 0,
+    stock: 0,
     sku: product.sku,
     legacyWooId: product.wooId,
     certified: false,
@@ -96,6 +98,7 @@ function createData(product: WooCatalogProduct) {
 }
 
 function updateData(existing: Product, product: WooCatalogProduct, options: SyncOptions) {
+  const hasOwnedImage = Boolean(existing.images?.some(({ image }) => image))
   return {
     name: product.name,
     slug: product.slug,
@@ -104,8 +107,8 @@ function updateData(existing: Product, product: WooCatalogProduct, options: Sync
     compareAtPrice: product.compareAtPrice,
     category: product.category,
     tags: product.tags.map((tag) => ({ tag })),
-    status: 'published' as const,
-    stock: reconciledStock(existing.stock, product.inStock, options.restock),
+    status: hasOwnedImage ? ('published' as const) : ('draft' as const),
+    stock: hasOwnedImage ? reconciledStock(existing.stock, product.inStock, options.restock) : 0,
     legacyWooId: product.wooId,
   }
 }
@@ -135,9 +138,23 @@ export async function syncWooCatalog(options: SyncOptions) {
     )
   }
   const sourceWooIds = new Set(sourceProducts.map((product) => product.wooId))
+  if (options.archiveMissing && existingByWooId.size > 0) {
+    const retainedProducts = [...existingByWooId.keys()].filter((wooId) =>
+      sourceWooIds.has(wooId)
+    ).length
+    if (sourceProducts.length === 0) {
+      throw new Error('Refusing to archive products from an empty WooCommerce catalogue snapshot')
+    }
+    if (existingByWooId.size >= 10 && retainedProducts < Math.ceil(existingByWooId.size / 2)) {
+      throw new Error(
+        `Refusing severe WooCommerce catalogue drop: only ${retainedProducts} of ${existingByWooId.size} managed products remain`
+      )
+    }
+  }
   const slugOwners = new Map(allProducts.map((product) => [product.slug, product]))
 
   let created = 0
+  const createdWooIds: number[] = []
   let updated = 0
   let archived = 0
 
@@ -179,6 +196,7 @@ export async function syncWooCatalog(options: SyncOptions) {
         })
       )
       created += 1
+      createdWooIds.push(sourceProduct.wooId)
     }
   }
 
@@ -205,7 +223,15 @@ export async function syncWooCatalog(options: SyncOptions) {
   payload.logger.info(
     `WooCommerce catalog sync ${mode}: ${created} create, ${updated} update, ${archived} archive, ${sourceProducts.length} source products.`
   )
-  return { mode, created, updated, archived, sourceProducts: sourceProducts.length }
+  return {
+    mode,
+    created,
+    createdWooIds,
+    sourceWooIds: [...sourceWooIds].sort((left, right) => left - right),
+    updated,
+    archived,
+    sourceProducts: sourceProducts.length,
+  }
 }
 
 const options: SyncOptions = {

@@ -28,7 +28,13 @@ export async function GET(request: NextRequest) {
       // A paid local order must never be undone by the legacy storefront.
       restock: false,
     })
-    const images = await retrySerializableTransaction(() => importProductImages(true))
+    const images = await retrySerializableTransaction(() =>
+      importProductImages(true, {
+        expectedProductCount: catalog.sourceProducts,
+        expectedWooIds: catalog.sourceWooIds,
+        publishWooIds: catalog.createdWooIds,
+      })
+    )
     return NextResponse.json({ catalog, images })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown WooCommerce sync error'
