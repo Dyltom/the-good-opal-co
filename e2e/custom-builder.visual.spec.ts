@@ -68,7 +68,7 @@ async function expectPixelSanity(canvas: Locator, label: string): Promise<void> 
 }
 
 async function expectRingSnapshot(page: Page, query: string, snapshotName: string): Promise<void> {
-  const response = await page.goto(`/__visual-tests__/ring-scene?${query}`, {
+  const response = await page.goto(`/visual-tests/ring-scene?${query}`, {
     waitUntil: 'domcontentloaded',
   })
   expect(response?.status()).toBeLessThan(400)

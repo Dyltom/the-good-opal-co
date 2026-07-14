@@ -83,18 +83,18 @@ describe('sold ring style geometry', () => {
     }
   })
 
-  test('distinguishes faceted Sun and Moon granules from larger Aurora nuggets', () => {
+  test('distinguishes rounded Sun and Moon granules from larger Aurora nuggets', () => {
     const sunMoon = ringStyleGeometryProfiles['sun-moon']
     const aurora = ringStyleGeometryProfiles.aurora
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon.beadAsymmetry).toBe(0.08)
-    expect(aurora.beadAsymmetry).toBe(0.26)
+    expect(aurora.beadAsymmetry).toBe(0.18)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('nugget')
-    expect(sunMoon.beadPrimitive).toBe('soft-faceted')
-    expect(aurora.beadPrimitive).toBe('soft-faceted')
+    expect(sunMoon.beadPrimitive).toBe('rounded-granule')
+    expect(aurora.beadPrimitive).toBe('rough-nugget')
     expect(ringStyleGeometryProfiles.gemini.beadPrimitive).toBe('none')
     expect(ringStyleGeometryProfiles.coral.beadPrimitive).toBe('none')
     expect(sunMoon).toMatchObject({
@@ -150,15 +150,13 @@ describe('sold ring style geometry', () => {
     )
     expect(
       handmade.map(({ size, stretchX, stretchY }) => size * Math.max(stretchX, stretchY))
-    ).toEqual(
-      baseline.map(({ size, stretchX, stretchY }) => size * Math.max(stretchX, stretchY))
-    )
+    ).toEqual(baseline.map(({ size, stretchX, stretchY }) => size * Math.max(stretchX, stretchY)))
 
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.73)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.75)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.81)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.83)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 

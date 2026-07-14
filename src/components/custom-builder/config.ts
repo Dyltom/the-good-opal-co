@@ -104,6 +104,7 @@ export interface RingStyleOption extends ConfigOption<RingConfig['style']> {
   band: RingConfig['band']
   referenceName: string
   referenceImage: string
+  referenceOpal: Pick<BuilderOpal, 'renderStone' | 'visual'>
 }
 
 export interface RingStyleFit {
@@ -125,7 +126,7 @@ export interface RingStyleGeometryProfile {
   beadAsymmetry: number
   beadRoughness: number
   beadShape: 'granulated' | 'none' | 'nugget'
-  beadPrimitive: 'none' | 'soft-faceted'
+  beadPrimitive: 'none' | 'rounded-granule' | 'rough-nugget'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -283,7 +284,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadAsymmetry: 0.08,
     beadRoughness: 0.62,
     beadShape: 'granulated',
-    beadPrimitive: 'soft-faceted',
+    beadPrimitive: 'rounded-granule',
     beadVariation: 1.3,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.58,
@@ -324,10 +325,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.58,
-    beadAsymmetry: 0.26,
-    beadRoughness: 0.74,
+    beadAsymmetry: 0.18,
+    beadRoughness: 0.6,
     beadShape: 'nugget',
-    beadPrimitive: 'soft-faceted',
+    beadPrimitive: 'rough-nugget',
     beadVariation: 1.9,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.6,
@@ -403,6 +404,22 @@ export const ringStyles: readonly RingStyleOption[] = [
     band: 'classic',
     referenceName: 'White Opal Gemini Ring',
     referenceImage: '/images/products/20210819_101941.jpg',
+    referenceOpal: {
+      renderStone: 'sunset',
+      visual: {
+        silhouette: 'oval',
+        aspectRatio: 1.25,
+        bodyColour: '#cbb8ae',
+        flashColours: ['#ff5b4d', '#ffe04f', '#4cff8d', '#52a5ff'],
+        transmission: 0.2,
+        patternSeed: 19,
+        evidence: 'catalogue',
+        photoFit: 'reviewed',
+        recommendedStyle: 'gemini',
+        textureCrop: { focalX: 0.528, focalY: 0.524, zoom: 8.2 },
+        dimensionsMm: { width: 8, length: 10, depth: 3 },
+      },
+    },
   },
   {
     id: 'coral',
@@ -413,6 +430,22 @@ export const ringStyles: readonly RingStyleOption[] = [
     band: 'classic',
     referenceName: 'Crystal Black Opal Coral Ring',
     referenceImage: '/images/products/20210819_101746.jpg',
+    referenceOpal: {
+      renderStone: 'lightning',
+      visual: {
+        silhouette: 'cushion',
+        aspectRatio: 1,
+        bodyColour: '#0c3152',
+        flashColours: ['#2b65ff', '#35e873', '#0ed8e7'],
+        transmission: 0.06,
+        patternSeed: 29,
+        evidence: 'catalogue',
+        photoFit: 'reviewed',
+        recommendedStyle: 'coral',
+        textureCrop: { focalX: 0.503, focalY: 0.487, zoom: 6.26 },
+        dimensionsMm: { width: 10, length: 10, depth: 3 },
+      },
+    },
   },
   {
     id: 'sun-moon',
@@ -423,6 +456,22 @@ export const ringStyles: readonly RingStyleOption[] = [
     band: 'classic',
     referenceName: 'Crystal Opal Sun and Moon Ring',
     referenceImage: '/images/products/20210819_102749.jpg',
+    referenceOpal: {
+      renderStone: 'crystal',
+      visual: {
+        silhouette: 'oval',
+        aspectRatio: 1.25,
+        bodyColour: '#c9cec5',
+        flashColours: ['#72ff55', '#ffd93d', '#57b9ff', '#ff746d'],
+        transmission: 0.26,
+        patternSeed: 41,
+        evidence: 'catalogue',
+        photoFit: 'reviewed',
+        recommendedStyle: 'sun-moon',
+        textureCrop: { focalX: 0.5, focalY: 0.49, zoom: 7.5 },
+        dimensionsMm: { width: 8, length: 10, depth: 3 },
+      },
+    },
   },
   {
     id: 'aurora',
@@ -433,8 +482,40 @@ export const ringStyles: readonly RingStyleOption[] = [
     band: 'classic',
     referenceName: 'Aurora Opal Ring',
     referenceImage: '/images/products/20210819_102625-1.jpg',
+    referenceOpal: {
+      renderStone: 'blue-green',
+      visual: {
+        silhouette: 'pear',
+        aspectRatio: 1.25,
+        bodyColour: '#56c8d3',
+        flashColours: ['#35dcf0', '#ff7b78', '#637dff', '#5fe29c'],
+        transmission: 0.16,
+        patternSeed: 53,
+        evidence: 'catalogue',
+        photoFit: 'reviewed',
+        recommendedStyle: 'aurora',
+        textureCrop: { focalX: 0.5, focalY: 0.486, zoom: 8.45 },
+        dimensionsMm: { width: 8, length: 10, depth: 3 },
+      },
+    },
   },
 ]
+
+export function getRingStyleReferenceOpal(styleId: RingConfig['style']): BuilderOpal {
+  const style = ringStyles.find((option) => option.id === styleId) ?? ringStyles[0]!
+  return {
+    id: `reference-${style.id}`,
+    name: style.referenceName,
+    slug: `reference-${style.id}`,
+    imageUrl: style.referenceImage,
+    imageAlt: `${style.referenceName} sold-ring opal`,
+    price: 0,
+    stoneType: 'opal',
+    stoneTypeLabel: 'Sold-ring reference opal',
+    selectionKind: 'individual',
+    ...style.referenceOpal,
+  }
+}
 
 export const defaultRingConfig: RingConfig = {
   metal: 'sterling-silver',

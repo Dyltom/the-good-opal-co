@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest'
-import { applyRingStyle, defaultRingConfig, ringStyleGeometryProfiles, ringStyles } from '../config'
+import {
+  applyRingStyle,
+  defaultRingConfig,
+  getRingStyleReferenceOpal,
+  ringStyleGeometryProfiles,
+  ringStyles,
+} from '../config'
 import { getSettingOuterHalfWidth, getStoneDimensions } from '../geometry'
 
 const soldReferences = {
@@ -34,6 +40,50 @@ const soldReferences = {
 } as const
 
 describe('sold ring reference proportions', () => {
+  test('uses a reviewed crop from each exact sold-ring photograph in reference mode', () => {
+    const references = Object.fromEntries(
+      ringStyles.map((style) => {
+        const opal = getRingStyleReferenceOpal(style.id)
+        return [
+          style.id,
+          {
+            imageUrl: opal.imageUrl,
+            photoFit: opal.visual.photoFit,
+            renderStone: opal.renderStone,
+            textureCrop: opal.visual.textureCrop,
+          },
+        ]
+      })
+    )
+
+    expect(references).toEqual({
+      aurora: {
+        imageUrl: '/images/products/20210819_102625-1.jpg',
+        photoFit: 'reviewed',
+        renderStone: 'blue-green',
+        textureCrop: { focalX: 0.5, focalY: 0.486, zoom: 8.45 },
+      },
+      coral: {
+        imageUrl: '/images/products/20210819_101746.jpg',
+        photoFit: 'reviewed',
+        renderStone: 'lightning',
+        textureCrop: { focalX: 0.503, focalY: 0.487, zoom: 6.26 },
+      },
+      gemini: {
+        imageUrl: '/images/products/20210819_101941.jpg',
+        photoFit: 'reviewed',
+        renderStone: 'sunset',
+        textureCrop: { focalX: 0.528, focalY: 0.524, zoom: 8.2 },
+      },
+      'sun-moon': {
+        imageUrl: '/images/products/20210819_102749.jpg',
+        photoFit: 'reviewed',
+        renderStone: 'crystal',
+        textureCrop: { focalX: 0.5, focalY: 0.49, zoom: 7.5 },
+      },
+    })
+  })
+
   test.each(ringStyles.map(({ id }) => id))(
     'keeps %s inside its photographed face-on measurements',
     (style) => {

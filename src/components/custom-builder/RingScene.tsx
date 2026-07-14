@@ -25,6 +25,7 @@ import {
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 import {
+  getRingStyleReferenceOpal,
   ringStyleGeometryProfiles,
   type BezelLipProfileKnot,
   type BuilderOpal,
@@ -82,12 +83,12 @@ const metalColours: Record<RingConfig['metal'], string> = {
 }
 
 const auroraGrainColours: Record<RingConfig['metal'], readonly string[]> = {
-  'sterling-silver': ['#777873', '#888780', '#6d6f6b', '#969188'],
-  '14k-gold': ['#94742f', '#a58238', '#866527', '#ad8a42'],
-  '18k-gold': ['#a27c2d', '#b18a36', '#916b25', '#b89343'],
-  'white-gold': ['#898985', '#999792', '#7c7f7d', '#a39f98'],
-  'rose-gold': ['#855d53', '#95685d', '#795149', '#a17163'],
-  platinum: ['#8c8e8c', '#9b9b96', '#7e8281', '#a5a29b'],
+  'sterling-silver': ['#aaa9a2', '#bab7ad', '#979b97', '#c3bdb2'],
+  '14k-gold': ['#bd9745', '#d0a74d', '#ad8739', '#d8b25b'],
+  '18k-gold': ['#c99d3e', '#d9ac4b', '#b88d34', '#e0b85d'],
+  'white-gold': ['#b3b2ac', '#c2beb7', '#a2a6a3', '#cbc6bd'],
+  'rose-gold': ['#aa776b', '#bd8678', '#9c6b61', '#c79180'],
+  platinum: ['#b5b7b4', '#c4c3bd', '#a5aaa8', '#ccc9c1'],
 }
 
 const opalPalettes: Record<
@@ -218,7 +219,7 @@ function SolderGrainMaterial({
   style: RingConfig['style']
 }) {
   if (style !== 'aurora') {
-    return <MetalMaterial flatShading metal={metal} roughness={roughness} />
+    return <MetalMaterial metal={metal} roughness={roughness} />
   }
 
   const palette = auroraGrainColours[metal]
@@ -228,11 +229,11 @@ function SolderGrainMaterial({
     <meshPhysicalMaterial
       color={colour}
       flatShading
-      metalness={0.82}
+      metalness={0.94}
       roughness={roughness}
       clearcoat={0.01}
       clearcoatRoughness={0.8}
-      envMapIntensity={0.62}
+      envMapIntensity={1.08}
     />
   )
 }
@@ -1203,8 +1204,11 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  {profile.beadPrimitive === 'soft-faceted' && (
-                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
+                  {profile.beadPrimitive === 'rounded-granule' && (
+                    <sphereGeometry args={[profile.beadRadius, 16, 12]} />
+                  )}
+                  {profile.beadPrimitive === 'rough-nugget' && (
+                    <sphereGeometry args={[profile.beadRadius, 8, 6]} />
                   )}
                   <SolderGrainMaterial
                     grainKey={key}
@@ -1432,13 +1436,17 @@ export function RingScene({
   view,
 }: RingSceneProps) {
   const background = useMemo(() => new Color('#24241f'), [])
+  const renderedOpal = useMemo(
+    () => selectedOpal ?? getRingStyleReferenceOpal(config.style),
+    [config.style, selectedOpal]
+  )
   const framingTarget = useMemo(
-    () => getRingFramingTarget(config, selectedOpal),
-    [config, selectedOpal]
+    () => getRingFramingTarget(config, renderedOpal),
+    [config, renderedOpal]
   )
   const renderSignature = useMemo(
-    () => JSON.stringify([config, selectedOpal, view]),
-    [config, selectedOpal, view]
+    () => JSON.stringify([config, renderedOpal, view]),
+    [config, renderedOpal, view]
   )
 
   return (
@@ -1473,7 +1481,7 @@ export function RingScene({
       <CameraPreset target={framingTarget} view={view} />
       {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}
 
-      <RingModel config={config} selectedOpal={selectedOpal} />
+      <RingModel config={config} selectedOpal={renderedOpal} />
 
       <Environment resolution={256}>
         <Lightformer
