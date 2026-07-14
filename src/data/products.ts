@@ -6,8 +6,11 @@ interface FallbackProductRecord {
   compare_at_price: number | null
   description: string
   id: string
-  image_filename: string
-  image_url: string
+  images: Array<{
+    filename: string
+    id: string
+    source_url: string
+  }>
   price: number
   slug: string
   title: string
@@ -22,27 +25,43 @@ export interface Product {
   id: string
   image?: string
   imageSourceUrl?: string
+  images: ProductImage[]
   name: string
   price: number
   slug: string
+}
+
+export interface ProductImage {
+  legacyWordPressId: string
+  sourceUrl: string
+  url: string
 }
 
 /**
  * Checked-in recovery catalogue generated from the public WooCommerce Store API.
  * It records availability but deliberately carries no synthetic stock quantity.
  */
-export const PRODUCTS: Product[] = (fallbackProducts as FallbackProductRecord[]).map((product) => ({
-  available: product.available,
-  category: product.category,
-  ...(product.compare_at_price === null ? {} : { compareAtPrice: product.compare_at_price }),
-  description: product.description,
-  id: product.id,
-  image: `/images/products/${product.image_filename}`,
-  imageSourceUrl: product.image_url,
-  name: product.title,
-  price: product.price,
-  slug: product.slug,
-}))
+export const PRODUCTS: Product[] = (fallbackProducts as FallbackProductRecord[]).map((product) => {
+  const images = product.images.map((image) => ({
+    legacyWordPressId: image.id,
+    sourceUrl: image.source_url,
+    url: `/images/products/${image.filename}`,
+  }))
+  const primaryImage = images[0]
+
+  return {
+    available: product.available,
+    category: product.category,
+    ...(product.compare_at_price === null ? {} : { compareAtPrice: product.compare_at_price }),
+    description: product.description,
+    id: product.id,
+    ...(primaryImage ? { image: primaryImage.url, imageSourceUrl: primaryImage.sourceUrl } : {}),
+    images,
+    name: product.title,
+    price: product.price,
+    slug: product.slug,
+  }
+})
 
 export function getProductsByCategory(category = 'all'): Product[] {
   if (category === 'all') return PRODUCTS.filter((product) => product.available)

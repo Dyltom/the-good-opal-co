@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFile, rename, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { z } from 'zod'
 import { parseWooProductPage } from '../src/lib/woocommerce/catalog-sync.ts'
@@ -8,6 +8,7 @@ const DEFAULT_STORE_API = 'https://goodopalco.com/wp-json/wc/store/v1/products'
 const PAGE_SIZE = 100
 
 const sourceImageSchema = z.object({
+  id: z.number().int().positive(),
   src: z.url(),
 })
 
@@ -25,8 +26,11 @@ interface FallbackProduct {
   compare_at_price: number | null
   description: string
   id: string
-  image_filename: string
-  image_url: string
+  images: Array<{
+    id: string
+    filename: string
+    source_url: string
+  }>
   price: number
   slug: string
   title: string
@@ -84,7 +88,11 @@ async function fetchSourceProducts(baseUrl: string): Promise<unknown[]> {
   return products
 }
 
-async function refreshImage(sourceUrl: string, filename: string): Promise<boolean> {
+async function stageImage(
+  sourceUrl: string,
+  filename: string,
+  stagingDirectory: string
+): Promise<boolean> {
   const response = await fetch(sourceUrl, { signal: AbortSignal.timeout(30_000) })
   if (!response.ok) {
     throw new Error(`WooCommerce image request failed (${response.status}): ${sourceUrl}`)
@@ -101,15 +109,21 @@ async function refreshImage(sourceUrl: string, filename: string): Promise<boolea
   const existing = await readFile(destination).catch(() => undefined)
   if (existing && contentHash(existing) === contentHash(incoming)) return false
 
-  await writeFile(destination, incoming)
+  await writeFile(path.join(stagingDirectory, filename), incoming)
   return true
 }
 
-async function writeJsonAtomically(products: readonly FallbackProduct[]): Promise<void> {
-  const destination = path.join(process.cwd(), 'data', 'wordpress-products.json')
-  const temporary = `${destination}.tmp`
-  await writeFile(temporary, `${JSON.stringify(products, null, 2)}\n`, 'utf8')
-  await rename(temporary, destination)
+function uniqueOrderedImages(
+  images: z.infer<typeof sourceImageSchema>[]
+): z.infer<typeof sourceImageSchema>[] {
+  const ids = new Set<number>()
+  const sourceUrls = new Set<string>()
+  return images.filter((image) => {
+    if (ids.has(image.id) || sourceUrls.has(image.src)) return false
+    ids.add(image.id)
+    sourceUrls.add(image.src)
+    return true
+  })
 }
 
 async function main(): Promise<void> {
@@ -130,44 +144,68 @@ async function main(): Promise<void> {
 
   const products: FallbackProduct[] = []
   const sourceUrlByFilename = new Map<string, string>()
+  const stagedFilenames = new Set<string>()
   let refreshedImages = 0
+  let galleryImages = 0
+  const stagingDirectory = await mkdtemp(path.join(process.cwd(), '.fallback-sync-'))
 
-  for (const [index, source] of sourceProducts.entries()) {
-    const mapped = mappedProducts[index]
-    if (!mapped || mapped.wooId !== source.id || mapped.slug !== source.slug) {
-      throw new Error(`WooCommerce fallback mapping changed product order at index ${index}`)
+  try {
+    for (const [index, source] of sourceProducts.entries()) {
+      const mapped = mappedProducts[index]
+      if (!mapped || mapped.wooId !== source.id || mapped.slug !== source.slug) {
+        throw new Error(`WooCommerce fallback mapping changed product order at index ${index}`)
+      }
+
+      const images = []
+      for (const image of uniqueOrderedImages(source.images)) {
+        const filename = imageFilename(image.src)
+        const previousSourceUrl = sourceUrlByFilename.get(filename)
+        if (previousSourceUrl && previousSourceUrl !== image.src) {
+          throw new Error(
+            `WooCommerce fallback image filename collision: ${filename} belongs to multiple source URLs`
+          )
+        }
+        sourceUrlByFilename.set(filename, image.src)
+
+        if (!stagedFilenames.has(filename)) {
+          if (await stageImage(image.src, filename, stagingDirectory)) {
+            refreshedImages += 1
+            stagedFilenames.add(filename)
+          }
+        }
+        images.push({ id: String(image.id), filename, source_url: image.src })
+      }
+      galleryImages += images.length
+
+      products.push({
+        available: mapped.inStock,
+        category: mapped.category,
+        compare_at_price: mapped.compareAtPrice,
+        description: mapped.description,
+        id: String(mapped.wooId),
+        images,
+        price: mapped.price,
+        slug: mapped.slug,
+        title: mapped.name,
+      })
     }
 
-    const imageUrl = source.images[0]?.src
-    if (!imageUrl) throw new Error(`WooCommerce product ${source.id} has no primary image`)
-    const filename = imageFilename(imageUrl)
-    const previousSourceUrl = sourceUrlByFilename.get(filename)
-    if (previousSourceUrl && previousSourceUrl !== imageUrl) {
-      throw new Error(
-        `WooCommerce fallback image filename collision: ${filename} belongs to multiple source URLs`
+    const stagedJson = path.join(stagingDirectory, 'wordpress-products.json')
+    await writeFile(stagedJson, `${JSON.stringify(products, null, 2)}\n`, 'utf8')
+    for (const filename of stagedFilenames) {
+      await rename(
+        path.join(stagingDirectory, filename),
+        path.join(process.cwd(), 'public', 'images', 'products', filename)
       )
     }
-    sourceUrlByFilename.set(filename, imageUrl)
-    if (await refreshImage(imageUrl, filename)) refreshedImages += 1
+    await rename(stagedJson, path.join(process.cwd(), 'data', 'wordpress-products.json'))
 
-    products.push({
-      available: mapped.inStock,
-      category: mapped.category,
-      compare_at_price: mapped.compareAtPrice,
-      description: mapped.description,
-      id: String(mapped.wooId),
-      image_filename: filename,
-      image_url: imageUrl,
-      price: mapped.price,
-      slug: mapped.slug,
-      title: mapped.name,
-    })
+    console.info(
+      `WooCommerce fallback refreshed: ${products.length} products, ${galleryImages} ordered gallery images, ${refreshedImages} image files changed.`
+    )
+  } finally {
+    await rm(stagingDirectory, { force: true, recursive: true })
   }
-
-  await writeJsonAtomically(products)
-  console.info(
-    `WooCommerce fallback refreshed: ${products.length} products, ${refreshedImages} image files changed.`
-  )
 }
 
 main().catch((error: unknown) => {

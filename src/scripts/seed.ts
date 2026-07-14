@@ -121,7 +121,11 @@ async function seed() {
       continue
     }
 
-    const mediaId = await mediaIdFor(product.image, product.name)
+    const mediaIds: number[] = []
+    for (const [index, image] of product.images.entries()) {
+      const mediaId = await mediaIdFor(image.url, `${product.name} — image ${index + 1}`)
+      if (mediaId !== null) mediaIds.push(mediaId)
+    }
     const category = categoryFor(product)
     const testStock = publish && product.available ? 1 : 0
     const trustedBuilderMapping =
@@ -139,7 +143,7 @@ async function seed() {
         featured: product.featured ?? false,
         category,
         ...trustedBuilderMapping,
-        images: mediaId ? [{ image: mediaId }] : [],
+        images: mediaIds.map((image) => ({ image })),
         certified: false,
         sku: `WP-${product.id}`,
         tenantId: 'good-opal-co',
