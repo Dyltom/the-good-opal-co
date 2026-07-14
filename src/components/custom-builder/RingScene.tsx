@@ -878,7 +878,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   {profile.beadShape === 'rounded' ? (
                     <sphereGeometry args={[profile.beadRadius, 16, 10]} />
                   ) : (
-                    <dodecahedronGeometry args={[profile.beadRadius, 0]} />
+                    <dodecahedronGeometry args={[profile.beadRadius, 1]} />
                   )}
                   <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
                 </mesh>
