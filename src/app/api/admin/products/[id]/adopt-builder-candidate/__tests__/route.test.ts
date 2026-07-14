@@ -30,6 +30,7 @@ const product = {
   builderContourCandidate: contour,
   builderMappingAnalyzedImageHash: 'a'.repeat(64),
   builderPhotoAnalysisVersion: 3,
+  builderPhotoAnalysisConfidence: 0.81,
   builderPhotoCandidateFocalX: 0.42,
   builderPhotoCandidateFocalY: 0.57,
   builderPhotoCandidateZoom: 3.4,
@@ -103,6 +104,60 @@ describe('adopt builder candidate admin route', () => {
       expect.objectContaining({ data: expect.objectContaining({ builderEligible: false }) })
     )
   })
+
+  test('applies low-confidence real placement without approving its contour or review state', async () => {
+    mocks.findByID.mockResolvedValue({
+      ...product,
+      builderContourCandidate: null,
+      builderEligible: false,
+      builderMappingStatus: 'pending',
+      builderPhotoAnalysisConfidence: 0.6927,
+    })
+    const placementRequest = new NextRequest(
+      'https://example.com/api/admin/products/42/adopt-builder-candidate?mode=placement',
+      { method: 'POST' }
+    )
+
+    const response = await POST(placementRequest, { params: Promise.resolve({ id: '42' }) })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      adopted: true,
+      builderEligible: false,
+      message: 'Candidate placement applied. Existing contour and review status preserved.',
+    })
+    expect(mocks.update).toHaveBeenCalledWith({
+      collection: 'products',
+      id: 42,
+      overrideAccess: true,
+      data: {
+        builderPhotoFocalX: 0.42,
+        builderPhotoFocalY: 0.57,
+        builderPhotoRotation: -12,
+        builderPhotoZoom: 3.4,
+      },
+    })
+  })
+
+  test.each(['', '?mode=placement'])(
+    'rejects the analyser canonical fallback instead of applying it (%s)',
+    async (query) => {
+      mocks.findByID.mockResolvedValue({ ...product, builderPhotoAnalysisConfidence: 0.7 })
+      const fallbackRequest = new NextRequest(
+        `https://example.com/api/admin/products/42/adopt-builder-candidate${query}`,
+        { method: 'POST' }
+      )
+
+      const response = await POST(fallbackRequest, { params: Promise.resolve({ id: '42' }) })
+
+      expect(response.status).toBe(409)
+      await expect(response.json()).resolves.toEqual({
+        error:
+          'This candidate is a generic shape fallback, not an isolated opal trace. Adjust the mapping manually instead.',
+      })
+      expect(mocks.update).not.toHaveBeenCalled()
+    }
+  )
 
   test('rejects a product without a complete candidate crop', async () => {
     mocks.findByID.mockResolvedValue({ ...product, builderPhotoCandidateZoom: null })

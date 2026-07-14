@@ -8,6 +8,10 @@ function finiteBetween(value: unknown, minimum: number, maximum: number): value 
   return typeof value === 'number' && Number.isFinite(value) && value >= minimum && value <= maximum
 }
 
+function isCanonicalFallbackConfidence(value: number): boolean {
+  return Math.abs(value - 0.7) < 0.0001
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const origin = request.headers.get('origin')
   if (origin && new URL(origin).origin !== request.nextUrl.origin) {
@@ -35,22 +39,61 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: 'Only raw-opal mappings can adopt a candidate.' }, { status: 409 })
   }
 
+  const placementOnly = request.nextUrl.searchParams.get('mode') === 'placement'
   const contour = parseBuilderStoneContour(product.builderContourCandidate)
   const analyzedHash = product.builderMappingAnalyzedImageHash
+  const confidence = product.builderPhotoAnalysisConfidence
   const focalX = product.builderPhotoCandidateFocalX
   const focalY = product.builderPhotoCandidateFocalY
   const zoom = product.builderPhotoCandidateZoom
   const rotation = product.builderPhotoCandidateRotation
   if (
-    !contour ||
     typeof analyzedHash !== 'string' ||
     !/^[0-9a-f]{64}$/i.test(analyzedHash) ||
     product.builderPhotoAnalysisVersion !== BUILDER_PHOTO_ANALYSIS_VERSION ||
+    !finiteBetween(confidence, 0, 1) ||
     !finiteBetween(focalX, 0, 1) ||
     !finiteBetween(focalY, 0, 1) ||
     !finiteBetween(zoom, 1, 12) ||
     !finiteBetween(rotation, -180, 180)
   ) {
+    return NextResponse.json(
+      { error: 'No complete analyzed contour and crop candidate is ready to adopt.' },
+      { status: 409 }
+    )
+  }
+
+  if (isCanonicalFallbackConfidence(confidence)) {
+    return NextResponse.json(
+      {
+        error:
+          'This candidate is a generic shape fallback, not an isolated opal trace. Adjust the mapping manually instead.',
+      },
+      { status: 409 }
+    )
+  }
+
+  if (placementOnly) {
+    await payload.update({
+      collection: 'products',
+      id,
+      overrideAccess: true,
+      data: {
+        builderPhotoFocalX: focalX,
+        builderPhotoFocalY: focalY,
+        builderPhotoZoom: zoom,
+        builderPhotoRotation: rotation,
+      },
+    })
+
+    return NextResponse.json({
+      adopted: true,
+      builderEligible: product.builderEligible === true,
+      message: 'Candidate placement applied. Existing contour and review status preserved.',
+    })
+  }
+
+  if (!contour) {
     return NextResponse.json(
       { error: 'No complete analyzed contour and crop candidate is ready to adopt.' },
       { status: 409 }
