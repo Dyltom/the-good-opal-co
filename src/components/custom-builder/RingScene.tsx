@@ -39,6 +39,7 @@ import {
   cameraUpVectors,
   coalesceOverlappingHaloBeads,
   evenlySpacedOutlinePoints,
+  fuseContactingHaloBeads,
   getBezelWallContourPoints,
   getBezelLipContactZ,
   getCabochonDepthProfile,
@@ -46,6 +47,7 @@ import {
   getDShankCrossSection,
   getForgedMetalTone,
   getGrainDerivedHaloSupportOutline,
+  getHaloStoneContour,
   getOpalSettleTransform,
   getOpalSettleStartOffset,
   getPatinaGrooveProfile,
@@ -68,6 +70,7 @@ import {
   type HaloSupportContourPoint,
   type StoneDimensions,
 } from './geometry'
+import { applyForgedNormalVariation } from './forged-surface'
 
 export type RingView = 'three-quarter' | 'front' | 'profile'
 
@@ -218,7 +221,7 @@ function SolderGrainMaterial({
   tone: number
 }) {
   const solderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#c7c2b8',
+    'sterling-silver': '#aaa69d',
     '14k-gold': '#b99342',
     '18k-gold': '#c49a3d',
     'white-gold': '#c7c4bb',
@@ -226,7 +229,7 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#aaa69d',
+    'sterling-silver': '#8f8b83',
     '14k-gold': '#997a37',
     '18k-gold': '#a98235',
     'white-gold': '#aaa8a1',
@@ -242,7 +245,7 @@ function SolderGrainMaterial({
     <meshPhysicalMaterial
       color={colour}
       metalness={0.91}
-      roughness={organic ? Math.max(0.64, roughness) : roughness}
+      roughness={organic ? Math.max(0.72, roughness) : Math.max(0.64, roughness)}
       clearcoat={0.01}
       clearcoatRoughness={0.74}
       envMapIntensity={organic ? 0.82 : 0.92}
@@ -762,6 +765,12 @@ function createBezelWallGeometry(
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
   geometry.setIndex(indices)
   geometry.computeVertexNormals()
+  const surface = ringStyleGeometryProfiles[style]
+  applyForgedNormalVariation(
+    geometry,
+    surface.surfaceNormalVariation * 0.62,
+    surface.surfaceSeed + 7
+  )
   return geometry
 }
 
@@ -819,6 +828,12 @@ function createProfiledBezelLipGeometry(
   geometry.addGroup(0, metalIndices.length, 0)
   geometry.addGroup(metalIndices.length, patinaIndices.length, 1)
   geometry.computeVertexNormals()
+  const surface = ringStyleGeometryProfiles[style]
+  applyForgedNormalVariation(
+    geometry,
+    surface.surfaceNormalVariation * 0.42,
+    surface.surfaceSeed + 13
+  )
   geometry.computeBoundingSphere()
   return geometry
 }
@@ -826,7 +841,8 @@ function createProfiledBezelLipGeometry(
 function createHaloSupportMeshGeometry(
   contour: readonly HaloSupportContourPoint[],
   bottomZ: number,
-  topZ: number
+  topZ: number,
+  style: RingConfig['style']
 ): BufferGeometry {
   const geometry = new BufferGeometry()
   const positions: number[] = []
@@ -884,6 +900,8 @@ function createHaloSupportMeshGeometry(
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
   geometry.setIndex(indices)
   geometry.computeVertexNormals()
+  const surface = ringStyleGeometryProfiles[style]
+  applyForgedNormalVariation(geometry, surface.surfaceNormalVariation, surface.surfaceSeed + 31)
   geometry.computeBoundingSphere()
   return geometry
 }
@@ -952,6 +970,12 @@ function createSettingBaseGeometry(
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
   geometry.setIndex(indices)
   geometry.computeVertexNormals()
+  const surface = ringStyleGeometryProfiles[style]
+  applyForgedNormalVariation(
+    geometry,
+    surface.surfaceNormalVariation * 0.72,
+    surface.surfaceSeed + 23
+  )
   geometry.computeBoundingSphere()
   return geometry
 }
@@ -1141,8 +1165,8 @@ function HaloSupport({
   topZ: number
 }) {
   const geometry = useMemo(
-    () => createHaloSupportMeshGeometry(contour, bottomZ, topZ),
-    [bottomZ, contour, topZ]
+    () => createHaloSupportMeshGeometry(contour, bottomZ, topZ, config.style),
+    [bottomZ, config.style, contour, topZ]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -1168,6 +1192,7 @@ function Setting({
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
   const contour = selectedOpal?.visual.contour
+  const haloContour = useMemo(() => getHaloStoneContour(contour), [contour])
   const depthMm = getRenderableOpalDepthMm(selectedOpal)
   const depthProfile = useMemo(
     () => getCabochonDepthProfile(width, height, depthMm, config.style),
@@ -1180,7 +1205,7 @@ function Setting({
   const patinaGroove = getPatinaGrooveProfile(depthProfile.girdleZ, profile.innerSeamRadius)
   const beadCount =
     profile.beadCount > 0
-      ? getStyleBeadCount(config.style, config.shape, width, height, contour)
+      ? getStyleBeadCount(config.style, config.shape, width, height, haloContour)
       : 0
   const beads = useMemo(() => {
     const variedBeads = applyHandmadeBeadVariation(
@@ -1192,18 +1217,21 @@ function Setting({
         beadCount,
         profile.haloPhase,
         config.style,
-        contour
+        haloContour
       ),
       profile.beadVariation,
       profile.beadFlattening,
       profile.beadAsymmetry
     )
-    return coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius)
+    return fuseContactingHaloBeads(
+      coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius),
+      profile.beadRadius
+    )
   }, [
     beadCount,
     config.shape,
     config.style,
-    contour,
+    haloContour,
     height,
     profile.beadRadius,
     profile.beadFlattening,
@@ -1221,10 +1249,12 @@ function Setting({
         bezelOuterOffset: outerBezelOffset,
         contour,
         coverage: profile.haloSupportCoverage,
+        haloContour,
         haloOffset: profile.haloOffset,
         height,
         shape: config.shape,
         style: config.style,
+        valleyCoverage: profile.haloValleySupportCoverage,
         width,
       }),
     [
@@ -1232,11 +1262,13 @@ function Setting({
       config.shape,
       config.style,
       contour,
+      haloContour,
       height,
       outerBezelOffset,
       profile.beadRadius,
       profile.haloOffset,
       profile.haloSupportCoverage,
+      profile.haloValleySupportCoverage,
       width,
     ]
   )
@@ -1317,7 +1349,7 @@ function Setting({
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <sphereGeometry args={[profile.beadRadius, 12, 9]} />
+                      <sphereGeometry args={[profile.beadRadius, 18, 12]} />
                     )}
                     <SolderGrainMaterial
                       organic={isOrganicGrain}
@@ -1336,7 +1368,7 @@ function Setting({
                       ]}
                       receiveShadow
                     >
-                      <sphereGeometry args={[profile.beadRadius * 0.3, 9, 7]} />
+                      <sphereGeometry args={[profile.beadRadius * 0.3, 12, 9]} />
                       <SolderGrainMaterial
                         organic
                         metal={config.metal}
@@ -1381,6 +1413,8 @@ function RingShank({
   crossSectionPower,
   shankInnerFacePower,
   shankForgedVariation,
+  surfaceNormalVariation,
+  surfaceSeed,
   metalRoughness,
 }: {
   metal: RingConfig['metal']
@@ -1399,6 +1433,8 @@ function RingShank({
   crossSectionPower: number
   shankInnerFacePower: number
   shankForgedVariation: number
+  surfaceNormalVariation: number
+  surfaceSeed: number
   metalRoughness: number
 }) {
   const curve = useMemo(() => {
@@ -1502,6 +1538,7 @@ function RingShank({
     nextGeometry.setAttribute('color', new Float32BufferAttribute(colours, 3))
     nextGeometry.setIndex(indices)
     nextGeometry.computeVertexNormals()
+    applyForgedNormalVariation(nextGeometry, surfaceNormalVariation, surfaceSeed)
     nextGeometry.computeBoundingSphere()
     return nextGeometry
   }, [
@@ -1513,6 +1550,8 @@ function RingShank({
     shoulderRadius,
     shankForgedVariation,
     shankInnerFacePower,
+    surfaceNormalVariation,
+    surfaceSeed,
     tubeDepth,
     tubeRadius,
   ])
@@ -1574,6 +1613,8 @@ function RingModel({
         crossSectionPower={styleProfile.crossSectionPower}
         shankInnerFacePower={styleProfile.shankInnerFacePower}
         shankForgedVariation={styleProfile.shankForgedVariation}
+        surfaceNormalVariation={styleProfile.surfaceNormalVariation}
+        surfaceSeed={styleProfile.surfaceSeed}
         metalRoughness={styleProfile.metalRoughness}
       />
 

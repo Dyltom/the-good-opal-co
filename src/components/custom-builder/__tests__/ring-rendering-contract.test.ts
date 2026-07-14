@@ -99,8 +99,8 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain("profile.beadPrimitive === 'rounded-granule'")
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')
     expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
-    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 12, 9]} />')
-    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius * 0.3, 9, 7]} />')
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 18, 12]} />')
+    expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius * 0.3, 12, 9]} />')
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
       /function SolderGrainMaterial[\s\S]*organicSolderColour[\s\S]*envMapIntensity=\{organic \? 0\.82 : 0\.92\}/

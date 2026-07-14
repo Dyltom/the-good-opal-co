@@ -1,15 +1,18 @@
 import { describe, expect, test } from 'vitest'
 import {
+  applyHandmadeBeadVariation,
   bezelLipCompression,
   cameraPositions,
   cameraUpVectors,
   cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
+  fuseContactingHaloBeads,
   getBezelLipContactZ,
   getBezelWallContourPoints,
   getCabochonDepthProfile,
   getCameraPosition,
   getForgedMetalTone,
+  getHaloBeadSurfaceGap,
   getOpalSettleTransform,
   getOpalSettleStartOffset,
   getPortraitFramingScale,
@@ -26,6 +29,7 @@ import {
   getSettingShoulderHalfWidth,
   getSettingPlacement,
   getStoneDimensions,
+  getStyleBeadCount,
   outlinePoint,
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
@@ -628,8 +632,52 @@ describe('custom ring geometry contract', () => {
       expect(profile.cupTaper, style).toBeGreaterThan(0.015)
       expect(profile.cupTaper, style).toBeLessThan(profile.bezelWallOffset + 0.02)
       expect(profile.shankForgedVariation, style).toBeGreaterThan(0)
+      expect(profile.surfaceNormalVariation, style).toBeGreaterThanOrEqual(0.05)
+      expect(profile.surfaceNormalVariation, style).toBeLessThanOrEqual(0.12)
+      expect(Number.isInteger(profile.surfaceSeed), style).toBe(true)
     }
   })
+
+  test.each([
+    ['sun-moon', 'oval', 0.133],
+    ['aurora', 'pear', 0.141],
+  ] as const)(
+    'fuses the %s grains without changing its sold outer head envelope',
+    (style, shape, expectedOuterOffset) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const [width, height] = stoneDimensions[shape]
+      const beadCount = getStyleBeadCount(style, shape, width, height)
+      const beads = fuseContactingHaloBeads(
+        applyHandmadeBeadVariation(
+          evenlySpacedOutlinePoints(
+            shape,
+            width,
+            height,
+            profile.haloOffset,
+            beadCount,
+            profile.haloPhase,
+            style
+          ),
+          profile.beadVariation,
+          profile.beadFlattening,
+          profile.beadAsymmetry
+        ),
+        profile.beadRadius
+      )
+      const gaps = beads.map((bead, index) =>
+        getHaloBeadSurfaceGap(bead, beads[(index + 1) % beads.length]!, profile.beadRadius)
+      )
+
+      // One scene unit is 10 mm. Sold references show contact or a hairline
+      // oxidised seam, never the previous 0.12–0.20 mm ball-bearing gaps.
+      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(0.02)
+      expect(profile.haloOffset + profile.beadRadius, style).toBeCloseTo(
+        expectedOuterOffset,
+        12
+      )
+      expect(profile.haloValleySupportCoverage, style).toBeGreaterThanOrEqual(0.9)
+    }
+  )
 
   test.each(ringStyles.map(({ id }) => id))(
     'keeps the %s shoulder transition monotonic, symmetric, and hidden beneath the head',

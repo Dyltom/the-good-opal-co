@@ -130,6 +130,7 @@ export interface RingStyleGeometryProfile {
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
+  haloValleySupportCoverage: number
   innerSeamOffset: number
   innerSeamRadius: number
   innerSeamVariation: number
@@ -150,6 +151,8 @@ export interface RingStyleGeometryProfile {
   shoulderRadius: number
   shoulderDepth: number
   shankForgedVariation: number
+  surfaceNormalVariation: number
+  surfaceSeed: number
 }
 
 export interface BezelLipProfileKnot {
@@ -199,6 +202,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadVariation: 0,
     haloPhase: 0,
     haloSupportCoverage: 0,
+    haloValleySupportCoverage: 0,
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.018,
     innerSeamVariation: 0.001,
@@ -219,6 +223,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderRadius: 0.094,
     shoulderDepth: 0.057,
     shankForgedVariation: 0.012,
+    surfaceNormalVariation: 0.075,
+    surfaceSeed: 19,
   },
   coral: {
     bezelLipProfile: [
@@ -244,6 +250,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadVariation: 0,
     haloPhase: 0,
     haloSupportCoverage: 0,
+    haloValleySupportCoverage: 0,
     innerSeamOffset: 0.001,
     innerSeamRadius: 0.024,
     innerSeamVariation: 0.0025,
@@ -264,6 +271,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderRadius: 0.087,
     shoulderDepth: 0.049,
     shankForgedVariation: 0.016,
+    surfaceNormalVariation: 0.09,
+    surfaceSeed: 37,
   },
   'sun-moon': {
     bezelLipProfile: [
@@ -278,8 +287,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipRadius: 0.012,
     // Preserve the sold head envelope while leaving the hairline oxidized
     // crevices visible between the smaller Sun & Moon grains.
-    haloOffset: 0.097,
-    beadRadius: 0.036,
+    haloOffset: 0.091,
+    beadRadius: 0.042,
     beadCount: 40,
     beadPitchMm: 0.84,
     beadFlattening: 0.68,
@@ -290,6 +299,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadVariation: 1.1,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.8,
+    haloValleySupportCoverage: 0.9,
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.018,
     innerSeamVariation: 0.001,
@@ -310,6 +320,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderRadius: 0.092,
     shoulderDepth: 0.052,
     shankForgedVariation: 0.013,
+    surfaceNormalVariation: 0.095,
+    surfaceSeed: 53,
   },
   aurora: {
     bezelLipProfile: [
@@ -324,8 +336,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     bezelLipRadius: 0.012,
     // Aurora's granules are broad and handmade, but the sold ring does not use
     // the oversized pearl-like balls produced by a full 1 mm sphere.
-    haloOffset: 0.095,
-    beadRadius: 0.046,
+    haloOffset: 0.085,
+    beadRadius: 0.056,
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.64,
@@ -336,6 +348,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadVariation: 1.55,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.82,
+    haloValleySupportCoverage: 0.92,
     innerSeamOffset: 0.003,
     innerSeamRadius: 0.02,
     innerSeamVariation: 0.001,
@@ -356,6 +369,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderRadius: 0.095,
     shoulderDepth: 0.054,
     shankForgedVariation: 0.017,
+    surfaceNormalVariation: 0.1,
+    surfaceSeed: 71,
   },
 }
 

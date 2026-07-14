@@ -1,10 +1,20 @@
 import { describe, expect, test } from 'vitest'
-import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 import {
+  parseBuilderStoneContour,
+  type BuilderStoneContourV1,
+} from '@/lib/custom-builder/stone-contour'
+import { ringStyleGeometryProfiles } from '../config'
+import {
+  applyHandmadeBeadVariation,
+  coalesceOverlappingHaloBeads,
   cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
+  fuseContactingHaloBeads,
   getBezelWallContourPoints,
+  getHaloBeadSurfaceGap,
+  getHaloStoneContour,
   getSettingShoulderHalfWidth,
+  getStyleBeadCount,
   outlinePoint,
 } from '../geometry'
 
@@ -66,5 +76,94 @@ describe('per-opal contour geometry', () => {
     expect(Math.max(...xs)).toBeLessThanOrEqual(0.401)
     expect(Math.min(...ys)).toBeGreaterThanOrEqual(-0.501)
     expect(Math.max(...ys)).toBeLessThanOrEqual(0.501)
+  })
+
+  test('keeps every non-folded grain fused around an accepted wavy contour', () => {
+    const wavyContour = parseBuilderStoneContour({
+      version: 1,
+      radii: Array.from({ length: 96 }, (_, index) => {
+        const angle = (index / 96) * Math.PI * 2
+        return 1 + Math.sin(angle * 6) * 0.1
+      }),
+    })
+    expect(wavyContour).toBeDefined()
+
+    const profile = ringStyleGeometryProfiles.aurora
+    const haloContour = getHaloStoneContour(wavyContour)
+    const count = getStyleBeadCount('aurora', 'oval', 0.4, 0.5, haloContour)
+    const varied = applyHandmadeBeadVariation(
+      evenlySpacedOutlinePoints(
+        'oval',
+        0.4,
+        0.5,
+        profile.haloOffset,
+        count,
+        profile.haloPhase,
+        'aurora',
+        haloContour
+      ),
+      profile.beadVariation,
+      profile.beadFlattening,
+      profile.beadAsymmetry
+    )
+    const coalesced = coalesceOverlappingHaloBeads(varied, profile.beadRadius)
+    const fused = fuseContactingHaloBeads(coalesced, profile.beadRadius)
+    const gaps = fused.map((bead, index) =>
+      getHaloBeadSurfaceGap(bead, fused[(index + 1) % fused.length]!, profile.beadRadius)
+    )
+
+    expect(coalesced).toHaveLength(varied.length)
+    expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.018)
+    expect(Math.max(...gaps)).toBeLessThanOrEqual(0.006)
+  })
+
+  test('fits grains around an accepted compound contour without blobs or voids', () => {
+    const terms = [
+      [2, 0.0034628526493906972, 0.6877147271759518],
+      [3, 0.03850963147357106, 2.757098501545037],
+      [4, 0.006245822980999946, 5.069776857927168],
+      [5, -0.03038160117343068, 1.7611219703704721],
+      [6, -0.053133015297353266, 2.9342648063984775],
+      [7, 0.05827762925997376, 1.003849571529726],
+    ] as const
+    const compoundContour = parseBuilderStoneContour({
+      version: 1,
+      radii: Array.from({ length: 96 }, (_, index) => {
+        const angle = (index / 96) * Math.PI * 2
+        return 1 + terms.reduce((sum, [frequency, amplitude, phase]) => {
+          return sum + amplitude * Math.sin(frequency * angle + phase)
+        }, 0)
+      }),
+    })
+    expect(compoundContour).toBeDefined()
+
+    const profile = ringStyleGeometryProfiles['sun-moon']
+    const haloContour = getHaloStoneContour(compoundContour)
+    const count = getStyleBeadCount('sun-moon', 'oval', 0.4, 0.5, haloContour)
+    const varied = applyHandmadeBeadVariation(
+      evenlySpacedOutlinePoints(
+        'oval',
+        0.4,
+        0.5,
+        profile.haloOffset,
+        count,
+        profile.haloPhase,
+        'sun-moon',
+        haloContour
+      ),
+      profile.beadVariation,
+      profile.beadFlattening,
+      profile.beadAsymmetry
+    )
+    const coalesced = coalesceOverlappingHaloBeads(varied, profile.beadRadius)
+    const fused = fuseContactingHaloBeads(coalesced, profile.beadRadius)
+    const gaps = fused.map((bead, index) =>
+      getHaloBeadSurfaceGap(bead, fused[(index + 1) % fused.length]!, profile.beadRadius)
+    )
+
+    expect(coalesced.length).toBeGreaterThanOrEqual(varied.length - 1)
+    expect(coalesced.length).toBeLessThanOrEqual(varied.length)
+    expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.0185)
+    expect(Math.max(...gaps)).toBeLessThanOrEqual(0.006)
   })
 })

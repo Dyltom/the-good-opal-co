@@ -4,10 +4,12 @@ import {
   applyHandmadeBeadVariation,
   coalesceOverlappingHaloBeads,
   evenlySpacedOutlinePoints,
+  fuseContactingHaloBeads,
   getBezelWallContourPoints,
   getCabochonDepthProfile,
   getDShankCrossSection,
   getGrainDerivedHaloSupportOutline,
+  getHaloBeadSurfaceGap,
   getProfiledBezelLipRings,
   getSoldStyleOuterVariation,
   getStyleBeadCount,
@@ -102,21 +104,21 @@ describe('sold ring style geometry', () => {
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 0.84,
-      beadRadius: 0.036,
-      haloOffset: 0.097,
+      beadRadius: 0.042,
+      haloOffset: 0.091,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.046,
-      haloOffset: 0.095,
+      beadRadius: 0.056,
+      haloOffset: 0.085,
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
-    expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0.12, 12)
-    expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0.2, 12)
+    expect(sunMoon.beadPitchMm - sunMoon.beadRadius * 20).toBeCloseTo(0, 12)
+    expect(aurora.beadPitchMm - aurora.beadRadius * 20).toBeCloseTo(0, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
@@ -276,18 +278,17 @@ describe('sold ring style geometry', () => {
         profile.beadFlattening,
         profile.beadAsymmetry
       )
-      const beads = coalesceOverlappingHaloBeads(varied, profile.beadRadius)
-      const gaps = beads.map((bead, index) => {
-        const next = beads[(index + 1) % beads.length]!
-        return (
-          Math.hypot(next.x - bead.x, next.y - bead.y) -
-          profile.beadRadius * bead.size -
-          profile.beadRadius * next.size
-        )
-      })
+      const coalesced = coalesceOverlappingHaloBeads(varied, profile.beadRadius)
+      const beads = fuseContactingHaloBeads(coalesced, profile.beadRadius)
+      const gaps = beads.map((bead, index) =>
+        getHaloBeadSurfaceGap(bead, beads[(index + 1) % beads.length]!, profile.beadRadius)
+      )
 
       expect(beads.length).toBeLessThan(varied.length)
+      expect(beads.length).toBeGreaterThanOrEqual(varied.length - 2)
       expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
+      // Even concave adaptations retain only a sub-0.05 mm oxidised seam.
+      expect(Math.max(...gaps)).toBeLessThanOrEqual(0.005)
     }
   )
   test.each(['sun-moon', 'aurora'] as const)(
@@ -497,6 +498,7 @@ describe('sold ring style geometry', () => {
         bezelOuterOffset: profile.bezelWallOffset + profile.bezelWallThickness / 2,
         coverage: profile.haloSupportCoverage,
         haloOffset: profile.haloOffset,
+        valleyCoverage: profile.haloValleySupportCoverage,
         height: 0.5,
         shape,
         style,

@@ -95,6 +95,36 @@ export interface HaloSupportContourPoint {
   outer: StoneDimensions
 }
 
+/**
+ * Granulation follows a stone's broad silhouette, not image-mask noise below
+ * grain scale. This preserves large lobes and points while keeping the halo
+ * physically placeable around approved photographed contours.
+ */
+export function getHaloStoneContour(
+  contour?: BuilderStoneContourV1
+): BuilderStoneContourV1 | undefined {
+  if (!contour) return undefined
+
+  // Nineteen weighted samples is the smallest window that keeps every
+  // parser-valid compound contour physically granular in deterministic fuzz
+  // coverage; the exact bezel still follows all 96 source samples.
+  const smoothingRadius = 9
+  return {
+    version: contour.version,
+    radii: contour.radii.map((_, index) => {
+      let weightedRadius = 0
+      let totalWeight = 0
+      for (let offset = -smoothingRadius; offset <= smoothingRadius; offset += 1) {
+        const weight = smoothingRadius + 1 - Math.abs(offset)
+        const sourceIndex = (index + offset + contour.radii.length) % contour.radii.length
+        weightedRadius += contour.radii[sourceIndex]! * weight
+        totalWeight += weight
+      }
+      return weightedRadius / totalWeight
+    }),
+  }
+}
+
 export const settingRotationX = -Math.PI / 2
 
 export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
@@ -502,6 +532,25 @@ function ellipseRadiusAtAngle(
   return (semiX * semiY) / Math.hypot(semiY * cosine, semiX * sine)
 }
 
+/** Distance between neighbouring varied grain surfaces in scene units. */
+export function getHaloBeadSurfaceGap(
+  left: HandmadeBeadPoint,
+  right: HandmadeBeadPoint,
+  beadRadius: number
+): number {
+  const deltaX = right.x - left.x
+  const deltaY = right.y - left.y
+  const distance = Math.hypot(deltaX, deltaY)
+  if (distance === 0) return -beadRadius * (left.size + right.size)
+
+  const direction = Math.atan2(deltaY, deltaX)
+  return (
+    distance -
+    ellipseRadiusAtAngle(left, beadRadius, direction) -
+    ellipseRadiusAtAngle(right, beadRadius, direction + Math.PI)
+  )
+}
+
 /**
  * Builds the scalloped solder web visible between individual halo grains.
  * Crests sit beneath each varied grain; valleys pull inward between grains.
@@ -511,8 +560,10 @@ export function getGrainDerivedHaloSupportOutline({
   beads,
   bezelOuterOffset,
   contour,
+  haloContour,
   coverage,
   haloOffset,
+  valleyCoverage,
   height,
   shape,
   style,
@@ -522,8 +573,10 @@ export function getGrainDerivedHaloSupportOutline({
   beads: readonly HandmadeBeadPoint[]
   bezelOuterOffset: number
   contour?: BuilderStoneContourV1
+  haloContour?: BuilderStoneContourV1
   coverage: number
   haloOffset: number
+  valleyCoverage: number
   height: number
   shape: RingConfig['shape']
   style: RingConfig['style']
@@ -532,6 +585,18 @@ export function getGrainDerivedHaloSupportOutline({
   if (beads.length === 0 || coverage <= 0) return []
 
   const result: HaloSupportContourPoint[] = []
+  const keepOutsideBezel = (
+    inner: StoneDimensions,
+    candidate: StoneDimensions
+  ): StoneDimensions => {
+    const innerRadius = Math.hypot(inner[0], inner[1])
+    const candidateRadius = Math.hypot(candidate[0], candidate[1])
+    if (candidateRadius > innerRadius) return candidate
+
+    const angle = Math.atan2(candidate[1], candidate[0])
+    const radius = innerRadius + 0.001
+    return [Math.cos(angle) * radius, Math.sin(angle) * radius]
+  }
   beads.forEach((bead, index) => {
     const next = beads[(index + 1) % beads.length]!
     const crestAngle = Math.atan2(bead.y, bead.x)
@@ -550,7 +615,7 @@ export function getGrainDerivedHaloSupportOutline({
       bezelOuterOffset,
       contour
     )
-    result.push({ inner: crestInner, outer: crestOuter })
+    result.push({ inner: crestInner, outer: keepOutsideBezel(crestInner, crestOuter) })
 
     const midpointX = bead.x + next.x
     const midpointY = bead.y + next.y
@@ -559,15 +624,14 @@ export function getGrainDerivedHaloSupportOutline({
     // between neighbouring grains. Carry the support through each valley far
     // enough to join the flattened bead backs without filling the visible
     // scallop between their outer faces.
-    const valleySupportCoverage = 0.62
     const valleyOuter = soldStyleOutlinePoint(
       style,
       shape,
       valleyAngle,
       width,
       height,
-      haloOffset + beadRadius * coverage * valleySupportCoverage,
-      contour
+      haloOffset + beadRadius * coverage * valleyCoverage,
+      haloContour ?? contour
     )
     const valleyInner = soldStyleOutlinePoint(
       style,
@@ -578,7 +642,7 @@ export function getGrainDerivedHaloSupportOutline({
       bezelOuterOffset,
       contour
     )
-    result.push({ inner: valleyInner, outer: valleyOuter })
+    result.push({ inner: valleyInner, outer: keepOutsideBezel(valleyInner, valleyOuter) })
   })
   return result
 }
@@ -704,8 +768,15 @@ export function getSettingOuterHalfWidth(
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
   if (config.setting === 'beaded') {
-    const beadCount = getStyleBeadCount(config.style, config.shape, width, height, contour)
-    const beads = applyHandmadeBeadVariation(
+    const haloContour = getHaloStoneContour(contour)
+    const beadCount = getStyleBeadCount(
+      config.style,
+      config.shape,
+      width,
+      height,
+      haloContour
+    )
+    const variedBeads = applyHandmadeBeadVariation(
       evenlySpacedOutlinePoints(
         config.shape,
         width,
@@ -714,11 +785,15 @@ export function getSettingOuterHalfWidth(
         beadCount,
         profile.haloPhase,
         config.style,
-        contour
+        haloContour
       ),
       profile.beadVariation,
       profile.beadFlattening,
       profile.beadAsymmetry
+    )
+    const beads = fuseContactingHaloBeads(
+      coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius),
+      profile.beadRadius
     )
     return beads.reduce(
       (maximum, bead) =>
@@ -1062,30 +1137,128 @@ export function coalesceOverlappingHaloBeads(
 ): readonly HandmadeBeadPoint[] {
   if (beads.length < 2 || beadRadius <= 0) return beads
 
-  const result: HandmadeBeadPoint[] = []
-  const gap = (left: HandmadeBeadPoint, right: HandmadeBeadPoint) =>
-    Math.hypot(right.x - left.x, right.y - left.y) -
-    beadRadius * left.size -
-    beadRadius * right.size
-  const outward = (left: HandmadeBeadPoint, right: HandmadeBeadPoint) =>
-    Math.hypot(left.x, left.y) >= Math.hypot(right.x, right.y) ? left : right
-
-  for (const bead of beads) {
-    const previous = result.at(-1)
-    if (previous && gap(previous, bead) < minimumGap) {
-      result[result.length - 1] = outward(previous, bead)
-    } else {
-      result.push(bead)
+  return beads.filter((bead, index) => {
+    const previous = beads[(index - 1 + beads.length) % beads.length]!
+    const next = beads[(index + 1) % beads.length]!
+    const duplicateThreshold = beadRadius * 0.5
+    const beadRadiusFromOrigin = Math.hypot(bead.x, bead.y)
+    const shouldKeepNearDuplicate = (other: HandmadeBeadPoint) => {
+      const otherRadiusFromOrigin = Math.hypot(other.x, other.y)
+      return (
+        beadRadiusFromOrigin > otherRadiusFromOrigin ||
+        (beadRadiusFromOrigin === otherRadiusFromOrigin && bead.key < other.key)
+      )
     }
+    if (
+      Math.hypot(bead.x - previous.x, bead.y - previous.y) < duplicateThreshold &&
+      !shouldKeepNearDuplicate(previous)
+    ) {
+      return false
+    }
+    if (
+      Math.hypot(bead.x - next.x, bead.y - next.y) < duplicateThreshold &&
+      !shouldKeepNearDuplicate(next)
+    ) {
+      return false
+    }
+
+    const incomingX = bead.x - previous.x
+    const incomingY = bead.y - previous.y
+    const outgoingX = next.x - bead.x
+    const outgoingY = next.y - bead.y
+    const pathReverses = incomingX * outgoingX + incomingY * outgoingY < 0
+    if (!pathReverses) return true
+
+    // Remove only a folded-back sample such as a heart cleft. Ordinary close
+    // contact on a valid irregular opal contour must remain a grain, otherwise
+    // a chain of removals can open a visible unsupported gap.
+    return (
+      getHaloBeadSurfaceGap(previous, bead, beadRadius) >= minimumGap &&
+      getHaloBeadSurfaceGap(bead, next, beadRadius) >= minimumGap
+    )
+  })
+}
+
+/**
+ * Files neighbouring halo grains into a continuous soldered crown. Width is
+ * added along the local perimeter tangent, so the documented radial head
+ * envelope and stone clearance remain unchanged.
+ */
+export function fuseContactingHaloBeads(
+  beads: readonly HandmadeBeadPoint[],
+  beadRadius: number,
+  minimumOverlap = 0.006
+): readonly HandmadeBeadPoint[] {
+  if (beads.length < 2 || beadRadius <= 0) return beads
+
+  let fused = beads.map((bead, index) => {
+    const previous = beads[(index - 1 + beads.length) % beads.length]!
+    const next = beads[(index + 1) % beads.length]!
+    const previousDistance = Math.hypot(bead.x - previous.x, bead.y - previous.y)
+    const nextDistance = Math.hypot(next.x - bead.x, next.y - bead.y)
+    const requiredTangentialRadius =
+      Math.max(previousDistance, nextDistance) / 2 + Math.max(0, minimumOverlap) / 2
+    const requiredStretch = requiredTangentialRadius / (beadRadius * bead.size)
+    const tangentAngle = Math.atan2(next.y - previous.y, next.x - previous.x)
+
+    return {
+      ...bead,
+      rotation: tangentAngle,
+      stretchX: Math.min(1.55, Math.max(bead.stretchX, requiredStretch)),
+      stretchY: Math.min(1.04, bead.stretchY),
+    }
+  })
+
+  // Equal arc spacing can still yield uneven straight-line pitch around an
+  // accepted wavy contour. Relax tangential grain widths toward one soldered
+  // seam. Locally reduce grain size only when a tight compound curve cannot
+  // physically fit the sold grain diameter; this avoids one fused metal blob
+  // without changing the opal seat or bezel.
+  const targetGap = -Math.max(0, minimumOverlap)
+  const minimumAllowedGap = -0.018
+  for (let pass = 0; pass < 28; pass += 1) {
+    const adjustments = Array.from({ length: fused.length }, () => 0)
+    const adjustmentCounts = Array.from({ length: fused.length }, () => 0)
+    const sizeScales = Array.from({ length: fused.length }, () => 1)
+
+    fused.forEach((bead, index) => {
+      const nextIndex = (index + 1) % fused.length
+      const next = fused[nextIndex]!
+      const gap = getHaloBeadSurfaceGap(bead, next, beadRadius)
+      if (gap < minimumAllowedGap) {
+        const distance = Math.hypot(next.x - bead.x, next.y - bead.y)
+        const occupiedDistance = distance - gap
+        const targetOccupiedDistance = distance - minimumAllowedGap
+        const scale = Math.max(0.72, Math.min(1, targetOccupiedDistance / occupiedDistance))
+        sizeScales[index] = Math.min(sizeScales[index]!, scale)
+        sizeScales[nextIndex] = Math.min(sizeScales[nextIndex]!, scale)
+        return
+      }
+
+      const error = gap - targetGap
+      if (Math.abs(error) <= 0.0005) return
+
+      const boundedError = Math.max(-0.025, Math.min(0.025, error))
+      adjustments[index]! += (boundedError / (beadRadius * bead.size * 2)) * 0.42
+      adjustments[nextIndex]! += (boundedError / (beadRadius * next.size * 2)) * 0.42
+      adjustmentCounts[index]! += 1
+      adjustmentCounts[nextIndex]! += 1
+    })
+
+    fused = fused.map((bead, index) => ({
+      ...bead,
+      size: Math.max(0.45, bead.size * sizeScales[index]!),
+      stretchX: Math.min(
+        1.55,
+        Math.max(
+          0.62,
+          bead.stretchX + adjustments[index]! / Math.max(1, adjustmentCounts[index]!)
+        )
+      ),
+    }))
   }
 
-  while (result.length > 1 && gap(result.at(-1)!, result[0]!) < minimumGap) {
-    const merged = outward(result.at(-1)!, result[0]!)
-    result.pop()
-    result[0] = merged
-  }
-
-  return result
+  return fused
 }
 
 export function applyHandmadeBeadVariation(
