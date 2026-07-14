@@ -247,7 +247,7 @@ describe('RingConfigurator store opal selection', () => {
     )
 
     expect(screen.getByRole('slider', { name: 'Zoom' })).toHaveProperty('disabled', true)
-    expect(screen.getByText('Maximum photo detail')).not.toBeNull()
+    expect(screen.getByText('Closest safe source fit')).not.toBeNull()
   })
 
   test('normalizes over-limit zoom from an old shared design', async () => {

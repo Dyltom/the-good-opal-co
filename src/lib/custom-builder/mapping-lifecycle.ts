@@ -222,6 +222,18 @@ export function createBuilderSourceImageHash(images: unknown, imageIndex = 0): s
   return identity ? stableHash(JSON.stringify({ imageIndex, identity })) : undefined
 }
 
+function galleryImageHash(images: unknown): string | undefined {
+  if (!Array.isArray(images)) return undefined
+  return stableHash(
+    JSON.stringify(
+      images.map((image, index) => ({
+        identity: imageIdentity(image) ?? null,
+        index,
+      }))
+    )
+  )
+}
+
 function explicitShape(name: string): InferredMapping['builderSilhouette'] | undefined {
   if (/\bheart\b/i.test(name)) return 'heart'
   if (/\b(pear|teardrop)\b/i.test(name)) return 'pear'
@@ -425,6 +437,9 @@ export function applyBuilderMappingLifecycle(
       ? previous.builderMappingInputHash
       : undefined
   const inputsChanged = Boolean(previousHash && previousHash !== inputHash)
+  const galleryChanged = Boolean(
+    previousHash && galleryImageHash(previous.images) !== galleryImageHash(product.images)
+  )
   const versionChanged =
     typeof previous.builderMappingVersion === 'number' &&
     previous.builderMappingVersion < BUILDER_MAPPING_VERSION
@@ -470,11 +485,12 @@ export function applyBuilderMappingLifecycle(
     incoming.builderContourSourceImageHash = product.builderMappingAnalyzedImageHash
   }
 
-  if (inputsChanged || versionChanged) {
+  if (inputsChanged || galleryChanged || versionChanged) {
     incoming.builderContourCandidate = null
     incoming.builderMappingAnalyzedImageHash = null
     incoming.builderPhotoAnalysisVersion = null
     incoming.builderPhotoAnalysisConfidence = null
+    incoming.builderPhotoCandidateImageIndex = null
     incoming.builderPhotoCandidateFocalX = null
     incoming.builderPhotoCandidateFocalY = null
     incoming.builderPhotoCandidateZoom = null

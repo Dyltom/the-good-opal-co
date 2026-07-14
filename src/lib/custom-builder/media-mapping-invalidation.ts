@@ -25,6 +25,10 @@ function selectedBuilderMediaId(product: Product): string | undefined {
   return relationshipId(selected?.image)
 }
 
+function productUsesMedia(product: Product, mediaId: string): boolean {
+  return Boolean(product.images?.some((item) => relationshipId(item.image) === mediaId))
+}
+
 function requestIncludesUploadedFile(req: object): boolean {
   return 'file' in req && Boolean(req.file)
 }
@@ -48,29 +52,33 @@ export const invalidateBuilderMappingsForMediaReplacement: CollectionAfterChange
     req,
     where: { category: { equals: 'raw-opals' } },
   })
-  const affected = products.docs.filter(
-    (product) => selectedBuilderMediaId(product) === changedMediaId
-  )
+  const affected = products.docs.filter((product) => productUsesMedia(product, changedMediaId))
 
   for (const product of affected) {
+    const activeSourceChanged = selectedBuilderMediaId(product) === changedMediaId
     await req.payload.update({
       collection: 'products',
       id: product.id,
       context: { ...context, [BUILDER_MEDIA_REPLACEMENT_CONTEXT]: true },
       data: {
         builderContourCandidate: null,
-        builderContourSourceImageHash: null,
-        builderEligible: false,
         builderMappingAnalysisError: null,
         builderMappingAnalyzedImageHash: null,
-        builderMappingSourceImageHash: null,
-        builderMappingStatus:
-          product.builderMappingStatus === 'reviewed' ||
-          product.builderMappingStatus === 'manual'
-            ? 'stale'
-            : 'pending',
+        ...(activeSourceChanged
+          ? {
+              builderContourSourceImageHash: null,
+              builderEligible: false,
+              builderMappingSourceImageHash: null,
+              builderMappingStatus:
+                product.builderMappingStatus === 'reviewed' ||
+                product.builderMappingStatus === 'manual'
+                  ? ('stale' as const)
+                  : ('pending' as const),
+            }
+          : {}),
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: null,
+        builderPhotoCandidateImageIndex: null,
         builderPhotoCandidateFocalX: null,
         builderPhotoCandidateFocalY: null,
         builderPhotoCandidateRotation: null,

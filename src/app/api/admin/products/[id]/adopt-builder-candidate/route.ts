@@ -4,6 +4,7 @@ import { validateBuilderProduct } from '@/lib/product-validation'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { BUILDER_PHOTO_ANALYSIS_VERSION } from '@/lib/custom-builder/mapping-lifecycle'
+import { BUILDER_MEDIA_REPLACEMENT_CONTEXT } from '@/lib/custom-builder/media-mapping-invalidation'
 import {
   parseBuilderStoneContour,
   type BuilderStoneContourV1,
@@ -127,11 +128,19 @@ async function selectedMedia(
   product: Product
 ): Promise<Media | undefined> {
   const images = product.images ?? []
-  const requestedIndex = product.builderMappedImageIndex
+  const requestedIndex = product.builderPhotoCandidateImageIndex
   const imageIndex =
-    typeof requestedIndex === 'number' && Number.isInteger(requestedIndex) && requestedIndex >= 0
+    typeof requestedIndex === 'number' &&
+    Number.isInteger(requestedIndex) &&
+    requestedIndex >= 0 &&
+    requestedIndex < images.length
       ? requestedIndex
-      : 0
+      : typeof product.builderMappedImageIndex === 'number' &&
+          Number.isInteger(product.builderMappedImageIndex) &&
+          product.builderMappedImageIndex >= 0 &&
+          product.builderMappedImageIndex < images.length
+        ? product.builderMappedImageIndex
+        : 0
   const relationship = (images[imageIndex] ?? images[0])?.image
   if (relationship && typeof relationship === 'object') return relationship
   if (typeof relationship !== 'number') return undefined
@@ -169,9 +178,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     typeof product.builderMappingAnalyzedImageHash === 'string'
       ? product.builderMappingAnalyzedImageHash
       : null
+  const candidateImageIndex =
+    typeof product.builderPhotoCandidateImageIndex === 'number' &&
+    Number.isInteger(product.builderPhotoCandidateImageIndex) &&
+    product.builderPhotoCandidateImageIndex >= 0 &&
+    product.builderPhotoCandidateImageIndex < (product.images?.length ?? 0)
+      ? product.builderPhotoCandidateImageIndex
+      : null
   const candidateCurrent =
     product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
-    Boolean(sourceHash?.match(/^[0-9a-f]{64}$/i))
+    Boolean(sourceHash?.match(/^[0-9a-f]{64}$/i)) &&
+    candidateImageIndex !== null
   const completeCrop = Object.values(candidateCrop).every((value) => value !== null)
   const genericFallback = confidence !== null && isCanonicalFallbackConfidence(confidence)
   const dimensions = product.dimensions
@@ -204,6 +221,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         confidence,
         contour: candidateContour ?? null,
         crop: candidateCrop,
+        imageIndex: candidateImageIndex,
         genericFallback,
         placementAdoptable: Boolean(
           candidateCurrent && completeCrop && confidence !== null && !genericFallback
@@ -243,6 +261,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const placementOnly = request.nextUrl.searchParams.get('mode') === 'placement'
   const contour = parseBuilderStoneContour(product.builderContourCandidate)
   const analyzedHash = product.builderMappingAnalyzedImageHash
+  const candidateImageIndex = product.builderPhotoCandidateImageIndex
   const confidence = product.builderPhotoAnalysisConfidence
   const focalX = product.builderPhotoCandidateFocalX
   const focalY = product.builderPhotoCandidateFocalY
@@ -252,6 +271,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     typeof analyzedHash !== 'string' ||
     !/^[0-9a-f]{64}$/i.test(analyzedHash) ||
     product.builderPhotoAnalysisVersion !== BUILDER_PHOTO_ANALYSIS_VERSION ||
+    (product.images?.length ?? 0) === 0 ||
+    !finiteBetween(candidateImageIndex, 0, Math.max(0, (product.images?.length ?? 0) - 1)) ||
+    !Number.isInteger(candidateImageIndex) ||
     !finiteBetween(confidence, 0, 1) ||
     !finiteBetween(focalX, 0, 1) ||
     !finiteBetween(focalY, 0, 1) ||
@@ -279,7 +301,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       collection: 'products',
       id,
       overrideAccess: true,
+      // Candidate source and crop are adopted atomically by an administrator;
+      // do not let the generic source-change hook mark the approved mapping stale.
+      context: { [BUILDER_MEDIA_REPLACEMENT_CONTEXT]: true },
       data: {
+        builderMappedImageIndex: candidateImageIndex,
         builderPhotoFocalX: focalX,
         builderPhotoFocalY: focalY,
         builderPhotoZoom: zoom,
@@ -302,6 +328,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const adopted = {
+    builderMappedImageIndex: candidateImageIndex,
     builderContour: { version: contour.version, radii: [...contour.radii] },
     builderContourSourceImageHash: analyzedHash,
     builderPhotoFocalX: focalX,

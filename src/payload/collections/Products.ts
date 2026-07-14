@@ -491,6 +491,16 @@ export const Products: CollectionConfig = {
           type: 'row',
           fields: [
             {
+              name: 'builderPhotoCandidateImageIndex',
+              type: 'number',
+              min: 0,
+              access: { read: isAdminField },
+              admin: {
+                readOnly: true,
+                description: 'Gallery image selected by automatic analysis for this candidate.',
+              },
+            },
+            {
               name: 'builderPhotoCandidateFocalX',
               type: 'number',
               min: 0,

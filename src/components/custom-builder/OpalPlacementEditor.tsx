@@ -1,7 +1,7 @@
 'use client'
 
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Move, RotateCcw, RotateCw, SlidersHorizontal, Undo2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -10,15 +10,9 @@ import {
   getPhotoPlacementScaleMax,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
-import { defaultOpalPlacement, ringStyleGeometryProfiles } from './config'
+import { defaultOpalPlacement } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
-import {
-  applyHandmadeBeadVariation,
-  coalesceOverlappingHaloBeads,
-  cssSilhouetteClipPath,
-  evenlySpacedOutlinePoints,
-  getStyleBeadCount,
-} from './geometry'
+import { cssSilhouetteClipPath } from './geometry'
 
 interface OpalPlacementEditorProps {
   onChange: (placement: OpalPlacement) => void
@@ -72,121 +66,11 @@ const metalColours: Record<RingConfig['metal'], string> = {
   platinum: '#e4e3df',
 }
 
-const patinaColours: Record<RingConfig['metal'], string> = {
-  'sterling-silver': '#20211d',
-  '14k-gold': '#6b4b22',
-  '18k-gold': '#6b4b22',
-  'white-gold': '#575a59',
-  'rose-gold': '#704a42',
-  platinum: '#575a59',
-}
-
 const styleLabels: Record<RingConfig['style'], string> = {
   aurora: 'Aurora halo',
   coral: 'Coral clean bezel',
   gemini: 'Gemini clean bezel',
   'sun-moon': 'Sun & Moon beaded trim',
-}
-
-function OpalSettingDecoration({
-  aspectRatio,
-  clipPath,
-  metal,
-  opal,
-  style,
-}: {
-  aspectRatio: number
-  clipPath?: string
-  metal: RingConfig['metal']
-  opal: BuilderOpal
-  style: RingConfig['style']
-}) {
-  const profile = ringStyleGeometryProfiles[style]
-  const width = 0.4
-  const height = width * aspectRatio
-  const beadCount = getStyleBeadCount(
-    style,
-    opal.visual.silhouette,
-    width,
-    height,
-    opal.visual.contour
-  )
-  const beads = useMemo(() => {
-    const variedBeads = applyHandmadeBeadVariation(
-      evenlySpacedOutlinePoints(
-        opal.visual.silhouette,
-        width,
-        height,
-        profile.haloOffset,
-        beadCount,
-        profile.haloPhase,
-        style,
-        opal.visual.contour
-      ),
-      profile.beadVariation,
-      profile.beadFlattening,
-      profile.beadAsymmetry
-    )
-    return coalesceOverlappingHaloBeads(variedBeads, profile.beadRadius)
-  }, [
-    beadCount,
-    height,
-    opal.visual.contour,
-    opal.visual.silhouette,
-    profile.beadRadius,
-    profile.beadFlattening,
-    profile.beadAsymmetry,
-    profile.beadVariation,
-    profile.haloOffset,
-    profile.haloPhase,
-    style,
-  ])
-
-  if (beads.length === 0) return null
-
-  const supportInset = `${(profile.haloOffset / width) * 38}%`
-  return (
-    <span
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-0"
-      data-opal-setting-decoration={style}
-    >
-      <span
-        data-opal-setting-support
-        className={cn(
-          'absolute shadow-[0_8px_18px_rgb(0_0_0/0.42)]',
-          silhouetteClass(opal.visual.silhouette)
-        )}
-        style={{
-          background: `linear-gradient(145deg, ${patinaColours[metal]}, #20211e 72%)`,
-          clipPath,
-          inset: `-${supportInset}`,
-        }}
-      />
-      {beads.map(({ key, rotation, size, stretchX, stretchY, x, y }) => {
-        const diameter = (profile.beadRadius / width) * 100
-        return (
-          <span
-            key={key}
-            data-opal-setting-grain
-            className={cn(
-              'absolute block -translate-x-1/2 -translate-y-1/2 shadow-[0_1px_2px_rgb(0_0_0/0.75)]',
-              profile.beadPrimitive === 'organic-granule'
-                ? 'rounded-[28%] bg-[radial-gradient(circle_at_34%_28%,#d7d5cd_0%,#7b7c76_32%,#343530_72%,#20211d_100%)]'
-                : 'rounded-[46%] bg-[radial-gradient(circle_at_34%_28%,#f3f1e9_0%,#b6b5ae_34%,#585954_70%,#262722_100%)]'
-            )}
-            style={{
-              height: `${diameter}%`,
-              left: `${50 + (x / (width * 2)) * 100}%`,
-              top: `${50 - (y / (height * 2)) * 100}%`,
-              transform: `translate(-50%, -50%) rotate(${rotation}rad) scale(${size * stretchX}, ${size * stretchY})`,
-              width: `${diameter}%`,
-            }}
-          />
-        )
-      })}
-    </span>
-  )
 }
 
 function RangeControl({
@@ -343,10 +227,10 @@ export function OpalPlacementEditor({
 
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">4. Adjust the opal photo crop</legend>
+      <legend className="font-serif text-xl font-medium">4. Frame the opal colour</legend>
       <p className="mt-2 max-w-[62ch] text-sm leading-6 text-charcoal-light">
-        Slide the exact listing photo beneath the cut outline. This changes the colour shown in the
-        concept, not the physical stone or setting engineering.
+        Move the exact listing photo inside its measured outline. The stone and setting stay fixed;
+        only the colour framing in this concept changes.
       </p>
 
       <div className="mt-4 overflow-hidden rounded-xl border border-warm-grey/80 bg-white shadow-[0_10px_30px_rgb(31_30_25/0.06)]">
@@ -354,13 +238,13 @@ export function OpalPlacementEditor({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-opal-light">
-                Stone workbench
+                Colour workbench
               </p>
               <p className="mt-1 line-clamp-1 text-sm text-cream/75">{opal.name}</p>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
-                {opal.visual.photoFit === 'reviewed' ? 'Reviewed photo crop' : 'Auto-fitted colour'}
+                {opal.visual.photoFit === 'reviewed' ? 'Reviewed source photo' : 'Auto-fitted photo'}
               </span>
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
                 {styleLabels[style]}
@@ -368,7 +252,7 @@ export function OpalPlacementEditor({
             </div>
           </div>
 
-          <div className="relative grid min-h-[20rem] select-none place-items-center overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_center,rgb(255_255_255/0.075),transparent_58%)] p-8 sm:min-h-[24rem]">
+          <div className="relative grid min-h-[20rem] select-none place-items-center gap-5 overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_50%_42%,rgb(255_255_255/0.09),transparent_55%)] px-8 py-7 sm:min-h-[24rem] sm:px-10">
             <div
               data-opal-placement-aperture
               role="group"
@@ -376,7 +260,7 @@ export function OpalPlacementEditor({
               aria-disabled={!canAdjustPosition}
               aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown"
               aria-roledescription="opal photo crop"
-              aria-label={`Adjust the photo crop for ${opal.name}. ${canAdjustPosition ? 'Drag the photo beneath the outline. The editor adds enough zoom to keep the photographed face inside the stone. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : 'This reviewed photo already uses the maximum safe detail.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
+              aria-label={`Adjust the photo crop for ${opal.name}. ${canAdjustPosition ? 'Drag the colour inside the fixed stone outline. The editor adds enough zoom to keep the photographed face inside the stone. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : 'This source photo already uses the closest safe fit.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
               onPointerDown={startDrag}
               onPointerMove={moveDrag}
               onPointerUp={stopDrag}
@@ -384,7 +268,7 @@ export function OpalPlacementEditor({
               onLostPointerCapture={stopDrag}
               onKeyDown={nudge}
               className={cn(
-                'group relative mx-auto w-[74%] max-w-[17rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[58%]',
+                'group relative mx-auto w-[70%] max-w-[15.5rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[54%]',
                 isDragging
                   ? 'cursor-grabbing'
                   : canAdjustPosition
@@ -395,16 +279,9 @@ export function OpalPlacementEditor({
                 aspectRatio: 1 / opal.visual.aspectRatio,
               }}
             >
-              <OpalSettingDecoration
-                aspectRatio={opal.visual.aspectRatio}
-                clipPath={clipPath}
-                metal={metal}
-                opal={opal}
-                style={style}
-              />
               <div
                 className={cn(
-                  'absolute inset-0 z-10 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)] group-focus-visible:drop-shadow-[0_0_5px_rgb(129_221_231/0.95)]',
+                  'absolute inset-0 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.25),0_12px_30px_rgb(0_0_0/0.5)] group-focus-visible:drop-shadow-[0_0_6px_rgb(129_221_231/0.95)]',
                   bezelPadding,
                   silhouetteClass(opal.visual.silhouette)
                 )}
@@ -440,7 +317,9 @@ export function OpalPlacementEditor({
                       aria-hidden="true"
                       className={cn(
                         'pointer-events-none absolute inset-0 z-10 transition-opacity',
-                        isDragging ? 'opacity-100' : 'opacity-0 group-focus-visible:opacity-100'
+                        isDragging
+                          ? 'opacity-100'
+                          : 'opacity-0 group-hover:opacity-75 group-focus-visible:opacity-100'
                       )}
                     >
                       <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-cream/45" />
@@ -453,12 +332,12 @@ export function OpalPlacementEditor({
             </div>
             <output
               aria-live="polite"
-              className="pointer-events-none absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
+              className="pointer-events-none inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
             >
               <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
               {canAdjustPosition
-                ? `${isDragging ? 'Moving' : 'Drag photo'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
-                : 'Maximum photo detail'}
+                ? `${isDragging ? 'Framing colour' : 'Drag colour inside outline'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
+                : 'Closest safe source fit'}
             </output>
           </div>
         </div>

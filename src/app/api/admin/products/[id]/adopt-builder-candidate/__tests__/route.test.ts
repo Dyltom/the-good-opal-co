@@ -29,6 +29,7 @@ const product = {
   builderSilhouette: 'oval',
   builderRecommendedStyle: 'gemini',
   builderMappedImageIndex: 0,
+  builderPhotoCandidateImageIndex: 0,
   builderContourCandidate: contour,
   builderMappingAnalyzedImageHash: 'a'.repeat(64),
   builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
@@ -103,6 +104,7 @@ describe('adopt builder candidate admin route', () => {
               ...product,
               images: [{ image: 7 }, { image: 8 }],
               builderMappedImageIndex: 1,
+              builderPhotoCandidateImageIndex: 1,
               builderContour: activeContour,
               builderContourSourceImageHash: 'b'.repeat(64),
               builderPhotoFocalX: 0.5,
@@ -143,6 +145,7 @@ describe('adopt builder candidate admin route', () => {
       confidence: 0.81,
       contour,
       crop: { focalX: 0.42, focalY: 0.57, rotation: -12, zoom: 3.4 },
+      imageIndex: 1,
       genericFallback: false,
       placementAdoptable: true,
     })
@@ -193,6 +196,11 @@ describe('adopt builder candidate admin route', () => {
   })
 
   test('adopts the exact candidate contour and crop and enables a complete opal', async () => {
+    mocks.findByID.mockResolvedValue({
+      ...product,
+      images: [{ image: 7 }, { image: 8 }],
+      builderPhotoCandidateImageIndex: 1,
+    })
     const response = await POST(request(), { params: Promise.resolve({ id: '42' }) })
 
     expect(response.status).toBe(200)
@@ -206,6 +214,7 @@ describe('adopt builder candidate admin route', () => {
       id: 42,
       overrideAccess: true,
       data: {
+        builderMappedImageIndex: 1,
         builderContour: contour,
         builderContourSourceImageHash: 'a'.repeat(64),
         builderEligible: true,
@@ -257,7 +266,9 @@ describe('adopt builder candidate admin route', () => {
       collection: 'products',
       id: 42,
       overrideAccess: true,
+      context: { builderMediaReplacementInvalidation: true },
       data: {
+        builderMappedImageIndex: 0,
         builderPhotoFocalX: 0.42,
         builderPhotoFocalY: 0.57,
         builderPhotoRotation: -12,

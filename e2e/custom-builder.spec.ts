@@ -51,18 +51,17 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
 
   const styles = page.getByRole('group', { name: '2. Choose a collection design' })
   await expect(styles).toBeVisible()
-  for (const style of ['Gemini', 'Coral', 'Sun & Moon', 'Aurora']) {
-    await expect(styles.getByRole('button', { name: new RegExp(style, 'i') })).toBeEnabled()
-  }
-  await styles.getByRole('button', { name: /Aurora/i }).click()
-  await expect(page).toHaveURL(/[?&]y=aurora/)
+  await expect(styles.getByRole('button', { name: /Gemini/i })).toBeEnabled()
+  await expect(styles.getByRole('button', { name: /Sun & Moon/i })).toBeEnabled()
+  await expect(styles.getByRole('button', { name: /Coral/i })).toBeDisabled()
+  await expect(styles.getByRole('button', { name: /Aurora/i })).toBeDisabled()
+  await styles.getByRole('button', { name: /Sun & Moon/i }).click()
+  await expect(page).toHaveURL(/[?&]y=sun-moon/)
 
   await individualOpals.nth(0).click()
-  await expect(page).toHaveURL(/[?&]y=aurora/)
-  await expect(styles.getByRole('button', { name: /Aurora/i })).toHaveAttribute(
-    'aria-pressed',
-    'true'
-  )
+  const selectedStyle = styles.locator('button[aria-pressed="true"]')
+  await expect(selectedStyle).toHaveCount(1)
+  await expect(selectedStyle).toBeEnabled()
 
   const canvas = page.locator('canvas')
   const fallback = page.getByText('Interactive 3D is unavailable on this device.')

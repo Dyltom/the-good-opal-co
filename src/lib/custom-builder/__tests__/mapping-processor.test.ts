@@ -81,7 +81,7 @@ describe('builder mapping processor', () => {
     vi.unstubAllGlobals()
   })
 
-  test('analyzes the selected gallery image and persists a reviewable crop', async () => {
+  test('analyzes every gallery image and keeps the current source when a score gain is ambiguous', async () => {
     mocks.find.mockResolvedValue({
       docs: [
         {
@@ -99,6 +99,23 @@ describe('builder mapping processor', () => {
         },
       ],
     })
+    mocks.analyzeOpalRaster
+      .mockReturnValueOnce({
+        confidence: 0.93,
+        contour,
+        focalX: 0.4,
+        focalY: 0.5,
+        rotation: 0,
+        zoom: 2.8,
+      })
+      .mockReturnValueOnce({
+        confidence: 0.91,
+        contour,
+        focalX: 0.42,
+        focalY: 0.57,
+        rotation: -12,
+        zoom: 3.4,
+      })
 
     await expect(processBuilderMappings({ limit: 999 })).resolves.toEqual({
       analyzed: 1,
@@ -145,7 +162,12 @@ describe('builder mapping processor', () => {
       'https://example.com/selected.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
     )
-    expect(mocks.analyzeOpalRaster).toHaveBeenCalledWith({
+    expect(fetch).toHaveBeenCalledWith(
+      'https://example.com/first.jpg',
+      expect.objectContaining({ headers: { accept: 'image/*' } })
+    )
+    expect(mocks.analyzeOpalRaster).toHaveBeenCalledTimes(2)
+    expect(mocks.analyzeOpalRaster).toHaveBeenLastCalledWith({
       channels: 3,
       data: Buffer.from([5, 10, 15, 20, 25, 30]),
       height: 1,
@@ -159,11 +181,13 @@ describe('builder mapping processor', () => {
       data: expect.objectContaining({
         builderMappingAnalysisError: null,
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        builderMappedImageIndex: 1,
         builderContour: contour,
         builderContourCandidate: contour,
         builderContourSourceImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderPhotoAnalysisConfidence: 0.91,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateImageIndex: 1,
         builderPhotoFocalX: 0.42,
         builderPhotoFocalY: 0.57,
         builderPhotoRotation: -12,
@@ -237,6 +261,7 @@ describe('builder mapping processor', () => {
           builderMappingMode: 'inferred',
           builderMappingStatus: 'pending',
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+          builderPhotoCandidateImageIndex: 0,
           images: [{ image: { id: 7, url: '/first.jpg' } }],
           name: 'Lightning Ridge black opal',
         },
@@ -335,6 +360,7 @@ describe('builder mapping processor', () => {
         builderMappingAnalysisError: 'Mapped product image is unavailable',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateImageIndex: null,
         builderPhotoCandidateFocalX: null,
         builderPhotoCandidateFocalY: null,
         builderPhotoCandidateRotation: null,
@@ -446,6 +472,122 @@ describe('builder mapping processor', () => {
     )
   })
 
+  test('stores a clear gallery winner separately without changing a reviewed active source', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 44,
+          builderMappedImageIndex: 0,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'reviewed',
+          images: [
+            { image: { id: 8, url: '/active.jpg' } },
+            { image: { id: 9, url: '/clear-winner.jpg' } },
+          ],
+          name: 'Reviewed Lightning Ridge black opal',
+        },
+      ],
+    })
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const bytes = String(input).includes('clear-winner')
+        ? new Uint8Array([9, 9, 9])
+        : new Uint8Array([1, 1, 1])
+      return new Response(bytes, { headers: { 'content-type': 'image/jpeg' }, status: 200 })
+    })
+    mocks.analyzeOpalRaster
+      .mockReturnValueOnce({
+        confidence: 0.78,
+        contour,
+        focalX: 0.4,
+        focalY: 0.5,
+        rotation: 0,
+        zoom: 2.8,
+      })
+      .mockReturnValueOnce({
+        confidence: 0.94,
+        contour,
+        focalX: 0.6,
+        focalY: 0.45,
+        rotation: 8,
+        zoom: 3.1,
+      })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({
+      builderMappingAnalyzedImageHash: createHash('sha256')
+        .update(new Uint8Array([9, 9, 9]))
+        .digest('hex'),
+      builderPhotoAnalysisConfidence: 0.94,
+      builderPhotoCandidateImageIndex: 1,
+      builderPhotoCandidateFocalX: 0.6,
+    })
+    expect(update?.data).not.toHaveProperty('builderMappedImageIndex')
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
+  })
+
+  test('preserves the reviewed source when alternate gallery scores are ambiguous', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 45,
+          builderMappedImageIndex: 0,
+          builderMappingMode: 'manual',
+          builderMappingStatus: 'reviewed',
+          images: [
+            { image: { id: 10, url: '/active.jpg' } },
+            { image: { id: 11, url: '/alternate-a.jpg' } },
+            { image: { id: 12, url: '/alternate-b.jpg' } },
+          ],
+          name: 'Reviewed Lightning Ridge black opal',
+        },
+      ],
+    })
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const value = String(input)
+      const byte = value.includes('alternate-a') ? 2 : value.includes('alternate-b') ? 3 : 1
+      return new Response(new Uint8Array([byte, byte, byte]), {
+        headers: { 'content-type': 'image/jpeg' },
+        status: 200,
+      })
+    })
+    mocks.analyzeOpalRaster
+      .mockReturnValueOnce({
+        confidence: 0.78,
+        contour,
+        focalX: 0.4,
+        focalY: 0.5,
+        rotation: 0,
+        zoom: 2.8,
+      })
+      .mockReturnValueOnce({
+        confidence: 0.94,
+        contour,
+        focalX: 0.6,
+        focalY: 0.45,
+        rotation: 8,
+        zoom: 3.1,
+      })
+      .mockReturnValueOnce({
+        confidence: 0.92,
+        contour,
+        focalX: 0.55,
+        focalY: 0.48,
+        rotation: 4,
+        zoom: 3,
+      })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    expect(mocks.update.mock.calls[0]?.[0].data).toMatchObject({
+      builderPhotoAnalysisConfidence: 0.78,
+      builderPhotoCandidateImageIndex: 0,
+      builderPhotoCandidateFocalX: 0.4,
+    })
+  })
+
   test('generates a candidate for a reviewed mapping without overwriting its approved contour or crop', async () => {
     const approvedContour = {
       version: 1 as const,
@@ -540,6 +682,7 @@ describe('builder mapping processor', () => {
         builderMappingAnalysisError: 'Opal contour confidence is too low for automatic activation',
         builderPhotoAnalysisConfidence: 0.4,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateImageIndex: 0,
         builderPhotoCandidateFocalX: 0.42,
         builderPhotoCandidateFocalY: 0.57,
         builderPhotoCandidateRotation: -12,
@@ -577,6 +720,7 @@ describe('builder mapping processor', () => {
         builderMappingAnalysisError: 'Opal face could not be isolated from the source image',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateImageIndex: null,
         builderPhotoCandidateFocalX: null,
         builderPhotoCandidateFocalY: null,
         builderPhotoCandidateRotation: null,
@@ -669,6 +813,7 @@ describe('builder mapping processor', () => {
           'Automatic crop mapping skipped for a non-individual or non-opal listing',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateImageIndex: null,
         builderPhotoCandidateFocalX: null,
         builderPhotoCandidateFocalY: null,
         builderPhotoCandidateRotation: null,

@@ -51,7 +51,7 @@ describe('Media builder mapping invalidation', () => {
     expect(creation.find).not.toHaveBeenCalled()
   })
 
-  it('invalidates only products using the replaced media as their selected builder image', async () => {
+  it('reanalyzes every affected gallery while invalidating active sources only', async () => {
     const { args, find, info, update } = hookArguments({
       docs: [
         {
@@ -91,8 +91,8 @@ describe('Media builder mapping invalidation', () => {
         where: { category: { equals: 'raw-opals' } },
       })
     )
-    expect(update).toHaveBeenCalledTimes(3)
-    expect(update.mock.calls.map(([call]) => call.id)).toEqual([1, 2, 4])
+    expect(update).toHaveBeenCalledTimes(4)
+    expect(update.mock.calls.map(([call]) => call.id)).toEqual([1, 2, 3, 4])
 
     for (const [call] of update.mock.calls) {
       expect(call).toMatchObject({
@@ -103,13 +103,11 @@ describe('Media builder mapping invalidation', () => {
         },
         data: {
           builderContourCandidate: null,
-          builderContourSourceImageHash: null,
-          builderEligible: false,
           builderMappingAnalysisError: null,
           builderMappingAnalyzedImageHash: null,
-          builderMappingSourceImageHash: null,
           builderPhotoAnalysisConfidence: null,
           builderPhotoAnalysisVersion: null,
+          builderPhotoCandidateImageIndex: null,
           builderPhotoCandidateFocalX: null,
           builderPhotoCandidateFocalY: null,
           builderPhotoCandidateRotation: null,
@@ -126,12 +124,22 @@ describe('Media builder mapping invalidation', () => {
 
     expect(update.mock.calls[0]?.[0].data.builderMappingStatus).toBe('stale')
     expect(update.mock.calls[1]?.[0].data.builderMappingStatus).toBe('stale')
-    expect(update.mock.calls[2]?.[0].data.builderMappingStatus).toBe('pending')
+    expect(update.mock.calls[2]?.[0].data).not.toHaveProperty('builderMappingStatus')
+    expect(update.mock.calls[2]?.[0].data).not.toHaveProperty('builderEligible')
+    expect(update.mock.calls[2]?.[0].data).not.toHaveProperty('builderContourSourceImageHash')
+    expect(update.mock.calls[3]?.[0].data.builderMappingStatus).toBe('pending')
+    for (const index of [0, 1, 3]) {
+      expect(update.mock.calls[index]?.[0].data).toMatchObject({
+        builderContourSourceImageHash: null,
+        builderEligible: false,
+        builderMappingSourceImageHash: null,
+      })
+    }
     expect(info).toHaveBeenCalledWith({
       mediaId: '42',
       msg: 'Requeued opal builder mappings after source media replacement',
-      productCount: 3,
-      productIds: [1, 2, 4],
+      productCount: 4,
+      productIds: [1, 2, 3, 4],
     })
   })
 

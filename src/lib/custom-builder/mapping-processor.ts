@@ -11,6 +11,7 @@ import { parseBuilderStoneContour } from './stone-contour'
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
 const ANALYSIS_EDGE_PX = 640
 const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.75
+const MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN = 0.05
 const RETRYABLE_ANALYSIS_ERROR_PREFIX = 'Retryable source error: '
 
 class RetryableSourceError extends Error {}
@@ -21,6 +22,19 @@ type ProductRecord = Record<string, unknown>
 interface MediaRecord extends ProductRecord {
   id?: number | string
   url?: string | null
+}
+
+interface GalleryMedia {
+  index: number
+  media: MediaRecord
+}
+
+interface GalleryAnalysis {
+  analysis: NonNullable<ReturnType<typeof analyzeOpalRaster>>
+  confidence: number
+  contour: NonNullable<ReturnType<typeof parseBuilderStoneContour>>
+  imageHash: string
+  index: number
 }
 
 const opalShapeHints = new Set<OpalShapeHint>([
@@ -142,7 +156,13 @@ function mappingNeedsPhotoAnalysis(value: unknown): boolean {
     typeof product.builderMappingAnalyzedImageHash === 'string' &&
     product.builderMappingAnalyzedImageHash.length > 0
   const hasCandidate = Boolean(parseBuilderStoneContour(product.builderContourCandidate))
-  return !currentVersion || !hasHash || !hasCandidate
+  const hasCandidateImageIndex =
+    typeof product.builderPhotoCandidateImageIndex === 'number' &&
+    Number.isInteger(product.builderPhotoCandidateImageIndex) &&
+    product.builderPhotoCandidateImageIndex >= 0 &&
+    Array.isArray(product.images) &&
+    product.builderPhotoCandidateImageIndex < product.images.length
+  return !currentVersion || !hasHash || !hasCandidate || !hasCandidateImageIndex
 }
 
 function analysisPriority(value: unknown): number {
@@ -152,24 +172,57 @@ function analysisPriority(value: unknown): number {
   return isAvailableOpalListing(name) && classifyOpalListing(name) === 'individual' ? 0 : 1
 }
 
-async function resolveMappedMedia(
+async function resolveGalleryMedia(
   payload: PayloadClient,
   product: ProductRecord
-): Promise<MediaRecord | undefined> {
+): Promise<GalleryMedia[]> {
   const images = Array.isArray(product.images) ? product.images : []
-  const selected = images[mappedImageIndex(product)] ?? images[0]
-  const relationship = isRecord(selected) && 'image' in selected ? selected.image : selected
+  const resolved = await Promise.all(
+    images.map(async (selected, index): Promise<GalleryMedia | undefined> => {
+      const relationship = isRecord(selected) && 'image' in selected ? selected.image : selected
 
-  if (isRecord(relationship)) return relationship
-  if (typeof relationship !== 'number' && typeof relationship !== 'string') return undefined
+      if (isRecord(relationship)) return { index, media: relationship }
+      if (typeof relationship !== 'number' && typeof relationship !== 'string') return undefined
 
-  const media = await payload.findByID({
-    collection: 'media',
-    id: relationship,
-    depth: 0,
-    overrideAccess: true,
-  })
-  return isRecord(media) ? media : undefined
+      try {
+        const media = await payload.findByID({
+          collection: 'media',
+          id: relationship,
+          depth: 0,
+          overrideAccess: true,
+        })
+        return isRecord(media) ? { index, media } : undefined
+      } catch {
+        return undefined
+      }
+    })
+  )
+  return resolved.filter((item): item is GalleryMedia => Boolean(item))
+}
+
+function selectGalleryAnalysis(
+  analyses: GalleryAnalysis[],
+  currentImageIndex: number
+): GalleryAnalysis | undefined {
+  const ranked = [...analyses].sort(
+    (left, right) => right.confidence - left.confidence || left.index - right.index
+  )
+  const best = ranked[0]
+  if (!best) return undefined
+
+  const current = analyses.find((candidate) => candidate.index === currentImageIndex)
+  if (current && best.index === current.index) return best
+
+  const runnerUp = ranked[1]
+  const hasClearWinner =
+    !runnerUp ||
+    best.confidence - runnerUp.confidence >= MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN
+  if (hasClearWinner) return best
+
+  // A reviewed source is safer than choosing arbitrarily between near-equal
+  // alternates. If the active image could not be analysed, leave the product
+  // in the retry queue until a gallery image becomes an unambiguous winner.
+  return current
 }
 
 function absoluteMediaUrl(value: string | null | undefined): string | undefined {
@@ -376,31 +429,27 @@ export async function processBuilderMappings(
     let analysisConfidence: number | undefined
     let imageHash: string | undefined
     try {
-      const media = await resolveMappedMedia(payload, product)
-      const imageUrl = absoluteMediaUrl(media?.url)
-      if (!imageUrl) throw new Error('Mapped product image is unavailable')
-
-      const source = await fetchImage(imageUrl)
-      imageHash = createHash('sha256').update(source).digest('hex')
-      const alreadyAnalyzed =
-        product.builderMappingAnalyzedImageHash === imageHash &&
-        product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION &&
-        Boolean(parseBuilderStoneContour(product.builderContourCandidate))
-      if (alreadyAnalyzed) {
-        summary.unchanged += 1
-        continue
-      }
+      const gallery = await resolveGalleryMedia(payload, product)
+      if (gallery.length === 0) throw new Error('Mapped product image is unavailable')
+      const currentImageIndex = mappedImageIndex(product)
       const productName = typeof product.name === 'string' ? product.name : ''
       if (
         !isAvailableOpalListing(productName) ||
         classifyOpalListing(productName) !== 'individual'
       ) {
+        const selected =
+          gallery.find((candidate) => candidate.index === currentImageIndex) ?? gallery[0]
+        const imageUrl = absoluteMediaUrl(selected?.media.url)
+        if (!imageUrl) throw new Error('Mapped product image is unavailable')
+        const source = await fetchImage(imageUrl)
+        imageHash = createHash('sha256').update(source).digest('hex')
         const updated = await updateProduct(
           payload,
           id,
           {
             builderMappingAnalyzedImageHash: imageHash,
             builderContourCandidate: null,
+            builderPhotoCandidateImageIndex: null,
             builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
             builderPhotoAnalysisConfidence: null,
             builderPhotoCandidateFocalX: null,
@@ -420,37 +469,69 @@ export async function processBuilderMappings(
         continue
       }
 
-      const raster = await sharp(source, { limitInputPixels: 40_000_000 })
-        .rotate()
-        .toColourspace('srgb')
-        .removeAlpha()
-        .resize({
-          width: ANALYSIS_EDGE_PX,
-          height: ANALYSIS_EDGE_PX,
-          fit: 'inside',
-          withoutEnlargement: true,
-        })
-        .raw()
-        .toBuffer({ resolveWithObject: true })
-      if (raster.info.channels !== 3 && raster.info.channels !== 4) {
-        throw new Error('Image analysis requires an RGB raster')
+      const analyses: GalleryAnalysis[] = []
+      const failures: Array<{ error: unknown; index: number }> = []
+      for (const sourceImage of gallery) {
+        try {
+          const imageUrl = absoluteMediaUrl(sourceImage.media.url)
+          if (!imageUrl) throw new Error('Gallery image is unavailable')
+          const source = await fetchImage(imageUrl)
+          const sourceHash = createHash('sha256').update(source).digest('hex')
+          if (!imageHash || sourceImage.index === currentImageIndex) imageHash = sourceHash
+          const raster = await sharp(source, { limitInputPixels: 40_000_000 })
+            .rotate()
+            .toColourspace('srgb')
+            .removeAlpha()
+            .resize({
+              width: ANALYSIS_EDGE_PX,
+              height: ANALYSIS_EDGE_PX,
+              fit: 'inside',
+              withoutEnlargement: true,
+            })
+            .raw()
+            .toBuffer({ resolveWithObject: true })
+          if (raster.info.channels !== 3 && raster.info.channels !== 4) {
+            throw new Error('Image analysis requires an RGB raster')
+          }
+          const analysis = analyzeOpalRaster({
+            channels: raster.info.channels,
+            data: raster.data,
+            height: raster.info.height,
+            ...(typeof product.builderSilhouette === 'string' &&
+            opalShapeHints.has(product.builderSilhouette as OpalShapeHint)
+              ? { shapeHint: product.builderSilhouette as OpalShapeHint }
+              : {}),
+            ...(protectsActiveMapping && sourceImage.index === currentImageIndex
+              ? reviewedAnalysisHints(product)
+              : {}),
+            stoneAspect: stoneAspect(product),
+            width: raster.info.width,
+          })
+          if (!analysis) throw new Error('Opal face could not be isolated from the source image')
+          const confidence = finiteBetween(analysis.confidence, 0, 1, 'confidence')
+          const candidate = parseBuilderStoneContour(analysis.contour)
+          if (!candidate) throw new Error('Image analysis returned an invalid opal contour')
+          analyses.push({
+            analysis,
+            confidence,
+            contour: candidate,
+            imageHash: sourceHash,
+            index: sourceImage.index,
+          })
+        } catch (error: unknown) {
+          failures.push({ error, index: sourceImage.index })
+        }
       }
-      const analysis = analyzeOpalRaster({
-        channels: raster.info.channels,
-        data: raster.data,
-        height: raster.info.height,
-        ...(typeof product.builderSilhouette === 'string' &&
-        opalShapeHints.has(product.builderSilhouette as OpalShapeHint)
-          ? { shapeHint: product.builderSilhouette as OpalShapeHint }
-          : {}),
-        ...(protectsActiveMapping ? reviewedAnalysisHints(product) : {}),
-        stoneAspect: stoneAspect(product),
-        width: raster.info.width,
-      })
-      if (!analysis) throw new Error('Opal face could not be isolated from the source image')
-      analysisConfidence = finiteBetween(analysis.confidence, 0, 1, 'confidence')
-      const candidate = parseBuilderStoneContour(analysis.contour)
-      if (!candidate) throw new Error('Image analysis returned an invalid opal contour')
+
+      const selected = selectGalleryAnalysis(analyses, currentImageIndex)
+      if (!selected) {
+        const preferredFailure =
+          failures.find((failure) => failure.index === currentImageIndex) ?? failures[0]
+        throw preferredFailure?.error ?? new Error('No gallery image could be analyzed')
+      }
+      const { analysis, contour: candidate } = selected
+      analysisConfidence = selected.confidence
+      imageHash = selected.imageHash
       const mayActivateContour =
         !protectsActiveMapping &&
         (product.builderMappingStatus === 'pending' || product.builderMappingStatus === 'stale') &&
@@ -466,6 +547,7 @@ export async function processBuilderMappings(
         {
           ...(mayActivateContour
             ? {
+                builderMappedImageIndex: selected.index,
                 builderContour: candidate,
                 builderContourSourceImageHash: imageHash,
                 builderPhotoFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
@@ -476,6 +558,7 @@ export async function processBuilderMappings(
             : {}),
           builderContourCandidate: candidate,
           builderMappingAnalyzedImageHash: imageHash,
+          builderPhotoCandidateImageIndex: selected.index,
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
           builderPhotoAnalysisConfidence: analysisConfidence,
           builderPhotoCandidateFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
@@ -503,6 +586,7 @@ export async function processBuilderMappings(
         {
           ...(imageHash ? { builderMappingAnalyzedImageHash: imageHash } : {}),
           builderContourCandidate: null,
+          builderPhotoCandidateImageIndex: null,
           builderPhotoAnalysisConfidence: analysisConfidence ?? null,
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
           builderPhotoCandidateFocalX: null,

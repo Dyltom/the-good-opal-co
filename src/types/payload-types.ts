@@ -525,6 +525,10 @@ export interface Product {
    */
   builderContourSourceImageHash?: string | null;
   /**
+   * Gallery image selected by automatic analysis for this candidate.
+   */
+  builderPhotoCandidateImageIndex?: number | null;
+  /**
    * Candidate crop horizontal focus.
    */
   builderPhotoCandidateFocalX?: number | null;
@@ -1562,6 +1566,7 @@ export interface ProductsSelect<T extends boolean = true> {
   builderContour?: T;
   builderContourCandidate?: T;
   builderContourSourceImageHash?: T;
+  builderPhotoCandidateImageIndex?: T;
   builderPhotoCandidateFocalX?: T;
   builderPhotoCandidateFocalY?: T;
   builderPhotoCandidateZoom?: T;

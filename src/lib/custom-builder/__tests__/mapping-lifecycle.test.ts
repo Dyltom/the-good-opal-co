@@ -289,6 +289,49 @@ describe('opal builder mapping lifecycle', () => {
     expect(changed.builderMappingSourceImageHash).not.toBe(original.builderMappingSourceImageHash)
   })
 
+  test('requeues gallery analysis without invalidating a reviewed active source', () => {
+    const original = applyBuilderMappingLifecycle(
+      {
+        category: 'raw-opals',
+        dimensions: { depth: 2, length: 9, width: 6 },
+        images: [{ image: 'active-media' }],
+        name: 'Oval white opal',
+        slug: 'white-opal',
+        stoneType: 'white-opal',
+      },
+      undefined,
+      now
+    )
+    const reviewed = {
+      ...original,
+      builderContourCandidate: { radii: Array.from({ length: 72 }, () => 1), version: 1 },
+      builderEligible: true,
+      builderMappingAnalyzedImageHash: 'analysed-source',
+      builderMappingStatus: 'reviewed',
+      builderPhotoAnalysisConfidence: 0.91,
+      builderPhotoAnalysisVersion: 3,
+      builderPhotoCandidateImageIndex: 0,
+    }
+
+    const changed = applyBuilderMappingLifecycle(
+      { images: [{ image: 'active-media' }, { image: 'new-gallery-media' }] },
+      reviewed,
+      '2026-07-13T12:00:00.000Z'
+    )
+
+    expect(changed).toMatchObject({
+      builderContourCandidate: null,
+      builderEligible: true,
+      builderMappingAnalyzedImageHash: null,
+      builderMappingStatus: 'reviewed',
+      builderPhotoAnalysisConfidence: null,
+      builderPhotoAnalysisVersion: null,
+      builderPhotoCandidateImageIndex: null,
+    })
+    expect(changed.builderMappingInputHash).toBe(original.builderMappingInputHash)
+    expect(changed.builderMappingSourceImageHash).toBe(original.builderMappingSourceImageHash)
+  })
+
   test('refreshes inferred crop suggestions when the source image changes', () => {
     const changed = applyBuilderMappingLifecycle(
       { images: [{ image: { filename: 'replacement.jpg', focalX: 72, focalY: 31 } }] },
@@ -317,6 +360,7 @@ describe('opal builder mapping lifecycle', () => {
       builderMappingStatus: 'stale',
       builderPhotoAnalysisVersion: null,
       builderPhotoAnalysisConfidence: null,
+      builderPhotoCandidateImageIndex: null,
       builderPhotoFocalX: 0.72,
       builderPhotoFocalY: 0.31,
     })
