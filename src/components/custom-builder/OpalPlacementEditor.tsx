@@ -129,7 +129,11 @@ function OpalSettingDecoration({
       data-opal-setting-decoration={style}
     >
       <span
-        className="absolute bg-[#31312c] shadow-[0_10px_22px_rgb(0_0_0/0.55)]"
+        data-opal-setting-support
+        className={cn(
+          'absolute bg-[#31312c] shadow-[0_10px_22px_rgb(0_0_0/0.55)]',
+          silhouetteClass(opal.visual.silhouette)
+        )}
         style={{
           background: `linear-gradient(135deg, ${metalColours[metal]}, #77766f 44%, #292a26 78%)`,
           clipPath,

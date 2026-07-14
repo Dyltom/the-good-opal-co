@@ -19,7 +19,7 @@ describe('catalogue opal gloss contract', () => {
   })
 
   test('keeps gloss restrained and independent from animation time', () => {
-    expect(sceneSource).toContain('float alpha = min(0.2, highlight * 0.18 + edgeSheen * 0.035)')
+    expect(sceneSource).toContain('float alpha = min(0.13, highlight * 0.1 + edgeSheen * 0.025)')
     expect(sceneSource).toContain('vec3 shellPosition = position + normal * 0.0015')
     expect(sceneSource).not.toMatch(/photoGloss(?:Vertex|Fragment)Shader[\s\S]*uTime/)
     expect(sceneSource).toContain("frameloop={allowMotion ? 'always' : 'demand'}")

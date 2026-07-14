@@ -176,6 +176,9 @@ describe('RingConfigurator store opal selection', () => {
 
     expect(document.querySelector('[data-opal-setting-decoration="aurora"]')).not.toBeNull()
     expect(document.querySelectorAll('[data-opal-setting-grain]').length).toBeGreaterThan(20)
+    expect(
+      document.querySelector('[data-opal-setting-support]')?.getAttribute('class')
+    ).toContain('rounded-[50%]')
 
     await user.click(screen.getByRole('button', { name: /Coral/i }))
 
