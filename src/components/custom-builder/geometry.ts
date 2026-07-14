@@ -627,8 +627,15 @@ export function getCabochonDepthProfile(
   }
 }
 
-export function getPatinaSeamCentreZ(girdleZ: number, seamRadius: number): number {
-  return girdleZ - seamRadius + 0.0005
+export function getPatinaGrooveProfile(
+  girdleZ: number,
+  seamRadius: number
+): { bottomZ: number; thickness: number; topZ: number } {
+  return {
+    bottomZ: girdleZ - 0.008,
+    thickness: Math.max(0.012, seamRadius * 1.5),
+    topZ: girdleZ + 0.0005,
+  }
 }
 
 export function getSettingPlacement(config: RingConfig, selectedOpal?: BuilderOpal) {

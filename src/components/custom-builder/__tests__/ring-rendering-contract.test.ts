@@ -15,9 +15,11 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('const bezelCapInnerOffset =')
     expect(sceneSource).toContain('thickness={bezelCapThickness}')
     expect(sceneSource).toContain('finish="patina"')
-    expect(sceneSource).toContain(
-      'z={getPatinaSeamCentreZ(depthProfile.girdleZ, profile.innerSeamRadius)}'
-    )
+    expect(sceneSource).toContain('getPatinaGrooveProfile(')
+    expect(sceneSource).toContain('bottomZ={patinaGroove.bottomZ}')
+    expect(sceneSource).toContain('thickness={patinaGroove.thickness}')
+    expect(sceneSource).toContain('topZ={patinaGroove.topZ}')
+    expect(sceneSource).not.toContain('<tubeGeometry args={[curve, 96, radius, 14, true]} />')
   })
 
   test('drives each forged shank and shoulder join from its sold-style profile', () => {

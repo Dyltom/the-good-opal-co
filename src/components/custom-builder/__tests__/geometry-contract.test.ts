@@ -9,7 +9,7 @@ import {
   getCabochonDepthProfile,
   getCameraPosition,
   getPortraitFramingScale,
-  getPatinaSeamCentreZ,
+  getPatinaGrooveProfile,
   getRingFramingTarget,
   getRingMeasurements,
   getRingModelBounds,
@@ -156,13 +156,14 @@ describe('custom ring geometry contract', () => {
     expect(placement.depthProfile.girdleZ).toBeGreaterThan(placement.depthProfile.baseZ)
   })
 
-  test('recesses the patina seam into the stone seat instead of raising a dark cord', () => {
+  test('recesses a flat patina groove into the stone seat instead of raising a dark cord', () => {
     const girdleZ = 0.028
     const radius = 0.008
-    const centreZ = getPatinaSeamCentreZ(girdleZ, radius)
+    const groove = getPatinaGrooveProfile(girdleZ, radius)
 
-    expect(centreZ + radius).toBeLessThanOrEqual(girdleZ + 0.0005)
-    expect(centreZ - radius).toBeLessThan(girdleZ)
+    expect(groove.topZ).toBeLessThanOrEqual(girdleZ + 0.0005)
+    expect(groove.bottomZ).toBeLessThan(girdleZ)
+    expect(groove.thickness).toBeGreaterThanOrEqual(0.012)
   })
 
   test('centres every camera on the actual model bounds', () => {

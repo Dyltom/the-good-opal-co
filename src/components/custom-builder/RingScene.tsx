@@ -44,7 +44,7 @@ import {
   getCabochonDepthProfile,
   getBezelWallContourPoints,
   getCameraPosition,
-  getPatinaSeamCentreZ,
+  getPatinaGrooveProfile,
   getRingFramingTarget,
   getRingMeasurements,
   getRingShankPathPoints,
@@ -679,52 +679,6 @@ function BezelWall({
   )
 }
 
-function StoneOutline({
-  config,
-  dimensions,
-  offset,
-  radius,
-  z,
-  finish = 'metal',
-  edgeVariation = 0,
-}: {
-  config: RingConfig
-  dimensions: StoneDimensions
-  offset: number
-  radius: number
-  z: number
-  finish?: 'metal' | 'patina'
-  edgeVariation?: number
-}) {
-  const [width, height] = dimensions
-  const curve = useMemo(
-    () =>
-      new CatmullRomCurve3(
-        Array.from({ length: 72 }, (_, index) => {
-          const angle = (index / 72) * Math.PI * 2
-          const handmadeOffset =
-            edgeVariation * (Math.sin(angle * 3 + 0.4) * 0.65 + Math.sin(angle * 7) * 0.35)
-          const [x, y] = outlinePoint(config.shape, angle, width, height, offset + handmadeOffset)
-          return new Vector3(x, y, z)
-        }),
-        true,
-        'centripetal'
-      ),
-    [config.shape, edgeVariation, height, offset, width, z]
-  )
-
-  return (
-    <mesh castShadow receiveShadow>
-      <tubeGeometry args={[curve, 96, radius, 14, true]} />
-      {finish === 'patina' ? (
-        <PatinaMaterial metal={config.metal} />
-      ) : (
-        <MetalMaterial metal={config.metal} roughness={0.2} />
-      )}
-    </mesh>
-  )
-}
-
 function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
   const dimensions = getStoneDimensions(config, selectedOpal)
   const [width, height] = dimensions
@@ -747,6 +701,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const settingBaseDrop =
     config.style === 'coral' ? 0.04 : config.setting === 'beaded' ? 0.075 : 0.055
   const haloSupport = getHaloSupportGeometry(profile)
+  const patinaGroove = getPatinaGrooveProfile(depthProfile.girdleZ, profile.innerSeamRadius)
   const beadCount =
     profile.beadCount > 0 ? getStyleBeadCount(config.style, config.shape, width, height) : 0
   const beads = useMemo(
@@ -802,14 +757,14 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         thickness={bezelCapThickness}
         topZ={bezelTop + profile.bezelLipRadius * 0.18}
       />
-      <StoneOutline
+      <BezelWall
         config={config}
         dimensions={dimensions}
-        offset={profile.innerSeamOffset}
-        radius={profile.innerSeamRadius}
-        z={getPatinaSeamCentreZ(depthProfile.girdleZ, profile.innerSeamRadius)}
+        bottomZ={patinaGroove.bottomZ}
         finish="patina"
-        edgeVariation={profile.innerSeamVariation}
+        offset={profile.innerSeamOffset}
+        thickness={patinaGroove.thickness}
+        topZ={patinaGroove.topZ}
       />
 
       {config.setting === 'beaded' && (
