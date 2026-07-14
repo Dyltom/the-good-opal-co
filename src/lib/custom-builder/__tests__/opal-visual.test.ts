@@ -208,7 +208,7 @@ describe('custom builder opal visual profiles', () => {
       'white-opal'
     )
 
-    expect(profile.visual.textureCrop).toEqual({ focalX: 0.47, focalY: 0.48, zoom: 3.8 })
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.505, focalY: 0.48, zoom: 3.8 })
   })
 
   test('keeps reviewed photo crops aligned with the complete stone face', () => {

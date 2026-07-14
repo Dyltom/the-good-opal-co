@@ -225,7 +225,7 @@ const cataloguePhotoProfiles: Record<
     aspectRatio: 13 / 8.5,
     evidence: 'catalogue',
     recommendedStyle: 'aurora',
-    textureCrop: { focalX: 0.47, focalY: 0.48, zoom: 3.8 },
+    textureCrop: { focalX: 0.505, focalY: 0.48, zoom: 3.8 },
     photoFit: 'estimated',
   },
 }
