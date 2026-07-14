@@ -30,6 +30,7 @@ export interface StockReconciliationSummary {
   mismatchCount: number
   mismatches: StockReconciliationMismatch[]
   productsWithExactQuantity: number
+  productsWithoutExactQuantity: Array<{ slug: string; wooId: number }>
 }
 
 function enabled(name: string): boolean {
@@ -190,6 +191,7 @@ export async function syncWooCatalog(options: SyncOptions) {
     mismatchCount: 0,
     mismatches: [],
     productsWithExactQuantity: 0,
+    productsWithoutExactQuantity: [],
   }
 
   for (const sourceProduct of sourceProducts) {
@@ -225,6 +227,11 @@ export async function syncWooCatalog(options: SyncOptions) {
             wooId: sourceProduct.wooId,
           })
         }
+      } else {
+        stockReconciliation.productsWithoutExactQuantity.push({
+          slug: sourceProduct.slug,
+          wooId: sourceProduct.wooId,
+        })
       }
     }
     const slugOwner = slugOwners.get(sourceProduct.slug)
@@ -282,6 +289,7 @@ export async function syncWooCatalog(options: SyncOptions) {
   }
 
   stockReconciliation.mismatches.sort((left, right) => left.wooId - right.wooId)
+  stockReconciliation.productsWithoutExactQuantity.sort((left, right) => left.wooId - right.wooId)
   stockReconciliation.mismatchCount = stockReconciliation.mismatches.length
 
   const mode = options.apply ? 'applied' : 'dry run'
@@ -292,8 +300,12 @@ export async function syncWooCatalog(options: SyncOptions) {
           `${wooId}:${localStock}->${sourceStock}=>${targetStock}`
       )
       .join(',') || 'none'
+  const quantityGapSummary =
+    stockReconciliation.productsWithoutExactQuantity
+      .map(({ slug, wooId }) => `${wooId}:${slug}`)
+      .join(',') || 'none'
   payload.logger.info(
-    `WooCommerce catalog sync ${mode}: ${created} create, ${updated} update, ${archived} archive, ${sourceProducts.length} source products; stock source ${stockReconciliation.authenticatedSource ? 'authenticated' : 'public fallback'}, exact quantities ${stockReconciliation.productsWithExactQuantity}/${stockReconciliation.managedProducts}, local/source mismatches ${stockReconciliation.mismatchCount} (${mismatchSummary}).`
+    `WooCommerce catalog sync ${mode}: ${created} create, ${updated} update, ${archived} archive, ${sourceProducts.length} source products; stock source ${stockReconciliation.authenticatedSource ? 'authenticated' : 'public fallback'}, exact quantities ${stockReconciliation.productsWithExactQuantity}/${stockReconciliation.managedProducts}, missing exact quantities ${stockReconciliation.productsWithoutExactQuantity.length} (${quantityGapSummary}), local/source mismatches ${stockReconciliation.mismatchCount} (${mismatchSummary}).`
   )
   return {
     mode,

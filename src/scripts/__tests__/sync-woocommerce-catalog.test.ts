@@ -86,11 +86,15 @@ describe('WooCommerce catalogue mutation retries', () => {
         mismatchCount: 0,
         mismatches: [],
         productsWithExactQuantity: 0,
+        productsWithoutExactQuantity: [{ slug: 'existing-opal', wooId: 5681 }],
       },
     })
 
     expect(mocks.logger.info).toHaveBeenCalledWith(
       expect.stringContaining('stock source public fallback, exact quantities 0/1')
+    )
+    expect(mocks.logger.info).toHaveBeenCalledWith(
+      expect.stringContaining('missing exact quantities 1 (5681:existing-opal)')
     )
   })
 
@@ -156,9 +160,11 @@ describe('WooCommerce catalogue mutation retries', () => {
       mismatchCount: 1,
       mismatches: [{ localStock: 5, reconciledStock: 3, sourceStock: 3, wooId: 5681 }],
       productsWithExactQuantity: 1,
+      productsWithoutExactQuantity: [],
     })
     const log = String(mocks.logger.info.mock.calls.at(-1)?.[0])
     expect(log).toContain('stock source authenticated, exact quantities 1/1')
+    expect(log).toContain('missing exact quantities 0 (none)')
     expect(log).toContain('local/source mismatches 1 (5681:5->3=>3)')
     expect(log).not.toContain('ck_read_only')
     expect(log).not.toContain('cs_private')
