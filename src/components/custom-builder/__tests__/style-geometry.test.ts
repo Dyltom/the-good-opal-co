@@ -46,7 +46,7 @@ describe('sold ring style geometry', () => {
 
       expect(Math.max(...samples.map(({ delta }) => delta))).toBeGreaterThan(0)
       expect(Math.min(...samples.map(({ delta }) => delta))).toBeLessThan(0)
-      expect(Math.min(...samples.map(({ thickness }) => thickness))).toBeGreaterThan(0.035)
+      expect(Math.min(...samples.map(({ thickness }) => thickness))).toBeGreaterThan(0.03)
     }
   )
 
@@ -55,16 +55,16 @@ describe('sold ring style geometry', () => {
 
     expect(coral).toMatchObject({
       bezelWallOffset: 0.025,
-      bezelWallThickness: 0.06,
+      bezelWallThickness: 0.046,
       bezelLipOffset: 0.002,
-      innerSeamRadius: 0.008,
-      shankRadius: 0.094,
-      shoulderRadius: 0.105,
-      crossSectionPower: 0.96,
+      innerSeamRadius: 0.024,
+      shankRadius: 0.082,
+      shoulderRadius: 0.091,
+      crossSectionPower: 0.76,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
-    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.11)
-    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.13)
+    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.09)
+    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.11)
   })
 
   test('keeps Coral square with constant normal-width setting walls', () => {
@@ -86,22 +86,22 @@ describe('sold ring style geometry', () => {
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon).toMatchObject({
-      beadCount: 32,
-      beadPitchMm: 1.06,
-      beadRadius: 0.052,
-      haloOffset: 0.094,
+      beadCount: 36,
+      beadPitchMm: 0.93,
+      beadRadius: 0.044,
+      haloOffset: 0.095,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
-      beadPitchMm: 1.1,
-      beadRadius: 0.062,
-      haloOffset: 0.104,
+      beadPitchMm: 1.12,
+      beadRadius: 0.052,
+      haloOffset: 0.09,
     })
   })
 
   test.each([
-    ['sun-moon', 'oval', 0.3, 0.35, 25],
-    ['sun-moon', 'oval', 0.4, 0.5, 32],
+    ['sun-moon', 'oval', 0.3, 0.35, 28],
+    ['sun-moon', 'oval', 0.4, 0.5, 36],
     ['aurora', 'pear', 0.4, 0.5, 28],
     ['aurora', 'pear', 0.5, 0.75, 37],
   ] as const)(
@@ -139,7 +139,7 @@ describe('sold ring style geometry', () => {
 
       // Aurora's photographed 28-grain layout spans a wider irregular pear
       // perimeter than the denser Sun & Moon halo.
-      const [minimum, maximum] = style === 'sun-moon' ? [1.0, 1.1] : [1.18, 1.28]
+      const [minimum, maximum] = style === 'sun-moon' ? [0.87, 0.98] : [1.12, 1.24]
       expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }

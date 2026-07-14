@@ -4,29 +4,29 @@ import { getSettingOuterHalfWidth, getStoneDimensions } from '../geometry'
 
 const soldReferences = {
   gemini: {
-    bandWidthMm: [1.9, 2.1],
-    headWidthMm: [8.8, 9],
+    bandWidthMm: [1.7, 1.85],
+    headWidthMm: [8.65, 8.85],
     setting: 'bezel',
     shape: 'oval',
     stoneMm: [8, 10],
   },
   coral: {
-    bandWidthMm: [1.7, 1.9],
-    headWidthMm: [11.1, 11.3],
+    bandWidthMm: [1.55, 1.7],
+    headWidthMm: [10.9, 11.1],
     setting: 'bezel',
     shape: 'cushion',
     stoneMm: [10, 10],
   },
   'sun-moon': {
-    bandWidthMm: [1.8, 2],
-    headWidthMm: [10.8, 11.2],
+    bandWidthMm: [1.65, 1.8],
+    headWidthMm: [10.65, 10.95],
     setting: 'beaded',
     shape: 'oval',
     stoneMm: [8, 10],
   },
   aurora: {
-    bandWidthMm: [2, 2.2],
-    headWidthMm: [11, 11.5],
+    bandWidthMm: [1.7, 1.85],
+    headWidthMm: [10.9, 11.3],
     setting: 'beaded',
     shape: 'pear',
     stoneMm: [8, 10],
@@ -53,8 +53,10 @@ describe('sold ring reference proportions', () => {
       expect(headWidthMm).toBeLessThanOrEqual(reference.headWidthMm[1])
       expect(bandWidthMm).toBeGreaterThanOrEqual(reference.bandWidthMm[0])
       expect(bandWidthMm).toBeLessThanOrEqual(reference.bandWidthMm[1])
-      expect(innerWallClearanceMm).toBeGreaterThanOrEqual(-0.05)
-      expect(innerWallClearanceMm).toBeLessThanOrEqual(-0.02)
+      // The vertical wall clears the stone by a hair; the separate burnished
+      // lip provides the protective overlap visible in the sold references.
+      expect(innerWallClearanceMm).toBeGreaterThanOrEqual(0)
+      expect(innerWallClearanceMm).toBeLessThanOrEqual(0.025)
       expect(lipOverlapMm).toBeGreaterThanOrEqual(0.08)
       expect(lipOverlapMm).toBeLessThanOrEqual(0.12)
     }

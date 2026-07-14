@@ -8,9 +8,9 @@ describe('photoreal ring rendering contract', () => {
   test('models a complete low bezel rather than a floating outline', () => {
     expect(sceneSource).toContain('function createSettingBaseGeometry(')
     expect(sceneSource).toContain('<SettingBase')
-    expect(sceneSource).toContain("config.style === 'coral' ? 0.04")
-    expect(sceneSource).toContain("config.setting === 'beaded' ? 0.075 : 0.055")
-    expect(sceneSource).toContain('bottomZ={bezelBottom - settingBaseDrop}')
+    expect(sceneSource).toContain('bottomZ={bezelBottom - profile.cupDepth}')
+    expect(sceneSource).toContain('bottomOffset={outerBezelOffset - profile.cupTaper}')
+    expect(sceneSource).toContain('topOffset={outerBezelOffset}')
     expect(sceneSource).toContain('topZ={depthProfile.baseZ + 0.003}')
     expect(sceneSource).toContain('const bezelCapInnerOffset =')
     expect(sceneSource).toContain('thickness={bezelCapThickness}')
@@ -30,6 +30,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('Math.pow(Math.abs(cosine), crossSectionPower)')
     expect(sceneSource).toContain('const acrossBand =')
     expect(sceneSource).toContain('const throughBand =')
+    expect(sceneSource).toContain('shankForgedVariation')
     expect(sceneSource).toContain('const startCentre = positions.length / 3')
   })
 
@@ -59,11 +60,11 @@ describe('photoreal ring rendering contract', () => {
     )
   })
 
-  test('uses exact catalogue colour and rounded solder grains', () => {
+  test('uses exact catalogue colour and faceted solder grains', () => {
     expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('toneMapped={false}')
-    expect(sceneSource).toContain('<sphereGeometry')
-    expect(sceneSource).not.toContain('<icosahedronGeometry')
+    expect(sceneSource).toContain('<dodecahedronGeometry')
+    expect(sceneSource).not.toContain('<sphereGeometry')
   })
 })

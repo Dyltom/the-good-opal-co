@@ -44,10 +44,13 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
   'three-quarter': [3.2, 5.8, 3],
-  front: [0, 5.8, 0],
-  // Look across the band, not into the tip of the setting's long axis. The old
-  // end-on view hid pear and elongated crowns behind their bezel or halo.
-  profile: [5.8, 0.8, 0],
+  // A small elevation keeps the circular shank readable behind the setting;
+  // an exact face-on camera reduced the forged band to two tube end-caps.
+  front: [0, 5.8, 0.45],
+  // The old end-on profile collapsed the ring into a vertical stick and turned
+  // the opal sideways. This oblique side elevation keeps the stone upright,
+  // reveals cup depth, and shows enough of the shank loop to read as a ring.
+  profile: [5.8, 2.6, 1.8],
 }
 
 export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
@@ -55,7 +58,7 @@ export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', Came
   // The setting rotation maps its local long axis to world -Z. Keeping -Z as
   // screen-up avoids the near-parallel Y-up singularity in the face-on view.
   front: [0, 0, -1],
-  profile: [0, 1, 0],
+  profile: [0, 0, -1],
 }
 
 export function getPortraitFramingScale(width: number, height: number): number {

@@ -583,7 +583,8 @@ function createSettingBaseGeometry(
   shape: RingConfig['shape'],
   width: number,
   height: number,
-  offset: number,
+  bottomOffset: number,
+  topOffset: number,
   bottomZ: number,
   topZ: number,
   contour?: BuilderStoneContourV1
@@ -595,8 +596,25 @@ function createSettingBaseGeometry(
 
   for (let segment = 0; segment < segments; segment += 1) {
     const angle = (segment / segments) * Math.PI * 2
-    const [x, y] = soldStyleOutlinePoint(style, shape, angle, width, height, offset, contour)
-    positions.push(x, y, bottomZ, x, y, topZ)
+    const [bottomX, bottomY] = soldStyleOutlinePoint(
+      style,
+      shape,
+      angle,
+      width,
+      height,
+      bottomOffset,
+      contour
+    )
+    const [topX, topY] = soldStyleOutlinePoint(
+      style,
+      shape,
+      angle,
+      width,
+      height,
+      topOffset,
+      contour
+    )
+    positions.push(bottomX, bottomY, bottomZ, topX, topY, topZ)
   }
 
   for (let segment = 0; segment < segments; segment += 1) {
@@ -631,15 +649,17 @@ function createSettingBaseGeometry(
 function SettingBase({
   config,
   dimensions,
+  bottomOffset,
   bottomZ,
-  offset,
+  topOffset,
   topZ,
   contour,
 }: {
   config: RingConfig
   dimensions: StoneDimensions
+  bottomOffset: number
   bottomZ: number
-  offset: number
+  topOffset: number
   topZ: number
   contour?: BuilderStoneContourV1
 }) {
@@ -651,12 +671,13 @@ function SettingBase({
         config.shape,
         width,
         height,
-        offset,
+        bottomOffset,
+        topOffset,
         bottomZ,
         topZ,
         contour
       ),
-    [bottomZ, config.shape, config.style, contour, height, offset, topZ, width]
+    [bottomOffset, bottomZ, config.shape, config.style, contour, height, topOffset, topZ, width]
   )
   useEffect(() => () => geometry.dispose(), [geometry])
 
@@ -732,11 +753,6 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const bezelCapInnerOffset = profile.bezelLipOffset - profile.bezelLipRadius
   const bezelCapThickness = outerBezelOffset - bezelCapInnerOffset
   const bezelCapOffset = bezelCapInnerOffset + bezelCapThickness / 2
-  // Sold halo designs need a deeper structural backplate to carry the grain
-  // field into the shank. The former paper-thin cup vanished in profile and
-  // made the setting look suspended even where the meshes intersected.
-  const settingBaseDrop =
-    config.style === 'coral' ? 0.04 : config.setting === 'beaded' ? 0.075 : 0.055
   const haloSupport = getHaloSupportGeometry(profile)
   const patinaGroove = getPatinaGrooveProfile(depthProfile.girdleZ, profile.innerSeamRadius)
   const beadCount =
@@ -778,8 +794,9 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       <SettingBase
         config={config}
         dimensions={dimensions}
-        bottomZ={bezelBottom - settingBaseDrop}
-        offset={outerBezelOffset}
+        bottomOffset={outerBezelOffset - profile.cupTaper}
+        bottomZ={bezelBottom - profile.cupDepth}
+        topOffset={outerBezelOffset}
         topZ={depthProfile.baseZ + 0.003}
         contour={contour}
       />
@@ -838,9 +855,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
-                  <sphereGeometry
-                    args={[profile.beadRadius, config.style === 'aurora' ? 12 : 16, 10]}
-                  />
+                  <dodecahedronGeometry args={[profile.beadRadius, 1]} />
                   <MetalMaterial metal={config.metal} roughness={profile.beadRoughness} />
                 </mesh>
               )
@@ -868,6 +883,7 @@ function RingShank({
   shoulderTransition,
   shoulderBlend,
   crossSectionPower,
+  shankForgedVariation,
   metalRoughness,
 }: {
   metal: RingConfig['metal']
@@ -883,6 +899,7 @@ function RingShank({
   shoulderTransition: number
   shoulderBlend: number
   crossSectionPower: number
+  shankForgedVariation: number
   metalRoughness: number
 }) {
   const curve = useMemo(() => {
@@ -919,7 +936,16 @@ function RingShank({
       const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
       const shoulderDistance = Math.min(progress, 1 - progress)
       const blend = Math.min(1, shoulderDistance / shoulderBlend)
-      const localHalfWidth = shoulderRadius + (tubeRadius - shoulderRadius) * blend
+      // Deterministic low-amplitude forging variation breaks the mathematically
+      // perfect tube highlight without changing ring size or shoulder joins.
+      const widthForge =
+        1 +
+        Math.sin(progress * Math.PI * 10 + 0.35) * shankForgedVariation +
+        Math.sin(progress * Math.PI * 22 - 0.4) * shankForgedVariation * 0.35
+      const localHalfWidth =
+        (shoulderRadius + (tubeRadius - shoulderRadius) * blend) * widthForge
+      // Keep radial depth nominal so forged surface variation cannot shrink the
+      // selected ring's exact inside diameter.
       const localHalfDepth = shoulderDepth + (tubeDepth - shoulderDepth) * blend
 
       for (let side = 0; side < radialSegments; side += 1) {
@@ -980,6 +1006,7 @@ function RingShank({
     shoulderBlend,
     shoulderDepth,
     shoulderRadius,
+    shankForgedVariation,
     tubeDepth,
     tubeRadius,
   ])
@@ -1028,6 +1055,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         shoulderTransition={styleProfile.shoulderTransition}
         shoulderBlend={styleProfile.shoulderBlend}
         crossSectionPower={styleProfile.crossSectionPower}
+        shankForgedVariation={styleProfile.shankForgedVariation}
         metalRoughness={styleProfile.metalRoughness}
       />
 

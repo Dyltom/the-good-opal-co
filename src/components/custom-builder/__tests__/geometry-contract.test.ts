@@ -23,6 +23,7 @@ import {
   outlinePoint,
   projectWorldAxisToView,
   rotateSettingVectorToWorld,
+  type CameraVector,
 } from '../geometry'
 import {
   applyRingStyle,
@@ -95,9 +96,9 @@ describe('custom ring geometry contract', () => {
       cameraUpVectors.front
     )
 
-    expect(frontProjection.horizontal).toBeCloseTo(0, 12)
-    expect(frontProjection.vertical).toBeCloseTo(1, 12)
-    expect(Math.abs(faceProjection.depth)).toBeCloseTo(1, 12)
+    expect(Math.abs(frontProjection.horizontal)).toBeLessThan(0.01)
+    expect(Math.abs(frontProjection.vertical)).toBeGreaterThan(0.99)
+    expect(Math.abs(faceProjection.depth)).toBeGreaterThan(0.99)
   })
 
   test('keeps front, profile, and three-quarter views geometrically distinct', () => {
@@ -113,25 +114,34 @@ describe('custom ring geometry contract', () => {
       ])
     )
 
-    expect(projectedDepth.front).toBeGreaterThan(0.99)
-    expect(projectedDepth.profile).toBeLessThan(0.2)
+    expect(projectedDepth.front).toBeGreaterThan(0.98)
+    expect(projectedDepth.profile).toBeGreaterThan(0.3)
+    expect(projectedDepth.profile).toBeLessThan(0.55)
     expect(projectedDepth['three-quarter']).toBeGreaterThan(0.5)
     expect(projectedDepth['three-quarter']).toBeLessThan(0.9)
     expect(cameraPositions['three-quarter']).toEqual([3.2, 5.8, 3])
   })
 
-  test('shows the setting long axis in profile instead of looking into its end', () => {
+  test('keeps the opal upright and reveals the ring loop in profile', () => {
     const target = getRingFramingTarget(defaultRingConfig)
     const longStoneAxis = rotateSettingVectorToWorld([0, 1, 0])
-    const projection = projectWorldAxisToView(
+    const ringPlaneNormal: CameraVector = [0, 0, 1]
+    const stoneProjection = projectWorldAxisToView(
       longStoneAxis,
       cameraPositions.profile,
       target,
       cameraUpVectors.profile
     )
+    const ringProjection = projectWorldAxisToView(
+      ringPlaneNormal,
+      cameraPositions.profile,
+      target,
+      cameraUpVectors.profile
+    )
 
-    expect(Math.abs(projection.depth)).toBeLessThan(0.01)
-    expect(Math.abs(projection.horizontal)).toBeGreaterThan(0.99)
+    expect(Math.abs(stoneProjection.horizontal)).toBeLessThan(0.05)
+    expect(Math.abs(stoneProjection.vertical)).toBeGreaterThan(0.9)
+    expect(Math.abs(ringProjection.depth)).toBeGreaterThan(0.25)
   })
 
   test('scales portrait cameras without changing the selected view direction ratios', () => {
@@ -387,20 +397,21 @@ describe('custom ring geometry contract', () => {
       expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(2.2)
       expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
       expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
-      expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.85)
-      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(1)
+      expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.65)
+      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.85)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(1.1)
       expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(1.15)
       expect(profile.shoulderBlend, style).toBeGreaterThanOrEqual(0.11)
       expect(profile.shoulderBlend, style).toBeLessThanOrEqual(0.13)
-      expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.11)
-      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.14)
+      expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
+      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.18)
       expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
       expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.035)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
         expect(profile.beadPitchMm, style).toBeGreaterThan(0)
+        expect(profile.beadFlattening, style).toBeLessThanOrEqual(0.5)
         expect(profile.haloOffset - profile.beadRadius, style).toBeGreaterThan(
           profile.bezelLipOffset
         )
@@ -408,6 +419,11 @@ describe('custom ring geometry contract', () => {
         expect(profile.beadRadius, style).toBe(0)
         expect(profile.haloOffset, style).toBe(0)
       }
+
+      expect(profile.cupDepth, style).toBeGreaterThan(0.03)
+      expect(profile.cupTaper, style).toBeGreaterThan(0.015)
+      expect(profile.cupTaper, style).toBeLessThan(profile.bezelWallOffset + 0.02)
+      expect(profile.shankForgedVariation, style).toBeGreaterThan(0)
     }
   })
 
