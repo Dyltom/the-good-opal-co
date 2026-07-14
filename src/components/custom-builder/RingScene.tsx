@@ -1355,7 +1355,7 @@ function Setting({
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <dodecahedronGeometry args={[profile.beadRadius, 0]} />
+                      <icosahedronGeometry args={[profile.beadRadius, 1]} />
                     )}
                     <SolderGrainMaterial
                       organic={isOrganicGrain}

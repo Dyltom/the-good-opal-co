@@ -100,7 +100,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain("profile.beadPrimitive === 'rounded-granule'")
     expect(sceneSource).toContain('<sphereGeometry args={[profile.beadRadius, 20, 14]} />')
     expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
-    expect(sceneSource).toContain('<dodecahedronGeometry args={[profile.beadRadius, 0]} />')
+    expect(sceneSource).toContain('<icosahedronGeometry args={[profile.beadRadius, 1]} />')
     expect(sceneSource).not.toContain('lobeOffset')
     expect(sceneSource).toContain(
       'rotation={isOrganicGrain ? [grainTiltX, grainTiltY, 0] : undefined}'
