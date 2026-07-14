@@ -21,7 +21,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "builder_mapping_reviewed_at" = NOW(),
       "builder_mapping_notes" = 'Stone-only crop verified against selected catalogue source, 2026-07-15'
     WHERE "slug" = ${mintabieSlug};
-
+  `)
+  await db.execute(sql`
     UPDATE "products"
     SET
       "builder_silhouette" = 'pear',
@@ -45,7 +46,8 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
       "builder_mapping_reviewed_at" = NOW(),
       "builder_mapping_notes" = 'Cushion crop manually verified inside selected source-photo stone pixels, 2026-07-14'
     WHERE "slug" = ${mintabieSlug};
-
+  `)
+  await db.execute(sql`
     UPDATE "products"
     SET
       "builder_silhouette" = 'oval',
