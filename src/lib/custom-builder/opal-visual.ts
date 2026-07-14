@@ -264,7 +264,10 @@ const validSilhouettes = new Set<RingConfig['shape']>([
 const validStyles = new Set<RingConfig['style']>(['gemini', 'coral', 'sun-moon', 'aurora'])
 const hexColourPattern = /^#[0-9a-f]{6}$/i
 
-function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undefined {
+function cmsReviewedProfile(
+  fields?: BuilderVisualFields,
+  fallbackAspectRatio?: number
+): VisualProfile | undefined {
   const mappingApproved =
     fields?.builderMappingStatus === undefined ||
     fields.builderMappingStatus === null ||
@@ -276,7 +279,7 @@ function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undef
 
   const silhouette = fields.builderSilhouette
   const recommendedStyle = fields.builderRecommendedStyle
-  const dimensions = fields.dimensions
+  const dimensionsMm = completeDimensions(fields)
   const colours = [
     fields.builderFlashColourPrimary,
     fields.builderFlashColourSecondary,
@@ -295,19 +298,14 @@ function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undef
     typeof fields.builderPhotoFocalX !== 'number' ||
     typeof fields.builderPhotoFocalY !== 'number' ||
     typeof fields.builderPhotoZoom !== 'number' ||
-    typeof dimensions?.width !== 'number' ||
-    typeof dimensions.length !== 'number' ||
-    typeof dimensions.depth !== 'number' ||
-    dimensions.width <= 0 ||
-    dimensions.length <= 0 ||
-    dimensions.depth <= 0
+    (!dimensionsMm && (!fallbackAspectRatio || fallbackAspectRatio <= 0))
   ) {
     return undefined
   }
 
   return {
     silhouette: silhouette as RingConfig['shape'],
-    aspectRatio: dimensions.length / dimensions.width,
+    aspectRatio: dimensionsMm ? dimensionsMm.length / dimensionsMm.width : fallbackAspectRatio!,
     evidence: 'catalogue',
     recommendedStyle: recommendedStyle as RingConfig['style'],
     textureCrop: {
@@ -323,11 +321,7 @@ function cmsReviewedProfile(fields?: BuilderVisualFields): VisualProfile | undef
     transmission: fields.builderTransmission,
     patternSeed: 0,
     photoFit: 'reviewed',
-    dimensionsMm: {
-      width: dimensions.width,
-      length: dimensions.length,
-      depth: dimensions.depth,
-    },
+    dimensionsMm,
   }
 }
 
@@ -484,7 +478,8 @@ export function createOpalVisualProfile(
   const silhouette = inferSilhouette(name)
   const reviewed = reviewedProfileFor(slug)
   const cataloguePhoto = cataloguePhotoProfiles[slug]
-  const managed = cmsReviewedProfile(fields)
+  const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
+  const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
   const dimensionsMm = completeDimensions(fields)
   const baseVisual = managed ?? reviewed ?? cataloguePhoto ?? silhouette
   const usesIndividualPhoto = classifyOpalListing(name) === 'individual'

@@ -368,6 +368,35 @@ describe('custom builder opal visual profiles', () => {
     })
   })
 
+  test('uses reviewed CMS crops when legacy catalogue dimensions are incomplete', () => {
+    const profile = createOpalVisualProfile(
+      'coober-pedy-white-opal-2-30-cts-copy',
+      'Coober Pedy White Opal 2.30 cts',
+      'white-opal',
+      {
+        builderEligible: false,
+        builderMappingStatus: 'reviewed',
+        builderSilhouette: 'oval',
+        builderRecommendedStyle: 'gemini',
+        builderBodyColour: '#dce6df',
+        builderFlashColourPrimary: '#55cfff',
+        builderFlashColourSecondary: '#5bea9a',
+        builderFlashColourAccent: '#ffd34e',
+        builderTransmission: 0.16,
+        builderPhotoFocalX: 0.43,
+        builderPhotoFocalY: 0.43,
+        builderPhotoZoom: 4.6,
+      }
+    )
+
+    expect(profile.visual).toMatchObject({
+      aspectRatio: 1.2,
+      photoFit: 'reviewed',
+      textureCrop: { focalX: 0.43, focalY: 0.43, zoom: 4.6 },
+    })
+    expect(profile.visual.dimensionsMm).toBeUndefined()
+  })
+
   test('never maps one crop onto a parcel containing multiple opals', () => {
     const profile = createOpalVisualProfile(
       'opal-parcel',
