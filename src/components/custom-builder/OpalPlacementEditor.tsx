@@ -113,7 +113,8 @@ function OpalSettingDecoration({
           opal.visual.contour
         ),
         profile.beadVariation,
-        profile.beadFlattening
+        profile.beadFlattening,
+        profile.beadAsymmetry
       ),
     [
       beadCount,
@@ -121,6 +122,7 @@ function OpalSettingDecoration({
       opal.visual.contour,
       opal.visual.silhouette,
       profile.beadFlattening,
+      profile.beadAsymmetry,
       profile.beadVariation,
       profile.haloOffset,
       profile.haloPhase,

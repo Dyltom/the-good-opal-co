@@ -122,6 +122,7 @@ export interface RingStyleGeometryProfile {
   beadCount: number
   beadPitchMm: number
   beadFlattening: number
+  beadAsymmetry: number
   beadRoughness: number
   beadShape: 'angular' | 'none' | 'rounded'
   beadVariation: number
@@ -189,6 +190,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 0,
     beadPitchMm: 0,
     beadFlattening: 0.7,
+    beadAsymmetry: 0,
     beadRoughness: 0.34,
     beadShape: 'none',
     beadVariation: 0,
@@ -232,6 +234,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 0,
     beadPitchMm: 0,
     beadFlattening: 0.7,
+    beadAsymmetry: 0,
     beadRoughness: 0.34,
     beadShape: 'none',
     beadVariation: 0,
@@ -274,6 +277,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 36,
     beadPitchMm: 0.93,
     beadFlattening: 0.48,
+    beadAsymmetry: 0,
     beadRoughness: 0.48,
     beadShape: 'rounded',
     beadVariation: 0.9,
@@ -316,6 +320,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadCount: 28,
     beadPitchMm: 1.12,
     beadFlattening: 0.42,
+    beadAsymmetry: 0.24,
     beadRoughness: 0.52,
     beadShape: 'angular',
     beadVariation: 1.7,

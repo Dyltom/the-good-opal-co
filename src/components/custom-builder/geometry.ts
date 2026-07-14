@@ -631,7 +631,8 @@ export function getSettingOuterHalfWidth(
         contour
       ),
       profile.beadVariation,
-      profile.beadFlattening
+      profile.beadFlattening,
+      profile.beadAsymmetry
     )
     return beads.reduce(
       (maximum, bead) =>
@@ -945,7 +946,8 @@ export interface HandmadeBeadPoint {
 export function applyHandmadeBeadVariation(
   points: readonly { key: number; x: number; y: number }[],
   variation = 1,
-  baseFlattening = 0.72
+  baseFlattening = 0.72,
+  asymmetry = 0
 ): readonly HandmadeBeadPoint[] {
   return points.map(({ key, x, y }) => {
     const size = 1 + (-0.06 + ((key * 5) % 7) * 0.022) * variation
@@ -954,8 +956,14 @@ export function applyHandmadeBeadVariation(
     const radialLength = Math.hypot(x, y) || 1
     const radialJitter = (((key * 11) % 9) - 4) * 0.0012 * variation
     const tangentJitter = (((key * 13) % 7) - 3) * 0.0008 * variation
-    const stretchX = 1 + (((key * 7) % 5) - 2) * 0.022 * variation
-    const stretchY = 1 + (((key * 9) % 7) - 3) * 0.016 * variation
+    const baseStretchX = 1 + (((key * 7) % 5) - 2) * 0.022 * variation
+    const baseStretchY = 1 + (((key * 9) % 7) - 3) * 0.016 * variation
+    const maximumStretch = Math.max(baseStretchX, baseStretchY)
+    const asymmetryPattern = 0.58 + (((key * 19) % 8) / 7) * 0.42
+    const minorStretch = maximumStretch * Math.max(0.65, 1 - asymmetry * asymmetryPattern)
+    const majorAlongX = (key * 7) % 5 < 2
+    const stretchX = asymmetry > 0 ? (majorAlongX ? maximumStretch : minorStretch) : baseStretchX
+    const stretchY = asymmetry > 0 ? (majorAlongX ? minorStretch : maximumStretch) : baseStretchY
 
     return {
       key,

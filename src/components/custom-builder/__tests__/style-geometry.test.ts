@@ -89,6 +89,8 @@ describe('sold ring style geometry', () => {
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
+    expect(sunMoon.beadAsymmetry).toBe(0)
+    expect(aurora.beadAsymmetry).toBe(0.24)
     expect(sunMoon.beadShape).toBe('rounded')
     expect(aurora.beadShape).toBe('angular')
     expect(sunMoon).toMatchObject({
@@ -103,6 +105,52 @@ describe('sold ring style geometry', () => {
       beadRadius: 0.052,
       haloOffset: 0.09,
     })
+  })
+
+  test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
+    const profile = ringStyleGeometryProfiles.aurora
+    const count = getStyleBeadCount('aurora', 'pear', 0.4, 0.5)
+    const points = evenlySpacedOutlinePoints(
+      'pear',
+      0.4,
+      0.5,
+      profile.haloOffset,
+      count,
+      profile.haloPhase,
+      'aurora'
+    )
+    const baseline = applyHandmadeBeadVariation(
+      points,
+      profile.beadVariation,
+      profile.beadFlattening
+    )
+    const handmade = applyHandmadeBeadVariation(
+      points,
+      profile.beadVariation,
+      profile.beadFlattening,
+      profile.beadAsymmetry
+    )
+
+    expect(count).toBe(28)
+    expect(handmade).toEqual(
+      applyHandmadeBeadVariation(
+        points,
+        profile.beadVariation,
+        profile.beadFlattening,
+        profile.beadAsymmetry
+      )
+    )
+    expect(
+      handmade.map(({ size, stretchX, stretchY }) => size * Math.max(stretchX, stretchY))
+    ).toEqual(
+      baseline.map(({ size, stretchX, stretchY }) => size * Math.max(stretchX, stretchY))
+    )
+
+    const aspectRatios = handmade.map(
+      ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
+    )
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.76)
+    expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
   test.each([
@@ -186,7 +234,8 @@ describe('sold ring style geometry', () => {
           style
         ),
         profile.beadVariation,
-        profile.beadFlattening
+        profile.beadFlattening,
+        profile.beadAsymmetry
       )
       const gaps = beads.map((bead, index) => {
         const next = beads[(index + 1) % beads.length]!
@@ -308,7 +357,8 @@ describe('sold ring style geometry', () => {
           style
         ),
         profile.beadVariation,
-        profile.beadFlattening
+        profile.beadFlattening,
+        profile.beadAsymmetry
       )
       const contour = getGrainDerivedHaloSupportOutline({
         beadRadius: profile.beadRadius,

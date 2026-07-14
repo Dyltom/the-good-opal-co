@@ -1009,7 +1009,8 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
           contour
         ),
         profile.beadVariation,
-        profile.beadFlattening
+        profile.beadFlattening,
+        profile.beadAsymmetry
       ),
     [
       beadCount,
@@ -1018,6 +1019,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       contour,
       height,
       profile.beadFlattening,
+      profile.beadAsymmetry,
       profile.beadVariation,
       profile.haloOffset,
       profile.haloPhase,
