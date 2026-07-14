@@ -10,11 +10,12 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 
-import { POST } from '../route'
+import { GET, POST } from '../route'
 
 const contour = { version: 1 as const, radii: Array.from({ length: 96 }, () => 1) }
 const product = {
   id: 42,
+  name: 'Lightning Ridge black opal',
   category: 'raw-opals',
   images: [{ image: 7 }],
   stoneType: 'black-opal',
@@ -37,10 +38,22 @@ const product = {
   builderPhotoCandidateRotation: -12,
 }
 
+const media = {
+  id: 7,
+  alt: 'Black opal on a neutral background',
+  url: '/api/media/file/black-opal.jpg',
+  width: 1200,
+  height: 1600,
+}
+
 function request() {
   return new NextRequest('https://example.com/api/admin/products/42/adopt-builder-candidate', {
     method: 'POST',
   })
+}
+
+function getRequest() {
+  return new NextRequest('https://example.com/api/admin/products/42/adopt-builder-candidate')
 }
 
 describe('adopt builder candidate admin route', () => {
@@ -52,7 +65,9 @@ describe('adopt builder candidate admin route', () => {
       update: mocks.update,
     })
     mocks.auth.mockResolvedValue({ user: { id: 1, role: 'admin' } })
-    mocks.findByID.mockResolvedValue(product)
+    mocks.findByID.mockImplementation(({ collection }: { collection: string }) =>
+      Promise.resolve(collection === 'media' ? media : product)
+    )
     mocks.update.mockResolvedValue({})
   })
 
@@ -63,6 +78,117 @@ describe('adopt builder candidate admin route', () => {
 
     expect(response.status).toBe(403)
     expect(mocks.findByID).not.toHaveBeenCalled()
+  })
+
+  test('rejects a malformed request origin before authentication', async () => {
+    const malformedOrigin = new NextRequest(
+      'https://example.com/api/admin/products/42/adopt-builder-candidate',
+      { headers: { origin: 'not a valid origin' }, method: 'POST' }
+    )
+
+    const response = await POST(malformedOrigin, { params: Promise.resolve({ id: '42' }) })
+
+    expect(response.status).toBe(403)
+    expect(mocks.auth).not.toHaveBeenCalled()
+  })
+
+  test('returns the selected source, candidate, crop, active state, and dimensions for review', async () => {
+    const activeContour = { version: 1 as const, radii: Array.from({ length: 96 }, () => 0.95) }
+    mocks.findByID.mockImplementation(({ collection }: { collection: string }) =>
+      Promise.resolve(
+        collection === 'media'
+          ? { ...media, id: 8, url: 'https://cdn.example.com/selected-opal.jpg' }
+          : {
+              ...product,
+              images: [{ image: 7 }, { image: 8 }],
+              builderMappedImageIndex: 1,
+              builderContour: activeContour,
+              builderContourSourceImageHash: 'b'.repeat(64),
+              builderPhotoFocalX: 0.5,
+              builderPhotoFocalY: 0.5,
+              builderPhotoZoom: 2.8,
+              builderPhotoRotation: 0,
+              builderMappingStatus: 'reviewed',
+              builderEligible: true,
+            }
+      )
+    )
+
+    const response = await GET(getRequest(), { params: Promise.resolve({ id: '42' }) })
+    const result = (await response.json()) as {
+      active: Record<string, unknown>
+      candidate: Record<string, unknown>
+      dimensions: Record<string, unknown>
+      product: Record<string, unknown>
+      sourceImage: Record<string, unknown>
+    }
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(result.product).toEqual({
+      id: 42,
+      name: 'Lightning Ridge black opal',
+      silhouette: 'oval',
+    })
+    expect(result.sourceImage).toEqual({
+      alt: 'Black opal on a neutral background',
+      height: 1600,
+      url: 'https://cdn.example.com/selected-opal.jpg',
+      width: 1200,
+    })
+    expect(result.candidate).toMatchObject({
+      adoptable: true,
+      analysisVersion: 3,
+      confidence: 0.81,
+      contour,
+      crop: { focalX: 0.42, focalY: 0.57, rotation: -12, zoom: 3.4 },
+      genericFallback: false,
+      placementAdoptable: true,
+    })
+    expect(result.active).toMatchObject({
+      contour: activeContour,
+      eligible: true,
+      mappingStatus: 'reviewed',
+      matchesCandidateContour: false,
+      matchesCandidateCrop: false,
+      sourceIsCurrent: false,
+    })
+    expect(result.dimensions).toEqual({ depth: 2.5, length: 9, width: 6 })
+    expect(mocks.findByID).toHaveBeenNthCalledWith(2, {
+      collection: 'media',
+      id: 8,
+      depth: 0,
+      overrideAccess: true,
+    })
+  })
+
+  test('marks a canonical fallback and missing measurements as unsafe to adopt', async () => {
+    mocks.findByID.mockImplementation(({ collection }: { collection: string }) =>
+      Promise.resolve(
+        collection === 'media'
+          ? { ...media, url: 'javascript:alert(1)' }
+          : {
+              ...product,
+              dimensions: { length: 9 },
+              builderPhotoAnalysisConfidence: 0.7,
+            }
+      )
+    )
+
+    const response = await GET(getRequest(), { params: Promise.resolve({ id: '42' }) })
+    const result = (await response.json()) as {
+      candidate: { adoptable: boolean; genericFallback: boolean; placementAdoptable: boolean }
+      dimensions: Record<string, unknown>
+      sourceImage: { url: string | null }
+    }
+
+    expect(result.candidate).toMatchObject({
+      adoptable: false,
+      genericFallback: true,
+      placementAdoptable: false,
+    })
+    expect(result.dimensions).toEqual({ depth: null, length: 9, width: null })
+    expect(result.sourceImage.url).toBeNull()
   })
 
   test('adopts the exact candidate contour and crop and enables a complete opal', async () => {
