@@ -126,52 +126,20 @@ describe('builder mapping processor', () => {
       unchanged: 0,
     })
 
-    expect(mocks.find).toHaveBeenCalledWith(
-      expect.objectContaining({
-        collection: 'products',
-        depth: 1,
-        limit: 25,
-        where: expect.objectContaining({
-          and: expect.arrayContaining([
-            { category: { equals: 'raw-opals' } },
-            { status: { equals: 'published' } },
-            { stock: { greater_than: 0 } },
-            expect.objectContaining({
-              or: expect.arrayContaining([
-                {
-                  and: [
-                    {
-                      or: expect.arrayContaining([
-                        { builderMappingAnalysisError: { exists: false } },
-                        { builderMappingAnalysisError: { equals: null } },
-                      ]),
-                    },
-                    {
-                      or: expect.arrayContaining([
-                        { builderContourCandidate: { exists: false } },
-                        { builderContourCandidate: { equals: null } },
-                        { builderMappingAnalyzedImageHash: { equals: null } },
-                        { builderPhotoAnalysisVersion: { equals: null } },
-                      ]),
-                    },
-                  ],
-                },
-                {
-                  and: [
-                    { builderMappingAnalysisError: { exists: true } },
-                    {
-                      builderPhotoAnalysisVersion: {
-                        not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
-                      },
-                    },
-                  ],
-                },
-              ]),
-            }),
-          ]),
-        }),
-      })
-    )
+    expect(mocks.find).toHaveBeenNthCalledWith(1, {
+      collection: 'products',
+      depth: 1,
+      limit: 1000,
+      overrideAccess: true,
+      sort: 'updatedAt',
+      where: {
+        and: [
+          { category: { equals: 'raw-opals' } },
+          { status: { equals: 'published' } },
+          { stock: { greater_than: 0 } },
+        ],
+      },
+    })
     expect(fetch).toHaveBeenCalledWith(
       'https://example.com/selected.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
@@ -282,7 +250,7 @@ describe('builder mapping processor', () => {
 
     await expect(processBuilderMappings()).resolves.toEqual({
       analyzed: 1,
-      checked: 2,
+      checked: 1,
       coverage: {
         activeContours: 0,
         availableIndividuals: 2,
@@ -299,12 +267,12 @@ describe('builder mapping processor', () => {
       manual: 1,
       nonIndividual: 0,
       selectedState: {
-        currentVersion: 1,
-        withCandidate: 1,
+        currentVersion: 0,
+        withCandidate: 0,
         withError: 0,
-        withHash: 1,
+        withHash: 0,
       },
-      unchanged: 1,
+      unchanged: 0,
     })
     expect(mocks.analyzeOpalRaster).toHaveBeenCalledTimes(1)
     expect(mocks.update).toHaveBeenCalledTimes(1)
@@ -374,7 +342,7 @@ describe('builder mapping processor', () => {
     })
   })
 
-  test('marks transient source failures retryable without retrying deterministic failures', async () => {
+  test('marks transient source failures retryable', async () => {
     mocks.find.mockResolvedValue({
       docs: [
         {
@@ -398,31 +366,80 @@ describe('builder mapping processor', () => {
       }),
       overrideAccess: true,
     })
-    expect(mocks.find).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          and: expect.arrayContaining([
-            expect.objectContaining({
-              or: expect.arrayContaining([
-                {
-                  and: [
-                    {
-                      builderMappingAnalysisError: {
-                        contains: 'Retryable source error: ',
-                      },
-                    },
-                    {
-                      builderPhotoAnalysisVersion: {
-                        equals: BUILDER_PHOTO_ANALYSIS_VERSION,
-                      },
-                    },
-                  ],
-                },
-              ]),
-            }),
-          ]),
-        }),
-      })
+  })
+
+  test('selects explicit null fields and retries only current transient errors', async () => {
+    const product = {
+      id: 42,
+      builderContourCandidate: null,
+      builderMappingAnalyzedImageHash: null,
+      builderMappingAnalysisError: null,
+      builderMappingMode: 'inferred',
+      builderMappingStatus: 'pending',
+      builderPhotoAnalysisVersion: null,
+      images: [{ image: { id: 7, url: '/opal.jpg' } }],
+      name: 'Lightning Ridge black opal',
+    }
+    mocks.find.mockResolvedValue({ docs: [product] })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, checked: 1 })
+
+    vi.mocked(fetch).mockClear()
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          ...product,
+          builderMappingAnalysisError: 'Retryable source error: Source image request did not complete',
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        },
+      ],
+    })
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, checked: 1 })
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    vi.mocked(fetch).mockClear()
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          ...product,
+          builderMappingAnalysisError: 'Opal face could not be isolated from the source image',
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        },
+      ],
+    })
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 0, checked: 0 })
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('prioritizes individual stones before non-individual catalogue records', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 41,
+          images: [{ image: { id: 6, url: '/parcel.jpg' } }],
+          name: 'Coober Pedy opal parcel',
+        },
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/individual.jpg' } }],
+          name: 'Lightning Ridge black opal 1.2 ct',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings({ limit: 1 })).resolves.toMatchObject({
+      analyzed: 1,
+      checked: 1,
+      nonIndividual: 0,
+    })
+    expect(fetch).toHaveBeenCalledWith(
+      'https://example.com/individual.jpg',
+      expect.objectContaining({ headers: { accept: 'image/*' } })
+    )
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'products', id: 42 })
     )
   })
 

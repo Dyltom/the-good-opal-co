@@ -124,6 +124,34 @@ function reviewedAnalysisHints(product: ProductRecord):
   }
 }
 
+function mappingNeedsPhotoAnalysis(value: unknown): boolean {
+  if (!isRecord(value)) return false
+  const product = value
+  const error =
+    typeof product.builderMappingAnalysisError === 'string'
+      ? product.builderMappingAnalysisError.trim()
+      : ''
+  const currentVersion =
+    product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
+
+  if (error) {
+    return !currentVersion || error.startsWith(RETRYABLE_ANALYSIS_ERROR_PREFIX)
+  }
+
+  const hasHash =
+    typeof product.builderMappingAnalyzedImageHash === 'string' &&
+    product.builderMappingAnalyzedImageHash.length > 0
+  const hasCandidate = Boolean(parseBuilderStoneContour(product.builderContourCandidate))
+  return !currentVersion || !hasHash || !hasCandidate
+}
+
+function analysisPriority(value: unknown): number {
+  if (!isRecord(value)) return 1
+  const product = value
+  const name = typeof product.name === 'string' ? product.name : ''
+  return isAvailableOpalListing(name) && classifyOpalListing(name) === 'individual' ? 0 : 1
+}
+
 async function resolveMappedMedia(
   payload: PayloadClient,
   product: ProductRecord
@@ -275,7 +303,7 @@ export async function processBuilderMappings(
   const result = await payload.find({
     collection: 'products',
     depth: 1,
-    limit,
+    limit: 1000,
     sort: 'updatedAt',
     overrideAccess: true,
     where: {
@@ -283,68 +311,17 @@ export async function processBuilderMappings(
         { category: { equals: 'raw-opals' } },
         { status: { equals: 'published' } },
         { stock: { greater_than: 0 } },
-        {
-          or: [
-            {
-              and: [
-                {
-                  or: [
-                    { builderMappingAnalysisError: { exists: false } },
-                    { builderMappingAnalysisError: { equals: null } },
-                    { builderMappingAnalysisError: { equals: '' } },
-                  ],
-                },
-                {
-                  or: [
-                    { builderMappingAnalyzedImageHash: { exists: false } },
-                    { builderMappingAnalyzedImageHash: { equals: null } },
-                    { builderMappingAnalyzedImageHash: { equals: '' } },
-                    { builderPhotoAnalysisVersion: { exists: false } },
-                    { builderPhotoAnalysisVersion: { equals: null } },
-                    {
-                      builderPhotoAnalysisVersion: {
-                        not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
-                      },
-                    },
-                    { builderContourCandidate: { exists: false } },
-                    { builderContourCandidate: { equals: null } },
-                  ],
-                },
-              ],
-            },
-            {
-              and: [
-                { builderMappingAnalysisError: { exists: true } },
-                {
-                  builderPhotoAnalysisVersion: {
-                    not_equals: BUILDER_PHOTO_ANALYSIS_VERSION,
-                  },
-                },
-              ],
-            },
-            {
-              and: [
-                {
-                  builderMappingAnalysisError: {
-                    contains: RETRYABLE_ANALYSIS_ERROR_PREFIX,
-                  },
-                },
-                {
-                  builderPhotoAnalysisVersion: {
-                    equals: BUILDER_PHOTO_ANALYSIS_VERSION,
-                  },
-                },
-              ],
-            },
-          ],
-        },
       ],
     },
   })
+  const selectedDocuments = result.docs
+    .filter((document) => mappingNeedsPhotoAnalysis(document))
+    .sort((left, right) => analysisPriority(left) - analysisPriority(right))
+    .slice(0, limit)
 
   const summary: BuilderMappingBatchResult = {
     analyzed: 0,
-    checked: result.docs.length,
+    checked: selectedDocuments.length,
     coverage: {
       activeContours: 0,
       availableIndividuals: 0,
@@ -361,18 +338,18 @@ export async function processBuilderMappings(
     manual: 0,
     nonIndividual: 0,
     selectedState: {
-      currentVersion: result.docs.filter(
+      currentVersion: selectedDocuments.filter(
         (document) => document.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
       ).length,
-      withCandidate: result.docs.filter((document) =>
+      withCandidate: selectedDocuments.filter((document) =>
         Boolean(parseBuilderStoneContour(document.builderContourCandidate))
       ).length,
-      withError: result.docs.filter(
+      withError: selectedDocuments.filter(
         (document) =>
           typeof document.builderMappingAnalysisError === 'string' &&
           document.builderMappingAnalysisError.length > 0
       ).length,
-      withHash: result.docs.filter(
+      withHash: selectedDocuments.filter(
         (document) =>
           typeof document.builderMappingAnalyzedImageHash === 'string' &&
           document.builderMappingAnalyzedImageHash.length > 0
@@ -381,7 +358,7 @@ export async function processBuilderMappings(
     unchanged: 0,
   }
 
-  for (const document of result.docs) {
+  for (const document of selectedDocuments) {
     const product = isRecord(document) ? document : undefined
     const id = product?.id
     if (!product || (typeof id !== 'number' && typeof id !== 'string')) {

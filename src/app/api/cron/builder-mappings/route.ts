@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await processBuilderMappings({ limit: batchSize() })
+    console.info('Opal builder mapping cron completed', result)
     return NextResponse.json(result)
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown builder mapping error'
