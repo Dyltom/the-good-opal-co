@@ -28,6 +28,13 @@ describe('WooCommerce catalogue cron', () => {
       sourceStockByWooId: { 5000: 3, 5001: 1 },
       sourceProducts: 2,
       sourceWooIds: [5000, 5001],
+      stockReconciliation: {
+        authenticatedSource: true,
+        managedProducts: 2,
+        mismatchCount: 1,
+        mismatches: [{ localStock: 5, reconciledStock: 3, sourceStock: 3, wooId: 5000 }],
+        productsWithExactQuantity: 2,
+      },
       updated: 2,
     })
     importProductImages.mockResolvedValue({ changed: 1 })
@@ -78,6 +85,15 @@ describe('WooCommerce catalogue cron', () => {
         sourceStockByWooId: { 5000: 3, 5001: 1 },
         sourceProducts: 2,
         sourceWooIds: [5000, 5001],
+        stockReconciliation: {
+          authenticatedSource: true,
+          managedProducts: 2,
+          mismatchCount: 1,
+          mismatches: [
+            { localStock: 5, reconciledStock: 3, sourceStock: 3, wooId: 5000 },
+          ],
+          productsWithExactQuantity: 2,
+        },
         updated: 2,
       },
       images: { changed: 1 },

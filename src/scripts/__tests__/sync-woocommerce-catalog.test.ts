@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   create: vi.fn(),
@@ -34,6 +34,8 @@ import { syncWooCatalog } from '../sync-woocommerce-catalog'
 describe('WooCommerce catalogue mutation retries', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubEnv('WOO_CONSUMER_KEY', '')
+    vi.stubEnv('WOO_CONSUMER_SECRET', '')
     mocks.getPayload.mockResolvedValue({
       create: mocks.create,
       find: mocks.find,
@@ -70,6 +72,28 @@ describe('WooCommerce catalogue mutation retries', () => {
     ])
   })
 
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  test('reports public fallback without claiming exact quantity coverage', async () => {
+    await expect(
+      syncWooCatalog({ apply: false, archiveMissing: false, restock: false })
+    ).resolves.toMatchObject({
+      stockReconciliation: {
+        authenticatedSource: false,
+        managedProducts: 1,
+        mismatchCount: 0,
+        mismatches: [],
+        productsWithExactQuantity: 0,
+      },
+    })
+
+    expect(mocks.logger.info).toHaveBeenCalledWith(
+      expect.stringContaining('stock source public fallback, exact quantities 0/1')
+    )
+  })
+
   test('retries one product mutation after a Postgres serialization conflict', async () => {
     mocks.update.mockRejectedValueOnce({ code: '40001' }).mockResolvedValueOnce({ id: 42 })
 
@@ -82,6 +106,8 @@ describe('WooCommerce catalogue mutation retries', () => {
   })
 
   test('writes exact authenticated Woo stock quantity for an imaged product', async () => {
+    vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
+    vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
     mocks.find.mockResolvedValue({
       docs: [
         {
@@ -114,16 +140,28 @@ describe('WooCommerce catalogue mutation retries', () => {
     ])
     mocks.update.mockResolvedValue({ id: 42 })
 
-    await syncWooCatalog({ apply: true, archiveMissing: false, restock: false })
+    const result = await syncWooCatalog({ apply: true, archiveMissing: false, restock: false })
 
     expect(mocks.fetchWooCatalog).toHaveBeenCalledWith({
       baseUrl: undefined,
-      consumerKey: undefined,
-      consumerSecret: undefined,
+      consumerKey: 'ck_read_only',
+      consumerSecret: 'cs_private',
     })
     expect(mocks.update).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ stock: 3 }) })
     )
+    expect(result.stockReconciliation).toEqual({
+      authenticatedSource: true,
+      managedProducts: 1,
+      mismatchCount: 1,
+      mismatches: [{ localStock: 5, reconciledStock: 3, sourceStock: 3, wooId: 5681 }],
+      productsWithExactQuantity: 1,
+    })
+    const log = String(mocks.logger.info.mock.calls.at(-1)?.[0])
+    expect(log).toContain('stock source authenticated, exact quantities 1/1')
+    expect(log).toContain('local/source mismatches 1 (5681:5->3=>3)')
+    expect(log).not.toContain('ck_read_only')
+    expect(log).not.toContain('cs_private')
   })
 
   test('does not resurrect locally sold inventory from a higher Woo quantity', async () => {

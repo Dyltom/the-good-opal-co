@@ -17,6 +17,21 @@ export interface SyncOptions {
   restock: boolean
 }
 
+export interface StockReconciliationMismatch {
+  localStock: number
+  reconciledStock: number
+  sourceStock: number
+  wooId: number
+}
+
+export interface StockReconciliationSummary {
+  authenticatedSource: boolean
+  managedProducts: number
+  mismatchCount: number
+  mismatches: StockReconciliationMismatch[]
+  productsWithExactQuantity: number
+}
+
 function enabled(name: string): boolean {
   return process.env[name] === 'true'
 }
@@ -117,10 +132,12 @@ function updateData(existing: Product, product: WooCatalogProduct, options: Sync
 
 export async function syncWooCatalog(options: SyncOptions) {
   const payload = await getPayload()
+  const consumerKey = process.env.WOO_CONSUMER_KEY?.trim()
+  const consumerSecret = process.env.WOO_CONSUMER_SECRET?.trim()
   const sourceProducts = await fetchWooCatalog({
     baseUrl: process.env.WOO_STORE_API_URL,
-    consumerKey: process.env.WOO_CONSUMER_KEY,
-    consumerSecret: process.env.WOO_CONSUMER_SECRET,
+    consumerKey,
+    consumerSecret,
   })
   const allProducts = await findAllProducts()
   const existingBySku = new Map(
@@ -167,6 +184,13 @@ export async function syncWooCatalog(options: SyncOptions) {
   )
   let updated = 0
   let archived = 0
+  const stockReconciliation: StockReconciliationSummary = {
+    authenticatedSource: Boolean(consumerKey && consumerSecret),
+    managedProducts: 0,
+    mismatchCount: 0,
+    mismatches: [],
+    productsWithExactQuantity: 0,
+  }
 
   for (const sourceProduct of sourceProducts) {
     const byWooId = existingByWooId.get(sourceProduct.wooId)
@@ -175,6 +199,34 @@ export async function syncWooCatalog(options: SyncOptions) {
       throw new Error(`WooCommerce product ${sourceProduct.wooId} has conflicting identities`)
     }
     const existing = byWooId ?? bySku
+    if (existing) {
+      stockReconciliation.managedProducts += 1
+      if (typeof sourceProduct.stockQuantity === 'number') {
+        stockReconciliation.productsWithExactQuantity += 1
+        const localStock = Math.max(0, existing.stock ?? 0)
+        const sourceStock = reconciledStock(
+          0,
+          sourceProduct.inStock,
+          true,
+          sourceProduct.stockQuantity
+        )
+        if (localStock !== sourceStock) {
+          stockReconciliation.mismatches.push({
+            localStock,
+            reconciledStock: Boolean(existing.images?.some(({ image }) => image))
+              ? reconciledStock(
+                  localStock,
+                  sourceProduct.inStock,
+                  options.restock,
+                  sourceProduct.stockQuantity
+                )
+              : 0,
+            sourceStock,
+            wooId: sourceProduct.wooId,
+          })
+        }
+      }
+    }
     const slugOwner = slugOwners.get(sourceProduct.slug)
     if (slugOwner && slugOwner.id !== existing?.id) {
       throw new Error(
@@ -229,9 +281,19 @@ export async function syncWooCatalog(options: SyncOptions) {
     }
   }
 
+  stockReconciliation.mismatches.sort((left, right) => left.wooId - right.wooId)
+  stockReconciliation.mismatchCount = stockReconciliation.mismatches.length
+
   const mode = options.apply ? 'applied' : 'dry run'
+  const mismatchSummary =
+    stockReconciliation.mismatches
+      .map(
+        ({ localStock, reconciledStock: targetStock, sourceStock, wooId }) =>
+          `${wooId}:${localStock}->${sourceStock}=>${targetStock}`
+      )
+      .join(',') || 'none'
   payload.logger.info(
-    `WooCommerce catalog sync ${mode}: ${created} create, ${updated} update, ${archived} archive, ${sourceProducts.length} source products.`
+    `WooCommerce catalog sync ${mode}: ${created} create, ${updated} update, ${archived} archive, ${sourceProducts.length} source products; stock source ${stockReconciliation.authenticatedSource ? 'authenticated' : 'public fallback'}, exact quantities ${stockReconciliation.productsWithExactQuantity}/${stockReconciliation.managedProducts}, local/source mismatches ${stockReconciliation.mismatchCount} (${mismatchSummary}).`
   )
   return {
     mode,
@@ -242,6 +304,7 @@ export async function syncWooCatalog(options: SyncOptions) {
     updated,
     archived,
     sourceProducts: sourceProducts.length,
+    stockReconciliation,
   }
 }
 
