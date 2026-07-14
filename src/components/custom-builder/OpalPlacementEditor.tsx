@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useMemo, useRef, useState } from 'react'
-import { Move, RotateCcw, RotateCw, SlidersHorizontal, ZoomIn } from 'lucide-react'
+import { Move, RotateCcw, RotateCw, SlidersHorizontal, Undo2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
@@ -43,6 +43,14 @@ function clamp(value: number, minimum: number, maximum: number): number {
 
 function roundPlacement(value: number): number {
   return Math.round(value * 1000) / 1000
+}
+
+function formatPosition(value: number, axis: 'horizontal' | 'vertical'): string {
+  const amount = Math.round(clamp((Math.abs(value) / limits.position) * 100, 0, 100))
+  if (amount === 0) return 'Centred'
+  const direction =
+    axis === 'horizontal' ? (value > 0 ? 'right' : 'left') : value > 0 ? 'down' : 'up'
+  return `${amount}% ${direction}`
 }
 
 function silhouetteClass(shape: BuilderOpal['visual']['silhouette']): string {
@@ -183,6 +191,7 @@ function RangeControl({
   onChange,
   step,
   value,
+  valueText,
 }: {
   disabled?: boolean
   label: string
@@ -191,14 +200,13 @@ function RangeControl({
   onChange: (value: number) => void
   step: number
   value: number
+  valueText: string
 }) {
   return (
     <label className="grid gap-2 text-xs font-medium text-charcoal">
       <span className="flex items-center justify-between gap-3">
         {label}
-        <output className="font-normal tabular-nums text-charcoal-light">
-          {label === 'Rotation' ? `${Math.round(value)}°` : value.toFixed(2)}
-        </output>
+        <output className="font-normal tabular-nums text-charcoal-light">{valueText}</output>
       </span>
       <input
         type="range"
@@ -208,6 +216,7 @@ function RangeControl({
         max={max}
         step={step}
         value={value}
+        aria-valuetext={valueText}
         onChange={(event) => onChange(Number(event.target.value))}
         className="h-11 w-full cursor-pointer accent-charcoal disabled:cursor-not-allowed disabled:opacity-45"
       />
@@ -229,6 +238,11 @@ export function OpalPlacementEditor({
   const scaleMax = getPhotoPlacementScaleMax(baseZoom)
   const displayedScale = Math.min(placement.opalScale, scaleMax)
   const canPan = displayedScale > limits.scaleMin && scaleMax > limits.scaleMin
+  const isDefaultPlacement =
+    placement.opalPositionX === defaultOpalPlacement.opalPositionX &&
+    placement.opalPositionY === defaultOpalPlacement.opalPositionY &&
+    placement.opalScale === defaultOpalPlacement.opalScale &&
+    placement.opalRotation === defaultOpalPlacement.opalRotation
   const clipPath = cssSilhouetteClipPath(opal.visual.silhouette, opal.visual.contour)
   const bezelPadding = style === 'coral' ? 'p-[7px]' : style === 'gemini' ? 'p-[5px]' : 'p-[4px]'
   const seatPadding = style === 'coral' ? 'p-[3px]' : style === 'gemini' ? 'p-px' : 'p-[2px]'
@@ -238,9 +252,11 @@ export function OpalPlacementEditor({
   }
 
   function startDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!canPan) return
+    if (!canPan || event.button !== 0) return
     const bounds =
       cropViewport.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect()
+    if (bounds.width <= 0 || bounds.height <= 0) return
+    event.currentTarget.focus({ preventScroll: true })
     event.currentTarget.setPointerCapture(event.pointerId)
     drag.current = {
       ...placement,
@@ -339,7 +355,7 @@ export function OpalPlacementEditor({
               aria-disabled={!canPan}
               aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown"
               aria-roledescription="opal photo crop"
-              aria-label={`Adjust the photo crop for ${opal.name}. ${canPan ? 'Drag to move the colour. Arrow keys nudge by one percent; Shift plus an arrow nudges by five percent.' : 'Increase zoom above one to reposition the colour.'} Horizontal ${placement.opalPositionX.toFixed(2)}, vertical ${placement.opalPositionY.toFixed(2)}.`}
+              aria-label={`Adjust the photo crop for ${opal.name}. ${canPan ? 'Drag the photo beneath the outline. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : 'Increase zoom above one to reposition the photo.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
               onPointerDown={startDrag}
               onPointerMove={moveDrag}
               onPointerUp={stopDrag}
@@ -347,7 +363,7 @@ export function OpalPlacementEditor({
               onLostPointerCapture={stopDrag}
               onKeyDown={nudge}
               className={cn(
-                'group relative mx-auto w-[58%] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[52%]',
+                'group relative mx-auto w-[74%] max-w-[17rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[58%]',
                 isDragging ? 'cursor-grabbing' : canPan ? 'cursor-grab' : 'cursor-default'
               )}
               style={{
@@ -399,7 +415,7 @@ export function OpalPlacementEditor({
                       aria-hidden="true"
                       className={cn(
                         'pointer-events-none absolute inset-0 z-10 transition-opacity',
-                        isDragging ? 'opacity-100' : 'opacity-0'
+                        isDragging ? 'opacity-100' : 'opacity-0 group-focus-visible:opacity-100'
                       )}
                     >
                       <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-cream/45" />
@@ -416,7 +432,7 @@ export function OpalPlacementEditor({
             >
               <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
               {canPan
-                ? `X ${placement.opalPositionX.toFixed(2)} · Y ${placement.opalPositionY.toFixed(2)}`
+                ? `${isDragging ? 'Moving' : 'Drag photo'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
                 : scaleMax > limits.scaleMin
                   ? 'Zoom to reposition'
                   : 'Maximum photo detail'}
@@ -431,6 +447,7 @@ export function OpalPlacementEditor({
             max={scaleMax}
             step={0.05}
             value={displayedScale}
+            valueText={`${displayedScale.toFixed(2)}×`}
             disabled={scaleMax <= limits.scaleMin}
             onChange={(value) =>
               onChange({
@@ -448,10 +465,11 @@ export function OpalPlacementEditor({
               <button
                 type="button"
                 aria-label="Rotate opal colour left"
+                disabled={placement.opalRotation <= -limits.rotation}
                 onClick={() =>
                   update('opalRotation', clamp(placement.opalRotation - 15, -180, 180))
                 }
-                className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <RotateCcw aria-hidden="true" className="h-4 w-4" />
               </button>
@@ -464,10 +482,11 @@ export function OpalPlacementEditor({
               <button
                 type="button"
                 aria-label="Rotate opal colour right"
+                disabled={placement.opalRotation >= limits.rotation}
                 onClick={() =>
                   update('opalRotation', clamp(placement.opalRotation + 15, -180, 180))
                 }
-                className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <RotateCw aria-hidden="true" className="h-4 w-4" />
               </button>
@@ -489,6 +508,7 @@ export function OpalPlacementEditor({
                 max={limits.position}
                 step={0.01}
                 value={placement.opalPositionX}
+                valueText={formatPosition(placement.opalPositionX, 'horizontal')}
                 onChange={(value) => update('opalPositionX', value)}
               />
               <RangeControl
@@ -498,6 +518,7 @@ export function OpalPlacementEditor({
                 max={limits.position}
                 step={0.01}
                 value={placement.opalPositionY}
+                valueText={formatPosition(placement.opalPositionY, 'vertical')}
                 onChange={(value) => update('opalPositionY', value)}
               />
               <RangeControl
@@ -506,6 +527,7 @@ export function OpalPlacementEditor({
                 max={limits.rotation}
                 step={5}
                 value={placement.opalRotation}
+                valueText={`${Math.round(placement.opalRotation)}°`}
                 onChange={(value) => update('opalRotation', value)}
               />
             </div>
@@ -517,10 +539,11 @@ export function OpalPlacementEditor({
             </p>
             <button
               type="button"
+              disabled={isDefaultPlacement}
               onClick={() => onChange(defaultOpalPlacement)}
-              className="inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              className="inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:no-underline disabled:opacity-45"
             >
-              <ZoomIn aria-hidden="true" className="h-4 w-4" /> Reset photo crop
+              <Undo2 aria-hidden="true" className="h-4 w-4" /> Reset photo crop
             </button>
           </div>
         </div>

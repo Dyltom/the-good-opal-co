@@ -30,7 +30,6 @@ import {
   stoneDimensions,
   opalSettleDurationSeconds,
   opalSettleLift,
-  opalSettleStartScale,
   type CabochonDepthProfile,
   type CameraVector,
 } from '../geometry'
@@ -117,27 +116,23 @@ function sampleRenderedCabochonSurfaceZ(
 }
 
 describe('custom ring geometry contract', () => {
-  test('settles a selected opal without scaling its measured depth axis', () => {
+  test('settles a selected opal with its fitted face footprint unchanged', () => {
     expect(getOpalSettleTransform(0)).toEqual({
       offsetZ: opalSettleLift,
-      scaleXY: opalSettleStartScale,
       settled: false,
     })
 
     const halfway = getOpalSettleTransform(opalSettleDurationSeconds / 2)
     expect(halfway.offsetZ).toBeGreaterThan(0)
     expect(halfway.offsetZ).toBeLessThan(opalSettleLift)
-    expect(halfway.scaleXY).toBeGreaterThan(opalSettleStartScale)
-    expect(halfway.scaleXY).toBeLessThan(1)
+    expect(opalSettleLift * 10).toBeLessThanOrEqual(0.3)
 
     expect(getOpalSettleTransform(opalSettleDurationSeconds)).toEqual({
       offsetZ: 0,
-      scaleXY: 1,
       settled: true,
     })
     expect(getOpalSettleTransform(0, true)).toEqual({
       offsetZ: 0,
-      scaleXY: 1,
       settled: true,
     })
   })

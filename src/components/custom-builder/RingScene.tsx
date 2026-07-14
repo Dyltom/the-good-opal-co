@@ -595,7 +595,6 @@ function SettlingOpalCabochon({
     elapsed.current = animate ? 0 : Number.POSITIVE_INFINITY
     const transform = getOpalSettleTransform(0, !animate)
     group.current?.position.set(0, 0, transform.offsetZ)
-    group.current?.scale.set(transform.scaleXY, transform.scaleXY, 1)
     if (animate) invalidate()
   }, [animate, invalidate, transitionKey])
 
@@ -605,7 +604,6 @@ function SettlingOpalCabochon({
     elapsed.current += Math.min(delta, 0.05)
     const transform = getOpalSettleTransform(elapsed.current)
     group.current.position.z = transform.offsetZ
-    group.current.scale.set(transform.scaleXY, transform.scaleXY, 1)
 
     if (transform.settled) elapsed.current = Number.POSITIVE_INFINITY
     else invalidate()

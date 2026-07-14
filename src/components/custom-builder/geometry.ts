@@ -20,26 +20,27 @@ export interface CabochonDepthProfile {
 // without making the bezel appear to cut materially into the opal.
 export const bezelLipCompression = 0.002
 
-export const opalSettleDurationSeconds = 0.46
-export const opalSettleLift = 0.085
-export const opalSettleStartScale = 0.94
+export const opalSettleDurationSeconds = 0.32
+// One scene unit is 10 mm. Keep the selected stone close enough to its bezel
+// that the transition reads as the final press into the seat, not a loose gem
+// floating above the finished ring.
+export const opalSettleLift = 0.028
 
 export interface OpalSettleTransform {
   offsetZ: number
-  scaleXY: number
   settled: boolean
 }
 
 /**
- * Settles a newly selected opal along the setting normal. Only its face plane
- * scales during the transition; keeping Z at full scale preserves the measured
- * cabochon depth and prevents the stone seat from sinking into the bezel.
+ * Settles a newly selected opal along the setting normal. Its face footprint
+ * stays identical to the fitted bezel throughout, preventing a temporary gap
+ * between the selected contour and its setting.
  */
 export function getOpalSettleTransform(
   elapsedSeconds: number,
   reduceMotion = false
 ): OpalSettleTransform {
-  if (reduceMotion) return { offsetZ: 0, scaleXY: 1, settled: true }
+  if (reduceMotion) return { offsetZ: 0, settled: true }
 
   const progress = Math.min(
     1,
@@ -49,7 +50,6 @@ export function getOpalSettleTransform(
 
   return {
     offsetZ: opalSettleLift * (1 - eased),
-    scaleXY: opalSettleStartScale + (1 - opalSettleStartScale) * eased,
     settled: progress >= 1,
   }
 }

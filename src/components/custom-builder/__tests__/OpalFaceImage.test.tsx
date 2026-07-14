@@ -43,20 +43,18 @@ const placement: OpalPlacement = {
 }
 
 describe('OpalFaceImage', () => {
-  test('combines reviewed photo rotation with customer placement rotation', () => {
-    render(
-      <OpalFaceImage
-        alt="Selected opal"
-        eager
-        opal={opal}
-        placement={placement}
-        sizes="360px"
-      />
+  test('reveals one stable image only after its exact crop is ready', () => {
+    const { rerender } = render(
+      <OpalFaceImage alt="Selected opal" eager opal={opal} placement={placement} sizes="360px" />
     )
 
     const image = screen.getByRole('img', { name: 'Selected opal' }) as HTMLImageElement
+    const frame = image.parentElement?.parentElement
+    expect(frame?.getAttribute('data-opal-photo-state')).toBe('loading')
+    expect(frame?.getAttribute('aria-busy')).toBe('true')
     expect(image.getAttribute('loading')).toBe('eager')
-    expect(image.style.transform).toContain('rotate(-75deg)')
+    expect(image.getAttribute('draggable')).toBe('false')
+    expect(image.className).toContain('opacity-0')
 
     Object.defineProperties(image, {
       naturalHeight: { configurable: true, value: 1920 },
@@ -65,7 +63,29 @@ describe('OpalFaceImage', () => {
     fireEvent.load(image)
 
     const croppedImage = screen.getByRole('img', { name: 'Selected opal' })
+    expect(croppedImage).toBe(image)
     expect(croppedImage.parentElement?.className).toContain('absolute')
     expect(croppedImage.parentElement?.style.width).not.toBe('')
+    expect(croppedImage.parentElement?.style.transform).toContain('rotate(-75deg)')
+    expect(croppedImage.className).toContain('opacity-100')
+    expect(frame?.getAttribute('data-opal-photo-state')).toBe('ready')
+    expect(frame?.getAttribute('aria-busy')).toBe('false')
+
+    rerender(
+      <OpalFaceImage
+        alt="Selected opal"
+        eager
+        opal={{ ...opal, imageUrl: '/new-opal.jpg' }}
+        placement={placement}
+        sizes="360px"
+      />
+    )
+
+    const nextImage = screen.getByRole('img', { name: 'Selected opal' })
+    expect(nextImage).toBe(image)
+    expect(nextImage.className).toContain('opacity-0')
+    expect(nextImage.parentElement?.parentElement?.getAttribute('data-opal-photo-state')).toBe(
+      'loading'
+    )
   })
 })

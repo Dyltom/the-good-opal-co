@@ -1,0 +1,145 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+import type { ComponentProps } from 'react'
+import { createElement } from 'react'
+import { describe, expect, test, vi } from 'vitest'
+import type { BuilderOpal, OpalPlacement } from '../config'
+import { defaultOpalPlacement } from '../config'
+
+vi.mock('next/image', () => ({
+  default: ({ fill: _fill, ...props }: ComponentProps<'img'> & { fill?: boolean }) =>
+    createElement('img', props),
+}))
+
+import { OpalPlacementEditor } from '../OpalPlacementEditor'
+
+const opal: BuilderOpal = {
+  id: 'precise-opal',
+  name: 'Lightning Ridge black opal',
+  slug: 'precise-opal',
+  imageUrl: '/precise-opal.jpg',
+  imageAlt: 'Black opal with green fire',
+  price: 420,
+  stoneType: 'black-opal',
+  stoneTypeLabel: 'Black opal',
+  selectionKind: 'individual',
+  renderStone: 'lightning',
+  visual: {
+    silhouette: 'oval',
+    aspectRatio: 1.3,
+    bodyColour: '#173350',
+    flashColours: ['#16d7ef', '#43ef8f'],
+    transmission: 0.08,
+    patternSeed: 42,
+    evidence: 'catalogue',
+    photoFit: 'reviewed',
+    recommendedStyle: 'coral',
+    textureCrop: { focalX: 0.48, focalY: 0.52, zoom: 3.4 },
+  },
+}
+
+function renderEditor(placement: OpalPlacement, onChange = vi.fn()) {
+  return {
+    onChange,
+    ...render(
+      <OpalPlacementEditor
+        metal="sterling-silver"
+        onChange={onChange}
+        opal={opal}
+        placement={placement}
+        style="coral"
+      />
+    ),
+  }
+}
+
+describe('OpalPlacementEditor', () => {
+  test('describes fine placement values in visual directions', () => {
+    renderEditor({
+      opalPositionX: 0.225,
+      opalPositionY: -0.225,
+      opalScale: 1.5,
+      opalRotation: 15,
+    })
+
+    expect(screen.getByRole('slider', { name: 'Zoom' }).getAttribute('aria-valuetext')).toBe(
+      '1.50×'
+    )
+    expect(screen.getByRole('slider', { name: 'Horizontal' }).getAttribute('aria-valuetext')).toBe(
+      '50% right'
+    )
+    expect(screen.getByRole('slider', { name: 'Vertical' }).getAttribute('aria-valuetext')).toBe(
+      '50% up'
+    )
+    expect(screen.getByRole('slider', { name: 'Rotation' }).getAttribute('aria-valuetext')).toBe(
+      '15°'
+    )
+    expect(
+      screen.getByRole('group', { name: /Horizontal 50% right, vertical 50% up/i })
+    ).not.toBeNull()
+  })
+
+  test('disables controls that cannot make another change', () => {
+    const { rerender } = renderEditor(defaultOpalPlacement)
+
+    expect(screen.getByRole('button', { name: 'Reset photo crop' })).toHaveProperty(
+      'disabled',
+      true
+    )
+
+    rerender(
+      <OpalPlacementEditor
+        metal="sterling-silver"
+        onChange={vi.fn()}
+        opal={opal}
+        placement={{ ...defaultOpalPlacement, opalRotation: 180 }}
+        style="coral"
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Rotate opal colour right' })).toHaveProperty(
+      'disabled',
+      true
+    )
+    expect(screen.getByRole('button', { name: 'Rotate opal colour left' })).toHaveProperty(
+      'disabled',
+      false
+    )
+  })
+
+  test('ignores non-primary and zero-size drag starts', () => {
+    const onChange = vi.fn()
+    renderEditor({ ...defaultOpalPlacement, opalScale: 1.25 }, onChange)
+    const aperture = screen.getByRole('group', { name: /Adjust the photo crop/i })
+    const viewport = document.querySelector('[data-opal-placement-crop-viewport]') as HTMLDivElement
+    Object.defineProperty(aperture, 'setPointerCapture', { value: vi.fn() })
+
+    fireEvent.pointerDown(aperture, {
+      button: 2,
+      clientX: 100,
+      clientY: 100,
+      pointerId: 1,
+    })
+    fireEvent.pointerMove(aperture, { clientX: 120, clientY: 120, pointerId: 1 })
+
+    vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue({
+      bottom: 0,
+      height: 0,
+      left: 0,
+      right: 0,
+      top: 0,
+      width: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    })
+    fireEvent.pointerDown(aperture, {
+      button: 0,
+      clientX: 100,
+      clientY: 100,
+      pointerId: 2,
+    })
+    fireEvent.pointerMove(aperture, { clientX: 120, clientY: 120, pointerId: 2 })
+
+    expect(onChange).not.toHaveBeenCalled()
+  })
+})
