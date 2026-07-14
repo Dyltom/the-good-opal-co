@@ -80,6 +80,7 @@ describe('WooCommerce catalogue mutation retries', () => {
     await expect(
       syncWooCatalog({ apply: false, archiveMissing: false, restock: false })
     ).resolves.toMatchObject({
+      sourceStockByWooId: {},
       stockReconciliation: {
         authenticatedSource: false,
         managedProducts: 1,
@@ -256,6 +257,8 @@ describe('WooCommerce catalogue mutation retries', () => {
   })
 
   test('stages a new product at draft with zero stock until its gallery succeeds', async () => {
+    vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
+    vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
     mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
     mocks.create.mockResolvedValue({ id: 91 })
     mocks.fetchWooCatalog.mockResolvedValue([
@@ -285,5 +288,32 @@ describe('WooCommerce catalogue mutation retries', () => {
     expect(mocks.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: 'draft', stock: 0 }) })
     )
+  })
+
+  test('does not expose synthetic public availability as exact publish stock', async () => {
+    mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
+    mocks.create.mockResolvedValue({ id: 91 })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Exact product copy',
+        inStock: true,
+        name: 'New opal parcel',
+        price: 95,
+        sku: 'WP-5681',
+        slug: 'new-opal-parcel',
+        tags: ['opal'],
+        wooId: 5681,
+      },
+    ])
+
+    await expect(
+      syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+    ).resolves.toMatchObject({
+      created: 1,
+      createdWooIds: [5681],
+      sourceStockByWooId: {},
+    })
   })
 })

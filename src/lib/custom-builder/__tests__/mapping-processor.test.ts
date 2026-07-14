@@ -48,7 +48,7 @@ describe('builder mapping processor', () => {
       update: mocks.update,
     })
     mocks.find.mockResolvedValue({ docs: [] })
-    mocks.update.mockResolvedValue({})
+    mocks.update.mockResolvedValue({ docs: [{}] })
     mocks.pipeline.toBuffer.mockResolvedValue({
       data: Buffer.from([5, 10, 15, 20, 25, 30]),
       info: { channels: 3, height: 1, width: 2 },
@@ -391,7 +391,8 @@ describe('builder mapping processor', () => {
       docs: [
         {
           ...product,
-          builderMappingAnalysisError: 'Retryable source error: Source image request did not complete',
+          builderMappingAnalysisError:
+            'Retryable source error: Source image request did not complete',
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         },
       ],
@@ -454,6 +455,7 @@ describe('builder mapping processor', () => {
       docs: [
         {
           id: 44,
+          updatedAt: '2026-07-14T01:00:00.000Z',
           builderContour: approvedContour,
           builderMappingMode: 'inferred',
           builderMappingStatus: 'reviewed',
@@ -476,6 +478,10 @@ describe('builder mapping processor', () => {
       })
     )
     const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.where).toEqual({
+      and: [{ id: { equals: 44 } }, { updatedAt: { equals: '2026-07-14T01:00:00.000Z' } }],
+    })
+    expect(update).not.toHaveProperty('id')
     expect(update?.data).toMatchObject({ builderContourCandidate: contour })
     expect(update?.data).not.toHaveProperty('builderContour')
     expect(update?.data).not.toHaveProperty('builderContourSourceImageHash')
@@ -624,10 +630,7 @@ describe('builder mapping processor', () => {
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
       where: {
-        and: [
-          { id: { equals: 46 } },
-          { updatedAt: { equals: '2026-07-14T01:00:00.000Z' } },
-        ],
+        and: [{ id: { equals: 46 } }, { updatedAt: { equals: '2026-07-14T01:00:00.000Z' } }],
       },
       data: expect.objectContaining({ builderContourCandidate: contour }),
       overrideAccess: true,
@@ -656,7 +659,9 @@ describe('builder mapping processor', () => {
     expect(mocks.sharp).not.toHaveBeenCalled()
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
-      id: 42,
+      where: {
+        and: [{ id: { equals: 42 } }, { updatedAt: { equals: '2026-07-14T01:00:00.123456Z' } }],
+      },
       data: {
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderContourCandidate: null,

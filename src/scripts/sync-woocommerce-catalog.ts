@@ -177,11 +177,18 @@ export async function syncWooCatalog(options: SyncOptions) {
 
   let created = 0
   const createdWooIds: number[] = []
+  // Only an authenticated, exact Woo quantity can unlock first publication.
+  // The public Store API exposes availability but not quantity; converting that
+  // signal to a synthetic stock of one would put a newly added product on sale
+  // before its physical inventory had been verified.
   const sourceStockByWooId = Object.fromEntries(
-    sourceProducts.map((product) => [
-      product.wooId,
-      reconciledStock(0, product.inStock, true, product.stockQuantity),
-    ])
+    consumerKey && consumerSecret
+      ? sourceProducts.flatMap((product) =>
+          typeof product.stockQuantity === 'number'
+            ? [[product.wooId, reconciledStock(0, product.inStock, true, product.stockQuantity)]]
+            : []
+        )
+      : []
   )
   let updated = 0
   let archived = 0
