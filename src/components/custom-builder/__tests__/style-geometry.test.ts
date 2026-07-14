@@ -130,7 +130,7 @@ describe('sold ring style geometry', () => {
       beadCount: 40,
       beadPitchMm: 1,
       beadRadius: 0.038,
-      haloOffset: 0.152,
+      haloOffset: 0.095,
       beadPrimitive: 'rounded-granule',
     })
     expect(aurora).toMatchObject({
@@ -141,7 +141,7 @@ describe('sold ring style geometry', () => {
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
-    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.19, 12)
+    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
     expect(sunMoon.beadRadius * 20).toBeCloseTo(0.76, 12)
     expect(aurora.beadRadius * 20).toBeCloseTo(1.08, 12)
@@ -277,9 +277,9 @@ describe('sold ring style geometry', () => {
           points.length) *
         10
 
-      // Aurora's photographed 28-grain layout spans a wider irregular pear
-      // perimeter than the denser Sun & Moon halo.
-      const [minimum, maximum] = style === 'sun-moon' ? [0.9, 1.05] : [1.12, 1.24]
+      // The measured 40-grain Sun & Moon head is 10.8 × 12.8 mm. Aurora's
+      // photographed 28-grain layout spans a wider irregular pear perimeter.
+      const [minimum, maximum] = style === 'sun-moon' ? [0.84, 0.9] : [1.12, 1.24]
       expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }

@@ -679,7 +679,7 @@ describe('custom ring geometry contract', () => {
   })
 
   test.each([
-    ['sun-moon', 'oval', 0.19],
+    ['sun-moon', 'oval', 0.133],
     ['aurora', 'pear', 0.141],
   ] as const)(
     'fuses the %s grains without changing its sold outer head envelope',

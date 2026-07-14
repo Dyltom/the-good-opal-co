@@ -211,11 +211,13 @@ function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
 }
 
 function SolderGrainMaterial({
+  faceted,
   organic,
   metal,
   roughness,
   tone,
 }: {
+  faceted: boolean
   organic: boolean
   metal: RingConfig['metal']
   roughness: number
@@ -237,19 +239,33 @@ function SolderGrainMaterial({
     'rose-gold': '#956458',
     platinum: '#afada8',
   }
+  const facetedSolderColour: Record<RingConfig['metal'], string> = {
+    'sterling-silver': '#969690',
+    '14k-gold': '#967634',
+    '18k-gold': '#a17d31',
+    'white-gold': '#aaa9a4',
+    'rose-gold': '#936157',
+    platinum: '#acabaa',
+  }
 
-  const colour = new Color((organic ? organicSolderColour : solderColour)[metal]).multiplyScalar(
-    tone
-  )
+  const colour = new Color(
+    (faceted ? facetedSolderColour : organic ? organicSolderColour : solderColour)[metal]
+  ).multiplyScalar(tone)
 
   return (
     <meshPhysicalMaterial
       color={colour}
-      metalness={0.91}
-      roughness={organic ? Math.max(0.55, roughness * 0.9) : Math.max(0.44, roughness * 0.82)}
+      metalness={faceted ? 0.74 : 0.91}
+      roughness={
+        faceted
+          ? Math.max(0.5, roughness * 0.85)
+          : organic
+            ? roughness
+            : Math.max(0.44, roughness * 0.82)
+      }
       clearcoat={0.01}
       clearcoatRoughness={0.68}
-      envMapIntensity={organic ? 1.14 : 1.26}
+      envMapIntensity={faceted ? 1.18 : organic ? 1.14 : 1.26}
     />
   )
 }
@@ -1328,6 +1344,7 @@ function Setting({
               // Deterministic variation keeps the halo handmade without animating
               // or changing between renders.
               const usesHandmadeSurface = profile.beadShape === 'granulated'
+              const facetedGrain = profile.beadPrimitive === 'organic-granule'
               const solderTone = getSolderGrainTone(key, usesHandmadeSurface)
               const grainTiltX = ((((key * 13) % 7) - 3) / 3) * 0.16
               const grainTiltY = ((((key * 17) % 9) - 4) / 4) * 0.14
@@ -1341,15 +1358,22 @@ function Setting({
                   <mesh
                     castShadow
                     receiveShadow
-                    rotation={usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined}
+                    rotation={
+                      facetedGrain
+                        ? [Math.PI / 2 + grainTiltX, grainTiltY, 0]
+                        : usesHandmadeSurface
+                          ? [grainTiltX, grainTiltY, 0]
+                          : undefined
+                    }
                   >
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
-                      <icosahedronGeometry args={[profile.beadRadius, 2]} />
+                      <sphereGeometry args={[profile.beadRadius, 8 + (key % 3), 5]} />
                     )}
                     <SolderGrainMaterial
+                      faceted={facetedGrain}
                       organic={usesHandmadeSurface}
                       metal={config.metal}
                       roughness={profile.beadRoughness}

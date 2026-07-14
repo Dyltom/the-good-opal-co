@@ -349,11 +349,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
     ...sunMoonBezelSeat,
-    // Forty owned-reference grains span an approximately 12 mm-wide head.
-    // Keep their oxidized seams visible instead of pulling the halo inward.
-    // The sold trim uses small solder grains on a dark web, not a pearl-sized
-    // necklace. Move the slimmer grains outward to preserve the 12 mm head.
-    haloOffset: 0.152,
+    // Forty measured-reference grains span a 10.8 × 12.8 mm head around the
+    // 8 × 10 mm stone. Keep the small solder grains tight to the bezel so the
+    // oxidized web reads as a seam, not a dark moat or detached pearl chain.
+    haloOffset: 0.095,
     beadRadius: 0.038,
     beadCount: 40,
     beadPitchMm: 1,

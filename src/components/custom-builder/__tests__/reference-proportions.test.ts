@@ -25,7 +25,7 @@ const soldReferences = {
   },
   'sun-moon': {
     bandWidthMm: [1.65, 1.8],
-    headWidthMm: [11.75, 12.15],
+    headWidthMm: [10.7, 10.95],
     setting: 'beaded',
     shape: 'oval',
     stoneMm: [8, 10],

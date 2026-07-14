@@ -170,8 +170,10 @@ function OpalSettingDecoration({
             key={key}
             data-opal-setting-grain
             className={cn(
-              'absolute block -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_34%_28%,#f3f1e9_0%,#b6b5ae_34%,#585954_70%,#262722_100%)] shadow-[0_1px_2px_rgb(0_0_0/0.75)]',
-              profile.beadPrimitive === 'organic-granule' ? 'rounded-[38%]' : 'rounded-[46%]'
+              'absolute block -translate-x-1/2 -translate-y-1/2 shadow-[0_1px_2px_rgb(0_0_0/0.75)]',
+              profile.beadPrimitive === 'organic-granule'
+                ? 'rounded-[28%] bg-[radial-gradient(circle_at_34%_28%,#d7d5cd_0%,#7b7c76_32%,#343530_72%,#20211d_100%)]'
+                : 'rounded-[46%] bg-[radial-gradient(circle_at_34%_28%,#f3f1e9_0%,#b6b5ae_34%,#585954_70%,#262722_100%)]'
             )}
             style={{
               height: `${diameter}%`,
@@ -249,7 +251,8 @@ export function OpalPlacementEditor({
     displayedScale,
     placement.opalRotation
   )
-  const canPan = displayedScale > limits.scaleMin && scaleMax > limits.scaleMin
+  const canAdjustPosition = scaleMax > limits.scaleMin
+  const dragScale = Math.min(scaleMax, Math.max(displayedScale, 1.15))
   const isDefaultPlacement =
     placement.opalPositionX === defaultOpalPlacement.opalPositionX &&
     placement.opalPositionY === defaultOpalPlacement.opalPositionY &&
@@ -264,20 +267,25 @@ export function OpalPlacementEditor({
   }
 
   function startDrag(event: ReactPointerEvent<HTMLDivElement>) {
-    if (!canPan || event.button !== 0) return
+    if (!canAdjustPosition || event.button !== 0) return
     const bounds =
       cropViewport.current?.getBoundingClientRect() ?? event.currentTarget.getBoundingClientRect()
     if (bounds.width <= 0 || bounds.height <= 0) return
     event.currentTarget.focus({ preventScroll: true })
     event.currentTarget.setPointerCapture(event.pointerId)
-    drag.current = {
+    const dragPlacement = {
       ...placement,
+      opalScale: dragScale,
+    }
+    drag.current = {
+      ...dragPlacement,
       height: bounds.height,
       pointerId: event.pointerId,
       width: bounds.width,
       x: event.clientX,
       y: event.clientY,
     }
+    if (dragScale !== placement.opalScale) onChange(dragPlacement)
     setIsDragging(true)
   }
 
@@ -286,7 +294,8 @@ export function OpalPlacementEditor({
     if (!start || start.pointerId !== event.pointerId) return
 
     onChange({
-      ...placement,
+      opalRotation: start.opalRotation,
+      opalScale: start.opalScale,
       opalPositionX: roundPlacement(
         clamp(
           start.opalPositionX + ((event.clientX - start.x) / start.width) * limits.position * 2,
@@ -312,9 +321,9 @@ export function OpalPlacementEditor({
   }
 
   function nudge(event: KeyboardEvent<HTMLDivElement>) {
-    if (!canPan) return
+    if (!canAdjustPosition) return
     const delta = event.shiftKey ? 0.05 : 0.01
-    const next = { ...placement }
+    const next = { ...placement, opalScale: dragScale }
 
     if (event.key === 'ArrowLeft') next.opalPositionX -= delta
     else if (event.key === 'ArrowRight') next.opalPositionX += delta
@@ -363,11 +372,11 @@ export function OpalPlacementEditor({
             <div
               data-opal-placement-aperture
               role="group"
-              tabIndex={canPan ? 0 : -1}
-              aria-disabled={!canPan}
+              tabIndex={canAdjustPosition ? 0 : -1}
+              aria-disabled={!canAdjustPosition}
               aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown"
               aria-roledescription="opal photo crop"
-              aria-label={`Adjust the photo crop for ${opal.name}. ${canPan ? 'Drag the photo beneath the outline. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : 'Increase zoom above one to reposition the photo.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
+              aria-label={`Adjust the photo crop for ${opal.name}. ${canAdjustPosition ? 'Drag the photo beneath the outline. The editor adds enough zoom to keep the photographed face inside the stone. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : 'This reviewed photo already uses the maximum safe detail.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
               onPointerDown={startDrag}
               onPointerMove={moveDrag}
               onPointerUp={stopDrag}
@@ -376,7 +385,11 @@ export function OpalPlacementEditor({
               onKeyDown={nudge}
               className={cn(
                 'group relative mx-auto w-[74%] max-w-[17rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[58%]',
-                isDragging ? 'cursor-grabbing' : canPan ? 'cursor-grab' : 'cursor-default'
+                isDragging
+                  ? 'cursor-grabbing'
+                  : canAdjustPosition
+                    ? 'cursor-grab'
+                    : 'cursor-default'
               )}
               style={{
                 aspectRatio: 1 / opal.visual.aspectRatio,
@@ -443,11 +456,9 @@ export function OpalPlacementEditor({
               className="pointer-events-none absolute bottom-4 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
             >
               <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
-              {canPan
+              {canAdjustPosition
                 ? `${isDragging ? 'Moving' : 'Drag photo'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
-                : scaleMax > limits.scaleMin
-                  ? 'Zoom to reposition'
-                  : 'Maximum photo detail'}
+                : 'Maximum photo detail'}
             </output>
           </div>
         </div>
@@ -526,24 +537,28 @@ export function OpalPlacementEditor({
             </summary>
             <div className="grid gap-x-5 gap-y-3 pb-2 pt-3 sm:grid-cols-2">
               <RangeControl
-                disabled={!canPan}
+                disabled={!canAdjustPosition}
                 label="Horizontal"
                 min={-limits.position}
                 max={limits.position}
                 step={0.01}
                 value={placement.opalPositionX}
                 valueText={formatPosition(placement.opalPositionX, 'horizontal')}
-                onChange={(value) => update('opalPositionX', value)}
+                onChange={(value) =>
+                  onChange({ ...placement, opalPositionX: value, opalScale: dragScale })
+                }
               />
               <RangeControl
-                disabled={!canPan}
+                disabled={!canAdjustPosition}
                 label="Vertical"
                 min={-limits.position}
                 max={limits.position}
                 step={0.01}
                 value={placement.opalPositionY}
                 valueText={formatPosition(placement.opalPositionY, 'vertical')}
-                onChange={(value) => update('opalPositionY', value)}
+                onChange={(value) =>
+                  onChange({ ...placement, opalPositionY: value, opalScale: dragScale })
+                }
               />
               <RangeControl
                 label="Rotation"

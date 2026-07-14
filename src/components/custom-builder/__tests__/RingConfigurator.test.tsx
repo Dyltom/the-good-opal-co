@@ -191,7 +191,7 @@ describe('RingConfigurator store opal selection', () => {
     })
   })
 
-  test('requires explicit usable zoom before storing photo position', async () => {
+  test('adds safe zoom when fine-positioning from the reviewed crop', async () => {
     render(
       <RingConfigurator
         initialConfig={{
@@ -205,15 +205,15 @@ describe('RingConfigurator store opal selection', () => {
       />
     )
 
-    expect(screen.getByRole('slider', { name: 'Horizontal' })).toHaveProperty('disabled', true)
-    fireEvent.change(screen.getByRole('slider', { name: 'Zoom' }), {
-      target: { value: '1.2' },
+    expect(screen.getByRole('slider', { name: 'Horizontal' })).toHaveProperty('disabled', false)
+    fireEvent.change(screen.getByRole('slider', { name: 'Horizontal' }), {
+      target: { value: '0.2' },
     })
 
     await waitFor(() => {
       const preview = screen.getByTestId('ring-preview')
-      expect(preview.getAttribute('data-opal-position-x')).toBe('0')
-      expect(preview.getAttribute('data-opal-scale')).toBe('1.2')
+      expect(preview.getAttribute('data-opal-position-x')).toBe('0.2')
+      expect(preview.getAttribute('data-opal-scale')).toBe('1.15')
     })
   })
 
