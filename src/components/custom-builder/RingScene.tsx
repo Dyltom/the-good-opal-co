@@ -80,6 +80,15 @@ const metalColours: Record<RingConfig['metal'], string> = {
   platinum: '#e4e3df',
 }
 
+const auroraGrainColours: Record<RingConfig['metal'], readonly string[]> = {
+  'sterling-silver': ['#777873', '#888780', '#6d6f6b', '#969188'],
+  '14k-gold': ['#94742f', '#a58238', '#866527', '#ad8a42'],
+  '18k-gold': ['#a27c2d', '#b18a36', '#916b25', '#b89343'],
+  'white-gold': ['#898985', '#999792', '#7c7f7d', '#a39f98'],
+  'rose-gold': ['#855d53', '#95685d', '#795149', '#a17163'],
+  platinum: ['#8c8e8c', '#9b9b96', '#7e8281', '#a5a29b'],
+}
+
 const opalPalettes: Record<
   RingConfig['stone'],
   { base: string; body: string; flashes: readonly string[] }
@@ -157,6 +166,36 @@ function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
           ? '#704a42'
           : '#575a59'
   return <meshStandardMaterial color={shadowColour} metalness={0.58} roughness={0.72} />
+}
+
+function SolderGrainMaterial({
+  grainKey,
+  metal,
+  roughness,
+  style,
+}: {
+  grainKey: number
+  metal: RingConfig['metal']
+  roughness: number
+  style: RingConfig['style']
+}) {
+  if (style !== 'aurora') {
+    return <MetalMaterial flatShading metal={metal} roughness={roughness} />
+  }
+
+  const palette = auroraGrainColours[metal]
+  const colour = palette[(grainKey * 7) % palette.length]
+
+  return (
+    <meshPhysicalMaterial
+      color={colour}
+      metalness={0.82}
+      roughness={roughness}
+      clearcoat={0.01}
+      clearcoatRoughness={0.8}
+      envMapIntensity={0.62}
+    />
+  )
 }
 
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
@@ -1128,12 +1167,13 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   {profile.beadShape === 'granulated' ? (
                     <sphereGeometry args={[profile.beadRadius, 10, 8]} />
                   ) : (
-                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
+                    <sphereGeometry args={[profile.beadRadius, 10, 6]} />
                   )}
-                  <MetalMaterial
-                    flatShading
+                  <SolderGrainMaterial
+                    grainKey={key}
                     metal={config.metal}
                     roughness={profile.beadRoughness}
+                    style={config.style}
                   />
                 </mesh>
               )
