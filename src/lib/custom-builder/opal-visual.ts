@@ -24,6 +24,12 @@ export interface BuilderVisualFields {
   builderPhotoZoom?: number | null
   builderPhotoRotation?: number | null
   builderContour?: unknown
+  builderContourCandidate?: unknown
+  builderPhotoAnalysisConfidence?: number | null
+  builderPhotoCandidateFocalX?: number | null
+  builderPhotoCandidateFocalY?: number | null
+  builderPhotoCandidateZoom?: number | null
+  builderPhotoCandidateRotation?: number | null
   builderContourSourceImageHash?: string | null
   builderMappingAnalyzedImageHash?: string | null
   dimensions?: {
@@ -241,6 +247,19 @@ const reviewedSlugAliases: Record<string, keyof typeof reviewedProfiles> = {
   'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
 }
 
+// These six source photographs produced real pixel-isolated contours during
+// the July 2026 catalogue audit. Keep this allow-list separate from automatic
+// activation: other candidates still require maker review, and the analyser's
+// exact 0.70 canonical fallback must never masquerade as a traced stone edge.
+const visuallyAuditedImageCandidateSlugs = new Set([
+  'lightning-ridge-black-opal-6-30ct',
+  'lightning-ridge-semi-black-opal-5-50-cts',
+  'lightning-ridge-white-opal-1-05-cts',
+  'mintabie-dark-opal-heart-055-cts',
+  'mintabie-semi-black-opal-1-35-cts',
+  'queensland-crystal-pipe-opal-1-45-cts',
+])
+
 const reviewedPhotoBySlug: Record<string, string> = {
   'lightning-ridge-white-opal-1-05-cts': '/images/products/20211104_234659-1-1.jpg',
   'mintabie-semi-black-opal-1-05-cts': '/images/products/20210923_174046.jpg',
@@ -271,6 +290,53 @@ export function reviewedOpalImageUrl(
 
 function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | undefined {
   return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
+}
+
+function auditedImageCandidate(
+  slug: string,
+  fields?: BuilderVisualFields
+): Pick<VisualProfile, 'contour' | 'textureCrop' | 'photoFit'> | undefined {
+  const reviewedSlug = reviewedSlugAliases[slug] ?? slug
+  const mappingApproved =
+    fields?.builderMappingStatus === 'reviewed' || fields?.builderMappingStatus === 'manual'
+  const confidence = fields?.builderPhotoAnalysisConfidence
+  const contour = parseBuilderStoneContour(fields?.builderContourCandidate)
+  const focalX = fields?.builderPhotoCandidateFocalX
+  const focalY = fields?.builderPhotoCandidateFocalY
+  const zoom = fields?.builderPhotoCandidateZoom
+  const rotation = fields?.builderPhotoCandidateRotation
+
+  if (
+    !mappingApproved ||
+    !visuallyAuditedImageCandidateSlugs.has(reviewedSlug) ||
+    !contour ||
+    typeof confidence !== 'number' ||
+    confidence < 0.68 ||
+    Math.abs(confidence - 0.7) < 0.0001 ||
+    typeof focalX !== 'number' ||
+    focalX < 0 ||
+    focalX > 1 ||
+    typeof focalY !== 'number' ||
+    focalY < 0 ||
+    focalY > 1 ||
+    typeof zoom !== 'number' ||
+    zoom < 1 ||
+    zoom > 12 ||
+    (rotation !== null && rotation !== undefined && typeof rotation !== 'number')
+  ) {
+    return undefined
+  }
+
+  return {
+    contour,
+    textureCrop: {
+      focalX,
+      focalY,
+      zoom,
+      ...(typeof rotation === 'number' ? { rotation } : {}),
+    },
+    photoFit: 'reviewed',
+  }
 }
 
 const validSilhouettes = new Set<RingConfig['shape']>([
@@ -503,6 +569,7 @@ export function createOpalVisualProfile(
   const cataloguePhoto = cataloguePhotoProfiles[slug]
   const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
   const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
+  const imageCandidate = auditedImageCandidate(slug, fields)
   const mappingApproved =
     !fields ||
     fields.builderMappingStatus === 'reviewed' ||
@@ -511,11 +578,19 @@ export function createOpalVisualProfile(
   const approvedCataloguePhoto = mappingApproved ? cataloguePhoto : undefined
   const dimensionsMm = completeDimensions(fields)
   const baseVisual = managed ?? approvedReviewed ?? approvedCataloguePhoto ?? silhouette
+  const baseContour =
+    'contour' in baseVisual ? parseBuilderStoneContour(baseVisual.contour) : undefined
   const usesIndividualPhoto = classifyOpalListing(name) === 'individual'
   const baseTextureCrop =
-    managed?.textureCrop ?? approvedReviewed?.textureCrop ?? approvedCataloguePhoto?.textureCrop
+    managed?.textureCrop ??
+    imageCandidate?.textureCrop ??
+    approvedReviewed?.textureCrop ??
+    approvedCataloguePhoto?.textureCrop
   const basePhotoFit =
-    managed?.photoFit ?? approvedReviewed?.photoFit ?? approvedCataloguePhoto?.photoFit
+    managed?.photoFit ??
+    imageCandidate?.photoFit ??
+    approvedReviewed?.photoFit ??
+    approvedCataloguePhoto?.photoFit
   const estimatedTextureCrop = baseTextureCrop
     ? { ...baseTextureCrop, zoom: Math.max(baseTextureCrop.zoom, ESTIMATED_OPAL_PHOTO_ZOOM) }
     : { focalX: 0.5, focalY: 0.5, zoom: ESTIMATED_OPAL_PHOTO_ZOOM }
@@ -530,6 +605,7 @@ export function createOpalVisualProfile(
       flashColours: managed?.flashColours ?? flashColours,
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
+      contour: managed?.contour ?? imageCandidate?.contour ?? baseContour,
       dimensionsMm: managed?.dimensionsMm ?? approvedReviewed?.dimensionsMm ?? dimensionsMm,
       textureCrop: usesIndividualPhoto
         ? basePhotoFit === 'reviewed'

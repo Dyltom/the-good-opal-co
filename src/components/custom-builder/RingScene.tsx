@@ -951,9 +951,9 @@ function ProfiledBezelLip({
       />
       <meshStandardMaterial
         attach="material-1"
-        color={config.metal === 'sterling-silver' ? '#171814' : '#65451f'}
+        color={config.metal === 'sterling-silver' ? '#080a08' : '#563716'}
         metalness={0.56}
-        roughness={0.78}
+        roughness={0.9}
       />
     </mesh>
   )
@@ -1126,9 +1126,9 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                   scale={[size * stretchX, size * stretchY, flattening]}
                 >
                   {profile.beadShape === 'granulated' ? (
-                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
+                    <icosahedronGeometry args={[profile.beadRadius, 0]} />
                   ) : (
-                    <dodecahedronGeometry args={[profile.beadRadius, 0]} />
+                    <icosahedronGeometry args={[profile.beadRadius, 1]} />
                   )}
                   <MetalMaterial
                     flatShading

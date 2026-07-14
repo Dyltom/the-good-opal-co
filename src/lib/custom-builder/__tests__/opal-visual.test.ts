@@ -558,6 +558,50 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
   })
 
+  test('uses a visually audited image candidate for the matching legacy stone', () => {
+    const contour = {
+      version: 1,
+      radii: Array.from({ length: 96 }, (_, index) =>
+        Number((1 + Math.sin((index / 96) * Math.PI * 2) * 0.04).toFixed(4))
+      ),
+    }
+    const fields = {
+      builderMappingStatus: 'manual',
+      builderContourCandidate: contour,
+      builderPhotoAnalysisConfidence: 0.692,
+      builderPhotoCandidateFocalX: 0.498,
+      builderPhotoCandidateFocalY: 0.466,
+      builderPhotoCandidateZoom: 4.344,
+      builderPhotoCandidateRotation: 0,
+    }
+
+    expect(
+      createOpalVisualProfile(
+        'mintabie-semi-black-opal-1-35-cts',
+        'Mintabie Semi Black Opal 1.35 cts',
+        'black-opal',
+        fields
+      ).visual
+    ).toMatchObject({
+      contour,
+      photoFit: 'reviewed',
+      textureCrop: { focalX: 0.498, focalY: 0.466, rotation: 0, zoom: 4.344 },
+    })
+
+    expect(
+      createOpalVisualProfile('unreviewed-opal', 'Unreviewed opal', 'black-opal', fields).visual
+        .contour
+    ).toBeUndefined()
+    expect(
+      createOpalVisualProfile(
+        'mintabie-semi-black-opal-1-35-cts',
+        'Mintabie Semi Black Opal 1.35 cts',
+        'black-opal',
+        { ...fields, builderPhotoAnalysisConfidence: 0.7 }
+      ).visual.contour
+    ).toBeUndefined()
+  })
+
   test.each([
     ['lightning-ridge-black-opal-6-30ct', 'cushion', 'coral'],
     ['mintabie-semi-black-opal-1-05-cts', 'cushion', 'coral'],

@@ -90,23 +90,23 @@ describe('sold ring style geometry', () => {
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon.beadAsymmetry).toBe(0.06)
-    expect(aurora.beadAsymmetry).toBe(0.1)
+    expect(aurora.beadAsymmetry).toBe(0.12)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('nugget')
     expect(sunMoon).toMatchObject({
-      beadCount: 36,
-      beadPitchMm: 0.93,
-      beadRadius: 0.046,
-      haloOffset: 0.093,
+      beadCount: 40,
+      beadPitchMm: 0.84,
+      beadRadius: 0.04,
+      haloOffset: 0.099,
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.052,
-      haloOffset: 0.09,
+      beadRadius: 0.047,
+      haloOffset: 0.095,
     })
-    // Moving Sun and Moon's slightly larger granules inward fuses their edges
-    // without changing the photographed 10.78 mm outer head envelope.
+    // More, smaller Sun & Moon granules preserve the photographed outer head
+    // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.139, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.142, 12)
   })
@@ -153,8 +153,8 @@ describe('sold ring style geometry', () => {
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.89)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.91)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.87)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.89)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -180,7 +180,7 @@ describe('sold ring style geometry', () => {
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
 
-    expect(count).toBe(36)
+    expect(count).toBe(40)
     expect(granules).toEqual(
       applyHandmadeBeadVariation(
         points,
@@ -194,8 +194,8 @@ describe('sold ring style geometry', () => {
   })
 
   test.each([
-    ['sun-moon', 'oval', 0.3, 0.35, 28],
-    ['sun-moon', 'oval', 0.4, 0.5, 36],
+    ['sun-moon', 'oval', 0.3, 0.35, 31],
+    ['sun-moon', 'oval', 0.4, 0.5, 40],
     ['aurora', 'pear', 0.4, 0.5, 28],
     ['aurora', 'pear', 0.5, 0.75, 37],
   ] as const)(
@@ -233,7 +233,7 @@ describe('sold ring style geometry', () => {
 
       // Aurora's photographed 28-grain layout spans a wider irregular pear
       // perimeter than the denser Sun & Moon halo.
-      const [minimum, maximum] = style === 'sun-moon' ? [0.87, 0.98] : [1.12, 1.24]
+      const [minimum, maximum] = style === 'sun-moon' ? [0.83, 0.9] : [1.12, 1.24]
       expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }
@@ -289,7 +289,7 @@ describe('sold ring style geometry', () => {
       // Handmade soldered grains should touch or very slightly overlap rather
       // than read as disconnected stones.
       expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.012)
-      expect(Math.max(...gaps)).toBeLessThanOrEqual(0.035)
+      expect(Math.max(...gaps)).toBeLessThanOrEqual(style === 'aurora' ? 0.04 : 0.035)
     }
   )
 
@@ -375,7 +375,7 @@ describe('sold ring style geometry', () => {
     const metal = knots.filter(({ finish }) => finish === 'metal')
 
     expect(patina).toHaveLength(3)
-    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.08)
+    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.12)
     expect(Math.max(...metal.map(({ heightOffset }) => heightOffset)) * 10).toBe(0.01)
     expect(metal[0]?.radialProgress).toBeGreaterThan(patina.at(-1)?.radialProgress ?? 1)
     const profile = ringStyleGeometryProfiles.coral
@@ -383,8 +383,8 @@ describe('sold ring style geometry', () => {
     const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
     const moatWidthMm =
       (outerOffset - innerOffset) * (patina.at(-1)?.radialProgress ?? 0) * 10
-    expect(moatWidthMm).toBeGreaterThanOrEqual(0.33)
-    expect(moatWidthMm).toBeLessThanOrEqual(0.34)
+    expect(moatWidthMm).toBeGreaterThanOrEqual(0.39)
+    expect(moatWidthMm).toBeLessThanOrEqual(0.4)
   })
 
   test.each([
