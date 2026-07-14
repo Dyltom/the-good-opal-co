@@ -158,6 +158,33 @@ describe('RingConfigurator store opal selection', () => {
     expect(screen.getByText('4. Ring size (US)')).not.toBeNull()
   })
 
+  test('renders the crop workbench inside the selected sold-style setting', async () => {
+    const user = userEvent.setup()
+    render(
+      <RingConfigurator
+        initialConfig={{
+          ...defaultRingConfig,
+          opalId: opals[0].id,
+          stone: opals[0].renderStone,
+          style: 'aurora',
+          shape: 'oval',
+          setting: 'beaded',
+        }}
+        opals={opals}
+      />
+    )
+
+    expect(document.querySelector('[data-opal-setting-decoration="aurora"]')).not.toBeNull()
+    expect(document.querySelectorAll('[data-opal-setting-grain]').length).toBeGreaterThan(20)
+
+    await user.click(screen.getByRole('button', { name: /Coral/i }))
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-opal-setting-seat="coral"]')).not.toBeNull()
+      expect(document.querySelector('[data-opal-setting-decoration]')).toBeNull()
+    })
+  })
+
   test('requires explicit usable zoom before storing photo position', async () => {
     render(
       <RingConfigurator

@@ -25,8 +25,8 @@ import {
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 import {
-  getHaloSupportGeometry,
   ringStyleGeometryProfiles,
+  type BezelLipProfileKnot,
   type BuilderOpal,
   type RingConfig,
 } from './config'
@@ -39,7 +39,10 @@ import {
   getBezelLipContactZ,
   getCabochonDepthProfile,
   getCameraPosition,
+  getDShankCrossSection,
+  getGrainDerivedHaloSupportOutline,
   getPatinaGrooveProfile,
+  getProfiledBezelLipRings,
   getRingFramingTarget,
   getRingShankCurve,
   getShoulderBlendProgress,
@@ -53,6 +56,7 @@ import {
   settingRotationX,
   type CabochonDepthProfile,
   type CameraVector,
+  type HaloSupportContourPoint,
   type StoneDimensions,
 } from './geometry'
 
@@ -128,10 +132,10 @@ function MetalMaterial({
     <meshPhysicalMaterial
       color={metalColours[metal]}
       metalness={0.96}
-      roughness={isSterlingSilver ? Math.max(0.34, roughness) : roughness}
+      roughness={isSterlingSilver ? Math.max(0.38, roughness) : roughness}
       clearcoat={0.04}
       clearcoatRoughness={0.36}
-      envMapIntensity={2.2}
+      envMapIntensity={1.55}
     />
   )
 }
@@ -331,7 +335,7 @@ const photoGlossFragmentShader = /* glsl */ `
     vec3 halfDirection = normalize(galleryLight + viewDirection);
     float highlight = pow(max(dot(normal, halfDirection), 0.0), 54.0);
     float edgeSheen = pow(1.0 - max(dot(normal, viewDirection), 0.0), 5.0);
-    float alpha = min(0.2, highlight * 0.18 + edgeSheen * 0.035);
+    float alpha = min(0.13, highlight * 0.1 + edgeSheen * 0.025);
     gl_FragColor = vec4(vec3(1.0), alpha);
   }
 `
@@ -584,6 +588,129 @@ function createBezelWallGeometry(
   return geometry
 }
 
+function createProfiledBezelLipGeometry(
+  style: RingConfig['style'],
+  shape: RingConfig['shape'],
+  width: number,
+  height: number,
+  innerOffset: number,
+  outerOffset: number,
+  topZ: number,
+  depthProfile: CabochonDepthProfile,
+  profile: readonly BezelLipProfileKnot[],
+  contour?: BuilderStoneContourV1
+): BufferGeometry {
+  const geometry = new BufferGeometry()
+  const segments = 96
+  const positions: number[] = []
+  const metalIndices: number[] = []
+  const patinaIndices: number[] = []
+
+  for (let segment = 0; segment < segments; segment += 1) {
+    const angle = (segment / segments) * Math.PI * 2
+    const rings = getProfiledBezelLipRings({
+      angle,
+      contour,
+      depthProfile,
+      height,
+      innerOffset,
+      outerOffset,
+      profile,
+      shape,
+      style,
+      topZ,
+      width,
+    })
+    rings.forEach(({ point, z }) => positions.push(point[0], point[1], z))
+  }
+
+  for (let segment = 0; segment < segments; segment += 1) {
+    const next = (segment + 1) % segments
+    for (let ring = 0; ring < profile.length - 1; ring += 1) {
+      const currentInner = segment * profile.length + ring
+      const currentOuter = currentInner + 1
+      const nextInner = next * profile.length + ring
+      const nextOuter = nextInner + 1
+      const target = profile[ring + 1]?.finish === 'patina' ? patinaIndices : metalIndices
+      target.push(currentInner, nextInner, nextOuter, currentInner, nextOuter, currentOuter)
+    }
+  }
+
+  const indices = [...metalIndices, ...patinaIndices]
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+  geometry.setIndex(indices)
+  geometry.addGroup(0, metalIndices.length, 0)
+  geometry.addGroup(metalIndices.length, patinaIndices.length, 1)
+  geometry.computeVertexNormals()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
+function createHaloSupportMeshGeometry(
+  contour: readonly HaloSupportContourPoint[],
+  bottomZ: number,
+  topZ: number
+): BufferGeometry {
+  const geometry = new BufferGeometry()
+  const positions: number[] = []
+  const indices: number[] = []
+
+  contour.forEach(({ inner, outer }) => {
+    positions.push(
+      outer[0],
+      outer[1],
+      bottomZ,
+      outer[0],
+      outer[1],
+      topZ,
+      inner[0],
+      inner[1],
+      bottomZ,
+      inner[0],
+      inner[1],
+      topZ
+    )
+  })
+
+  contour.forEach((_, index) => {
+    const next = (index + 1) % contour.length
+    const outerBottom = index * 4
+    const outerTop = outerBottom + 1
+    const innerBottom = outerBottom + 2
+    const innerTop = outerBottom + 3
+    const nextOuterBottom = next * 4
+    const nextOuterTop = nextOuterBottom + 1
+    const nextInnerBottom = nextOuterBottom + 2
+    const nextInnerTop = nextOuterBottom + 3
+    indices.push(
+      outerTop,
+      nextOuterTop,
+      nextInnerTop,
+      outerTop,
+      nextInnerTop,
+      innerTop,
+      outerBottom,
+      nextOuterBottom,
+      nextOuterTop,
+      outerBottom,
+      nextOuterTop,
+      outerTop,
+      innerBottom,
+      innerTop,
+      nextInnerTop,
+      innerBottom,
+      nextInnerTop,
+      nextInnerBottom
+    )
+  })
+
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  geometry.computeBoundingSphere()
+  return geometry
+}
+
 function createSettingBaseGeometry(
   style: RingConfig['style'],
   shape: RingConfig['shape'],
@@ -756,6 +883,99 @@ function BezelWall({
   )
 }
 
+function ProfiledBezelLip({
+  config,
+  contour,
+  depthProfile,
+  dimensions,
+  innerOffset,
+  outerOffset,
+  topZ,
+}: {
+  config: RingConfig
+  contour?: BuilderStoneContourV1
+  depthProfile: CabochonDepthProfile
+  dimensions: StoneDimensions
+  innerOffset: number
+  outerOffset: number
+  topZ: number
+}) {
+  const [width, height] = dimensions
+  const profile = ringStyleGeometryProfiles[config.style]
+  const geometry = useMemo(
+    () =>
+      createProfiledBezelLipGeometry(
+        config.style,
+        config.shape,
+        width,
+        height,
+        innerOffset,
+        outerOffset,
+        topZ,
+        depthProfile,
+        profile.bezelLipProfile,
+        contour
+      ),
+    [
+      config.shape,
+      config.style,
+      contour,
+      depthProfile,
+      height,
+      innerOffset,
+      outerOffset,
+      profile.bezelLipProfile,
+      topZ,
+      width,
+    ]
+  )
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  return (
+    <mesh castShadow geometry={geometry} receiveShadow>
+      <meshPhysicalMaterial
+        attach="material-0"
+        color={metalColours[config.metal]}
+        metalness={0.96}
+        roughness={config.metal === 'sterling-silver' ? 0.38 : 0.25}
+        clearcoat={0.04}
+        clearcoatRoughness={0.36}
+        envMapIntensity={1.55}
+      />
+      <meshStandardMaterial
+        attach="material-1"
+        color={config.metal === 'sterling-silver' ? '#242621' : '#65451f'}
+        metalness={0.72}
+        roughness={0.68}
+      />
+    </mesh>
+  )
+}
+
+function HaloSupport({
+  bottomZ,
+  config,
+  contour,
+  topZ,
+}: {
+  bottomZ: number
+  config: RingConfig
+  contour: readonly HaloSupportContourPoint[]
+  topZ: number
+}) {
+  const geometry = useMemo(
+    () => createHaloSupportMeshGeometry(contour, bottomZ, topZ),
+    [bottomZ, contour, topZ]
+  )
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  return (
+    <mesh castShadow geometry={geometry} receiveShadow>
+      <MetalMaterial metal={config.metal} roughness={0.43} />
+    </mesh>
+  )
+}
+
 function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: BuilderOpal }) {
   const dimensions = getStoneDimensions(config, selectedOpal)
   const [width, height] = dimensions
@@ -770,9 +990,6 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
   const bezelTop = depthProfile.girdleZ + 0.025
   const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
   const bezelCapInnerOffset = profile.bezelLipOffset - profile.bezelLipRadius
-  const bezelCapThickness = outerBezelOffset - bezelCapInnerOffset
-  const bezelCapOffset = bezelCapInnerOffset + bezelCapThickness / 2
-  const haloSupport = getHaloSupportGeometry(profile)
   const patinaGroove = getPatinaGrooveProfile(depthProfile.girdleZ, profile.innerSeamRadius)
   const beadCount =
     profile.beadCount > 0
@@ -807,6 +1024,33 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
       width,
     ]
   )
+  const haloSupportContour = useMemo(
+    () =>
+      getGrainDerivedHaloSupportOutline({
+        beadRadius: profile.beadRadius,
+        beads,
+        bezelOuterOffset: outerBezelOffset,
+        contour,
+        coverage: profile.haloSupportCoverage,
+        haloOffset: profile.haloOffset,
+        height,
+        shape: config.shape,
+        style: config.style,
+        width,
+      }),
+    [
+      beads,
+      config.shape,
+      config.style,
+      contour,
+      height,
+      outerBezelOffset,
+      profile.beadRadius,
+      profile.haloOffset,
+      profile.haloSupportCoverage,
+      width,
+    ]
+  )
 
   return (
     <group>
@@ -828,38 +1072,35 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
         topZ={bezelTop}
         contour={contour}
       />
-      <BezelWall
+      <ProfiledBezelLip
         config={config}
+        contour={contour}
+        depthProfile={depthProfile}
         dimensions={dimensions}
-        bottomZ={bezelTop - profile.bezelLipRadius}
-        offset={bezelCapOffset}
-        thickness={bezelCapThickness}
+        innerOffset={bezelCapInnerOffset}
+        outerOffset={outerBezelOffset}
         topZ={bezelTop + profile.bezelLipRadius * 0.18}
-        contour={contour}
-        lipContactProfile={depthProfile}
       />
-      <BezelWall
-        config={config}
-        dimensions={dimensions}
-        bottomZ={patinaGroove.bottomZ}
-        finish="patina"
-        offset={profile.innerSeamOffset}
-        thickness={patinaGroove.thickness}
-        topZ={patinaGroove.topZ}
-        contour={contour}
-      />
+      {config.style !== 'coral' && (
+        <BezelWall
+          config={config}
+          dimensions={dimensions}
+          bottomZ={patinaGroove.bottomZ}
+          finish="patina"
+          offset={profile.innerSeamOffset}
+          thickness={patinaGroove.thickness}
+          topZ={patinaGroove.topZ}
+          contour={contour}
+        />
+      )}
 
       {config.setting === 'beaded' && (
         <>
-          <BezelWall
+          <HaloSupport
             config={config}
-            dimensions={dimensions}
             bottomZ={bezelBottom}
-            finish="patina"
-            offset={haloSupport.offset}
-            thickness={haloSupport.thickness}
-            topZ={0.03}
-            contour={contour}
+            contour={haloSupportContour}
+            topZ={0.034}
           />
           {beads.map(
             ({ key, x, y, size, flattening, heightVariation, rotation, stretchX, stretchY }) => {
@@ -870,7 +1111,7 @@ function Setting({ config, selectedOpal }: { config: RingConfig; selectedOpal?: 
                 <mesh
                   castShadow
                   key={key}
-                  position={[x, y, 0.048 + heightVariation]}
+                  position={[x, y, 0.041 + heightVariation]}
                   receiveShadow
                   rotation={[0, 0, rotation]}
                   scale={[size * stretchX, size * stretchY, flattening]}
@@ -908,6 +1149,7 @@ function RingShank({
   shoulderBlendLengthMm,
   shoulderLandingLengthMm,
   crossSectionPower,
+  shankInnerFacePower,
   shankForgedVariation,
   metalRoughness,
 }: {
@@ -925,6 +1167,7 @@ function RingShank({
   shoulderBlendLengthMm: number
   shoulderLandingLengthMm: number
   crossSectionPower: number
+  shankInnerFacePower: number
   shankForgedVariation: number
   metalRoughness: number
 }) {
@@ -949,7 +1192,7 @@ function RingShank({
   ])
   const geometry = useMemo(() => {
     const tubularSegments = 160
-    const radialSegments = 16
+    const radialSegments = 24
     const curveLength = curve.getLength()
     const positions: number[] = []
     const indices: number[] = []
@@ -959,6 +1202,8 @@ function RingShank({
       const point = curve.getPointAt(progress)
       const tangent = curve.getTangentAt(progress).normalize()
       const inPlaneNormal = new Vector3(-tangent.y, tangent.x, 0).normalize()
+      const toCentre = new Vector3(-point.x, -point.y, 0)
+      if (inPlaneNormal.dot(toCentre) < 0) inPlaneNormal.multiplyScalar(-1)
       const blend = getShoulderBlendProgress(progress, curveLength, shoulderBlendLengthMm)
       // Deterministic low-amplitude forging variation breaks the mathematically
       // perfect tube highlight without changing ring size or shoulder joins.
@@ -976,10 +1221,11 @@ function RingShank({
         // A softly squared superellipse matches the forged, low-profile bands
         // across the sold references. It also gives metals broad highlight planes
         // instead of the plastic-looking highlight produced by a round tube.
-        const cosine = Math.cos(angle)
-        const sine = Math.sin(angle)
-        const acrossBand = Math.sign(cosine) * Math.pow(Math.abs(cosine), crossSectionPower)
-        const throughBand = Math.sign(sine) * Math.pow(Math.abs(sine), crossSectionPower)
+        const { axial: throughBand, radial: acrossBand } = getDShankCrossSection(
+          angle,
+          crossSectionPower,
+          shankInnerFacePower
+        )
         positions.push(
           point.x + inPlaneNormal.x * acrossBand * localHalfDepth,
           point.y + inPlaneNormal.y * acrossBand * localHalfDepth,
@@ -1004,19 +1250,6 @@ function RingShank({
       }
     }
 
-    const startCentre = positions.length / 3
-    const startPoint = curve.getPointAt(0)
-    positions.push(startPoint.x, startPoint.y, startPoint.z)
-    const endCentre = positions.length / 3
-    const endPoint = curve.getPointAt(1)
-    positions.push(endPoint.x, endPoint.y, endPoint.z)
-    const endStart = tubularSegments * radialSegments
-    for (let side = 0; side < radialSegments; side += 1) {
-      const nextSide = (side + 1) % radialSegments
-      indices.push(startCentre, nextSide, side)
-      indices.push(endCentre, endStart + side, endStart + nextSide)
-    }
-
     const nextGeometry = new BufferGeometry()
     nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
     nextGeometry.setIndex(indices)
@@ -1030,6 +1263,7 @@ function RingShank({
     shoulderDepth,
     shoulderRadius,
     shankForgedVariation,
+    shankInnerFacePower,
     tubeDepth,
     tubeRadius,
   ])
@@ -1079,6 +1313,7 @@ function RingModel({ config, selectedOpal }: { config: RingConfig; selectedOpal?
         shoulderBlendLengthMm={styleProfile.shoulderBlendLengthMm}
         shoulderLandingLengthMm={styleProfile.shoulderLandingLengthMm}
         crossSectionPower={styleProfile.crossSectionPower}
+        shankInnerFacePower={styleProfile.shankInnerFacePower}
         shankForgedVariation={styleProfile.shankForgedVariation}
         metalRoughness={styleProfile.metalRoughness}
       />
@@ -1097,7 +1332,7 @@ export function RingScene({
   selectedOpal,
   view,
 }: RingSceneProps) {
-  const background = useMemo(() => new Color('#171815'), [])
+  const background = useMemo(() => new Color('#24241f'), [])
   const framingTarget = useMemo(
     () => getRingFramingTarget(config, selectedOpal),
     [config, selectedOpal]
@@ -1123,13 +1358,13 @@ export function RingScene({
       <directionalLight
         castShadow
         position={[4.5, 5.5, 5]}
-        intensity={3.1}
+        intensity={2.2}
         color="#fff7e8"
         shadow-bias={-0.00015}
         shadow-mapSize-height={1024}
         shadow-mapSize-width={1024}
       />
-      <directionalLight position={[-4, 2, 3]} intensity={1.35} color="#e5f1f2" />
+      <directionalLight position={[-4, 2, 3]} intensity={1} color="#e5f1f2" />
       <pointLight position={[0, -2, 3]} intensity={0.42} color="#fff1de" />
 
       <CameraPreset target={framingTarget} view={view} />
@@ -1144,10 +1379,10 @@ export function RingScene({
           position={[0, 0, 4.5]}
           scale={[8, 8, 1]}
         />
-        <Lightformer form="rect" intensity={5.5} position={[0, 4, -4]} scale={[5, 1.1, 1]} />
+        <Lightformer form="rect" intensity={3.6} position={[0, 4, -4]} scale={[5, 1.1, 1]} />
         <Lightformer
           form="rect"
-          intensity={4.2}
+          intensity={3}
           color="#f7f2e9"
           position={[0, 4, 3]}
           rotation={[Math.PI / 5, 0, 0]}
@@ -1155,7 +1390,7 @@ export function RingScene({
         />
         <Lightformer
           form="rect"
-          intensity={3.4}
+          intensity={2.4}
           color="#eef4f2"
           position={[-4, 1, 2]}
           rotation={[0, Math.PI / 2, 0]}
@@ -1163,7 +1398,7 @@ export function RingScene({
         />
         <Lightformer
           form="rect"
-          intensity={2.4}
+          intensity={1.8}
           color="#fff2df"
           position={[4, -1, 1]}
           rotation={[0, -Math.PI / 2, 0]}

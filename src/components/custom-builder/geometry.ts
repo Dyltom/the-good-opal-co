@@ -1,5 +1,10 @@
 import { CatmullRomCurve3, CurvePath, LineCurve3, Vector3 } from 'three'
-import { ringStyleGeometryProfiles, type BuilderOpal, type RingConfig } from './config'
+import {
+  ringStyleGeometryProfiles,
+  type BezelLipProfileKnot,
+  type BuilderOpal,
+  type RingConfig,
+} from './config'
 import { contourRadiusAt, type BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 
 export type StoneDimensions = readonly [width: number, height: number]
@@ -36,6 +41,17 @@ export interface RingShankLandmarks {
   startAngle: number
   transitionLeft: CameraVector
   transitionRight: CameraVector
+}
+
+export interface ProfiledBezelLipRing {
+  finish: BezelLipProfileKnot['finish']
+  point: StoneDimensions
+  z: number
+}
+
+export interface HaloSupportContourPoint {
+  inner: StoneDimensions
+  outer: StoneDimensions
 }
 
 export const settingRotationX = -Math.PI / 2
@@ -381,6 +397,154 @@ export function getBezelWallContourPoints(
       offset + thickness / 2,
       contour
     ),
+  }
+}
+
+/**
+ * Samples a style-specific bezel crown without changing the exact stone seat
+ * or the already reviewed outer head envelope. The first ring follows the
+ * cabochon contact surface; every later knot describes the filed crown.
+ */
+export function getProfiledBezelLipRings({
+  angle,
+  contour,
+  depthProfile,
+  height,
+  innerOffset,
+  outerOffset,
+  profile,
+  shape,
+  style,
+  topZ,
+  width,
+}: {
+  angle: number
+  contour?: BuilderStoneContourV1
+  depthProfile: CabochonDepthProfile
+  height: number
+  innerOffset: number
+  outerOffset: number
+  profile: readonly BezelLipProfileKnot[]
+  shape: RingConfig['shape']
+  style: RingConfig['style']
+  topZ: number
+  width: number
+}): readonly ProfiledBezelLipRing[] {
+  const inner = outlinePoint(shape, angle, width, height, innerOffset, contour)
+  const outer = soldStyleOutlinePoint(style, shape, angle, width, height, outerOffset, contour)
+  const contactZ = getBezelLipContactZ(shape, angle, width, height, inner, depthProfile, contour)
+
+  return profile.map((knot, index) => ({
+    finish: knot.finish,
+    point: [
+      inner[0] + (outer[0] - inner[0]) * knot.radialProgress,
+      inner[1] + (outer[1] - inner[1]) * knot.radialProgress,
+    ],
+    z: index === 0 ? contactZ : topZ + knot.heightOffset,
+  }))
+}
+
+function ellipseRadiusAtAngle(
+  bead: HandmadeBeadPoint,
+  beadRadius: number,
+  worldAngle: number
+): number {
+  const localAngle = worldAngle - bead.rotation
+  const semiX = Math.max(0.0001, beadRadius * bead.size * bead.stretchX)
+  const semiY = Math.max(0.0001, beadRadius * bead.size * bead.stretchY)
+  const cosine = Math.cos(localAngle)
+  const sine = Math.sin(localAngle)
+  return (semiX * semiY) / Math.hypot(semiY * cosine, semiX * sine)
+}
+
+/**
+ * Builds the scalloped solder web visible between individual halo grains.
+ * Crests sit beneath each varied grain; valleys pull inward between grains.
+ */
+export function getGrainDerivedHaloSupportOutline({
+  beadRadius,
+  beads,
+  bezelOuterOffset,
+  contour,
+  coverage,
+  haloOffset,
+  height,
+  shape,
+  style,
+  width,
+}: {
+  beadRadius: number
+  beads: readonly HandmadeBeadPoint[]
+  bezelOuterOffset: number
+  contour?: BuilderStoneContourV1
+  coverage: number
+  haloOffset: number
+  height: number
+  shape: RingConfig['shape']
+  style: RingConfig['style']
+  width: number
+}): readonly HaloSupportContourPoint[] {
+  if (beads.length === 0 || coverage <= 0) return []
+
+  const result: HaloSupportContourPoint[] = []
+  beads.forEach((bead, index) => {
+    const next = beads[(index + 1) % beads.length]!
+    const crestAngle = Math.atan2(bead.y, bead.x)
+    const crestDirection: StoneDimensions = [Math.cos(crestAngle), Math.sin(crestAngle)]
+    const crestReach = ellipseRadiusAtAngle(bead, beadRadius, crestAngle) * coverage
+    const crestOuter: StoneDimensions = [
+      bead.x + crestDirection[0] * crestReach,
+      bead.y + crestDirection[1] * crestReach,
+    ]
+    const crestInner = soldStyleOutlinePoint(
+      style,
+      shape,
+      crestAngle,
+      width,
+      height,
+      bezelOuterOffset,
+      contour
+    )
+    result.push({ inner: crestInner, outer: crestOuter })
+
+    const midpointX = bead.x + next.x
+    const midpointY = bead.y + next.y
+    const valleyAngle = Math.atan2(midpointY, midpointX)
+    const valleyOuter = soldStyleOutlinePoint(
+      style,
+      shape,
+      valleyAngle,
+      width,
+      height,
+      haloOffset + beadRadius * coverage * 0.42,
+      contour
+    )
+    const valleyInner = soldStyleOutlinePoint(
+      style,
+      shape,
+      valleyAngle,
+      width,
+      height,
+      bezelOuterOffset,
+      contour
+    )
+    result.push({ inner: valleyInner, outer: valleyOuter })
+  })
+  return result
+}
+
+/** D-shaped forged band: softened flat finger-side, curved exterior. */
+export function getDShankCrossSection(
+  angle: number,
+  outerPower: number,
+  innerFacePower: number
+): { axial: number; radial: number } {
+  const cosine = Math.cos(angle)
+  const sine = Math.sin(angle)
+  const radialPower = cosine >= 0 ? innerFacePower : outerPower
+  return {
+    radial: Math.sign(cosine) * Math.pow(Math.abs(cosine), radialPower),
+    axial: Math.sign(sine) * Math.pow(Math.abs(sine), outerPower),
   }
 }
 

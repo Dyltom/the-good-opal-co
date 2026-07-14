@@ -4,6 +4,10 @@ import {
   applyHandmadeBeadVariation,
   evenlySpacedOutlinePoints,
   getBezelWallContourPoints,
+  getCabochonDepthProfile,
+  getDShankCrossSection,
+  getGrainDerivedHaloSupportOutline,
+  getProfiledBezelLipRings,
   getSoldStyleOuterVariation,
   getStyleBeadCount,
   outlinePoint,
@@ -232,4 +236,130 @@ describe('sold ring style geometry', () => {
   test.each(['gemini', 'coral'] as const)('%s has no decorative halo backplate', (style) => {
     expect(getHaloSupportGeometry(ringStyleGeometryProfiles[style]).thickness).toBe(0)
   })
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'profiles the %s bezel crown without moving its exact inner or outer edge',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const shape = style === 'coral' ? 'cushion' : style === 'aurora' ? 'pear' : 'oval'
+      const width = style === 'coral' ? 0.5 : 0.4
+      const height = 0.5
+      const innerOffset = profile.bezelLipOffset - profile.bezelLipRadius
+      const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+      const depthProfile = getCabochonDepthProfile(width, height, undefined, style)
+      const rings = getProfiledBezelLipRings({
+        angle: Math.PI / 5,
+        depthProfile,
+        height,
+        innerOffset,
+        outerOffset,
+        profile: profile.bezelLipProfile,
+        shape,
+        style,
+        topZ: depthProfile.girdleZ + 0.025,
+        width,
+      })
+      const expectedInner = outlinePoint(shape, Math.PI / 5, width, height, innerOffset)
+      const expectedOuter = getBezelWallContourPoints(
+        style,
+        shape,
+        Math.PI / 5,
+        width,
+        height,
+        profile.bezelWallOffset,
+        profile.bezelWallThickness
+      ).outer
+
+      expect(rings[0]?.point[0]).toBeCloseTo(expectedInner[0], 8)
+      expect(rings[0]?.point[1]).toBeCloseTo(expectedInner[1], 8)
+      expect(rings.at(-1)?.point[0]).toBeCloseTo(expectedOuter[0], 8)
+      expect(rings.at(-1)?.point[1]).toBeCloseTo(expectedOuter[1], 8)
+      expect(profile.bezelLipProfile[0]?.radialProgress).toBe(0)
+      expect(profile.bezelLipProfile.at(-1)?.radialProgress).toBe(1)
+    }
+  )
+
+  test('gives Coral a real recessed patina moat and raised bright outer rail', () => {
+    const knots = ringStyleGeometryProfiles.coral.bezelLipProfile
+    const patina = knots.filter(({ finish }) => finish === 'patina')
+    const metal = knots.filter(({ finish }) => finish === 'metal')
+
+    expect(patina).toHaveLength(3)
+    expect(Math.min(...patina.slice(1).map(({ heightOffset }) => heightOffset)) * 10).toBe(-0.08)
+    expect(Math.max(...metal.map(({ heightOffset }) => heightOffset)) * 10).toBe(0.01)
+    expect(metal[0]?.radialProgress).toBeGreaterThan(patina.at(-1)?.radialProgress ?? 1)
+  })
+
+  test.each(['sun-moon', 'aurora'] as const)(
+    'derives the %s solder web from the varied grain footprints',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const shape = style === 'aurora' ? 'pear' : 'oval'
+      const count = getStyleBeadCount(style, shape, 0.4, 0.5)
+      const beads = applyHandmadeBeadVariation(
+        evenlySpacedOutlinePoints(
+          shape,
+          0.4,
+          0.5,
+          profile.haloOffset,
+          count,
+          profile.haloPhase,
+          style
+        ),
+        profile.beadVariation,
+        profile.beadFlattening
+      )
+      const contour = getGrainDerivedHaloSupportOutline({
+        beadRadius: profile.beadRadius,
+        beads,
+        bezelOuterOffset: profile.bezelWallOffset + profile.bezelWallThickness / 2,
+        coverage: profile.haloSupportCoverage,
+        haloOffset: profile.haloOffset,
+        height: 0.5,
+        shape,
+        style,
+        width: 0.4,
+      })
+
+      expect(contour).toHaveLength(count * 2)
+      expect(
+        contour.every(
+          ({ inner, outer }) =>
+            [...inner, ...outer].every(Number.isFinite) &&
+            Math.hypot(outer[0], outer[1]) > Math.hypot(inner[0], inner[1])
+        )
+      ).toBe(true)
+      const crestRadii = contour
+        .filter((_, index) => index % 2 === 0)
+        .map(({ outer }) => Math.hypot(outer[0], outer[1]))
+      const valleyRadii = contour
+        .filter((_, index) => index % 2 === 1)
+        .map(({ outer }) => Math.hypot(outer[0], outer[1]))
+      expect(Math.max(...crestRadii)).toBeGreaterThan(Math.max(...valleyRadii))
+    }
+  )
+
+  test.each(ringStyles.map(({ id }) => id))(
+    'uses a flat finger-side and curved exterior for the %s D shank',
+    (style) => {
+      const profile = ringStyleGeometryProfiles[style]
+      const inner = getDShankCrossSection(
+        Math.PI / 3,
+        profile.crossSectionPower,
+        profile.shankInnerFacePower
+      )
+      const outer = getDShankCrossSection(
+        (Math.PI * 2) / 3,
+        profile.crossSectionPower,
+        profile.shankInnerFacePower
+      )
+
+      expect(
+        getDShankCrossSection(0, profile.crossSectionPower, profile.shankInnerFacePower)
+      ).toEqual({ axial: 0, radial: 1 })
+      expect(inner.radial).toBeGreaterThan(Math.abs(outer.radial))
+      expect(inner.axial).toBeCloseTo(outer.axial, 10)
+      expect(profile.shankInnerFacePower).toBeLessThan(profile.crossSectionPower)
+    }
+  )
 })

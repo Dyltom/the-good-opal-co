@@ -112,6 +112,7 @@ export interface RingStyleFit {
 }
 
 export interface RingStyleGeometryProfile {
+  bezelLipProfile: readonly BezelLipProfileKnot[]
   bezelWallOffset: number
   bezelWallThickness: number
   bezelLipOffset: number
@@ -139,12 +140,19 @@ export interface RingStyleGeometryProfile {
   shoulderBlendLengthMm: number
   shoulderLandingLengthMm: number
   crossSectionPower: number
+  shankInnerFacePower: number
   metalRoughness: number
   shankRadius: number
   shankDepth: number
   shoulderRadius: number
   shoulderDepth: number
   shankForgedVariation: number
+}
+
+export interface BezelLipProfileKnot {
+  finish: 'metal' | 'patina'
+  heightOffset: number
+  radialProgress: number
 }
 
 export function getHaloSupportGeometry(
@@ -165,6 +173,13 @@ export function getHaloSupportGeometry(
 
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
+    bezelLipProfile: [
+      { radialProgress: 0, heightOffset: 0, finish: 'metal' },
+      { radialProgress: 0.16, heightOffset: 0.003, finish: 'metal' },
+      { radialProgress: 0.46, heightOffset: 0.002, finish: 'metal' },
+      { radialProgress: 0.78, heightOffset: -0.001, finish: 'metal' },
+      { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
+    ],
     bezelWallOffset: 0.0185,
     bezelWallThickness: 0.036,
     bezelLipOffset: 0.002,
@@ -192,6 +207,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlendLengthMm: 1.4,
     shoulderLandingLengthMm: 1.2,
     crossSectionPower: 0.72,
+    shankInnerFacePower: 0.26,
     metalRoughness: 0.31,
     shankRadius: 0.088,
     shankDepth: 0.055,
@@ -200,6 +216,13 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shankForgedVariation: 0.012,
   },
   coral: {
+    bezelLipProfile: [
+      { radialProgress: 0, heightOffset: 0, finish: 'patina' },
+      { radialProgress: 0.28, heightOffset: -0.008, finish: 'patina' },
+      { radialProgress: 0.48, heightOffset: -0.008, finish: 'patina' },
+      { radialProgress: 0.63, heightOffset: 0.001, finish: 'metal' },
+      { radialProgress: 1, heightOffset: -0.003, finish: 'metal' },
+    ],
     bezelWallOffset: 0.025,
     bezelWallThickness: 0.046,
     bezelLipOffset: 0.002,
@@ -227,6 +250,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlendLengthMm: 1.3,
     shoulderLandingLengthMm: 1.1,
     crossSectionPower: 0.76,
+    shankInnerFacePower: 0.24,
     metalRoughness: 0.31,
     shankRadius: 0.082,
     shankDepth: 0.047,
@@ -235,6 +259,12 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shankForgedVariation: 0.016,
   },
   'sun-moon': {
+    bezelLipProfile: [
+      { radialProgress: 0, heightOffset: 0, finish: 'metal' },
+      { radialProgress: 0.18, heightOffset: 0.002, finish: 'metal' },
+      { radialProgress: 0.52, heightOffset: 0.001, finish: 'metal' },
+      { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
+    ],
     bezelWallOffset: 0.022,
     bezelWallThickness: 0.04,
     bezelLipOffset: 0.002,
@@ -262,6 +292,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
     crossSectionPower: 0.72,
+    shankInnerFacePower: 0.27,
     metalRoughness: 0.25,
     shankRadius: 0.086,
     shankDepth: 0.05,
@@ -270,6 +301,12 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shankForgedVariation: 0.013,
   },
   aurora: {
+    bezelLipProfile: [
+      { radialProgress: 0, heightOffset: 0, finish: 'metal' },
+      { radialProgress: 0.2, heightOffset: 0.002, finish: 'metal' },
+      { radialProgress: 0.58, heightOffset: 0, finish: 'metal' },
+      { radialProgress: 1, heightOffset: -0.006, finish: 'metal' },
+    ],
     bezelWallOffset: 0.022,
     bezelWallThickness: 0.042,
     bezelLipOffset: 0.002,
@@ -297,6 +334,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
     crossSectionPower: 0.7,
+    shankInnerFacePower: 0.22,
     metalRoughness: 0.25,
     shankRadius: 0.089,
     shankDepth: 0.052,

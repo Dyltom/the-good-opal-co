@@ -1,14 +1,19 @@
 'use client'
 
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Move, RotateCcw, RotateCw, SlidersHorizontal, ZoomIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
-import { defaultOpalPlacement } from './config'
+import { defaultOpalPlacement, ringStyleGeometryProfiles } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
-import { cssSilhouetteClipPath } from './geometry'
+import {
+  applyHandmadeBeadVariation,
+  cssSilhouetteClipPath,
+  evenlySpacedOutlinePoints,
+  getStyleBeadCount,
+} from './geometry'
 
 interface OpalPlacementEditorProps {
   onChange: (placement: OpalPlacement) => void
@@ -60,6 +65,99 @@ const styleLabels: Record<RingConfig['style'], string> = {
   coral: 'Coral clean bezel',
   gemini: 'Gemini clean bezel',
   'sun-moon': 'Sun & Moon beaded trim',
+}
+
+function OpalSettingDecoration({
+  aspectRatio,
+  clipPath,
+  metal,
+  opal,
+  style,
+}: {
+  aspectRatio: number
+  clipPath?: string
+  metal: RingConfig['metal']
+  opal: BuilderOpal
+  style: RingConfig['style']
+}) {
+  const profile = ringStyleGeometryProfiles[style]
+  const width = 0.4
+  const height = width * aspectRatio
+  const beadCount = getStyleBeadCount(
+    style,
+    opal.visual.silhouette,
+    width,
+    height,
+    opal.visual.contour
+  )
+  const beads = useMemo(
+    () =>
+      applyHandmadeBeadVariation(
+        evenlySpacedOutlinePoints(
+          opal.visual.silhouette,
+          width,
+          height,
+          profile.haloOffset,
+          beadCount,
+          profile.haloPhase,
+          style,
+          opal.visual.contour
+        ),
+        profile.beadVariation,
+        profile.beadFlattening
+      ),
+    [
+      beadCount,
+      height,
+      opal.visual.contour,
+      opal.visual.silhouette,
+      profile.beadFlattening,
+      profile.beadVariation,
+      profile.haloOffset,
+      profile.haloPhase,
+      style,
+    ]
+  )
+
+  if (beads.length === 0) return null
+
+  const supportInset = `${(profile.haloOffset / width) * 38}%`
+  return (
+    <span
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 z-0"
+      data-opal-setting-decoration={style}
+    >
+      <span
+        className="absolute bg-[#31312c] shadow-[0_10px_22px_rgb(0_0_0/0.55)]"
+        style={{
+          background: `linear-gradient(135deg, ${metalColours[metal]}, #77766f 44%, #292a26 78%)`,
+          clipPath,
+          inset: `-${supportInset}`,
+        }}
+      />
+      {beads.map(({ key, rotation, size, stretchX, stretchY, x, y }) => {
+        const diameter = (profile.beadRadius / width) * 100
+        return (
+          <span
+            key={key}
+            data-opal-setting-grain
+            className={cn(
+              'absolute block -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_34%_28%,#f3f1e9_0%,#b6b5ae_34%,#585954_70%,#262722_100%)] shadow-[0_1px_2px_rgb(0_0_0/0.75)]',
+              profile.beadShape === 'angular' ? 'rounded-[38%]' : 'rounded-full'
+            )}
+            style={{
+              height: `${diameter}%`,
+              left: `${50 + (x / (width * 2)) * 100}%`,
+              top: `${50 - (y / (height * 2)) * 100}%`,
+              transform: `translate(-50%, -50%) rotate(${rotation}rad) scale(${size * stretchX}, ${size * stretchY})`,
+              width: `${diameter}%`,
+            }}
+          />
+        )
+      })}
+    </span>
+  )
 }
 
 function RangeControl({
@@ -117,6 +215,8 @@ export function OpalPlacementEditor({
   const displayedScale = Math.min(placement.opalScale, scaleMax)
   const canPan = displayedScale > limits.scaleMin && scaleMax > limits.scaleMin
   const clipPath = cssSilhouetteClipPath(opal.visual.silhouette, opal.visual.contour)
+  const bezelPadding = style === 'coral' ? 'p-[7px]' : style === 'gemini' ? 'p-[5px]' : 'p-[4px]'
+  const seatPadding = style === 'coral' ? 'p-[3px]' : style === 'gemini' ? 'p-px' : 'p-[2px]'
 
   function update<K extends keyof OpalPlacement>(key: K, value: OpalPlacement[K]) {
     onChange({ ...placement, [key]: value })
@@ -233,45 +333,64 @@ export function OpalPlacementEditor({
               onLostPointerCapture={stopDrag}
               onKeyDown={nudge}
               className={cn(
-                'relative mx-auto w-[58%] touch-none p-[5px] shadow-[0_18px_36px_rgb(0_0_0/0.48)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light sm:w-[52%]',
-                isDragging ? 'cursor-grabbing' : canPan ? 'cursor-grab' : 'cursor-default',
-                style === 'sun-moon' && 'outline outline-dotted outline-[5px] outline-offset-[5px]',
-                style === 'aurora' && 'outline outline-dotted outline-[8px] outline-offset-[6px]',
-                silhouetteClass(opal.visual.silhouette)
+                'relative mx-auto w-[58%] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light sm:w-[52%]',
+                isDragging ? 'cursor-grabbing' : canPan ? 'cursor-grab' : 'cursor-default'
               )}
               style={{
                 aspectRatio: 1 / opal.visual.aspectRatio,
-                backgroundColor: metalColours[metal],
-                clipPath,
-                outlineColor:
-                  style === 'sun-moon' || style === 'aurora' ? metalColours[metal] : undefined,
               }}
             >
+              <OpalSettingDecoration
+                aspectRatio={opal.visual.aspectRatio}
+                clipPath={clipPath}
+                metal={metal}
+                opal={opal}
+                style={style}
+              />
               <div
                 className={cn(
-                  'h-full w-full overflow-hidden bg-charcoal',
+                  'absolute inset-0 z-10 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.2)]',
+                  bezelPadding,
                   silhouetteClass(opal.visual.silhouette)
                 )}
-                style={{ clipPath }}
+                style={{ backgroundColor: metalColours[metal], clipPath }}
               >
-                <OpalFaceImage
-                  opal={opal}
-                  placement={placement}
-                  alt=""
-                  sizes="360px"
-                  className="h-full w-full"
-                />
-                <span
-                  aria-hidden="true"
+                <div
+                  data-opal-setting-seat={style}
                   className={cn(
-                    'pointer-events-none absolute inset-0 z-10 transition-opacity',
-                    isDragging ? 'opacity-100' : 'opacity-0'
+                    'relative h-full w-full bg-[#252622]',
+                    seatPadding,
+                    silhouetteClass(opal.visual.silhouette)
                   )}
+                  style={{ clipPath }}
                 >
-                  <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-cream/45" />
-                  <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-cream/45" />
-                  <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cream/70 bg-black-rich/25" />
-                </span>
+                  <div
+                    className={cn(
+                      'relative h-full w-full overflow-hidden bg-charcoal',
+                      silhouetteClass(opal.visual.silhouette)
+                    )}
+                    style={{ clipPath }}
+                  >
+                    <OpalFaceImage
+                      opal={opal}
+                      placement={placement}
+                      alt=""
+                      sizes="360px"
+                      className="h-full w-full"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        'pointer-events-none absolute inset-0 z-10 transition-opacity',
+                        isDragging ? 'opacity-100' : 'opacity-0'
+                      )}
+                    >
+                      <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-cream/45" />
+                      <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-cream/45" />
+                      <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cream/70 bg-black-rich/25" />
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             <output
