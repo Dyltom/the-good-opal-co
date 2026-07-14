@@ -69,6 +69,12 @@ describe('product commerce validation', () => {
     )
     expect(validateBuilderProduct({ ...valid, builderMappingStatus: 'manual' })).toBe(true)
     expect(validateBuilderProduct({ ...valid, dimensions: null })).toBe(true)
+    expect(
+      validateBuilderProduct({
+        ...valid,
+        dimensions: { width: null, length: null, depth: null },
+      })
+    ).toBe(true)
     expect(validateBuilderProduct({ ...valid, dimensions: { width: 5, length: 8 } })).toBe(
       'Builder opals require positive width, length, and depth measurements'
     )

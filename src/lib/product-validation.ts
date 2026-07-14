@@ -107,13 +107,19 @@ export function validateBuilderProduct(data: unknown, originalData?: unknown): t
   }
 
   const dimensions = data.dimensions
+  const hasDimensionValue =
+    isRecord(dimensions) &&
+    [dimensions.width, dimensions.length, dimensions.depth].some(
+      (value) => value !== undefined && value !== null && value !== ''
+    )
   if (
     dimensions !== undefined &&
     dimensions !== null &&
     (!isRecord(dimensions) ||
-      !isPositiveNumber(dimensions.width) ||
-      !isPositiveNumber(dimensions.length) ||
-      !isPositiveNumber(dimensions.depth))
+      (hasDimensionValue &&
+        (!isPositiveNumber(dimensions.width) ||
+          !isPositiveNumber(dimensions.length) ||
+          !isPositiveNumber(dimensions.depth))))
   ) {
     return 'Builder opals require positive width, length, and depth measurements'
   }
