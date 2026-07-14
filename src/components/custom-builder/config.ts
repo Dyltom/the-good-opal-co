@@ -353,11 +353,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     // Keep their oxidized seams visible instead of pulling the halo inward.
     // The sold trim uses small solder grains on a dark web, not a pearl-sized
     // necklace. Move the slimmer grains outward to preserve the 12 mm head.
-    haloOffset: 0.147,
-    beadRadius: 0.043,
+    haloOffset: 0.152,
+    beadRadius: 0.038,
     beadCount: 40,
     beadPitchMm: 1,
-    beadFlattening: 0.68,
+    beadFlattening: 0.62,
     beadAsymmetry: 0.06,
     beadRoughness: 0.56,
     beadShape: 'granulated',
@@ -404,11 +404,11 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     ...auroraBezelSeat,
     // Aurora's granules are broad and handmade, but the sold ring does not use
     // the oversized pearl-like balls produced by a full 1 mm sphere.
-    haloOffset: 0.085,
-    beadRadius: 0.056,
+    haloOffset: 0.087,
+    beadRadius: 0.054,
     beadCount: 28,
     beadPitchMm: 1.12,
-    beadFlattening: 0.64,
+    beadFlattening: 0.6,
     beadAsymmetry: 0.18,
     beadRoughness: 0.62,
     beadShape: 'granulated',

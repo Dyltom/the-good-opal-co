@@ -230,7 +230,7 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#c8c4bb',
+    'sterling-silver': '#b9b6af',
     '14k-gold': '#997a37',
     '18k-gold': '#a98235',
     'white-gold': '#aaa8a1',
@@ -247,10 +247,10 @@ function SolderGrainMaterial({
       color={colour}
       flatShading={organic}
       metalness={0.91}
-      roughness={organic ? Math.max(0.44, roughness * 0.72) : Math.max(0.4, roughness * 0.78)}
+      roughness={organic ? Math.max(0.55, roughness * 0.9) : Math.max(0.44, roughness * 0.82)}
       clearcoat={0.01}
       clearcoatRoughness={0.68}
-      envMapIntensity={organic ? 1.3 : 1.38}
+      envMapIntensity={organic ? 1.14 : 1.26}
     />
   )
 }
@@ -1328,8 +1328,8 @@ function Setting({
               // Sold Sun & Moon and Aurora rings use individually soldered beads.
               // Deterministic variation keeps the halo handmade without animating
               // or changing between renders.
-              const isOrganicGrain = profile.beadPrimitive === 'organic-granule'
-              const solderTone = getSolderGrainTone(key, isOrganicGrain)
+              const usesHandmadeSurface = profile.beadShape === 'granulated'
+              const solderTone = getSolderGrainTone(key, usesHandmadeSurface)
               const grainTiltX = ((((key * 13) % 7) - 3) / 3) * 0.16
               const grainTiltY = ((((key * 17) % 9) - 4) / 4) * 0.14
               return (
@@ -1342,7 +1342,7 @@ function Setting({
                   <mesh
                     castShadow
                     receiveShadow
-                    rotation={isOrganicGrain ? [grainTiltX, grainTiltY, 0] : undefined}
+                    rotation={usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined}
                   >
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <sphereGeometry args={[profile.beadRadius, 20, 14]} />
@@ -1351,7 +1351,7 @@ function Setting({
                       <icosahedronGeometry args={[profile.beadRadius, 1]} />
                     )}
                     <SolderGrainMaterial
-                      organic={isOrganicGrain}
+                      organic={usesHandmadeSurface}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
                       tone={solderTone}

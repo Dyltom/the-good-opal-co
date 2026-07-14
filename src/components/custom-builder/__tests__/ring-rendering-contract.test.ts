@@ -103,15 +103,15 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('<icosahedronGeometry args={[profile.beadRadius, 1]} />')
     expect(sceneSource).not.toContain('lobeOffset')
     expect(sceneSource).toContain(
-      'rotation={isOrganicGrain ? [grainTiltX, grainTiltY, 0] : undefined}'
+      'rotation={usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined}'
     )
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*organicSolderColour[\s\S]*envMapIntensity=\{organic \? 1\.3 : 1\.38\}/
+      /function SolderGrainMaterial[\s\S]*organicSolderColour[\s\S]*envMapIntensity=\{organic \? 1\.14 : 1\.26\}/
     )
-    expect(sceneSource).toContain('organic ? 1.3 : 1.38')
-    expect(sceneSource).toContain('organic={isOrganicGrain}')
-    expect(sceneSource).toContain('getSolderGrainTone(key, isOrganicGrain)')
+    expect(sceneSource).toContain('organic ? 1.14 : 1.26')
+    expect(sceneSource).toContain('organic={usesHandmadeSurface}')
+    expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).toContain('flatShading={organic}')
     expect(sceneSource).not.toContain('position={[0, 0, -profile.beadRadius * 0.38]}')
     expect(sceneSource).not.toContain('scale={[1.07, 1.07, 0.34]}')
