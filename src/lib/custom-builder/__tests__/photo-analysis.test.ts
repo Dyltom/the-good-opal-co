@@ -55,7 +55,7 @@ describe('opal photo crop analysis', () => {
       stoneAspect: 24 / 44,
     })
 
-    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(2)
+    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(3)
     expect(analysis).toBeDefined()
     expect(parseBuilderStoneContour(analysis?.contour)?.radii).toHaveLength(
       BUILDER_STONE_CONTOUR_SAMPLE_COUNT
@@ -214,5 +214,24 @@ describe('opal photo crop analysis', () => {
     expect(
       analyzeOpalRaster({ data: new Uint8Array(7 * 7 * 3), width: 7, height: 7 })
     ).toBeUndefined()
+  })
+
+  test('uses reviewed framing as a low-confidence candidate when pixels are ambiguous', () => {
+    const analysis = analyzeOpalRaster({
+      data: new Uint8Array(48 * 48 * 3).fill(120),
+      height: 48,
+      reviewedCropHint: { focalX: 0.43, focalY: 0.57, rotation: -8, zoom: 5.2 },
+      shapeHint: 'pear',
+      width: 48,
+    })
+
+    expect(analysis).toMatchObject({
+      confidence: 0.7,
+      focalX: 0.43,
+      focalY: 0.57,
+      rotation: -8,
+      zoom: 5.2,
+    })
+    expect(parseBuilderStoneContour(analysis?.contour)).toBeDefined()
   })
 })

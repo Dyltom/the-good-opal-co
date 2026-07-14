@@ -6,12 +6,23 @@ import {
   type BuilderStoneContourV1,
 } from './stone-contour'
 
-export const OPAL_PHOTO_ANALYSIS_VERSION = 2
+export const OPAL_PHOTO_ANALYSIS_VERSION = 3
+
+export type OpalShapeHint = 'cushion' | 'elongated' | 'heart' | 'oval' | 'pear' | 'round'
+
+export interface ReviewedOpalCropHint {
+  focalX: number
+  focalY: number
+  rotation?: number
+  zoom: number
+}
 
 export interface OpalRasterInput {
   channels?: 3 | 4
   data: ArrayLike<number>
   height: number
+  reviewedCropHint?: ReviewedOpalCropHint
+  shapeHint?: OpalShapeHint
   stoneAspect?: number
   width: number
 }
@@ -409,7 +420,7 @@ function normalizeHalfTurn(degrees: number): number {
  * Estimates one conservative crop from border contrast without image codecs or
  * network access. The result is deterministic for identical raster bytes.
  */
-export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | undefined {
+function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | undefined {
   if (
     !Number.isInteger(input.width) ||
     !Number.isInteger(input.height) ||
@@ -544,4 +555,113 @@ export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | u
     rotation: clamp(rotation, -90, 90),
     confidence,
   }
+}
+
+function canonicalShapePoint(
+  shape: OpalShapeHint,
+  angle: number
+): readonly [number, number] {
+  const cosine = Math.cos(angle)
+  const sine = Math.sin(angle)
+  if (shape === 'cushion' || shape === 'elongated') {
+    const exponent = shape === 'cushion' ? 0.42 : 0.62
+    return [
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), exponent),
+      Math.sign(sine) * Math.pow(Math.abs(sine), exponent),
+    ]
+  }
+  if (shape === 'pear') {
+    const taper = 0.925 + 0.2 * sine + 0.045 * sine * sine
+    const widthCorrection = 1.055_526_961_712_104_8
+    const finalTipProgress = clamp((-sine - 0.72) / 0.28, 0, 1)
+    const smoothTipProgress = finalTipProgress * finalTipProgress * (3 - 2 * finalTipProgress)
+    return [cosine * taper * widthCorrection * (1 - smoothTipProgress * 0.4), sine]
+  }
+  if (shape === 'heart') {
+    const upperHalf = Math.max(0, sine)
+    const lowerHalf = Math.max(0, -sine)
+    const notch = 0.22 * Math.exp(-Math.pow(cosine / 0.2, 2)) * upperHalf
+    const positiveYScale = sine > 0 ? 1 / 0.932 : 1
+    const taper = 1 - 0.42 * Math.pow(lowerHalf, 1.35)
+    return [cosine * taper, (sine - notch) * positiveYScale]
+  }
+  return [cosine, sine]
+}
+
+function canonicalShapeContour(shape: OpalShapeHint): BuilderStoneContourV1 | undefined {
+  const boundary = Array.from(
+    { length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT * 8 },
+    (_, index) => canonicalShapePoint(shape, (index / (BUILDER_STONE_CONTOUR_SAMPLE_COUNT * 8)) * fullTurn)
+  )
+  const minimumX = Math.min(...boundary.map(([x]) => x))
+  const maximumX = Math.max(...boundary.map(([x]) => x))
+  const minimumY = Math.min(...boundary.map(([, y]) => y))
+  const maximumY = Math.max(...boundary.map(([, y]) => y))
+  const centreX = (minimumX + maximumX) / 2
+  const centreY = (minimumY + maximumY) / 2
+  const halfWidth = (maximumX - minimumX) / 2
+  const halfHeight = (maximumY - minimumY) / 2
+  const bins: Array<number | undefined> = Array.from({
+    length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT,
+  })
+
+  for (const [rawX, rawY] of boundary) {
+    const x = (rawX - centreX) / halfWidth
+    const y = (rawY - centreY) / halfHeight
+    const angle = (Math.atan2(y, x) + fullTurn) % fullTurn
+    const index = Math.min(
+      BUILDER_STONE_CONTOUR_SAMPLE_COUNT - 1,
+      Math.floor((angle / fullTurn) * BUILDER_STONE_CONTOUR_SAMPLE_COUNT)
+    )
+    bins[index] = Math.max(bins[index] ?? 0, Math.hypot(x, y))
+  }
+
+  const filled = circularlyFill(bins)
+  if (!filled) return undefined
+  const radii = filled.map((radius, index) =>
+    Math.round(
+      medianOfThree(
+        filled[(index - 1 + filled.length) % filled.length]!,
+        radius,
+        filled[(index + 1) % filled.length]!
+      ) * 10_000
+    ) / 10_000
+  )
+  return parseBuilderStoneContour({ version: BUILDER_STONE_CONTOUR_VERSION, radii })
+}
+
+function reviewedCropFallback(input: OpalRasterInput): OpalPhotoAnalysis | undefined {
+  const hint = input.reviewedCropHint
+  if (
+    !hint ||
+    !input.shapeHint ||
+    !Number.isFinite(hint.focalX) ||
+    hint.focalX < 0 ||
+    hint.focalX > 1 ||
+    !Number.isFinite(hint.focalY) ||
+    hint.focalY < 0 ||
+    hint.focalY > 1 ||
+    !Number.isFinite(hint.zoom) ||
+    hint.zoom < 1 ||
+    hint.zoom > 12
+  ) {
+    return undefined
+  }
+  const contour = canonicalShapeContour(input.shapeHint)
+  if (!contour) return undefined
+
+  return {
+    // Human-reviewed framing is trustworthy, but a canonical named outline is
+    // still a review candidate rather than image-derived evidence.
+    confidence: 0.7,
+    contour,
+    focalX: hint.focalX,
+    focalY: hint.focalY,
+    rotation: clamp(hint.rotation ?? 0, -90, 90),
+    zoom: hint.zoom,
+  }
+}
+
+export function analyzeOpalRaster(input: OpalRasterInput): OpalPhotoAnalysis | undefined {
+  return analyzeOpalRasterPixels(input) ?? reviewedCropFallback(input)
 }

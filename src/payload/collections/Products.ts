@@ -23,6 +23,13 @@ export const Products: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'price', 'status', 'builderMappingStatus', 'stock', 'updatedAt'],
+    components: {
+      edit: {
+        beforeDocumentControls: [
+          '@/components/payload/AdoptBuilderCandidateButton#AdoptBuilderCandidateButton',
+        ],
+      },
+    },
   },
   hooks: {
     beforeValidate: [
@@ -476,6 +483,43 @@ export const Products: CollectionConfig = {
             readOnly: true,
             description: 'SHA-256 of the source bytes used by the approved contour.',
           },
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'builderPhotoCandidateFocalX',
+              type: 'number',
+              min: 0,
+              max: 1,
+              access: { read: isAdminField },
+              admin: { readOnly: true, description: 'Candidate crop horizontal focus.' },
+            },
+            {
+              name: 'builderPhotoCandidateFocalY',
+              type: 'number',
+              min: 0,
+              max: 1,
+              access: { read: isAdminField },
+              admin: { readOnly: true, description: 'Candidate crop vertical focus.' },
+            },
+            {
+              name: 'builderPhotoCandidateZoom',
+              type: 'number',
+              min: 1,
+              max: 12,
+              access: { read: isAdminField },
+              admin: { readOnly: true, description: 'Candidate crop zoom.' },
+            },
+            {
+              name: 'builderPhotoCandidateRotation',
+              type: 'number',
+              min: -180,
+              max: 180,
+              access: { read: isAdminField },
+              admin: { readOnly: true, description: 'Candidate crop rotation in degrees.' },
+            },
+          ],
         },
         {
           name: 'builderMappingReviewedAt',

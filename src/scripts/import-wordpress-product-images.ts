@@ -322,6 +322,10 @@ export async function importProductImages(
                   builderMappingAnalysisError: null,
                   builderPhotoAnalysisConfidence: null,
                   builderPhotoAnalysisVersion: null,
+                  builderPhotoCandidateFocalX: null,
+                  builderPhotoCandidateFocalY: null,
+                  builderPhotoCandidateZoom: null,
+                  builderPhotoCandidateRotation: null,
                   ...(product.builderMappingStatus === 'reviewed' ||
                   product.builderMappingStatus === 'manual'
                     ? { builderMappingStatus: 'stale' as const }

@@ -521,6 +521,22 @@ export interface Product {
    */
   builderContourSourceImageHash?: string | null;
   /**
+   * Candidate crop horizontal focus.
+   */
+  builderPhotoCandidateFocalX?: number | null;
+  /**
+   * Candidate crop vertical focus.
+   */
+  builderPhotoCandidateFocalY?: number | null;
+  /**
+   * Candidate crop zoom.
+   */
+  builderPhotoCandidateZoom?: number | null;
+  /**
+   * Candidate crop rotation in degrees.
+   */
+  builderPhotoCandidateRotation?: number | null;
+  /**
    * Set when mapping is explicitly approved as Reviewed or Manual.
    */
   builderMappingReviewedAt?: string | null;
@@ -1452,6 +1468,10 @@ export interface ProductsSelect<T extends boolean = true> {
   builderContour?: T;
   builderContourCandidate?: T;
   builderContourSourceImageHash?: T;
+  builderPhotoCandidateFocalX?: T;
+  builderPhotoCandidateFocalY?: T;
+  builderPhotoCandidateZoom?: T;
+  builderPhotoCandidateRotation?: T;
   builderMappingReviewedAt?: T;
   builderMappingNotes?: T;
   builderEligible?: T;

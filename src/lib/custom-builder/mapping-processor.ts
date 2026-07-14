@@ -5,7 +5,7 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { BUILDER_PHOTO_ANALYSIS_VERSION } from './mapping-lifecycle'
 import { classifyOpalListing, isAvailableOpalListing } from './opal-visual'
-import { analyzeOpalRaster } from './photo-analysis'
+import { analyzeOpalRaster, type OpalShapeHint } from './photo-analysis'
 import { parseBuilderStoneContour } from './stone-contour'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
@@ -19,6 +19,15 @@ interface MediaRecord extends ProductRecord {
   id?: number | string
   url?: string | null
 }
+
+const opalShapeHints = new Set<OpalShapeHint>([
+  'cushion',
+  'elongated',
+  'heart',
+  'oval',
+  'pear',
+  'round',
+])
 
 export interface ProcessBuilderMappingsOptions {
   limit?: number
@@ -75,6 +84,41 @@ function stoneAspect(product: ProductRecord): number | undefined {
     width > 0
     ? width / length
     : undefined
+}
+
+function reviewedAnalysisHints(product: ProductRecord):
+  | {
+      reviewedCropHint: { focalX: number; focalY: number; rotation?: number; zoom: number }
+      shapeHint: OpalShapeHint
+    }
+  | undefined {
+  const focalX = product.builderPhotoFocalX
+  const focalY = product.builderPhotoFocalY
+  const zoom = product.builderPhotoZoom
+  const rotation = product.builderPhotoRotation
+  const shape = product.builderSilhouette
+  if (
+    typeof focalX !== 'number' ||
+    !Number.isFinite(focalX) ||
+    typeof focalY !== 'number' ||
+    !Number.isFinite(focalY) ||
+    typeof zoom !== 'number' ||
+    !Number.isFinite(zoom) ||
+    typeof shape !== 'string' ||
+    !opalShapeHints.has(shape as OpalShapeHint)
+  ) {
+    return undefined
+  }
+
+  return {
+    reviewedCropHint: {
+      focalX,
+      focalY,
+      ...(typeof rotation === 'number' && Number.isFinite(rotation) ? { rotation } : {}),
+      zoom,
+    },
+    shapeHint: shape as OpalShapeHint,
+  }
 }
 
 async function resolveMappedMedia(
@@ -333,8 +377,13 @@ export async function processBuilderMappings(
           id,
           {
             builderMappingAnalyzedImageHash: imageHash,
+            builderContourCandidate: null,
             builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
             builderPhotoAnalysisConfidence: null,
+            builderPhotoCandidateFocalX: null,
+            builderPhotoCandidateFocalY: null,
+            builderPhotoCandidateZoom: null,
+            builderPhotoCandidateRotation: null,
             builderMappingAnalysisError:
               'Automatic crop mapping skipped for a non-individual or non-opal listing',
           },
@@ -367,6 +416,7 @@ export async function processBuilderMappings(
         channels: raster.info.channels,
         data: raster.data,
         height: raster.info.height,
+        ...(protectsActiveMapping ? reviewedAnalysisHints(product) : {}),
         stoneAspect: stoneAspect(product),
         width: raster.info.width,
       })
@@ -401,6 +451,15 @@ export async function processBuilderMappings(
           builderMappingAnalyzedImageHash: imageHash,
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
           builderPhotoAnalysisConfidence: analysisConfidence,
+          builderPhotoCandidateFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
+          builderPhotoCandidateFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
+          builderPhotoCandidateZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
+          builderPhotoCandidateRotation: finiteBetween(
+            analysis.rotation,
+            -180,
+            180,
+            'rotation'
+          ),
           builderMappingAnalysisError: analysisError,
         },
         expectedUpdatedAt
@@ -416,8 +475,13 @@ export async function processBuilderMappings(
         id,
         {
           ...(imageHash ? { builderMappingAnalyzedImageHash: imageHash } : {}),
+          builderContourCandidate: null,
           builderPhotoAnalysisConfidence: analysisConfidence ?? null,
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+          builderPhotoCandidateFocalX: null,
+          builderPhotoCandidateFocalY: null,
+          builderPhotoCandidateZoom: null,
+          builderPhotoCandidateRotation: null,
           builderMappingAnalysisError: conciseError(error),
         },
         expectedUpdatedAt

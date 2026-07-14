@@ -475,6 +475,10 @@ export function applyBuilderMappingLifecycle(
     incoming.builderMappingAnalyzedImageHash = null
     incoming.builderPhotoAnalysisVersion = null
     incoming.builderPhotoAnalysisConfidence = null
+    incoming.builderPhotoCandidateFocalX = null
+    incoming.builderPhotoCandidateFocalY = null
+    incoming.builderPhotoCandidateZoom = null
+    incoming.builderPhotoCandidateRotation = null
     incoming.builderMappingAnalysisError = null
   }
 

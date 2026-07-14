@@ -353,9 +353,14 @@ describe('builder mapping processor', () => {
       collection: 'products',
       id: 42,
       data: {
+        builderContourCandidate: null,
         builderMappingAnalysisError: 'Mapped product image is unavailable',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateFocalX: null,
+        builderPhotoCandidateFocalY: null,
+        builderPhotoCandidateRotation: null,
+        builderPhotoCandidateZoom: null,
       },
       overrideAccess: true,
     })
@@ -374,6 +379,10 @@ describe('builder mapping processor', () => {
           builderMappingMode: 'inferred',
           builderMappingStatus: 'reviewed',
           builderPhotoFocalX: 0.33,
+          builderPhotoFocalY: 0.58,
+          builderPhotoRotation: -7,
+          builderPhotoZoom: 4.2,
+          builderSilhouette: 'pear',
           images: [{ image: { id: 9, url: '/reviewed.jpg' } }],
           name: 'Reviewed Lightning Ridge black opal',
         },
@@ -381,6 +390,12 @@ describe('builder mapping processor', () => {
     })
 
     await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    expect(mocks.analyzeOpalRaster).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reviewedCropHint: { focalX: 0.33, focalY: 0.58, rotation: -7, zoom: 4.2 },
+        shapeHint: 'pear',
+      })
+    )
     const update = mocks.update.mock.calls[0]?.[0]
     expect(update?.data).toMatchObject({ builderContourCandidate: contour })
     expect(update?.data).not.toHaveProperty('builderContour')
@@ -440,6 +455,10 @@ describe('builder mapping processor', () => {
         builderMappingAnalysisError: 'Opal contour confidence is too low for automatic activation',
         builderPhotoAnalysisConfidence: 0.4,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateFocalX: 0.42,
+        builderPhotoCandidateFocalY: 0.57,
+        builderPhotoCandidateRotation: -12,
+        builderPhotoCandidateZoom: 3.4,
       },
       overrideAccess: true,
     })
@@ -468,10 +487,15 @@ describe('builder mapping processor', () => {
       collection: 'products',
       id: 42,
       data: {
+        builderContourCandidate: null,
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderMappingAnalysisError: 'Opal face could not be isolated from the source image',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateFocalX: null,
+        builderPhotoCandidateFocalY: null,
+        builderPhotoCandidateRotation: null,
+        builderPhotoCandidateZoom: null,
       },
       overrideAccess: true,
     })
@@ -555,10 +579,15 @@ describe('builder mapping processor', () => {
       id: 42,
       data: {
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
+        builderContourCandidate: null,
         builderMappingAnalysisError:
           'Automatic crop mapping skipped for a non-individual or non-opal listing',
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        builderPhotoCandidateFocalX: null,
+        builderPhotoCandidateFocalY: null,
+        builderPhotoCandidateRotation: null,
+        builderPhotoCandidateZoom: null,
       },
       overrideAccess: true,
     })
