@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "builderVisible": false,
+  "candidates": [
+    {
+      "id": "unnamed-pear-clean-bezel-2023",
+      "name": null,
+      "status": "draft-evidence",
+      "sourceType": "instagram",
+      "sourceUrl": "https://www.instagram.com/thegoodopalco/p/CtEHPylykK3/",
+      "postedAt": "2023-06-04",
+      "views": [
+        {
+          "slide": 1,
+          "view": "top",
+          "notes": "Reworked asymmetric pear in a clean full bezel, without a grain halo. Narrow offset shoulders terminate in small rounded solder details beside the bezel."
+        },
+        {
+          "slide": 2,
+          "view": "top",
+          "notes": "Earlier version of the same opal in a broad hammered single shank. Kept only as historical comparison evidence."
+        }
+      ],
+      "known": [
+        "pear stone silhouette",
+        "clean full bezel",
+        "no grain halo",
+        "rounded shoulder terminals on the reworked ring"
+      ],
+      "unknown": [
+        "design name",
+        "physical dimensions",
+        "profile geometry",
+        "underside construction"
+      ],
+      "requiresMakerApproval": true
+    }
+  ]
+}
