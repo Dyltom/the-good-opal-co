@@ -588,6 +588,58 @@ describe('builder mapping processor', () => {
     })
   })
 
+  test('preserves an ambiguous alternate candidate when the current source fails', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 46,
+          builderMappedImageIndex: 0,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [
+            { image: { id: 10, url: '/failed-current.jpg' } },
+            { image: { id: 11, url: '/alternate-a.jpg' } },
+            { image: { id: 12, url: '/alternate-b.jpg' } },
+          ],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    mocks.analyzeOpalRaster
+      .mockReturnValueOnce(undefined)
+      .mockReturnValueOnce({
+        confidence: 0.94,
+        contour,
+        focalX: 0.6,
+        focalY: 0.45,
+        rotation: 8,
+        zoom: 3.1,
+      })
+      .mockReturnValueOnce({
+        confidence: 0.92,
+        contour,
+        focalX: 0.55,
+        focalY: 0.48,
+        rotation: 4,
+        zoom: 3,
+      })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({
+      builderContourCandidate: contour,
+      builderMappingAnalysisError:
+        'Multiple gallery images are similarly suitable; choose the mapped source before activation',
+      builderPhotoAnalysisConfidence: 0.94,
+      builderPhotoCandidateImageIndex: 1,
+      builderPhotoCandidateFocalX: 0.6,
+    })
+    expect(update?.data).not.toHaveProperty('builderMappedImageIndex')
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
+  })
+
   test('generates a candidate for a reviewed mapping without overwriting its approved contour or crop', async () => {
     const approvedContour = {
       version: 1 as const,

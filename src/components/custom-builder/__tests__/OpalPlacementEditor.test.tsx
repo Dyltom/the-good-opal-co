@@ -143,7 +143,7 @@ describe('OpalPlacementEditor', () => {
     expect(onChange).not.toHaveBeenCalled()
   })
 
-  test('starts direct positioning from the reviewed crop without a separate zoom step', () => {
+  test('does not silently zoom the reviewed crop when direct positioning starts', () => {
     const onChange = vi.fn()
     renderEditor(defaultOpalPlacement, onChange)
     const aperture = screen.getByRole('group', { name: /Adjust the photo crop/i })
@@ -169,15 +169,42 @@ describe('OpalPlacementEditor', () => {
     })
     fireEvent.pointerMove(aperture, { clientX: 220, clientY: 180, pointerId: 7 })
 
-    expect(onChange).toHaveBeenNthCalledWith(1, {
-      ...defaultOpalPlacement,
-      opalScale: 1.15,
+    expect(onChange).not.toHaveBeenCalled()
+    expect(screen.getByText('Increase zoom to move colour')).toBeTruthy()
+  })
+
+  test('moves the photo at the customer-selected zoom without changing magnification', () => {
+    const onChange = vi.fn()
+    renderEditor({ ...defaultOpalPlacement, opalScale: 1.25 }, onChange)
+    const aperture = screen.getByRole('group', { name: /Adjust the photo crop/i })
+    const viewport = document.querySelector('[data-opal-placement-crop-viewport]') as HTMLDivElement
+    Object.defineProperty(aperture, 'setPointerCapture', { value: vi.fn() })
+    vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue({
+      bottom: 300,
+      height: 200,
+      left: 100,
+      right: 300,
+      top: 100,
+      width: 200,
+      x: 100,
+      y: 100,
+      toJSON: () => ({}),
     })
-    expect(onChange).toHaveBeenNthCalledWith(2, {
+
+    fireEvent.pointerDown(aperture, {
+      button: 0,
+      clientX: 200,
+      clientY: 200,
+      pointerId: 8,
+    })
+    fireEvent.pointerMove(aperture, { clientX: 220, clientY: 180, pointerId: 8 })
+
+    expect(onChange).toHaveBeenCalledTimes(1)
+    expect(onChange).toHaveBeenCalledWith({
       ...defaultOpalPlacement,
       opalPositionX: 0.09,
       opalPositionY: -0.09,
-      opalScale: 1.15,
+      opalScale: 1.25,
     })
   })
 })

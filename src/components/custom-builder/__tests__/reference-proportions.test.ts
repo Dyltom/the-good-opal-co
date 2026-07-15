@@ -13,14 +13,14 @@ import { getSettingOuterHalfWidth, getStoneDimensions } from '../geometry'
 const draftReferenceEnvelopes = {
   gemini: {
     bandWidthMm: [1.7, 1.85],
-    headWidthMm: [8.75, 8.9],
+    headWidthMm: [9.2, 9.3],
     setting: 'bezel',
     shape: 'oval',
     stoneMm: [8, 10],
   },
   coral: {
     bandWidthMm: [1.55, 1.7],
-    headWidthMm: [11.2, 11.35],
+    headWidthMm: [11.7, 11.9],
     setting: 'bezel',
     shape: 'cushion',
     stoneMm: [10, 10],
@@ -34,7 +34,10 @@ const draftReferenceEnvelopes = {
   },
   aurora: {
     bandWidthMm: [1.7, 1.85],
-    headWidthMm: [10.75, 11.3],
+    // Normalized against the visible stone/head landmarks in the owned pear
+    // photograph. The earlier 11.5–11.7 estimate counted the cast shadow as
+    // metal and produced oversized pearl-like grains.
+    headWidthMm: [10.6, 11],
     setting: 'beaded',
     shape: 'pear',
     stoneMm: [8, 10],

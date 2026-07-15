@@ -286,8 +286,148 @@ describe('WooCommerce catalogue mutation retries', () => {
     })
 
     expect(mocks.create).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ status: 'draft', stock: 0 }) })
+      expect.objectContaining({
+        data: expect.objectContaining({
+          material: 'none',
+          status: 'draft',
+          stock: 0,
+        }),
+      })
     )
+  })
+
+  test('persists builder facts inferred from a new individual opal name', async () => {
+    vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
+    vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
+    mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
+    mocks.create.mockResolvedValue({ id: 93 })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'New individual stone',
+        inStock: true,
+        name: 'Lightning Ridge Black Opal 1.25 ct',
+        price: 180,
+        sku: 'WP-5683',
+        slug: 'lightning-ridge-black-opal-1-25-ct',
+        stockQuantity: 1,
+        tags: ['opal'],
+        wooId: 5683,
+      },
+    ])
+
+    await syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          material: 'none',
+          stoneOrigin: 'lightning-ridge',
+          stoneType: 'black-opal',
+          weight: 1.25,
+          weightUnit: 'carats',
+        }),
+      })
+    )
+  })
+
+  test('publishes one authenticated status-managed individual opal as one inventory unit', async () => {
+    vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
+    vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
+    mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
+    mocks.create.mockResolvedValue({ id: 92 })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'One-off opal with Woo stock status management',
+        inStock: true,
+        name: 'New status-managed opal',
+        price: 125,
+        sku: 'WP-5682',
+        slug: 'new-status-managed-opal',
+        stockQuantity: null,
+        tags: ['opal'],
+        wooId: 5682,
+      },
+    ])
+
+    await expect(
+      syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+    ).resolves.toMatchObject({
+      created: 1,
+      createdWooIds: [5682],
+      sourceStockByWooId: { 5682: 1 },
+    })
+  })
+
+  test('does not turn status-only parcels or finished rings into one-unit inventory', async () => {
+    vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
+    vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
+    mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
+    mocks.create.mockResolvedValue({ id: 94 })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Multiple stones, priced as a parcel',
+        inStock: true,
+        name: 'Coober Pedy opal parcel',
+        price: 125,
+        sku: 'WP-5684',
+        slug: 'coober-pedy-opal-parcel',
+        stockQuantity: null,
+        tags: ['opal'],
+        wooId: 5684,
+      },
+      {
+        category: 'opal-rings',
+        compareAtPrice: null,
+        description: 'Made-to-order ring',
+        inStock: true,
+        name: 'Made-to-order Aurora ring',
+        price: 425,
+        sku: 'WP-5685',
+        slug: 'made-to-order-aurora-ring',
+        stockQuantity: null,
+        tags: ['ring'],
+        wooId: 5685,
+      },
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Legacy uncategorized voucher',
+        inStock: true,
+        name: 'Gift Voucher',
+        price: 100,
+        sku: 'WP-5686',
+        slug: 'gift-voucher',
+        stockQuantity: null,
+        tags: ['gift'],
+        wooId: 5686,
+      },
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Legacy uncategorized education product',
+        inStock: true,
+        name: 'Opal Workshop',
+        price: 180,
+        sku: 'WP-5687',
+        slug: 'opal-workshop',
+        stockQuantity: null,
+        tags: ['course'],
+        wooId: 5687,
+      },
+    ])
+
+    await expect(
+      syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+    ).resolves.toMatchObject({
+      created: 4,
+      sourceStockByWooId: {},
+    })
   })
 
   test('does not expose synthetic public availability as exact publish stock', async () => {

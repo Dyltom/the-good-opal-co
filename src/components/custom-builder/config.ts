@@ -20,10 +20,10 @@ export const styleIds = ['gemini', 'coral', 'sun-moon', 'aurora'] as const
  * approval applies only when Payload names this exact version for the style.
  */
 export const proceduralRingModelVersions: Readonly<Record<(typeof styleIds)[number], string>> = {
-  gemini: 'procedural-v2',
-  coral: 'procedural-v2',
-  'sun-moon': 'procedural-v2',
-  aurora: 'procedural-v2',
+  gemini: 'procedural-v3',
+  coral: 'procedural-v3',
+  'sun-moon': 'procedural-v3',
+  aurora: 'procedural-v3',
 }
 
 export const ringConfigSchema = z.object({
@@ -222,19 +222,19 @@ export function getHaloSupportGeometry(
 const geminiBezelSeat = {
   bezelLipOffset: 0.002,
   bezelLipRadius: 0.012,
-  // The draft CMS evidence records an 8.75 mm head around an 8 mm stone. Keep
-  // the wall just clear of the stone and leave the broad inflated rail behind.
-  bezelWallOffset: 0.02,
-  bezelWallThickness: 0.036,
-  patinaSeatReveal: 0.008,
+  // The sold ring has a broad oxidized seat ending in a thin handmade outer
+  // rail. Overall head width comes from that dark seat, not a swollen bright lip.
+  bezelWallOffset: 0.0305,
+  bezelWallThickness: 0.059,
+  patinaSeatReveal: 0.055,
 } satisfies BezelSeatGeometry
 
 const coralBezelSeat = {
   bezelLipOffset: 0.002,
   bezelLipRadius: 0.012,
-  bezelWallOffset: 0.031,
-  bezelWallThickness: 0.058,
-  patinaSeatReveal: 0.0425,
+  bezelWallOffset: 0.0395,
+  bezelWallThickness: 0.077,
+  patinaSeatReveal: 0.0715,
 } satisfies BezelSeatGeometry
 
 const sunMoonBezelSeat = {
@@ -263,8 +263,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
         finish: 'patina',
         stoneReveal: geminiBezelSeat.patinaSeatReveal,
       },
-      { radialProgress: 0.46, heightOffset: 0.002, finish: 'metal' },
-      { radialProgress: 0.78, heightOffset: -0.001, finish: 'metal' },
+      { radialProgress: 0.96, heightOffset: 0.002, finish: 'metal' },
+      { radialProgress: 0.985, heightOffset: -0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
     ...geminiBezelSeat,
@@ -321,7 +321,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
         finish: 'patina',
         stoneReveal: coralBezelSeat.patinaSeatReveal,
       },
-      { radialProgress: 0.81, heightOffset: 0.001, finish: 'metal' },
+      { radialProgress: 0.96, heightOffset: 0.001, finish: 'metal' },
       { radialProgress: 1, heightOffset: -0.003, finish: 'metal' },
     ],
     ...coralBezelSeat,
@@ -378,8 +378,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
     ...sunMoonBezelSeat,
-    // Forty measured-reference grains span a 10.8 × 12.8 mm head around the
-    // 8 × 10 mm stone. Keep the small solder grains tight to the bezel so the
+    // Forty counted reference grains span the face-on head around the 8 × 10 mm
+    // draft stone. Keep the small solder grains tight to the bezel so the
     // oxidized web reads as a seam, not a dark moat or detached pearl chain.
     haloOffset: 0.095,
     beadRadius: 0.038,
@@ -434,8 +434,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.006, finish: 'metal' },
     ],
     ...auroraBezelSeat,
-    // Aurora's granules are broad and handmade, but the sold ring does not use
-    // the oversized pearl-like balls produced by a full 1 mm sphere.
+    // Aurora uses broad but low, oxidized solder grains. Keep them connected to
+    // the dark support web; detached spheres read as a pearl halo.
     haloOffset: 0.095,
     beadRadius: 0.046,
     beadCount: 28,

@@ -345,8 +345,8 @@ function baseOutlinePoint(
 
   if (shape === 'cushion') {
     return [
-      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.34) * width,
-      Math.sign(sine) * Math.pow(Math.abs(sine), 0.34) * height,
+      Math.sign(cosine) * Math.pow(Math.abs(cosine), 0.25) * width,
+      Math.sign(sine) * Math.pow(Math.abs(sine), 0.25) * height,
     ]
   }
   if (shape === 'elongated') {

@@ -135,8 +135,8 @@ export function OpalPlacementEditor({
     displayedScale,
     placement.opalRotation
   )
-  const canAdjustPosition = scaleMax > limits.scaleMin
-  const dragScale = Math.min(scaleMax, Math.max(displayedScale, 1.15))
+  const hasPositionRange = scaleMax > limits.scaleMin
+  const canAdjustPosition = hasPositionRange && displayedScale > limits.scaleMin
   const isDefaultPlacement =
     placement.opalPositionX === defaultOpalPlacement.opalPositionX &&
     placement.opalPositionY === defaultOpalPlacement.opalPositionY &&
@@ -157,19 +157,14 @@ export function OpalPlacementEditor({
     if (bounds.width <= 0 || bounds.height <= 0) return
     event.currentTarget.focus({ preventScroll: true })
     event.currentTarget.setPointerCapture(event.pointerId)
-    const dragPlacement = {
-      ...placement,
-      opalScale: dragScale,
-    }
     drag.current = {
-      ...dragPlacement,
+      ...placement,
       height: bounds.height,
       pointerId: event.pointerId,
       width: bounds.width,
       x: event.clientX,
       y: event.clientY,
     }
-    if (dragScale !== placement.opalScale) onChange(dragPlacement)
     setIsDragging(true)
   }
 
@@ -207,7 +202,7 @@ export function OpalPlacementEditor({
   function nudge(event: KeyboardEvent<HTMLDivElement>) {
     if (!canAdjustPosition) return
     const delta = event.shiftKey ? 0.05 : 0.01
-    const next = { ...placement, opalScale: dragScale }
+    const next = { ...placement }
 
     if (event.key === 'ArrowLeft') next.opalPositionX -= delta
     else if (event.key === 'ArrowRight') next.opalPositionX += delta
@@ -252,15 +247,15 @@ export function OpalPlacementEditor({
             </div>
           </div>
 
-          <div className="relative grid min-h-[20rem] select-none place-items-center gap-5 overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_50%_42%,rgb(255_255_255/0.09),transparent_55%)] px-8 py-7 sm:min-h-[24rem] sm:px-10">
+          <div className="relative grid min-h-[17rem] select-none place-items-center gap-4 overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_50%_42%,rgb(255_255_255/0.09),transparent_55%)] px-7 py-6 sm:min-h-[20rem] sm:px-9">
             <div
               data-opal-placement-aperture
               role="group"
-              tabIndex={canAdjustPosition ? 0 : -1}
-              aria-disabled={!canAdjustPosition}
+              tabIndex={hasPositionRange ? 0 : -1}
+              aria-disabled={!hasPositionRange}
               aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown"
               aria-roledescription="opal photo crop"
-              aria-label={`Adjust the photo crop for ${opal.name}. ${canAdjustPosition ? 'Drag the colour inside the fixed stone outline. The editor adds enough zoom to keep the photographed face inside the stone. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : 'This source photo already uses the closest safe fit.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
+              aria-label={`Adjust the photo crop for ${opal.name}. ${canAdjustPosition ? 'Drag the colour inside the fixed stone outline. Arrow keys nudge it; Shift plus an arrow makes a larger move.' : hasPositionRange ? 'Increase zoom before moving the colour inside the fixed stone outline.' : 'This source photo already uses the closest safe fit.'} Horizontal ${formatPosition(placement.opalPositionX, 'horizontal')}, vertical ${formatPosition(placement.opalPositionY, 'vertical')}.`}
               onPointerDown={startDrag}
               onPointerMove={moveDrag}
               onPointerUp={stopDrag}
@@ -268,7 +263,7 @@ export function OpalPlacementEditor({
               onLostPointerCapture={stopDrag}
               onKeyDown={nudge}
               className={cn(
-                'group relative mx-auto w-[70%] max-w-[15.5rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[54%]',
+                'group relative mx-auto w-[64%] max-w-[12.5rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[48%]',
                 isDragging
                   ? 'cursor-grabbing'
                   : canAdjustPosition
@@ -337,7 +332,9 @@ export function OpalPlacementEditor({
               <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
               {canAdjustPosition
                 ? `${isDragging ? 'Framing colour' : 'Drag colour inside outline'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
-                : 'Closest safe source fit'}
+                : hasPositionRange
+                  ? 'Increase zoom to move colour'
+                  : 'Closest safe source fit'}
             </output>
           </div>
         </div>
@@ -424,7 +421,7 @@ export function OpalPlacementEditor({
                 value={placement.opalPositionX}
                 valueText={formatPosition(placement.opalPositionX, 'horizontal')}
                 onChange={(value) =>
-                  onChange({ ...placement, opalPositionX: value, opalScale: dragScale })
+                  onChange({ ...placement, opalPositionX: value })
                 }
               />
               <RangeControl
@@ -436,7 +433,7 @@ export function OpalPlacementEditor({
                 value={placement.opalPositionY}
                 valueText={formatPosition(placement.opalPositionY, 'vertical')}
                 onChange={(value) =>
-                  onChange({ ...placement, opalPositionY: value, opalScale: dragScale })
+                  onChange({ ...placement, opalPositionY: value })
                 }
               />
               <RangeControl

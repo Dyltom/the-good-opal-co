@@ -4,6 +4,11 @@ import { fileURLToPath } from 'node:url'
 import { getPayload } from '@/lib/payload'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import {
+  classifyOpalListing,
+  inferBuilderStoneType,
+  isAvailableOpalListing,
+} from '@/lib/custom-builder/opal-visual'
+import {
   fetchWooCatalog,
   reconciledStock,
   type WooCatalogProduct,
@@ -71,6 +76,52 @@ function richText(text: string) {
   }
 }
 
+function inferredProductFacts(product: WooCatalogProduct) {
+  if (product.category !== 'raw-opals') return {}
+
+  const stoneType = inferBuilderStoneType(undefined, product.name)
+  const stoneOrigin = /lightning\s+ridge/i.test(product.name)
+    ? ('lightning-ridge' as const)
+    : /coober\s+pedy/i.test(product.name)
+      ? ('coober-pedy' as const)
+      : /mintabie/i.test(product.name)
+        ? ('mintabie' as const)
+        : /andamooka/i.test(product.name)
+          ? ('andamooka' as const)
+          : /queensland|koroit/i.test(product.name)
+            ? ('queensland' as const)
+            : undefined
+  const weightMatch = product.name.match(/\b(\d+(?:\.\d+)?)\s*(?:ct|cts|carats?)\b/i)
+  const weight = weightMatch?.[1] ? Number(weightMatch[1]) : undefined
+
+  return {
+    material: 'none' as const,
+    ...(stoneType !== 'unknown-opal' ? { stoneType } : {}),
+    ...(stoneOrigin ? { stoneOrigin } : {}),
+    ...(weight !== undefined && Number.isFinite(weight)
+      ? { weight, weightUnit: 'carats' as const }
+      : {}),
+  }
+}
+
+function statusManagedPublishStock(product: WooCatalogProduct): number | undefined {
+  if (
+    product.category !== 'raw-opals' ||
+    !/\bopals?\b/i.test(product.name) ||
+    !isAvailableOpalListing(product.name) ||
+    classifyOpalListing(product.name) !== 'individual' ||
+    product.stockQuantity !== null
+  ) {
+    return undefined
+  }
+
+  // A raw individual opal is a one-off inventory unit. Woo's authenticated
+  // status is sufficient to make that single stone available, while parcels,
+  // finished rings, services, and other non-quantity products remain draft
+  // until an exact inventory model exists for them.
+  return product.inStock ? 1 : 0
+}
+
 async function findAllProducts(): Promise<Product[]> {
   const payload = await getPayload()
   const products: Product[] = []
@@ -110,6 +161,7 @@ function createData(product: WooCatalogProduct) {
     legacyWooId: product.wooId,
     certified: false,
     tenantId: TENANT_ID,
+    ...inferredProductFacts(product),
   }
 }
 
@@ -128,6 +180,7 @@ function updateData(existing: Product, product: WooCatalogProduct, options: Sync
       ? reconciledStock(existing.stock, product.inStock, options.restock, product.stockQuantity)
       : 0,
     legacyWooId: product.wooId,
+    ...(!existing.stoneType ? inferredProductFacts(product) : {}),
   }
 }
 
@@ -177,17 +230,24 @@ export async function syncWooCatalog(options: SyncOptions) {
 
   let created = 0
   const createdWooIds: number[] = []
-  // Only an authenticated, exact Woo quantity can unlock first publication.
-  // The public Store API exposes availability but not quantity; converting that
-  // signal to a synthetic stock of one would put a newly added product on sale
-  // before its physical inventory had been verified.
+  // Only authenticated Woo inventory can unlock first publication. Quantity-
+  // managed products use their exact count. A status-only signal maps to one
+  // unit only for an individual raw opal, whose business model is inherently
+  // one stone/one sale; every other null quantity stays unpublished.
   const sourceStockByWooId = Object.fromEntries(
     consumerKey && consumerSecret
-      ? sourceProducts.flatMap((product) =>
-          typeof product.stockQuantity === 'number'
-            ? [[product.wooId, reconciledStock(0, product.inStock, true, product.stockQuantity)]]
-            : []
-        )
+      ? sourceProducts.flatMap((product) => {
+          if (typeof product.stockQuantity === 'number') {
+            return [
+              [
+                product.wooId,
+                reconciledStock(0, product.inStock, true, product.stockQuantity),
+              ] as const,
+            ]
+          }
+          const statusStock = statusManagedPublishStock(product)
+          return statusStock === undefined ? [] : ([[product.wooId, statusStock]] as const)
+        })
       : []
   )
   let updated = 0

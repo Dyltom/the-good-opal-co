@@ -92,6 +92,8 @@ describe('custom builder opal visual profiles', () => {
     expect(isAvailableOpalListing('Coober Pedy Carved Heart Parcel')).toBe(true)
     expect(isAvailableOpalListing('Large Koroit Boulder Opal Specimen')).toBe(true)
     expect(isAvailableOpalListing('Custom Jewellery Deposit')).toBe(false)
+    expect(isAvailableOpalListing('Gift Voucher')).toBe(false)
+    expect(isAvailableOpalListing('Opal cutting workshop')).toBe(false)
     expect(isAvailableOpalListing('Ring repair fee')).toBe(false)
   })
 

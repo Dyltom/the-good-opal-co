@@ -226,7 +226,7 @@ function SolderGrainMaterial({
   tone: number
 }) {
   const solderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#d0cdc5',
+    'sterling-silver': '#868681',
     '14k-gold': '#b99342',
     '18k-gold': '#c49a3d',
     'white-gold': '#c7c4bb',
@@ -234,7 +234,7 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#c4c1b9',
+    'sterling-silver': '#797a75',
     '14k-gold': '#ad873c',
     '18k-gold': '#b78d38',
     'white-gold': '#bdbbb5',
@@ -267,7 +267,7 @@ function SolderGrainMaterial({
       }
       clearcoat={0.01}
       clearcoatRoughness={0.68}
-      envMapIntensity={faceted ? 1.18 : organic ? 1.2 : 1.26}
+      envMapIntensity={faceted ? 1.05 : organic ? 0.62 : 0.72}
     />
   )
 }
@@ -300,7 +300,7 @@ function SolderBridgeMaterial({ metal }: { metal: RingConfig['metal'] }) {
 
 function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
   const geometry = useMemo(() => {
-    const nextGeometry = new SphereGeometry(radius, 12 + (seed % 3), 7)
+    const nextGeometry = new SphereGeometry(radius, 18 + (seed % 3), 12)
     const positions = nextGeometry.getAttribute('position')
     const point = new Vector3()
 
@@ -312,9 +312,36 @@ function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number 
       const nz = point.z / length
       const deformation =
         1 +
-        Math.sin(nx * 7.1 + seed * 0.73) * 0.06 +
-        Math.sin(ny * 9.3 - seed * 0.41) * 0.045 +
-        Math.sin(nz * 6.7 + nx * 2.8 + seed * 0.29) * 0.035
+        Math.sin(nx * 7.1 + seed * 0.73) * 0.05 +
+        Math.sin(ny * 9.3 - seed * 0.41) * 0.035 +
+        Math.sin(nz * 6.7 + nx * 2.8 + seed * 0.29) * 0.025
+      point.multiplyScalar(deformation)
+      positions.setXYZ(index, point.x, point.y, point.z)
+    }
+
+    positions.needsUpdate = true
+    nextGeometry.computeVertexNormals()
+    nextGeometry.computeBoundingSphere()
+    return nextGeometry
+  }, [radius, seed])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+  return <primitive attach="geometry" object={geometry} />
+}
+
+function RoundedSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
+  const geometry = useMemo(() => {
+    const nextGeometry = new SphereGeometry(radius, 20, 14)
+    const positions = nextGeometry.getAttribute('position')
+    const point = new Vector3()
+
+    for (let index = 0; index < positions.count; index += 1) {
+      point.fromBufferAttribute(positions, index)
+      const length = point.length() || 1
+      const deformation =
+        1 +
+        Math.sin((point.x / length) * 8.2 + seed * 0.61) * 0.018 +
+        Math.sin((point.y / length) * 7.4 - seed * 0.37) * 0.012
       point.multiplyScalar(deformation)
       positions.setXYZ(index, point.x, point.y, point.z)
     }
@@ -512,7 +539,7 @@ const photoGlossFragmentShader = /* glsl */ `
     vec3 halfDirection = normalize(galleryLight + viewDirection);
     float highlight = pow(max(dot(normal, halfDirection), 0.0), 54.0);
     float edgeSheen = pow(1.0 - max(dot(normal, viewDirection), 0.0), 5.0);
-    float alpha = min(0.06, highlight * 0.045 + edgeSheen * 0.012);
+    float alpha = min(0.025, highlight * 0.018 + edgeSheen * 0.006);
     gl_FragColor = vec4(vec3(1.0), alpha);
   }
 `
@@ -635,14 +662,17 @@ function OpalCabochon({
           <meshPhysicalMaterial
             attach="material-0"
             map={photoTexture}
-            color="#ffffff"
-            clearcoat={0.38}
-            clearcoatRoughness={0.12}
-            envMapIntensity={0.35}
+            color="#dddddd"
+            clearcoat={0.22}
+            clearcoatRoughness={0.2}
+            emissive="#ffffff"
+            emissiveIntensity={0.16}
+            emissiveMap={photoTexture}
+            envMapIntensity={0.24}
             ior={1.44}
             metalness={0}
-            roughness={0.24}
-            specularIntensity={0.32}
+            roughness={0.34}
+            specularIntensity={0.22}
             toneMapped={false}
           />
           <meshPhysicalMaterial
@@ -1099,7 +1129,7 @@ function BezelWall({
   config: RingConfig
   dimensions: StoneDimensions
   bottomZ: number
-  finish?: 'metal' | 'patina'
+  finish?: 'metal' | 'oxidized' | 'patina'
   offset: number
   thickness: number
   topZ: number
@@ -1140,6 +1170,13 @@ function BezelWall({
     <mesh castShadow geometry={geometry} receiveShadow>
       {finish === 'patina' ? (
         <PatinaMaterial metal={config.metal} />
+      ) : finish === 'oxidized' ? (
+        <meshStandardMaterial
+          color="#555752"
+          envMapIntensity={0.72}
+          metalness={0.8}
+          roughness={0.64}
+        />
       ) : (
         <MetalMaterial metal={config.metal} roughness={0.3} />
       )}
@@ -1166,6 +1203,9 @@ function ProfiledBezelLip({
 }) {
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
+  const usesOxidizedSilverRail =
+    config.metal === 'sterling-silver' &&
+    (config.style === 'gemini' || config.style === 'coral')
   const geometry = useMemo(
     () =>
       createProfiledBezelLipGeometry(
@@ -1199,12 +1239,12 @@ function ProfiledBezelLip({
     <mesh castShadow geometry={geometry} receiveShadow>
       <meshPhysicalMaterial
         attach="material-0"
-        color={metalColours[config.metal]}
-        metalness={0.96}
-        roughness={config.metal === 'sterling-silver' ? 0.38 : 0.25}
-        clearcoat={0.04}
-        clearcoatRoughness={0.36}
-        envMapIntensity={1.55}
+        color={usesOxidizedSilverRail ? '#c0c0ba' : metalColours[config.metal]}
+        metalness={usesOxidizedSilverRail ? 0.92 : 0.96}
+        roughness={usesOxidizedSilverRail ? 0.5 : config.metal === 'sterling-silver' ? 0.38 : 0.25}
+        clearcoat={usesOxidizedSilverRail ? 0.02 : 0.04}
+        clearcoatRoughness={usesOxidizedSilverRail ? 0.54 : 0.36}
+        envMapIntensity={usesOxidizedSilverRail ? 1.1 : 1.55}
       />
       <meshStandardMaterial
         attach="material-1"
@@ -1426,6 +1466,12 @@ function Setting({
         config={config}
         dimensions={dimensions}
         bottomZ={bezelBottom}
+        finish={
+          config.metal === 'sterling-silver' &&
+          (config.style === 'gemini' || config.style === 'coral')
+            ? 'oxidized'
+            : 'metal'
+        }
         offset={profile.bezelWallOffset}
         thickness={profile.bezelWallThickness}
         topZ={bezelTop}
@@ -1491,7 +1537,7 @@ function Setting({
                     }
                   >
                     {profile.beadPrimitive === 'rounded-granule' && (
-                      <sphereGeometry args={[profile.beadRadius, 20, 14]} />
+                      <RoundedSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
                     {profile.beadPrimitive === 'organic-granule' && (
                       <OrganicSolderGeometry radius={profile.beadRadius} seed={key} />

@@ -66,7 +66,8 @@ export interface BuilderVisualFields {
 
 export type BuilderOpalSelectionKind = BuilderOpal['selectionKind']
 
-const nonOpalListingPattern = /\b(deposit|gift\s*card|consultation|shipping|repair)\b/i
+const nonOpalListingPattern =
+  /\b(deposit|gift\s*(?:card|voucher)|voucher|consultation|shipping|repair|service|course|workshop)\b/i
 
 /**
  * The collection contains one legacy service product filed as a raw opal.

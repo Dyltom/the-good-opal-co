@@ -37,6 +37,11 @@ interface GalleryAnalysis {
   index: number
 }
 
+interface GalleryAnalysisSelection {
+  ambiguousSource: boolean
+  candidate: GalleryAnalysis
+}
+
 const opalShapeHints = new Set<OpalShapeHint>([
   'cushion',
   'elongated',
@@ -203,7 +208,7 @@ async function resolveGalleryMedia(
 function selectGalleryAnalysis(
   analyses: GalleryAnalysis[],
   currentImageIndex: number
-): GalleryAnalysis | undefined {
+): GalleryAnalysisSelection | undefined {
   const ranked = [...analyses].sort(
     (left, right) => right.confidence - left.confidence || left.index - right.index
   )
@@ -211,18 +216,22 @@ function selectGalleryAnalysis(
   if (!best) return undefined
 
   const current = analyses.find((candidate) => candidate.index === currentImageIndex)
-  if (current && best.index === current.index) return best
+  if (current && best.index === current.index) {
+    return { ambiguousSource: false, candidate: best }
+  }
 
   const runnerUp = ranked[1]
   const hasClearWinner =
     !runnerUp ||
     best.confidence - runnerUp.confidence >= MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN
-  if (hasClearWinner) return best
+  if (hasClearWinner) return { ambiguousSource: false, candidate: best }
 
   // A reviewed source is safer than choosing arbitrarily between near-equal
-  // alternates. If the active image could not be analysed, leave the product
-  // in the retry queue until a gallery image becomes an unambiguous winner.
+  // alternates. When the active image failed, preserve the best valid candidate
+  // for human source review without activating an arbitrary gallery image.
   return current
+    ? { ambiguousSource: false, candidate: current }
+    : { ambiguousSource: true, candidate: best }
 }
 
 function absoluteMediaUrl(value: string | null | undefined): string | undefined {
@@ -523,21 +532,25 @@ export async function processBuilderMappings(
         }
       }
 
-      const selected = selectGalleryAnalysis(analyses, currentImageIndex)
-      if (!selected) {
+      const selection = selectGalleryAnalysis(analyses, currentImageIndex)
+      if (!selection) {
         const preferredFailure =
           failures.find((failure) => failure.index === currentImageIndex) ?? failures[0]
         throw preferredFailure?.error ?? new Error('No gallery image could be analyzed')
       }
+      const selected = selection.candidate
       const { analysis, contour: candidate } = selected
       analysisConfidence = selected.confidence
       imageHash = selected.imageHash
       const mayActivateContour =
         !protectsActiveMapping &&
+        !selection.ambiguousSource &&
         (product.builderMappingStatus === 'pending' || product.builderMappingStatus === 'stale') &&
         analysisConfidence >= MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
       const analysisError =
-        analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+        selection.ambiguousSource
+          ? 'Multiple gallery images are similarly suitable; choose the mapped source before activation'
+          : analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
           ? 'Opal contour confidence is too low for automatic activation'
           : null
 

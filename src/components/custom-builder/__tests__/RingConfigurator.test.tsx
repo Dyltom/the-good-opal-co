@@ -229,7 +229,7 @@ describe('RingConfigurator store opal selection', () => {
     expect(screen.getByRole('button', { name: /Coral/i })).toHaveProperty('disabled', true)
   })
 
-  test('adds safe zoom when fine-positioning from the reviewed crop', async () => {
+  test('requires explicit zoom before fine-positioning the reviewed crop', async () => {
     render(
       <RingConfigurator
         initialConfig={{
@@ -243,7 +243,14 @@ describe('RingConfigurator store opal selection', () => {
       />
     )
 
-    expect(screen.getByRole('slider', { name: 'Horizontal' })).toHaveProperty('disabled', false)
+    expect(screen.getByRole('slider', { name: 'Horizontal' })).toHaveProperty('disabled', true)
+    fireEvent.change(screen.getByRole('slider', { name: 'Zoom' }), {
+      target: { value: '1.15' },
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('slider', { name: 'Horizontal' })).toHaveProperty('disabled', false)
+    })
     fireEvent.change(screen.getByRole('slider', { name: 'Horizontal' }), {
       target: { value: '0.2' },
     })

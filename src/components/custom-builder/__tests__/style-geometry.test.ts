@@ -64,8 +64,8 @@ describe('sold ring style geometry', () => {
     const coral = ringStyleGeometryProfiles.coral
 
     expect(coral).toMatchObject({
-      bezelWallOffset: 0.031,
-      bezelWallThickness: 0.058,
+      bezelWallOffset: 0.0395,
+      bezelWallThickness: 0.077,
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
@@ -73,8 +73,8 @@ describe('sold ring style geometry', () => {
       crossSectionPower: 0.92,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
-    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.12)
-    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.13)
+    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.155)
+    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.16)
   })
 
   test('tapers every sold shank into the setting instead of flaring at the join', () => {
@@ -99,8 +99,8 @@ describe('sold ring style geometry', () => {
 
   test('keeps Coral square with constant normal-width setting walls', () => {
     const diagonal = outlinePoint('cushion', Math.PI / 4, 0.5, 0.5)
-    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.88)
-    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.9)
+    expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.91)
+    expect(diagonal[0] / 0.5).toBeLessThanOrEqual(0.92)
 
     for (const angle of [0, Math.PI / 8, Math.PI / 4, (3 * Math.PI) / 8]) {
       const inner = outlinePoint('cushion', angle, 0.5, 0.5)
@@ -278,7 +278,7 @@ describe('sold ring style geometry', () => {
 
       // The measured 40-grain Sun & Moon head is 10.8 × 12.8 mm. Aurora's
       // photographed 28-grain layout spans a wider irregular pear perimeter.
-      const [minimum, maximum] = style === 'sun-moon' ? [0.84, 0.9] : [1.12, 1.24]
+      const [minimum, maximum] = style === 'sun-moon' ? [0.84, 0.9] : [1.12, 1.3]
       expect(chordPitchMm).toBeGreaterThanOrEqual(minimum)
       expect(chordPitchMm).toBeLessThanOrEqual(maximum)
     }
@@ -432,21 +432,21 @@ describe('sold ring style geometry', () => {
     const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
     const lastPatinaOffset =
       innerOffset + (outerOffset - innerOffset) * (patina.at(-1)?.radialProgress ?? 0)
-    const firstMetalOffset =
-      innerOffset + (outerOffset - innerOffset) * (metal[0]?.radialProgress ?? 1)
     const visibleMoatWidthMm = Math.max(0, lastPatinaOffset) * 10
-    const brightRailWidthMm = (outerOffset - firstMetalOffset) * 10
+    // Geometry assigns the strip ending at the first metal knot to metal, so
+    // its visible width begins at the final patina landmark.
+    const brightRailWidthMm = (outerOffset - lastPatinaOffset) * 10
 
     // Measure only the moat outside the stone edge. Counting the lip's hidden
     // underlap produced a false positive while the production moat looked lost.
-    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.42)
-    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.43)
-    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.13)
-    expect(brightRailWidthMm).toBeLessThanOrEqual(0.14)
+    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.71)
+    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.72)
+    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.06)
+    expect(brightRailWidthMm).toBeLessThanOrEqual(0.07)
   })
 
   test.each([
-    ['gemini', 0.008],
+    ['gemini', 0.055],
     ['sun-moon', 0.008],
     ['aurora', 0.01],
   ] as const)('gives %s its photographed visible oxidized stone seat', (style, expectedReveal) => {
@@ -471,7 +471,7 @@ describe('sold ring style geometry', () => {
     expect(patina.at(-1)?.stoneReveal).toBe(expectedReveal)
     expect(visibleSeatReveal).toBeCloseTo(expectedReveal, 12)
     expect(visibleSeatReveal * 10).toBeGreaterThanOrEqual(0.08)
-    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(0.1)
+    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.551 : 0.1)
     expect(knots.at(-1)?.radialProgress).toBe(1)
 
     for (let index = 0; index < 72; index += 1) {
