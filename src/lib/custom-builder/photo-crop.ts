@@ -32,6 +32,21 @@ const maximumCustomerRotation = 45
 const maximumTextureZoom = 12
 const maximumInteractiveTextureZoom = 7.5
 
+export function isPhotoCropRenderable(
+  baseZoom: number,
+  stoneAspect: number,
+  baseRotation = 0
+): boolean {
+  return (
+    Number.isFinite(baseZoom) &&
+    baseZoom >= 1 &&
+    Number.isFinite(stoneAspect) &&
+    stoneAspect > 0 &&
+    Number.isFinite(baseRotation) &&
+    baseZoom * rotationCoverScale(stoneAspect, baseRotation) <= maximumTextureZoom
+  )
+}
+
 export function getPhotoPlacementScaleMax(
   baseZoom: number,
   stoneAspect = 1,
@@ -104,13 +119,29 @@ export function getPhotoPlacementRotationBounds(
   if (!isSafe(0)) return { min: 0, max: 0 }
 
   const findBoundary = (direction: -1 | 1): number => {
-    let safe = 0
-    for (let tenth = 1; tenth <= maximumCustomerRotation * 10; tenth += 1) {
-      const candidate = direction * (tenth / 10)
-      if (!isSafe(candidate)) return safe
-      safe = candidate
+    let lastSafe = 0
+    let firstUnsafe: number | undefined
+
+    // Cover scale can peak inside the allowed range for elongated stones, so
+    // first bracket the nearest unsafe angle before refining its boundary.
+    for (let degree = 1; degree <= maximumCustomerRotation; degree += 1) {
+      const candidate = direction * degree
+      if (!isSafe(candidate)) {
+        firstUnsafe = candidate
+        break
+      }
+      lastSafe = candidate
     }
-    return direction * maximumCustomerRotation
+    if (firstUnsafe === undefined) return direction * maximumCustomerRotation
+
+    let safeMagnitude = Math.abs(lastSafe)
+    let unsafeMagnitude = Math.abs(firstUnsafe)
+    for (let iteration = 0; iteration < 12; iteration += 1) {
+      const middleMagnitude = (safeMagnitude + unsafeMagnitude) / 2
+      if (isSafe(direction * middleMagnitude)) safeMagnitude = middleMagnitude
+      else unsafeMagnitude = middleMagnitude
+    }
+    return direction * (Math.floor(safeMagnitude * 10) / 10)
   }
 
   return { min: findBoundary(-1), max: findBoundary(1) }

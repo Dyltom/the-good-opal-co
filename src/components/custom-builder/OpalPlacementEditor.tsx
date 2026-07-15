@@ -135,11 +135,15 @@ export function OpalPlacementEditor({
   const baseRotation = opal.visual.textureCrop?.rotation ?? 0
   const scaleMax = getPhotoPlacementScaleMax(baseZoom, stoneAspect, baseRotation)
   const displayedScale = Math.min(placement.opalScale, scaleMax)
-  const rotationBounds = getPhotoPlacementRotationBounds(
-    stoneAspect,
-    baseZoom,
-    baseRotation,
-    displayedScale
+  const rotationBounds = useMemo(
+    () =>
+      getPhotoPlacementRotationBounds(
+        stoneAspect,
+        baseZoom,
+        baseRotation,
+        displayedScale
+      ),
+    [baseRotation, baseZoom, displayedScale, stoneAspect]
   )
   const displayedRotation = constrainPhotoPlacementRotation(
     stoneAspect,
@@ -175,8 +179,9 @@ export function OpalPlacementEditor({
       opal.visual.contour
     ).map(({ key, x, y }) => ({
       key,
-      left: 50 + (x / halfWidth) * 50,
-      top: 50 - (y / halfHeight) * 50,
+      // Stable precision keeps server and browser style serialization equal.
+      left: Number((50 + (x / halfWidth) * 50).toFixed(4)),
+      top: Number((50 - (y / halfHeight) * 50).toFixed(4)),
     }))
   }, [opal.visual.aspectRatio, opal.visual.contour, opal.visual.silhouette, style])
 
@@ -354,7 +359,7 @@ export function OpalPlacementEditor({
                         top: `${top}%`,
                         filter:
                           style === 'aurora'
-                            ? `brightness(${0.72 + (key % 5) * 0.04})`
+                            ? `brightness(${(0.72 + (key % 5) * 0.04).toFixed(2)})`
                             : undefined,
                         transform: `translate(-50%, -50%) rotate(${(key * 47) % 180}deg)`,
                       }}

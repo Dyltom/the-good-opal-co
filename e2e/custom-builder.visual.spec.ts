@@ -7,6 +7,7 @@ const screenshotOptions = {
   maxDiffPixelRatio: 0.003,
   scale: 'css',
   threshold: 0.12,
+  timeout: 15_000,
 } as const
 
 const styles = ['gemini', 'coral', 'sun-moon', 'aurora'] as const
@@ -162,6 +163,11 @@ test.describe('custom ring render fidelity', () => {
 
   test('keeps the opal framing workbench clear and setting-specific', async ({ page }) => {
     test.setTimeout(60_000)
+    const browserErrors: string[] = []
+    page.on('pageerror', (error) => browserErrors.push(error.message))
+    page.on('console', (message) => {
+      if (message.type() === 'error') browserErrors.push(message.text())
+    })
     await page.addInitScript(() => {
       window.localStorage.setItem(
         'cookie-consent',
@@ -174,10 +180,8 @@ test.describe('custom ring render fidelity', () => {
     expect(response?.status()).toBeLessThan(400)
 
     const harness = page.getByTestId('opal-placement-visual-harness')
-    await expect(harness).toBeVisible()
-    await page
-      .locator('nextjs-portal')
-      .evaluateAll((portals) => portals.forEach((portal) => portal.remove()))
+    await expect(harness).toHaveAttribute('data-hydrated', 'true')
+    await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' })
 
     const workbench = page.getByTestId('opal-placement-workbench')
     await expect(workbench).toHaveScreenshot('opal-placement-workbench.png', screenshotOptions)
@@ -188,5 +192,6 @@ test.describe('custom ring render fidelity', () => {
       'opal-placement-workbench-active.png',
       screenshotOptions
     )
+    expect(browserErrors).toEqual([])
   })
 })

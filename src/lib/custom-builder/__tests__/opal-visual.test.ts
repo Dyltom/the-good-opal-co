@@ -467,6 +467,28 @@ describe('custom builder opal visual profiles', () => {
     })
   })
 
+  test('does not render an approved crop whose rotation exceeds the texture ceiling', () => {
+    const profile = createOpalVisualProfile('unsafe-crop', 'Unsafe crop opal', 'black-opal', {
+      builderEligible: true,
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'pear',
+      builderRecommendedStyle: 'aurora',
+      builderBodyColour: '#173350',
+      builderFlashColourPrimary: '#16d7ef',
+      builderFlashColourSecondary: '#43ef8f',
+      builderFlashColourAccent: '#ffcb42',
+      builderTransmission: 0.08,
+      builderPhotoFocalX: 0.5,
+      builderPhotoFocalY: 0.5,
+      builderPhotoZoom: 8,
+      builderPhotoRotation: -90,
+      dimensions: { width: 6, length: 12, depth: 3 },
+    })
+
+    expect(profile.visual.textureCrop).toBeUndefined()
+    expect(profile.visual.photoFit).toBeUndefined()
+  })
+
   test('never presents a reviewed parcel mapping as an exact listing-photo preview', () => {
     const managed = {
       builderEligible: true,

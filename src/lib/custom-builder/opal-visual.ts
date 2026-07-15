@@ -4,6 +4,7 @@ import {
   parseBuilderPhotoCrop,
   parseBuilderDimensions,
 } from '@/lib/product-validation'
+import { isPhotoCropRenderable } from './photo-crop'
 import { parseBuilderStoneContour, type BuilderStoneContourV1 } from './stone-contour'
 
 type VisualProfile = BuilderOpal['visual']
@@ -651,6 +652,17 @@ export function createOpalVisualProfile(
   const estimatedTextureCrop = baseTextureCrop
     ? { ...baseTextureCrop, zoom: Math.max(baseTextureCrop.zoom, ESTIMATED_OPAL_PHOTO_ZOOM) }
     : { focalX: 0.5, focalY: 0.5, zoom: ESTIMATED_OPAL_PHOTO_ZOOM }
+  const selectedTextureCrop =
+    basePhotoFit === 'reviewed' ? baseTextureCrop : estimatedTextureCrop
+  const safeTextureCrop =
+    selectedTextureCrop &&
+    isPhotoCropRenderable(
+      selectedTextureCrop.zoom,
+      1 / baseVisual.aspectRatio,
+      selectedTextureCrop.rotation ?? 0
+    )
+      ? selectedTextureCrop
+      : undefined
   const bodyColour = profile.bodies[seed % profile.bodies.length] ?? profile.bodies[0]!
   const flashColours = profile.flashes[(seed >>> 4) % profile.flashes.length] ?? profile.flashes[0]!
 
@@ -664,12 +676,9 @@ export function createOpalVisualProfile(
       patternSeed: seed,
       contour: pairedContour ?? baseContour,
       dimensionsMm: managed?.dimensionsMm ?? approvedReviewed?.dimensionsMm ?? dimensionsMm,
-      textureCrop: usesIndividualPhoto
-        ? basePhotoFit === 'reviewed'
-          ? baseTextureCrop
-          : estimatedTextureCrop
-        : undefined,
-      photoFit: usesIndividualPhoto ? (basePhotoFit ?? 'estimated') : undefined,
+      textureCrop: usesIndividualPhoto ? safeTextureCrop : undefined,
+      photoFit:
+        usesIndividualPhoto && safeTextureCrop ? (basePhotoFit ?? 'estimated') : undefined,
     },
   }
 }

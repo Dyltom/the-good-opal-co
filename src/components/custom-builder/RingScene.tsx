@@ -659,17 +659,25 @@ function OpalCabochon({
     return nextTexture
   }, [sourcePhoto])
 
+  const selectedPhotoCrop = selectedOpal?.visual.textureCrop
+  const customerPhotoRotation = useMemo(
+    () =>
+      selectedPhotoCrop
+        ? constrainPhotoPlacementRotation(
+            width / height,
+            selectedPhotoCrop.zoom,
+            config.opalScale,
+            config.opalRotation,
+            selectedPhotoCrop.rotation ?? 0
+          )
+        : 0,
+    [config.opalRotation, config.opalScale, height, selectedPhotoCrop, width]
+  )
+
   useLayoutEffect(() => {
-    const crop = selectedOpal?.visual.textureCrop
+    const crop = selectedPhotoCrop
     if (crop) {
-      const customerRotation = constrainPhotoPlacementRotation(
-        width / height,
-        crop.zoom,
-        config.opalScale,
-        config.opalRotation,
-        crop.rotation ?? 0
-      )
-      const rotation = (crop.rotation ?? 0) + customerRotation
+      const rotation = (crop.rotation ?? 0) + customerPhotoRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
       const cropRect = computePlacedPhotoCrop(
         image?.width ?? 1,
@@ -694,9 +702,10 @@ function OpalCabochon({
     config.opalPositionY,
     config.opalRotation,
     config.opalScale,
+    customerPhotoRotation,
     height,
     photoTexture,
-    selectedOpal?.visual.textureCrop,
+    selectedPhotoCrop,
     sourcePhoto.image,
     width,
   ])
@@ -711,10 +720,17 @@ function OpalCabochon({
     return (
       <group>
         <mesh castShadow geometry={geometry} receiveShadow>
-          <meshBasicMaterial
+          <meshPhysicalMaterial
             attach="material-0"
             map={photoTexture}
             color="#ffffff"
+            clearcoat={0.38}
+            clearcoatRoughness={0.16}
+            envMapIntensity={0.62}
+            ior={1.44}
+            metalness={0}
+            roughness={0.36}
+            specularIntensity={0.46}
             toneMapped={false}
           />
           <meshPhysicalMaterial

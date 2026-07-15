@@ -53,12 +53,16 @@ export function OpalFaceImage({
   const baseZoom = opal.visual.textureCrop?.zoom ?? 1
   const baseRotation = opal.visual.textureCrop?.rotation ?? 0
   const placementScale = placement?.opalScale ?? 1
-  const customerRotation = constrainPhotoPlacementRotation(
-    stoneAspect,
-    baseZoom,
-    placementScale,
-    placement?.opalRotation ?? 0,
-    baseRotation
+  const customerRotation = useMemo(
+    () =>
+      constrainPhotoPlacementRotation(
+        stoneAspect,
+        baseZoom,
+        placementScale,
+        placement?.opalRotation ?? 0,
+        baseRotation
+      ),
+    [baseRotation, baseZoom, placement?.opalRotation, placementScale, stoneAspect]
   )
   const rotation = baseRotation + customerRotation
   const coverScale = rotationCoverScale(stoneAspect, rotation)

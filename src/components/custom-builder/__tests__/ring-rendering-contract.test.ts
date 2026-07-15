@@ -72,7 +72,9 @@ describe('photoreal ring rendering contract', () => {
   test('applies customer crop placement to the photographed opal texture', () => {
     expect(sceneSource).toContain('computePlacedPhotoCrop(')
     expect(sceneSource).toContain('constrainPhotoPlacementRotation(')
-    expect(sceneSource).toContain('const rotation = (crop.rotation ?? 0) + customerRotation')
+    expect(sceneSource).toContain(
+      'const rotation = (crop.rotation ?? 0) + customerPhotoRotation'
+    )
     expect(sceneSource).toContain('const [m00, m01, m02, m10, m11, m12] = transform.matrix')
     expect(sceneSource).toContain('photoTexture.matrix.set(m00, m01, m02, m10, m11, m12, 0, 0, 1)')
     expect(sceneSource).toContain('}, [sourcePhoto])')
@@ -106,7 +108,7 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('preserves catalogue pixels and uses fused style-specific solder grains', () => {
-    expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
+    expect(sceneSource).toContain('<meshPhysicalMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
     expect(sceneSource).toContain('color="#ffffff"')
     expect(sceneSource).toContain('toneMapped={false}')
