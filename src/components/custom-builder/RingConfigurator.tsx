@@ -23,6 +23,7 @@ import type { BuilderOpal, ConfigOption, RingConfig, RingStyleOption } from './c
 import { OpalFaceImage } from './OpalFaceImage'
 import { OpalPlacementEditor } from './OpalPlacementEditor'
 import { ViewerErrorBoundary } from './ViewerErrorBoundary'
+import { getRenderedStoneAspect } from './geometry'
 
 const RingPreview = dynamic(() => import('./RingPreview').then((module) => module.RingPreview), {
   ssr: false,
@@ -444,7 +445,7 @@ export function RingConfigurator({
   const selectedCrop = selectedOpal?.visual.textureCrop
   const placementScaleMax = getPhotoPlacementScaleMax(
     selectedCrop?.zoom ?? 1,
-    selectedOpal ? 1 / selectedOpal.visual.aspectRatio : 1,
+    selectedOpal ? getRenderedStoneAspect({ shape: config.shape }, selectedOpal) : 1,
     selectedCrop?.rotation ?? 0
   )
   useEffect(() => {

@@ -285,7 +285,7 @@ export function getRingMeasurements(config: RingConfig): RingMeasurements {
 }
 
 export function getStoneDimensions(
-  config: RingConfig,
+  config: Pick<RingConfig, 'shape'>,
   selectedOpal?: BuilderOpal
 ): StoneDimensions {
   const [width, defaultHeight] = stoneDimensions[config.shape]
@@ -309,6 +309,15 @@ export function getStoneDimensions(
   const desiredHeight = Math.max(width, width * selectedOpal.visual.aspectRatio)
   const scale = Math.min(1, 0.72 / desiredHeight)
   return [width * scale, desiredHeight * scale]
+}
+
+/** One physical face aspect shared by CSS crop tools and WebGL geometry. */
+export function getRenderedStoneAspect(
+  config: Pick<RingConfig, 'shape'>,
+  selectedOpal?: BuilderOpal
+): number {
+  const [width, height] = getStoneDimensions(config, selectedOpal)
+  return width / height
 }
 
 export function getRenderableOpalDepthMm(selectedOpal?: BuilderOpal): number | undefined {
@@ -806,21 +815,15 @@ export function getSettingOuterHalfWidth(
       profile.beadMinimumOverlap,
       profile.beadTangentialStretchMax
     )
-    return beads.reduce(
-      (maximum, bead) => {
-        const semiX = profile.beadRadius * bead.size * bead.stretchX
-        const semiY = profile.beadRadius * bead.size * bead.stretchY
-        // Rendered grains rotate their stretched ellipse around Z. Use the
-        // ellipse support in world X instead of the larger semi-axis, which
-        // overstated tangentially fused Aurora grains as extra head width.
-        const xSupport = Math.hypot(
-          semiX * Math.cos(bead.rotation),
-          semiY * Math.sin(bead.rotation)
-        )
-        return Math.max(maximum, Math.abs(bead.x) + xSupport)
-      },
-      0
-    )
+    return beads.reduce((maximum, bead) => {
+      const semiX = profile.beadRadius * bead.size * bead.stretchX
+      const semiY = profile.beadRadius * bead.size * bead.stretchY
+      // Rendered grains rotate their stretched ellipse around Z. Use the
+      // ellipse support in world X instead of the larger semi-axis, which
+      // overstated tangentially fused Aurora grains as extra head width.
+      const xSupport = Math.hypot(semiX * Math.cos(bead.rotation), semiY * Math.sin(bead.rotation))
+      return Math.max(maximum, Math.abs(bead.x) + xSupport)
+    }, 0)
   }
 
   const outerOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2

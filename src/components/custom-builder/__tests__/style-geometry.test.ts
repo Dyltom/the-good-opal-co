@@ -109,7 +109,7 @@ describe('sold ring style geometry', () => {
     }
   })
 
-  test('distinguishes rounded Sun and Moon grains from organic Aurora granules', () => {
+  test('keeps both sold halos rounded while preserving Aurora granule irregularity', () => {
     const sunMoon = ringStyleGeometryProfiles['sun-moon']
     const aurora = ringStyleGeometryProfiles.aurora
 
@@ -120,7 +120,7 @@ describe('sold ring style geometry', () => {
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('granulated')
     expect(sunMoon.beadPrimitive).toBe('rounded-granule')
-    expect(aurora.beadPrimitive).toBe('faceted-organic-granule')
+    expect(aurora.beadPrimitive).toBe('rounded-granule')
     expect(ringStyleGeometryProfiles.gemini.beadPrimitive).toBe('none')
     expect(ringStyleGeometryProfiles.coral.beadPrimitive).toBe('none')
     expect(sunMoon).toMatchObject({
@@ -137,7 +137,7 @@ describe('sold ring style geometry', () => {
       beadRadius: 0.046,
       beadBridgeRadius: 0.034,
       haloOffset: 0.095,
-      beadPrimitive: 'faceted-organic-granule',
+      beadPrimitive: 'rounded-granule',
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.

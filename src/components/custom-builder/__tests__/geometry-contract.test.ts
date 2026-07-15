@@ -17,6 +17,7 @@ import {
   getOpalSettleStartOffset,
   getPortraitFramingScale,
   getPatinaGrooveProfile,
+  getRenderedStoneAspect,
   getRingFramingTarget,
   getRingMeasurements,
   getRingModelBounds,
@@ -505,6 +506,7 @@ describe('custom ring geometry contract', () => {
     const measuredDimensions = getStoneDimensions(defaultRingConfig, measuredOpal)
     expect(measuredDimensions[0]).toBeCloseTo(0.4, 12)
     expect(measuredDimensions[1]).toBeCloseTo(0.7, 12)
+    expect(getRenderedStoneAspect(defaultRingConfig, measuredOpal)).toBeCloseTo(4 / 7, 12)
     expect(getStoneDimensions({ ...defaultRingConfig, shape: 'round' }, measuredOpal)).toEqual([
       0.42, 0.42,
     ])

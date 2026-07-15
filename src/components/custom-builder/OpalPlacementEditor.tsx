@@ -12,7 +12,11 @@ import {
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
 import { defaultOpalPlacement } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
-import { cssSilhouetteClipPath, evenlySpacedOutlinePoints } from './geometry'
+import {
+  cssSilhouetteClipPath,
+  evenlySpacedOutlinePoints,
+  getRenderedStoneAspect,
+} from './geometry'
 
 interface OpalPlacementEditorProps {
   onChange: (placement: OpalPlacement) => void
@@ -73,12 +77,6 @@ const styleLabels: Record<RingConfig['style'], string> = {
   'sun-moon': 'Sun & Moon beaded trim',
 }
 
-const auroraGuideGrainShapes = [
-  'polygon(17% 5%, 76% 0%, 100% 36%, 86% 82%, 42% 100%, 3% 70%, 0% 28%)',
-  'polygon(28% 0%, 82% 12%, 100% 58%, 67% 100%, 14% 88%, 0% 36%)',
-  'polygon(12% 14%, 58% 0%, 100% 24%, 91% 77%, 53% 100%, 5% 83%, 0% 42%)',
-] as const
-
 function RangeControl({
   disabled = false,
   label,
@@ -131,18 +129,12 @@ export function OpalPlacementEditor({
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const baseZoom = opal.visual.textureCrop?.zoom ?? 1
-  const stoneAspect = 1 / opal.visual.aspectRatio
+  const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
   const baseRotation = opal.visual.textureCrop?.rotation ?? 0
   const scaleMax = getPhotoPlacementScaleMax(baseZoom, stoneAspect, baseRotation)
   const displayedScale = Math.min(placement.opalScale, scaleMax)
   const rotationBounds = useMemo(
-    () =>
-      getPhotoPlacementRotationBounds(
-        stoneAspect,
-        baseZoom,
-        baseRotation,
-        displayedScale
-      ),
+    () => getPhotoPlacementRotationBounds(stoneAspect, baseZoom, baseRotation, displayedScale),
     [baseRotation, baseZoom, displayedScale, stoneAspect]
   )
   const displayedRotation = constrainPhotoPlacementRotation(
@@ -347,21 +339,17 @@ export function OpalPlacementEditor({
                       key={key}
                       className={cn(
                         'absolute aspect-square -translate-x-1/2 -translate-y-1/2 border border-black/20 shadow-[inset_1px_1px_2px_rgb(255_255_255/0.38),0_2px_4px_rgb(0_0_0/0.42)]',
-                        style === 'aurora' ? 'w-[11%]' : 'w-[9%] rounded-full'
+                        style === 'aurora' ? 'w-[11%] rounded-[42%]' : 'w-[9%] rounded-full'
                       )}
                       style={{
                         backgroundColor: metalColours[metal],
-                        clipPath:
-                          style === 'aurora'
-                            ? auroraGuideGrainShapes[key % auroraGuideGrainShapes.length]
-                            : undefined,
                         left: `${left}%`,
                         top: `${top}%`,
                         filter:
                           style === 'aurora'
                             ? `brightness(${(0.72 + (key % 5) * 0.04).toFixed(2)})`
                             : undefined,
-                        transform: `translate(-50%, -50%) rotate(${(key * 47) % 180}deg)`,
+                        transform: `translate(-50%, -50%) rotate(${(key * 47) % 180}deg) scale(${style === 'aurora' ? (0.9 + (key % 4) * 0.045).toFixed(3) : 1})`,
                       }}
                     />
                   ))}

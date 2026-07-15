@@ -10,7 +10,7 @@ import {
   rotationCoverScale,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement } from './config'
-import { cssSilhouetteClipPath } from './geometry'
+import { cssSilhouetteClipPath, getRenderedStoneAspect } from './geometry'
 
 interface OpalFaceImageProps {
   alt: string
@@ -36,7 +36,7 @@ export function OpalFaceImage({
     url: string
     width: number
   }>()
-  const stoneAspect = 1 / opal.visual.aspectRatio
+  const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
   const currentImageSize = imageSize?.url === opal.imageUrl ? imageSize : undefined
   const crop = useMemo(() => {
     if (!currentImageSize) return undefined

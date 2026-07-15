@@ -59,6 +59,7 @@ import {
   getOpalSettleStartOffset,
   getPatinaGrooveProfile,
   getProfiledBezelLipRings,
+  getRenderedStoneAspect,
   getRingFramingTarget,
   getRingShankCapTopology,
   getRingShankCurve,
@@ -629,6 +630,7 @@ function OpalCabochon({
   selectedOpal?: BuilderOpal
 }) {
   const [width, height] = dimensions
+  const stoneAspect = getRenderedStoneAspect(config, selectedOpal)
   const texture = useMemo(
     () => createOpalTexture(config.stone, selectedOpal),
     [config.stone, selectedOpal]
@@ -671,14 +673,14 @@ function OpalCabochon({
     () =>
       selectedPhotoCrop
         ? constrainPhotoPlacementRotation(
-            width / height,
+            stoneAspect,
             selectedPhotoCrop.zoom,
             config.opalScale,
             config.opalRotation,
             selectedPhotoCrop.rotation ?? 0
           )
         : 0,
-    [config.opalRotation, config.opalScale, height, selectedPhotoCrop, width]
+    [config.opalRotation, config.opalScale, selectedPhotoCrop, stoneAspect]
   )
 
   useLayoutEffect(() => {
@@ -689,7 +691,7 @@ function OpalCabochon({
       const cropRect = computePlacedPhotoCrop(
         image?.width ?? 1,
         image?.height ?? 1,
-        width / height,
+        stoneAspect,
         crop,
         {
           opalPositionX: config.opalPositionX,
@@ -698,7 +700,7 @@ function OpalCabochon({
           opalScale: config.opalScale,
         }
       )
-      const transform = computePhotoTextureTransform(cropRect, width / height, rotation)
+      const transform = computePhotoTextureTransform(cropRect, stoneAspect, rotation)
       const [m00, m01, m02, m10, m11, m12] = transform.matrix
       photoTexture.matrix.set(m00, m01, m02, m10, m11, m12, 0, 0, 1)
     } else {
@@ -710,11 +712,10 @@ function OpalCabochon({
     config.opalRotation,
     config.opalScale,
     customerPhotoRotation,
-    height,
     photoTexture,
     selectedPhotoCrop,
     sourcePhoto.image,
-    width,
+    stoneAspect,
   ])
 
   useEffect(() => () => texture.dispose(), [texture])
@@ -1624,8 +1625,8 @@ function Setting({
                       <FacetedOrganicSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
                     <SolderGrainMaterial
-                      faceted={config.style === 'aurora'}
-                      organic={profile.beadPrimitive === 'faceted-organic-granule'}
+                      faceted={profile.beadPrimitive === 'faceted-organic-granule'}
+                      organic={config.style === 'aurora'}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
                       tone={solderTone}

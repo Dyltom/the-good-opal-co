@@ -438,8 +438,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.006, finish: 'metal' },
     ],
     ...auroraBezelSeat,
-    // Aurora uses broad but low, oxidized solder grains. Keep them connected to
-    // the dark support web; detached spheres read as a pearl halo.
+    // Sold Aurora references show broad, low, softly rounded fused granules.
+    // Keep them connected to the dark support web without turning them into
+    // either faceted gemstones or a mathematically perfect pearl halo.
     haloOffset: 0.095,
     beadRadius: 0.046,
     beadCount: 28,
@@ -452,7 +453,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadBridgeZ: 0.03,
     beadTangentialStretchMax: 1.4,
     beadShape: 'granulated',
-    beadPrimitive: 'faceted-organic-granule',
+    beadPrimitive: 'rounded-granule',
     beadVariation: 1.55,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.62,

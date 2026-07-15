@@ -23,16 +23,14 @@ export const ESTIMATED_OPAL_PHOTO_ZOOM = 3.2
 const mintabieHeart055Contour = {
   version: 1,
   radii: [
-    0.9008, 0.9255, 0.9418, 1.0081, 1.022, 1.0605, 1.1089, 1.1329, 1.1655, 1.1774,
-    1.181, 1.2022, 1.2022, 1.199, 1.189, 1.17, 1.1455, 1.1131, 1.0732, 0.975, 0.8914,
-    0.7998, 0.7431, 0.7431, 0.7792, 0.8475, 0.9125, 0.9985, 1.0251, 1.0427, 1.0592,
-    1.0816, 1.1004, 1.12, 1.1251, 1.1251, 1.1325, 1.1325, 1.1318, 1.1224, 1.1096,
-    1.0918, 1.0696, 1.0541, 1.0281, 0.9926, 0.964, 0.926, 0.8928, 0.8577, 0.8371,
-    0.8139, 0.7883, 0.7764, 0.7615, 0.7532, 0.7511, 0.7487, 0.7487, 0.7502, 0.7588,
-    0.7655, 0.7771, 0.7897, 0.7992, 0.8149, 0.8334, 0.8562, 0.8852, 0.918, 0.9606,
-    0.9931, 0.9931, 0.9749, 0.9387, 0.9069, 0.8713, 0.8445, 0.8213, 0.8054, 0.7897,
-    0.7771, 0.7665, 0.7588, 0.7502, 0.7458, 0.7458, 0.7475, 0.7507, 0.7615, 0.7704,
-    0.7841, 0.8077, 0.8308, 0.8514, 0.8739,
+    0.9008, 0.9255, 0.9418, 1.0081, 1.022, 1.0605, 1.1089, 1.1329, 1.1655, 1.1774, 1.181, 1.2022,
+    1.2022, 1.199, 1.189, 1.17, 1.1455, 1.1131, 1.0732, 0.975, 0.8914, 0.7998, 0.7431, 0.7431,
+    0.7792, 0.8475, 0.9125, 0.9985, 1.0251, 1.0427, 1.0592, 1.0816, 1.1004, 1.12, 1.1251, 1.1251,
+    1.1325, 1.1325, 1.1318, 1.1224, 1.1096, 1.0918, 1.0696, 1.0541, 1.0281, 0.9926, 0.964, 0.926,
+    0.8928, 0.8577, 0.8371, 0.8139, 0.7883, 0.7764, 0.7615, 0.7532, 0.7511, 0.7487, 0.7487, 0.7502,
+    0.7588, 0.7655, 0.7771, 0.7897, 0.7992, 0.8149, 0.8334, 0.8562, 0.8852, 0.918, 0.9606, 0.9931,
+    0.9931, 0.9749, 0.9387, 0.9069, 0.8713, 0.8445, 0.8213, 0.8054, 0.7897, 0.7771, 0.7665, 0.7588,
+    0.7502, 0.7458, 0.7458, 0.7475, 0.7507, 0.7615, 0.7704, 0.7841, 0.8077, 0.8308, 0.8514, 0.8739,
   ],
 } satisfies BuilderStoneContourV1
 
@@ -146,7 +144,7 @@ const reviewedProfiles: Record<
     dimensionsMm: { width: 7, length: 8, depth: 3.5 },
     photoFit: 'reviewed',
   },
-  'queensland-crystal-pipe-opal-1-45-cts': {
+  'queensland-crystal-pipe-opal-1-05-cts': {
     silhouette: 'elongated',
     aspectRatio: 9.5 / 5.3,
     evidence: 'catalogue',
@@ -283,14 +281,18 @@ const reviewedSlugAliases: Readonly<Record<string, string>> = {
   'mintabie-carved-heart': 'mintabie-dark-opal-heart-055-cts',
   'mintabie-semi-black-opal-105-cts': 'mintabie-semi-black-opal-1-05-cts',
   'mintabie-semi-black-opal-135-cts': 'mintabie-semi-black-opal-1-35-cts',
-  'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
+  // Woo's published URL still carries the original 1.45 ct typo. Preserve
+  // that customer-facing URL while keeping the reviewed profile keyed to the
+  // 1.05 ct weight confirmed by the listing title and description.
+  'queensland-crystal-pipe-opal-1-45-cts': 'queensland-crystal-pipe-opal-1-05-cts',
+  'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-05-cts',
 }
 
 const reviewedPhotoBySlug: Record<string, string> = {
   'lightning-ridge-white-opal-1-05-cts': '/images/products/20211104_234659-1-1.jpg',
   'mintabie-semi-black-opal-1-05-cts': '/images/products/20210923_174046.jpg',
   'mintabie-semi-black-opal-1-35-cts': '/images/products/20210923_173846-1.jpg',
-  'queensland-crystal-pipe-opal-1-45-cts': '/images/products/20211012_173649.jpg',
+  'queensland-crystal-pipe-opal-1-05-cts': '/images/products/20211012_173649.jpg',
   'mintabie-dark-opal-heart-055-cts': '/images/products/IMG_0774.jpg',
   'mintabie-dark-opal-heart-070cts': '/images/products/IMG_0779.jpg',
   'coober-pedy-carved-heart-1-ct': '/images/products/heartthing-1.jpg',
@@ -647,8 +649,7 @@ export function createOpalVisualProfile(
   const estimatedTextureCrop = baseTextureCrop
     ? { ...baseTextureCrop, zoom: Math.max(baseTextureCrop.zoom, ESTIMATED_OPAL_PHOTO_ZOOM) }
     : { focalX: 0.5, focalY: 0.5, zoom: ESTIMATED_OPAL_PHOTO_ZOOM }
-  const selectedTextureCrop =
-    basePhotoFit === 'reviewed' ? baseTextureCrop : estimatedTextureCrop
+  const selectedTextureCrop = basePhotoFit === 'reviewed' ? baseTextureCrop : estimatedTextureCrop
   const safeTextureCrop =
     selectedTextureCrop &&
     isPhotoCropRenderable(
@@ -672,8 +673,7 @@ export function createOpalVisualProfile(
       contour: pairedContour ?? baseContour,
       dimensionsMm: managed?.dimensionsMm ?? approvedReviewed?.dimensionsMm ?? dimensionsMm,
       textureCrop: usesIndividualPhoto ? safeTextureCrop : undefined,
-      photoFit:
-        usesIndividualPhoto && safeTextureCrop ? (basePhotoFit ?? 'estimated') : undefined,
+      photoFit: usesIndividualPhoto && safeTextureCrop ? (basePhotoFit ?? 'estimated') : undefined,
     },
   }
 }

@@ -10,8 +10,15 @@ import { parseBuilderStoneContour } from './stone-contour'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
 const ANALYSIS_EDGE_PX = 640
+const STABILITY_ANALYSIS_EDGE_PX = 480
 const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.9
 const MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN = 0.05
+const MAXIMUM_STABILITY_FOCAL_DELTA = 0.01
+const MAXIMUM_STABILITY_ZOOM_DELTA = 0.03
+const MAXIMUM_STABILITY_ROTATION_DELTA = 2
+const MAXIMUM_STABILITY_CONTOUR_DELTA = 0.015
+const UNSTABLE_ANALYSIS_ERROR =
+  'Opal contour is not stable across analysis resolutions; visual review required before activation'
 const RETRYABLE_ANALYSIS_ERROR_PREFIX = 'Retryable source error: '
 
 class RetryableSourceError extends Error {}
@@ -35,6 +42,7 @@ interface GalleryAnalysis {
   contour: NonNullable<ReturnType<typeof parseBuilderStoneContour>>
   imageHash: string
   index: number
+  source: Buffer
 }
 
 interface GalleryAnalysisSelection {
@@ -150,8 +158,7 @@ function mappingNeedsPhotoAnalysis(value: unknown): boolean {
     typeof product.builderMappingAnalysisError === 'string'
       ? product.builderMappingAnalysisError.trim()
       : ''
-  const currentVersion =
-    product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
+  const currentVersion = product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
 
   if (error) {
     return !currentVersion || error.startsWith(RETRYABLE_ANALYSIS_ERROR_PREFIX)
@@ -222,8 +229,7 @@ function selectGalleryAnalysis(
 
   const runnerUp = ranked[1]
   const hasClearWinner =
-    !runnerUp ||
-    best.confidence - runnerUp.confidence >= MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN
+    !runnerUp || best.confidence - runnerUp.confidence >= MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN
   if (hasClearWinner) return { ambiguousSource: false, candidate: best }
 
   // A reviewed source is safer than choosing arbitrarily between near-equal
@@ -247,13 +253,18 @@ function absoluteMediaUrl(value: string | null | undefined): string | undefined 
   }
 }
 
-function normalizedOrigin(value: string | undefined, defaultProtocol?: 'https:'): string | undefined {
+function normalizedOrigin(
+  value: string | undefined,
+  defaultProtocol?: 'https:'
+): string | undefined {
   const configured = value?.trim()
   if (!configured) return undefined
 
   try {
     const url = new URL(
-      defaultProtocol && !configured.includes('://') ? `${defaultProtocol}//${configured}` : configured
+      defaultProtocol && !configured.includes('://')
+        ? `${defaultProtocol}//${configured}`
+        : configured
     )
     if (url.username || url.password) return undefined
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return undefined
@@ -328,6 +339,89 @@ function finiteBetween(value: unknown, minimum: number, maximum: number, field: 
     throw new Error(`Image analysis returned invalid ${field}`)
   }
   return value
+}
+
+async function analyzeSourceRaster(
+  source: Buffer,
+  edge: number,
+  product: ProductRecord,
+  reviewedHints?: ReturnType<typeof reviewedAnalysisHints>
+): Promise<GalleryAnalysis['analysis']> {
+  const raster = await sharp(source, { limitInputPixels: 40_000_000 })
+    .rotate()
+    .toColourspace('srgb')
+    .removeAlpha()
+    .resize({
+      width: edge,
+      height: edge,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  if (raster.info.channels !== 3 && raster.info.channels !== 4) {
+    throw new Error('Image analysis requires an RGB raster')
+  }
+
+  const analysis = analyzeOpalRaster({
+    channels: raster.info.channels,
+    data: raster.data,
+    height: raster.info.height,
+    ...(typeof product.builderSilhouette === 'string' &&
+    opalShapeHints.has(product.builderSilhouette as OpalShapeHint)
+      ? { shapeHint: product.builderSilhouette as OpalShapeHint }
+      : {}),
+    ...reviewedHints,
+    stoneAspect: stoneAspect(product),
+    width: raster.info.width,
+  })
+  if (!analysis) throw new Error('Opal face could not be isolated from the source image')
+  return analysis
+}
+
+function circularDegreeDelta(left: number, right: number): number {
+  const difference = Math.abs(left - right) % 360
+  return Math.min(difference, 360 - difference)
+}
+
+function meanContourRadiusDelta(
+  left: GalleryAnalysis['contour'],
+  right: GalleryAnalysis['contour']
+): number {
+  return (
+    left.radii.reduce(
+      (total, radius, index) => total + Math.abs(radius - (right.radii[index] ?? radius)),
+      0
+    ) / left.radii.length
+  )
+}
+
+function analysesAreStable(
+  primary: GalleryAnalysis,
+  secondaryAnalysis: GalleryAnalysis['analysis']
+): boolean {
+  const secondaryConfidence = finiteBetween(secondaryAnalysis.confidence, 0, 1, 'confidence')
+  const secondaryContour = parseBuilderStoneContour(secondaryAnalysis.contour)
+  if (
+    primary.analysis.source !== 'image' ||
+    secondaryAnalysis.source !== 'image' ||
+    primary.confidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE ||
+    secondaryConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE ||
+    !secondaryContour
+  ) {
+    return false
+  }
+
+  const primaryZoom = finiteBetween(primary.analysis.zoom, 1, 12, 'zoom')
+  const secondaryZoom = finiteBetween(secondaryAnalysis.zoom, 1, 12, 'zoom')
+  return (
+    Math.abs(primary.analysis.focalX - secondaryAnalysis.focalX) <= MAXIMUM_STABILITY_FOCAL_DELTA &&
+    Math.abs(primary.analysis.focalY - secondaryAnalysis.focalY) <= MAXIMUM_STABILITY_FOCAL_DELTA &&
+    Math.abs(primaryZoom - secondaryZoom) / primaryZoom <= MAXIMUM_STABILITY_ZOOM_DELTA &&
+    circularDegreeDelta(primary.analysis.rotation, secondaryAnalysis.rotation) <=
+      MAXIMUM_STABILITY_ROTATION_DELTA &&
+    meanContourRadiusDelta(primary.contour, secondaryContour) <= MAXIMUM_STABILITY_CONTOUR_DELTA
+  )
 }
 
 async function updateProduct(
@@ -427,8 +521,7 @@ export async function processBuilderMappings(
       summary.failed += 1
       continue
     }
-    const expectedUpdatedAt =
-      typeof product.updatedAt === 'string' ? product.updatedAt : undefined
+    const expectedUpdatedAt = typeof product.updatedAt === 'string' ? product.updatedAt : undefined
     const protectsActiveMapping =
       product.builderMappingMode === 'manual' ||
       product.builderMappingStatus === 'manual' ||
@@ -487,36 +580,14 @@ export async function processBuilderMappings(
           const source = await fetchImage(imageUrl)
           const sourceHash = createHash('sha256').update(source).digest('hex')
           if (!imageHash || sourceImage.index === currentImageIndex) imageHash = sourceHash
-          const raster = await sharp(source, { limitInputPixels: 40_000_000 })
-            .rotate()
-            .toColourspace('srgb')
-            .removeAlpha()
-            .resize({
-              width: ANALYSIS_EDGE_PX,
-              height: ANALYSIS_EDGE_PX,
-              fit: 'inside',
-              withoutEnlargement: true,
-            })
-            .raw()
-            .toBuffer({ resolveWithObject: true })
-          if (raster.info.channels !== 3 && raster.info.channels !== 4) {
-            throw new Error('Image analysis requires an RGB raster')
-          }
-          const analysis = analyzeOpalRaster({
-            channels: raster.info.channels,
-            data: raster.data,
-            height: raster.info.height,
-            ...(typeof product.builderSilhouette === 'string' &&
-            opalShapeHints.has(product.builderSilhouette as OpalShapeHint)
-              ? { shapeHint: product.builderSilhouette as OpalShapeHint }
-              : {}),
-            ...(protectsActiveMapping && sourceImage.index === currentImageIndex
+          const analysis = await analyzeSourceRaster(
+            source,
+            ANALYSIS_EDGE_PX,
+            product,
+            protectsActiveMapping && sourceImage.index === currentImageIndex
               ? reviewedAnalysisHints(product)
-              : {}),
-            stoneAspect: stoneAspect(product),
-            width: raster.info.width,
-          })
-          if (!analysis) throw new Error('Opal face could not be isolated from the source image')
+              : undefined
+          )
           const confidence = finiteBetween(analysis.confidence, 0, 1, 'confidence')
           const candidate = parseBuilderStoneContour(analysis.contour)
           if (!candidate) throw new Error('Image analysis returned an invalid opal contour')
@@ -526,6 +597,7 @@ export async function processBuilderMappings(
             contour: candidate,
             imageHash: sourceHash,
             index: sourceImage.index,
+            source,
           })
         } catch (error: unknown) {
           failures.push({ error, index: sourceImage.index })
@@ -542,20 +614,37 @@ export async function processBuilderMappings(
       const { analysis, contour: candidate } = selected
       analysisConfidence = selected.confidence
       imageHash = selected.imageHash
-      const mayActivateContour =
+      const isActivationCandidate =
         !protectsActiveMapping &&
         !selection.ambiguousSource &&
         (product.builderMappingStatus === 'pending' || product.builderMappingStatus === 'stale') &&
         analysis.source === 'image' &&
         analysisConfidence >= MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
-      const analysisError =
-        selection.ambiguousSource
-          ? 'Multiple gallery images are similarly suitable; choose the mapped source before activation'
-          : analysis.source !== 'image'
-            ? 'Named-shape fallback requires visual review before activation'
+      let stableAcrossResolutions = false
+      if (isActivationCandidate) {
+        try {
+          const secondaryAnalysis = await analyzeSourceRaster(
+            selected.source,
+            STABILITY_ANALYSIS_EDGE_PX,
+            product
+          )
+          stableAcrossResolutions = analysesAreStable(selected, secondaryAnalysis)
+        } catch {
+          // The primary candidate remains useful for visual review even when
+          // the independent stability pass cannot reproduce it.
+          stableAcrossResolutions = false
+        }
+      }
+      const mayActivateContour = isActivationCandidate && stableAcrossResolutions
+      const analysisError = selection.ambiguousSource
+        ? 'Multiple gallery images are similarly suitable; choose the mapped source before activation'
+        : analysis.source !== 'image'
+          ? 'Named-shape fallback requires visual review before activation'
           : analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
-          ? 'Opal contour confidence is too low for automatic activation'
-          : null
+            ? 'Opal contour confidence is too low for automatic activation'
+            : isActivationCandidate && !stableAcrossResolutions
+              ? UNSTABLE_ANALYSIS_ERROR
+              : null
 
       const updated = await updateProduct(
         payload,
@@ -580,12 +669,7 @@ export async function processBuilderMappings(
           builderPhotoCandidateFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
           builderPhotoCandidateFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
           builderPhotoCandidateZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
-          builderPhotoCandidateRotation: finiteBetween(
-            analysis.rotation,
-            -180,
-            180,
-            'rotation'
-          ),
+          builderPhotoCandidateRotation: finiteBetween(analysis.rotation, -180, 180, 'rotation'),
           builderMappingAnalysisError: analysisError,
         },
         expectedUpdatedAt

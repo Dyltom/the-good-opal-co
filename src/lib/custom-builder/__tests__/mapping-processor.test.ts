@@ -169,7 +169,7 @@ describe('builder mapping processor', () => {
       'https://example.com/first.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
     )
-    expect(mocks.analyzeOpalRaster).toHaveBeenCalledTimes(2)
+    expect(mocks.analyzeOpalRaster).toHaveBeenCalledTimes(3)
     expect(mocks.analyzeOpalRaster).toHaveBeenLastCalledWith({
       channels: 3,
       data: Buffer.from([5, 10, 15, 20, 25, 30]),
@@ -757,6 +757,54 @@ describe('builder mapping processor', () => {
     expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
     expect(update?.data).not.toHaveProperty('builderPhotoRotation')
     expect(update?.data).not.toHaveProperty('builderContour')
+  })
+
+  test('keeps an unstable dual-resolution contour as a review candidate', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/unstable.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    mocks.analyzeOpalRaster
+      .mockReturnValueOnce({
+        confidence: 0.95,
+        contour,
+        focalX: 0.42,
+        focalY: 0.57,
+        rotation: -12,
+        source: 'image',
+        zoom: 3.4,
+      })
+      .mockReturnValueOnce({
+        confidence: 0.94,
+        contour,
+        focalX: 0.44,
+        focalY: 0.57,
+        rotation: -12,
+        source: 'image',
+        zoom: 3.4,
+      })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({
+      builderContourCandidate: contour,
+      builderMappingAnalysisError:
+        'Opal contour is not stable across analysis resolutions; visual review required before activation',
+      builderPhotoAnalysisConfidence: 0.95,
+      builderPhotoCandidateImageIndex: 0,
+      builderPhotoCandidateFocalX: 0.42,
+    })
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderMappedImageIndex')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
   })
 
   test('records an unisolated photo without applying crop coordinates', async () => {

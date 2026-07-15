@@ -72,9 +72,7 @@ describe('photoreal ring rendering contract', () => {
   test('applies customer crop placement to the photographed opal texture', () => {
     expect(sceneSource).toContain('computePlacedPhotoCrop(')
     expect(sceneSource).toContain('constrainPhotoPlacementRotation(')
-    expect(sceneSource).toContain(
-      'const rotation = (crop.rotation ?? 0) + customerPhotoRotation'
-    )
+    expect(sceneSource).toContain('const rotation = (crop.rotation ?? 0) + customerPhotoRotation')
     expect(sceneSource).toContain('const [m00, m01, m02, m10, m11, m12] = transform.matrix')
     expect(sceneSource).toContain('photoTexture.matrix.set(m00, m01, m02, m10, m11, m12, 0, 0, 1)')
     expect(sceneSource).toContain('}, [sourcePhoto])')
@@ -126,7 +124,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain(
       '<FacetedOrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
-    expect(sceneSource).toContain("faceted={config.style === 'aurora'}")
+    expect(sceneSource).toContain("faceted={profile.beadPrimitive === 'faceted-organic-granule'}")
     expect(sceneSource).not.toContain('lobeOffset')
     expect(sceneSource).toContain('usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined')
     expect(sceneSource).toContain('<SolderGrainMaterial')
@@ -134,7 +132,7 @@ describe('photoreal ring rendering contract', () => {
       /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.4 : organic \? 1\.25 : 1\.4\}/
     )
     expect(sceneSource).toContain('faceted ? 1.4 : organic ? 1.25 : 1.4')
-    expect(sceneSource).toContain("organic={profile.beadPrimitive === 'faceted-organic-granule'}")
+    expect(sceneSource).toContain("organic={config.style === 'aurora'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
     expect(sceneSource).toContain('flatShading={faceted}')
