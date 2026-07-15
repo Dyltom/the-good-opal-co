@@ -153,6 +153,8 @@ function OpalPicker({
       : matchingOpals
   }, [matchingOpals, selectedIndex])
   const visibleOpals = orderedOpals.slice(0, visibleCount)
+  const remainingOpalCount = Math.max(0, matchingOpals.length - visibleCount)
+  const nextOpalCount = Math.min(12, remainingOpalCount)
 
   useEffect(() => {
     setVisibleCount(12)
@@ -304,7 +306,7 @@ function OpalPicker({
           onClick={() => setVisibleCount((current) => current + 12)}
           className="mt-4 inline-flex min-h-11 items-center rounded-full border border-charcoal/25 bg-white px-5 text-sm font-medium text-charcoal transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
         >
-          Show 12 more
+          Show {nextOpalCount} more {nextOpalCount === 1 ? 'opal' : 'opals'}
         </button>
       )}
     </fieldset>

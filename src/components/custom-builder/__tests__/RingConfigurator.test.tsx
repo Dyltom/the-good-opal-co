@@ -561,7 +561,7 @@ describe('RingConfigurator store opal selection', () => {
     expect(screen.getByRole('option', { name: 'Parcels (1)' })).not.toBeNull()
     expect(screen.getByText('14 listings found')).not.toBeNull()
 
-    await user.click(screen.getByRole('button', { name: 'Show 12 more' }))
+    await user.click(screen.getByRole('button', { name: 'Show 2 more opals' }))
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(14)
 
     await user.type(screen.getByRole('searchbox', { name: 'Search available opals' }), 'parcel')
