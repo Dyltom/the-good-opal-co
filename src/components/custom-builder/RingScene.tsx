@@ -2,7 +2,15 @@
 
 /* eslint-disable react/no-unknown-property -- React Three Fiber JSX maps these props to Three.js objects. */
 
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react'
 import { Environment, Lightformer, OrbitControls, useGLTF, useTexture } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
@@ -19,7 +27,6 @@ import {
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   PCFShadowMap,
-  Quaternion,
   RepeatWrapping,
   SRGBColorSpace,
   SphereGeometry,
@@ -31,6 +38,10 @@ import {
   computePhotoTextureTransform,
   constrainPhotoPlacementRotation,
 } from '@/lib/custom-builder/photo-crop'
+import {
+  getBuilderOpalPhotoSamplingDimensions,
+  getBuilderOpalPhotoSource,
+} from '@/lib/custom-builder/opal-photo-source'
 import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 import type { RingRenderModelSelection } from '@/lib/custom-builder/ring-render-model'
 import {
@@ -63,6 +74,7 @@ import {
   getRingFramingTarget,
   getRingShankCapTopology,
   getRingShankCurve,
+  getRingShankLandmarks,
   getSolderGrainTone,
   getShoulderBlendProgress,
   getRenderableOpalDepthMm,
@@ -80,6 +92,12 @@ import {
   type StoneDimensions,
 } from './geometry'
 import { applyForgedNormalVariation } from './forged-surface'
+import {
+  assertApprovedAssetJoinAlignment,
+  getApprovedAssetAnchorTransform,
+  getApprovedAssetFraming,
+  type ApprovedAssetFraming,
+} from './approved-asset'
 
 export type RingView = 'three-quarter' | 'front' | 'profile'
 
@@ -130,17 +148,29 @@ const opalPalettes: Record<
   },
 }
 
-function CameraPreset({ target, view }: { target: CameraVector; view: RingView }) {
+function CameraPreset({
+  distance,
+  target,
+  view,
+}: {
+  distance?: number
+  target: CameraVector
+  view: RingView
+}) {
   const { camera, invalidate, size } = useThree()
 
   useEffect(() => {
-    const [x, y, z] = getCameraPosition(view, size.width, size.height)
+    const [baseX, baseY, baseZ] = getCameraPosition(view, size.width, size.height)
+    const direction = new Vector3(baseX, baseY, baseZ).normalize()
+    const position = distance
+      ? direction.multiplyScalar(distance).add(new Vector3(...target))
+      : new Vector3(baseX, baseY, baseZ)
     camera.up.set(...cameraUpVectors[view])
-    camera.position.set(x, y, z)
+    camera.position.copy(position)
     camera.lookAt(...target)
     camera.updateProjectionMatrix()
     invalidate()
-  }, [camera, invalidate, size.height, size.width, target, view])
+  }, [camera, distance, invalidate, size.height, size.width, target, view])
 
   return null
 }
@@ -683,9 +713,10 @@ function OpalCabochon({
     [config.shape, config.style, height, selectedOpal, width]
   )
   const palette = opalPalettes[config.stone]
+  const selectedPhotoSource = selectedOpal ? getBuilderOpalPhotoSource(selectedOpal) : undefined
   // Catalogue growth must not make the WebGL scene download every product
-  // image. The selected listing is the only possible texture source.
-  const sourcePhoto = useTexture(selectedOpal?.imageUrl ?? '/images/products/20210923_172817.jpg')
+  // image. Only the selected listing or its canonical reviewed face can load.
+  const sourcePhoto = useTexture(selectedPhotoSource?.url ?? '/images/products/20210923_172817.jpg')
   const photoTexture = useMemo(() => {
     const nextTexture = sourcePhoto.clone()
     nextTexture.colorSpace = SRGBColorSpace
@@ -703,7 +734,7 @@ function OpalCabochon({
     return nextTexture
   }, [sourcePhoto])
 
-  const selectedPhotoCrop = selectedOpal?.visual.textureCrop
+  const selectedPhotoCrop = selectedPhotoSource?.crop
   const customerPhotoRotation = useMemo(
     () =>
       selectedPhotoCrop
@@ -723,9 +754,14 @@ function OpalCabochon({
     if (crop) {
       const rotation = (crop.rotation ?? 0) + customerPhotoRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
+      const samplingSize = getBuilderOpalPhotoSamplingDimensions(
+        selectedPhotoSource!,
+        { height: image?.height ?? 1, width: image?.width ?? 1 },
+        stoneAspect
+      )
       const cropRect = computePlacedPhotoCrop(
-        image?.width ?? 1,
-        image?.height ?? 1,
+        samplingSize.width,
+        samplingSize.height,
         stoneAspect,
         crop,
         {
@@ -749,6 +785,7 @@ function OpalCabochon({
     customerPhotoRotation,
     photoTexture,
     selectedPhotoCrop,
+    selectedPhotoSource,
     sourcePhoto.image,
     stoneAspect,
   ])
@@ -757,7 +794,7 @@ function OpalCabochon({
   useEffect(() => () => photoTexture.dispose(), [photoTexture])
   useEffect(() => () => geometry.dispose(), [geometry])
 
-  const usesProductPhoto = Boolean(selectedOpal?.visual.textureCrop)
+  const usesProductPhoto = Boolean(selectedPhotoCrop)
 
   if (usesProductPhoto) {
     return (
@@ -1858,24 +1895,15 @@ function RingShank({
   )
 }
 
-function RingModel({
-  animateOpalPlacement,
+function ProceduralShank({
   config,
   selectedOpal,
-  transitionKey,
 }: {
-  animateOpalPlacement: boolean
   config: RingConfig
   selectedOpal?: BuilderOpal
-  transitionKey: string
 }) {
-  const metal = config.metal
   const styleProfile = ringStyleGeometryProfiles[config.style]
-  const {
-    measurements,
-    settingY,
-    stoneDimensions: dimensions,
-  } = getSettingPlacement(config, selectedOpal)
+  const { measurements, stoneDimensions: dimensions } = getSettingPlacement(config, selectedOpal)
   const [stoneWidth, stoneHeight] = dimensions
   const shoulderAnchorHalfWidth = useMemo(
     () =>
@@ -1888,28 +1916,46 @@ function RingModel({
   )
 
   return (
+    <RingShank
+      metal={config.metal}
+      radius={measurements.centreRadius}
+      settingBaseY={measurements.outerRadius}
+      settingHalfWidth={shoulderAnchorHalfWidth}
+      shoulderDepth={styleProfile.shoulderDepth}
+      shoulderRadius={styleProfile.shoulderRadius}
+      tubeDepth={styleProfile.shankDepth}
+      tubeRadius={styleProfile.shankRadius}
+      shoulderUnderlap={styleProfile.shoulderUnderlap}
+      shoulderJoinDrop={styleProfile.shoulderJoinDrop}
+      shoulderTransition={styleProfile.shoulderTransition}
+      shoulderBlendLengthMm={styleProfile.shoulderBlendLengthMm}
+      shoulderLandingLengthMm={styleProfile.shoulderLandingLengthMm}
+      crossSectionPower={styleProfile.crossSectionPower}
+      shankInnerFacePower={styleProfile.shankInnerFacePower}
+      shankForgedVariation={styleProfile.shankForgedVariation}
+      surfaceNormalVariation={styleProfile.surfaceNormalVariation}
+      surfaceSeed={styleProfile.surfaceSeed}
+      metalRoughness={styleProfile.metalRoughness}
+    />
+  )
+}
+
+function RingModel({
+  animateOpalPlacement,
+  config,
+  selectedOpal,
+  transitionKey,
+}: {
+  animateOpalPlacement: boolean
+  config: RingConfig
+  selectedOpal?: BuilderOpal
+  transitionKey: string
+}) {
+  const { settingY } = getSettingPlacement(config, selectedOpal)
+
+  return (
     <group>
-      <RingShank
-        metal={metal}
-        radius={measurements.centreRadius}
-        settingBaseY={measurements.outerRadius}
-        settingHalfWidth={shoulderAnchorHalfWidth}
-        shoulderDepth={styleProfile.shoulderDepth}
-        shoulderRadius={styleProfile.shoulderRadius}
-        tubeDepth={styleProfile.shankDepth}
-        tubeRadius={styleProfile.shankRadius}
-        shoulderUnderlap={styleProfile.shoulderUnderlap}
-        shoulderJoinDrop={styleProfile.shoulderJoinDrop}
-        shoulderTransition={styleProfile.shoulderTransition}
-        shoulderBlendLengthMm={styleProfile.shoulderBlendLengthMm}
-        shoulderLandingLengthMm={styleProfile.shoulderLandingLengthMm}
-        crossSectionPower={styleProfile.crossSectionPower}
-        shankInnerFacePower={styleProfile.shankInnerFacePower}
-        shankForgedVariation={styleProfile.shankForgedVariation}
-        surfaceNormalVariation={styleProfile.surfaceNormalVariation}
-        surfaceSeed={styleProfile.surfaceSeed}
-        metalRoughness={styleProfile.metalRoughness}
-      />
+      <ProceduralShank config={config} selectedOpal={selectedOpal} />
 
       <group position={[0, settingY, 0]} rotation={[settingRotationX, 0, 0]}>
         <Setting
@@ -1923,15 +1969,82 @@ function RingModel({
   )
 }
 
+function ApprovedAssetBoundsReporter({
+  assembly,
+  onChange,
+  signature,
+  view,
+}: {
+  assembly: RefObject<Group | null>
+  onChange: (framing: ApprovedAssetFraming) => void
+  signature: string
+  view: RingView
+}) {
+  const { camera, invalidate, size } = useThree()
+
+  useLayoutEffect(() => {
+    if (!assembly.current || !('fov' in camera) || typeof camera.fov !== 'number') return
+    const framing = getApprovedAssetFraming(
+      assembly.current,
+      cameraPositions[view],
+      size.width / Math.max(1, size.height),
+      camera.fov
+    )
+    if (!framing) return
+    onChange(framing)
+    invalidate()
+  }, [assembly, camera, invalidate, onChange, signature, size.height, size.width, view])
+
+  return null
+}
+
 function ApprovedRingModel({
   config,
+  framingSignature,
+  onFramingChange,
   selectedOpal,
   selection,
+  view,
 }: {
   config: RingConfig
+  framingSignature: string
+  onFramingChange: (framing: ApprovedAssetFraming) => void
   selectedOpal: BuilderOpal
   selection: Extract<RingRenderModelSelection, { kind: 'asset' }>
+  view: RingView
 }) {
+  const assembly = useRef<Group>(null)
+  const styleProfile = ringStyleGeometryProfiles[config.style]
+  const placement = getSettingPlacement(config, selectedOpal)
+  const [stoneWidth, stoneHeight] = placement.stoneDimensions
+  const expectedJoins = useMemo(() => {
+    const shoulderAnchorHalfWidth = getSettingShoulderHalfWidth(
+      { shape: config.shape, style: config.style },
+      [stoneWidth, stoneHeight],
+      selectedOpal.visual.contour
+    )
+    return getRingShankLandmarks({
+      radius: placement.measurements.centreRadius,
+      settingBaseY: placement.measurements.outerRadius,
+      settingHalfWidth: shoulderAnchorHalfWidth,
+      shoulderJoinDrop: styleProfile.shoulderJoinDrop,
+      shoulderLandingLengthMm: styleProfile.shoulderLandingLengthMm,
+      shoulderTransition: styleProfile.shoulderTransition,
+      shoulderUnderlap: styleProfile.shoulderUnderlap,
+    })
+  }, [
+    config.shape,
+    config.style,
+    placement.measurements.centreRadius,
+    placement.measurements.outerRadius,
+    selectedOpal.visual.contour,
+    stoneHeight,
+    stoneWidth,
+    styleProfile.shoulderJoinDrop,
+    styleProfile.shoulderLandingLengthMm,
+    styleProfile.shoulderTransition,
+    styleProfile.shoulderUnderlap,
+  ])
   const { scene } = useGLTF(selection.variant.asset.url)
   const prepared = useMemo(() => {
     const model = scene.clone(true)
@@ -1975,17 +2088,39 @@ function ApprovedRingModel({
     }
 
     model.scale.setScalar(selection.variant.runtimeScale)
-    model.updateMatrixWorld(true)
-    const stoneAnchor = model.getObjectByName(selection.variant.nodes.stoneAnchor)
-    if (!stoneAnchor) {
+    let stoneAnchor
+    try {
+      stoneAnchor = getApprovedAssetAnchorTransform(
+        model,
+        selection.variant.nodes.stoneAnchor,
+        selection.variant.runtimeScale
+      )
+      if (selection.variant.assembly === 'authored-head-procedural-shank') {
+        const left = getApprovedAssetAnchorTransform(
+          model,
+          selection.variant.nodes.shankJoinLeft,
+          selection.variant.runtimeScale
+        )
+        const right = getApprovedAssetAnchorTransform(
+          model,
+          selection.variant.nodes.shankJoinRight,
+          selection.variant.runtimeScale
+        )
+        assertApprovedAssetJoinAlignment(
+          left.position,
+          right.position,
+          expectedJoins.joinLeft,
+          expectedJoins.joinRight,
+          0.05
+        )
+      }
+    } catch (error) {
       createdMaterials.forEach((material) => material.dispose())
-      throw new Error(`Approved ring asset is missing ${selection.variant.nodes.stoneAnchor}`)
+      throw error
     }
-    const position = stoneAnchor.getWorldPosition(new Vector3())
-    const quaternion = stoneAnchor.getWorldQuaternion(new Quaternion())
 
-    return { createdMaterials, model, position, quaternion }
-  }, [config.metal, scene, selection.variant])
+    return { createdMaterials, model, stoneAnchor }
+  }, [config.metal, expectedJoins.joinLeft, expectedJoins.joinRight, scene, selection.variant])
 
   useEffect(
     () => () => prepared.createdMaterials.forEach((material) => material.dispose()),
@@ -1993,15 +2128,28 @@ function ApprovedRingModel({
   )
 
   return (
-    <group>
+    <group ref={assembly}>
       <primitive object={prepared.model} />
-      <group position={prepared.position} quaternion={prepared.quaternion}>
+      {selection.variant.assembly === 'authored-head-procedural-shank' && (
+        <ProceduralShank config={config} selectedOpal={selectedOpal} />
+      )}
+      <group
+        position={prepared.stoneAnchor.position}
+        quaternion={prepared.stoneAnchor.quaternion}
+        scale={prepared.stoneAnchor.scale}
+      >
         <OpalCabochon
           config={config}
           dimensions={getStoneDimensions(config, selectedOpal)}
           selectedOpal={selectedOpal}
         />
       </group>
+      <ApprovedAssetBoundsReporter
+        assembly={assembly}
+        onChange={onFramingChange}
+        signature={framingSignature}
+        view={view}
+      />
     </group>
   )
 }
@@ -2018,6 +2166,10 @@ export function RingScene({
   zoomEnabled = true,
 }: RingSceneProps) {
   const background = useMemo(() => new Color('#24241f'), [])
+  const [approvedFramingState, setApprovedFramingState] = useState<{
+    framing: ApprovedAssetFraming
+    key: string
+  }>()
   const renderedOpal = useMemo(
     () => selectedOpal ?? getRingStyleReferenceOpal(config.style),
     [config.style, selectedOpal]
@@ -2031,9 +2183,38 @@ export function RingScene({
     [config, renderedOpal, view]
   )
   const opalTransitionKey = useMemo(
-    () => JSON.stringify([renderedOpal.id, renderedOpal.imageUrl]),
-    [renderedOpal.id, renderedOpal.imageUrl]
+    () =>
+      JSON.stringify([
+        renderedOpal.id,
+        renderedOpal.imageUrl,
+        renderedOpal.visual.canonicalFace?.url,
+      ]),
+    [renderedOpal.id, renderedOpal.imageUrl, renderedOpal.visual.canonicalFace?.url]
   )
+  const approvedFramingKey =
+    renderModel.kind === 'asset'
+      ? `${renderModel.variant.asset.sha256}:${renderSignature}`
+      : 'procedural'
+  const approvedFraming =
+    approvedFramingState?.key === approvedFramingKey ? approvedFramingState.framing : undefined
+  const handleApprovedFraming = useCallback(
+    (framing: ApprovedAssetFraming) => {
+      setApprovedFramingState((current) => {
+        if (
+          current?.key === approvedFramingKey &&
+          Math.abs(current.framing.distance - framing.distance) < 0.0001 &&
+          current.framing.target.every(
+            (value, index) => Math.abs(value - framing.target[index]!) < 0.0001
+          )
+        ) {
+          return current
+        }
+        return { framing, key: approvedFramingKey }
+      })
+    },
+    [approvedFramingKey]
+  )
+  const activeFramingTarget = approvedFraming?.target ?? framingTarget
 
   return (
     <Canvas
@@ -2064,11 +2245,18 @@ export function RingScene({
       <directionalLight position={[-4, 2, 3]} intensity={1} color="#e5f1f2" />
       <pointLight position={[0, -2, 3]} intensity={0.42} color="#fff1de" />
 
-      <CameraPreset target={framingTarget} view={view} />
+      <CameraPreset distance={approvedFraming?.distance} target={activeFramingTarget} view={view} />
       {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}
 
       {renderModel.kind === 'asset' && selectedOpal ? (
-        <ApprovedRingModel config={config} selectedOpal={selectedOpal} selection={renderModel} />
+        <ApprovedRingModel
+          config={config}
+          framingSignature={approvedFramingKey}
+          onFramingChange={handleApprovedFraming}
+          selectedOpal={selectedOpal}
+          selection={renderModel}
+          view={view}
+        />
       ) : (
         <RingModel
           animateOpalPlacement={!reduceMotion}
@@ -2123,11 +2311,11 @@ export function RingScene({
 
       <OrbitControls
         makeDefault
-        target={framingTarget}
+        target={activeFramingTarget}
         enablePan={false}
         enableZoom={zoomEnabled}
         minDistance={4.8}
-        maxDistance={8.5}
+        maxDistance={Math.max(8.5, (approvedFraming?.distance ?? 0) * 1.35)}
         autoRotate={allowMotion}
         autoRotateSpeed={0.55}
       />

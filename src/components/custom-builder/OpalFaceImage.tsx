@@ -9,6 +9,10 @@ import {
   constrainPhotoPlacementRotation,
   rotationCoverScale,
 } from '@/lib/custom-builder/photo-crop'
+import {
+  getBuilderOpalPhotoSamplingDimensions,
+  getBuilderOpalPhotoSource,
+} from '@/lib/custom-builder/opal-photo-source'
 import type { BuilderOpal, OpalPlacement } from './config'
 import { cssSilhouetteClipPath, getRenderedStoneAspect } from './geometry'
 
@@ -36,22 +40,28 @@ export function OpalFaceImage({
     url: string
     width: number
   }>()
+  const photoSource = getBuilderOpalPhotoSource(opal)
   const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
-  const currentImageSize = imageSize?.url === opal.imageUrl ? imageSize : undefined
+  const currentImageSize = imageSize?.url === photoSource.url ? imageSize : undefined
   const crop = useMemo(() => {
     if (!currentImageSize) return undefined
-    const focus = opal.visual.textureCrop ?? { focalX: 0.5, focalY: 0.5, zoom: 1 }
+    const focus = photoSource.crop ?? { focalX: 0.5, focalY: 0.5, zoom: 1 }
+    const samplingSize = getBuilderOpalPhotoSamplingDimensions(
+      photoSource,
+      currentImageSize,
+      stoneAspect
+    )
     return computePlacedPhotoCrop(
-      currentImageSize.width,
-      currentImageSize.height,
+      samplingSize.width,
+      samplingSize.height,
       stoneAspect,
       focus,
       placement
     )
-  }, [currentImageSize, opal.visual.textureCrop, placement, stoneAspect])
+  }, [currentImageSize, photoSource, placement, stoneAspect])
 
-  const baseZoom = opal.visual.textureCrop?.zoom ?? 1
-  const baseRotation = opal.visual.textureCrop?.rotation ?? 0
+  const baseZoom = photoSource.crop?.zoom ?? 1
+  const baseRotation = photoSource.crop?.rotation ?? 0
   const placementScale = placement?.opalScale ?? 1
   const customerRotation = useMemo(
     () =>
@@ -82,7 +92,7 @@ export function OpalFaceImage({
   const handleLoad: ComponentProps<typeof Image>['onLoad'] = (event) =>
     setImageSize({
       height: event.currentTarget.naturalHeight,
-      url: opal.imageUrl,
+      url: photoSource.url,
       width: event.currentTarget.naturalWidth,
     })
 
@@ -102,12 +112,13 @@ export function OpalFaceImage({
       className={cn('relative overflow-hidden bg-cream/10', silhouetteClass, className)}
       aria-busy={!crop}
       data-opal-photo-state={crop ? 'ready' : 'loading'}
+      data-opal-photo-source={photoSource.kind}
       style={{ aspectRatio: stoneAspect, clipPath: silhouetteClipPath }}
       data-opal-photo-shape={clipToStone ? opal.visual.silhouette : undefined}
     >
       <div className={cn('absolute', !crop && 'inset-0')} style={cropStyle}>
         <Image
-          src={opal.imageUrl}
+          src={photoSource.url}
           alt={alt}
           draggable={false}
           fill

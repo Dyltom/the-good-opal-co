@@ -13,6 +13,15 @@ export interface BuilderStoneContourV1 {
   version: typeof BUILDER_STONE_CONTOUR_VERSION
 }
 
+export interface BuilderStoneContourBounds {
+  bottom: number
+  left: number
+  right: number
+  top: number
+}
+
+const contourBoundsCache = new WeakMap<BuilderStoneContourV1, BuilderStoneContourBounds>()
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
@@ -110,4 +119,50 @@ export function contourRadiusAt(contour: BuilderStoneContourV1, angle: number): 
   const lower = contour.radii[lowerIndex] ?? 1
   const upper = contour.radii[upperIndex] ?? lower
   return lower + (upper - lower) * progress
+}
+
+export function getBuilderStoneContourBounds(
+  contour: BuilderStoneContourV1
+): BuilderStoneContourBounds {
+  const cached = contourBoundsCache.get(contour)
+  if (cached) return cached
+
+  const bounds = contour.radii.reduce<BuilderStoneContourBounds>(
+    (current, radius, index) => {
+      const angle = (index / contour.radii.length) * Math.PI * 2
+      const x = Math.cos(angle) * radius
+      const y = Math.sin(angle) * radius
+      return {
+        bottom: Math.min(current.bottom, y),
+        left: Math.min(current.left, x),
+        right: Math.max(current.right, x),
+        top: Math.max(current.top, y),
+      }
+    },
+    {
+      bottom: Number.POSITIVE_INFINITY,
+      left: Number.POSITIVE_INFINITY,
+      right: Number.NEGATIVE_INFINITY,
+      top: Number.NEGATIVE_INFINITY,
+    }
+  )
+  contourBoundsCache.set(contour, bounds)
+  return bounds
+}
+
+/**
+ * Maps the persisted radial boundary into the exact -1..1 coordinate space
+ * used by the cabochon mesh UVs and canonical face textures.
+ */
+export function normalizedBuilderStoneContourPoint(
+  contour: BuilderStoneContourV1,
+  angle: number
+): readonly [number, number] {
+  const radius = contourRadiusAt(contour, angle)
+  const rawX = Math.cos(angle) * radius
+  const rawY = Math.sin(angle) * radius
+  const bounds = getBuilderStoneContourBounds(contour)
+  const width = bounds.right - bounds.left || 1
+  const height = bounds.top - bounds.bottom || 1
+  return [((rawX - bounds.left) / width) * 2 - 1, ((rawY - bounds.bottom) / height) * 2 - 1]
 }

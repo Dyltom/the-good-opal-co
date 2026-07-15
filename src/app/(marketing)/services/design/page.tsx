@@ -16,6 +16,7 @@ import {
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
 import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/ring-design-manifest'
+import { resolveCanonicalFaceMapping } from '@/lib/custom-builder/canonical-face-mapping'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
 import {
@@ -192,6 +193,11 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       const stoneType = inferBuilderStoneType(product.stoneType, product.name)
 
       const renderProfile = createOpalVisualProfile(product.slug, product.name, stoneType, product)
+      const canonicalFace = resolveCanonicalFaceMapping(
+        product.id,
+        product,
+        1 / renderProfile.visual.aspectRatio
+      )
       return [
         {
           id: String(product.id),
@@ -206,6 +212,18 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
           weight: product.weight ?? undefined,
           selectionKind: classifyOpalListing(product.name),
           ...renderProfile,
+          visual: {
+            ...renderProfile.visual,
+            ...(canonicalFace
+              ? {
+                  canonicalFace: {
+                    inputHash: canonicalFace.identity.inputHash,
+                    sourceImageHash: canonicalFace.sourceImageHash,
+                    url: canonicalFace.url,
+                  },
+                }
+              : {}),
+          },
         },
       ]
     })

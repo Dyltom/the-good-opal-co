@@ -9,6 +9,7 @@ import {
   getPhotoPlacementRotationBounds,
   getPhotoPlacementScaleMax,
 } from '@/lib/custom-builder/photo-crop'
+import { getBuilderOpalPhotoSource } from '@/lib/custom-builder/opal-photo-source'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
 import { defaultOpalPlacement } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
@@ -128,9 +129,10 @@ export function OpalPlacementEditor({
   const cropViewport = useRef<HTMLDivElement>(null)
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const baseZoom = opal.visual.textureCrop?.zoom ?? 1
+  const photoSource = getBuilderOpalPhotoSource(opal)
+  const baseZoom = photoSource.crop?.zoom ?? 1
   const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
-  const baseRotation = opal.visual.textureCrop?.rotation ?? 0
+  const baseRotation = photoSource.crop?.rotation ?? 0
   const scaleMax = getPhotoPlacementScaleMax(baseZoom, stoneAspect, baseRotation)
   const displayedScale = Math.min(placement.opalScale, scaleMax)
   const rotationBounds = useMemo(
@@ -158,7 +160,7 @@ export function OpalPlacementEditor({
     if (style !== 'aurora' && style !== 'sun-moon') return []
 
     const halfWidth = 0.5
-    const halfHeight = halfWidth * opal.visual.aspectRatio
+    const halfHeight = halfWidth / stoneAspect
     const count = style === 'aurora' ? 28 : 40
     return evenlySpacedOutlinePoints(
       opal.visual.silhouette,
@@ -175,7 +177,7 @@ export function OpalPlacementEditor({
       left: Number((50 + (x / halfWidth) * 50).toFixed(4)),
       top: Number((50 - (y / halfHeight) * 50).toFixed(4)),
     }))
-  }, [opal.visual.aspectRatio, opal.visual.contour, opal.visual.silhouette, style])
+  }, [opal.visual.contour, opal.visual.silhouette, stoneAspect, style])
 
   function update<K extends keyof OpalPlacement>(key: K, value: OpalPlacement[K]) {
     onChange({ ...placement, [key]: value })

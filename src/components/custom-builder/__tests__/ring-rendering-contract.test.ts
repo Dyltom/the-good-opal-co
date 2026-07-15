@@ -80,7 +80,7 @@ describe('photoreal ring rendering contract', () => {
 
   test('settles opals without remounting or pulling their contour away from the bezel', () => {
     expect(sceneSource).toContain('transitionKey={opalTransitionKey}')
-    expect(sceneSource).toContain('JSON.stringify([renderedOpal.id, renderedOpal.imageUrl])')
+    expect(sceneSource).toContain('renderedOpal.visual.canonicalFace?.url')
     expect(sceneSource).not.toContain('renderedOpal.visual.contour?.radii')
     expect(sceneSource).not.toContain('key={renderedOpal.id}')
     expect(sceneSource).not.toContain('group.current.scale.set(')
@@ -94,6 +94,19 @@ describe('photoreal ring rendering contract', () => {
     )
     expect(sceneSource).toContain('else invalidate()')
     expect(sceneSource).toContain('animateOpalPlacement={!reduceMotion}')
+  })
+
+  test('assembles approved assets at their authored anchors and frames their visible bounds', () => {
+    expect(sceneSource).toContain('getApprovedAssetAnchorTransform(')
+    expect(sceneSource).toContain('scale={prepared.stoneAnchor.scale}')
+    expect(sceneSource).toContain("selection.variant.assembly === 'authored-head-procedural-shank'")
+    expect(sceneSource).toContain('<ProceduralShank config={config} selectedOpal={selectedOpal} />')
+    expect(sceneSource).toContain('assertApprovedAssetJoinAlignment(')
+    expect(sceneSource).toContain('<ApprovedAssetBoundsReporter')
+    expect(sceneSource).toContain('target={activeFramingTarget}')
+    expect(sceneSource).toContain(
+      'maxDistance={Math.max(8.5, (approvedFraming?.distance ?? 0) * 1.35)}'
+    )
   })
 
   test('keeps the physical opal independent from collection-edge variation', () => {

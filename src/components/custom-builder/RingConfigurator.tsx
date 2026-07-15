@@ -7,6 +7,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Check, ExternalLink, RotateCcw, Share2 } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
 import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
+import { getBuilderOpalPhotoSource } from '@/lib/custom-builder/opal-photo-source'
 import type { RingDesignRenderManifest } from '@/lib/custom-builder/ring-design-manifest'
 import { selectRingRenderModel } from '@/lib/custom-builder/ring-render-model'
 import {
@@ -292,6 +293,11 @@ function OpalPicker({
                       {opal.visual.dimensionsMm.depth} mm
                     </span>
                   )}
+                  {opal.selectionKind === 'individual' && !opal.visual.dimensionsMm && (
+                    <span className="mt-1 block text-xs leading-4 text-charcoal-light">
+                      Normalized shape preview · measurements pending
+                    </span>
+                  )}
                   {opal.selectionKind !== 'individual' && (
                     <span className="mt-1 block text-xs leading-4 text-charcoal-light">
                       3D shows a representative setting concept
@@ -437,12 +443,13 @@ export function RingConfigurator({
     () => opals.find((opal) => opal.id === config.opalId),
     [config.opalId, opals]
   )
+  const selectedPhotoSource = selectedOpal ? getBuilderOpalPhotoSource(selectedOpal) : undefined
   const hasEditableOpalPhoto = Boolean(
     selectedOpal?.selectionKind === 'individual' &&
     selectedOpal.visual.photoFit === 'reviewed' &&
-    selectedOpal.visual.textureCrop
+    selectedPhotoSource?.crop
   )
-  const selectedCrop = selectedOpal?.visual.textureCrop
+  const selectedCrop = selectedPhotoSource?.crop
   const placementScaleMax = getPhotoPlacementScaleMax(
     selectedCrop?.zoom ?? 1,
     selectedOpal ? getRenderedStoneAspect({ shape: config.shape }, selectedOpal) : 1,

@@ -3,6 +3,7 @@ import {
   BUILDER_STONE_CONTOUR_SAMPLE_COUNT,
   BUILDER_STONE_CONTOUR_VERSION,
   contourRadiusAt,
+  normalizedBuilderStoneContourPoint,
   parseBuilderStoneContour,
   validateBuilderStoneContour,
 } from '../stone-contour'
@@ -72,5 +73,31 @@ describe('builder stone contour', () => {
     expect(contourRadiusAt(parsed, -halfSample)).toBeCloseTo(0.96, 12)
     expect(contourRadiusAt(parsed, Math.PI * 2)).toBe(1)
     expect(contourRadiusAt(parsed, Number.NaN)).toBe(1)
+  })
+
+  test('normalizes asymmetric bounds into shared renderer texture coordinates', () => {
+    const parsed = parseBuilderStoneContour(
+      contour(
+        Array.from(
+          { length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT },
+          (_, index) =>
+            1 +
+            Math.sin((index / BUILDER_STONE_CONTOUR_SAMPLE_COUNT) * Math.PI * 2) * 0.06 +
+            Math.cos((index / BUILDER_STONE_CONTOUR_SAMPLE_COUNT) * Math.PI * 4) * 0.03
+        )
+      )
+    )
+    expect(parsed).toBeDefined()
+    const points = parsed!.radii.map((_, index) =>
+      normalizedBuilderStoneContourPoint(
+        parsed!,
+        (index / BUILDER_STONE_CONTOUR_SAMPLE_COUNT) * Math.PI * 2
+      )
+    )
+
+    expect(Math.min(...points.map(([x]) => x))).toBeCloseTo(-1, 12)
+    expect(Math.max(...points.map(([x]) => x))).toBeCloseTo(1, 12)
+    expect(Math.min(...points.map(([, y]) => y))).toBeCloseTo(-1, 12)
+    expect(Math.max(...points.map(([, y]) => y))).toBeCloseTo(1, 12)
   })
 })

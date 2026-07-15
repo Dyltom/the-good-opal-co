@@ -3,6 +3,10 @@ import sharp from 'sharp'
 import type { Product } from '@/types/payload-types'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import {
+  generateCanonicalFaceTexture,
+  type GeneratedCanonicalFaceTexture,
+} from './canonical-face-texture'
 import { BUILDER_PHOTO_ANALYSIS_VERSION } from './mapping-lifecycle'
 import { classifyOpalListing, isAvailableOpalListing } from './opal-visual'
 import { analyzeOpalRaster, type OpalShapeHint } from './photo-analysis'
@@ -20,6 +24,7 @@ const MAXIMUM_STABILITY_CONTOUR_DELTA = 0.015
 const UNSTABLE_ANALYSIS_ERROR =
   'Opal contour is not stable across analysis resolutions; visual review required before activation'
 const RETRYABLE_ANALYSIS_ERROR_PREFIX = 'Retryable source error: '
+const RETRYABLE_ARTIFACT_ERROR_PREFIX = 'Retryable artifact error: '
 
 class RetryableSourceError extends Error {}
 
@@ -60,7 +65,15 @@ const opalShapeHints = new Set<OpalShapeHint>([
 ])
 
 export interface ProcessBuilderMappingsOptions {
+  canonicalFaceArtifactSink?: (event: CanonicalFaceArtifactEvent) => Promise<void> | void
   limit?: number
+}
+
+export interface CanonicalFaceArtifactEvent {
+  artifact: GeneratedCanonicalFaceTexture
+  productId: number | string
+  productSlug?: string
+  sourceImageIndex: number
 }
 
 export interface BuilderMappingBatchResult {
@@ -161,7 +174,11 @@ function mappingNeedsPhotoAnalysis(value: unknown): boolean {
   const currentVersion = product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
 
   if (error) {
-    return !currentVersion || error.startsWith(RETRYABLE_ANALYSIS_ERROR_PREFIX)
+    return (
+      !currentVersion ||
+      error.startsWith(RETRYABLE_ANALYSIS_ERROR_PREFIX) ||
+      error.startsWith(RETRYABLE_ARTIFACT_ERROR_PREFIX)
+    )
   }
 
   const hasHash =
@@ -635,7 +652,36 @@ export async function processBuilderMappings(
           stableAcrossResolutions = false
         }
       }
-      const mayActivateContour = isActivationCandidate && stableAcrossResolutions
+      let canonicalFaceReady = false
+      let canonicalFaceError: string | undefined
+      if (isActivationCandidate && stableAcrossResolutions) {
+        try {
+          const canonicalFace = await generateCanonicalFaceTexture({
+            analysis,
+            source: selected.source,
+          })
+          if (canonicalFace.status === 'generated') {
+            try {
+              await options.canonicalFaceArtifactSink?.({
+                artifact: canonicalFace,
+                productId: id,
+                ...(typeof product.slug === 'string' ? { productSlug: product.slug } : {}),
+                sourceImageIndex: selected.index,
+              })
+              canonicalFaceReady = true
+            } catch (error: unknown) {
+              canonicalFaceError = `${RETRYABLE_ARTIFACT_ERROR_PREFIX}${conciseError(error)}`
+            }
+          } else {
+            canonicalFaceError =
+              'Canonical face texture was skipped because analysis did not isolate image pixels'
+          }
+        } catch (error: unknown) {
+          canonicalFaceError = `Canonical face texture generation failed: ${conciseError(error)}`
+        }
+      }
+      const mayActivateContour =
+        isActivationCandidate && stableAcrossResolutions && canonicalFaceReady
       const analysisError = selection.ambiguousSource
         ? 'Multiple gallery images are similarly suitable; choose the mapped source before activation'
         : analysis.source !== 'image'
@@ -644,7 +690,9 @@ export async function processBuilderMappings(
             ? 'Opal contour confidence is too low for automatic activation'
             : isActivationCandidate && !stableAcrossResolutions
               ? UNSTABLE_ANALYSIS_ERROR
-              : null
+              : canonicalFaceError
+                ? canonicalFaceError
+                : null
 
       const updated = await updateProduct(
         payload,

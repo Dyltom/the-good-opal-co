@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => {
     analyzeOpalRaster: vi.fn(),
     find: vi.fn(),
     findByID: vi.fn(),
+    generateCanonicalFaceTexture: vi.fn(),
     getPayload: vi.fn(),
     pipeline,
     sharp: vi.fn(() => pipeline),
@@ -30,6 +31,9 @@ const mocks = vi.hoisted(() => {
 
 vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 vi.mock('sharp', () => ({ default: mocks.sharp }))
+vi.mock('../canonical-face-texture', () => ({
+  generateCanonicalFaceTexture: mocks.generateCanonicalFaceTexture,
+}))
 vi.mock('../photo-analysis', () => ({
   analyzeOpalRaster: mocks.analyzeOpalRaster,
   OPAL_PHOTO_ANALYSIS_VERSION: 2,
@@ -60,7 +64,16 @@ describe('builder mapping processor', () => {
       focalY: 0.57,
       rotation: -12,
       source: 'image',
+      stoneAspect: 0.75,
       zoom: 3.4,
+    })
+    mocks.generateCanonicalFaceTexture.mockResolvedValue({
+      bytes: Buffer.from('canonical-face'),
+      metadata: {
+        contentHash: 'a'.repeat(64),
+        storageKey: `builder/opal-faces/v1/${'a'.repeat(64)}.png`,
+      },
+      status: 'generated',
     })
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://example.com')
     vi.stubGlobal(
@@ -83,6 +96,7 @@ describe('builder mapping processor', () => {
   })
 
   test('analyzes every gallery image and keeps the current source when a score gain is ambiguous', async () => {
+    const canonicalFaceArtifactSink = vi.fn()
     mocks.find.mockResolvedValue({
       docs: [
         {
@@ -120,7 +134,9 @@ describe('builder mapping processor', () => {
         zoom: 3.4,
       })
 
-    await expect(processBuilderMappings({ limit: 999 })).resolves.toEqual({
+    await expect(
+      processBuilderMappings({ canonicalFaceArtifactSink, limit: 999 })
+    ).resolves.toEqual({
       analyzed: 1,
       checked: 1,
       coverage: {
@@ -198,6 +214,18 @@ describe('builder mapping processor', () => {
       }),
       overrideAccess: true,
     })
+    expect(mocks.generateCanonicalFaceTexture).toHaveBeenCalledWith({
+      analysis: expect.objectContaining({ confidence: 0.91, source: 'image' }),
+      source: Buffer.from(imageBytes),
+    })
+    expect(canonicalFaceArtifactSink).toHaveBeenCalledWith({
+      artifact: expect.objectContaining({
+        bytes: Buffer.from('canonical-face'),
+        status: 'generated',
+      }),
+      productId: 42,
+      sourceImageIndex: 1,
+    })
   })
 
   test('fetches application-relative media from the active Vercel deployment', async () => {
@@ -222,6 +250,36 @@ describe('builder mapping processor', () => {
       'https://the-good-opal-co-git-main.example.vercel.app/api/media/file/opal.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
     )
+  })
+
+  test('keeps a canonical artifact sink failure retryable without activating the contour', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/opal.jpg' } }],
+          name: 'Lightning Ridge black opal',
+          slug: 'lightning-ridge-black-opal',
+        },
+      ],
+    })
+    const canonicalFaceArtifactSink = vi.fn().mockRejectedValue(new Error('blob unavailable'))
+
+    await expect(processBuilderMappings({ canonicalFaceArtifactSink })).resolves.toMatchObject({
+      analyzed: 1,
+      failed: 0,
+    })
+
+    expect(canonicalFaceArtifactSink).toHaveBeenCalledOnce()
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({
+      builderContourCandidate: contour,
+      builderMappingAnalysisError: 'Retryable artifact error: blob unavailable',
+    })
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderMappedImageIndex')
   })
 
   test('does not rewrite absolute owned-storage media through a Vercel origin', async () => {
@@ -422,6 +480,19 @@ describe('builder mapping processor', () => {
           ...product,
           builderMappingAnalysisError:
             'Retryable source error: Source image request did not complete',
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        },
+      ],
+    })
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, checked: 1 })
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    vi.mocked(fetch).mockClear()
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          ...product,
+          builderMappingAnalysisError: 'Retryable artifact error: blob unavailable',
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         },
       ],

@@ -86,6 +86,12 @@ export interface BuilderOpal {
     patternSeed: number
     evidence: 'catalogue' | 'type-fallback'
     photoFit?: 'reviewed' | 'estimated'
+    /** Content-addressed, contour-masked face generated from the reviewed source photo. */
+    canonicalFace?: {
+      inputHash: string
+      sourceImageHash: string
+      url: string
+    }
     contour?: BuilderStoneContourV1
     recommendedStyle: RingConfig['style']
     textureCrop?: {

@@ -34,6 +34,7 @@ export interface OpalPhotoAnalysis {
   focalY: number
   rotation: number
   source: 'canonical-fallback' | 'image'
+  stoneAspect: number
   zoom: number
 }
 
@@ -602,14 +603,12 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
     zoom,
     rotation: normalizeFullTurn(rotation + orientedContour.rotationOffset),
     source: 'image',
+    stoneAspect,
     confidence,
   }
 }
 
-function canonicalShapePoint(
-  shape: OpalShapeHint,
-  angle: number
-): readonly [number, number] {
+function canonicalShapePoint(shape: OpalShapeHint, angle: number): readonly [number, number] {
   const cosine = Math.cos(angle)
   const sine = Math.sin(angle)
   if (shape === 'cushion' || shape === 'elongated') {
@@ -638,9 +637,8 @@ function canonicalShapePoint(
 }
 
 function canonicalShapeContour(shape: OpalShapeHint): BuilderStoneContourV1 | undefined {
-  const boundary = Array.from(
-    { length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT * 8 },
-    (_, index) => canonicalShapePoint(shape, (index / (BUILDER_STONE_CONTOUR_SAMPLE_COUNT * 8)) * fullTurn)
+  const boundary = Array.from({ length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT * 8 }, (_, index) =>
+    canonicalShapePoint(shape, (index / (BUILDER_STONE_CONTOUR_SAMPLE_COUNT * 8)) * fullTurn)
   )
   const minimumX = Math.min(...boundary.map(([x]) => x))
   const maximumX = Math.max(...boundary.map(([x]) => x))
@@ -667,14 +665,15 @@ function canonicalShapeContour(shape: OpalShapeHint): BuilderStoneContourV1 | un
 
   const filled = circularlyFill(bins)
   if (!filled) return undefined
-  const radii = filled.map((radius, index) =>
-    Math.round(
-      medianOfThree(
-        filled[(index - 1 + filled.length) % filled.length]!,
-        radius,
-        filled[(index + 1) % filled.length]!
-      ) * 10_000
-    ) / 10_000
+  const radii = filled.map(
+    (radius, index) =>
+      Math.round(
+        medianOfThree(
+          filled[(index - 1 + filled.length) % filled.length]!,
+          radius,
+          filled[(index + 1) % filled.length]!
+        ) * 10_000
+      ) / 10_000
   )
   return parseBuilderStoneContour({ version: BUILDER_STONE_CONTOUR_VERSION, radii })
 }
@@ -708,6 +707,10 @@ function reviewedCropFallback(input: OpalRasterInput): OpalPhotoAnalysis | undef
     focalY: hint.focalY,
     rotation: clamp(hint.rotation ?? 0, -90, 90),
     source: 'canonical-fallback',
+    stoneAspect:
+      input.stoneAspect !== undefined && Number.isFinite(input.stoneAspect) && input.stoneAspect > 0
+        ? clamp(input.stoneAspect, 0.2, 5)
+        : 1,
     zoom: hint.zoom,
   }
 }

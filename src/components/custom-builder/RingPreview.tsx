@@ -32,12 +32,7 @@ const views: readonly { accessibleLabel: string; id: RingView; label: string }[]
   { id: 'profile', label: 'Profile', accessibleLabel: 'Profile view' },
 ]
 
-export function RingPreview({
-  config,
-  description,
-  renderModel,
-  selectedOpal,
-}: RingPreviewProps) {
+export function RingPreview({ config, description, renderModel, selectedOpal }: RingPreviewProps) {
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
   const [motionEnabled, setMotionEnabled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
@@ -149,7 +144,9 @@ export function RingPreview({
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.12em] text-opal-light">
                   {selectedOpal.selectionKind === 'individual'
-                    ? 'Selected opal face'
+                    ? selectedOpal.visual.canonicalFace
+                      ? 'Isolated opal face'
+                      : 'Selected opal face'
                     : 'Selected listing photo'}
                 </p>
                 <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
@@ -164,16 +161,28 @@ export function RingPreview({
                     {selectedOpal.visual.dimensionsMm.depth} mm
                   </p>
                 )}
+                {selectedOpal.selectionKind === 'individual' &&
+                  !selectedOpal.visual.dimensionsMm && (
+                    <p className="mt-1 text-xs text-cream/70">
+                      Normalized shape scale · measurements pending
+                    </p>
+                  )}
                 <p className="mt-1 text-xs leading-4 text-cream/60">
-                  {selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
-                    ? `Reviewed photo crop · ${selectedOpal.visual.silhouette} setting concept`
-                    : selectedOpal.visual.textureCrop
-                      ? 'Listing photo mapped to an estimated setting profile · visual guide only'
-                      : selectedOpal.selectionKind === 'individual'
-                        ? 'Listing photo shown · 3D shape and colour are a visual guide'
-                        : selectedOpal.selectionKind === 'specimen'
-                          ? 'Specimen photo shown · setting feasibility requires consultation'
-                          : 'Multiple stones pictured · 3D represents material, not one guaranteed stone'}
+                  {selectedOpal.visual.canonicalFace
+                    ? `Contour-masked reviewed face · ${selectedOpal.visual.silhouette} ${
+                        selectedOpal.visual.dimensionsMm ? 'measured' : 'normalized'
+                      } setting concept`
+                    : selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
+                      ? `Reviewed photo crop · ${selectedOpal.visual.silhouette} ${
+                          selectedOpal.visual.dimensionsMm ? 'measured' : 'normalized'
+                        } setting concept`
+                      : selectedOpal.visual.textureCrop
+                        ? 'Listing photo mapped to an estimated setting profile · visual guide only'
+                        : selectedOpal.selectionKind === 'individual'
+                          ? 'Listing photo shown · 3D shape and colour are a visual guide'
+                          : selectedOpal.selectionKind === 'specimen'
+                            ? 'Specimen photo shown · setting feasibility requires consultation'
+                            : 'Multiple stones pictured · 3D represents material, not one guaranteed stone'}
                 </p>
               </div>
             </div>

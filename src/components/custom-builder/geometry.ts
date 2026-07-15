@@ -5,7 +5,10 @@ import {
   type BuilderOpal,
   type RingConfig,
 } from './config'
-import { contourRadiusAt, type BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
+import {
+  normalizedBuilderStoneContourPoint,
+  type BuilderStoneContourV1,
+} from '@/lib/custom-builder/stone-contour'
 
 export type StoneDimensions = readonly [width: number, height: number]
 export type CameraVector = readonly [x: number, y: number, z: number]
@@ -164,50 +167,6 @@ export const cameraUpVectors: Record<'three-quarter' | 'front' | 'profile', Came
   profile: [0, 1, 0],
 }
 
-interface ContourBounds {
-  bottom: number
-  left: number
-  right: number
-  top: number
-}
-
-const contourBoundsCache = new WeakMap<BuilderStoneContourV1, ContourBounds>()
-
-function contourBounds(contour: BuilderStoneContourV1): ContourBounds {
-  const cached = contourBoundsCache.get(contour)
-  if (cached) return cached
-
-  const bounds = contour.radii.reduce<ContourBounds>(
-    (current, radius, index) => {
-      const angle = (index / contour.radii.length) * Math.PI * 2
-      const x = Math.cos(angle) * radius
-      const y = Math.sin(angle) * radius
-      return {
-        bottom: Math.min(current.bottom, y),
-        left: Math.min(current.left, x),
-        right: Math.max(current.right, x),
-        top: Math.max(current.top, y),
-      }
-    },
-    { bottom: Number.POSITIVE_INFINITY, left: Number.POSITIVE_INFINITY, right: 0, top: 0 }
-  )
-  contourBoundsCache.set(contour, bounds)
-  return bounds
-}
-
-function normalizedContourPoint(
-  contour: BuilderStoneContourV1,
-  angle: number
-): readonly [number, number] {
-  const radius = contourRadiusAt(contour, angle)
-  const rawX = Math.cos(angle) * radius
-  const rawY = Math.sin(angle) * radius
-  const bounds = contourBounds(contour)
-  const width = bounds.right - bounds.left || 1
-  const height = bounds.top - bounds.bottom || 1
-  return [((rawX - bounds.left) / width) * 2 - 1, ((rawY - bounds.bottom) / height) * 2 - 1]
-}
-
 export function getPortraitFramingScale(width: number, height: number): number {
   const aspectRatio = width / Math.max(1, height)
   // Portrait canvases still need extra distance for the full shank, but the
@@ -348,7 +307,7 @@ function baseOutlinePoint(
   const sine = Math.sin(angle)
 
   if (contour) {
-    const [x, y] = normalizedContourPoint(contour, angle)
+    const [x, y] = normalizedBuilderStoneContourPoint(contour, angle)
     return [x * width, y * height]
   }
 
