@@ -131,12 +131,13 @@ describe('custom ring geometry contract', () => {
     })
 
     const halfway = getOpalSettleTransform(opalSettleDurationSeconds / 2, startOffset)
-    expect(halfway.offsetZ).toBeCloseTo(startOffset / 2, 12)
+    expect(halfway.offsetZ).toBeCloseTo(startOffset / 32, 12)
 
     const opening = getOpalSettleTransform(opalSettleDurationSeconds * 0.1, startOffset)
     const contact = getOpalSettleTransform(opalSettleDurationSeconds * 0.9, startOffset)
-    expect(opening.offsetZ).toBeGreaterThan(startOffset * 0.99)
-    expect(contact.offsetZ).toBeLessThan(startOffset * 0.01)
+    expect(opening.offsetZ).toBeGreaterThan(startOffset * 0.58)
+    expect(opening.offsetZ).toBeLessThan(startOffset * 0.6)
+    expect(contact.offsetZ).toBeLessThan(startOffset * 0.000_02)
 
     expect(getOpalSettleTransform(opalSettleDurationSeconds, startOffset)).toEqual({
       offsetZ: 0,
@@ -171,7 +172,7 @@ describe('custom ring geometry contract', () => {
       }
 
       const travel = samples.slice(1).map((sample, index) => samples[index]! - sample)
-      expect(travel[1]!).toBeGreaterThan(travel[0]!)
+      expect(travel[1]!).toBeLessThan(travel[0]!)
       expect(travel.at(-1)!).toBeLessThan(travel.at(-2)!)
       expect(samples.at(-1)).toBe(0)
     }
@@ -390,7 +391,7 @@ describe('custom ring geometry contract', () => {
   )
 
   test.each(ringStyles.map(({ id }) => id))(
-    'buries the full %s shoulder end beneath the setting base',
+    'joins the %s shoulder into the setting base without exposing its end cap',
     (style) => {
       const config = applyRingStyle(defaultRingConfig, style)
       const reference = getRingStyleReferenceOpal(style)
@@ -411,10 +412,12 @@ describe('custom ring geometry contract', () => {
         shoulderUnderlap: profile.shoulderUnderlap,
       })
 
-      expect(landmarks.joinLeft[1] + profile.shoulderDepth).toBeLessThan(
+      expect(landmarks.joinLeft[1]).toBeLessThan(placement.measurements.outerRadius)
+      expect(landmarks.joinRight[1]).toBeLessThan(placement.measurements.outerRadius)
+      expect(landmarks.joinLeft[1] + profile.shoulderDepth).toBeGreaterThan(
         placement.measurements.outerRadius
       )
-      expect(landmarks.joinRight[1] + profile.shoulderDepth).toBeLessThan(
+      expect(landmarks.joinRight[1] + profile.shoulderDepth).toBeGreaterThan(
         placement.measurements.outerRadius
       )
     }
@@ -727,8 +730,10 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
       expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
       expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.19)
-      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.06)
-      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.08)
+      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.035)
+      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.05)
+      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.008)
+      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.012)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)

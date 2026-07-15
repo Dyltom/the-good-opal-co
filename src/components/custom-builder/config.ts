@@ -293,9 +293,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.145,
     visibleSeatCap: 0.036,
     shoulderUnderlap: 0.18,
-    // Bury the full shoulder section beneath the cup. The old 0.22 mm drop
-    // left the capped shank ends visible beside the bezel in face-on views.
-    shoulderJoinDrop: 0.072,
+    // Keep the cap centre beneath the cup while overlapping the shoulder face
+    // by 0.10 mm. A fully recessed shoulder left a visible air line in profile.
+    shoulderJoinDrop: 0.047,
     shoulderTransition: 0.04,
     shoulderBlendLengthMm: 1.4,
     shoulderLandingLengthMm: 1.2,
@@ -350,7 +350,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.11,
     visibleSeatCap: 0.06,
     shoulderUnderlap: 0.17,
-    shoulderJoinDrop: 0.065,
+    shoulderJoinDrop: 0.039,
     shoulderTransition: 0.038,
     shoulderBlendLengthMm: 1.3,
     shoulderLandingLengthMm: 1.1,
@@ -406,7 +406,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.135,
     visibleSeatCap: 0.044,
     shoulderUnderlap: 0.18,
-    shoulderJoinDrop: 0.069,
+    shoulderJoinDrop: 0.042,
     shoulderTransition: 0.042,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
@@ -461,7 +461,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.12,
     visibleSeatCap: 0.028,
     shoulderUnderlap: 0.19,
-    shoulderJoinDrop: 0.071,
+    shoulderJoinDrop: 0.044,
     shoulderTransition: 0.045,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,

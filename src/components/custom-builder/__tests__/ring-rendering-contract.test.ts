@@ -25,6 +25,13 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).not.toContain('<tubeGeometry args={[curve, 96, radius, 14, true]} />')
   })
 
+  test('keeps the structural bezel wall bright and confines patina to recessed details', () => {
+    expect(sceneSource).toContain('<BezelWall\n        config={config}')
+    expect(sceneSource).toContain('finish="patina"')
+    expect(sceneSource).not.toContain("? 'oxidized'\n            : 'metal'")
+    expect(sceneSource).not.toContain("finish?: 'metal' | 'oxidized' | 'patina'")
+  })
+
   test('drives each forged shank and shoulder join from its sold-style profile', () => {
     expect(sceneSource).toContain('getSettingShoulderHalfWidth(')
     expect(sceneSource).toContain('shoulderAnchorHalfWidth')
@@ -67,6 +74,8 @@ describe('photoreal ring rendering contract', () => {
 
   test('settles opals without remounting or pulling their contour away from the bezel', () => {
     expect(sceneSource).toContain('transitionKey={opalTransitionKey}')
+    expect(sceneSource).toContain('JSON.stringify([renderedOpal.id, renderedOpal.imageUrl])')
+    expect(sceneSource).not.toContain('renderedOpal.visual.contour?.radii')
     expect(sceneSource).not.toContain('key={renderedOpal.id}')
     expect(sceneSource).not.toContain('group.current.scale.set(')
     expect(sceneSource).not.toContain('group.current.rotation')

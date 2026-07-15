@@ -20,11 +20,10 @@ export interface CabochonDepthProfile {
 // without making the bezel appear to cut materially into the opal.
 export const bezelLipCompression = 0.002
 
-export const opalSettleDurationSeconds = 0.58
-// One scene unit is 10 mm. The selected stone starts no more than 0.8 mm above
-// its final seat: enough to read as deliberate placement without turning the
-// preview into an exploded technical diagram.
-export const opalSettleApproachLift = 0.08
+export const opalSettleDurationSeconds = 0.24
+// One scene unit is 10 mm. Keep the motion within a jeweller's fine seating
+// adjustment so the stone never appears to pass through an already-formed lip.
+export const opalSettleApproachLift = 0.014
 
 export interface OpalSettleTransform {
   offsetZ: number
@@ -44,13 +43,11 @@ export function getOpalSettleTransform(
   if (reduceMotion) return { offsetZ: 0, settled: true }
 
   const progress = Math.min(1, Math.max(0, elapsedSeconds / opalSettleDurationSeconds))
-  // Smootherstep preserves the physical read of a stone being guided into its
-  // seat. The previous ease-out completed 87.5% of the travel by halfway, which
-  // looked like a snap followed by a nearly static tail.
-  const eased = progress ** 3 * (progress * (progress * 6 - 15) + 10)
   if (progress >= 1) return { offsetZ: 0, settled: true }
 
-  const remaining = 1 - eased
+  // A short ease-out reads as a final setting adjustment, not an opal hanging
+  // above the ring before plunging through its closed bezel.
+  const remaining = (1 - progress) ** 5
   return {
     offsetZ: Math.max(0, startOffset) * remaining,
     settled: progress >= 1,

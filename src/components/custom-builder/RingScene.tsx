@@ -1129,7 +1129,7 @@ function BezelWall({
   config: RingConfig
   dimensions: StoneDimensions
   bottomZ: number
-  finish?: 'metal' | 'oxidized' | 'patina'
+  finish?: 'metal' | 'patina'
   offset: number
   thickness: number
   topZ: number
@@ -1170,13 +1170,6 @@ function BezelWall({
     <mesh castShadow geometry={geometry} receiveShadow>
       {finish === 'patina' ? (
         <PatinaMaterial metal={config.metal} />
-      ) : finish === 'oxidized' ? (
-        <meshStandardMaterial
-          color="#555752"
-          envMapIntensity={0.72}
-          metalness={0.8}
-          roughness={0.64}
-        />
       ) : (
         <MetalMaterial metal={config.metal} roughness={0.3} />
       )}
@@ -1466,12 +1459,6 @@ function Setting({
         config={config}
         dimensions={dimensions}
         bottomZ={bezelBottom}
-        finish={
-          config.metal === 'sterling-silver' &&
-          (config.style === 'gemini' || config.style === 'coral')
-            ? 'oxidized'
-            : 'metal'
-        }
         offset={profile.bezelWallOffset}
         thickness={profile.bezelWallThickness}
         topZ={bezelTop}
@@ -1827,15 +1814,8 @@ export function RingScene({
     [config, renderedOpal, view]
   )
   const opalTransitionKey = useMemo(
-    () =>
-      JSON.stringify([
-        renderedOpal.id,
-        config.style,
-        config.shape,
-        renderedOpal.visual.contour?.version,
-        renderedOpal.visual.contour?.radii,
-      ]),
-    [config.shape, config.style, renderedOpal]
+    () => JSON.stringify([renderedOpal.id, renderedOpal.imageUrl]),
+    [renderedOpal.id, renderedOpal.imageUrl]
   )
 
   return (
