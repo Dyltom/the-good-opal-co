@@ -25,8 +25,14 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).not.toContain('<tubeGeometry args={[curve, 96, radius, 14, true]} />')
   })
 
-  test('keeps the structural bezel wall bright and confines patina to recessed details', () => {
+  test('splits clean bezels into an oxidized seat and a hairline bright outer rail', () => {
     expect(sceneSource).toContain('<BezelWall\n        config={config}')
+    expect(sceneSource).toContain('const usesOxidizedSeat =')
+    expect(sceneSource).toContain('const outerRailThickness =')
+    expect(sceneSource).toContain('offset={oxidizedSeatOffset}')
+    expect(sceneSource).toContain('thickness={oxidizedSeatThickness}')
+    expect(sceneSource).toContain('offset={brightOuterRailOffset}')
+    expect(sceneSource).toContain('thickness={outerRailThickness}')
     expect(sceneSource).toContain('finish="patina"')
     expect(sceneSource).not.toContain("? 'oxidized'\n            : 'metal'")
     expect(sceneSource).not.toContain("finish?: 'metal' | 'oxidized' | 'patina'")
@@ -116,14 +122,12 @@ describe('photoreal ring rendering contract', () => {
     )
     expect(sceneSource).toContain('faceted={false}')
     expect(sceneSource).not.toContain('lobeOffset')
-    expect(sceneSource).toContain(
-      'usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined'
-    )
+    expect(sceneSource).toContain('usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined')
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.05 : organic \? 0\.62 : 0\.72\}/
+      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.55 : organic \? 1\.25 : 1\.4\}/
     )
-    expect(sceneSource).toContain('faceted ? 1.05 : organic ? 0.62 : 0.72')
+    expect(sceneSource).toContain('faceted ? 1.55 : organic ? 1.25 : 1.4')
     expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')

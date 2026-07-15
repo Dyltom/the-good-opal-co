@@ -64,17 +64,17 @@ describe('sold ring style geometry', () => {
     const coral = ringStyleGeometryProfiles.coral
 
     expect(coral).toMatchObject({
-      bezelWallOffset: 0.0395,
-      bezelWallThickness: 0.077,
+      bezelWallOffset: 0.028,
+      bezelWallThickness: 0.054,
       bezelLipOffset: 0.002,
       innerSeamRadius: 0.024,
       shankRadius: 0.082,
       shoulderRadius: 0.06,
-      crossSectionPower: 0.92,
+      crossSectionPower: 0.78,
     })
     const outerHalfWidth = 0.5 + coral.bezelWallOffset + coral.bezelWallThickness / 2
-    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.155)
-    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.16)
+    expect((outerHalfWidth * 2) / 1).toBeGreaterThanOrEqual(1.1)
+    expect((outerHalfWidth * 2) / 1).toBeLessThanOrEqual(1.12)
   })
 
   test('tapers every sold shank into the setting instead of flaring at the join', () => {
@@ -439,14 +439,14 @@ describe('sold ring style geometry', () => {
 
     // Measure only the moat outside the stone edge. Counting the lip's hidden
     // underlap produced a false positive while the production moat looked lost.
-    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.71)
-    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.72)
-    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.06)
-    expect(brightRailWidthMm).toBeLessThanOrEqual(0.07)
+    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.49)
+    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.51)
+    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.04)
+    expect(brightRailWidthMm).toBeLessThanOrEqual(0.06)
   })
 
   test.each([
-    ['gemini', 0.055],
+    ['gemini', 0.038],
     ['sun-moon', 0.008],
     ['aurora', 0.01],
   ] as const)('gives %s its photographed visible oxidized stone seat', (style, expectedReveal) => {
@@ -471,7 +471,7 @@ describe('sold ring style geometry', () => {
     expect(patina.at(-1)?.stoneReveal).toBe(expectedReveal)
     expect(visibleSeatReveal).toBeCloseTo(expectedReveal, 12)
     expect(visibleSeatReveal * 10).toBeGreaterThanOrEqual(0.08)
-    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.551 : 0.1)
+    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.381 : 0.1)
     expect(knots.at(-1)?.radialProgress).toBe(1)
 
     for (let index = 0; index < 72; index += 1) {

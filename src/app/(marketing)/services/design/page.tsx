@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
 import { RingConfigurator, ringConfigFromRecord } from '@/components/custom-builder'
-import { proceduralRingModelVersions, type BuilderOpal } from '@/components/custom-builder/config'
+import type { BuilderOpal } from '@/components/custom-builder/config'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -15,7 +15,6 @@ import {
   reviewedOpalImageUrl,
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
-import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/ring-design-manifest'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
 import {
@@ -230,24 +229,13 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
 }
 
 export default async function DesignPage({ searchParams }: DesignPageProps) {
-  const [query, opals, ringDesignManifests] = await Promise.all([
+  const [query, opals] = await Promise.all([
     searchParams,
     getBuilderOpals().catch((error: unknown) => {
       console.error('Ring builder catalogue unavailable; rendering design-only fallback', error)
       return []
     }),
-    loadPublishedRingDesignRenderManifests().catch((error: unknown) => {
-      console.error('Ring design approvals unavailable; retaining concept labels', error)
-      return []
-    }),
   ])
-  const approvedProceduralStyles = ringDesignManifests.flatMap((manifest) =>
-    manifest.model.source === 'procedural' &&
-    !manifest.model.assetUrl &&
-    manifest.model.version === proceduralRingModelVersions[manifest.style]
-      ? [manifest.style]
-      : []
-  )
   const initialConfig = ringConfigFromRecord(
     Object.fromEntries(Object.entries(query).map(([key, value]) => [key, first(value)]))
   )
@@ -283,7 +271,6 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
       </header>
 
       <RingConfigurator
-        approvedProceduralStyles={approvedProceduralStyles}
         initialConfig={hydratedConfig}
         opals={opals}
         unavailableOpalRequested={unavailableOpalRequested}

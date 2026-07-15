@@ -226,7 +226,7 @@ function SolderGrainMaterial({
   tone: number
 }) {
   const solderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#868681',
+    'sterling-silver': '#bfc0bb',
     '14k-gold': '#b99342',
     '18k-gold': '#c49a3d',
     'white-gold': '#c7c4bb',
@@ -234,7 +234,7 @@ function SolderGrainMaterial({
     platinum: '#cbc9c3',
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#797a75',
+    'sterling-silver': '#b5b6b1',
     '14k-gold': '#ad873c',
     '18k-gold': '#b78d38',
     'white-gold': '#bdbbb5',
@@ -242,7 +242,7 @@ function SolderGrainMaterial({
     platinum: '#c0bfbb',
   }
   const facetedSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#969690',
+    'sterling-silver': '#c8c8c3',
     '14k-gold': '#967634',
     '18k-gold': '#a17d31',
     'white-gold': '#aaa9a4',
@@ -257,17 +257,17 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
-      metalness={faceted ? 0.74 : organic ? 0.88 : 0.91}
+      metalness={faceted ? 0.91 : organic ? 0.93 : 0.94}
       roughness={
         faceted
-          ? Math.max(0.5, roughness * 0.85)
+          ? Math.min(0.38, roughness * 0.68)
           : organic
-            ? roughness
-            : Math.max(0.44, roughness * 0.82)
+            ? Math.min(0.44, roughness * 0.7)
+            : Math.min(0.4, roughness * 0.68)
       }
-      clearcoat={0.01}
-      clearcoatRoughness={0.68}
-      envMapIntensity={faceted ? 1.05 : organic ? 0.62 : 0.72}
+      clearcoat={0.025}
+      clearcoatRoughness={0.46}
+      envMapIntensity={faceted ? 1.55 : organic ? 1.25 : 1.4}
     />
   )
 }
@@ -1197,8 +1197,7 @@ function ProfiledBezelLip({
   const [width, height] = dimensions
   const profile = ringStyleGeometryProfiles[config.style]
   const usesOxidizedSilverRail =
-    config.metal === 'sterling-silver' &&
-    (config.style === 'gemini' || config.style === 'coral')
+    config.metal === 'sterling-silver' && (config.style === 'gemini' || config.style === 'coral')
   const geometry = useMemo(
     () =>
       createProfiledBezelLipGeometry(
@@ -1368,6 +1367,14 @@ function Setting({
   const bezelBottom = depthProfile.baseZ - 0.012
   const bezelTop = depthProfile.girdleZ + 0.025
   const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
+  const usesOxidizedSeat =
+    config.metal === 'sterling-silver' && (config.style === 'gemini' || config.style === 'coral')
+  const outerRailThickness = config.style === 'coral' ? 0.01 : 0.008
+  const bezelInnerOffset = profile.bezelWallOffset - profile.bezelWallThickness / 2
+  const oxidizedSeatOuterOffset = outerBezelOffset - outerRailThickness
+  const oxidizedSeatThickness = oxidizedSeatOuterOffset - bezelInnerOffset
+  const oxidizedSeatOffset = bezelInnerOffset + oxidizedSeatThickness / 2
+  const brightOuterRailOffset = outerBezelOffset - outerRailThickness / 2
   const bezelCapInnerOffset = profile.bezelLipOffset - profile.bezelLipRadius
   const patinaGroove = getPatinaGrooveProfile(depthProfile.girdleZ, profile.innerSeamRadius)
   const beadCount =
@@ -1455,15 +1462,39 @@ function Setting({
         topZ={depthProfile.baseZ + 0.003}
         contour={contour}
       />
-      <BezelWall
-        config={config}
-        dimensions={dimensions}
-        bottomZ={bezelBottom}
-        offset={profile.bezelWallOffset}
-        thickness={profile.bezelWallThickness}
-        topZ={bezelTop}
-        contour={contour}
-      />
+      {usesOxidizedSeat ? (
+        <>
+          <BezelWall
+            config={config}
+            dimensions={dimensions}
+            bottomZ={bezelBottom}
+            finish="patina"
+            offset={oxidizedSeatOffset}
+            thickness={oxidizedSeatThickness}
+            topZ={bezelTop}
+            contour={contour}
+          />
+          <BezelWall
+            config={config}
+            dimensions={dimensions}
+            bottomZ={bezelBottom}
+            offset={brightOuterRailOffset}
+            thickness={outerRailThickness}
+            topZ={bezelTop}
+            contour={contour}
+          />
+        </>
+      ) : (
+        <BezelWall
+          config={config}
+          dimensions={dimensions}
+          bottomZ={bezelBottom}
+          offset={profile.bezelWallOffset}
+          thickness={profile.bezelWallThickness}
+          topZ={bezelTop}
+          contour={contour}
+        />
+      )}
       <ProfiledBezelLip
         config={config}
         contour={contour}
@@ -1519,9 +1550,7 @@ function Setting({
                   <mesh
                     castShadow
                     receiveShadow
-                    rotation={
-                      usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined
-                    }
+                    rotation={usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined}
                   >
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <RoundedSolderGeometry radius={profile.beadRadius} seed={key} />

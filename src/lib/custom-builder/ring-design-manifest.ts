@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { getPayload } from '@/lib/payload'
 import {
+  ringDesignAssetContractSchema,
   ringDesignMeasurementsSchema,
   ringDesignModelDefinitionSchema,
   ringDesignSourceReferenceSchema,
@@ -8,21 +9,7 @@ import {
   validateRingDesignReference,
 } from './ring-design-reference'
 
-const ringDesignRuntimeModelSchema = ringDesignModelDefinitionSchema
-  .pick({
-    assetUrl: true,
-    source: true,
-    version: true,
-  })
-  .superRefine((model, context) => {
-    if (model.source !== 'procedural' && !model.assetUrl) {
-      context.addIssue({
-        code: 'custom',
-        message: `${model.source} models require an asset URL`,
-        path: ['assetUrl'],
-      })
-    }
-  })
+const ringDesignRuntimeModelSchema = ringDesignAssetContractSchema
 
 const ringDesignApprovalSchema = z.object({
   approvedAt: z.string().datetime({ offset: true }),
@@ -71,11 +58,7 @@ export function parseRingDesignRenderManifest(value: unknown): RingDesignRenderM
     name,
     slug,
     style,
-    model: {
-      assetUrl: modelDefinition.assetUrl,
-      source: modelDefinition.source,
-      version: modelDefinition.version,
-    },
+    model: modelDefinition,
     approval: {
       approvedAt,
       notes: approvalNotes,

@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import type { RingDesign } from '@/types/payload-types'
-
 const { findMock } = vi.hoisted(() => ({
   findMock: vi.fn(),
 }))
@@ -15,7 +13,49 @@ import {
   ringDesignRenderManifestSchema,
 } from '../ring-design-manifest'
 
-function approvedRecord(overrides: Partial<RingDesign> = {}): RingDesign {
+const approvedDigest = '9f7b33f54ecf0d93a349fc22965d0f62cdcd6f1d7633e62533e493ccb31a0a0d'
+const referenceContour = { version: 1 as const, radii: Array.from({ length: 96 }, () => 1) }
+const approvedAssetVariant = {
+  approvedMetals: ['sterling-silver'],
+  assembly: 'complete-ring',
+  asset: {
+    byteLength: 124_000,
+    sha256: approvedDigest,
+    url: `https://assets.goodopalco.com/rings/${approvedDigest}.glb`,
+  },
+  basis: 'good-opal-world-v1',
+  id: 'gemini-size-7-oval',
+  materialSlots: {
+    metal: ['STERLING_SILVER'],
+    patina: ['OXIDIZED_RECESS'],
+    preserve: ['MAKER_MARK'],
+  },
+  nodes: {
+    referenceStone: 'REFERENCE_STONE',
+    root: 'RING_ROOT',
+    stoneAnchor: 'STONE_ANCHOR',
+  },
+  ringFit: {
+    mode: 'fixed',
+    sizeUs: 7,
+  },
+  runtimeScale: 0.1,
+  stoneFit: {
+    reference: { contour: referenceContour, depthMm: 3, lengthMm: 10, widthMm: 8 },
+    shape: 'oval',
+    toleranceMm: { contour: 0.25, depth: 0.5, length: 0.2, width: 0.2 },
+  },
+  unit: 'millimeter',
+} as const
+
+const approvedAssetModel = {
+  contractVersion: 'ring-asset-v1',
+  source: 'artist-authored',
+  variants: [approvedAssetVariant],
+  version: 'gemini-v2',
+} as const
+
+function approvedRecord(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: 7,
     name: 'Gemini',
@@ -36,11 +76,7 @@ function approvedRecord(overrides: Partial<RingDesign> = {}): RingDesign {
       stoneLengthMm: 10,
       stoneWidthMm: 8,
     },
-    modelDefinition: {
-      assetUrl: 'https://assets.goodopalco.com/rings/gemini-v2.glb',
-      source: 'artist-authored',
-      version: 'gemini-v2',
-    },
+    modelDefinition: approvedAssetModel,
     makerApproved: true,
     approvedAt: '2026-07-15T01:30:00.000Z',
     approvalNotes: 'Approved against the physical Gemini master.',
@@ -62,9 +98,7 @@ describe('ring design render manifest boundary', () => {
       slug: 'gemini',
       style: 'gemini',
       model: {
-        assetUrl: 'https://assets.goodopalco.com/rings/gemini-v2.glb',
-        source: 'artist-authored',
-        version: 'gemini-v2',
+        ...approvedAssetModel,
       },
       approval: {
         approvedAt: '2026-07-15T01:30:00.000Z',
@@ -73,18 +107,194 @@ describe('ring design render manifest boundary', () => {
     })
   })
 
-  test('keeps asset URLs optional for an approved procedural model', () => {
+  test('rejects an approved procedural record at the render boundary', () => {
     const manifest = parseRingDesignRenderManifest(
       approvedRecord({
         modelDefinition: { source: 'procedural', version: 'gemini-procedural-v2' },
       })
     )
 
-    expect(manifest?.model).toEqual({
-      assetUrl: undefined,
-      source: 'procedural',
-      version: 'gemini-procedural-v2',
-    })
+    expect(manifest).toBeNull()
+  })
+
+  test.each([
+    [
+      'mutable asset URL',
+      {
+        ...approvedAssetVariant,
+        asset: {
+          ...approvedAssetVariant.asset,
+          url: 'https://assets.goodopalco.com/rings/gemini-v2.glb',
+        },
+      },
+    ],
+    [
+      'one complete-ring asset claiming multiple sizes',
+      {
+        ...approvedAssetVariant,
+        ringFit: { mode: 'fixed', sizeUs: 7, sizes: [6, 7, 8] },
+      },
+    ],
+    ['missing approved metal', { ...approvedAssetVariant, approvedMetals: [] }],
+    [
+      'overlapping material assignments',
+      {
+        ...approvedAssetVariant,
+        materialSlots: {
+          ...approvedAssetVariant.materialSlots,
+          patina: ['STERLING_SILVER'],
+        },
+      },
+    ],
+    ['unknown contract field', { ...approvedAssetVariant, stretchesToFit: true }],
+    [
+      'authored head without shank join anchors',
+      {
+        ...approvedAssetVariant,
+        assembly: 'authored-head-procedural-shank',
+        ringFit: { mode: 'procedural-shank', shankVersion: 'procedural-v3', sizesUs: [7] },
+      },
+    ],
+  ] as const)('rejects %s', (_, variant) => {
+    expect(
+      parseRingDesignRenderManifest(
+        approvedRecord({ modelDefinition: { ...approvedAssetModel, variants: [variant] } })
+      )
+    ).toBeNull()
+  })
+
+  test.each([
+    ['contract version', { ...approvedAssetModel, contractVersion: undefined }],
+    [
+      'asset URL',
+      {
+        ...approvedAssetModel,
+        variants: [
+          { ...approvedAssetVariant, asset: { ...approvedAssetVariant.asset, url: undefined } },
+        ],
+      },
+    ],
+    [
+      'SHA-256 digest',
+      {
+        ...approvedAssetModel,
+        variants: [
+          { ...approvedAssetVariant, asset: { ...approvedAssetVariant.asset, sha256: 'bad' } },
+        ],
+      },
+    ],
+    [
+      'millimeter units',
+      { ...approvedAssetModel, variants: [{ ...approvedAssetVariant, unit: 'meter' }] },
+    ],
+    [
+      'world basis',
+      { ...approvedAssetModel, variants: [{ ...approvedAssetVariant, basis: 'y-up' }] },
+    ],
+    [
+      'runtime scale',
+      { ...approvedAssetModel, variants: [{ ...approvedAssetVariant, runtimeScale: 1 }] },
+    ],
+    [
+      'assembly mode',
+      { ...approvedAssetModel, variants: [{ ...approvedAssetVariant, assembly: 'unknown' }] },
+    ],
+    [
+      'root node',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            nodes: { referenceStone: 'REFERENCE_STONE', stoneAnchor: 'STONE_ANCHOR' },
+          },
+        ],
+      },
+    ],
+    [
+      'stone anchor',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            nodes: { referenceStone: 'REFERENCE_STONE', root: 'RING_ROOT' },
+          },
+        ],
+      },
+    ],
+    [
+      'metal material slot',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            materialSlots: { ...approvedAssetVariant.materialSlots, metal: [] },
+          },
+        ],
+      },
+    ],
+    [
+      'patina material slot',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            materialSlots: { ...approvedAssetVariant.materialSlots, patina: [] },
+          },
+        ],
+      },
+    ],
+    [
+      'supported stone shapes',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            stoneFit: { ...approvedAssetVariant.stoneFit, shape: 'triangle' },
+          },
+        ],
+      },
+    ],
+    [
+      'stone width bounds',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            stoneFit: {
+              ...approvedAssetVariant.stoneFit,
+              toleranceMm: { ...approvedAssetVariant.stoneFit.toleranceMm, width: 0.3 },
+            },
+          },
+        ],
+      },
+    ],
+    [
+      'stone length bounds',
+      {
+        ...approvedAssetModel,
+        variants: [
+          {
+            ...approvedAssetVariant,
+            stoneFit: {
+              ...approvedAssetVariant.stoneFit,
+              reference: { ...approvedAssetVariant.stoneFit.reference, lengthMm: undefined },
+            },
+          },
+        ],
+      },
+    ],
+    [
+      'ring fit',
+      { ...approvedAssetModel, variants: [{ ...approvedAssetVariant, ringFit: undefined }] },
+    ],
+  ] as const)('rejects a nonprocedural model missing a valid %s contract', (_, modelDefinition) => {
+    expect(parseRingDesignRenderManifest(approvedRecord({ modelDefinition }))).toBeNull()
   })
 
   test.each([

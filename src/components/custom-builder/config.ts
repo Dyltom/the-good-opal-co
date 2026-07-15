@@ -224,17 +224,17 @@ const geminiBezelSeat = {
   bezelLipRadius: 0.012,
   // The sold ring has a broad oxidized seat ending in a thin handmade outer
   // rail. Overall head width comes from that dark seat, not a swollen bright lip.
-  bezelWallOffset: 0.0305,
-  bezelWallThickness: 0.059,
-  patinaSeatReveal: 0.055,
+  bezelWallOffset: 0.022,
+  bezelWallThickness: 0.042,
+  patinaSeatReveal: 0.038,
 } satisfies BezelSeatGeometry
 
 const coralBezelSeat = {
   bezelLipOffset: 0.002,
   bezelLipRadius: 0.012,
-  bezelWallOffset: 0.0395,
-  bezelWallThickness: 0.077,
-  patinaSeatReveal: 0.0715,
+  bezelWallOffset: 0.028,
+  bezelWallThickness: 0.054,
+  patinaSeatReveal: 0.05,
 } satisfies BezelSeatGeometry
 
 const sunMoonBezelSeat = {
@@ -299,8 +299,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderTransition: 0.04,
     shoulderBlendLengthMm: 1.4,
     shoulderLandingLengthMm: 1.2,
-    crossSectionPower: 0.86,
-    shankInnerFacePower: 0.46,
+    crossSectionPower: 0.76,
+    shankInnerFacePower: 0.4,
     metalRoughness: 0.31,
     shankRadius: 0.088,
     shankDepth: 0.055,
@@ -354,8 +354,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderTransition: 0.038,
     shoulderBlendLengthMm: 1.3,
     shoulderLandingLengthMm: 1.1,
-    crossSectionPower: 0.92,
-    shankInnerFacePower: 0.5,
+    crossSectionPower: 0.78,
+    shankInnerFacePower: 0.42,
     metalRoughness: 0.31,
     shankRadius: 0.082,
     shankDepth: 0.047,
@@ -410,8 +410,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderTransition: 0.042,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
-    crossSectionPower: 0.85,
-    shankInnerFacePower: 0.44,
+    crossSectionPower: 0.74,
+    shankInnerFacePower: 0.38,
     metalRoughness: 0.25,
     shankRadius: 0.086,
     shankDepth: 0.05,
@@ -465,8 +465,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     shoulderTransition: 0.045,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
-    crossSectionPower: 0.84,
-    shankInnerFacePower: 0.42,
+    crossSectionPower: 0.72,
+    shankInnerFacePower: 0.36,
     metalRoughness: 0.25,
     shankRadius: 0.089,
     shankDepth: 0.052,

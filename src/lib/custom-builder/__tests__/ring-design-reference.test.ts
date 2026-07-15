@@ -18,6 +18,47 @@ const completeMeasurements = {
   stoneWidthMm: 8,
 }
 
+const completeModelDefinition = {
+  contractVersion: 'ring-asset-v1',
+  source: 'hybrid',
+  variants: [
+    {
+      approvedMetals: ['sterling-silver'],
+      assembly: 'complete-ring',
+      asset: {
+        byteLength: 124_000,
+        sha256: '9f7b33f54ecf0d93a349fc22965d0f62cdcd6f1d7633e62533e493ccb31a0a0d',
+        url: 'https://assets.goodopalco.com/rings/9f7b33f54ecf0d93a349fc22965d0f62cdcd6f1d7633e62533e493ccb31a0a0d.glb',
+      },
+      basis: 'good-opal-world-v1',
+      id: 'gemini-size-7-oval',
+      materialSlots: {
+        metal: ['STERLING_SILVER'],
+        patina: ['OXIDIZED_RECESS'],
+        preserve: ['MAKER_MARK'],
+      },
+      nodes: {
+        root: 'RING_ROOT',
+        stoneAnchor: 'STONE_ANCHOR',
+      },
+      ringFit: { mode: 'fixed', sizeUs: 7 },
+      runtimeScale: 0.1,
+      stoneFit: {
+        reference: {
+          contour: { version: 1, radii: Array.from({ length: 96 }, () => 1) },
+          depthMm: 3,
+          lengthMm: 10,
+          widthMm: 8,
+        },
+        shape: 'oval',
+        toleranceMm: { contour: 0.25, depth: 0.5, length: 0.2, width: 0.2 },
+      },
+      unit: 'millimeter',
+    },
+  ],
+  version: 'gemini-v2',
+} as const
+
 describe('ring design reference governance', () => {
   test('allows incomplete evidence to remain a draft', () => {
     expect(
@@ -52,7 +93,7 @@ describe('ring design reference governance', () => {
         approvedAt: '2026-07-14T00:00:00.000Z',
         makerApproved: true,
         measurements: completeMeasurements,
-        modelDefinition: { source: 'hybrid', version: 'gemini-v2' },
+        modelDefinition: completeModelDefinition,
         sourceReferences: completeReferences.map((reference, index) =>
           index === 0 ? { ...reference, sourceType: 'product-gallery' } : reference
         ),
@@ -68,7 +109,7 @@ describe('ring design reference governance', () => {
         approvedAt: '2026-07-14T00:00:00.000Z',
         makerApproved: true,
         measurements: completeMeasurements,
-        modelDefinition: { source: 'hybrid', version: 'gemini-v2' },
+        modelDefinition: completeModelDefinition,
         sourceReferences: [
           ...completeReferences,
           {
@@ -95,7 +136,7 @@ describe('ring design reference governance', () => {
         approvedAt: '2026-07-14T00:00:00.000Z',
         makerApproved: true,
         measurements: completeMeasurements,
-        modelDefinition: { source: 'hybrid', version: 'gemini-v2' },
+        modelDefinition: completeModelDefinition,
         sourceReferences: completeReferences,
         status: 'published',
       })
