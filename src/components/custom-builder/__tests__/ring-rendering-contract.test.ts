@@ -120,7 +120,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain(
       '<OrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
-    expect(sceneSource).toContain('faceted={false}')
+    expect(sceneSource).toContain("faceted={config.style === 'aurora'}")
     expect(sceneSource).not.toContain('lobeOffset')
     expect(sceneSource).toContain('usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined')
     expect(sceneSource).toContain('<SolderGrainMaterial')

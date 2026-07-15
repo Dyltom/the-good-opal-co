@@ -1559,7 +1559,7 @@ function Setting({
                       <OrganicSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
                     <SolderGrainMaterial
-                      faceted={false}
+                      faceted={config.style === 'aurora'}
                       organic={profile.beadPrimitive === 'organic-granule'}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
