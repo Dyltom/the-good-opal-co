@@ -784,6 +784,118 @@ describe('WordPress product image script', () => {
     )
   })
 
+  it('isolates one broken gallery, preserves its existing product, and continues later products', async () => {
+    const firstSourceUrl =
+      'https://goodopalco.com/wp-content/uploads/2021/09/broken-opal.jpg'
+    const secondSourceUrl =
+      'https://goodopalco.com/wp-content/uploads/2021/09/healthy-opal.jpg'
+    const find = vi.fn(
+      async ({ collection, where }: { collection: string; where?: Record<string, unknown> }) => {
+        if (collection === 'media') return { docs: [] }
+        const wooId = (
+          where as { legacyWooId?: { equals?: number } } | undefined
+        )?.legacyWooId?.equals
+        return {
+          docs:
+            wooId === 4481
+              ? [
+                  {
+                    id: 44,
+                    images: [
+                      {
+                        image: {
+                          id: 210,
+                          legacyWordPressId: 5349,
+                          legacySourceUrl:
+                            'https://goodopalco.com/wp-content/uploads/2021/09/verified-opal.jpg',
+                        },
+                      },
+                    ],
+                    status: 'published',
+                    stock: 1,
+                  },
+                ]
+              : [{ id: 45, images: [], status: 'draft', stock: 0 }],
+        }
+      }
+    )
+    const create = vi.fn().mockResolvedValue({ id: 212 })
+    const update = vi.fn().mockResolvedValue({ id: 45 })
+    const logger = { error: vi.fn(), info: vi.fn() }
+    vi.mocked(getPayload).mockResolvedValue({ create, find, logger, update } as never)
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue([
+      {
+        inStock: true,
+        productId: 4481,
+        productName: 'Broken existing opal',
+        media: [
+          {
+            id: 5350,
+            alt: 'Broken existing opal',
+            mimeType: 'image/jpeg',
+            sourceUrl: firstSourceUrl,
+            title: 'Broken existing opal',
+          },
+        ],
+      },
+      {
+        inStock: true,
+        productId: 4482,
+        productName: 'Healthy new opal',
+        media: [
+          {
+            id: 5351,
+            alt: 'Healthy new opal',
+            mimeType: 'image/jpeg',
+            sourceUrl: secondSourceUrl,
+            title: 'Healthy new opal',
+          },
+        ],
+      },
+    ])
+    vi.mocked(downloadWordPressMedia).mockImplementation(async (media) => {
+      if (media.id === 5350) throw new Error('Source image returned HTTP 404')
+      return {
+        name: 'wp-5351-healthy-opal.jpg',
+        data: Buffer.from([4]),
+        mimetype: 'image/jpeg',
+        size: 1,
+      }
+    })
+
+    await expect(
+      importProductImages(true, {
+        publishWooIds: [4481, 4482],
+        publishStockByWooId: { 4481: 1, 4482: 6 },
+      })
+    ).resolves.toMatchObject({
+      changed: 1,
+      failed: 1,
+      failures: [
+        {
+          message: 'Source image returned HTTP 404',
+          productId: 4481,
+          productName: 'Broken existing opal',
+        },
+      ],
+      published: 1,
+    })
+    expect(update).not.toHaveBeenCalledWith(expect.objectContaining({ id: 44 }))
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'products',
+        data: { images: [{ image: 212 }], status: 'published', stock: 6 },
+        id: 45,
+      })
+    )
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        msg: 'WordPress product gallery reconciliation failed; continuing later products',
+        productId: 4481,
+      })
+    )
+  })
+
   it('refuses an explicit publish without exact authenticated stock', async () => {
     const update = vi.fn()
     vi.mocked(getPayload).mockResolvedValue({

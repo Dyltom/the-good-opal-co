@@ -183,6 +183,17 @@ export interface ImportProductImagesOptions {
   publishStockByWooId?: Readonly<Record<number, number>>
 }
 
+export interface ProductImageImportFailure {
+  message: string
+  productId: number
+  productName: string
+}
+
+function failureMessage(error: unknown): string {
+  if (error instanceof Error && error.message.trim()) return error.message.trim()
+  return 'Unknown gallery reconciliation error'
+}
+
 function sourceIdentity(source: WordPressFeaturedMedia): string {
   return `${source.id}:${source.sourceUrl}`
 }
@@ -229,6 +240,8 @@ export async function importProductImages(
   let published = 0
   let quarantined = 0
   let mappingRequeued = 0
+  let failed = 0
+  const failures: ProductImageImportFailure[] = []
 
   // Quarantine removed galleries before any network download can fail. New
   // products are already staged draft/stock-zero by the catalogue phase.
@@ -289,70 +302,89 @@ export async function importProductImages(
       continue
     }
 
-    const reconciledMedia: MediaReconciliation[] = []
-    for (const media of source.media) reconciledMedia.push(await findOrCreateMedia(media))
-    const mediaIds = reconciledMedia.map(({ id }) => id)
-    const existingMediaIds = (product.images ?? []).flatMap(({ image }) =>
-      typeof image === 'number' ? [image] : image?.id ? [image.id] : []
-    )
-    const galleryCurrent =
-      existingMediaIds.length === mediaIds.length &&
-      existingMediaIds.every((id, index) => id === mediaIds[index])
-    const mediaChanged = reconciledMedia.some(({ changed: didChange }) => didChange)
-    const mappedImageIndex =
-      typeof product.builderMappedImageIndex === 'number' &&
-      Number.isInteger(product.builderMappedImageIndex) &&
-      product.builderMappedImageIndex >= 0
-        ? product.builderMappedImageIndex
-        : 0
-    const mappedSource = reconciledMedia[mappedImageIndex] ?? reconciledMedia[0]
-    const builderMappingSourceChanged =
-      product.category === 'raw-opals' &&
-      typeof product.builderMappingAnalyzedImageHash === 'string' &&
-      Boolean(mappedSource) &&
-      product.builderMappingAnalyzedImageHash !== mappedSource?.contentHash
-    if (!mediaChanged && galleryCurrent && !shouldPublish && !builderMappingSourceChanged) continue
-    changed += 1
-
-    if (!galleryCurrent || shouldPublish || builderMappingSourceChanged) {
-      await retrySerializableTransaction(() =>
-        payload.update({
-          collection: 'products',
-          id: product.id,
-          data: {
-            ...(!galleryCurrent ? { images: mediaIds.map((image) => ({ image })) } : {}),
-            ...(shouldPublish
-              ? { status: 'published' as const, stock: publishStock! }
-              : {}),
-            ...(builderMappingSourceChanged
-              ? {
-                  builderEligible: false,
-                  builderContourCandidate: null,
-                  builderMappingAnalyzedImageHash: null,
-                  builderMappingAnalysisError: null,
-                  builderPhotoAnalysisConfidence: null,
-                  builderPhotoAnalysisVersion: null,
-                  builderPhotoCandidateFocalX: null,
-                  builderPhotoCandidateFocalY: null,
-                  builderPhotoCandidateZoom: null,
-                  builderPhotoCandidateRotation: null,
-                  ...(product.builderMappingStatus === 'reviewed' ||
-                  product.builderMappingStatus === 'manual'
-                    ? { builderMappingStatus: 'stale' as const }
-                    : {}),
-                }
-              : {}),
-          },
-          overrideAccess: true,
-        })
+    try {
+      // Reconcile every source attachment before changing the product gallery.
+      // If one download or upload fails, the existing verified product gallery
+      // remains in place and later products still receive their updates.
+      const reconciledMedia: MediaReconciliation[] = []
+      for (const media of source.media) reconciledMedia.push(await findOrCreateMedia(media))
+      const mediaIds = reconciledMedia.map(({ id }) => id)
+      const existingMediaIds = (product.images ?? []).flatMap(({ image }) =>
+        typeof image === 'number' ? [image] : image?.id ? [image.id] : []
       )
+      const galleryCurrent =
+        existingMediaIds.length === mediaIds.length &&
+        existingMediaIds.every((id, index) => id === mediaIds[index])
+      const mediaChanged = reconciledMedia.some(({ changed: didChange }) => didChange)
+      const mappedImageIndex =
+        typeof product.builderMappedImageIndex === 'number' &&
+        Number.isInteger(product.builderMappedImageIndex) &&
+        product.builderMappedImageIndex >= 0
+          ? product.builderMappedImageIndex
+          : 0
+      const mappedSource = reconciledMedia[mappedImageIndex] ?? reconciledMedia[0]
+      const builderMappingSourceChanged =
+        product.category === 'raw-opals' &&
+        typeof product.builderMappingAnalyzedImageHash === 'string' &&
+        Boolean(mappedSource) &&
+        product.builderMappingAnalyzedImageHash !== mappedSource?.contentHash
+      if (!mediaChanged && galleryCurrent && !shouldPublish && !builderMappingSourceChanged) continue
+
+      if (!galleryCurrent || shouldPublish || builderMappingSourceChanged) {
+        await retrySerializableTransaction(() =>
+          payload.update({
+            collection: 'products',
+            id: product.id,
+            data: {
+              ...(!galleryCurrent ? { images: mediaIds.map((image) => ({ image })) } : {}),
+              ...(shouldPublish
+                ? { status: 'published' as const, stock: publishStock! }
+                : {}),
+              ...(builderMappingSourceChanged
+                ? {
+                    builderEligible: false,
+                    builderContourCandidate: null,
+                    builderMappingAnalyzedImageHash: null,
+                    builderMappingAnalysisError: null,
+                    builderPhotoAnalysisConfidence: null,
+                    builderPhotoAnalysisVersion: null,
+                    builderPhotoCandidateFocalX: null,
+                    builderPhotoCandidateFocalY: null,
+                    builderPhotoCandidateZoom: null,
+                    builderPhotoCandidateRotation: null,
+                    ...(product.builderMappingStatus === 'reviewed' ||
+                    product.builderMappingStatus === 'manual'
+                      ? { builderMappingStatus: 'stale' as const }
+                      : {}),
+                  }
+                : {}),
+            },
+            overrideAccess: true,
+          })
+        )
+      }
+      changed += 1
+      if (builderMappingSourceChanged) mappingRequeued += 1
+      if (shouldPublish) published += 1
+    } catch (error: unknown) {
+      failed += 1
+      const failure = {
+        message: failureMessage(error),
+        productId: source.productId,
+        productName: source.productName,
+      }
+      failures.push(failure)
+      payload.logger.error({
+        err: error,
+        msg: 'WordPress product gallery reconciliation failed; continuing later products',
+        productId: source.productId,
+        productName: source.productName,
+      })
     }
-    if (builderMappingSourceChanged) mappingRequeued += 1
-    if (shouldPublish) published += 1
   }
 
   payload.logger.info(
-    `WordPress product image import ${apply ? 'applied' : 'dry run'}: ${changed} changed, ${published} published, ${quarantined} quarantined, ${mappingRequeued} builder mapping requeued, ${missing} unmatched, ${sourceImages.length} source products.`
+    `WordPress product image import ${apply ? 'applied' : 'dry run'}: ${changed} changed, ${published} published, ${quarantined} quarantined, ${mappingRequeued} builder mapping requeued, ${failed} failed, ${missing} unmatched, ${sourceImages.length} source products.`
   )
   return {
     mode: apply ? 'applied' : 'dry run',
@@ -360,6 +392,8 @@ export async function importProductImages(
     published,
     quarantined,
     mappingRequeued,
+    failed,
+    failures,
     missing,
     sourceProducts: sourceImages.length,
   }

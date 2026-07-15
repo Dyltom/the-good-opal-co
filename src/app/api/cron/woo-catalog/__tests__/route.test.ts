@@ -37,7 +37,7 @@ describe('WooCommerce catalogue cron', () => {
       },
       updated: 2,
     })
-    importProductImages.mockResolvedValue({ changed: 1 })
+    importProductImages.mockResolvedValue({ changed: 1, failed: 0, failures: [] })
     processBuilderMappings.mockResolvedValue({ analyzed: 1, checked: 1 })
   })
 
@@ -96,7 +96,34 @@ describe('WooCommerce catalogue cron', () => {
         },
         updated: 2,
       },
-      images: { changed: 1 },
+      degraded: false,
+      images: { changed: 1, failed: 0, failures: [] },
+    })
+  })
+
+  it('reports a degraded run while still analyzing later successful image mappings', async () => {
+    importProductImages.mockResolvedValue({
+      changed: 1,
+      failed: 1,
+      failures: [
+        {
+          message: 'Source image returned HTTP 404',
+          productId: 5000,
+          productName: 'Broken opal',
+        },
+      ],
+    })
+
+    const response = await GET(request())
+
+    expect(response.status).toBe(207)
+    expect(processBuilderMappings).toHaveBeenCalledWith({ limit: 25 })
+    await expect(response.json()).resolves.toMatchObject({
+      degraded: true,
+      images: {
+        failed: 1,
+        failures: [{ productId: 5000 }],
+      },
     })
   })
 
@@ -122,7 +149,7 @@ describe('WooCommerce catalogue cron', () => {
   it('retries image reconciliation after a Postgres serialization conflict', async () => {
     importProductImages
       .mockRejectedValueOnce({ code: '40001' })
-      .mockResolvedValueOnce({ changed: 1 })
+      .mockResolvedValueOnce({ changed: 1, failed: 0, failures: [] })
 
     const response = await GET(request())
 

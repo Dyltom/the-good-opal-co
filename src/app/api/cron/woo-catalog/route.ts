@@ -41,7 +41,11 @@ export async function GET(request: NextRequest) {
     // mapping stale. Analyze that exact post-import state in the same guarded
     // pipeline so no individual stone reaches the builder before review.
     const builderMappings = await processBuilderMappings({ limit: 25 })
-    return NextResponse.json({ builderMappings, catalog, images })
+    const degraded = images.failed > 0
+    return NextResponse.json(
+      { builderMappings, catalog, degraded, images },
+      { status: degraded ? 207 : 200 }
+    )
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown WooCommerce sync error'
     console.error('WooCommerce recurring catalogue sync failed', error)
