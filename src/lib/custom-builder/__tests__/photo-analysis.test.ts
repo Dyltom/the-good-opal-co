@@ -101,6 +101,7 @@ describe('opal photo crop analysis', () => {
     expect(analysis?.zoom).toBeGreaterThanOrEqual(3.2)
     expect(analysis?.zoom).toBeLessThan(4.1)
     expect(analysis?.rotation).toBeCloseTo(0, 4)
+    expect(analysis?.source).toBe('image')
     expect(analysis?.confidence).toBeGreaterThan(0.75)
   })
 
@@ -288,6 +289,7 @@ describe('opal photo crop analysis', () => {
       focalX: 0.43,
       focalY: 0.57,
       rotation: -8,
+      source: 'canonical-fallback',
       zoom: 5.2,
     })
     expect(parseBuilderStoneContour(analysis?.contour)).toBeDefined()

@@ -7,6 +7,8 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Check, ExternalLink, RotateCcw, Share2 } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
 import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
+import type { RingDesignRenderManifest } from '@/lib/custom-builder/ring-design-manifest'
+import { selectRingRenderModel } from '@/lib/custom-builder/ring-render-model'
 import {
   applyRingStyle,
   defaultOpalPlacement,
@@ -30,9 +32,9 @@ const RingPreview = dynamic(() => import('./RingPreview').then((module) => modul
 })
 
 interface RingConfiguratorProps {
-  approvedProceduralStyles?: readonly RingConfig['style'][]
   initialConfig: RingConfig
   opals: readonly BuilderOpal[]
+  ringDesignManifests?: readonly RingDesignRenderManifest[]
   unavailableOpalRequested?: boolean
 }
 
@@ -416,9 +418,9 @@ function RingStylePicker({
 }
 
 export function RingConfigurator({
-  approvedProceduralStyles = [],
   initialConfig,
   opals,
+  ringDesignManifests = [],
   unavailableOpalRequested = false,
 }: RingConfiguratorProps) {
   const [config, setConfig] = useState(() => {
@@ -467,13 +469,15 @@ export function RingConfigurator({
     () => describeRingConfig(config, selectedOpal?.name),
     [config, selectedOpal?.name]
   )
-  const referenceStyle = ringStyles.find((style) => style.id === config.style)
-  const makerApproved =
-    approvedProceduralStyles.includes(config.style) &&
-    config.shape === referenceStyle?.shape &&
-    config.setting === referenceStyle.setting &&
-    config.band === referenceStyle.band &&
-    (!selectedOpal || getRingStyleFit(config.style, selectedOpal).kind === 'original')
+  const renderModel = useMemo(
+    () =>
+      selectRingRenderModel({
+        config,
+        manifest: ringDesignManifests.find((manifest) => manifest.style === config.style),
+        opal: selectedOpal,
+      }),
+    [config, ringDesignManifests, selectedOpal]
+  )
   const isStartingDesign = useMemo(
     () => JSON.stringify(config) === JSON.stringify(initialConfig),
     [config, initialConfig]
@@ -551,7 +555,7 @@ export function RingConfigurator({
             <RingPreview
               config={config}
               description={description}
-              makerApproved={makerApproved}
+              renderModel={renderModel}
               selectedOpal={selectedOpal}
             />
           </ViewerErrorBoundary>

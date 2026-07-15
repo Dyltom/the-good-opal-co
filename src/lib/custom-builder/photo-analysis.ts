@@ -33,6 +33,7 @@ export interface OpalPhotoAnalysis {
   focalX: number
   focalY: number
   rotation: number
+  source: 'canonical-fallback' | 'image'
   zoom: number
 }
 
@@ -600,6 +601,7 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
     focalY: clamp((component.minimumY + component.maximumY + 1) / 2 / input.height, 0, 1),
     zoom,
     rotation: normalizeFullTurn(rotation + orientedContour.rotationOffset),
+    source: 'image',
     confidence,
   }
 }
@@ -705,6 +707,7 @@ function reviewedCropFallback(input: OpalRasterInput): OpalPhotoAnalysis | undef
     focalX: hint.focalX,
     focalY: hint.focalY,
     rotation: clamp(hint.rotation ?? 0, -90, 90),
+    source: 'canonical-fallback',
     zoom: hint.zoom,
   }
 }

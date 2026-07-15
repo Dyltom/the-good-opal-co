@@ -3,7 +3,7 @@
 /* eslint-disable react/no-unknown-property -- React Three Fiber JSX maps these props to Three.js objects. */
 
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
-import { Environment, Lightformer, OrbitControls, useTexture } from '@react-three/drei'
+import { Environment, Lightformer, OrbitControls, useGLTF, useTexture } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   ACESFilmicToneMapping,
@@ -14,7 +14,12 @@ import {
   Color,
   Float32BufferAttribute,
   LinearFilter,
+  type Material,
+  Mesh,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
   PCFShadowMap,
+  Quaternion,
   RepeatWrapping,
   SRGBColorSpace,
   SphereGeometry,
@@ -27,6 +32,7 @@ import {
   constrainPhotoPlacementRotation,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
+import type { RingRenderModelSelection } from '@/lib/custom-builder/ring-render-model'
 import {
   getRingStyleReferenceOpal,
   ringStyleGeometryProfiles,
@@ -82,6 +88,7 @@ interface RingSceneProps {
   onContextLost: () => void
   onRenderReady?: () => void
   reduceMotion?: boolean
+  renderModel: RingRenderModelSelection
   selectedOpal?: BuilderOpal
   view: RingView
   zoomEnabled?: boolean
@@ -1877,12 +1884,96 @@ function RingModel({
   )
 }
 
+function ApprovedRingModel({
+  config,
+  selectedOpal,
+  selection,
+}: {
+  config: RingConfig
+  selectedOpal: BuilderOpal
+  selection: Extract<RingRenderModelSelection, { kind: 'asset' }>
+}) {
+  const { scene } = useGLTF(selection.variant.asset.url)
+  const prepared = useMemo(() => {
+    const model = scene.clone(true)
+    const metalSlots = new Set(selection.variant.materialSlots.metal)
+    const patinaSlots = new Set(selection.variant.materialSlots.patina)
+    const createdMaterials: Material[] = []
+    const metalMaterial = new MeshPhysicalMaterial({
+      clearcoat: 0.06,
+      clearcoatRoughness: 0.36,
+      color: metalColours[config.metal],
+      envMapIntensity: 1.2,
+      metalness: 0.96,
+      roughness: 0.3,
+    })
+    const patinaMaterial = new MeshStandardMaterial({
+      color: config.metal === 'sterling-silver' ? '#20211d' : '#5e5548',
+      metalness: 0.58,
+      roughness: 0.72,
+    })
+    createdMaterials.push(metalMaterial, patinaMaterial)
+
+    const replaceMaterial = (material: Material): Material => {
+      if (metalSlots.has(material.name)) return metalMaterial
+      if (patinaSlots.has(material.name)) return patinaMaterial
+      return material
+    }
+
+    model.traverse((object) => {
+      if (!(object instanceof Mesh)) return
+      object.castShadow = true
+      object.receiveShadow = true
+      object.material = Array.isArray(object.material)
+        ? object.material.map(replaceMaterial)
+        : replaceMaterial(object.material)
+    })
+
+    const referenceStoneName = selection.variant.nodes.referenceStone
+    if (referenceStoneName) {
+      const referenceStone = model.getObjectByName(referenceStoneName)
+      if (referenceStone) referenceStone.visible = false
+    }
+
+    model.scale.setScalar(selection.variant.runtimeScale)
+    model.updateMatrixWorld(true)
+    const stoneAnchor = model.getObjectByName(selection.variant.nodes.stoneAnchor)
+    if (!stoneAnchor) {
+      createdMaterials.forEach((material) => material.dispose())
+      throw new Error(`Approved ring asset is missing ${selection.variant.nodes.stoneAnchor}`)
+    }
+    const position = stoneAnchor.getWorldPosition(new Vector3())
+    const quaternion = stoneAnchor.getWorldQuaternion(new Quaternion())
+
+    return { createdMaterials, model, position, quaternion }
+  }, [config.metal, scene, selection.variant])
+
+  useEffect(
+    () => () => prepared.createdMaterials.forEach((material) => material.dispose()),
+    [prepared]
+  )
+
+  return (
+    <group>
+      <primitive object={prepared.model} />
+      <group position={prepared.position} quaternion={prepared.quaternion}>
+        <OpalCabochon
+          config={config}
+          dimensions={getStoneDimensions(config, selectedOpal)}
+          selectedOpal={selectedOpal}
+        />
+      </group>
+    </group>
+  )
+}
+
 export function RingScene({
   config,
   allowMotion,
   onContextLost,
   onRenderReady,
   reduceMotion = false,
+  renderModel,
   selectedOpal,
   view,
   zoomEnabled = true,
@@ -1937,12 +2028,16 @@ export function RingScene({
       <CameraPreset target={framingTarget} view={view} />
       {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}
 
-      <RingModel
-        animateOpalPlacement={!reduceMotion}
-        config={config}
-        selectedOpal={renderedOpal}
-        transitionKey={opalTransitionKey}
-      />
+      {renderModel.kind === 'asset' && selectedOpal ? (
+        <ApprovedRingModel config={config} selectedOpal={selectedOpal} selection={renderModel} />
+      ) : (
+        <RingModel
+          animateOpalPlacement={!reduceMotion}
+          config={config}
+          selectedOpal={renderedOpal}
+          transitionKey={opalTransitionKey}
+        />
+      )}
 
       <Environment resolution={256}>
         <Lightformer

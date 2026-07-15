@@ -5,6 +5,7 @@ import {
   parseBuilderDimensions,
 } from '@/lib/product-validation'
 import { isPhotoCropRenderable } from './photo-crop'
+import { OPAL_PHOTO_ANALYSIS_VERSION } from './photo-analysis'
 import { parseBuilderStoneContour, type BuilderStoneContourV1 } from './stone-contour'
 
 type VisualProfile = BuilderOpal['visual']
@@ -38,6 +39,7 @@ const mintabieHeart055Contour = {
 export interface BuilderVisualFields {
   builderEligible?: boolean | null
   builderMappingStatus?: string | null
+  builderMappedImageIndex?: number | null
   builderSilhouette?: string | null
   builderRecommendedStyle?: string | null
   builderBodyColour?: string | null
@@ -52,6 +54,8 @@ export interface BuilderVisualFields {
   builderContour?: unknown
   builderContourCandidate?: unknown
   builderPhotoAnalysisConfidence?: number | null
+  builderPhotoAnalysisVersion?: number | null
+  builderPhotoCandidateImageIndex?: number | null
   builderPhotoCandidateFocalX?: number | null
   builderPhotoCandidateFocalY?: number | null
   builderPhotoCandidateZoom?: number | null
@@ -282,17 +286,6 @@ const reviewedSlugAliases: Readonly<Record<string, string>> = {
   'queensland-crystal-pipe-opal-105-cts': 'queensland-crystal-pipe-opal-1-45-cts',
 }
 
-// These three source photographs produced pixel-isolated contours that also
-// passed a live rendered-fit audit in July 2026. Keep this allow-list separate
-// from automatic activation: other candidates still require maker review, and
-// the analyser's exact 0.70 canonical fallback must never masquerade as a
-// traced stone edge.
-const visuallyAuditedImageCandidateSlugs = new Set([
-  'lightning-ridge-black-opal-6-30ct',
-  'mintabie-dark-opal-heart-055-cts',
-  'queensland-crystal-pipe-opal-1-45-cts',
-])
-
 const reviewedPhotoBySlug: Record<string, string> = {
   'lightning-ridge-white-opal-1-05-cts': '/images/products/20211104_234659-1-1.jpg',
   'mintabie-semi-black-opal-1-05-cts': '/images/products/20210923_174046.jpg',
@@ -326,10 +319,8 @@ function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | u
 }
 
 function auditedImageCandidate(
-  slug: string,
   fields?: BuilderVisualFields
 ): Pick<VisualProfile, 'contour' | 'textureCrop' | 'photoFit'> | undefined {
-  const reviewedSlug = reviewedSlugAliases[slug] ?? slug
   const mappingApproved =
     fields?.builderMappingStatus === 'reviewed' || fields?.builderMappingStatus === 'manual'
   const confidence = fields?.builderPhotoAnalysisConfidence
@@ -339,16 +330,20 @@ function auditedImageCandidate(
   const zoom = fields?.builderPhotoCandidateZoom
   const rotation = fields?.builderPhotoCandidateRotation
   const candidateCrop = parseBuilderPhotoCrop(focalX, focalY, zoom, rotation)
+  const analyzedHash = fields?.builderMappingAnalyzedImageHash
+  const currentMappedImageIndex = fields?.builderMappedImageIndex ?? 0
 
   if (
     !mappingApproved ||
-    !visuallyAuditedImageCandidateSlugs.has(reviewedSlug) ||
     !contour ||
+    fields?.builderPhotoAnalysisVersion !== OPAL_PHOTO_ANALYSIS_VERSION ||
+    fields.builderPhotoCandidateImageIndex !== currentMappedImageIndex ||
+    typeof analyzedHash !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(analyzedHash) ||
     typeof confidence !== 'number' ||
     !Number.isFinite(confidence) ||
     confidence < 0.9 ||
     confidence > 1 ||
-    Math.abs(confidence - 0.7) < 0.0001 ||
     !candidateCrop
   ) {
     return undefined
@@ -614,7 +609,7 @@ export function createOpalVisualProfile(
   const cataloguePhoto = cataloguePhotoProfiles[reviewedSlugAliases[slug] ?? slug]
   const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
   const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
-  const imageCandidate = auditedImageCandidate(slug, fields)
+  const imageCandidate = auditedImageCandidate(fields)
   const mappingApproved =
     !fields ||
     fields.builderMappingStatus === 'reviewed' ||

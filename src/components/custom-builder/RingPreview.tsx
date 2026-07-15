@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { Pause, Play, Rotate3D } from 'lucide-react'
+import type { RingRenderModelSelection } from '@/lib/custom-builder/ring-render-model'
 import type { BuilderOpal, RingConfig } from './config'
 import { opalPlacementFromConfig } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
@@ -12,7 +13,7 @@ import type { RingView } from './RingScene'
 interface RingPreviewProps {
   config: RingConfig
   description: string
-  makerApproved?: boolean
+  renderModel: RingRenderModelSelection
   selectedOpal?: BuilderOpal
 }
 
@@ -34,7 +35,7 @@ const views: readonly { accessibleLabel: string; id: RingView; label: string }[]
 export function RingPreview({
   config,
   description,
-  makerApproved = false,
+  renderModel,
   selectedOpal,
 }: RingPreviewProps) {
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
@@ -71,6 +72,7 @@ export function RingPreview({
           allowMotion={motionEnabled}
           onContextLost={() => setWebGlAvailable(false)}
           reduceMotion={prefersReducedMotion}
+          renderModel={renderModel}
           view={view}
           zoomEnabled={zoomEnabled}
         />
@@ -101,7 +103,7 @@ export function RingPreview({
           <p className="sr-only">{description}</p>
         </div>
         <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-charcoal">
-          {makerApproved ? 'Maker-approved reference' : 'Concept'}
+          {renderModel.makerApproved ? 'Maker-approved model' : 'Concept'}
         </span>
       </div>
 

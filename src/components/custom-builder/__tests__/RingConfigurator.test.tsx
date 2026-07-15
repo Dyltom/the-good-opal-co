@@ -4,16 +4,17 @@ import type { ComponentProps, ReactNode } from 'react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import type { BuilderOpal } from '../config'
 import { defaultRingConfig } from '../config'
+import type { RingRenderModelSelection } from '@/lib/custom-builder/ring-render-model'
 
 vi.mock('next/dynamic', () => ({
   default: () =>
     function RingPreviewStub({
       config,
-      makerApproved,
+      renderModel,
       selectedOpal,
     }: {
       config: typeof defaultRingConfig
-      makerApproved?: boolean
+      renderModel: RingRenderModelSelection
       selectedOpal?: BuilderOpal
     }) {
       return (
@@ -25,7 +26,7 @@ vi.mock('next/dynamic', () => ({
           data-opal-scale={config.opalScale}
           data-opal-rotation={config.opalRotation}
           data-style={config.style}
-          data-maker-approved={makerApproved ? 'true' : 'false'}
+          data-maker-approved={renderModel.makerApproved ? 'true' : 'false'}
         />
       )
     },
@@ -105,21 +106,9 @@ describe('RingConfigurator store opal selection', () => {
     window.history.replaceState(null, '', '/services/design')
   })
 
-  test('limits maker approval to the exact reference model, not adapted opal concepts', () => {
-    const { unmount } = render(
-      <RingConfigurator
-        approvedProceduralStyles={['gemini']}
-        initialConfig={defaultRingConfig}
-        opals={opals}
-      />
-    )
-
-    expect(screen.getByTestId('ring-preview').getAttribute('data-maker-approved')).toBe('true')
-    unmount()
-
+  test('never labels a procedural preview as maker-approved', () => {
     render(
       <RingConfigurator
-        approvedProceduralStyles={['gemini']}
         initialConfig={{ ...defaultRingConfig, opalId: opals[0].id }}
         opals={opals}
       />

@@ -731,7 +731,7 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
   })
 
-  test('uses a visually audited image candidate for the matching legacy stone', () => {
+  test('uses a high-confidence current image candidate for any approved stone', () => {
     const contour = {
       version: 1,
       radii: Array.from({ length: 96 }, (_, index) =>
@@ -739,9 +739,13 @@ describe('custom builder opal visual profiles', () => {
       ),
     }
     const fields = {
+      builderMappedImageIndex: 0,
       builderMappingStatus: 'manual',
+      builderMappingAnalyzedImageHash: 'a'.repeat(64),
       builderContourCandidate: contour,
       builderPhotoAnalysisConfidence: 0.954,
+      builderPhotoAnalysisVersion: 4,
+      builderPhotoCandidateImageIndex: 0,
       builderPhotoCandidateFocalX: 0.454,
       builderPhotoCandidateFocalY: 0.554,
       builderPhotoCandidateZoom: 3.2,
@@ -772,7 +776,7 @@ describe('custom builder opal visual profiles', () => {
     expect(
       createOpalVisualProfile('unreviewed-opal', 'Unreviewed opal', 'black-opal', fields).visual
         .contour
-    ).toBeUndefined()
+    ).toEqual(contour)
     expect(
       createOpalVisualProfile(
         'mintabie-semi-black-opal-1-35-cts',
@@ -791,6 +795,9 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
 
     for (const invalid of [
+      { builderPhotoAnalysisVersion: 3 },
+      { builderPhotoCandidateImageIndex: 1 },
+      { builderMappingAnalyzedImageHash: 'not-a-sha256' },
       { builderPhotoAnalysisConfidence: Number.NaN },
       { builderPhotoAnalysisConfidence: 1.01 },
       { builderPhotoCandidateFocalX: Number.NaN },

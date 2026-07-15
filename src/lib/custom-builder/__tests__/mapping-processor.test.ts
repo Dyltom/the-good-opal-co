@@ -59,6 +59,7 @@ describe('builder mapping processor', () => {
       focalX: 0.42,
       focalY: 0.57,
       rotation: -12,
+      source: 'image',
       zoom: 3.4,
     })
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://example.com')
@@ -106,6 +107,7 @@ describe('builder mapping processor', () => {
         focalX: 0.4,
         focalY: 0.5,
         rotation: 0,
+        source: 'image',
         zoom: 2.8,
       })
       .mockReturnValueOnce({
@@ -114,6 +116,7 @@ describe('builder mapping processor', () => {
         focalX: 0.42,
         focalY: 0.57,
         rotation: -12,
+        source: 'image',
         zoom: 3.4,
       })
 
@@ -501,6 +504,7 @@ describe('builder mapping processor', () => {
         focalX: 0.4,
         focalY: 0.5,
         rotation: 0,
+        source: 'image',
         zoom: 2.8,
       })
       .mockReturnValueOnce({
@@ -509,6 +513,7 @@ describe('builder mapping processor', () => {
         focalX: 0.6,
         focalY: 0.45,
         rotation: 8,
+        source: 'image',
         zoom: 3.1,
       })
 
@@ -560,6 +565,7 @@ describe('builder mapping processor', () => {
         focalX: 0.4,
         focalY: 0.5,
         rotation: 0,
+        source: 'image',
         zoom: 2.8,
       })
       .mockReturnValueOnce({
@@ -568,6 +574,7 @@ describe('builder mapping processor', () => {
         focalX: 0.6,
         focalY: 0.45,
         rotation: 8,
+        source: 'image',
         zoom: 3.1,
       })
       .mockReturnValueOnce({
@@ -576,6 +583,7 @@ describe('builder mapping processor', () => {
         focalX: 0.55,
         focalY: 0.48,
         rotation: 4,
+        source: 'image',
         zoom: 3,
       })
 
@@ -613,6 +621,7 @@ describe('builder mapping processor', () => {
         focalX: 0.6,
         focalY: 0.45,
         rotation: 8,
+        source: 'image',
         zoom: 3.1,
       })
       .mockReturnValueOnce({
@@ -621,6 +630,7 @@ describe('builder mapping processor', () => {
         focalX: 0.55,
         focalY: 0.48,
         rotation: 4,
+        source: 'image',
         zoom: 3,
       })
 
@@ -721,6 +731,7 @@ describe('builder mapping processor', () => {
       focalX: 0.42,
       focalY: 0.57,
       rotation: -12,
+      source: 'image',
       zoom: 3.4,
     })
 

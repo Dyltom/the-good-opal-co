@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import type { BuilderOpal, RingConfig } from '@/components/custom-builder/config'
 import { RingScene, type RingView } from '@/components/custom-builder/RingScene'
+import { selectRingRenderModel } from '@/lib/custom-builder/ring-render-model'
 
 interface RingSceneVisualHarnessProps {
   config: RingConfig
@@ -33,6 +34,7 @@ export function RingSceneVisualHarness({
         onContextLost={handleContextLost}
         onRenderReady={handleRenderReady}
         reduceMotion
+        renderModel={selectRingRenderModel({ config, opal: selectedOpal })}
         selectedOpal={selectedOpal}
         view={view}
       />

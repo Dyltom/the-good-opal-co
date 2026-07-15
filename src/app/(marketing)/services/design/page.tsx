@@ -15,6 +15,7 @@ import {
   reviewedOpalImageUrl,
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
+import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/ring-design-manifest'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
 import {
@@ -130,6 +131,8 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       builderContour: true,
       builderContourCandidate: true,
       builderPhotoAnalysisConfidence: true,
+      builderPhotoAnalysisVersion: true,
+      builderPhotoCandidateImageIndex: true,
       builderPhotoCandidateFocalX: true,
       builderPhotoCandidateFocalY: true,
       builderPhotoCandidateZoom: true,
@@ -229,10 +232,14 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
 }
 
 export default async function DesignPage({ searchParams }: DesignPageProps) {
-  const [query, opals] = await Promise.all([
+  const [query, opals, ringDesignManifests] = await Promise.all([
     searchParams,
     getBuilderOpals().catch((error: unknown) => {
       console.error('Ring builder catalogue unavailable; rendering design-only fallback', error)
+      return []
+    }),
+    loadPublishedRingDesignRenderManifests().catch((error: unknown) => {
+      console.error('Approved ring assets unavailable; using concept renderer', error)
       return []
     }),
   ])
@@ -273,6 +280,7 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
       <RingConfigurator
         initialConfig={hydratedConfig}
         opals={opals}
+        ringDesignManifests={ringDesignManifests}
         unavailableOpalRequested={unavailableOpalRequested}
       />
 

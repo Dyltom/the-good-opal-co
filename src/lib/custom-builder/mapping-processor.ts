@@ -10,7 +10,7 @@ import { parseBuilderStoneContour } from './stone-contour'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
 const ANALYSIS_EDGE_PX = 640
-const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.75
+const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.9
 const MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN = 0.05
 const RETRYABLE_ANALYSIS_ERROR_PREFIX = 'Retryable source error: '
 
@@ -546,10 +546,13 @@ export async function processBuilderMappings(
         !protectsActiveMapping &&
         !selection.ambiguousSource &&
         (product.builderMappingStatus === 'pending' || product.builderMappingStatus === 'stale') &&
+        analysis.source === 'image' &&
         analysisConfidence >= MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
       const analysisError =
         selection.ambiguousSource
           ? 'Multiple gallery images are similarly suitable; choose the mapped source before activation'
+          : analysis.source !== 'image'
+            ? 'Named-shape fallback requires visual review before activation'
           : analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
           ? 'Opal contour confidence is too low for automatic activation'
           : null
