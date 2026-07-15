@@ -10,6 +10,14 @@ const screenshotOptions = {
   timeout: 15_000,
 } as const
 
+// Chromium's JPEG scaling differs slightly between macOS/CoreGraphics and
+// Linux/Skia. Keep the 3D ring gate strict; only the photo-heavy CSS workbench
+// receives enough tolerance for that measured cross-platform raster variance.
+const workbenchScreenshotOptions = {
+  ...screenshotOptions,
+  maxDiffPixelRatio: 0.025,
+} as const
+
 const styles = ['gemini', 'coral', 'sun-moon', 'aurora'] as const
 
 async function expectPixelSanity(canvas: Locator, label: string): Promise<void> {
@@ -184,13 +192,16 @@ test.describe('custom ring render fidelity', () => {
     await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' })
 
     const workbench = page.getByTestId('opal-placement-workbench')
-    await expect(workbench).toHaveScreenshot('opal-placement-workbench.png', screenshotOptions)
+    await expect(workbench).toHaveScreenshot(
+      'opal-placement-workbench.png',
+      workbenchScreenshotOptions
+    )
 
     await workbench.getByRole('button', { name: 'Start framing colour' }).click()
     await expect(workbench.getByRole('group', { name: /Drag the colour inside/ })).toBeVisible()
     await expect(workbench).toHaveScreenshot(
       'opal-placement-workbench-active.png',
-      screenshotOptions
+      workbenchScreenshotOptions
     )
     expect(browserErrors).toEqual([])
   })
