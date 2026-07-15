@@ -419,12 +419,20 @@ export function OpalPlacementEditor({
             ) : (
               <output
                 aria-live="polite"
-                className="pointer-events-none relative z-20 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
+                className="pointer-events-none relative z-20 inline-flex max-w-full items-center justify-center gap-1.5 rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-center text-xs leading-4 text-cream/85"
               >
-                <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
-                {canAdjustPosition
-                  ? `${isDragging ? 'Framing colour' : 'Drag colour inside outline'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
-                  : 'Closest safe source fit'}
+                <Move aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+                {canAdjustPosition ? (
+                  <span>
+                    <span className="hidden sm:inline">
+                      {isDragging ? 'Framing colour' : 'Drag colour inside outline'} ·{' '}
+                    </span>
+                    {formatPosition(placement.opalPositionX, 'horizontal')} ·{' '}
+                    {formatPosition(placement.opalPositionY, 'vertical')}
+                  </span>
+                ) : (
+                  'Closest safe source fit'
+                )}
               </output>
             )}
           </div>
