@@ -134,6 +134,7 @@ describe('WooCommerce catalogue mutation retries', () => {
         compareAtPrice: null,
         description: 'Exact product copy',
         inStock: true,
+        manageStock: true,
         name: 'Existing opal',
         price: 95,
         sku: 'WP-5681',
@@ -153,7 +154,9 @@ describe('WooCommerce catalogue mutation retries', () => {
       consumerSecret: 'cs_private',
     })
     expect(mocks.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ stock: 3 }) })
+      expect.objectContaining({
+        data: expect.objectContaining({ stock: 3, wooManageStock: true }),
+      })
     )
     expect(result.stockReconciliation).toEqual({
       authenticatedSource: true,
@@ -332,7 +335,32 @@ describe('WooCommerce catalogue mutation retries', () => {
     )
   })
 
-  test('publishes one authenticated status-managed individual opal as one inventory unit', async () => {
+  test('does not persist the unsupported unknown-opal inference sentinel', async () => {
+    mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
+    mocks.create.mockResolvedValue({ id: 94 })
+    mocks.fetchWooCatalog.mockResolvedValue([
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'Natural Australian opal with type awaiting review',
+        inStock: true,
+        name: 'Australian Opal 1.10 ct',
+        price: 160,
+        sku: 'WP-5688',
+        slug: 'australian-opal-1-10-ct',
+        tags: ['opal'],
+        wooId: 5688,
+      },
+    ])
+
+    await syncWooCatalog({ apply: true, archiveMissing: false, restock: false })
+
+    const createData = mocks.create.mock.calls[0]?.[0]?.data
+    expect(createData).not.toHaveProperty('stoneType')
+    expect(createData).toMatchObject({ material: 'none', status: 'draft', stock: 0 })
+  })
+
+  test('publishes authenticated status-managed stock and persists its Woo mode', async () => {
     vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
     vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
     mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
@@ -343,11 +371,12 @@ describe('WooCommerce catalogue mutation retries', () => {
         compareAtPrice: null,
         description: 'One-off opal with Woo stock status management',
         inStock: true,
+        manageStock: false,
         name: 'New status-managed opal',
         price: 125,
         sku: 'WP-5682',
         slug: 'new-status-managed-opal',
-        stockQuantity: null,
+        stockQuantity: 1,
         tags: ['opal'],
         wooId: 5682,
       },
@@ -360,9 +389,15 @@ describe('WooCommerce catalogue mutation retries', () => {
       createdWooIds: [5682],
       sourceStockByWooId: { 5682: 1 },
     })
+
+    expect(mocks.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ wooManageStock: false }),
+      })
+    )
   })
 
-  test('does not turn status-only parcels or finished rings into one-unit inventory', async () => {
+  test('uses authenticated status-derived stock for every non-managed Woo listing', async () => {
     vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
     vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
     mocks.find.mockResolvedValue({ docs: [], hasNextPage: false })
@@ -373,11 +408,12 @@ describe('WooCommerce catalogue mutation retries', () => {
         compareAtPrice: null,
         description: 'Multiple stones, priced as a parcel',
         inStock: true,
+        manageStock: false,
         name: 'Coober Pedy opal parcel',
         price: 125,
         sku: 'WP-5684',
         slug: 'coober-pedy-opal-parcel',
-        stockQuantity: null,
+        stockQuantity: 1,
         tags: ['opal'],
         wooId: 5684,
       },
@@ -386,11 +422,12 @@ describe('WooCommerce catalogue mutation retries', () => {
         compareAtPrice: null,
         description: 'Made-to-order ring',
         inStock: true,
+        manageStock: false,
         name: 'Made-to-order Aurora ring',
         price: 425,
         sku: 'WP-5685',
         slug: 'made-to-order-aurora-ring',
-        stockQuantity: null,
+        stockQuantity: 1,
         tags: ['ring'],
         wooId: 5685,
       },
@@ -399,11 +436,12 @@ describe('WooCommerce catalogue mutation retries', () => {
         compareAtPrice: null,
         description: 'Legacy uncategorized voucher',
         inStock: true,
+        manageStock: false,
         name: 'Gift Voucher',
         price: 100,
         sku: 'WP-5686',
         slug: 'gift-voucher',
-        stockQuantity: null,
+        stockQuantity: 1,
         tags: ['gift'],
         wooId: 5686,
       },
@@ -411,12 +449,13 @@ describe('WooCommerce catalogue mutation retries', () => {
         category: 'raw-opals',
         compareAtPrice: null,
         description: 'Legacy uncategorized education product',
-        inStock: true,
+        inStock: false,
+        manageStock: false,
         name: 'Opal Workshop',
         price: 180,
         sku: 'WP-5687',
         slug: 'opal-workshop',
-        stockQuantity: null,
+        stockQuantity: 0,
         tags: ['course'],
         wooId: 5687,
       },
@@ -426,7 +465,7 @@ describe('WooCommerce catalogue mutation retries', () => {
       syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
     ).resolves.toMatchObject({
       created: 4,
-      sourceStockByWooId: {},
+      sourceStockByWooId: { 5684: 1, 5685: 1, 5686: 1, 5687: 0 },
     })
   })
 

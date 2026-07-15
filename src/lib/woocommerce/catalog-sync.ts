@@ -29,6 +29,7 @@ const wooProductPageSchema = z.array(wooProductSchema)
 
 const wooStockProductSchema = z.object({
   id: z.number().int().positive(),
+  manage_stock: z.boolean(),
   stock_quantity: z.number().int().nonnegative().nullable(),
   stock_status: z.enum(['instock', 'outofstock', 'onbackorder']),
 })
@@ -55,6 +56,7 @@ export interface WooCatalogProduct {
   category: ProductCategory
   tags: string[]
   inStock: boolean
+  manageStock?: boolean
   stockQuantity?: number | null
 }
 
@@ -182,8 +184,11 @@ async function fetchAuthenticatedStock(
     baseUrl: string
     perPage: number
   }
-): Promise<Map<number, { inStock: boolean; stockQuantity: number | null }>> {
-  const stockByWooId = new Map<number, { inStock: boolean; stockQuantity: number | null }>()
+): Promise<Map<number, { inStock: boolean; manageStock: boolean; stockQuantity: number }>> {
+  const stockByWooId = new Map<
+    number,
+    { inStock: boolean; manageStock: boolean; stockQuantity: number }
+  >()
   const authorization = `Basic ${Buffer.from(
     `${options.consumerKey}:${options.consumerSecret}`
   ).toString('base64')}`
@@ -212,7 +217,16 @@ async function fetchAuthenticatedStock(
       }
       stockByWooId.set(product.id, {
         inStock: product.stock_status !== 'outofstock',
-        stockQuantity: product.stock_quantity,
+        manageStock: product.manage_stock,
+        // Woo uses stock status, not a quantity, when per-product stock
+        // management is disabled. Normalize that authenticated signal exactly
+        // as the full commerce importer does so recurring imports never treat
+        // a null quantity as unknown inventory.
+        stockQuantity: product.manage_stock
+          ? (product.stock_quantity ?? 0)
+          : product.stock_status === 'instock'
+            ? 1
+            : 0,
       })
     }
   }

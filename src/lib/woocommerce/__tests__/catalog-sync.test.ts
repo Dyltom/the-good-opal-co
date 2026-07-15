@@ -101,7 +101,9 @@ describe('WooCommerce catalog sync', () => {
       )
       .mockResolvedValueOnce(
         new Response(
-          JSON.stringify([{ id: 5681, stock_quantity: 5, stock_status: 'instock' }])
+          JSON.stringify([
+            { id: 5681, manage_stock: true, stock_quantity: 5, stock_status: 'instock' },
+          ])
         )
       )
 
@@ -111,7 +113,12 @@ describe('WooCommerce catalog sync', () => {
       fetcher,
     })
 
-    expect(products[0]).toMatchObject({ inStock: true, stockQuantity: 5, wooId: 5681 })
+    expect(products[0]).toMatchObject({
+      inStock: true,
+      manageStock: true,
+      stockQuantity: 5,
+      wooId: 5681,
+    })
     const [stockInput, stockInit] = fetcher.mock.calls[1] ?? []
     const stockUrl = new URL(String(stockInput))
     expect(stockUrl.pathname).toBe('/wp-json/wc/v3/products')
@@ -121,6 +128,78 @@ describe('WooCommerce catalog sync', () => {
     expect(new Headers(stockInit?.headers).get('authorization')).toBe(
       `Basic ${Buffer.from('ck_read_only:cs_private').toString('base64')}`
     )
+  })
+
+  it.each([
+    ['instock', 1, true],
+    ['outofstock', 0, false],
+    ['onbackorder', 0, true],
+  ] as const)(
+    'normalizes authenticated status-managed %s inventory to %i',
+    async (stockStatus, expectedQuantity, expectedInStock) => {
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([wooProduct]), {
+            headers: { 'x-wp-totalpages': '1' },
+          })
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify([
+              {
+                id: 5681,
+                manage_stock: false,
+                stock_quantity: null,
+                stock_status: stockStatus,
+              },
+            ])
+          )
+        )
+
+      const products = await fetchWooCatalog({
+        consumerKey: 'ck_read_only',
+        consumerSecret: 'cs_private',
+        fetcher,
+      })
+
+      expect(products[0]).toMatchObject({
+        inStock: expectedInStock,
+        manageStock: false,
+        stockQuantity: expectedQuantity,
+        wooId: 5681,
+      })
+    }
+  )
+
+  it('normalizes an authenticated managed product with no quantity to zero', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify([wooProduct]), {
+          headers: { 'x-wp-totalpages': '1' },
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
+            {
+              id: 5681,
+              manage_stock: true,
+              stock_quantity: null,
+              stock_status: 'outofstock',
+            },
+          ])
+        )
+      )
+
+    const products = await fetchWooCatalog({
+      consumerKey: 'ck_read_only',
+      consumerSecret: 'cs_private',
+      fetcher,
+    })
+
+    expect(products[0]).toMatchObject({ manageStock: true, stockQuantity: 0, wooId: 5681 })
   })
 
   it('preserves public fallback when both stock credentials are absent', async () => {
@@ -143,9 +222,9 @@ describe('WooCommerce catalog sync', () => {
       })
     )
 
-    await expect(
-      fetchWooCatalog({ consumerKey: 'ck_without_secret', fetcher })
-    ).rejects.toThrow('must include both key and secret')
+    await expect(fetchWooCatalog({ consumerKey: 'ck_without_secret', fetcher })).rejects.toThrow(
+      'must include both key and secret'
+    )
     expect(fetcher).toHaveBeenCalledTimes(1)
   })
 
