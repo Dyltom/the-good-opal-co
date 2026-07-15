@@ -571,13 +571,10 @@ describe('custom ring geometry contract', () => {
   })
 
   test('keeps unmeasured opal crowns visible above each sold setting profile', () => {
-    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'gemini').domeHeight).toBeCloseTo(0.116, 12)
-    expect(getCabochonDepthProfile(0.5, 0.5, undefined, 'coral').domeHeight).toBeCloseTo(0.11, 12)
-    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'sun-moon').domeHeight).toBeCloseTo(
-      0.108,
-      12
-    )
-    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.096, 12)
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'gemini').domeHeight).toBeCloseTo(0.104, 12)
+    expect(getCabochonDepthProfile(0.5, 0.5, undefined, 'coral').domeHeight).toBeCloseTo(0.095, 12)
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'sun-moon').domeHeight).toBeCloseTo(0.1, 12)
+    expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.09, 12)
   })
 
   test('keeps a measured store opal physically invariant across compatible styles', () => {
@@ -794,9 +791,7 @@ describe('custom ring geometry contract', () => {
 
       // Sun & Moon uses a tight fused chain. Aurora's broader handmade pellets
       // retain visible oxidised seams in the owned close-up.
-      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(
-        style === 'aurora' ? 0.28 : 0.02
-      )
+      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(style === 'aurora' ? 0.28 : 0.02)
       expect(profile.haloOffset + profile.beadRadius, style).toBeCloseTo(expectedOuterOffset, 12)
       expect(profile.haloValleySupportCoverage, style).toBeGreaterThanOrEqual(0.9)
     }

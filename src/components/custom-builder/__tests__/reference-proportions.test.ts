@@ -115,10 +115,14 @@ describe('sold ring reference proportions', () => {
       expect(innerWallClearanceMm).toBeLessThanOrEqual(0.025)
       expect(lipOverlapMm).toBeGreaterThanOrEqual(0.08)
       expect(lipOverlapMm).toBeLessThanOrEqual(0.12)
-      expect(crownRatio).toBeGreaterThanOrEqual(
-        style === 'coral' ? 0.1 : style === 'aurora' ? 0.11 : 0.13
-      )
-      expect(crownRatio).toBeLessThanOrEqual(style === 'aurora' ? 0.16 : 0.15)
+      const crownEnvelope = {
+        aurora: [0.11, 0.14],
+        coral: [0.09, 0.12],
+        gemini: [0.12, 0.14],
+        'sun-moon': [0.12, 0.14],
+      } as const
+      expect(crownRatio).toBeGreaterThanOrEqual(crownEnvelope[style][0])
+      expect(crownRatio).toBeLessThanOrEqual(crownEnvelope[style][1])
     }
   )
 })

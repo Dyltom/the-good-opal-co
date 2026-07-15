@@ -6,6 +6,7 @@ import {
   computePhotoTextureTransform,
   constrainPhotoPlacementRotation,
   getPhotoPlacementScaleMax,
+  getPhotoPlacementRotationBounds,
   getPhotoPlacementRotationLimit,
   rotationCoverScale,
 } from '../photo-crop'
@@ -110,6 +111,34 @@ describe('custom builder photo crops', () => {
     expect(maximumZoom).toBe(0)
     expect(constrainPhotoPlacementRotation(1 / 2.25, 10, 1, 30)).toBe(available)
     expect(getPhotoPlacementRotationLimit(0.8, 3.4, 1.4)).toBe(45)
+  })
+
+  test('constrains total rotation around a reviewed non-zero source angle', () => {
+    const stoneAspect = 1 / 2.25
+    const baseZoom = 4
+    const baseRotation = 35
+    const placementScale = 1.25
+    const bounds = getPhotoPlacementRotationBounds(
+      stoneAspect,
+      baseZoom,
+      baseRotation,
+      placementScale
+    )
+
+    expect(bounds.min).toBe(-45)
+    expect(bounds.max).toBeGreaterThan(0)
+    expect(bounds.max).toBeLessThan(45)
+    expect(
+      rotationCoverScale(stoneAspect, baseRotation + bounds.max) * baseZoom * placementScale
+    ).toBeLessThanOrEqual(12)
+    expect(
+      constrainPhotoPlacementRotation(stoneAspect, baseZoom, placementScale, 45, baseRotation)
+    ).toBe(bounds.max)
+  })
+
+  test('reduces customer zoom when reviewed source rotation already consumes detail', () => {
+    expect(getPhotoPlacementScaleMax(3, 0.5, 90)).toBeCloseTo(1.25)
+    expect(getPhotoPlacementScaleMax(4, 0.5, 90)).toBe(1)
   })
 
   test('keeps the selected crop centre fixed when Three.js rotates the texture', () => {

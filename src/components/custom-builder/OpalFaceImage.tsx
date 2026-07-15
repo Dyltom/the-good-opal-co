@@ -51,14 +51,16 @@ export function OpalFaceImage({
   }, [currentImageSize, opal.visual.textureCrop, placement, stoneAspect])
 
   const baseZoom = opal.visual.textureCrop?.zoom ?? 1
+  const baseRotation = opal.visual.textureCrop?.rotation ?? 0
   const placementScale = placement?.opalScale ?? 1
   const customerRotation = constrainPhotoPlacementRotation(
     stoneAspect,
     baseZoom,
     placementScale,
-    placement?.opalRotation ?? 0
+    placement?.opalRotation ?? 0,
+    baseRotation
   )
-  const rotation = (opal.visual.textureCrop?.rotation ?? 0) + customerRotation
+  const rotation = baseRotation + customerRotation
   const coverScale = rotationCoverScale(stoneAspect, rotation)
   const silhouetteClipPath = clipToStone
     ? cssSilhouetteClipPath(opal.visual.silhouette, opal.visual.contour)

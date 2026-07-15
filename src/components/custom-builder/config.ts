@@ -147,7 +147,7 @@ export interface RingStyleGeometryProfile {
   /** Maximum filing/stretch along the halo tangent; preserves radial head size. */
   beadTangentialStretchMax: number
   beadShape: 'granulated' | 'none'
-  beadPrimitive: 'none' | 'organic-granule' | 'rounded-granule'
+  beadPrimitive: 'faceted-organic-granule' | 'none' | 'rounded-granule'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -290,7 +290,10 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.001,
     cupDepth: 0.048,
     cupTaper: 0.022,
-    domeHeightRatio: 0.145,
+    // Unmeasured catalogue stones previously stood visibly proud of the sold
+    // Gemini references. Keep the provisional crown close to 1 mm until a
+    // measured side profile exists; measured stones remain dimension-driven.
+    domeHeightRatio: 0.13,
     visibleSeatCap: 0.036,
     shoulderUnderlap: 0.18,
     // Keep the cap centre beneath the cup while overlapping the shoulder face
@@ -347,7 +350,8 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.0025,
     cupDepth: 0.035,
     cupTaper: 0.02,
-    domeHeightRatio: 0.11,
+    // Coral references read as low cabochons inside a broad recessed seat.
+    domeHeightRatio: 0.095,
     visibleSeatCap: 0.06,
     shoulderUnderlap: 0.17,
     shoulderJoinDrop: 0.039,
@@ -403,7 +407,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.001,
     cupDepth: 0.06,
     cupTaper: 0.026,
-    domeHeightRatio: 0.135,
+    domeHeightRatio: 0.125,
     visibleSeatCap: 0.044,
     shoulderUnderlap: 0.18,
     shoulderJoinDrop: 0.042,
@@ -448,7 +452,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadBridgeZ: 0.03,
     beadTangentialStretchMax: 1.4,
     beadShape: 'granulated',
-    beadPrimitive: 'organic-granule',
+    beadPrimitive: 'faceted-organic-granule',
     beadVariation: 1.55,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.62,
@@ -458,7 +462,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     innerSeamVariation: 0.001,
     cupDepth: 0.065,
     cupTaper: 0.03,
-    domeHeightRatio: 0.12,
+    domeHeightRatio: 0.1125,
     visibleSeatCap: 0.028,
     shoulderUnderlap: 0.19,
     shoulderJoinDrop: 0.044,

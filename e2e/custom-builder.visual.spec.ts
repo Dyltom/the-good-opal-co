@@ -159,4 +159,34 @@ test.describe('custom ring render fidelity', () => {
       'ring-photo-heart-sun-moon-profile.png'
     )
   })
+
+  test('keeps the opal framing workbench clear and setting-specific', async ({ page }) => {
+    test.setTimeout(60_000)
+    await page.addInitScript(() => {
+      window.localStorage.setItem(
+        'cookie-consent',
+        JSON.stringify({ necessary: true, analytics: false })
+      )
+    })
+    const response = await page.goto('/visual-tests/opal-placement', {
+      waitUntil: 'domcontentloaded',
+    })
+    expect(response?.status()).toBeLessThan(400)
+
+    const harness = page.getByTestId('opal-placement-visual-harness')
+    await expect(harness).toBeVisible()
+    await page
+      .locator('nextjs-portal')
+      .evaluateAll((portals) => portals.forEach((portal) => portal.remove()))
+
+    const workbench = page.getByTestId('opal-placement-workbench')
+    await expect(workbench).toHaveScreenshot('opal-placement-workbench.png', screenshotOptions)
+
+    await workbench.getByRole('button', { name: 'Start framing colour' }).click()
+    await expect(workbench.getByRole('group', { name: /Drag the colour inside/ })).toBeVisible()
+    await expect(workbench).toHaveScreenshot(
+      'opal-placement-workbench-active.png',
+      screenshotOptions
+    )
+  })
 })

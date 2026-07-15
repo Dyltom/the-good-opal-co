@@ -437,7 +437,12 @@ export function RingConfigurator({
     selectedOpal.visual.photoFit === 'reviewed' &&
     selectedOpal.visual.textureCrop
   )
-  const placementScaleMax = getPhotoPlacementScaleMax(selectedOpal?.visual.textureCrop?.zoom ?? 1)
+  const selectedCrop = selectedOpal?.visual.textureCrop
+  const placementScaleMax = getPhotoPlacementScaleMax(
+    selectedCrop?.zoom ?? 1,
+    selectedOpal ? 1 / selectedOpal.visual.aspectRatio : 1,
+    selectedCrop?.rotation ?? 0
+  )
   useEffect(() => {
     if (!selectedOpal || getRingStyleFit(config.style, selectedOpal).kind !== 'incompatible') return
     setConfig((current) => {

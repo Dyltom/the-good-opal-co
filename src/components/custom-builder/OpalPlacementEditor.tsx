@@ -1,18 +1,18 @@
 'use client'
 
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Move, RotateCcw, RotateCw, SlidersHorizontal, Undo2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   constrainPhotoPlacementRotation,
-  getPhotoPlacementRotationLimit,
+  getPhotoPlacementRotationBounds,
   getPhotoPlacementScaleMax,
 } from '@/lib/custom-builder/photo-crop'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
 import { defaultOpalPlacement } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
-import { cssSilhouetteClipPath } from './geometry'
+import { cssSilhouetteClipPath, evenlySpacedOutlinePoints } from './geometry'
 
 interface OpalPlacementEditorProps {
   onChange: (placement: OpalPlacement) => void
@@ -73,6 +73,12 @@ const styleLabels: Record<RingConfig['style'], string> = {
   'sun-moon': 'Sun & Moon beaded trim',
 }
 
+const auroraGuideGrainShapes = [
+  'polygon(17% 5%, 76% 0%, 100% 36%, 86% 82%, 42% 100%, 3% 70%, 0% 28%)',
+  'polygon(28% 0%, 82% 12%, 100% 58%, 67% 100%, 14% 88%, 0% 36%)',
+  'polygon(12% 14%, 58% 0%, 100% 24%, 91% 77%, 53% 100%, 5% 83%, 0% 42%)',
+] as const
+
 function RangeControl({
   disabled = false,
   label,
@@ -125,15 +131,22 @@ export function OpalPlacementEditor({
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const baseZoom = opal.visual.textureCrop?.zoom ?? 1
-  const scaleMax = getPhotoPlacementScaleMax(baseZoom)
-  const displayedScale = Math.min(placement.opalScale, scaleMax)
   const stoneAspect = 1 / opal.visual.aspectRatio
-  const rotationLimit = getPhotoPlacementRotationLimit(stoneAspect, baseZoom, displayedScale)
+  const baseRotation = opal.visual.textureCrop?.rotation ?? 0
+  const scaleMax = getPhotoPlacementScaleMax(baseZoom, stoneAspect, baseRotation)
+  const displayedScale = Math.min(placement.opalScale, scaleMax)
+  const rotationBounds = getPhotoPlacementRotationBounds(
+    stoneAspect,
+    baseZoom,
+    baseRotation,
+    displayedScale
+  )
   const displayedRotation = constrainPhotoPlacementRotation(
     stoneAspect,
     baseZoom,
     displayedScale,
-    placement.opalRotation
+    placement.opalRotation,
+    baseRotation
   )
   const hasPositionRange = scaleMax > limits.scaleMin
   const canAdjustPosition = hasPositionRange && displayedScale > limits.scaleMin
@@ -145,9 +158,47 @@ export function OpalPlacementEditor({
   const clipPath = cssSilhouetteClipPath(opal.visual.silhouette, opal.visual.contour)
   const bezelPadding = style === 'coral' ? 'p-[7px]' : style === 'gemini' ? 'p-[5px]' : 'p-[4px]'
   const seatPadding = style === 'coral' ? 'p-[3px]' : style === 'gemini' ? 'p-px' : 'p-[2px]'
+  const haloPoints = useMemo(() => {
+    if (style !== 'aurora' && style !== 'sun-moon') return []
+
+    const halfWidth = 0.5
+    const halfHeight = halfWidth * opal.visual.aspectRatio
+    const count = style === 'aurora' ? 28 : 40
+    return evenlySpacedOutlinePoints(
+      opal.visual.silhouette,
+      halfWidth,
+      halfHeight,
+      style === 'aurora' ? 0.085 : 0.1,
+      count,
+      -Math.PI / 2,
+      style,
+      opal.visual.contour
+    ).map(({ key, x, y }) => ({
+      key,
+      left: 50 + (x / halfWidth) * 50,
+      top: 50 - (y / halfHeight) * 50,
+    }))
+  }, [opal.visual.aspectRatio, opal.visual.contour, opal.visual.silhouette, style])
 
   function update<K extends keyof OpalPlacement>(key: K, value: OpalPlacement[K]) {
     onChange({ ...placement, [key]: value })
+  }
+
+  function startFraming() {
+    const opalScale = Math.min(scaleMax, 1.15)
+    onChange({
+      ...placement,
+      opalPositionX: 0,
+      opalPositionY: 0,
+      opalScale,
+      opalRotation: constrainPhotoPlacementRotation(
+        stoneAspect,
+        baseZoom,
+        opalScale,
+        placement.opalRotation,
+        baseRotation
+      ),
+    })
   }
 
   function startDrag(event: ReactPointerEvent<HTMLDivElement>) {
@@ -228,7 +279,10 @@ export function OpalPlacementEditor({
         only the colour framing in this concept changes.
       </p>
 
-      <div className="mt-4 overflow-hidden rounded-xl border border-warm-grey/80 bg-white shadow-[0_10px_30px_rgb(31_30_25/0.06)]">
+      <div
+        data-testid="opal-placement-workbench"
+        className="mt-4 overflow-hidden rounded-xl border border-warm-grey/80 bg-white shadow-[0_10px_30px_rgb(31_30_25/0.06)]"
+      >
         <div className="grid gap-5 bg-[#171714] p-4 text-cream sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -239,7 +293,9 @@ export function OpalPlacementEditor({
             </div>
             <div className="flex flex-wrap justify-end gap-2">
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
-                {opal.visual.photoFit === 'reviewed' ? 'Reviewed source photo' : 'Auto-fitted photo'}
+                {opal.visual.photoFit === 'reviewed'
+                  ? 'Reviewed source photo'
+                  : 'Auto-fitted photo'}
               </span>
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
                 {styleLabels[style]}
@@ -247,7 +303,12 @@ export function OpalPlacementEditor({
             </div>
           </div>
 
-          <div className="relative grid min-h-[17rem] select-none place-items-center gap-4 overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_50%_42%,rgb(255_255_255/0.09),transparent_55%)] px-7 py-6 sm:min-h-[20rem] sm:px-9">
+          <div className="relative grid min-h-[21rem] select-none place-items-center gap-4 overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_50%_42%,rgb(255_255_255/0.11),transparent_58%)] px-7 py-7 sm:min-h-[23rem] sm:px-9">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-[8%] right-[8%] top-1/2 h-[2.35rem] -translate-y-1/2 rounded-full border border-white/20 shadow-[inset_0_3px_5px_rgb(255_255_255/0.24),inset_0_-5px_8px_rgb(0_0_0/0.38),0_16px_28px_rgb(0_0_0/0.48)]"
+              style={{ backgroundColor: metalColours[metal] }}
+            />
             <div
               data-opal-placement-aperture
               role="group"
@@ -263,7 +324,7 @@ export function OpalPlacementEditor({
               onLostPointerCapture={stopDrag}
               onKeyDown={nudge}
               className={cn(
-                'group relative mx-auto w-[64%] max-w-[12.5rem] touch-none drop-shadow-[0_18px_24px_rgb(0_0_0/0.5)] focus-visible:outline-none sm:w-[48%]',
+                'group relative z-10 mx-auto w-[68%] max-w-[15rem] touch-none drop-shadow-[0_20px_28px_rgb(0_0_0/0.55)] focus-visible:outline-none sm:w-[58%]',
                 isDragging
                   ? 'cursor-grabbing'
                   : canAdjustPosition
@@ -274,6 +335,33 @@ export function OpalPlacementEditor({
                 aspectRatio: 1 / opal.visual.aspectRatio,
               }}
             >
+              {haloPoints.length > 0 && (
+                <span aria-hidden="true" className="pointer-events-none absolute inset-0">
+                  {haloPoints.map(({ key, left, top }) => (
+                    <span
+                      key={key}
+                      className={cn(
+                        'absolute aspect-square -translate-x-1/2 -translate-y-1/2 border border-black/20 shadow-[inset_1px_1px_2px_rgb(255_255_255/0.38),0_2px_4px_rgb(0_0_0/0.42)]',
+                        style === 'aurora' ? 'w-[11%]' : 'w-[9%] rounded-full'
+                      )}
+                      style={{
+                        backgroundColor: metalColours[metal],
+                        clipPath:
+                          style === 'aurora'
+                            ? auroraGuideGrainShapes[key % auroraGuideGrainShapes.length]
+                            : undefined,
+                        left: `${left}%`,
+                        top: `${top}%`,
+                        filter:
+                          style === 'aurora'
+                            ? `brightness(${0.72 + (key % 5) * 0.04})`
+                            : undefined,
+                        transform: `translate(-50%, -50%) rotate(${(key * 47) % 180}deg)`,
+                      }}
+                    />
+                  ))}
+                </span>
+              )}
               <div
                 className={cn(
                   'absolute inset-0 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.25),0_12px_30px_rgb(0_0_0/0.5)] group-focus-visible:drop-shadow-[0_0_6px_rgb(129_221_231/0.95)]',
@@ -325,17 +413,25 @@ export function OpalPlacementEditor({
                 </div>
               </div>
             </div>
-            <output
-              aria-live="polite"
-              className="pointer-events-none inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
-            >
-              <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
-              {canAdjustPosition
-                ? `${isDragging ? 'Framing colour' : 'Drag colour inside outline'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
-                : hasPositionRange
-                  ? 'Increase zoom to move colour'
+            {hasPositionRange && !canAdjustPosition ? (
+              <button
+                type="button"
+                onClick={startFraming}
+                className="relative z-20 inline-flex min-h-11 items-center gap-2 rounded-full border border-cream/20 bg-black-rich/85 px-4 text-xs font-medium text-cream transition-colors hover:border-cream/45 hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light"
+              >
+                <Move aria-hidden="true" className="h-3.5 w-3.5" /> Start framing colour
+              </button>
+            ) : (
+              <output
+                aria-live="polite"
+                className="pointer-events-none relative z-20 inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-xs text-cream/85"
+              >
+                <Move aria-hidden="true" className="h-3.5 w-3.5" />{' '}
+                {canAdjustPosition
+                  ? `${isDragging ? 'Framing colour' : 'Drag colour inside outline'} · ${formatPosition(placement.opalPositionX, 'horizontal')} · ${formatPosition(placement.opalPositionY, 'vertical')}`
                   : 'Closest safe source fit'}
-            </output>
+              </output>
+            )}
           </div>
         </div>
 
@@ -356,7 +452,8 @@ export function OpalPlacementEditor({
                   stoneAspect,
                   baseZoom,
                   value,
-                  placement.opalRotation
+                  placement.opalRotation,
+                  baseRotation
                 ),
                 ...(placement.opalScale <= limits.scaleMin || value === limits.scaleMin
                   ? { opalPositionX: 0, opalPositionY: 0 }
@@ -370,11 +467,11 @@ export function OpalPlacementEditor({
               <button
                 type="button"
                 aria-label="Rotate opal colour left"
-                disabled={displayedRotation <= -rotationLimit}
+                disabled={displayedRotation <= rotationBounds.min}
                 onClick={() =>
                   update(
                     'opalRotation',
-                    clamp(displayedRotation - 15, -rotationLimit, rotationLimit)
+                    clamp(displayedRotation - 15, rotationBounds.min, rotationBounds.max)
                   )
                 }
                 className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
@@ -390,11 +487,11 @@ export function OpalPlacementEditor({
               <button
                 type="button"
                 aria-label="Rotate opal colour right"
-                disabled={displayedRotation >= rotationLimit}
+                disabled={displayedRotation >= rotationBounds.max}
                 onClick={() =>
                   update(
                     'opalRotation',
-                    clamp(displayedRotation + 15, -rotationLimit, rotationLimit)
+                    clamp(displayedRotation + 15, rotationBounds.min, rotationBounds.max)
                   )
                 }
                 className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
@@ -420,9 +517,7 @@ export function OpalPlacementEditor({
                 step={0.01}
                 value={placement.opalPositionX}
                 valueText={formatPosition(placement.opalPositionX, 'horizontal')}
-                onChange={(value) =>
-                  onChange({ ...placement, opalPositionX: value })
-                }
+                onChange={(value) => onChange({ ...placement, opalPositionX: value })}
               />
               <RangeControl
                 disabled={!canAdjustPosition}
@@ -432,18 +527,16 @@ export function OpalPlacementEditor({
                 step={0.01}
                 value={placement.opalPositionY}
                 valueText={formatPosition(placement.opalPositionY, 'vertical')}
-                onChange={(value) =>
-                  onChange({ ...placement, opalPositionY: value })
-                }
+                onChange={(value) => onChange({ ...placement, opalPositionY: value })}
               />
               <RangeControl
                 label="Rotation"
-                min={-rotationLimit}
-                max={rotationLimit}
+                min={rotationBounds.min}
+                max={rotationBounds.max}
                 step={5}
                 value={displayedRotation}
                 valueText={`${Math.round(displayedRotation)}°`}
-                disabled={rotationLimit === 0}
+                disabled={rotationBounds.min === 0 && rotationBounds.max === 0}
                 onChange={(value) => update('opalRotation', value)}
               />
             </div>

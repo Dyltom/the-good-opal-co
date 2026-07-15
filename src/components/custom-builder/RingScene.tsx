@@ -242,12 +242,12 @@ function SolderGrainMaterial({
     platinum: '#c0bfbb',
   }
   const facetedSolderColour: Record<RingConfig['metal'], string> = {
-    'sterling-silver': '#c8c8c3',
+    'sterling-silver': '#b6b7b2',
     '14k-gold': '#967634',
     '18k-gold': '#a17d31',
-    'white-gold': '#aaa9a4',
+    'white-gold': '#a09f9a',
     'rose-gold': '#936157',
-    platinum: '#acabaa',
+    platinum: '#a3a29e',
   }
 
   const colour = new Color(
@@ -257,17 +257,18 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
-      metalness={faceted ? 0.91 : organic ? 0.93 : 0.94}
+      metalness={faceted ? 0.93 : organic ? 0.93 : 0.94}
       roughness={
         faceted
-          ? Math.min(0.38, roughness * 0.68)
+          ? Math.max(0.4, Math.min(0.48, roughness * 0.72))
           : organic
             ? Math.min(0.44, roughness * 0.7)
             : Math.min(0.4, roughness * 0.68)
       }
       clearcoat={0.025}
-      clearcoatRoughness={0.46}
-      envMapIntensity={faceted ? 1.55 : organic ? 1.25 : 1.4}
+      clearcoatRoughness={faceted ? 0.48 : 0.46}
+      envMapIntensity={faceted ? 1.4 : organic ? 1.25 : 1.4}
+      flatShading={faceted}
     />
   )
 }
@@ -298,28 +299,78 @@ function SolderBridgeMaterial({ metal }: { metal: RingConfig['metal'] }) {
   return <meshStandardMaterial color={colour} metalness={0.84} roughness={0.56} />
 }
 
-function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
+function FacetedOrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
   const geometry = useMemo(() => {
-    const nextGeometry = new SphereGeometry(radius, 18 + (seed % 3), 12)
-    const positions = nextGeometry.getAttribute('position')
-    const point = new Vector3()
-
-    for (let index = 0; index < positions.count; index += 1) {
-      point.fromBufferAttribute(positions, index)
-      const length = point.length() || 1
-      const nx = point.x / length
-      const ny = point.y / length
-      const nz = point.z / length
-      const deformation =
-        1 +
-        Math.sin(nx * 7.1 + seed * 0.73) * 0.05 +
-        Math.sin(ny * 9.3 - seed * 0.41) * 0.035 +
-        Math.sin(nz * 6.7 + nx * 2.8 + seed * 0.29) * 0.025
-      point.multiplyScalar(deformation)
-      positions.setXYZ(index, point.x, point.y, point.z)
+    // Aurora grains are filed, fused nuggets rather than round granulation.
+    // A broad coplanar top and two irregular bevels read as a hammered nugget,
+    // avoiding the star facets produced by a low-poly sphere.
+    const nextGeometry = new BufferGeometry()
+    const segments = 7 + (seed % 3)
+    const phase = seed * 0.37
+    const layers = [
+      { radiusScale: 0.7, rotation: -0.04, z: -0.68 },
+      { radiusScale: 1, rotation: 0, z: -0.16 },
+      { radiusScale: 0.91, rotation: 0.035, z: 0.38 },
+      { radiusScale: 0.64, rotation: 0.015, z: 0.62 },
+    ] as const
+    const rings = layers.map((layer, layerIndex) =>
+      Array.from({ length: segments }, (_, index) => {
+        const angle = (index / segments) * Math.PI * 2 + phase + layer.rotation
+        const variation =
+          1 +
+          Math.sin(index * 2.17 + seed * 0.61 + layerIndex * 0.73) * 0.075 +
+          Math.cos(index * 3.11 - seed * 0.29) * 0.035
+        const ringRadius = radius * layer.radiusScale * variation
+        return new Vector3(
+          Math.cos(angle) * ringRadius,
+          Math.sin(angle) * ringRadius,
+          radius * layer.z
+        )
+      })
+    )
+    const positions: number[] = []
+    const pushTriangle = (a: Vector3, b: Vector3, c: Vector3) => {
+      positions.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
     }
 
-    positions.needsUpdate = true
+    for (let layerIndex = 0; layerIndex < rings.length - 1; layerIndex += 1) {
+      const lower = rings[layerIndex]
+      const upper = rings[layerIndex + 1]
+      if (!lower || !upper) continue
+      for (let index = 0; index < segments; index += 1) {
+        const next = (index + 1) % segments
+        const lowerCurrent = lower[index]
+        const lowerNext = lower[next]
+        const upperCurrent = upper[index]
+        const upperNext = upper[next]
+        if (!lowerCurrent || !lowerNext || !upperCurrent || !upperNext) continue
+        pushTriangle(lowerCurrent, lowerNext, upperCurrent)
+        pushTriangle(lowerNext, upperNext, upperCurrent)
+      }
+    }
+
+    const bottom = new Vector3(0, 0, radius * layers[0].z)
+    const top = new Vector3(
+      Math.sin(seed * 0.83) * radius * 0.045,
+      Math.cos(seed * 0.57) * radius * 0.045,
+      radius * layers[3].z
+    )
+    const bottomRing = rings[0]
+    const topRing = rings[rings.length - 1]
+    if (bottomRing && topRing) {
+      for (let index = 0; index < segments; index += 1) {
+        const next = (index + 1) % segments
+        const bottomCurrent = bottomRing[index]
+        const bottomNext = bottomRing[next]
+        const topCurrent = topRing[index]
+        const topNext = topRing[next]
+        if (!bottomCurrent || !bottomNext || !topCurrent || !topNext) continue
+        pushTriangle(bottom, bottomNext, bottomCurrent)
+        pushTriangle(top, topCurrent, topNext)
+      }
+    }
+
+    nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
     nextGeometry.computeVertexNormals()
     nextGeometry.computeBoundingSphere()
     return nextGeometry
@@ -615,7 +666,8 @@ function OpalCabochon({
         width / height,
         crop.zoom,
         config.opalScale,
-        config.opalRotation
+        config.opalRotation,
+        crop.rotation ?? 0
       )
       const rotation = (crop.rotation ?? 0) + customerRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
@@ -659,20 +711,10 @@ function OpalCabochon({
     return (
       <group>
         <mesh castShadow geometry={geometry} receiveShadow>
-          <meshPhysicalMaterial
+          <meshBasicMaterial
             attach="material-0"
             map={photoTexture}
-            color="#dddddd"
-            clearcoat={0.22}
-            clearcoatRoughness={0.2}
-            emissive="#ffffff"
-            emissiveIntensity={0.16}
-            emissiveMap={photoTexture}
-            envMapIntensity={0.24}
-            ior={1.44}
-            metalness={0}
-            roughness={0.34}
-            specularIntensity={0.22}
+            color="#ffffff"
             toneMapped={false}
           />
           <meshPhysicalMaterial
@@ -1555,12 +1597,12 @@ function Setting({
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <RoundedSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
-                    {profile.beadPrimitive === 'organic-granule' && (
-                      <OrganicSolderGeometry radius={profile.beadRadius} seed={key} />
+                    {profile.beadPrimitive === 'faceted-organic-granule' && (
+                      <FacetedOrganicSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
                     <SolderGrainMaterial
                       faceted={config.style === 'aurora'}
-                      organic={profile.beadPrimitive === 'organic-granule'}
+                      organic={profile.beadPrimitive === 'faceted-organic-granule'}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
                       tone={solderTone}

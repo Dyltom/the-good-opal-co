@@ -170,7 +170,19 @@ describe('OpalPlacementEditor', () => {
     fireEvent.pointerMove(aperture, { clientX: 220, clientY: 180, pointerId: 7 })
 
     expect(onChange).not.toHaveBeenCalled()
-    expect(screen.getByText('Increase zoom to move colour')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Start framing colour' })).toBeTruthy()
+  })
+
+  test('starts movable framing only after an explicit customer action', () => {
+    const onChange = vi.fn()
+    renderEditor(defaultOpalPlacement, onChange)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start framing colour' }))
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...defaultOpalPlacement,
+      opalScale: 1.15,
+    })
   })
 
   test('moves the photo at the customer-selected zoom without changing magnification', () => {

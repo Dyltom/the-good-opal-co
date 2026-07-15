@@ -106,32 +106,36 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('preserves catalogue pixels and uses fused style-specific solder grains', () => {
-    expect(sceneSource).toContain('<meshPhysicalMaterial\n            attach="material-0"')
+    expect(sceneSource).toContain('<meshBasicMaterial\n            attach="material-0"')
     expect(sceneSource).toContain('map={photoTexture}')
+    expect(sceneSource).toContain('color="#ffffff"')
     expect(sceneSource).toContain('toneMapped={false}')
     expect(sceneSource).toContain("profile.beadPrimitive === 'rounded-granule'")
     expect(sceneSource).toContain('function RoundedSolderGeometry')
     expect(sceneSource).toContain(
       '<RoundedSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
-    expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
-    expect(sceneSource).toContain('function OrganicSolderGeometry')
-    expect(sceneSource).toContain('new SphereGeometry(radius, 18 + (seed % 3), 12)')
+    expect(sceneSource).toContain("profile.beadPrimitive === 'faceted-organic-granule'")
+    expect(sceneSource).toContain('function FacetedOrganicSolderGeometry')
+    expect(sceneSource).toContain('const segments = 7 + (seed % 3)')
     expect(sceneSource).toContain(
-      '<OrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
+      "nextGeometry.setAttribute('position', new Float32BufferAttribute"
+    )
+    expect(sceneSource).toContain(
+      '<FacetedOrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
     expect(sceneSource).toContain("faceted={config.style === 'aurora'}")
     expect(sceneSource).not.toContain('lobeOffset')
     expect(sceneSource).toContain('usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined')
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.55 : organic \? 1\.25 : 1\.4\}/
+      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.4 : organic \? 1\.25 : 1\.4\}/
     )
-    expect(sceneSource).toContain('faceted ? 1.55 : organic ? 1.25 : 1.4')
-    expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
+    expect(sceneSource).toContain('faceted ? 1.4 : organic ? 1.25 : 1.4')
+    expect(sceneSource).toContain("organic={profile.beadPrimitive === 'faceted-organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
-    expect(sceneSource).not.toContain('flatShading={faceted}')
+    expect(sceneSource).toContain('flatShading={faceted}')
     expect(sceneSource).toContain('bottomZ={Math.max(bezelBottom, 0.008)}')
     expect(sceneSource).toContain('topZ={0.026}')
     expect(sceneSource).not.toContain('position={[0, 0, -profile.beadRadius * 0.38]}')

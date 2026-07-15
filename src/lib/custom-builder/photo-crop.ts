@@ -32,10 +32,18 @@ const maximumCustomerRotation = 45
 const maximumTextureZoom = 12
 const maximumInteractiveTextureZoom = 7.5
 
-export function getPhotoPlacementScaleMax(baseZoom: number): number {
+export function getPhotoPlacementScaleMax(
+  baseZoom: number,
+  stoneAspect = 1,
+  baseRotation = 0
+): number {
+  const baseCoverScale = rotationCoverScale(stoneAspect, baseRotation)
   return Math.max(
     1,
-    Math.min(placementScaleLimit, maximumInteractiveTextureZoom / Math.max(1, baseZoom))
+    Math.min(
+      placementScaleLimit,
+      maximumInteractiveTextureZoom / Math.max(1, baseZoom * baseCoverScale)
+    )
   )
 }
 
@@ -64,31 +72,64 @@ export function getPhotoPlacementRotationLimit(
   baseZoom: number,
   placementScale: number
 ): number {
-  if (stoneAspect <= 0 || baseZoom < 1 || placementScale < 1) return 0
-  const availableCoverScale = maximumTextureZoom / (baseZoom * placementScale)
-  if (availableCoverScale <= 1) return 0
-  if (rotationCoverScale(stoneAspect, maximumCustomerRotation) <= availableCoverScale) {
-    return maximumCustomerRotation
+  const bounds = getPhotoPlacementRotationBounds(stoneAspect, baseZoom, 0, placementScale)
+  return Math.min(Math.abs(bounds.min), Math.abs(bounds.max))
+}
+
+export interface PhotoPlacementRotationBounds {
+  max: number
+  min: number
+}
+
+/**
+ * Bounds the customer adjustment around the source photo's reviewed rotation.
+ * A non-zero base rotation is not symmetric: adding rotation can expose a
+ * source corner while rotating back toward zero remains safe. The old ±limit
+ * API ignored that asymmetry and could leak background for new mapped photos.
+ */
+export function getPhotoPlacementRotationBounds(
+  stoneAspect: number,
+  baseZoom: number,
+  baseRotation: number,
+  placementScale: number
+): PhotoPlacementRotationBounds {
+  if (stoneAspect <= 0 || baseZoom < 1 || placementScale < 1 || !Number.isFinite(baseRotation)) {
+    return { min: 0, max: 0 }
   }
 
-  let lower = 0
-  let upper = maximumCustomerRotation
-  for (let iteration = 0; iteration < 32; iteration += 1) {
-    const middle = (lower + upper) / 2
-    if (rotationCoverScale(stoneAspect, middle) <= availableCoverScale) lower = middle
-    else upper = middle
+  const availableCoverScale = maximumTextureZoom / (baseZoom * placementScale)
+  const isSafe = (customerRotation: number) =>
+    rotationCoverScale(stoneAspect, baseRotation + customerRotation) <=
+    availableCoverScale + Number.EPSILON
+  if (!isSafe(0)) return { min: 0, max: 0 }
+
+  const findBoundary = (direction: -1 | 1): number => {
+    let safe = 0
+    for (let tenth = 1; tenth <= maximumCustomerRotation * 10; tenth += 1) {
+      const candidate = direction * (tenth / 10)
+      if (!isSafe(candidate)) return safe
+      safe = candidate
+    }
+    return direction * maximumCustomerRotation
   }
-  return Math.floor(lower * 10) / 10
+
+  return { min: findBoundary(-1), max: findBoundary(1) }
 }
 
 export function constrainPhotoPlacementRotation(
   stoneAspect: number,
   baseZoom: number,
   placementScale: number,
-  rotationDegrees: number
+  rotationDegrees: number,
+  baseRotation = 0
 ): number {
-  const limit = getPhotoPlacementRotationLimit(stoneAspect, baseZoom, placementScale)
-  return clamp(rotationDegrees, -limit, limit)
+  const bounds = getPhotoPlacementRotationBounds(
+    stoneAspect,
+    baseZoom,
+    baseRotation,
+    placementScale
+  )
+  return clamp(rotationDegrees, bounds.min, bounds.max)
 }
 
 /**
