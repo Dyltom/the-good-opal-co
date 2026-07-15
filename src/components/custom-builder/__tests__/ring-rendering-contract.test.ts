@@ -115,6 +115,11 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain(
       '<RoundedSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
+    expect(sceneSource).toContain('function OrganicSolderGeometry')
+    expect(sceneSource).toContain("profile.beadPrimitive === 'organic-granule'")
+    expect(sceneSource).toContain(
+      '<OrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
+    )
     expect(sceneSource).toContain("profile.beadPrimitive === 'faceted-organic-granule'")
     expect(sceneSource).toContain('function FacetedOrganicSolderGeometry')
     expect(sceneSource).toContain('const segments = 7 + (seed % 3)')
@@ -132,7 +137,7 @@ describe('photoreal ring rendering contract', () => {
       /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.4 : organic \? 1\.25 : 1\.4\}/
     )
     expect(sceneSource).toContain('faceted ? 1.4 : organic ? 1.25 : 1.4')
-    expect(sceneSource).toContain("organic={config.style === 'aurora'}")
+    expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
     expect(sceneSource).toContain('flatShading={faceted}')

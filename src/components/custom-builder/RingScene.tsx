@@ -415,6 +415,41 @@ function RoundedSolderGeometry({ radius, seed }: { radius: number; seed: number 
   return <primitive attach="geometry" object={geometry} />
 }
 
+function OrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
+  const geometry = useMemo(() => {
+    const nextGeometry = new SphereGeometry(radius, 14, 10)
+    const positions = nextGeometry.getAttribute('position')
+    const point = new Vector3()
+
+    for (let index = 0; index < positions.count; index += 1) {
+      point.fromBufferAttribute(positions, index)
+      const length = point.length() || 1
+      const normalizedX = point.x / length
+      const normalizedY = point.y / length
+      const radialVariation =
+        1 +
+        Math.sin(normalizedX * 7.3 + normalizedY * 3.1 + seed * 0.61) * 0.065 +
+        Math.cos(normalizedY * 8.7 - normalizedX * 2.4 - seed * 0.37) * 0.038
+      const widthBias = 1 + Math.sin(seed * 1.13) * 0.035
+      const heightBias = 1 + Math.cos(seed * 0.91) * 0.035
+      positions.setXYZ(
+        index,
+        point.x * radialVariation * widthBias,
+        point.y * radialVariation * heightBias,
+        point.z * (0.9 + Math.sin(seed * 0.47) * 0.035)
+      )
+    }
+
+    positions.needsUpdate = true
+    nextGeometry.computeVertexNormals()
+    nextGeometry.computeBoundingSphere()
+    return nextGeometry
+  }, [radius, seed])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+  return <primitive attach="geometry" object={geometry} />
+}
+
 function createOpalTexture(stone: RingConfig['stone'], selectedOpal?: BuilderOpal): CanvasTexture {
   const palette = opalPalettes[stone]
   const seed = selectedOpal?.visual.patternSeed ?? 19
@@ -1621,12 +1656,15 @@ function Setting({
                     {profile.beadPrimitive === 'rounded-granule' && (
                       <RoundedSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
+                    {profile.beadPrimitive === 'organic-granule' && (
+                      <OrganicSolderGeometry radius={profile.beadRadius} seed={key} />
+                    )}
                     {profile.beadPrimitive === 'faceted-organic-granule' && (
                       <FacetedOrganicSolderGeometry radius={profile.beadRadius} seed={key} />
                     )}
                     <SolderGrainMaterial
                       faceted={profile.beadPrimitive === 'faceted-organic-granule'}
-                      organic={config.style === 'aurora'}
+                      organic={profile.beadPrimitive === 'organic-granule'}
                       metal={config.metal}
                       roughness={profile.beadRoughness}
                       tone={solderTone}

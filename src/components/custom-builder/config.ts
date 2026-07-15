@@ -147,7 +147,7 @@ export interface RingStyleGeometryProfile {
   /** Maximum filing/stretch along the halo tangent; preserves radial head size. */
   beadTangentialStretchMax: number
   beadShape: 'granulated' | 'none'
-  beadPrimitive: 'faceted-organic-granule' | 'none' | 'rounded-granule'
+  beadPrimitive: 'faceted-organic-granule' | 'none' | 'organic-granule' | 'rounded-granule'
   beadVariation: number
   haloPhase: number
   haloSupportCoverage: number
@@ -453,7 +453,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadBridgeZ: 0.03,
     beadTangentialStretchMax: 1.4,
     beadShape: 'granulated',
-    beadPrimitive: 'rounded-granule',
+    beadPrimitive: 'organic-granule',
     beadVariation: 1.55,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.62,
