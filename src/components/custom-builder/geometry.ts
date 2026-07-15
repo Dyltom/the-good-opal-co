@@ -142,8 +142,11 @@ export const stoneDimensions: Record<RingConfig['shape'], StoneDimensions> = {
 
 export const cameraPositions: Record<'three-quarter' | 'front' | 'profile', CameraVector> = {
   // Owned three-quarter photographs retain most of the opal face. The old
-  // 37-degree view turned the setting into a narrow signboard.
-  'three-quarter': [2.2, 6.6, 1.6],
+  // 37-degree view turned the setting into a narrow signboard. View from the
+  // opposite shoulder so the setting lands on the top-right of the ring loop,
+  // matching the requested product-view composition instead of reading as if
+  // it were attached to the loop's left side.
+  'three-quarter': [-2.2, 6.6, 1.6],
   // Sold face-on photographs show one slim shoulder on each side of the head.
   // Keep only enough elevation to retain a soft edge highlight; the previous
   // 0.45 elevation exposed both shank faces as two horizontal rails.
@@ -1341,17 +1344,20 @@ export function getCabochonDepthProfile(
   const styleDomeCap = profile
     ? Math.min(width, height) * 2 * profile.domeHeightRatio
     : Number.POSITIVE_INFINITY
-  // A loose listing's total depth includes material hidden inside the cup.
-  // Treating 58% of raw depth as exposed dome made deep opals tower above the
-  // sold low-bezel designs. Cap both measured and reference stones to the
-  // crown ratio observed for the selected sold collection design.
+  // A measured loose stone must remain the same object when the customer
+  // changes setting style. Earlier style-specific caps visibly flattened or
+  // raised that same stone between compatible designs. Without a calibrated
+  // side capture, use one conservative cabochon crown limit; the setting adapts
+  // around it instead of rewriting the stone.
   const domeHeight = depthMm
-    ? Math.min(totalDepth * 0.42, styleDomeCap, 0.18)
+    ? Math.min(totalDepth * 0.42, Math.min(width, height) * 0.3, 0.18)
     : profile
       ? styleDomeCap
       : Math.min(width, height) * 0.22
   // Most loose-stone depth is hidden inside the handmade cup once set.
-  const visibleSeatCap = profile?.visibleSeatCap ?? 0.08
+  // Keep the rendered girdle invariant too; style-specific cup depth belongs
+  // to the setting geometry, not the selected opal mesh.
+  const visibleSeatCap = depthMm ? 0.06 : (profile?.visibleSeatCap ?? 0.08)
   const visibleSeatDepth = Math.min(Math.max(totalDepth - domeHeight, 0), visibleSeatCap)
 
   return {

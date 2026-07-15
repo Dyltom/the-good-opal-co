@@ -224,7 +224,20 @@ describe('custom ring geometry contract', () => {
     expect(projectedDepth['three-quarter']).toBeGreaterThan(0.88)
     expect(projectedDepth['three-quarter']).toBeLessThan(0.95)
     expect(cameraPositions.front).toEqual([0, 5.8, 0.2])
-    expect(cameraPositions['three-quarter']).toEqual([2.2, 6.6, 1.6])
+    expect(cameraPositions['three-quarter']).toEqual([-2.2, 6.6, 1.6])
+  })
+
+  test('presents the setting on the top-right of the ring in three-quarter view', () => {
+    const target = getRingFramingTarget(defaultRingConfig)
+    const settingDirection = projectWorldAxisToView(
+      [0, 1, 0],
+      cameraPositions['three-quarter'],
+      target,
+      cameraUpVectors['three-quarter']
+    )
+
+    expect(settingDirection.horizontal).toBeGreaterThan(0)
+    expect(settingDirection.vertical).toBeGreaterThan(0)
   })
 
   test('keeps the setting above the shank and reveals the opal edge in profile', () => {
@@ -549,8 +562,8 @@ describe('custom ring geometry contract', () => {
 
     expect(shallow.domeHeight).toBeCloseTo(0.042, 12)
     expect(shallow.girdleZ - shallow.baseZ).toBeCloseTo(0.058, 12)
-    expect(deep.domeHeight).toBeCloseTo(0.18, 12)
-    expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.08, 12)
+    expect(deep.domeHeight).toBeCloseTo(0.12, 12)
+    expect(deep.girdleZ - deep.baseZ).toBeCloseTo(0.06, 12)
     expect(coral.girdleZ - coral.baseZ).toBeCloseTo(0.06, 12)
   })
 
@@ -564,20 +577,19 @@ describe('custom ring geometry contract', () => {
     expect(getCabochonDepthProfile(0.4, 0.5, undefined, 'aurora').domeHeight).toBeCloseTo(0.096, 12)
   })
 
-  test('keeps measured store opals inside each sold design crown ratio', () => {
+  test('keeps a measured store opal physically invariant across compatible styles', () => {
     const gemini = getCabochonDepthProfile(0.3, 0.35, 3, 'gemini')
-    const coral = getCabochonDepthProfile(0.25, 0.325, 3.5, 'coral')
+    const coral = getCabochonDepthProfile(0.3, 0.35, 3, 'coral')
     const sunMoon = getCabochonDepthProfile(0.3, 0.35, 3, 'sun-moon')
     const aurora = getCabochonDepthProfile(0.3, 0.35, 3, 'aurora')
 
-    expect(gemini.domeHeight).toBeCloseTo(0.087, 12)
-    expect(coral.domeHeight).toBeCloseTo(0.055, 12)
-    expect(gemini.girdleZ - gemini.baseZ).toBeCloseTo(0.036, 12)
-    expect(coral.girdleZ - coral.baseZ).toBeCloseTo(0.06, 12)
-    expect(sunMoon.girdleZ - sunMoon.baseZ).toBeCloseTo(0.044, 12)
-    expect(aurora.girdleZ - aurora.baseZ).toBeCloseTo(0.028, 12)
-    expect(getCabochonDepthProfile(0.35, 0.4, 3.5, 'gemini').domeHeight).toBeCloseTo(0.1015, 12)
-    expect(getCabochonDepthProfile(0.265, 0.475, 2.5, 'gemini').domeHeight).toBeCloseTo(0.07685, 12)
+    expect(gemini).toEqual(coral)
+    expect(gemini).toEqual(sunMoon)
+    expect(gemini).toEqual(aurora)
+    expect(gemini.domeHeight).toBeCloseTo(0.09, 12)
+    expect(gemini.girdleZ - gemini.baseZ).toBeCloseTo(0.06, 12)
+    expect(getCabochonDepthProfile(0.35, 0.4, 3.5, 'gemini').domeHeight).toBeCloseTo(0.105, 12)
+    expect(getCabochonDepthProfile(0.265, 0.475, 2.5, 'gemini').domeHeight).toBeCloseTo(0.0795, 12)
   })
 
   test('seats every bezel lip against the cabochon surface without visible gaps', () => {
