@@ -11,12 +11,17 @@ import {
 } from '@/lib/custom-builder/photo-crop'
 import { getBuilderOpalPhotoSource } from '@/lib/custom-builder/opal-photo-source'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
-import { defaultOpalPlacement } from './config'
+import { defaultOpalPlacement, ringStyleGeometryProfiles } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
 import {
+  applyHandmadeBeadVariation,
+  coalesceOverlappingHaloBeads,
   cssSilhouetteClipPath,
   evenlySpacedOutlinePoints,
+  fuseContactingHaloBeads,
   getRenderedStoneAspect,
+  getSolderGrainTone,
+  getStyleBeadCount,
 } from './geometry'
 
 interface OpalPlacementEditorProps {
@@ -70,6 +75,9 @@ const metalColours: Record<RingConfig['metal'], string> = {
   'rose-gold': '#bd806e',
   platinum: '#e4e3df',
 }
+
+const metalGradient =
+  'linear-gradient(135deg, rgb(255 255 255 / 0.78) 0%, transparent 42%, rgb(255 255 255 / 0.3) 70%, rgb(0 0 0 / 0.24) 100%)'
 
 const styleLabels: Record<RingConfig['style'], string> = {
   aurora: 'Aurora halo',
@@ -171,23 +179,47 @@ export function OpalPlacementEditor({
   const haloPoints = useMemo(() => {
     if (style !== 'aurora' && style !== 'sun-moon') return []
 
+    const profile = ringStyleGeometryProfiles[style]
     const halfWidth = 0.5
     const halfHeight = halfWidth / stoneAspect
-    const count = style === 'aurora' ? 28 : 40
-    return evenlySpacedOutlinePoints(
+    const count = getStyleBeadCount(
+      style,
       opal.visual.silhouette,
       halfWidth,
       halfHeight,
-      style === 'aurora' ? 0.085 : 0.1,
-      count,
-      -Math.PI / 2,
-      style,
       opal.visual.contour
-    ).map(({ key, x, y }) => ({
+    )
+    const varied = applyHandmadeBeadVariation(
+      evenlySpacedOutlinePoints(
+        opal.visual.silhouette,
+        halfWidth,
+        halfHeight,
+        profile.haloOffset,
+        count,
+        profile.haloPhase,
+        style,
+        opal.visual.contour
+      ),
+      profile.beadVariation,
+      profile.beadFlattening,
+      profile.beadAsymmetry
+    )
+    const beads = fuseContactingHaloBeads(
+      coalesceOverlappingHaloBeads(varied, profile.beadRadius),
+      profile.beadRadius,
+      profile.beadMinimumOverlap,
+      profile.beadTangentialStretchMax
+    )
+
+    return beads.map(({ key, rotation, size, stretchX, stretchY, x, y }) => ({
       key,
-      // Stable precision keeps server and browser style serialization equal.
       left: Number((50 + (x / halfWidth) * 50).toFixed(4)),
+      rotation: Number(((rotation * 180) / Math.PI).toFixed(3)),
+      scaleX: Number((size * stretchX).toFixed(4)),
+      scaleY: Number((size * stretchY).toFixed(4)),
+      tone: getSolderGrainTone(key, true),
       top: Number((50 - (y / halfHeight) * 50).toFixed(4)),
+      width: Number(((profile.beadRadius / halfWidth) * 100).toFixed(4)),
     }))
   }, [opal.visual.contour, opal.visual.silhouette, stoneAspect, style])
 
@@ -349,22 +381,22 @@ export function OpalPlacementEditor({
             >
               {haloPoints.length > 0 && (
                 <span aria-hidden="true" className="pointer-events-none absolute inset-0">
-                  {haloPoints.map(({ key, left, top }) => (
+                  {haloPoints.map(({ key, left, rotation, scaleX, scaleY, tone, top, width }) => (
                     <span
                       key={key}
+                      data-opal-halo-grain={style}
                       className={cn(
                         'absolute aspect-square -translate-x-1/2 -translate-y-1/2 border border-black/20 shadow-[inset_1px_1px_2px_rgb(255_255_255/0.38),0_2px_4px_rgb(0_0_0/0.42)]',
-                        style === 'aurora' ? 'w-[11%] rounded-[42%]' : 'w-[9%] rounded-full'
+                        style === 'aurora' ? 'rounded-[44%]' : 'rounded-full'
                       )}
                       style={{
                         backgroundColor: metalColours[metal],
+                        backgroundImage: metalGradient,
                         left: `${left}%`,
                         top: `${top}%`,
-                        filter:
-                          style === 'aurora'
-                            ? `brightness(${(0.72 + (key % 5) * 0.04).toFixed(2)})`
-                            : undefined,
-                        transform: `translate(-50%, -50%) rotate(${(key * 47) % 180}deg) scale(${style === 'aurora' ? (0.9 + (key % 4) * 0.045).toFixed(3) : 1})`,
+                        filter: `brightness(${tone.toFixed(3)})`,
+                        transform: `translate(-50%, -50%) rotate(${rotation}deg) scale(${scaleX}, ${scaleY})`,
+                        width: `${width}%`,
                       }}
                     />
                   ))}
@@ -376,7 +408,11 @@ export function OpalPlacementEditor({
                   bezelPadding,
                   silhouetteClass(opal.visual.silhouette)
                 )}
-                style={{ backgroundColor: metalColours[metal], clipPath }}
+                style={{
+                  backgroundColor: metalColours[metal],
+                  backgroundImage: metalGradient,
+                  clipPath,
+                }}
               >
                 <div
                   data-opal-setting-seat={style}

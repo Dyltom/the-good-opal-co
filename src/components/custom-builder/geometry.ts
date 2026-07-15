@@ -417,14 +417,22 @@ export function soldStyleOutlinePoint(
   offset = 0,
   contour?: BuilderStoneContourV1
 ): readonly [number, number] {
-  return outlinePoint(
-    shape,
-    angle,
-    width,
-    height,
-    offset + getSoldStyleOuterVariation(style, angle),
-    contour
-  )
+  const variedOffset = offset + getSoldStyleOuterVariation(style, angle)
+  const point = outlinePoint(shape, angle, width, height, variedOffset, contour)
+
+  // Coral's owned sold-ring photographs show a square outer crown wrapped
+  // around a softer cushion stone. Keep the exact stone seat unchanged, then
+  // lift only the outer diagonal metal toward the square head envelope.
+  if (style !== 'coral' || shape !== 'cushion' || contour || offset <= 0) return point
+
+  const cornerWeight = Math.sin(angle * 2) ** 2
+  const cornerLift = cornerWeight * 0.18
+  const extentX = width + Math.max(0, variedOffset)
+  const extentY = height + Math.max(0, variedOffset)
+  return [
+    point[0] + Math.sign(point[0]) * Math.max(0, extentX - Math.abs(point[0])) * cornerLift,
+    point[1] + Math.sign(point[1]) * Math.max(0, extentY - Math.abs(point[1])) * cornerLift,
+  ]
 }
 
 export function getBezelWallContourPoints(

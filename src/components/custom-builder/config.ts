@@ -232,7 +232,9 @@ const geminiBezelSeat = {
   // rail. Overall head width comes from that dark seat, not a swollen bright lip.
   bezelWallOffset: 0.022,
   bezelWallThickness: 0.042,
-  patinaSeatReveal: 0.038,
+  // Owned face-on photographs show a readable bright handmade rail outside
+  // the oxidized seat. The earlier 0.38 mm reveal left only a hairline rail.
+  patinaSeatReveal: 0.03,
 } satisfies BezelSeatGeometry
 
 const coralBezelSeat = {
@@ -240,7 +242,7 @@ const coralBezelSeat = {
   bezelLipRadius: 0.012,
   bezelWallOffset: 0.028,
   bezelWallThickness: 0.054,
-  patinaSeatReveal: 0.05,
+  patinaSeatReveal: 0.04,
 } satisfies BezelSeatGeometry
 
 const sunMoonBezelSeat = {
@@ -302,9 +304,9 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.13,
     visibleSeatCap: 0.036,
     shoulderUnderlap: 0.18,
-    // Keep the cap centre beneath the cup while overlapping the shoulder face
-    // by 0.10 mm. A fully recessed shoulder left a visible air line in profile.
-    shoulderJoinDrop: 0.047,
+    // Bury the shoulder face into the cup by roughly 0.3 mm. A shallower
+    // overlap passed numeric contact checks but still showed an air line.
+    shoulderJoinDrop: 0.028,
     shoulderTransition: 0.04,
     shoulderBlendLengthMm: 1.4,
     shoulderLandingLengthMm: 1.2,
@@ -360,7 +362,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.095,
     visibleSeatCap: 0.06,
     shoulderUnderlap: 0.17,
-    shoulderJoinDrop: 0.039,
+    shoulderJoinDrop: 0.024,
     shoulderTransition: 0.038,
     shoulderBlendLengthMm: 1.3,
     shoulderLandingLengthMm: 1.1,
@@ -395,16 +397,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     beadRadius: 0.038,
     beadCount: 40,
     beadPitchMm: 1,
-    beadFlattening: 0.62,
-    beadAsymmetry: 0.09,
-    beadRoughness: 0.56,
-    beadMinimumOverlap: 0.004,
-    beadBridgeRadius: 0.02,
+    beadFlattening: 0.58,
+    beadAsymmetry: 0.04,
+    beadRoughness: 0.62,
+    beadMinimumOverlap: 0,
+    beadBridgeRadius: 0.018,
     beadBridgeZ: 0.03,
-    beadTangentialStretchMax: 1.35,
+    beadTangentialStretchMax: 1.12,
     beadShape: 'granulated',
     beadPrimitive: 'rounded-granule',
-    beadVariation: 1.45,
+    beadVariation: 1.15,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.62,
     haloValleySupportCoverage: 0.9,
@@ -416,7 +418,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.125,
     visibleSeatCap: 0.044,
     shoulderUnderlap: 0.18,
-    shoulderJoinDrop: 0.042,
+    shoulderJoinDrop: 0.026,
     shoulderTransition: 0.042,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,
@@ -447,20 +449,20 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     // Sold Aurora references show broad, low, softly rounded fused granules.
     // Keep them connected to the dark support web without turning them into
     // either faceted gemstones or a mathematically perfect pearl halo.
-    haloOffset: 0.095,
-    beadRadius: 0.046,
+    haloOffset: 0.096,
+    beadRadius: 0.045,
     beadCount: 28,
     beadPitchMm: 1.12,
-    beadFlattening: 0.56,
-    beadAsymmetry: 0.18,
-    beadRoughness: 0.62,
-    beadMinimumOverlap: 0.004,
-    beadBridgeRadius: 0.034,
+    beadFlattening: 0.5,
+    beadAsymmetry: 0.09,
+    beadRoughness: 0.68,
+    beadMinimumOverlap: 0,
+    beadBridgeRadius: 0.028,
     beadBridgeZ: 0.03,
-    beadTangentialStretchMax: 1.4,
+    beadTangentialStretchMax: 1.12,
     beadShape: 'granulated',
-    beadPrimitive: 'organic-granule',
-    beadVariation: 1.55,
+    beadPrimitive: 'faceted-organic-granule',
+    beadVariation: 1.2,
     haloPhase: -Math.PI / 2,
     haloSupportCoverage: 0.62,
     haloValleySupportCoverage: 0.9,
@@ -472,7 +474,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     domeHeightRatio: 0.1125,
     visibleSeatCap: 0.028,
     shoulderUnderlap: 0.19,
-    shoulderJoinDrop: 0.044,
+    shoulderJoinDrop: 0.027,
     shoulderTransition: 0.045,
     shoulderBlendLengthMm: 1.5,
     shoulderLandingLengthMm: 1.3,

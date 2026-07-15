@@ -4,6 +4,7 @@ import { createElement } from 'react'
 import { describe, expect, test, vi } from 'vitest'
 import type { BuilderOpal, OpalPlacement } from '../config'
 import { defaultOpalPlacement } from '../config'
+import { getRenderedStoneAspect, getStyleBeadCount } from '../geometry'
 
 vi.mock('next/image', () => ({
   default: ({ fill: _fill, ...props }: ComponentProps<'img'> & { fill?: boolean }) =>
@@ -68,6 +69,28 @@ describe('OpalPlacementEditor', () => {
       )
     ).not.toBeNull()
     expect(screen.queryByText('Reviewed source photo')).toBeNull()
+  })
+
+  test('renders halo grains from the shared sold-style geometry profile', () => {
+    const auroraOpal: BuilderOpal = {
+      ...opal,
+      visual: { ...opal.visual, aspectRatio: 0.8, silhouette: 'pear' },
+    }
+    const { container } = render(
+      <OpalPlacementEditor
+        metal="sterling-silver"
+        onChange={vi.fn()}
+        opal={auroraOpal}
+        placement={defaultOpalPlacement}
+        style="aurora"
+      />
+    )
+
+    const grains = container.querySelectorAll('[data-opal-halo-grain="aurora"]')
+    const stoneAspect = getRenderedStoneAspect({ shape: 'pear' }, auroraOpal)
+    expect(grains).toHaveLength(getStyleBeadCount('aurora', 'pear', 0.5, 0.5 / stoneAspect))
+    expect((grains[0] as HTMLElement).style.width).toBe('9%')
+    expect((grains[0] as HTMLElement).style.backgroundImage).toContain('linear-gradient')
   })
 
   test('describes fine placement values in visual directions', () => {

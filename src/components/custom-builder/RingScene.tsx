@@ -20,6 +20,7 @@ import {
   CanvasTexture,
   ClampToEdgeWrapping,
   Color,
+  CylinderGeometry,
   Float32BufferAttribute,
   LinearFilter,
   type Material,
@@ -228,11 +229,11 @@ function MetalMaterial({
     <meshPhysicalMaterial
       color={metalColours[metal]}
       flatShading={flatShading}
-      metalness={0.96}
-      roughness={isSterlingSilver ? Math.max(0.38, roughness) : roughness}
+      metalness={isSterlingSilver ? 0.9 : 0.96}
+      roughness={isSterlingSilver ? Math.max(0.32, roughness) : roughness}
       clearcoat={0.02}
       clearcoatRoughness={0.44}
-      envMapIntensity={1.4}
+      envMapIntensity={isSterlingSilver ? 1.65 : 1.4}
       vertexColors={vertexColors}
     />
   )
@@ -295,18 +296,18 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
-      metalness={faceted ? 0.93 : organic ? 0.93 : 0.94}
+      metalness={faceted ? 0.88 : organic ? 0.88 : 0.9}
       roughness={
         faceted
-          ? Math.max(0.4, Math.min(0.48, roughness * 0.72))
+          ? Math.max(0.58, Math.min(0.72, roughness))
           : organic
-            ? Math.min(0.44, roughness * 0.7)
-            : Math.min(0.4, roughness * 0.68)
+            ? Math.max(0.6, Math.min(0.72, roughness))
+            : Math.max(0.56, Math.min(0.68, roughness))
       }
-      clearcoat={0.025}
-      clearcoatRoughness={faceted ? 0.48 : 0.46}
-      envMapIntensity={faceted ? 1.4 : organic ? 1.25 : 1.4}
-      flatShading={faceted}
+      clearcoat={0}
+      clearcoatRoughness={0.62}
+      envMapIntensity={faceted ? 1.05 : organic ? 0.95 : 1.05}
+      flatShading={false}
     />
   )
 }
@@ -339,76 +340,23 @@ function SolderBridgeMaterial({ metal }: { metal: RingConfig['metal'] }) {
 
 function FacetedOrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
   const geometry = useMemo(() => {
-    // Aurora grains are filed, fused nuggets rather than round granulation.
-    // A broad coplanar top and two irregular bevels read as a hammered nugget,
-    // avoiding the star facets produced by a low-poly sphere.
-    const nextGeometry = new BufferGeometry()
-    const segments = 7 + (seed % 3)
-    const phase = seed * 0.37
-    const layers = [
-      { radiusScale: 0.7, rotation: -0.04, z: -0.68 },
-      { radiusScale: 1, rotation: 0, z: -0.16 },
-      { radiusScale: 0.91, rotation: 0.035, z: 0.38 },
-      { radiusScale: 0.64, rotation: 0.015, z: 0.62 },
-    ] as const
-    const rings = layers.map((layer, layerIndex) =>
-      Array.from({ length: segments }, (_, index) => {
-        const angle = (index / segments) * Math.PI * 2 + phase + layer.rotation
-        const variation =
-          1 +
-          Math.sin(index * 2.17 + seed * 0.61 + layerIndex * 0.73) * 0.075 +
-          Math.cos(index * 3.11 - seed * 0.29) * 0.035
-        const ringRadius = radius * layer.radiusScale * variation
-        return new Vector3(
-          Math.cos(angle) * ringRadius,
-          Math.sin(angle) * ringRadius,
-          radius * layer.z
-        )
-      })
-    )
-    const positions: number[] = []
-    const pushTriangle = (a: Vector3, b: Vector3, c: Vector3) => {
-      positions.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
+    // Aurora uses clipped solder wire: low tapered nubs with filed tops, not
+    // round granules or crystalline low-poly pebbles. CylinderGeometry keeps
+    // the top planar while its shared side normals preserve a soft silhouette.
+    const nextGeometry = new CylinderGeometry(radius * 0.78, radius, radius * 1.2, 16, 3)
+    nextGeometry.rotateX(Math.PI / 2)
+    const positions = nextGeometry.getAttribute('position')
+    const point = new Vector3()
+
+    for (let index = 0; index < positions.count; index += 1) {
+      point.fromBufferAttribute(positions, index)
+      const angle = Math.atan2(point.y, point.x)
+      const variation =
+        1 + Math.sin(angle * 3 + seed * 0.61) * 0.025 + Math.cos(angle * 5 - seed * 0.29) * 0.012
+      positions.setXYZ(index, point.x * variation, point.y * variation, point.z)
     }
 
-    for (let layerIndex = 0; layerIndex < rings.length - 1; layerIndex += 1) {
-      const lower = rings[layerIndex]
-      const upper = rings[layerIndex + 1]
-      if (!lower || !upper) continue
-      for (let index = 0; index < segments; index += 1) {
-        const next = (index + 1) % segments
-        const lowerCurrent = lower[index]
-        const lowerNext = lower[next]
-        const upperCurrent = upper[index]
-        const upperNext = upper[next]
-        if (!lowerCurrent || !lowerNext || !upperCurrent || !upperNext) continue
-        pushTriangle(lowerCurrent, lowerNext, upperCurrent)
-        pushTriangle(lowerNext, upperNext, upperCurrent)
-      }
-    }
-
-    const bottom = new Vector3(0, 0, radius * layers[0].z)
-    const top = new Vector3(
-      Math.sin(seed * 0.83) * radius * 0.045,
-      Math.cos(seed * 0.57) * radius * 0.045,
-      radius * layers[3].z
-    )
-    const bottomRing = rings[0]
-    const topRing = rings[rings.length - 1]
-    if (bottomRing && topRing) {
-      for (let index = 0; index < segments; index += 1) {
-        const next = (index + 1) % segments
-        const bottomCurrent = bottomRing[index]
-        const bottomNext = bottomRing[next]
-        const topCurrent = topRing[index]
-        const topNext = topRing[next]
-        if (!bottomCurrent || !bottomNext || !topCurrent || !topNext) continue
-        pushTriangle(bottom, bottomNext, bottomCurrent)
-        pushTriangle(top, topCurrent, topNext)
-      }
-    }
-
-    nextGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+    positions.needsUpdate = true
     nextGeometry.computeVertexNormals()
     nextGeometry.computeBoundingSphere()
     return nextGeometry
@@ -1369,12 +1317,12 @@ function ProfiledBezelLip({
     <mesh castShadow geometry={geometry} receiveShadow>
       <meshPhysicalMaterial
         attach="material-0"
-        color={usesOxidizedSilverRail ? '#c0c0ba' : metalColours[config.metal]}
-        metalness={usesOxidizedSilverRail ? 0.92 : 0.96}
-        roughness={usesOxidizedSilverRail ? 0.5 : config.metal === 'sterling-silver' ? 0.38 : 0.25}
+        color={usesOxidizedSilverRail ? '#e6e2da' : metalColours[config.metal]}
+        metalness={usesOxidizedSilverRail ? 0.9 : 0.96}
+        roughness={usesOxidizedSilverRail ? 0.34 : config.metal === 'sterling-silver' ? 0.32 : 0.25}
         clearcoat={usesOxidizedSilverRail ? 0.02 : 0.04}
-        clearcoatRoughness={usesOxidizedSilverRail ? 0.54 : 0.36}
-        envMapIntensity={usesOxidizedSilverRail ? 1.1 : 1.55}
+        clearcoatRoughness={usesOxidizedSilverRail ? 0.46 : 0.36}
+        envMapIntensity={usesOxidizedSilverRail ? 1.65 : 1.55}
       />
       <meshStandardMaterial
         attach="material-1"
@@ -1507,7 +1455,7 @@ function Setting({
   const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
   const usesOxidizedSeat =
     config.metal === 'sterling-silver' && (config.style === 'gemini' || config.style === 'coral')
-  const outerRailThickness = config.style === 'coral' ? 0.01 : 0.008
+  const outerRailThickness = config.style === 'coral' ? 0.016 : 0.012
   const bezelInnerOffset = profile.bezelWallOffset - profile.bezelWallThickness / 2
   const oxidizedSeatOuterOffset = outerBezelOffset - outerRailThickness
   const oxidizedSeatThickness = oxidizedSeatOuterOffset - bezelInnerOffset
@@ -1676,8 +1624,14 @@ function Setting({
               // or changing between renders.
               const usesHandmadeSurface = profile.beadShape === 'granulated'
               const solderTone = getSolderGrainTone(key, usesHandmadeSurface)
-              const grainTiltX = ((((key * 13) % 7) - 3) / 3) * 0.16
-              const grainTiltY = ((((key * 17) % 9) - 4) / 4) * 0.14
+              const maximumTilt =
+                profile.beadPrimitive === 'rounded-granule'
+                  ? 0.045
+                  : profile.beadPrimitive === 'faceted-organic-granule'
+                    ? 0.055
+                    : 0.1
+              const grainTiltX = ((((key * 13) % 7) - 3) / 3) * maximumTilt
+              const grainTiltY = ((((key * 17) % 9) - 4) / 4) * maximumTilt
               return (
                 <group
                   key={key}

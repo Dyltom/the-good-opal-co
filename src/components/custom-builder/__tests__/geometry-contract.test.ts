@@ -729,16 +729,16 @@ describe('custom ring geometry contract', () => {
       expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
       expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
       expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.19)
-      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.035)
-      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.05)
-      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.008)
-      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.012)
+      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
+      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.03)
+      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.024)
+      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.03)
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)
         expect(profile.beadPitchMm, style).toBeGreaterThan(0)
         expect(profile.beadFlattening, style).toBeGreaterThanOrEqual(
-          style === 'aurora' ? 0.54 : 0.6
+          style === 'aurora' ? 0.48 : 0.56
         )
         expect(profile.beadFlattening, style).toBeLessThanOrEqual(0.7)
         expect(profile.haloOffset - profile.beadRadius, style).toBeGreaterThan(
@@ -791,9 +791,9 @@ describe('custom ring geometry contract', () => {
         getHaloBeadSurfaceGap(bead, beads[(index + 1) % beads.length]!, profile.beadRadius)
       )
 
-      // Sun & Moon uses a tight fused chain. Aurora's broader handmade pellets
-      // retain visible oxidised seams in the owned close-up.
-      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(style === 'aurora' ? 0.28 : 0.02)
+      // The owned close-ups show individual grains and oxidized valleys, not a
+      // stretched pearl chain. Low solder bridges span these bounded gaps.
+      expect(Math.max(...gaps) * 10, style).toBeLessThanOrEqual(style === 'aurora' ? 0.4 : 0.18)
       expect(profile.haloOffset + profile.beadRadius, style).toBeCloseTo(expectedOuterOffset, 12)
       expect(profile.haloValleySupportCoverage, style).toBeGreaterThanOrEqual(0.9)
     }

@@ -61,8 +61,8 @@ describe('photoreal ring rendering contract', () => {
   })
 
   test('uses colour-managed PBR metals without a visible contact-shadow plane', () => {
-    expect(sceneSource).toContain('metalness={0.96}')
-    expect(sceneSource).toContain('envMapIntensity={1.4}')
+    expect(sceneSource).toContain('metalness={isSterlingSilver ? 0.9 : 0.96}')
+    expect(sceneSource).toContain('envMapIntensity={isSterlingSilver ? 1.65 : 1.4}')
     expect(sceneSource).toContain('gl.toneMapping = ACESFilmicToneMapping')
     expect(sceneSource).toContain('shadows={{ type: PCFShadowMap }}')
     expect(sceneSource).toContain('<Environment resolution={256}>')
@@ -135,10 +135,10 @@ describe('photoreal ring rendering contract', () => {
     )
     expect(sceneSource).toContain("profile.beadPrimitive === 'faceted-organic-granule'")
     expect(sceneSource).toContain('function FacetedOrganicSolderGeometry')
-    expect(sceneSource).toContain('const segments = 7 + (seed % 3)')
     expect(sceneSource).toContain(
-      "nextGeometry.setAttribute('position', new Float32BufferAttribute"
+      'new CylinderGeometry(radius * 0.78, radius, radius * 1.2, 16, 3)'
     )
+    expect(sceneSource).toContain('nextGeometry.rotateX(Math.PI / 2)')
     expect(sceneSource).toContain(
       '<FacetedOrganicSolderGeometry radius={profile.beadRadius} seed={key} />'
     )
@@ -147,13 +147,13 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('usesHandmadeSurface ? [grainTiltX, grainTiltY, 0] : undefined')
     expect(sceneSource).toContain('<SolderGrainMaterial')
     expect(sceneSource).toMatch(
-      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.4 : organic \? 1\.25 : 1\.4\}/
+      /function SolderGrainMaterial[\s\S]*facetedSolderColour[\s\S]*envMapIntensity=\{faceted \? 1\.05 : organic \? 0\.95 : 1\.05\}/
     )
-    expect(sceneSource).toContain('faceted ? 1.4 : organic ? 1.25 : 1.4')
+    expect(sceneSource).toContain('faceted ? 1.05 : organic ? 0.95 : 1.05')
     expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
-    expect(sceneSource).toContain('flatShading={faceted}')
+    expect(sceneSource).toContain('flatShading={false}')
     expect(sceneSource).toContain('bottomZ={Math.max(bezelBottom, 0.008)}')
     expect(sceneSource).toContain('topZ={0.026}')
     expect(sceneSource).not.toContain('position={[0, 0, -profile.beadRadius * 0.38]}')

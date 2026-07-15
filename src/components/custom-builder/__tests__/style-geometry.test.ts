@@ -17,6 +17,7 @@ import {
   getStyleBeadCount,
   getSolderGrainTone,
   outlinePoint,
+  soldStyleOutlinePoint,
 } from '../geometry'
 
 describe('sold ring style geometry', () => {
@@ -107,6 +108,11 @@ describe('sold ring style geometry', () => {
       const outer = outlinePoint('cushion', angle, 0.5, 0.5, 0.04)
       expect(Math.hypot(outer[0] - inner[0], outer[1] - inner[1])).toBeCloseTo(0.04, 5)
     }
+
+    const soldOuter = soldStyleOutlinePoint('coral', 'cushion', Math.PI / 4, 0.5, 0.5, 0.055)
+    const genericOuter = outlinePoint('cushion', Math.PI / 4, 0.5, 0.5, 0.055)
+    expect(soldOuter[0]).toBeGreaterThan(genericOuter[0])
+    expect(soldOuter[1]).toBeGreaterThan(genericOuter[1])
   })
 
   test('keeps both sold halos rounded while preserving Aurora granule irregularity', () => {
@@ -115,36 +121,36 @@ describe('sold ring style geometry', () => {
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
-    expect(sunMoon.beadAsymmetry).toBe(0.09)
-    expect(aurora.beadAsymmetry).toBe(0.18)
+    expect(sunMoon.beadAsymmetry).toBe(0.04)
+    expect(aurora.beadAsymmetry).toBe(0.09)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('granulated')
     expect(sunMoon.beadPrimitive).toBe('rounded-granule')
-    expect(aurora.beadPrimitive).toBe('organic-granule')
+    expect(aurora.beadPrimitive).toBe('faceted-organic-granule')
     expect(ringStyleGeometryProfiles.gemini.beadPrimitive).toBe('none')
     expect(ringStyleGeometryProfiles.coral.beadPrimitive).toBe('none')
     expect(sunMoon).toMatchObject({
       beadCount: 40,
       beadPitchMm: 1,
       beadRadius: 0.038,
-      beadBridgeRadius: 0.02,
+      beadBridgeRadius: 0.018,
       haloOffset: 0.095,
       beadPrimitive: 'rounded-granule',
     })
     expect(aurora).toMatchObject({
       beadCount: 28,
       beadPitchMm: 1.12,
-      beadRadius: 0.046,
-      beadBridgeRadius: 0.034,
-      haloOffset: 0.095,
-      beadPrimitive: 'organic-granule',
+      beadRadius: 0.045,
+      beadBridgeRadius: 0.028,
+      haloOffset: 0.096,
+      beadPrimitive: 'faceted-organic-granule',
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
     expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
     expect(sunMoon.beadRadius * 20).toBeCloseTo(0.76, 12)
-    expect(aurora.beadRadius * 20).toBeCloseTo(0.92, 12)
+    expect(aurora.beadRadius * 20).toBeCloseTo(0.9, 12)
   })
 
   test('makes Aurora grains asymmetric without changing their official outer envelope', () => {
@@ -187,8 +193,8 @@ describe('sold ring style geometry', () => {
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.81)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.83)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.9)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.92)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -234,8 +240,8 @@ describe('sold ring style geometry', () => {
         profile.beadAsymmetry
       )
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.9)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.92)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.95)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.97)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -339,7 +345,7 @@ describe('sold ring style geometry', () => {
       // Handmade soldered grains should touch or very slightly overlap rather
       // than read as disconnected stones.
       expect(Math.min(...gaps)).toBeGreaterThanOrEqual(-0.015)
-      expect(Math.max(...gaps)).toBeLessThanOrEqual(style === 'aurora' ? 0.04 : 0.035)
+      expect(Math.max(...gaps)).toBeLessThanOrEqual(style === 'aurora' ? 0.05 : 0.04)
     }
   )
 
@@ -440,14 +446,14 @@ describe('sold ring style geometry', () => {
 
     // Measure only the moat outside the stone edge. Counting the lip's hidden
     // underlap produced a false positive while the production moat looked lost.
-    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.49)
-    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.51)
-    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.04)
-    expect(brightRailWidthMm).toBeLessThanOrEqual(0.06)
+    expect(visibleMoatWidthMm).toBeGreaterThanOrEqual(0.39)
+    expect(visibleMoatWidthMm).toBeLessThanOrEqual(0.41)
+    expect(brightRailWidthMm).toBeGreaterThanOrEqual(0.14)
+    expect(brightRailWidthMm).toBeLessThanOrEqual(0.16)
   })
 
   test.each([
-    ['gemini', 0.038],
+    ['gemini', 0.03],
     ['sun-moon', 0.008],
     ['aurora', 0.01],
   ] as const)('gives %s its photographed visible oxidized stone seat', (style, expectedReveal) => {
@@ -472,7 +478,7 @@ describe('sold ring style geometry', () => {
     expect(patina.at(-1)?.stoneReveal).toBe(expectedReveal)
     expect(visibleSeatReveal).toBeCloseTo(expectedReveal, 12)
     expect(visibleSeatReveal * 10).toBeGreaterThanOrEqual(0.08)
-    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.381 : 0.1)
+    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.301 : 0.1)
     expect(knots.at(-1)?.radialProgress).toBe(1)
 
     for (let index = 0; index < 72; index += 1) {
