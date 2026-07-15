@@ -145,8 +145,10 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
                 <p className="text-xs uppercase tracking-[0.12em] text-opal-light">
                   {selectedOpal.selectionKind === 'individual'
                     ? selectedOpal.visual.canonicalFace
-                      ? 'Isolated opal face'
-                      : 'Selected opal face'
+                      ? 'Rectified opal face'
+                      : selectedOpal.visual.contour
+                        ? 'Reviewed crop + traced outline'
+                        : 'Reviewed colour crop'
                     : 'Selected listing photo'}
                 </p>
                 <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
@@ -173,7 +175,7 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
                         selectedOpal.visual.dimensionsMm ? 'measured' : 'normalized'
                       } setting concept`
                     : selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
-                      ? `Reviewed photo crop · ${selectedOpal.visual.silhouette} ${
+                      ? `${selectedOpal.visual.contour ? 'Reviewed crop + traced outline' : 'Reviewed colour crop'} · ${selectedOpal.visual.silhouette} ${
                           selectedOpal.visual.dimensionsMm ? 'measured' : 'normalized'
                         } setting concept`
                       : selectedOpal.visual.textureCrop

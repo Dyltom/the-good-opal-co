@@ -5,7 +5,6 @@ import {
   parseBuilderDimensions,
 } from '@/lib/product-validation'
 import { isPhotoCropRenderable } from './photo-crop'
-import { OPAL_PHOTO_ANALYSIS_VERSION } from './photo-analysis'
 import { parseBuilderStoneContour, type BuilderStoneContourV1 } from './stone-contour'
 
 type VisualProfile = BuilderOpal['visual']
@@ -320,44 +319,6 @@ function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | u
   return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
 }
 
-function auditedImageCandidate(
-  fields?: BuilderVisualFields
-): Pick<VisualProfile, 'contour' | 'textureCrop' | 'photoFit'> | undefined {
-  const mappingApproved =
-    fields?.builderMappingStatus === 'reviewed' || fields?.builderMappingStatus === 'manual'
-  const confidence = fields?.builderPhotoAnalysisConfidence
-  const contour = parseBuilderStoneContour(fields?.builderContourCandidate)
-  const focalX = fields?.builderPhotoCandidateFocalX
-  const focalY = fields?.builderPhotoCandidateFocalY
-  const zoom = fields?.builderPhotoCandidateZoom
-  const rotation = fields?.builderPhotoCandidateRotation
-  const candidateCrop = parseBuilderPhotoCrop(focalX, focalY, zoom, rotation)
-  const analyzedHash = fields?.builderMappingAnalyzedImageHash
-  const currentMappedImageIndex = fields?.builderMappedImageIndex ?? 0
-
-  if (
-    !mappingApproved ||
-    !contour ||
-    fields?.builderPhotoAnalysisVersion !== OPAL_PHOTO_ANALYSIS_VERSION ||
-    fields.builderPhotoCandidateImageIndex !== currentMappedImageIndex ||
-    typeof analyzedHash !== 'string' ||
-    !/^[a-f0-9]{64}$/.test(analyzedHash) ||
-    typeof confidence !== 'number' ||
-    !Number.isFinite(confidence) ||
-    confidence < 0.9 ||
-    confidence > 1 ||
-    !candidateCrop
-  ) {
-    return undefined
-  }
-
-  return {
-    contour,
-    textureCrop: candidateCrop,
-    photoFit: 'reviewed',
-  }
-}
-
 const validSilhouettes = new Set<RingConfig['shape']>([
   'oval',
   'round',
@@ -611,39 +572,38 @@ export function createOpalVisualProfile(
   const cataloguePhoto = cataloguePhotoProfiles[reviewedSlugAliases[slug] ?? slug]
   const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
   const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
-  const imageCandidate = auditedImageCandidate(fields)
   const mappingApproved =
     !fields ||
     fields.builderMappingStatus === 'reviewed' ||
     fields.builderMappingStatus === 'manual'
-  const approvedReviewed = mappingApproved ? reviewed : undefined
-  const approvedCataloguePhoto = mappingApproved ? cataloguePhoto : undefined
+  // Payload's adopted mapping is the only customer-facing source of truth.
+  // Analyzer candidates and code-level legacy calibrations belong to review
+  // tooling; using either when CMS fields exist makes the live preview differ
+  // from the tuple an admin approved and prevents canonical face generation.
+  const mayUseLegacyFallback = !fields && mappingApproved
+  const approvedReviewed = mayUseLegacyFallback ? reviewed : undefined
+  const approvedCataloguePhoto = mayUseLegacyFallback ? cataloguePhoto : undefined
   const dimensionsMm = completeDimensions(fields)
   const baseVisual = managed ?? approvedReviewed ?? approvedCataloguePhoto ?? silhouette
   const baseContour =
     'contour' in baseVisual ? parseBuilderStoneContour(baseVisual.contour) : undefined
-  // A contour and its photo crop are one calibration. Never combine a stale
-  // CMS crop with a different outline: prefer a complete reviewed CMS pair,
-  // then an analyzed candidate pair, then the audited catalogue fallback.
+  // A contour and its photo crop are one calibration. Never combine an adopted
+  // CMS crop with an unadopted analyzer or legacy code outline.
   const pairedContourProfile = managed?.contour
     ? managed
-    : imageCandidate?.contour
-      ? imageCandidate
-      : approvedCataloguePhoto?.contour
-        ? approvedCataloguePhoto
-        : undefined
+    : approvedCataloguePhoto?.contour
+      ? approvedCataloguePhoto
+      : undefined
   const pairedContour = parseBuilderStoneContour(pairedContourProfile?.contour)
   const usesIndividualPhoto = classifyOpalListing(name) === 'individual'
   const baseTextureCrop =
     pairedContourProfile?.textureCrop ??
     managed?.textureCrop ??
-    imageCandidate?.textureCrop ??
     approvedReviewed?.textureCrop ??
     approvedCataloguePhoto?.textureCrop
   const basePhotoFit =
     pairedContourProfile?.photoFit ??
     managed?.photoFit ??
-    imageCandidate?.photoFit ??
     approvedReviewed?.photoFit ??
     approvedCataloguePhoto?.photoFit
   const estimatedTextureCrop = baseTextureCrop

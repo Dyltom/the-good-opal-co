@@ -7,6 +7,8 @@ import {
 import { OPAL_PHOTO_ANALYSIS_VERSION, type OpalPhotoAnalysis } from './photo-analysis'
 import { parseBuilderStoneContour } from './stone-contour'
 
+export const CANONICAL_FACE_API_VERSION = 1 as const
+
 export interface CanonicalFaceMappingFields {
   builderContour?: unknown
   builderContourSourceImageHash?: string | null
@@ -90,6 +92,9 @@ export function resolveCanonicalFaceMapping(
     analysis,
     identity,
     sourceImageHash: analyzedHash,
-    url: `/api/builder/opal-face/v${CANONICAL_FACE_TEXTURE_VERSION}/${encodeURIComponent(String(productId))}/${identity.inputHash}`,
+    // API shape and pixel generator version are separate contracts. The
+    // content hash already changes when generatorVersion changes, preserving
+    // immutable caching without duplicating an otherwise identical route.
+    url: `/api/builder/opal-face/v${CANONICAL_FACE_API_VERSION}/${encodeURIComponent(String(productId))}/${identity.inputHash}`,
   }
 }

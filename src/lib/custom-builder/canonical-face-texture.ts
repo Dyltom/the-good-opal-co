@@ -4,7 +4,7 @@ import { computePhotoCrop, computePhotoTextureTransform, isPhotoCropRenderable }
 import { OPAL_PHOTO_ANALYSIS_VERSION, type OpalPhotoAnalysis } from './photo-analysis'
 import { normalizedBuilderStoneContourPoint, parseBuilderStoneContour } from './stone-contour'
 
-export const CANONICAL_FACE_TEXTURE_VERSION = 1 as const
+export const CANONICAL_FACE_TEXTURE_VERSION = 2 as const
 export const CANONICAL_FACE_TEXTURE_SIZE = 512
 
 const MINIMUM_TEXTURE_SIZE = 32
@@ -183,8 +183,12 @@ function bilinearChannel(
   sourceV: number,
   channel: number
 ): number {
-  const x = clamp(sourceU, 0, 1) * (width - 1)
-  const y = (1 - clamp(sourceV, 0, 1)) * (height - 1)
+  // CSS images and WebGL textures place texel centres at (index + 0.5) / size.
+  // Using `u * (size - 1)` subtly shifts every tight crop because it treats
+  // the first and final texel centres as the texture edges instead. Match the
+  // browser/GPU contract here, then clamp like ClampToEdgeWrapping.
+  const x = clamp(sourceU * width - 0.5, 0, width - 1)
+  const y = clamp((1 - sourceV) * height - 0.5, 0, height - 1)
   const left = Math.floor(x)
   const top = Math.floor(y)
   const right = Math.min(width - 1, left + 1)

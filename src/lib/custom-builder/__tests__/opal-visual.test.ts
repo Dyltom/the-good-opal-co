@@ -234,7 +234,7 @@ describe('custom builder opal visual profiles', () => {
     expect(Math.max(...(profile.visual.contour?.radii ?? []))).toBeGreaterThan(1.2)
   })
 
-  test('does not pair the audited heart contour with a legacy contour-less CMS crop', () => {
+  test('does not pair a legacy code contour with a contour-less CMS crop', () => {
     const profile = createOpalVisualProfile(
       'mintabie-carved-heart',
       'Mintabie Dark Opal heart 0.55 cts',
@@ -249,8 +249,9 @@ describe('custom builder opal visual profiles', () => {
       }
     )
 
-    expect(profile.visual.contour?.radii).toHaveLength(96)
-    expect(profile.visual.textureCrop).toEqual({ focalX: 0.4875, focalY: 0.532, zoom: 3.2 })
+    expect(profile.visual.contour).toBeUndefined()
+    expect(profile.visual.textureCrop).toEqual({ focalX: 0.5, focalY: 0.5, zoom: 3.2 })
+    expect(profile.visual.photoFit).toBe('estimated')
   })
 
   test.each([
@@ -731,7 +732,7 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
   })
 
-  test('uses a high-confidence current image candidate for any approved stone', () => {
+  test('keeps high-confidence analyzer candidates out of the customer preview until adoption', () => {
     const contour = {
       version: 1,
       radii: Array.from({ length: 96 }, (_, index) =>
@@ -752,18 +753,16 @@ describe('custom builder opal visual profiles', () => {
       builderPhotoCandidateRotation: 0,
     }
 
-    expect(
-      createOpalVisualProfile(
-        'lightning-ridge-black-opal-6-30ct',
-        'Lightning Ridge Black Opal 6.30ct',
-        'black-opal',
-        fields
-      ).visual
-    ).toMatchObject({
-      contour,
-      photoFit: 'reviewed',
-      textureCrop: { focalX: 0.454, focalY: 0.554, rotation: 0, zoom: 3.2 },
-    })
+    const profile = createOpalVisualProfile(
+      'lightning-ridge-black-opal-6-30ct',
+      'Lightning Ridge Black Opal 6.30ct',
+      'black-opal',
+      fields
+    ).visual
+
+    expect(profile.contour).toBeUndefined()
+    expect(profile.textureCrop).toEqual({ focalX: 0.5, focalY: 0.5, zoom: 3.2 })
+    expect(profile.photoFit).toBe('estimated')
     expect(
       createOpalVisualProfile(
         'mintabie-carved-heart',
@@ -771,12 +770,11 @@ describe('custom builder opal visual profiles', () => {
         'black-opal',
         fields
       ).visual.contour
-    ).toEqual(contour)
-
+    ).toBeUndefined()
     expect(
       createOpalVisualProfile('unreviewed-opal', 'Unreviewed opal', 'black-opal', fields).visual
         .contour
-    ).toEqual(contour)
+    ).toBeUndefined()
     expect(
       createOpalVisualProfile(
         'mintabie-semi-black-opal-1-35-cts',

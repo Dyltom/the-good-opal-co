@@ -71,7 +71,7 @@ describe('builder mapping processor', () => {
       bytes: Buffer.from('canonical-face'),
       metadata: {
         contentHash: 'a'.repeat(64),
-        storageKey: `builder/opal-faces/v1/${'a'.repeat(64)}.png`,
+        storageKey: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
       },
       status: 'generated',
     })

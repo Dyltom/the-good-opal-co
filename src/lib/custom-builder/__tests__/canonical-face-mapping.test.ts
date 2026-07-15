@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { CANONICAL_FACE_TEXTURE_VERSION } from '../canonical-face-texture'
 import { OPAL_PHOTO_ANALYSIS_VERSION } from '../photo-analysis'
 import { resolveCanonicalFaceMapping } from '../canonical-face-mapping'
 
@@ -33,6 +34,7 @@ describe('canonical face mapping', () => {
         stoneAspect: 0.75,
         zoom: 4.2,
       },
+      identity: { generatorVersion: CANONICAL_FACE_TEXTURE_VERSION },
       sourceImageHash: hash,
       url: expect.stringMatching(/^\/api\/builder\/opal-face\/v1\/52\/[a-f0-9]{64}$/),
     })

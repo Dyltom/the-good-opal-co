@@ -6,6 +6,8 @@ import {
   createCanonicalFaceTextureIdentity,
   generateCanonicalFaceTexture,
 } from '../canonical-face-texture'
+import { computePhotoCrop, computePhotoTextureTransform } from '../photo-crop'
+import { normalizedBuilderStoneContourPoint } from '../stone-contour'
 import { OPAL_PHOTO_ANALYSIS_VERSION, type OpalPhotoAnalysis } from '../photo-analysis'
 
 const contour = {
@@ -44,6 +46,85 @@ beforeAll(async () => {
 })
 
 describe('canonical opal face texture', () => {
+  test('samples the reviewed crop at the same texel centres as CSS and WebGL', async () => {
+    const width = 4
+    const height = 4
+    const pixels = Buffer.alloc(width * height * 3)
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const offset = (y * width + x) * 3
+        pixels[offset] = x * 50
+        pixels[offset + 1] = y * 60
+        pixels[offset + 2] = 180
+      }
+    }
+    const source = await sharp(pixels, { raw: { channels: 3, height, width } })
+      .png()
+      .toBuffer()
+    const asymmetricContour = {
+      version: 1 as const,
+      radii: Array.from({ length: 96 }, (_, index) => {
+        const angle = (index / 96) * Math.PI * 2
+        return 1 + Math.cos(angle) * 0.06 + Math.sin(angle * 2) * 0.035
+      }),
+    }
+    const analysis: OpalPhotoAnalysis = {
+      ...imageAnalysis,
+      contour: asymmetricContour,
+      focalX: 0.625,
+      focalY: 0.375,
+      rotation: 32,
+      stoneAspect: 1,
+      zoom: 2,
+    }
+    const outputSize = 33
+    const generated = await generateCanonicalFaceTexture({ analysis, outputSize, source })
+    expect(generated.status).toBe('generated')
+    if (generated.status !== 'generated') return
+
+    const decoded = await sharp(generated.bytes)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+    const crop = computePhotoCrop(width, height, analysis.stoneAspect, analysis)
+    const [m00, m01, m02, m10, m11, m12] = computePhotoTextureTransform(
+      crop,
+      analysis.stoneAspect,
+      analysis.rotation
+    ).matrix
+
+    for (const [pixelX, pixelY] of [
+      [16, 16],
+      [13, 14],
+      [19, 18],
+    ] as const) {
+      const canonicalU = (pixelX + 0.5) / outputSize
+      const canonicalV = 1 - (pixelY + 0.5) / outputSize
+      const sourceU = m00 * canonicalU + m01 * canonicalV + m02
+      const sourceV = m10 * canonicalU + m11 * canonicalV + m12
+      // Browser and GPU normalized texture coordinates address texel centres
+      // at (index + 0.5) / size, with edge sampling clamped to the first or
+      // final texel centre.
+      const sourceX = Math.min(width - 1, Math.max(0, sourceU * width - 0.5))
+      const sourceY = Math.min(height - 1, Math.max(0, (1 - sourceV) * height - 0.5))
+      const offset = (pixelY * outputSize + pixelX) * 4
+
+      expect(decoded.data[offset]).toBe(Math.round(sourceX * 50))
+      expect(decoded.data[offset + 1]).toBe(Math.round(sourceY * 60))
+      expect(decoded.data[offset + 2]).toBe(180)
+      expect(decoded.data[offset + 3]).toBe(255)
+    }
+
+    const boundary = normalizedBuilderStoneContourPoint(asymmetricContour, Math.PI / 4)
+    const alphaAt = (scale: number) => {
+      const x = Math.round((boundary[0] * scale * 0.5 + 0.5) * outputSize - 0.5)
+      const y = Math.round((0.5 - boundary[1] * scale * 0.5) * outputSize - 0.5)
+      return decoded.data[(y * outputSize + x) * 4 + 3] ?? 0
+    }
+    expect(alphaAt(0.72)).toBe(255)
+    expect(alphaAt(1.16)).toBe(0)
+  })
+
   test('derives a lightweight identity from every pixel-affecting contract input', () => {
     const sourceImageHash = 'a'.repeat(64)
     const identity = createCanonicalFaceTextureIdentity({
@@ -62,33 +143,45 @@ describe('canonical opal face texture', () => {
       },
     }
     const variants = [
-      { analysis: imageAnalysis, generatorVersion: 1, sourceImageHash: 'b'.repeat(64) },
+      {
+        analysis: imageAnalysis,
+        generatorVersion: CANONICAL_FACE_TEXTURE_VERSION,
+        sourceImageHash: 'b'.repeat(64),
+      },
       {
         analysis: { ...imageAnalysis, focalX: 0.51 },
-        generatorVersion: 1,
+        generatorVersion: CANONICAL_FACE_TEXTURE_VERSION,
         sourceImageHash,
       },
-      { analysis: changedContour, generatorVersion: 1, sourceImageHash },
+      {
+        analysis: changedContour,
+        generatorVersion: CANONICAL_FACE_TEXTURE_VERSION,
+        sourceImageHash,
+      },
       {
         analysis: { ...imageAnalysis, stoneAspect: 0.76 },
-        generatorVersion: 1,
+        generatorVersion: CANONICAL_FACE_TEXTURE_VERSION,
         sourceImageHash,
       },
-      { analysis: imageAnalysis, generatorVersion: 2, sourceImageHash },
+      {
+        analysis: imageAnalysis,
+        generatorVersion: CANONICAL_FACE_TEXTURE_VERSION + 1,
+        sourceImageHash,
+      },
     ].map((variant) => createCanonicalFaceTextureIdentity({ ...variant, outputSize: 64 }))
 
     expect(identity).toMatchObject({
-      generatorVersion: 1,
+      generatorVersion: CANONICAL_FACE_TEXTURE_VERSION,
       inputHash: expect.stringMatching(/^[a-f0-9]{64}$/),
       outputSize: 64,
     })
-    expect(identity?.key).toBe(`v1/${identity.inputHash}`)
+    expect(identity?.key).toBe(`v${CANONICAL_FACE_TEXTURE_VERSION}/${identity.inputHash}`)
     expect(new Set(variants.map((variant) => variant?.inputHash)).size).toBe(variants.length)
     for (const variant of variants) expect(variant?.inputHash).not.toBe(identity?.inputHash)
     expect(
       createCanonicalFaceTextureIdentity({
         analysis: { ...imageAnalysis, source: 'canonical-fallback' },
-        generatorVersion: 1,
+        generatorVersion: CANONICAL_FACE_TEXTURE_VERSION,
         sourceImageHash,
       })
     ).toBeUndefined()
@@ -131,7 +224,7 @@ describe('canonical opal face texture', () => {
     expect(first.metadata.inputHash).toMatch(/^[a-f0-9]{64}$/)
     expect(first.metadata.contourHash).toMatch(/^[a-f0-9]{64}$/)
     expect(first.metadata.storageKey).toBe(
-      `builder/opal-faces/v1/${first.metadata.contentHash}.png`
+      `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${first.metadata.contentHash}.png`
     )
 
     const decoded = await sharp(first.bytes)

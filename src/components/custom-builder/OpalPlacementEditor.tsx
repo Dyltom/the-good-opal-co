@@ -130,6 +130,18 @@ export function OpalPlacementEditor({
   const drag = useRef<DragState | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const photoSource = getBuilderOpalPhotoSource(opal)
+  const hasExactContour = Boolean(opal.visual.contour)
+  const hasMeasurements = Boolean(opal.visual.dimensionsMm)
+  const sourceReviewLabel = opal.visual.canonicalFace
+    ? 'Rectified stone face'
+    : hasExactContour
+      ? 'Reviewed crop + traced outline'
+      : 'Reviewed colour crop'
+  const outlineDescription = hasExactContour
+    ? 'its traced stone outline'
+    : hasMeasurements
+      ? 'a measured supported outline'
+      : 'a supported outline preview'
   const baseZoom = photoSource.crop?.zoom ?? 1
   const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
   const baseRotation = photoSource.crop?.rotation ?? 0
@@ -272,10 +284,10 @@ export function OpalPlacementEditor({
 
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">4. Frame the opal colour</legend>
+      <legend className="font-serif text-xl font-medium">4. Frame the opal&apos;s colour</legend>
       <p className="mt-2 max-w-[62ch] text-sm leading-6 text-charcoal-light">
-        Move the exact listing photo inside its measured outline. The stone and setting stay fixed;
-        only the colour framing in this concept changes.
+        Move the selected listing colour inside {outlineDescription}. Stone scale and setting
+        geometry stay fixed; only the colour framing changes.
       </p>
 
       <div
@@ -292,9 +304,7 @@ export function OpalPlacementEditor({
             </div>
             <div className="flex flex-wrap justify-end gap-2">
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
-                {opal.visual.photoFit === 'reviewed'
-                  ? 'Reviewed source photo'
-                  : 'Auto-fitted photo'}
+                {opal.visual.photoFit === 'reviewed' ? sourceReviewLabel : 'Auto-fitted colour'}
               </span>
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
                 {styleLabels[style]}
@@ -302,11 +312,14 @@ export function OpalPlacementEditor({
             </div>
           </div>
 
-          <div className="relative grid min-h-[21rem] select-none place-items-center gap-4 overflow-hidden rounded-lg border border-cream/10 bg-[radial-gradient(circle_at_50%_42%,rgb(255_255_255/0.11),transparent_58%)] px-7 py-7 sm:min-h-[23rem] sm:px-9">
+          <div className="relative grid min-h-[21rem] select-none place-items-center gap-4 overflow-hidden rounded-lg border border-cream/10 bg-black-rich/35 px-7 py-7 sm:min-h-[23rem] sm:px-9">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-[8%] right-[8%] top-1/2 h-[2.35rem] -translate-y-1/2 rounded-full border border-white/20 shadow-[inset_0_3px_5px_rgb(255_255_255/0.24),inset_0_-5px_8px_rgb(0_0_0/0.38),0_16px_28px_rgb(0_0_0/0.48)]"
-              style={{ backgroundColor: metalColours[metal] }}
+              className="pointer-events-none absolute left-[12%] right-[12%] top-1/2 h-px -translate-y-1/2 bg-cream/10"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-[12%] left-1/2 top-[12%] w-px -translate-x-1/2 bg-cream/10"
             />
             <div
               data-opal-placement-aperture
@@ -547,7 +560,11 @@ export function OpalPlacementEditor({
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-warm-grey/70 pt-3 sm:col-span-2">
             <p className="max-w-[37ch] text-xs leading-4 text-charcoal-light">
-              Visual guide only. Your maker confirms colour bar, inclusions, stability, and yield.
+              {hasExactContour && hasMeasurements
+                ? 'Traced outline and catalogue measurements shown. Your maker confirms final seat, stability, and yield.'
+                : hasMeasurements
+                  ? 'Catalogue measurements shown with a supported outline. Your maker confirms the exact traced seat.'
+                  : 'Outline scale is normalized until measurements are verified. Your maker confirms the exact traced seat.'}
             </p>
             <button
               type="button"

@@ -53,6 +53,23 @@ function renderEditor(placement: OpalPlacement, onChange = vi.fn()) {
 }
 
 describe('OpalPlacementEditor', () => {
+  test('states crop and outline fidelity without calling a generic outline exact', () => {
+    renderEditor(defaultOpalPlacement)
+
+    expect(screen.getByText('Reviewed colour crop')).not.toBeNull()
+    expect(
+      screen.getByText(
+        'Move the selected listing colour inside a supported outline preview. Stone scale and setting geometry stay fixed; only the colour framing changes.'
+      )
+    ).not.toBeNull()
+    expect(
+      screen.getByText(
+        'Outline scale is normalized until measurements are verified. Your maker confirms the exact traced seat.'
+      )
+    ).not.toBeNull()
+    expect(screen.queryByText('Reviewed source photo')).toBeNull()
+  })
+
   test('describes fine placement values in visual directions', () => {
     renderEditor({
       opalPositionX: 0.225,
