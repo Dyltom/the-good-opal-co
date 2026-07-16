@@ -14,6 +14,7 @@ export interface CanonicalFaceMappingFields {
   builderContour?: unknown
   builderContourSourceImageHash?: string | null
   builderMappingAnalyzedImageHash?: string | null
+  builderMappingAnalysisError?: string | null
   builderMappingStatus?: string | null
   builderPhotoAnalysisConfidence?: number | null
   builderPhotoAnalysisVersion?: number | null
@@ -54,14 +55,17 @@ export function resolveCanonicalFaceMapping(
   const analyzedHash = fields.builderMappingAnalyzedImageHash?.toLowerCase()
   const contourHash = fields.builderContourSourceImageHash?.toLowerCase()
 
+  const minimumConfidence = fields.builderMappingStatus === 'manual' ? 0 : 0.9
+
   if (
     !approved ||
+    Boolean(fields.builderMappingAnalysisError?.trim()) ||
     !contour ||
     !crop ||
     fields.builderPhotoAnalysisVersion !== BUILDER_PHOTO_PIPELINE_VERSION ||
     typeof confidence !== 'number' ||
     !Number.isFinite(confidence) ||
-    confidence < 0.9 ||
+    confidence < minimumConfidence ||
     confidence > 1 ||
     !analyzedHash ||
     !sha256Pattern.test(analyzedHash) ||

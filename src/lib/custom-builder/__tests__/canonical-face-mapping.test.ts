@@ -40,10 +40,25 @@ describe('canonical face mapping', () => {
     })
   })
 
+  test('accepts a complete low-confidence contour after explicit maker approval', () => {
+    expect(
+      resolveCanonicalFaceMapping(
+        52,
+        {
+          ...approved,
+          builderMappingStatus: 'manual',
+          builderPhotoAnalysisConfidence: 0.42,
+        },
+        0.75
+      )
+    ).toMatchObject({ analysis: { confidence: 0.42 } })
+  })
+
   test.each([
     { builderMappingStatus: 'pending' },
     { builderPhotoAnalysisConfidence: 0.89 },
     { builderPhotoAnalysisVersion: BUILDER_PHOTO_PIPELINE_VERSION - 1 },
+    { builderMappingAnalysisError: 'Retryable artifact error: blob unavailable' },
     { builderContourSourceImageHash: 'b'.repeat(64) },
     { builderContour: null },
     { builderPhotoZoom: null },

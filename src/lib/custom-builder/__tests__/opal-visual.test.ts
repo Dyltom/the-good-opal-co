@@ -665,6 +665,53 @@ describe('custom builder opal visual profiles', () => {
     ).toBe(true)
   })
 
+  test('retains maker-measured dimensions when the migrated CMS tuple omitted them', () => {
+    const profile = createOpalVisualProfile(
+      'mintabie-semi-black-opal-1-35-cts',
+      'Mintabie Semi Black Opal 1.35 cts',
+      'black-opal',
+      {
+        builderMappingStatus: 'reviewed',
+        builderSilhouette: 'oval',
+        builderRecommendedStyle: 'gemini',
+        builderBodyColour: '#cbd5c7',
+        builderFlashColourPrimary: '#16d7ef',
+        builderFlashColourSecondary: '#43ef8f',
+        builderFlashColourAccent: '#ffcb42',
+        builderTransmission: 0.08,
+        builderPhotoFocalX: 0.501,
+        builderPhotoFocalY: 0.493,
+        builderPhotoZoom: 3.61,
+      }
+    )
+
+    expect(profile.visual.dimensionsMm).toEqual({ width: 7, length: 8, depth: 3.5 })
+  })
+
+  test('never lets legacy calibration replace complete CMS dimensions', () => {
+    const profile = createOpalVisualProfile(
+      'mintabie-semi-black-opal-1-35-cts',
+      'Mintabie Semi Black Opal 1.35 cts',
+      'black-opal',
+      {
+        builderMappingStatus: 'reviewed',
+        builderSilhouette: 'oval',
+        builderRecommendedStyle: 'gemini',
+        builderBodyColour: 'invalid-colour',
+        builderFlashColourPrimary: '#16d7ef',
+        builderFlashColourSecondary: '#43ef8f',
+        builderFlashColourAccent: '#ffcb42',
+        builderTransmission: 0.08,
+        builderPhotoFocalX: 0.501,
+        builderPhotoFocalY: 0.493,
+        builderPhotoZoom: 3.61,
+        dimensions: { width: 10, length: 12, depth: 4 },
+      }
+    )
+
+    expect(profile.visual.dimensionsMm).toEqual({ width: 10, length: 12, depth: 4 })
+  })
+
   test('does not describe an unapproved CMS crop as maker-reviewed', () => {
     const profile = createOpalVisualProfile(
       'coober-pedy-white-opal-6-35-cts',

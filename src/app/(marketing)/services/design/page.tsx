@@ -133,6 +133,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       builderPhotoAnalysisVersion: true,
       builderContourSourceImageHash: true,
       builderMappingAnalyzedImageHash: true,
+      builderMappingAnalysisError: true,
     },
     where: {
       and: [

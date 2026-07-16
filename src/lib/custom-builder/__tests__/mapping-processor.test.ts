@@ -320,9 +320,10 @@ describe('builder mapping processor', () => {
       ],
     })
 
-    await expect(
-      processBuilderMappings({ canonicalFaceArtifactSink })
-    ).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    await expect(processBuilderMappings({ canonicalFaceArtifactSink })).resolves.toMatchObject({
+      analyzed: 1,
+      failed: 0,
+    })
 
     expect(mocks.generateCanonicalFaceTexture).toHaveBeenCalledWith({
       analysis: {
@@ -346,6 +347,105 @@ describe('builder mapping processor', () => {
         }),
       })
     )
+  })
+
+  test('bootstraps a reviewed legacy crop only after stable current-source analysis and artifact persistence', async () => {
+    const currentHash = createHash('sha256').update(imageBytes).digest('hex')
+    const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
+      contentHash: 'a'.repeat(64),
+      pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
+      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
+    })
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderContourCandidate: contour,
+          builderMappedImageIndex: 0,
+          builderMappingAnalyzedImageHash: currentHash,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'reviewed',
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+          builderPhotoCandidateImageIndex: 0,
+          builderPhotoFocalX: 0.41,
+          builderPhotoFocalY: 0.57,
+          builderPhotoRotation: -8,
+          builderPhotoZoom: 2.2,
+          builderSilhouette: 'oval',
+          dimensions: { length: 8, width: 6 },
+          images: [{ image: { id: 7, url: '/approved.jpg' } }],
+          name: 'Lightning Ridge black opal',
+          slug: 'approved-opal',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings({ canonicalFaceArtifactSink })).resolves.toMatchObject({
+      analyzed: 1,
+      checked: 1,
+      failed: 0,
+    })
+
+    expect(mocks.generateCanonicalFaceTexture).toHaveBeenCalledWith({
+      analysis: {
+        confidence: 0.91,
+        contour,
+        focalX: 0.41,
+        focalY: 0.57,
+        rotation: -8,
+        source: 'image',
+        stoneAspect: 0.75,
+        zoom: 2.2,
+      },
+      source: Buffer.from(imageBytes),
+    })
+    expect(canonicalFaceArtifactSink).toHaveBeenCalledOnce()
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({
+      builderContour: contour,
+      builderContourSourceImageHash: currentHash,
+      builderMappingAnalysisError: null,
+    })
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
+    expect(update?.data).not.toHaveProperty('builderPhotoFocalY')
+    expect(update?.data).not.toHaveProperty('builderPhotoZoom')
+    expect(update?.data).not.toHaveProperty('builderPhotoRotation')
+  })
+
+  test('keeps a reviewed legacy crop unexposed when canonical artifact persistence fails', async () => {
+    const currentHash = createHash('sha256').update(imageBytes).digest('hex')
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderContourCandidate: contour,
+          builderMappedImageIndex: 0,
+          builderMappingAnalyzedImageHash: currentHash,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'reviewed',
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+          builderPhotoCandidateImageIndex: 0,
+          builderPhotoFocalX: 0.41,
+          builderPhotoFocalY: 0.57,
+          builderPhotoRotation: -8,
+          builderPhotoZoom: 2.2,
+          builderSilhouette: 'oval',
+          dimensions: { length: 8, width: 6 },
+          images: [{ image: { id: 7, url: '/approved.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    const canonicalFaceArtifactSink = vi.fn().mockRejectedValue(new Error('blob unavailable'))
+
+    await processBuilderMappings({ canonicalFaceArtifactSink })
+
+    const update = mocks.update.mock.calls[0]?.[0]
+    expect(update?.data).toMatchObject({
+      builderMappingAnalysisError: 'Retryable artifact error: blob unavailable',
+    })
+    expect(update?.data).not.toHaveProperty('builderContour')
+    expect(update?.data).not.toHaveProperty('builderContourSourceImageHash')
   })
 
   test('keeps an approved mapping retryable until its canonical artifact persists', async () => {
@@ -378,6 +478,53 @@ describe('builder mapping processor', () => {
         data: expect.objectContaining({
           builderMappingAnalysisError: 'Retryable artifact error: blob unavailable',
         }),
+      })
+    )
+  })
+
+  test('persists and clears the warning for a low-confidence contour explicitly approved by a maker', async () => {
+    const currentHash = createHash('sha256').update(imageBytes).digest('hex')
+    const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
+      contentHash: 'a'.repeat(64),
+      pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
+      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
+    })
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderContour: contour,
+          builderContourSourceImageHash: currentHash,
+          builderMappedImageIndex: 0,
+          builderMappingMode: 'manual',
+          builderMappingStatus: 'manual',
+          builderPhotoFocalX: 0.41,
+          builderPhotoFocalY: 0.57,
+          builderPhotoRotation: -8,
+          builderPhotoZoom: 2.2,
+          dimensions: { length: 8, width: 6 },
+          images: [{ image: { id: 7, url: '/approved.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    mocks.analyzeOpalRaster.mockReturnValue({
+      confidence: 0.42,
+      contour,
+      focalX: 0.41,
+      focalY: 0.57,
+      rotation: -8,
+      source: 'image',
+      stoneAspect: 0.75,
+      zoom: 2.2,
+    })
+
+    await processBuilderMappings({ canonicalFaceArtifactSink })
+
+    expect(canonicalFaceArtifactSink).toHaveBeenCalledOnce()
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ builderMappingAnalysisError: null }),
       })
     )
   })
@@ -492,7 +639,8 @@ describe('builder mapping processor', () => {
     expect(update?.id).toBe(43)
     expect(update?.data).toMatchObject({
       builderContourCandidate: contour,
-      builderMappingAnalysisError: null,
+      builderMappingAnalysisError:
+        'Approved mapping is missing a complete reviewed crop or dimensions; visual review required',
     })
     expect(update?.data).not.toHaveProperty('builderContour')
     expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
@@ -611,8 +759,7 @@ describe('builder mapping processor', () => {
       docs: [
         {
           ...product,
-          builderMappingAnalysisError:
-            'Retryable source error: Source image request failed (404)',
+          builderMappingAnalysisError: 'Retryable source error: Source image request failed (404)',
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         },
       ],
@@ -803,17 +950,16 @@ describe('builder mapping processor', () => {
       'https://example.com/requested.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
     )
-    expect(fetch).not.toHaveBeenCalledWith(
-      'https://example.com/older.jpg',
-      expect.anything()
-    )
+    expect(fetch).not.toHaveBeenCalledWith('https://example.com/older.jpg', expect.anything())
     expect(mocks.update).toHaveBeenCalledWith(
       expect.objectContaining({ collection: 'products', id: 42 })
     )
   })
 
   test('does not let a high-confidence alternate replace an approved current source', async () => {
-    const activeHash = createHash('sha256').update(new Uint8Array([1, 1, 1])).digest('hex')
+    const activeHash = createHash('sha256')
+      .update(new Uint8Array([1, 1, 1]))
+      .digest('hex')
     const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
       contentHash: 'a'.repeat(64),
       pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
@@ -867,9 +1013,10 @@ describe('builder mapping processor', () => {
         zoom: 3.1,
       })
 
-    await expect(
-      processBuilderMappings({ canonicalFaceArtifactSink })
-    ).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    await expect(processBuilderMappings({ canonicalFaceArtifactSink })).resolves.toMatchObject({
+      analyzed: 1,
+      failed: 0,
+    })
 
     const update = mocks.update.mock.calls[0]?.[0]
     expect(update?.data).toMatchObject({

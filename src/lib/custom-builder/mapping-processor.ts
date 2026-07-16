@@ -13,12 +13,12 @@ import {
   BUILDER_MAPPING_WORKER_CONTEXT,
   BUILDER_PHOTO_ANALYSIS_VERSION,
 } from './mapping-lifecycle'
-import { classifyOpalListing, isAvailableOpalListing } from './opal-visual'
 import {
-  analyzeOpalRaster,
-  type OpalPhotoAnalysis,
-  type OpalShapeHint,
-} from './photo-analysis'
+  classifyOpalListing,
+  isAvailableOpalListing,
+  reviewedOpalVisualCalibration,
+} from './opal-visual'
+import { analyzeOpalRaster, type OpalPhotoAnalysis, type OpalShapeHint } from './photo-analysis'
 import { parseBuilderStoneContour } from './stone-contour'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
@@ -138,13 +138,21 @@ function stoneAspect(product: ProductRecord): number | undefined {
   const dimensions = isRecord(product.dimensions) ? product.dimensions : undefined
   const length = dimensions?.length
   const width = dimensions?.width
-  return typeof length === 'number' &&
+  const measured =
+    typeof length === 'number' &&
     Number.isFinite(length) &&
     length > 0 &&
     typeof width === 'number' &&
     Number.isFinite(width) &&
     width > 0
-    ? width / length
+      ? width / length
+      : undefined
+  if (measured) return measured
+
+  const slug = typeof product.slug === 'string' ? product.slug : ''
+  const calibration = reviewedOpalVisualCalibration(slug)
+  return calibration && Number.isFinite(calibration.aspectRatio) && calibration.aspectRatio > 0
+    ? 1 / calibration.aspectRatio
     : undefined
 }
 
@@ -183,16 +191,76 @@ function reviewedAnalysisHints(product: ProductRecord):
   }
 }
 
-function approvedCanonicalAnalysis(
+function isApprovedMapping(product: ProductRecord): boolean {
+  return (
+    product.builderMappingMode === 'manual' ||
+    product.builderMappingStatus === 'manual' ||
+    product.builderMappingStatus === 'reviewed'
+  )
+}
+
+function hasProtectedActiveMapping(product: ProductRecord): boolean {
+  if (!isApprovedMapping(product)) return false
+
+  return Boolean(
+    parseBuilderStoneContour(product.builderContour) &&
+    parseBuilderPhotoCrop(
+      product.builderPhotoFocalX,
+      product.builderPhotoFocalY,
+      product.builderPhotoZoom,
+      product.builderPhotoRotation
+    )
+  )
+}
+
+function approvedBootstrapAnalysis(
   product: ProductRecord,
   selected: GalleryAnalysis,
   currentImageIndex: number
 ): OpalPhotoAnalysis | undefined {
   if (
+    !isApprovedMapping(product) ||
+    hasProtectedActiveMapping(product) ||
+    selected.index !== currentImageIndex ||
+    selected.analysis.source !== 'image' ||
+    selected.confidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+  ) {
+    return undefined
+  }
+
+  const crop = parseBuilderPhotoCrop(
+    product.builderPhotoFocalX,
+    product.builderPhotoFocalY,
+    product.builderPhotoZoom,
+    product.builderPhotoRotation
+  )
+  const aspect = stoneAspect(product)
+  if (!crop || aspect === undefined) return undefined
+
+  return {
+    confidence: selected.confidence,
+    contour: selected.contour,
+    focalX: crop.focalX,
+    focalY: crop.focalY,
+    rotation: crop.rotation ?? 0,
+    source: 'image',
+    stoneAspect: aspect,
+    zoom: crop.zoom,
+  }
+}
+
+function approvedCanonicalAnalysis(
+  product: ProductRecord,
+  selected: GalleryAnalysis,
+  currentImageIndex: number
+): OpalPhotoAnalysis | undefined {
+  const manuallyApproved =
+    product.builderMappingMode === 'manual' || product.builderMappingStatus === 'manual'
+  if (
     (product.builderMappingStatus !== 'reviewed' && product.builderMappingStatus !== 'manual') ||
     selected.index !== currentImageIndex ||
     product.builderContourSourceImageHash !== selected.imageHash ||
-    selected.confidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+    (!manuallyApproved && selected.confidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE)
   ) {
     return undefined
   }
@@ -226,8 +294,7 @@ function mappingNeedsPhotoAnalysis(value: unknown): boolean {
     typeof product.builderMappingAnalysisError === 'string'
       ? product.builderMappingAnalysisError.trim()
       : ''
-  const currentVersion =
-    product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
+  const currentVersion = product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
 
   if (error) {
     return (
@@ -247,7 +314,11 @@ function mappingNeedsPhotoAnalysis(value: unknown): boolean {
     product.builderPhotoCandidateImageIndex >= 0 &&
     Array.isArray(product.images) &&
     product.builderPhotoCandidateImageIndex < product.images.length
+  const approvedMappingNeedsBootstrap =
+    isApprovedMapping(product) && !hasProtectedActiveMapping(product)
   return !currentVersion || !hasHash || !hasCandidate || !hasCandidateImageIndex
+    ? true
+    : approvedMappingNeedsBootstrap
 }
 
 function analysisPriority(value: unknown): number {
@@ -545,10 +616,7 @@ async function updateProduct(
   return true
 }
 
-async function findAllAvailableProducts(
-  payload: PayloadClient,
-  depth: 0 | 1
-): Promise<Product[]> {
+async function findAllAvailableProducts(payload: PayloadClient, depth: 0 | 1): Promise<Product[]> {
   const documents: Product[] = []
   let page = 1
 
@@ -588,8 +656,7 @@ export async function processBuilderMappings(
       : undefined
   const selectedDocuments = availableProducts
     .filter(
-      (document) =>
-        requestedProductId === undefined || String(document.id) === requestedProductId
+      (document) => requestedProductId === undefined || String(document.id) === requestedProductId
     )
     .filter((document) => mappingNeedsPhotoAnalysis(document))
     .sort((left, right) => analysisPriority(left) - analysisPriority(right))
@@ -642,10 +709,8 @@ export async function processBuilderMappings(
       continue
     }
     const expectedUpdatedAt = typeof product.updatedAt === 'string' ? product.updatedAt : undefined
-    const protectsActiveMapping =
-      product.builderMappingMode === 'manual' ||
-      product.builderMappingStatus === 'manual' ||
-      product.builderMappingStatus === 'reviewed'
+    const approvedMapping = isApprovedMapping(product)
+    const protectsActiveMapping = hasProtectedActiveMapping(product)
     if (product.builderMappingMode === 'manual') summary.manual += 1
 
     let analysisConfidence: number | undefined
@@ -704,7 +769,7 @@ export async function processBuilderMappings(
             source,
             ANALYSIS_EDGE_PX,
             product,
-            protectsActiveMapping && sourceImage.index === currentImageIndex
+            approvedMapping && sourceImage.index === currentImageIndex
               ? reviewedAnalysisHints(product)
               : undefined
           )
@@ -734,10 +799,17 @@ export async function processBuilderMappings(
       const { analysis, contour: candidate } = selected
       analysisConfidence = selected.confidence
       imageHash = selected.imageHash
+      const currentAnalysis = analyses.find((candidate) => candidate.index === currentImageIndex)
+      const bootstrapAnalysis = currentAnalysis
+        ? approvedBootstrapAnalysis(product, currentAnalysis, currentImageIndex)
+        : undefined
       const isActivationCandidate =
         !protectsActiveMapping &&
         !selection.ambiguousSource &&
-        (product.builderMappingStatus === 'pending' || product.builderMappingStatus === 'stale') &&
+        ((!approvedMapping &&
+          (product.builderMappingStatus === 'pending' ||
+            product.builderMappingStatus === 'stale')) ||
+          Boolean(bootstrapAnalysis)) &&
         analysis.source === 'image' &&
         analysisConfidence >= MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
       let stableAcrossResolutions = false
@@ -746,7 +818,8 @@ export async function processBuilderMappings(
           const secondaryAnalysis = await analyzeSourceRaster(
             selected.source,
             STABILITY_ANALYSIS_EDGE_PX,
-            product
+            product,
+            approvedMapping ? reviewedAnalysisHints(product) : undefined
           )
           stableAcrossResolutions = analysesAreStable(selected, secondaryAnalysis)
         } catch {
@@ -757,13 +830,17 @@ export async function processBuilderMappings(
       }
       let canonicalFaceReady = false
       let canonicalFaceError: string | undefined
-      const currentAnalysis = analyses.find((candidate) => candidate.index === currentImageIndex)
       const approvedAnalysis = currentAnalysis
         ? approvedCanonicalAnalysis(product, currentAnalysis, currentImageIndex)
         : undefined
-      const canonicalAnalysis = approvedAnalysis ?? analysis
-      const canonicalSource = approvedAnalysis ? currentAnalysis?.source : selected.source
-      if ((isActivationCandidate && stableAcrossResolutions) || approvedAnalysis) {
+      const canonicalAnalysis = approvedAnalysis ?? bootstrapAnalysis ?? analysis
+      const canonicalSource =
+        approvedAnalysis || bootstrapAnalysis ? currentAnalysis?.source : selected.source
+      if (
+        (isActivationCandidate && stableAcrossResolutions) ||
+        approvedAnalysis ||
+        bootstrapAnalysis
+      ) {
         try {
           if (!canonicalSource) throw new Error('Canonical face source is unavailable')
           const canonicalFace = await generateCanonicalFaceTexture({
@@ -779,7 +856,8 @@ export async function processBuilderMappings(
                 artifact: canonicalFace,
                 productId: id,
                 ...(typeof product.slug === 'string' ? { productSlug: product.slug } : {}),
-                sourceImageIndex: approvedAnalysis ? currentImageIndex : selected.index,
+                sourceImageIndex:
+                  approvedAnalysis || bootstrapAnalysis ? currentImageIndex : selected.index,
               })
               if (
                 receipt.contentHash !== canonicalFace.metadata.contentHash ||
@@ -805,30 +883,39 @@ export async function processBuilderMappings(
       const recordedAnalysis = protectsActiveMapping && currentAnalysis ? currentAnalysis : selected
       const analysisError = selection.ambiguousSource
         ? 'A different gallery image may be suitable; choose the mapped source before activation'
-        : analysis.source !== 'image'
-          ? 'Named-shape fallback requires visual review before activation'
-          : analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
-            ? 'Opal contour confidence is too low for automatic activation'
-            : isActivationCandidate && !stableAcrossResolutions
-              ? UNSTABLE_ANALYSIS_ERROR
-              : canonicalFaceError
-                ? canonicalFaceError
-                : null
+        : approvedMapping && !protectsActiveMapping && !bootstrapAnalysis
+          ? 'Approved mapping is missing a complete reviewed crop or dimensions; visual review required'
+          : approvedAnalysis && canonicalFaceReady
+            ? null
+            : analysis.source !== 'image'
+              ? 'Named-shape fallback requires visual review before activation'
+              : analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+                ? 'Opal contour confidence is too low for automatic activation'
+                : isActivationCandidate && !stableAcrossResolutions
+                  ? UNSTABLE_ANALYSIS_ERROR
+                  : canonicalFaceError
+                    ? canonicalFaceError
+                    : null
 
       const updated = await updateProduct(
         payload,
         id,
         {
           ...(mayActivateContour
-            ? {
-                builderMappedImageIndex: selected.index,
-                builderContour: candidate,
-                builderContourSourceImageHash: imageHash,
-                builderPhotoFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
-                builderPhotoFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
-                builderPhotoZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
-                builderPhotoRotation: finiteBetween(analysis.rotation, -180, 180, 'rotation'),
-              }
+            ? bootstrapAnalysis
+              ? {
+                  builderContour: candidate,
+                  builderContourSourceImageHash: imageHash,
+                }
+              : {
+                  builderMappedImageIndex: selected.index,
+                  builderContour: candidate,
+                  builderContourSourceImageHash: imageHash,
+                  builderPhotoFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
+                  builderPhotoFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
+                  builderPhotoZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
+                  builderPhotoRotation: finiteBetween(analysis.rotation, -180, 180, 'rotation'),
+                }
             : {}),
           builderContourCandidate: candidate,
           builderMappingAnalyzedImageHash: recordedAnalysis.imageHash,

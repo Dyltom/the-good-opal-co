@@ -3,6 +3,7 @@ import type { CollectionAfterChangeHook } from 'payload'
 
 import { builderMappingNeedsReview } from './mapping-lifecycle'
 import { BUILDER_MAPPING_WORKER_CONTEXT } from './mapping-lifecycle'
+import { BUILDER_PHOTO_PIPELINE_VERSION } from './mapping-version'
 
 type ProductRecord = Record<string, unknown>
 
@@ -27,13 +28,23 @@ function isAvailableMappingSource(value: unknown): value is ProductRecord {
     value.stock > 0 &&
     Array.isArray(value.images) &&
     value.images.length > 0 &&
-    (value.builderMappingStatus === 'pending' || value.builderMappingStatus === 'stale')
+    (value.builderMappingStatus === 'pending' ||
+      value.builderMappingStatus === 'stale' ||
+      ((value.builderMappingStatus === 'reviewed' || value.builderMappingStatus === 'manual') &&
+        value.builderPhotoAnalysisVersion !== BUILDER_PHOTO_PIPELINE_VERSION))
   )
 }
 
 export function shouldWakeBuilderMappingWorker(doc: unknown, previousDoc: unknown): boolean {
   if (!isAvailableMappingSource(doc)) return false
-  return !isAvailableMappingSource(previousDoc) || builderMappingNeedsReview(doc, previousDoc)
+  if (!isAvailableMappingSource(previousDoc)) return true
+
+  return (
+    builderMappingNeedsReview(doc, previousDoc) ||
+    doc.builderMappingStatus !== previousDoc.builderMappingStatus ||
+    doc.builderPhotoAnalysisVersion !== previousDoc.builderPhotoAnalysisVersion ||
+    doc.builderContourSourceImageHash !== previousDoc.builderContourSourceImageHash
+  )
 }
 
 function applicationOrigin(): string | undefined {
@@ -104,10 +115,7 @@ export const wakeBuilderMappingWorkerAfterProductChange: CollectionAfterChangeHo
   previousDoc,
   req,
 }) => {
-  if (
-    context[BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT] ||
-    context[BUILDER_MAPPING_WORKER_CONTEXT]
-  ) {
+  if (context[BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT] || context[BUILDER_MAPPING_WORKER_CONTEXT]) {
     return doc
   }
   if (!shouldWakeBuilderMappingWorker(doc, previousDoc)) return doc

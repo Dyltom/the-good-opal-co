@@ -9,6 +9,7 @@ import {
   shouldWakeBuilderMappingWorker,
   wakeBuilderMappingWorkerAfterProductChange,
 } from '../builder-mapping-trigger'
+import { BUILDER_PHOTO_PIPELINE_VERSION } from '../mapping-version'
 
 const availableProduct = {
   builderMappingInputHash: 'current-input',
@@ -131,6 +132,23 @@ describe('builder mapping event trigger', () => {
           builderMappingStatus: 'stale',
         },
         { ...availableProduct, builderMappingStatus: 'reviewed' }
+      )
+    ).toBe(true)
+  })
+
+  test('wakes immediately when a maker adopts a contour that needs canonical backfill', () => {
+    expect(
+      shouldWakeBuilderMappingWorker(
+        {
+          ...availableProduct,
+          builderContourSourceImageHash: 'approved-source',
+          builderMappingStatus: 'manual',
+          builderPhotoAnalysisVersion: null,
+        },
+        {
+          ...availableProduct,
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_PIPELINE_VERSION,
+        }
       )
     ).toBe(true)
   })

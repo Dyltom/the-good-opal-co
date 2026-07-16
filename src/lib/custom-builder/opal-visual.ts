@@ -319,6 +319,13 @@ function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | u
   return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
 }
 
+export function reviewedOpalVisualCalibration(
+  slug: string
+): (typeof reviewedProfiles)[string] | (typeof cataloguePhotoProfiles)[string] | undefined {
+  const reviewedSlug = reviewedSlugAliases[slug] ?? slug
+  return reviewedProfiles[reviewedSlug] ?? cataloguePhotoProfiles[reviewedSlug]
+}
+
 const validSilhouettes = new Set<RingConfig['shape']>([
   'oval',
   'round',
@@ -631,7 +638,11 @@ export function createOpalVisualProfile(
       transmission: managed?.transmission ?? profile.transmission,
       patternSeed: seed,
       contour: pairedContour ?? baseContour,
-      dimensionsMm: managed?.dimensionsMm ?? approvedReviewed?.dimensionsMm ?? dimensionsMm,
+      dimensionsMm:
+        managed?.dimensionsMm ??
+        dimensionsMm ??
+        reviewed?.dimensionsMm ??
+        approvedReviewed?.dimensionsMm,
       textureCrop: usesIndividualPhoto ? safeTextureCrop : undefined,
       photoFit: usesIndividualPhoto && safeTextureCrop ? (basePhotoFit ?? 'estimated') : undefined,
     },

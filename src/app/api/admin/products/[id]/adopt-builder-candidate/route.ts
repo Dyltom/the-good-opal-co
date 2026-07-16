@@ -306,6 +306,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       context: { [BUILDER_MEDIA_REPLACEMENT_CONTEXT]: true },
       data: {
         builderMappedImageIndex: candidateImageIndex,
+        builderMappingAnalysisError: null,
+        builderPhotoAnalysisVersion: null,
         builderPhotoFocalX: focalX,
         builderPhotoFocalY: focalY,
         builderPhotoZoom: zoom,
@@ -335,6 +337,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     builderPhotoFocalY: focalY,
     builderPhotoZoom: zoom,
     builderPhotoRotation: rotation,
+    // Force the worker to persist the canonical artifact before the public
+    // resolver advertises this newly approved contour.
+    builderPhotoAnalysisVersion: null,
+    builderMappingAnalysisError: null,
     builderMappingStatus: 'manual' as const,
     builderEligible: true,
   }

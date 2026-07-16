@@ -219,6 +219,8 @@ describe('adopt builder candidate admin route', () => {
         builderContourSourceImageHash: 'a'.repeat(64),
         builderEligible: true,
         builderMappingStatus: 'manual',
+        builderMappingAnalysisError: null,
+        builderPhotoAnalysisVersion: null,
         builderPhotoFocalX: 0.42,
         builderPhotoFocalY: 0.57,
         builderPhotoRotation: -12,
@@ -269,6 +271,8 @@ describe('adopt builder candidate admin route', () => {
       context: { builderMediaReplacementInvalidation: true },
       data: {
         builderMappedImageIndex: 0,
+        builderMappingAnalysisError: null,
+        builderPhotoAnalysisVersion: null,
         builderPhotoFocalX: 0.42,
         builderPhotoFocalY: 0.57,
         builderPhotoRotation: -12,
