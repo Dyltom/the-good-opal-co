@@ -56,6 +56,20 @@ const approvedAssetModel = {
   version: 'gemini-v2',
 } as const
 
+const approvedStoredAsset = {
+  bounds: { min: [-10, -10, -3], max: [10, 10, 3], size: [20, 20, 6] },
+  byteLength: approvedAssetVariant.asset.byteLength,
+  filename: `${approvedDigest}.glb`,
+  filesize: approvedAssetVariant.asset.byteLength,
+  materialNames: ['STERLING_SILVER', 'OXIDIZED_RECESS', 'MAKER_MARK'],
+  mimeType: 'model/gltf-binary',
+  nodeNames: ['REFERENCE_STONE', 'RING_ROOT', 'STONE_ANCHOR'],
+  sha256: approvedDigest,
+  url: approvedAssetVariant.asset.url,
+  validated: true,
+      validationVersion: 'glb-ring-v6',
+}
+
 function approvedRecord(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: 7,
@@ -345,13 +359,16 @@ describe('ring design render manifest boundary', () => {
 
   test('loads only valid published maker-approved records through a read-only query', async () => {
     const approved = approvedRecord()
-    findMock.mockResolvedValue({
-      docs: [
-        approved,
-        approvedRecord({ id: 8, status: 'draft' }),
-        approvedRecord({ id: 9, makerApproved: false }),
-        approvedRecord({ id: 10, modelDefinition: { source: 'scanned', version: '' } }),
-      ],
+    findMock.mockImplementation(async ({ collection }: { collection: string }) => {
+      if (collection === 'ring-assets') return { docs: [approvedStoredAsset] }
+      return {
+        docs: [
+          approved,
+          approvedRecord({ id: 8, status: 'draft' }),
+          approvedRecord({ id: 9, makerApproved: false }),
+          approvedRecord({ id: 10, modelDefinition: { source: 'scanned', version: '' } }),
+        ],
+      }
     })
 
     await expect(loadPublishedRingDesignRenderManifests()).resolves.toEqual([
@@ -380,6 +397,24 @@ describe('ring design render manifest boundary', () => {
         approvalNotes: true,
       },
     })
+    expect(findMock).toHaveBeenCalledWith({
+      collection: 'ring-assets',
+      depth: 0,
+      overrideAccess: true,
+      pagination: false,
+      where: { sha256: { in: [approvedDigest] } },
+    })
+  })
+
+  test('fails closed at runtime when the CMS asset identity has drifted', async () => {
+    findMock.mockImplementation(async ({ collection }: { collection: string }) => ({
+      docs:
+        collection === 'ring-assets'
+          ? [{ ...approvedStoredAsset, byteLength: approvedStoredAsset.byteLength + 1 }]
+          : [approvedRecord()],
+    }))
+
+    await expect(loadPublishedRingDesignRenderManifests()).resolves.toEqual([])
   })
 
   test('exports a schema that independently rejects malformed manifests', () => {

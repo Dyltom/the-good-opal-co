@@ -8,6 +8,7 @@ import {
   ringDesignStyles,
   validateRingDesignReference,
 } from './ring-design-reference'
+import { validateStoredRingAssets, type StoredRingAssetRecord } from './ring-asset-ingestion'
 
 const ringDesignRuntimeModelSchema = ringDesignAssetContractSchema
 
@@ -100,8 +101,29 @@ export async function loadPublishedRingDesignRenderManifests(): Promise<
     },
   })
 
-  return result.docs.flatMap((record) => {
+  const manifests = result.docs.flatMap((record) => {
     const manifest = parseRingDesignRenderManifest(record)
     return manifest ? [manifest] : []
   })
+  if (manifests.length === 0) return []
+
+  const digests = manifests.flatMap(({ model }) => model.variants.map(({ asset }) => asset.sha256))
+  interface RingAssetFinder {
+    find(args: {
+      collection: 'ring-assets'
+      depth: 0
+      overrideAccess: true
+      pagination: false
+      where: { sha256: { in: string[] } }
+    }): Promise<{ docs: StoredRingAssetRecord[] }>
+  }
+  const assetResult = await (payload as unknown as RingAssetFinder).find({
+    collection: 'ring-assets',
+    depth: 0,
+    overrideAccess: true,
+    pagination: false,
+    where: { sha256: { in: [...new Set(digests)] } },
+  })
+
+  return manifests.filter(({ model }) => validateStoredRingAssets(model, assetResult.docs) === true)
 }

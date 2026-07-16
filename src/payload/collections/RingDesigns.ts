@@ -1,10 +1,15 @@
 import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
 import {
+  ringDesignAssetContractSchema,
   ringDesignStyles,
   applyRingDesignApprovalLifecycle,
   validateRingDesignReference,
 } from '../../lib/custom-builder/ring-design-reference.ts'
+import {
+  validateStoredRingAssets,
+  type StoredRingAssetRecord,
+} from '../../lib/custom-builder/ring-asset-ingestion.ts'
 
 function record(value: unknown): Record<string, unknown> | undefined {
   return value !== null && typeof value === 'object'
@@ -20,6 +25,42 @@ export const invalidateRingDesignApprovalOnFidelityChange: CollectionBeforeValid
   const next = record(data)
   const previous = record(originalDoc)
   return applyRingDesignApprovalLifecycle(next, previous, operation)
+}
+
+interface RingAssetFinder {
+  find(args: {
+    collection: 'ring-assets'
+    depth: 0
+    overrideAccess: true
+    pagination: false
+    req: unknown
+    where: { sha256: { in: string[] } }
+  }): Promise<{ docs: StoredRingAssetRecord[] }>
+}
+
+export const requireStoredRingAssetsForApproval: CollectionBeforeValidateHook = async ({
+  data,
+  originalDoc,
+  req,
+}) => {
+  const document = { ...record(originalDoc), ...record(data) }
+  if (document['status'] !== 'published') return data
+
+  const model = ringDesignAssetContractSchema.safeParse(document['modelDefinition'])
+  if (!model.success) return data
+  const digests = model.data.variants.map(({ asset }) => asset.sha256)
+  const payload = req.payload as unknown as RingAssetFinder
+  const stored = await payload.find({
+    collection: 'ring-assets',
+    depth: 0,
+    overrideAccess: true,
+    pagination: false,
+    req,
+    where: { sha256: { in: digests } },
+  })
+  const result = validateStoredRingAssets(model.data, stored.docs)
+  if (result !== true) throw new Error(result)
+  return data
 }
 
 export const RingDesigns: CollectionConfig = {
@@ -38,6 +79,7 @@ export const RingDesigns: CollectionConfig = {
   hooks: {
     beforeValidate: [
       invalidateRingDesignApprovalOnFidelityChange,
+      requireStoredRingAssetsForApproval,
       ({ data, originalDoc }) => {
         const result = validateRingDesignReference(data, originalDoc)
         if (result !== true) throw new Error(result)

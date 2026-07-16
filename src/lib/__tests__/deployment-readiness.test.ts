@@ -8,6 +8,7 @@ const validEnvironment = {
   NODE_ENV: 'production',
   PAYLOAD_SECRET: 'uR2zX8fH4mQ9vB7cK3pL6sN1dT5wY0aE',
   QUOTE_LINK_SECRET: 'qL8vN2cR5xT9mK4dS7pW1yH6bF3aJ0uZ',
+  CRON_SECRET: 'cR9vN2xL5tQ8mK4dS7pW1yH6bF3aJ0uZ',
   NEXT_PUBLIC_APP_URL: 'https://shop.goodopal.test',
   EMAIL_FROM: 'The Good Opal Co <orders@send.goodopal.test>',
   STRIPE_SECRET_KEY: `sk_live_${'a'.repeat(24)}`,
@@ -41,6 +42,7 @@ describe('deployment readiness', () => {
       ...validEnvironment,
       PAYLOAD_SECRET: 'your-secret-key-minimum-32-characters-long-please',
       QUOTE_LINK_SECRET: 'short',
+      CRON_SECRET: 'your-secret',
       NEXT_PUBLIC_APP_URL: 'http://shop.goodopal.test?secret=value',
       EMAIL_FROM: 'not-an-email',
       STRIPE_SECRET_KEY: 'sk_test_xxxxxxxxxxxx',
@@ -66,6 +68,7 @@ describe('deployment readiness', () => {
     expect(readiness.issues).toEqual([
       'payload_secret_invalid',
       'quote_link_secret_invalid',
+      'cron_secret_invalid',
       'app_url_invalid',
       'email_from_invalid',
       'stripe_secret_key_invalid',
@@ -136,6 +139,13 @@ describe('deployment readiness', () => {
         PAYLOAD_SECRET: 'short',
       })
     ).toThrow('payload_secret_invalid')
+
+    expect(() =>
+      assertValidCoreProductionConfiguration({
+        ...validEnvironment,
+        CRON_SECRET: '',
+      })
+    ).toThrow('cron_secret_invalid')
   })
 
   test('allows local HTTP app URLs outside production', () => {

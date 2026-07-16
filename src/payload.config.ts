@@ -27,6 +27,7 @@ import { CustomQuotes } from './payload/collections/CustomQuotes.ts'
 import { CustomQuoteEvents } from './payload/collections/CustomQuoteEvents.ts'
 import { RingDesigns } from './payload/collections/RingDesigns.ts'
 import { RingReferenceChecks } from './payload/collections/RingReferenceChecks.ts'
+import { RingAssets } from './payload/collections/RingAssets.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -146,6 +147,7 @@ export default buildConfig({
     InventoryReservations,
     CustomQuotes,
     CustomQuoteEvents,
+    RingAssets,
     RingDesigns,
     RingReferenceChecks,
   ],
@@ -179,6 +181,22 @@ export default buildConfig({
       },
       token: blobToken,
       clientUploads: true,
+    }),
+    vercelBlobStorage({
+      enabled: Boolean(blobToken),
+      addRandomSuffix: true,
+      collections: {
+        'ring-assets': {
+          // Ring metadata remains admin-only while the immutable model URL stays
+          // fetchable by the public Three.js renderer.
+          disablePayloadAccessControl: true,
+          prefix: 'rings',
+        },
+      },
+      token: blobToken,
+      // Validation must see exact bytes. Keep these small, immutable uploads on
+      // the server path instead of direct-to-Blob client uploads.
+      clientUploads: false,
     }),
     // SEO plugin - adds meta fields to collections
     seoPlugin({

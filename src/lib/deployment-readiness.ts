@@ -5,6 +5,7 @@ export type ReadinessIssueCode =
   | 'payload_secret_invalid'
   | 'app_url_invalid'
   | 'quote_link_secret_invalid'
+  | 'cron_secret_invalid'
   | 'email_from_invalid'
   | 'stripe_secret_key_invalid'
   | 'stripe_live_mode_required'
@@ -69,6 +70,11 @@ function hasValidQuoteLinkSecret(env: Environment): boolean {
   return isValidQuoteLinkSecret(secret) && !isObviousPlaceholder(secret)
 }
 
+function hasValidCronSecret(env: Environment): boolean {
+  const secret = value(env, 'CRON_SECRET')
+  return secret.length >= 32 && !isObviousPlaceholder(secret)
+}
+
 function hasValidAppUrl(env: Environment, production: boolean): boolean {
   const configured = value(env, 'NEXT_PUBLIC_APP_URL')
 
@@ -128,6 +134,7 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
   if (!hasValidQuoteLinkSecret(env)) {
     issues.push('quote_link_secret_invalid')
   }
+  if (production && !hasValidCronSecret(env)) issues.push('cron_secret_invalid')
   if (!hasValidAppUrl(env, production)) issues.push('app_url_invalid')
   if (!hasValidEmailFrom(env)) issues.push('email_from_invalid')
   const stripeSecretKey = getConfiguredStripeSecretKey(value(env, 'STRIPE_SECRET_KEY'))
@@ -157,6 +164,7 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
     (issue) =>
       issue === 'payload_secret_invalid' ||
       issue === 'quote_link_secret_invalid' ||
+      issue === 'cron_secret_invalid' ||
       issue === 'app_url_invalid'
   )
   const payments = !issues.some(
@@ -194,6 +202,7 @@ export function assertValidCoreProductionConfiguration(env: Environment = proces
     (issue) =>
       issue === 'payload_secret_invalid' ||
       issue === 'quote_link_secret_invalid' ||
+      issue === 'cron_secret_invalid' ||
       issue === 'app_url_invalid'
   )
 

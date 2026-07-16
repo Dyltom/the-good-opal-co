@@ -82,6 +82,7 @@ export interface Config {
     'inventory-reservations': InventoryReservation;
     'custom-quotes': CustomQuote;
     'custom-quote-events': CustomQuoteEvent;
+    'ring-assets': RingAsset;
     'ring-designs': RingDesign;
     'ring-reference-checks': RingReferenceCheck;
     'payload-kv': PayloadKv;
@@ -106,6 +107,7 @@ export interface Config {
     'inventory-reservations': InventoryReservationsSelect<false> | InventoryReservationsSelect<true>;
     'custom-quotes': CustomQuotesSelect<false> | CustomQuotesSelect<true>;
     'custom-quote-events': CustomQuoteEventsSelect<false> | CustomQuoteEventsSelect<true>;
+    'ring-assets': RingAssetsSelect<false> | RingAssetsSelect<true>;
     'ring-designs': RingDesignsSelect<false> | RingDesignsSelect<true>;
     'ring-reference-checks': RingReferenceChecksSelect<false> | RingReferenceChecksSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -587,7 +589,7 @@ export interface Product {
    */
   builderPhotoFocalY?: number | null;
   /**
-   * Crop zoom, 1 or greater
+   * Crop zoom, from 1 to 12
    */
   builderPhotoZoom?: number | null;
   /**
@@ -1137,6 +1139,71 @@ export interface CustomQuoteEvent {
   createdAt: string;
 }
 /**
+ * Immutable maker-reviewed GLB models, maximum 4 MiB. Revised bytes require a new content identity.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ring-assets".
+ */
+export interface RingAsset {
+  id: number;
+  name: string;
+  /**
+   * Artist/CAD source, export settings, and physical master provenance.
+   */
+  notes?: string | null;
+  sha256: string;
+  byteLength: number;
+  validationVersion: string;
+  validated: boolean;
+  /**
+   * Unique named nodes parsed from the GLB default scene.
+   */
+  nodeNames:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Unique named materials parsed from the GLB.
+   */
+  materialNames:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * World bounds in authored millimetres, validated by glb-ring-v6.
+   */
+  bounds:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
  * Physical reference evidence and maker approval for each ring-builder design.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1301,6 +1368,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'custom-quote-events';
         value: number | CustomQuoteEvent;
+      } | null)
+    | ({
+        relationTo: 'ring-assets';
+        value: number | RingAsset;
       } | null)
     | ({
         relationTo: 'ring-designs';
@@ -1915,6 +1986,32 @@ export interface CustomQuoteEventsSelect<T extends boolean = true> {
   evidence?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ring-assets_select".
+ */
+export interface RingAssetsSelect<T extends boolean = true> {
+  name?: T;
+  notes?: T;
+  sha256?: T;
+  byteLength?: T;
+  validationVersion?: T;
+  validated?: T;
+  nodeNames?: T;
+  materialNames?: T;
+  bounds?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

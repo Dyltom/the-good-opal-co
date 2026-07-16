@@ -48,6 +48,7 @@ import * as migration_20260715_070000_builder_candidate_image_selection from './
 import * as migration_20260715_083000_refine_reviewed_opal_placement from './20260715_083000_refine_reviewed_opal_placement'
 import * as migration_20260715_141500_remove_misclassified_coral_reel from './20260715_141500_remove_misclassified_coral_reel'
 import * as migration_20260715_223000_expand_instagram_content_review from './20260715_223000_expand_instagram_content_review'
+import * as migration_20260716_120000_ring_asset_ingestion from './20260716_120000_ring_asset_ingestion'
 
 export const migrations = [
   {
@@ -299,5 +300,10 @@ export const migrations = [
     up: migration_20260715_223000_expand_instagram_content_review.up,
     down: migration_20260715_223000_expand_instagram_content_review.down,
     name: '20260715_223000_expand_instagram_content_review',
+  },
+  {
+    up: migration_20260716_120000_ring_asset_ingestion.up,
+    down: migration_20260716_120000_ring_asset_ingestion.down,
+    name: '20260716_120000_ring_asset_ingestion',
   },
 ]
