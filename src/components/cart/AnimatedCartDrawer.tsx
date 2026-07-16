@@ -11,8 +11,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
@@ -100,7 +99,8 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg flex flex-col p-0">
         {/* Animated Header */}
-        <SheetHeader className="p-6 pb-4 border-b">
+        {/* pr-16 keeps the title clear of the close button */}
+        <SheetHeader className="p-6 pb-4 pr-16 border-b">
           <SheetTitle className="flex items-center gap-2">
             <motion.div
               animate={{ rotate: isLoading ? 360 : 0 }}
@@ -108,16 +108,16 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
             >
               <ShoppingBag className="w-5 h-5" />
             </motion.div>
-            <span>Your Cart</span>
+            <span>Your cart</span>
             <AnimatePresence mode="wait">
               <motion.span
                 key={itemCount}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
-                className="ml-auto text-sm font-normal text-gray-500"
+                className="text-sm font-normal text-gray-500"
               >
-                {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                ({itemCount})
               </motion.span>
             </AnimatePresence>
           </SheetTitle>
@@ -138,8 +138,10 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
           </div>
         ) : (
           <>
-            {/* Cart Items - Scrollable */}
-            <ScrollArea className="flex-1 p-6">
+            {/* Cart Items - Scrollable. Native overflow instead of Radix
+                ScrollArea, whose display:table viewport defeats min-w-0
+                truncation and lets rows overflow on narrow screens. */}
+            <div className="flex-1 overflow-y-auto p-6">
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
                   <AnimatedCartItem
@@ -152,7 +154,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                   />
                 ))}
               </AnimatePresence>
-            </ScrollArea>
+            </div>
 
             {/* Cart Summary */}
             <div className="border-t bg-gradient-to-b from-gray-50 to-white p-6 space-y-4">
@@ -205,6 +207,12 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                     <Link href="/cart">View cart</Link>
                   </Button>
                 </motion.div>
+
+                <SheetClose asChild>
+                  <Button variant="ghost" className="w-full h-10 text-charcoal/70 hover:text-charcoal">
+                    Continue shopping
+                  </Button>
+                </SheetClose>
               </div>
             </div>
           </>
