@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense, useEffect, useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { ArrowRight, Menu, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { CartButton } from '@/components/cart/CartButton'
 import { Container } from '@/components/layout'
@@ -78,7 +78,7 @@ export function Navigation({
             ) : null}
             <span className="hidden sm:block">
               <span className="block font-serif text-lg font-semibold leading-5">{logoText}</span>
-              <span className="mt-1 block font-sans text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-charcoal/55">
+              <span className="mt-1 block font-sans text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-charcoal/70">
                 Australian opals
               </span>
             </span>
@@ -112,7 +112,7 @@ export function Navigation({
           {cta ? (
             <Link
               href={cta.href}
-              className="hidden min-h-11 items-center rounded-md bg-charcoal px-4 font-sans text-sm font-semibold text-cream xl:inline-flex"
+              className="hidden min-h-11 items-center rounded-md bg-charcoal px-4 font-sans text-sm font-semibold text-cream transition-colors duration-150 hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 xl:inline-flex"
             >
               {cta.label}
             </Link>
@@ -178,9 +178,7 @@ export function Navigation({
                   className="flex min-h-14 items-center justify-between border-b border-warm-grey/55 font-serif text-2xl text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-opal-electric-accessible"
                 >
                   {item.label}
-                  <span aria-hidden="true" className="font-sans text-sm text-charcoal/45">
-                    ↗
-                  </span>
+                  <ArrowRight className="h-4 w-4 text-charcoal/45" aria-hidden="true" />
                 </Link>
               ))}
             </div>
@@ -193,7 +191,7 @@ export function Navigation({
               >
                 Need help choosing? Talk to us
               </Link>
-              <p className="mt-3 max-w-[28ch] font-sans text-xs leading-5 text-charcoal/55">
+              <p className="mt-3 max-w-[28ch] font-sans text-xs leading-5 text-charcoal/70">
                 Personal guidance for gifts, first opals, collectors, and custom pieces.
               </p>
             </div>

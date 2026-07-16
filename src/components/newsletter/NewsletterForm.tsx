@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 interface NewsletterFormProps {
   variant?: 'default' | 'compact' | 'hero'
   source?: 'footer' | 'popup' | 'checkout' | 'account'
+  /** Surface the form renders on; controls text colors for contrast. */
+  tone?: 'light' | 'dark'
   className?: string
   showName?: boolean
 }
@@ -17,6 +19,7 @@ interface NewsletterFormProps {
 export function NewsletterForm({
   variant = 'default',
   source = 'footer',
+  tone = 'light',
   className,
   showName = false
 }: NewsletterFormProps) {
@@ -110,7 +113,12 @@ export function NewsletterForm({
         )}
 
         {/* Privacy notice */}
-        <p className="text-xs text-gray-500 text-center">
+        <p
+          className={cn(
+            'text-xs text-center',
+            tone === 'dark' ? 'text-white/70' : 'text-charcoal/70'
+          )}
+        >
           By subscribing, you agree to receive marketing emails. Unsubscribe anytime.
         </p>
       </div>

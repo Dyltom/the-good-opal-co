@@ -1,5 +1,3 @@
-'use client'
-
 import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
@@ -45,8 +43,8 @@ const defaultLinks = [
   {
     title: 'Shop',
     links: [
-      { href: '/store', label: 'All Products' },
-      { href: '/store?category=raw-opals', label: 'Raw Opals' },
+      { href: '/store', label: 'All products' },
+      { href: '/store?category=raw-opals', label: 'Raw opals' },
       { href: '/store?category=opal-rings', label: 'Rings' },
       { href: '/store?category=opal-necklaces', label: 'Necklaces' },
     ],
@@ -55,8 +53,8 @@ const defaultLinks = [
     title: 'Support',
     links: [
       { href: '/faq', label: 'FAQ' },
-      { href: '/contact', label: 'Contact Us' },
-      { href: '/shipping', label: 'Shipping Info' },
+      { href: '/contact', label: 'Contact us' },
+      { href: '/shipping', label: 'Shipping info' },
       { href: '/returns', label: 'Returns' },
     ],
   },
@@ -65,7 +63,7 @@ const defaultLinks = [
     links: [
       { href: '/blog', label: 'Blog' },
       { href: '/courses', label: 'Courses' },
-      { href: '/about', label: 'Our Story' },
+      { href: '/about', label: 'Our story' },
       { href: '/services', label: 'Services' },
     ],
   },
@@ -136,7 +134,7 @@ export function Footer({
                 <p className="text-white/60 mb-6">
                   New pieces, care notes, and workshop updates, sent occasionally.
                 </p>
-                <NewsletterForm variant="compact" source="footer" className="lg:max-w-md lg:ml-auto" />
+                <NewsletterForm variant="compact" source="footer" tone="dark" className="lg:max-w-md lg:ml-auto" />
               </div>
             </div>
 
@@ -150,7 +148,7 @@ export function Footer({
                       <li key={link.href}>
                         <Link
                           href={link.href}
-                          className="rounded text-sm text-white/55 transition-colors duration-200 hover:text-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
+                          className="inline-flex min-h-11 items-center rounded text-sm text-white/55 transition-colors duration-200 hover:text-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
                           target={link.external ? '_blank' : undefined}
                           rel={link.external ? 'noopener noreferrer' : undefined}
                         >
@@ -188,15 +186,15 @@ export function Footer({
 
             {/* Bottom Bar */}
             <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="text-sm text-white/40">
+              <div className="text-sm text-white/70">
                 {copyright || `© ${currentYear} ${logoText}. All rights reserved.`}
               </div>
-              <div className="flex gap-6 text-sm text-white/40">
-                <Link href="/legal/privacy" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Privacy Policy</Link>
-                <Link href="/legal/terms" className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Terms of Service</Link>
-                <CookieSettingsLink className="rounded px-1 transition-colors hover:text-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark" />
+              <div className="flex gap-6 text-sm text-white/70">
+                <Link href="/legal/privacy" className="rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Privacy policy</Link>
+                <Link href="/legal/terms" className="rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark">Terms of service</Link>
+                <CookieSettingsLink className="rounded px-1 text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark" />
               </div>
-              <div className="text-xs text-white/35">
+              <div className="text-xs text-white/70">
                 Australian opal that doesn&apos;t cost the earth.
               </div>
             </div>

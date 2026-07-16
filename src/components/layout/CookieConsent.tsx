@@ -81,7 +81,7 @@ export function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 16, opacity: 0 }}
           transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-5"
+          className="fixed inset-x-0 bottom-0 z-50 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-5 sm:pb-[max(1.25rem,env(safe-area-inset-bottom))]"
         >
           <div className="mx-auto max-w-xl sm:ml-auto sm:mr-0">
             <div className="max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-lg border border-warm-grey bg-cream shadow-lg">
@@ -169,6 +169,7 @@ export function CookieConsent() {
                               type="checkbox"
                               checked={preferences.necessary}
                               disabled
+                              aria-label="Necessary cookies (always on)"
                               className="h-4 w-4 cursor-not-allowed rounded text-opal-electric"
                             />
                             <span className="ml-2 text-xs text-gray-500">Always On</span>
@@ -188,6 +189,7 @@ export function CookieConsent() {
                           <input
                             type="checkbox"
                             checked={preferences.analytics}
+                            aria-label="Allow analytics cookies"
                             onChange={(e) =>
                               setPreferences({
                                 ...preferences,
