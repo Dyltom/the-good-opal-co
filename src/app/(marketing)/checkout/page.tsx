@@ -36,7 +36,9 @@ export default async function CheckoutPage() {
             <div className="mx-auto max-w-6xl">
               <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-opal-electric-accessible">Final step</p>
+                  <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-opal-electric-accessible">
+                    Final step
+                  </p>
                   <h1 className="mt-2 font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
                     Checkout
                   </h1>

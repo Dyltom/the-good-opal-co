@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { AlertCircle, LockKeyhole, PackageCheck, ShoppingBag, Truck } from 'lucide-react'
+import { AlertCircle, LockKeyhole, PackageCheck, RotateCcw, ShoppingBag, Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -236,7 +236,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <h2 id="payment-heading" className="font-serif text-2xl font-semibold text-charcoal">
             Delivery and payment
           </h2>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="flex gap-3">
               <LockKeyhole
                 className="mt-0.5 h-5 w-5 shrink-0 text-opal-electric-accessible"
@@ -266,6 +266,25 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                 <p className="text-sm font-semibold text-charcoal">Order confirmation</p>
                 <p className="mt-1 text-sm leading-5 text-charcoal/65">
                   Review details before paying.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <RotateCcw
+                className="mt-0.5 h-5 w-5 shrink-0 text-opal-electric-accessible"
+                aria-hidden="true"
+              />
+              <div>
+                <p className="text-sm font-semibold text-charcoal">Returns</p>
+                <p className="mt-1 text-sm leading-5 text-charcoal/65">
+                  Change of mind is covered.{' '}
+                  <Link
+                    href="/returns"
+                    className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                  >
+                    See what&apos;s included
+                  </Link>{' '}
+                  before you order.
                 </p>
               </div>
             </div>
@@ -313,7 +332,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                   </p>
                   <p className="mt-1 text-xs text-charcoal/60">Quantity {item.quantity}</p>
                 </div>
-                <p className="shrink-0 text-sm font-semibold text-charcoal">
+                <p className="shrink-0 text-sm font-semibold tabular-nums text-charcoal">
                   {formatCurrency(item.price * item.quantity, 'AUD')}
                 </p>
               </div>
@@ -323,15 +342,17 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <dl className="mt-5 space-y-3 text-sm text-charcoal">
             <div className="flex justify-between gap-4">
               <dt>Subtotal</dt>
-              <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
+              <dd className="tabular-nums">{formatCurrency(pricing.subtotal, 'AUD')}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Shipping</dt>
-              <dd>{pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}</dd>
+              <dd className="tabular-nums">
+                {pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}
+              </dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-warm-grey/50 pt-4 text-lg font-semibold">
               <dt>Total</dt>
-              <dd>{formatCurrency(pricing.total, 'AUD')}</dd>
+              <dd className="tabular-nums">{formatCurrency(pricing.total, 'AUD')}</dd>
             </div>
           </dl>
 
@@ -359,14 +380,14 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <p className="mt-4 text-xs leading-5 text-charcoal/60">
             By continuing, you agree to our{' '}
             <Link
-              href="/terms"
+              href="/legal/terms"
               className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
             >
               terms
             </Link>{' '}
             and{' '}
             <Link
-              href="/privacy"
+              href="/legal/privacy"
               className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
             >
               privacy policy

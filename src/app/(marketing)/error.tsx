@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { Button } from '@/components/ui/button'
 
@@ -22,22 +23,26 @@ export default function Error({
   return (
     <Section padding="lg">
       <Container>
-        <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-6xl font-bold text-destructive mb-4">Error</h1>
-          <h2 className="text-2xl font-bold mb-4">Something went wrong</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            We apologize for the inconvenience. An error has occurred.
+        <div className="mx-auto max-w-2xl text-center">
+          <h1 className="font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+            Something went wrong on our end.
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-charcoal/70">
+            Your cart and any order you completed are safe. Please try again, or contact us if it
+            keeps happening.
           </p>
 
-          <div className="flex gap-4 justify-center">
-            <Button onClick={() => reset()}>Try Again</Button>
-            <Button asChild variant="outline">
-              <button onClick={() => window.location.href = '/'}>Go Home</button>
+          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+            <Button size="lg" onClick={() => reset()}>
+              Try again
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/">Back to home</Link>
             </Button>
           </div>
 
           {process.env['NODE_ENV'] === 'development' && error.message && (
-            <div className="mt-8 p-4 bg-destructive/10 rounded-lg text-left">
+            <div className="mt-8 rounded-lg bg-destructive/10 p-4 text-left">
               <p className="font-mono text-sm text-destructive">{error.message}</p>
             </div>
           )}

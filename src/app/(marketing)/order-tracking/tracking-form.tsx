@@ -33,18 +33,18 @@ export function OrderTrackingForm() {
       case 'delivered':
         return 'bg-green-100 text-green-800'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-warm-grey/60 text-charcoal'
     }
   }
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-white rounded-xl shadow-sm border border-warm-grey/60 p-8">
         <form action={formAction} className="space-y-6">
           {/* Order Number */}
           <div>
             <Label htmlFor="orderNumber" className="flex items-center gap-2 mb-2">
-              <Package className="h-4 w-4 text-gray-400" />
+              <Package className="h-4 w-4 text-charcoal/50" />
               Order Number
             </Label>
             <Input
@@ -56,7 +56,7 @@ export function OrderTrackingForm() {
               className="h-12 uppercase"
               autoComplete="off"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-charcoal/65 mt-1">
               Found in your order confirmation email
             </p>
           </div>
@@ -64,7 +64,7 @@ export function OrderTrackingForm() {
           {/* Email */}
           <div>
             <Label htmlFor="email" className="flex items-center gap-2 mb-2">
-              <Mail className="h-4 w-4 text-gray-400" />
+              <Mail className="h-4 w-4 text-charcoal/50" />
               Email Address
             </Label>
             <Input
@@ -76,7 +76,7 @@ export function OrderTrackingForm() {
               className="h-12"
               autoComplete="email"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-charcoal/65 mt-1">
               The email used when placing the order
             </p>
           </div>
@@ -104,7 +104,7 @@ export function OrderTrackingForm() {
 
       {/* Order Details */}
       {state.order && (
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="mt-8 bg-white rounded-xl shadow-sm border border-warm-grey/60 p-8">
           <h2 className="text-xl font-semibold text-charcoal mb-6">
             Order #{state.order.orderNumber}
           </h2>
@@ -120,7 +120,7 @@ export function OrderTrackingForm() {
           {/* Order Info */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div>
-              <p className="text-sm text-gray-600 mb-1">Order Date</p>
+              <p className="text-sm text-charcoal/70 mb-1">Order Date</p>
               <p className="font-medium text-charcoal">
                 {new Date(state.order.createdAt).toLocaleDateString('en-AU', {
                   year: 'numeric',
@@ -130,7 +130,7 @@ export function OrderTrackingForm() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-1">Total Amount</p>
+              <p className="text-sm text-charcoal/70 mb-1">Total Amount</p>
               <p className="font-medium text-charcoal">
                 {formatCurrency(state.order.total, 'AUD')}
               </p>
@@ -139,11 +139,11 @@ export function OrderTrackingForm() {
 
           {/* Tracking Info */}
           {state.order.trackingNumber && (
-            <div className="mb-8 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-8 p-4 bg-cream rounded-lg">
               <p className="text-sm font-medium text-charcoal mb-2">
                 Tracking Information
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-charcoal/70">
                 Tracking Number: <span className="font-mono">{state.order.trackingNumber}</span>
               </p>
             </div>
@@ -154,10 +154,10 @@ export function OrderTrackingForm() {
             <h3 className="font-medium text-charcoal mb-4">Items Ordered</h3>
             <div className="space-y-3">
               {state.order.items.map((item: { name: string; price: number; quantity: number }, index: number) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-0">
+                <div key={index} className="flex items-center justify-between py-3 border-b border-warm-grey/60 last:border-0">
                   <div>
                     <p className="font-medium text-charcoal">{item.name}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                    <p className="text-sm text-charcoal/70">Qty: {item.quantity}</p>
                   </div>
                   <p className="font-medium text-charcoal">
                     {formatCurrency(item.price * item.quantity, 'AUD')}
@@ -168,9 +168,9 @@ export function OrderTrackingForm() {
           </div>
 
           {/* Shipping destination */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
+          <div className="mt-8 pt-8 border-t border-warm-grey/60">
             <h3 className="font-medium text-charcoal mb-3">Shipping destination</h3>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-charcoal/70">
               <p>
                 {state.order.shippingDestination.city}, {state.order.shippingDestination.state}
               </p>

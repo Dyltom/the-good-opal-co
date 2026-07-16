@@ -31,6 +31,10 @@ export default async function CartPage() {
       <MarketingShell className="bg-white">
           {cart.items.length === 0 ? (
             <Container className="py-20 text-center">
+              <div
+                aria-hidden
+                className="mx-auto mb-6 h-px w-24 bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald opacity-70"
+              />
               <ShoppingBag className="mx-auto h-8 w-8 text-charcoal/40" aria-hidden="true" />
               <h1 className="mt-5 font-serif text-4xl font-semibold text-charcoal">
                 Your cart is empty
@@ -45,6 +49,14 @@ export default async function CartPage() {
               >
                 <Link href="/store">Browse available pieces</Link>
               </Button>
+              <p className="mt-4 text-sm text-charcoal/65">
+                <Link
+                  href="/contact"
+                  className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                >
+                  Need help choosing? Talk to us
+                </Link>
+              </p>
             </Container>
           ) : (
             <CartPageContent initialCart={cart} />

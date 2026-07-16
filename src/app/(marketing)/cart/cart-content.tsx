@@ -81,7 +81,9 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
     <Container className="py-10 lg:py-14">
       <div className="pb-28 lg:pb-0" aria-busy={isPending}>
         <header className="mb-8 border-b border-warm-grey/50 pb-6">
-          <p className="text-sm font-semibold text-opal-electric-accessible">Your order</p>
+          <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-opal-electric-accessible">
+            Your order
+          </p>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
@@ -132,17 +134,17 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               <dl className="mt-5 space-y-3 text-sm text-charcoal">
                 <div className="flex justify-between gap-4">
                   <dt>Subtotal</dt>
-                  <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
+                  <dd className="tabular-nums">{formatCurrency(pricing.subtotal, 'AUD')}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt>Shipping</dt>
-                  <dd>
+                  <dd className="tabular-nums">
                     {pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4 border-t border-warm-grey/50 pt-4 text-lg font-semibold">
                   <dt>Estimated total</dt>
-                  <dd>{formatCurrency(pricing.total, 'AUD')}</dd>
+                  <dd className="tabular-nums">{formatCurrency(pricing.total, 'AUD')}</dd>
                 </div>
               </dl>
 
@@ -180,7 +182,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
         <div className="mx-auto flex max-w-screen-sm items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-charcoal/60">Estimated total</p>
-            <p className="font-serif text-lg font-semibold text-charcoal">
+            <p className="font-serif text-lg font-semibold tabular-nums text-charcoal">
               {formatCurrency(pricing.total, 'AUD')}
             </p>
           </div>
@@ -248,11 +250,11 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                 {item.name}
               </h2>
             </Link>
-            <p className="mt-1 text-sm text-charcoal/60">
+            <p className="mt-1 text-sm tabular-nums text-charcoal/60">
               {formatCurrency(item.price, 'AUD')} each
             </p>
           </div>
-          <p className="shrink-0 font-semibold text-charcoal">
+          <p className="shrink-0 font-semibold tabular-nums text-charcoal">
             {formatCurrency(item.price * item.quantity, 'AUD')}
           </p>
         </div>

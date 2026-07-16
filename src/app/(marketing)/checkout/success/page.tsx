@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Check } from 'lucide-react'
 import Stripe from 'stripe'
 import { Container, Section } from '@/components/layout'
 import { Footer, SiteNavigation } from '@/components/navigation'
@@ -153,22 +154,15 @@ function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirme
   return (
     <Card className="p-12">
       {/* Success Icon */}
-      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-        <svg
-          className="h-10 w-10 text-green-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-opal-emerald/10">
+        <Check className="h-10 w-10 text-success" aria-hidden="true" />
       </div>
 
       {/* Success Message */}
-      <h1 className="mb-4 font-accent text-3xl font-bold">
-        {orderConfirmed ? 'Order Confirmed!' : 'Payment Received'}
+      <h1 className="mb-2 font-serif text-3xl font-semibold text-charcoal">
+        {orderConfirmed ? 'Order confirmed' : 'Payment received'}
       </h1>
-      <p className="mb-2 text-lg text-muted-foreground">
+      <p className="mb-4 font-accent text-xl text-charcoal/70">
         {orderConfirmed ? 'Thank you for your order' : 'We are finalizing your order now'}
       </p>
 
@@ -183,11 +177,11 @@ function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirme
         <h2 className="mb-3 font-semibold">What happens next?</h2>
         <ul className="space-y-2 text-sm text-muted-foreground">
           <li className="flex items-center gap-2">
-            <span className="text-green-600">✓</span>
+            <Check className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
             {orderConfirmed ? 'Order confirmation is being emailed' : 'Payment received securely'}
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-green-600">✓</span>
+            <Check className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
             Payment processed successfully
           </li>
           <li className="flex items-center gap-2">

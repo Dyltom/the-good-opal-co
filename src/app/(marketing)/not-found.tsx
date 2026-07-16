@@ -7,23 +7,37 @@ import { Button } from '@/components/ui/button'
  */
 export default function NotFound() {
   return (
-    <Section padding="lg">
+    <Section padding="lg" className="bg-cream">
       <Container>
-        <div className="text-center max-w-2xl mx-auto">
-          <h1 className="text-9xl font-serif font-bold text-primary mb-4">404</h1>
-          <h2 className="text-3xl font-serif font-bold mb-4">Page Not Found</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Sorry, we couldn&apos;t find the page you&apos;re looking for.
+        <div className="mx-auto max-w-2xl text-center">
+          <h1 className="font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+            This page has wandered off.
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-charcoal/70">
+            The opal you&apos;re after may have found a home, or the address may have changed.
           </p>
 
-          <div className="flex gap-4 justify-center">
-            <Button asChild>
-              <Link href="/">Go Home</Link>
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button asChild size="lg">
+              <Link href="/store">Browse the collection</Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/blog">View Blog</Link>
-            </Button>
+            <Link
+              href="/"
+              className="text-sm text-charcoal/70 underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+            >
+              Back to home
+            </Link>
           </div>
+
+          <p className="mt-8 text-sm text-charcoal/65">
+            Looking for something specific?{' '}
+            <Link
+              href="/contact"
+              className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+            >
+              Contact us
+            </Link>
+          </p>
         </div>
       </Container>
     </Section>

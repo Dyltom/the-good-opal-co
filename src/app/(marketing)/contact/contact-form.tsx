@@ -151,7 +151,7 @@ export function ContactForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="phone">
-            Phone <span className="text-gray-500">(optional)</span>
+            Phone <span className="text-charcoal/65">(optional)</span>
           </Label>
           <Input
             id="phone"
@@ -167,7 +167,7 @@ export function ContactForm({
         {!isCourseIntent ? (
           <div>
             <Label htmlFor="orderNumber">
-              Order Number <span className="text-gray-500">(if applicable)</span>
+              Order Number <span className="text-charcoal/65">(if applicable)</span>
             </Label>
             <Input
               id="orderNumber"
@@ -186,7 +186,7 @@ export function ContactForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div className={isCourseIntent ? 'sm:col-span-2' : undefined}>
           <Label htmlFor="product">
-            Course, product, or piece <span className="text-gray-500">(optional)</span>
+            Course, product, or piece <span className="text-charcoal/65">(optional)</span>
           </Label>
           <Input
             id="product"
@@ -199,7 +199,7 @@ export function ContactForm({
         {!isCourseIntent ? (
           <div>
             <Label htmlFor="budget">
-              Approximate budget <span className="text-gray-500">(optional)</span>
+              Approximate budget <span className="text-charcoal/65">(optional)</span>
             </Label>
             <Input
               id="budget"
@@ -215,7 +215,7 @@ export function ContactForm({
       <div>
         <Label htmlFor="timeline">
           {isCourseIntent ? 'What timing would suit you?' : 'When do you need it?'}{' '}
-          <span className="text-gray-500">(optional)</span>
+          <span className="text-charcoal/65">(optional)</span>
         </Label>
         <Input
           id="timeline"
@@ -264,9 +264,9 @@ export function ContactForm({
         )}
       </Button>
 
-      <p className="text-center text-xs text-gray-500">
+      <p className="text-center text-xs text-charcoal/65">
         By submitting this form, you agree to our{' '}
-        <a href="/legal/privacy" className="underline hover:text-gray-700">
+        <a href="/legal/privacy" className="underline hover:text-charcoal">
           Privacy Policy
         </a>
         .
