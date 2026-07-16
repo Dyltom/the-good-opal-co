@@ -46,20 +46,20 @@ const goodStartingPoints = [
 export default function ServicesPage() {
   return (
     <MarketingShell>
-      <section className="grid min-h-[calc(100vh-5rem)] lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="flex items-center px-5 py-16 sm:px-10 lg:px-[clamp(3rem,7vw,8rem)] lg:py-24">
+      <section className="grid lg:min-h-[34rem] lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="flex items-center px-5 py-12 sm:px-10 sm:py-14 lg:px-[clamp(3rem,6vw,6.5rem)] lg:py-16">
           <div className="max-w-xl">
-            <p className="mb-5 text-sm font-medium text-opal-electric-accessible">
+            <p className="mb-4 text-sm font-medium text-opal-electric-accessible">
               Custom opal jewellery
             </p>
-            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-medium leading-[0.94]">
+            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.75rem,5vw,4.75rem)] font-medium leading-[1.02]">
               Begin with the stone.
             </h1>
-            <p className="mt-7 max-w-[58ch] text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
+            <p className="mt-5 max-w-[58ch] text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
               Bring an idea, a meaningful occasion, or simply a colour you love. We&apos;ll help
               shape a one-of-a-kind piece around an Australian opal.
             </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Button
                 asChild
                 size="lg"
@@ -71,13 +71,13 @@ export default function ServicesPage() {
                 <Link href="/contact?subject=custom-design">Start with an enquiry</Link>
               </Button>
             </div>
-            <p className="mt-5 text-sm leading-6 text-charcoal-light">
+            <p className="mt-4 text-sm leading-6 text-charcoal-light">
               No finished brief required. We&apos;ll ask the practical questions.
             </p>
           </div>
         </div>
 
-        <div className="relative min-h-[30rem] overflow-hidden bg-black-rich lg:min-h-full">
+        <div className="relative min-h-[22rem] overflow-hidden bg-black-rich sm:min-h-[26rem] lg:min-h-full">
           <Image
             src="/images/customs/custom-2.jpg"
             alt="Four Australian opals viewed together in natural light"
@@ -95,12 +95,12 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <section className="border-y border-warm-grey/50 bg-white py-20 sm:py-28" id="how-it-works">
+      <section className="border-y border-warm-grey/50 bg-white py-14 sm:py-20" id="how-it-works">
         <Container>
-          <div className="grid gap-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20">
+          <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
             <div>
               <p className="text-sm font-medium text-opal-electric-accessible">The process</p>
-              <h2 className="mt-3 max-w-[10ch] font-serif text-4xl leading-tight sm:text-5xl">
+              <h2 className="mt-3 max-w-[16ch] text-balance font-serif text-4xl leading-tight sm:text-5xl">
                 Clear decisions, one at a time.
               </h2>
               <p className="mt-5 max-w-md leading-7 text-charcoal-light">
@@ -113,7 +113,7 @@ export default function ServicesPage() {
               {process.map((step) => (
                 <li
                   key={step.number}
-                  className="grid gap-3 py-7 sm:grid-cols-[4rem_0.7fr_1.3fr] sm:gap-6 sm:py-9"
+                  className="grid gap-3 py-6 sm:grid-cols-[4rem_0.7fr_1.3fr] sm:gap-6 sm:py-7"
                 >
                   <span className="text-sm font-medium text-opal-electric-accessible">
                     {step.number}
@@ -129,9 +129,9 @@ export default function ServicesPage() {
         </Container>
       </section>
 
-      <section className="py-20 sm:py-28">
+      <section className="py-14 sm:py-20">
         <Container>
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
             <div className="relative aspect-[4/3] overflow-hidden bg-warm-grey/30">
               <Image
                 src="/images/customs/custom-1.jpg"
@@ -148,7 +148,7 @@ export default function ServicesPage() {
               <h2 className="mt-3 font-serif text-4xl leading-tight sm:text-5xl">
                 What helps us guide you
               </h2>
-              <ul className="mt-8 space-y-4">
+              <ul className="mt-6 space-y-3">
                 {goodStartingPoints.map((item) => (
                   <li key={item} className="flex gap-3 leading-7 text-charcoal-light">
                     <Check
@@ -159,7 +159,7 @@ export default function ServicesPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-7 text-sm leading-6 text-charcoal-light">
+              <p className="mt-6 text-sm leading-6 text-charcoal-light">
                 Unsure about any of these? Leave the field blank. An enquiry is a conversation, not
                 a commitment.
               </p>
@@ -168,25 +168,33 @@ export default function ServicesPage() {
         </Container>
       </section>
 
-      <section className="bg-charcoal py-20 text-cream sm:py-24">
+      <section className="bg-charcoal py-14 text-cream sm:py-16">
         <Container>
           <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
             <div>
               <p className="text-sm text-opal-light">Ready when you are</p>
-              <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight sm:text-6xl">
+              <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight sm:text-5xl">
                 Tell us what you have in mind.
               </h2>
-              <p className="mt-5 max-w-xl leading-7 text-cream/70">
-                The enquiry form keeps your stone, budget, and timing details together so we can
-                give a useful first reply.
+              <p className="mt-4 max-w-xl leading-7 text-cream/70">
+                Sketch a ring in the 3D studio, or send an enquiry with your stone, budget, and
+                timing. Either way, you&apos;ll get a useful first reply.
               </p>
             </div>
-            <Link
-              href="/services/design"
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cream px-7 font-medium text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
-            >
-              Open the design studio <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </Link>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <Link
+                href="/services/design"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cream px-7 font-medium text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+              >
+                Open the design studio <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/contact?subject=custom-design"
+                className="inline-flex min-h-12 items-center justify-center rounded-full px-4 font-medium text-cream/80 underline-offset-4 transition-colors hover:text-cream hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+              >
+                Start with an enquiry
+              </Link>
+            </div>
           </div>
         </Container>
       </section>
