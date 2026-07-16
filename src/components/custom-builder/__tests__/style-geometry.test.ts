@@ -130,13 +130,13 @@ describe('sold ring style geometry', () => {
     expect(soldOuter[1]).toBeGreaterThan(genericOuter[1])
   })
 
-  test('keeps both sold halos rounded while preserving Aurora granule irregularity', () => {
+  test('keeps Sun and Moon rounded while preserving Aurora faceted granule irregularity', () => {
     const sunMoon = ringStyleGeometryProfiles['sun-moon']
     const aurora = ringStyleGeometryProfiles.aurora
 
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
-    expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
-    expect(sunMoon.beadAsymmetry).toBe(0.04)
+    expect(sunMoon.beadVariation).toBeLessThanOrEqual(aurora.beadVariation)
+    expect(sunMoon.beadAsymmetry).toBe(0.08)
     expect(aurora.beadAsymmetry).toBe(0.12)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('granulated')
@@ -149,7 +149,7 @@ describe('sold ring style geometry', () => {
       beadPitchMm: 1,
       beadRadius: 0.038,
       beadBridgeRadius: 0.022,
-      haloOffset: 0.095,
+      haloOffset: 0.1,
       beadPrimitive: 'rounded-granule',
     })
     expect(aurora).toMatchObject({
@@ -162,7 +162,7 @@ describe('sold ring style geometry', () => {
     })
     // More, smaller Sun & Moon granules preserve the photographed outer head
     // while reading as one fused granular trim instead of a pearl necklace.
-    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.133, 12)
+    expect(sunMoon.haloOffset + sunMoon.beadRadius).toBeCloseTo(0.138, 12)
     expect(aurora.haloOffset + aurora.beadRadius).toBeCloseTo(0.141, 12)
     expect(sunMoon.beadRadius * 20).toBeCloseTo(0.76, 12)
     expect(aurora.beadRadius * 20).toBeCloseTo(0.9, 12)
@@ -255,8 +255,8 @@ describe('sold ring style geometry', () => {
         profile.beadAsymmetry
       )
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.95)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.97)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.91)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.93)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 

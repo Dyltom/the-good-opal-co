@@ -273,10 +273,10 @@ function MetalMaterial({
       color={metalColours[metal]}
       flatShading={flatShading}
       metalness={isSterlingSilver ? 0.9 : 0.96}
-      roughness={isSterlingSilver ? Math.max(0.32, roughness) : roughness}
+      roughness={isSterlingSilver ? Math.max(0.38, roughness) : roughness}
       clearcoat={0.02}
       clearcoatRoughness={0.44}
-      envMapIntensity={isSterlingSilver ? 1.65 : 1.4}
+      envMapIntensity={isSterlingSilver ? 1.15 : 1.3}
       vertexColors={vertexColors}
     />
   )
@@ -350,7 +350,7 @@ function SolderGrainMaterial({
       clearcoat={0.015}
       clearcoatRoughness={0.5}
       envMapIntensity={faceted ? 1.2 : organic ? 1.25 : 1.18}
-      flatShading={false}
+      flatShading={faceted}
     />
   )
 }
@@ -1438,10 +1438,10 @@ function ProfiledBezelLip({
         attach="material-0"
         color={usesOxidizedSilverRail ? '#e6e2da' : metalColours[config.metal]}
         metalness={usesOxidizedSilverRail ? 0.9 : 0.96}
-        roughness={usesOxidizedSilverRail ? 0.34 : config.metal === 'sterling-silver' ? 0.32 : 0.25}
+        roughness={usesOxidizedSilverRail ? 0.38 : config.metal === 'sterling-silver' ? 0.38 : 0.3}
         clearcoat={usesOxidizedSilverRail ? 0.02 : 0.04}
         clearcoatRoughness={usesOxidizedSilverRail ? 0.46 : 0.36}
-        envMapIntensity={usesOxidizedSilverRail ? 1.65 : 1.55}
+        envMapIntensity={usesOxidizedSilverRail ? 1.15 : 1.3}
       />
       <meshStandardMaterial
         attach="material-1"
@@ -2241,7 +2241,7 @@ export function RingScene({
   view,
   zoomEnabled = true,
 }: RingSceneProps) {
-  const background = useMemo(() => new Color('#24241f'), [])
+  const background = useMemo(() => new Color('#eae6de'), [])
   const [approvedFramingState, setApprovedFramingState] = useState<{
     framing: ApprovedAssetFraming
     key: string
@@ -2303,23 +2303,23 @@ export function RingScene({
       onCreated={({ gl }) => {
         gl.outputColorSpace = SRGBColorSpace
         gl.toneMapping = ACESFilmicToneMapping
-        gl.toneMappingExposure = 1.08
+        gl.toneMappingExposure = 0.95
         gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
       }}
     >
-      <ambientLight intensity={0.48} />
-      <hemisphereLight args={['#f6f0e7', '#24251f', 1.25]} />
+      <ambientLight intensity={0.18} />
+      <hemisphereLight args={['#f6f0e7', '#80786c', 0.55]} />
       <directionalLight
         castShadow
         position={[4.5, 5.5, 5]}
-        intensity={2.2}
+        intensity={1.4}
         color="#fff7e8"
         shadow-bias={-0.00015}
         shadow-mapSize-height={1024}
         shadow-mapSize-width={1024}
       />
-      <directionalLight position={[-4, 2, 3]} intensity={1} color="#e5f1f2" />
-      <pointLight position={[0, -2, 3]} intensity={0.42} color="#fff1de" />
+      <directionalLight position={[-4, 2, 3]} intensity={0.45} color="#e5f1f2" />
+      <pointLight position={[0, -2, 3]} intensity={0.15} color="#fff1de" />
 
       <CameraPreset distance={approvedFraming?.distance} target={activeFramingTarget} view={view} />
       {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}

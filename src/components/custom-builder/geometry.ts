@@ -285,14 +285,17 @@ export function getRenderableOpalDepthMm(selectedOpal?: BuilderOpal): number | u
     !selectedOpal ||
     selectedOpal.selectionKind !== 'individual' ||
     selectedOpal.visual.evidence !== 'catalogue' ||
+    !selectedOpal.visual.dimensionEvidence ||
     !dimensions
   ) {
     return undefined
   }
 
-  // Catalogue dimensions sometimes describe parcels or rough depth. A set
-  // cabochon cannot plausibly stand taller than three quarters of its narrow
-  // face, so cap bad legacy data before it produces a tower-like preview.
+  // Only explicitly sourced catalogue or maker measurements may control the
+  // profile. Sold-reference placeholders still carry face dimensions for
+  // framing, but their synthetic depth must not raise the rendered crown.
+  // A set cabochon cannot plausibly stand taller than three quarters of its
+  // narrow face, so cap bad legacy data before it produces a tower-like preview.
   return Math.min(dimensions.depth, Math.min(dimensions.width, dimensions.length) * 0.75)
 }
 

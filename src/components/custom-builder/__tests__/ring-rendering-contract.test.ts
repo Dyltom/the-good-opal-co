@@ -62,7 +62,7 @@ describe('photoreal ring rendering contract', () => {
 
   test('uses colour-managed PBR metals without a visible contact-shadow plane', () => {
     expect(sceneSource).toContain('metalness={isSterlingSilver ? 0.9 : 0.96}')
-    expect(sceneSource).toContain('envMapIntensity={isSterlingSilver ? 1.65 : 1.4}')
+    expect(sceneSource).toContain('envMapIntensity={isSterlingSilver ? 1.15 : 1.3}')
     expect(sceneSource).toContain('gl.toneMapping = ACESFilmicToneMapping')
     expect(sceneSource).toContain('shadows={{ type: PCFShadowMap }}')
     expect(sceneSource).toContain('<Environment resolution={256}>')
@@ -155,7 +155,7 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain("organic={profile.beadPrimitive === 'organic-granule'}")
     expect(sceneSource).toContain('getSolderGrainTone(key, usesHandmadeSurface)')
     expect(sceneSource).not.toContain('flatShading={organic}')
-    expect(sceneSource).toContain('flatShading={false}')
+    expect(sceneSource).toContain('flatShading={faceted}')
     expect(sceneSource).toContain('bottomZ={Math.max(bezelBottom, 0.008)}')
     expect(sceneSource).toContain('topZ={0.026}')
     expect(sceneSource).not.toContain('position={[0, 0, -profile.beadRadius * 0.38]}')

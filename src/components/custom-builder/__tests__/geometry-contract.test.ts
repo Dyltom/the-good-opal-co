@@ -71,6 +71,7 @@ const measuredOpal: BuilderOpal = {
     evidence: 'catalogue',
     recommendedStyle: 'gemini',
     dimensionsMm: { width: 8, length: 14, depth: 3.2 },
+    dimensionEvidence: 'catalogue',
   },
 }
 
@@ -555,6 +556,12 @@ describe('custom ring geometry contract', () => {
     expect(
       getRenderableOpalDepthMm({
         ...measuredOpal,
+        visual: { ...measuredOpal.visual, dimensionEvidence: undefined },
+      })
+    ).toBeUndefined()
+    expect(
+      getRenderableOpalDepthMm({
+        ...measuredOpal,
         visual: { ...measuredOpal.visual, evidence: 'type-fallback' },
       })
     ).toBeUndefined()
@@ -760,7 +767,7 @@ describe('custom ring geometry contract', () => {
   })
 
   test.each([
-    ['sun-moon', 'oval', 0.133],
+    ['sun-moon', 'oval', 0.138],
     ['aurora', 'pear', 0.141],
   ] as const)(
     'fuses the %s grains without changing its sold outer head envelope',
