@@ -1,0 +1,103 @@
+import { describe, expect, test } from 'vitest'
+import type { CollectionBeforeValidateHook } from 'payload'
+import { applyRingDesignApprovalLifecycle } from '@/lib/custom-builder/ring-design-reference'
+import { invalidateRingDesignApprovalOnFidelityChange, RingDesigns } from '../RingDesigns'
+
+const approvedDesign = {
+  approvalNotes: 'Approved against physical Gemini master.',
+  approvedAt: '2026-07-15T01:30:00.000Z',
+  makerApproved: true,
+  measurements: { headWidthMm: 8.8 },
+  modelDefinition: { source: 'procedural', version: 'procedural-v3' },
+  sourceReferences: [{ assetPath: '/references/gemini-top.jpg', view: 'top' }],
+  status: 'published',
+  style: 'gemini',
+}
+
+async function runInvalidation(data: Record<string, unknown>, originalDoc = approvedDesign) {
+  return applyRingDesignApprovalLifecycle(data, originalDoc, 'update')
+}
+
+describe('ring design approval lifecycle', () => {
+  test.each([
+    ['style', { style: 'coral' }],
+    ['source references', { sourceReferences: [] }],
+    ['measurements', { measurements: { headWidthMm: 9.1 } }],
+    ['model definition', { modelDefinition: { source: 'procedural', version: 'procedural-v4' } }],
+  ] as const)('returns approved designs to draft when %s change', async (_, patch) => {
+    await expect(runInvalidation(patch)).resolves.toMatchObject({
+      approvalNotes: null,
+      approvedAt: null,
+      makerApproved: false,
+      status: 'draft',
+    })
+  })
+
+  test('does not let the fidelity edit reassert approval in the same save', async () => {
+    await expect(
+      runInvalidation({
+        approvalNotes: 'Reapproved without a separate review save.',
+        approvedAt: '2026-07-16T01:30:00.000Z',
+        makerApproved: true,
+        modelDefinition: { source: 'procedural', version: 'procedural-v4' },
+        status: 'published',
+      })
+    ).resolves.toMatchObject({
+      approvalNotes: null,
+      approvedAt: null,
+      makerApproved: false,
+      status: 'draft',
+    })
+  })
+
+  test('preserves approval when a non-fidelity field changes', async () => {
+    const patch = { name: 'Gemini ring' }
+    await expect(runInvalidation(patch)).resolves.toBe(patch)
+  })
+
+  test('clears stale approval metadata from already-draft evidence edits', async () => {
+    const patch = { measurements: { headWidthMm: 9.1 } }
+    await expect(
+      runInvalidation(patch, { ...approvedDesign, makerApproved: false, status: 'draft' })
+    ).resolves.toMatchObject({
+      approvalNotes: null,
+      approvedAt: null,
+      makerApproved: false,
+      status: 'draft',
+    })
+  })
+
+  test('compares JSON object keys canonically while preserving array order', async () => {
+    const measurements = { method: 'calipers', width: 8.8 }
+    const patch = { measurements: { width: 8.8, method: 'calipers' } }
+
+    await expect(
+      runInvalidation(patch, { ...approvedDesign, measurements })
+    ).resolves.toBe(patch)
+  })
+
+  test('forces newly created records through a separate approval save', () => {
+    expect(
+      applyRingDesignApprovalLifecycle(
+        {
+          approvalNotes: 'Attempted approval during creation.',
+          approvedAt: '2026-07-16T01:30:00.000Z',
+          makerApproved: true,
+          status: 'published',
+        },
+        undefined,
+        'create'
+      )
+    ).toMatchObject({
+      approvalNotes: null,
+      approvedAt: null,
+      makerApproved: false,
+      status: 'draft',
+    })
+  })
+
+  test('runs invalidation before publication validation', () => {
+    const hooks = RingDesigns.hooks?.beforeValidate as CollectionBeforeValidateHook[] | undefined
+    expect(hooks?.[0]).toBe(invalidateRingDesignApprovalOnFidelityChange)
+  })
+})

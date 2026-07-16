@@ -104,6 +104,68 @@ describe('ring render model selection', () => {
     expect(select()).toEqual({ kind: 'asset', makerApproved: true, manifest, variant })
   })
 
+  test('selects an authored head with a procedural shank at an approved ring size', () => {
+    const headVariant = {
+      ...variant,
+      assembly: 'authored-head-procedural-shank' as const,
+      nodes: {
+        referenceStone: 'REFERENCE_STONE' as const,
+        root: 'RING_ROOT' as const,
+        shankJoinLeft: 'SHANK_JOIN_LEFT' as const,
+        shankJoinRight: 'SHANK_JOIN_RIGHT' as const,
+        stoneAnchor: 'STONE_ANCHOR' as const,
+      },
+      ringFit: {
+        mode: 'procedural-shank' as const,
+        shankVersion: 'procedural-v3',
+        sizesUs: [7, 8],
+      },
+    }
+    const headManifest = {
+      ...manifest,
+      model: { ...manifest.model, variants: [headVariant] },
+    }
+
+    expect(select({ manifest: headManifest })).toEqual({
+      kind: 'asset',
+      makerApproved: true,
+      manifest: headManifest,
+      variant: headVariant,
+    })
+  })
+
+  test('rejects an authored head calibrated for a stale procedural shank', () => {
+    const staleHeadManifest = {
+      ...manifest,
+      model: {
+        ...manifest.model,
+        variants: [
+          {
+            ...variant,
+            assembly: 'authored-head-procedural-shank' as const,
+            nodes: {
+              referenceStone: 'REFERENCE_STONE' as const,
+              root: 'RING_ROOT' as const,
+              shankJoinLeft: 'SHANK_JOIN_LEFT' as const,
+              shankJoinRight: 'SHANK_JOIN_RIGHT' as const,
+              stoneAnchor: 'STONE_ANCHOR' as const,
+            },
+            ringFit: {
+              mode: 'procedural-shank' as const,
+              shankVersion: 'procedural-v2',
+              sizesUs: [7],
+            },
+          },
+        ],
+      },
+    }
+
+    expect(select({ manifest: staleHeadManifest })).toMatchObject({
+      kind: 'procedural',
+      reason: 'unsupported-shank-version',
+    })
+  })
+
   test.each([
     ['missing manifest', { manifest: null }],
     ['shape mismatch', { opal: builderOpal({ silhouette: 'pear' }) }],
@@ -133,31 +195,6 @@ describe('ring render model selection', () => {
     ['missing calibrated dimensions', { opal: builderOpal({ dimensionsMm: undefined }) }],
     ['ring-size mismatch', { config: { ...defaultRingConfig, size: 8.5 } }],
     ['style mismatch', { config: { ...defaultRingConfig, style: 'coral' } }],
-    [
-      'head-only assembly',
-      {
-        manifest: {
-          ...manifest,
-          model: {
-            ...manifest.model,
-            variants: [
-              {
-                ...variant,
-                assembly: 'authored-head-procedural-shank' as const,
-                nodes: {
-                  referenceStone: 'REFERENCE_STONE' as const,
-                  root: 'RING_ROOT' as const,
-                  shankJoinLeft: 'SHANK_JOIN_LEFT' as const,
-                  shankJoinRight: 'SHANK_JOIN_RIGHT' as const,
-                  stoneAnchor: 'STONE_ANCHOR' as const,
-                },
-                ringFit: { mode: 'resizable' as const, sizesUs: [7] },
-              },
-            ],
-          },
-        },
-      },
-    ],
   ] as const)('falls back to procedural rendering for %s', (_, options) => {
     expect(select(options)).toMatchObject({ kind: 'procedural' })
   })

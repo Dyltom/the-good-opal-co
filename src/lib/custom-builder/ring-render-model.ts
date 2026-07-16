@@ -25,6 +25,7 @@ export type RingRenderModelSelection =
         | 'contour-mismatch'
         | 'unsupported-ring-size'
         | 'unsupported-assembly'
+        | 'unsupported-shank-version'
         | 'ambiguous-variant'
       version: string
     }
@@ -95,11 +96,22 @@ export function selectRingRenderModel({
   if (opal.visual.silhouette !== config.shape) return procedural(config, 'unsupported-shape')
 
   const renderableVariants = manifest.model.variants.filter(
-    (variant) => variant.assembly === 'complete-ring'
+    (variant) =>
+      variant.assembly === 'complete-ring' ||
+      variant.assembly === 'authored-head-procedural-shank'
   )
   if (renderableVariants.length === 0) return procedural(config, 'unsupported-assembly')
 
-  const shapeVariants = renderableVariants.filter(
+  const currentAssemblyVariants = renderableVariants.filter(
+    (variant) =>
+      variant.assembly === 'complete-ring' ||
+      variant.ringFit.shankVersion === proceduralRingModelVersions[config.style]
+  )
+  if (currentAssemblyVariants.length === 0) {
+    return procedural(config, 'unsupported-shank-version')
+  }
+
+  const shapeVariants = currentAssemblyVariants.filter(
     (variant) =>
       variant.stoneFit.shape === opal.visual.silhouette &&
       (!variant.stoneFit.allowedOpalIds || variant.stoneFit.allowedOpalIds.includes(opal.id))

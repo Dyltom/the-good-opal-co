@@ -1,9 +1,26 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
 import {
   ringDesignStyles,
+  applyRingDesignApprovalLifecycle,
   validateRingDesignReference,
 } from '../../lib/custom-builder/ring-design-reference.ts'
+
+function record(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : undefined
+}
+
+export const invalidateRingDesignApprovalOnFidelityChange: CollectionBeforeValidateHook = ({
+  data,
+  operation,
+  originalDoc,
+}) => {
+  const next = record(data)
+  const previous = record(originalDoc)
+  return applyRingDesignApprovalLifecycle(next, previous, operation)
+}
 
 export const RingDesigns: CollectionConfig = {
   slug: 'ring-designs',
@@ -20,6 +37,7 @@ export const RingDesigns: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [
+      invalidateRingDesignApprovalOnFidelityChange,
       ({ data, originalDoc }) => {
         const result = validateRingDesignReference(data, originalDoc)
         if (result !== true) throw new Error(result)

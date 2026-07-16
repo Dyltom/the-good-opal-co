@@ -238,6 +238,58 @@ interface RingDesignReferenceDocument {
   status?: unknown
 }
 
+const ringDesignFidelityFields = [
+  'style',
+  'sourceReferences',
+  'measurements',
+  'modelDefinition',
+] as const
+
+function canonicalJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalJsonValue)
+  if (value === null || typeof value !== 'object') return value
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, entry]) => [key, canonicalJsonValue(entry)])
+  )
+}
+
+function equalJson(left: unknown, right: unknown): boolean {
+  return JSON.stringify(canonicalJsonValue(left)) === JSON.stringify(canonicalJsonValue(right))
+}
+
+/**
+ * Maker approval belongs to one exact evidence/model revision. Creation and
+ * fidelity edits always become an unapproved draft; approval requires a later
+ * unchanged save after review.
+ */
+export function applyRingDesignApprovalLifecycle(
+  data: Record<string, unknown> | undefined,
+  originalDoc: Record<string, unknown> | undefined,
+  operation: 'create' | 'update'
+): Record<string, unknown> | undefined {
+  if (!data) return data
+
+  const fidelityChanged =
+    operation === 'create' ||
+    ringDesignFidelityFields.some(
+      (field) =>
+        Object.prototype.hasOwnProperty.call(data, field) &&
+        !equalJson(data[field], originalDoc?.[field])
+    )
+  if (!fidelityChanged) return data
+
+  return {
+    ...data,
+    approvalNotes: null,
+    approvedAt: null,
+    makerApproved: false,
+    status: 'draft',
+  }
+}
+
 const requiredViews = ringReferenceViews
 
 function mergedDocument(
