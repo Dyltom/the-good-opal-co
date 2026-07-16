@@ -9,7 +9,12 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+// How long a toast stays on screen. Dismissal is scheduled here rather than
+// left to Radix, whose timer pauses on hover/window blur and can strand a
+// toast on screen indefinitely.
+const TOAST_DURATION = 4000
+// Buffer for the exit animation before the toast unmounts.
+const TOAST_REMOVE_DELAY = 1000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -142,7 +147,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ duration, ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -150,13 +155,21 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+  const dismissTimeout = setTimeout(() => {
+    dispatch({ type: "DISMISS_TOAST", toastId: id })
+  }, duration ?? TOAST_DURATION)
+  const dismiss = () => {
+    clearTimeout(dismissTimeout)
+    dispatch({ type: "DISMISS_TOAST", toastId: id })
+  }
 
   dispatch({
     type: "ADD_TOAST",
     toast: {
       ...props,
       id,
+      // Keep Radix's own timer out of the picture; ours above is authoritative.
+      duration: Infinity,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()

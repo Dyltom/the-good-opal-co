@@ -121,6 +121,7 @@ export const designTokens = {
       'in': 'cubic-bezier(0.4, 0, 1, 1)',
       'out': 'cubic-bezier(0, 0, 0.2, 1)',
       'in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
     },
   },
 
