@@ -128,9 +128,9 @@ export default function HomePage() {
       <MarketingShell mainClassName="pt-0">
           <HomeHero />
 
-          <section className="bg-cream px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+          <section className="bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
             <div className="mx-auto max-w-[90rem]">
-              <div className="mb-12 max-w-3xl lg:mb-16">
+              <div className="mb-10 max-w-3xl lg:mb-12">
                 <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
                   Find your way in
                 </p>
@@ -187,9 +187,9 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className="bg-white px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+          <section className="bg-white px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
             <div className="mx-auto max-w-[90rem]">
-              <div className="mb-12 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+              <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
                 <div>
                   <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
                     Recently added

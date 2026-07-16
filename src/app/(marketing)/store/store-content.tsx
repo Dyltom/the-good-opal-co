@@ -146,13 +146,13 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
 
   return (
     <>
-      <header className="border-b border-warm-grey/60 bg-cream px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto grid max-w-[92rem] gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
+      <header className="border-b border-warm-grey/60 bg-cream px-5 py-12 sm:px-8 sm:py-16">
+        <div className="mx-auto grid max-w-[92rem] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
-            <p className="mb-5 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
+            <p className="mb-4 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
               The collection
             </p>
-            <h1 className="max-w-[12ch] font-serif text-[clamp(3.1rem,7vw,7.25rem)] leading-[0.94] text-charcoal">
+            <h1 className="max-w-[18ch] font-serif text-[clamp(2.5rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
               Find the opal that stays with you.
             </h1>
           </div>
@@ -161,7 +161,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
               One-of-a-kind Australian stones and finished pieces, photographed individually. Use
               the details you know, or browse slowly.
             </p>
-            <ul className="mt-7 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-warm-grey/70 pt-5 font-sans text-xs font-semibold text-charcoal/65 sm:grid-cols-3">
+            <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-warm-grey/70 pt-5 font-sans text-xs font-semibold text-charcoal/65 sm:grid-cols-3">
               <li>Origin disclosed</li>
               <li>Prices in AUD</li>
               <li>Tracked delivery</li>
@@ -170,13 +170,13 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
         </div>
       </header>
 
-      <section className="bg-cream-dark px-5 py-10 sm:px-8 sm:py-14" aria-label="Opal collection">
+      <section className="bg-cream-dark px-5 py-8 sm:px-8 sm:py-10" aria-label="Opal collection">
         <div className="mx-auto max-w-[92rem]">
           <form
             action="/store"
             method="get"
             role="search"
-            className="grid gap-3 border-b border-warm-grey/70 pb-8 sm:grid-cols-[1fr_auto]"
+            className="grid gap-3 border-b border-warm-grey/70 pb-6 sm:grid-cols-[1fr_auto]"
           >
             <label className="sr-only" htmlFor="store-search">
               Search the collection
@@ -198,7 +198,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
             </button>
           </form>
 
-          <div className="grid gap-10 pt-9 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-14">
+          <div className="grid gap-8 pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
             <aside>
               <details className="group lg:hidden">
                 <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between border-y border-warm-grey/70 font-sans text-sm font-semibold">
@@ -252,7 +252,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
               </div>
 
               {products.length > 0 ? (
-                <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
                   {products.map((product, index) => (
                     <ProductCard
                       key={product.id}
