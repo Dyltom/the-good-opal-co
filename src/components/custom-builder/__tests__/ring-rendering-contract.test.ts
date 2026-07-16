@@ -25,10 +25,10 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).not.toContain('<tubeGeometry args={[curve, 96, radius, 14, true]} />')
   })
 
-  test('splits clean bezels into an oxidized seat and a hairline bright outer rail', () => {
+  test('splits clean bezels into an oxidized seat and a profile-driven bright outer rail', () => {
     expect(sceneSource).toContain('<BezelWall\n        config={config}')
     expect(sceneSource).toContain('const usesOxidizedSeat =')
-    expect(sceneSource).toContain('const outerRailThickness =')
+    expect(sceneSource).toContain('const outerRailThickness = profile.brightOuterRailThickness')
     expect(sceneSource).toContain('offset={oxidizedSeatOffset}')
     expect(sceneSource).toContain('thickness={oxidizedSeatThickness}')
     expect(sceneSource).toContain('offset={brightOuterRailOffset}')
@@ -101,7 +101,12 @@ describe('photoreal ring rendering contract', () => {
     expect(sceneSource).toContain('scale={prepared.stoneAnchor.scale}')
     expect(sceneSource).toContain("selection.variant.assembly === 'authored-head-procedural-shank'")
     expect(sceneSource).toContain('<ProceduralShank config={config} selectedOpal={selectedOpal} />')
-    expect(sceneSource).toContain('assertApprovedAssetJoinAlignment(')
+    expect(sceneSource).toContain('getApprovedAssetJoinTranslation(')
+    expect(sceneSource).toContain('model.position.add(new Vector3(...translation))')
+    expect(sceneSource).toContain('<ApprovedAssetErrorBoundary')
+    expect(sceneSource).toContain('onFailure={onApprovedAssetFailure}')
+    expect(sceneSource).toContain('resetKey={approvedAssetResetKey ?? approvedFramingKey}')
+    expect(sceneSource).toContain('Approved ring asset failed; using procedural concept:')
     expect(sceneSource).toContain('<ApprovedAssetBoundsReporter')
     expect(sceneSource).toContain('target={activeFramingTarget}')
     expect(sceneSource).toContain(

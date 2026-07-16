@@ -1,9 +1,9 @@
 import { BoxGeometry, Group, Mesh, Object3D } from 'three'
 import { describe, expect, test } from 'vitest'
 import {
-  assertApprovedAssetJoinAlignment,
   getApprovedAssetAnchorTransform,
   getApprovedAssetFraming,
+  getApprovedAssetJoinTranslation,
 } from '../approved-asset'
 
 describe('approved ring asset placement', () => {
@@ -28,24 +28,38 @@ describe('approved ring asset placement', () => {
     expect(transform.quaternion[3]).toBeLessThan(1)
   })
 
-  test('fails closed when an authored head cannot meet its procedural shank', () => {
-    expect(() =>
-      assertApprovedAssetJoinAlignment(
-        [-0.3, 0.8, 0],
-        [0.3, 0.8, 0],
-        [-0.31, 0.81, 0],
-        [0.31, 0.81, 0],
-        0.05
-      )
-    ).not.toThrow()
+  test('translates one calibrated head onto different ring radii without stretching it', () => {
+    const translation = getApprovedAssetJoinTranslation(
+      [-0.31, 0.8, 0],
+      [0.31, 0.8, 0],
+      [-0.31, 0.84064, 0],
+      [0.31, 0.84064, 0],
+      0.01
+    )
 
+    expect(translation[0]).toBe(0)
+    expect(translation[1]).toBeCloseTo(0.04064, 12)
+    expect(translation[2]).toBe(0)
+  })
+
+  test('fails closed when an authored head join span or skew cannot meet the shank', () => {
     expect(() =>
-      assertApprovedAssetJoinAlignment(
+      getApprovedAssetJoinTranslation(
         [-0.1, 0.8, 0],
         [0.1, 0.8, 0],
         [-0.31, 0.81, 0],
         [0.31, 0.81, 0],
-        0.05
+        0.01
+      )
+    ).toThrow('shank anchors do not match')
+
+    expect(() =>
+      getApprovedAssetJoinTranslation(
+        [-0.31, 0.8, -0.01],
+        [0.31, 0.8, 0.01],
+        [-0.31, 0.81, 0],
+        [0.31, 0.81, 0],
+        0.01
       )
     ).toThrow('shank anchors do not match')
   })

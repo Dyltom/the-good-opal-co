@@ -13,6 +13,10 @@ import type { RingView } from './RingScene'
 interface RingPreviewProps {
   config: RingConfig
   description: string
+  reference: {
+    image: string
+    name: string
+  }
   renderModel: RingRenderModelSelection
   selectedOpal?: BuilderOpal
 }
@@ -32,12 +36,35 @@ const views: readonly { accessibleLabel: string; id: RingView; label: string }[]
   { id: 'profile', label: 'Profile', accessibleLabel: 'Profile view' },
 ]
 
-export function RingPreview({ config, description, renderModel, selectedOpal }: RingPreviewProps) {
+export function RingPreview({
+  config,
+  description,
+  reference,
+  renderModel,
+  selectedOpal,
+}: RingPreviewProps) {
   const [webGlAvailable, setWebGlAvailable] = useState<boolean | null>(null)
   const [motionEnabled, setMotionEnabled] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const [zoomEnabled, setZoomEnabled] = useState(false)
   const [view, setView] = useState<RingView>('front')
+  const [previewSource, setPreviewSource] = useState<'concept' | 'reference'>('concept')
+  const [failedAssetKey, setFailedAssetKey] = useState<string>()
+  const approvedAssetFitKey =
+    renderModel.kind === 'asset' && selectedOpal
+      ? JSON.stringify([
+          renderModel.variant.asset.sha256,
+          renderModel.variant.id,
+          config.style,
+          config.shape,
+          config.metal,
+          config.size,
+          selectedOpal.id,
+          selectedOpal.visual.dimensionsMm,
+          selectedOpal.visual.contour,
+        ])
+      : undefined
+  const approvedAssetFailed = failedAssetKey === approvedAssetFitKey
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
     const desktop = window.matchMedia('(min-width: 640px)')
@@ -57,15 +84,36 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
       desktop.removeEventListener('change', updateZoom)
     }
   }, [])
+  const dimensionLabel = selectedOpal?.visual.dimensionsMm
+    ? selectedOpal.visual.dimensionEvidence === 'maker-measured'
+      ? 'maker-measured'
+      : 'catalogue-sized'
+    : 'normalized'
 
   return (
     <div className="relative aspect-[4/5] min-h-[28rem] w-full min-w-0 overflow-hidden bg-[#171714] text-cream sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0 [&_canvas]:touch-pan-y">
-      {webGlAvailable ? (
+      {previewSource === 'reference' ? (
+        <div className="absolute inset-0 bg-[#11110f]">
+          <Image
+            src={reference.image}
+            alt={`${reference.name}, sold Good Opal Co ring reference`}
+            fill
+            priority
+            className="object-contain"
+            sizes="(max-width: 1024px) 100vw, 58vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black-rich/20 via-transparent to-black-rich/60" />
+        </div>
+      ) : webGlAvailable ? (
         <RingScene
           config={config}
           selectedOpal={selectedOpal}
           allowMotion={motionEnabled}
+          approvedAssetResetKey={approvedAssetFitKey}
           onContextLost={() => setWebGlAvailable(false)}
+          onApprovedAssetFailure={
+            approvedAssetFitKey ? () => setFailedAssetKey(approvedAssetFitKey) : undefined
+          }
           reduceMotion={prefersReducedMotion}
           renderModel={renderModel}
           view={view}
@@ -98,11 +146,39 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
           <p className="sr-only">{description}</p>
         </div>
         <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-charcoal">
-          {renderModel.makerApproved ? 'Maker-approved model' : 'Concept'}
+          {previewSource === 'reference'
+            ? 'Sold reference'
+            : renderModel.makerApproved && !approvedAssetFailed
+              ? 'Maker-approved model'
+              : 'Concept'}
         </span>
       </div>
 
-      {webGlAvailable && (
+      <div
+        role="group"
+        aria-label="Preview source"
+        className="absolute left-5 top-16 flex rounded-full border border-cream/20 bg-black-rich/80 p-1 sm:left-7 sm:top-20"
+      >
+        <button
+          type="button"
+          onClick={() => setPreviewSource('concept')}
+          aria-pressed={previewSource === 'concept'}
+          className="min-h-11 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
+        >
+          3D concept
+        </button>
+        <button
+          type="button"
+          onClick={() => setPreviewSource('reference')}
+          aria-label="Sold ring reference"
+          aria-pressed={previewSource === 'reference'}
+          className="min-h-11 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
+        >
+          Sold ring
+        </button>
+      </div>
+
+      {previewSource === 'concept' && webGlAvailable && (
         <div
           role="group"
           aria-label="Ring preview angle"
@@ -123,7 +199,18 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
         </div>
       )}
 
-      {webGlAvailable && (
+      {previewSource === 'reference' ? (
+        <div className="absolute inset-x-5 bottom-5 rounded-lg bg-black-rich/80 p-4 sm:inset-x-7 sm:bottom-7">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-opal-light">
+            Physical design reference
+          </p>
+          <p className="mt-1 font-serif text-lg text-cream">{reference.name}</p>
+          <p className="mt-1 text-xs leading-5 text-cream/70">
+            Sold-ring photo for construction and proportion. Your selected opal changes the final
+            fit and scale.
+          </p>
+        </div>
+      ) : webGlAvailable ? (
         <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3 sm:inset-x-7 sm:bottom-7">
           {selectedOpal ? (
             <div className="flex max-w-[calc(100%_-_3.75rem)] items-center gap-2.5 rounded-lg bg-black-rich/80 p-2 text-cream sm:max-w-[70%] sm:gap-3 sm:p-2.5">
@@ -171,13 +258,9 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
                   )}
                 <p className="mt-1 text-xs leading-4 text-cream/60">
                   {selectedOpal.visual.canonicalFace
-                    ? `Contour-masked reviewed face · ${selectedOpal.visual.silhouette} ${
-                        selectedOpal.visual.dimensionsMm ? 'measured' : 'normalized'
-                      } setting concept`
+                    ? `Contour-masked reviewed face · ${selectedOpal.visual.silhouette} ${dimensionLabel} setting concept`
                     : selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed'
-                      ? `${selectedOpal.visual.contour ? 'Reviewed crop + traced outline' : 'Reviewed colour crop'} · ${selectedOpal.visual.silhouette} ${
-                          selectedOpal.visual.dimensionsMm ? 'measured' : 'normalized'
-                        } setting concept`
+                      ? `${selectedOpal.visual.contour ? 'Reviewed crop + traced outline' : 'Reviewed colour crop'} · ${selectedOpal.visual.silhouette} ${dimensionLabel} setting concept`
                       : selectedOpal.visual.textureCrop
                         ? 'Listing photo mapped to an estimated setting profile · visual guide only'
                         : selectedOpal.selectionKind === 'individual'
@@ -214,7 +297,7 @@ export function RingPreview({ config, description, renderModel, selectedOpal }: 
             </span>
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

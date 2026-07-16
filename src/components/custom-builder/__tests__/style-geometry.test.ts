@@ -98,6 +98,21 @@ describe('sold ring style geometry', () => {
     }
   })
 
+  test('gives clean bezels the broad filed silver edge visible outside the oxidized seat', () => {
+    expect(ringStyleGeometryProfiles.gemini.brightOuterRailThickness * 10).toBeCloseTo(0.24, 12)
+    expect(ringStyleGeometryProfiles.coral.brightOuterRailThickness * 10).toBeCloseTo(0.28, 12)
+    expect(ringStyleGeometryProfiles['sun-moon'].brightOuterRailThickness).toBe(0)
+    expect(ringStyleGeometryProfiles.aurora.brightOuterRailThickness).toBe(0)
+
+    for (const style of ['gemini', 'coral'] as const) {
+      const profile = ringStyleGeometryProfiles[style]
+      const oxidizedSeatThickness =
+        profile.bezelWallThickness - profile.brightOuterRailThickness
+      expect(oxidizedSeatThickness * 10, style).toBeGreaterThanOrEqual(0.17)
+      expect(oxidizedSeatThickness * 10, style).toBeLessThanOrEqual(0.27)
+    }
+  })
+
   test('keeps Coral square with constant normal-width setting walls', () => {
     const diagonal = outlinePoint('cushion', Math.PI / 4, 0.5, 0.5)
     expect(diagonal[0] / 0.5).toBeGreaterThanOrEqual(0.91)

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import {
   defaultRingConfig,
+  proceduralRingModelVersions,
   type BuilderOpal,
   type RingConfig,
 } from '@/components/custom-builder/config'
@@ -32,6 +33,7 @@ const variant = {
   ringFit: { mode: 'fixed', sizeUs: 7 },
   runtimeScale: 0.1,
   stoneFit: {
+    allowedOpalIds: ['opal-1'],
     reference: { contour: referenceContour, depthMm: 3, lengthMm: 10, widthMm: 8 },
     shape: 'oval',
     toleranceMm: { contour: 0.25, depth: 0.5, length: 0.2, width: 0.2 },
@@ -72,6 +74,7 @@ function builderOpal(overrides: Partial<BuilderOpal['visual']> = {}): BuilderOpa
       aspectRatio: 1.25,
       bodyColour: '#d6ece5',
       dimensionsMm: { depth: 3, length: 10, width: 8 },
+      dimensionEvidence: 'maker-measured',
       evidence: 'catalogue',
       flashColours: ['#55b9a9'],
       patternSeed: 7,
@@ -117,7 +120,7 @@ describe('ring render model selection', () => {
       },
       ringFit: {
         mode: 'procedural-shank' as const,
-        shankVersion: 'procedural-v3',
+        shankVersion: proceduralRingModelVersions.gemini,
         sizesUs: [7, 8],
       },
     }
@@ -163,6 +166,22 @@ describe('ring render model selection', () => {
     expect(select({ manifest: staleHeadManifest })).toMatchObject({
       kind: 'procedural',
       reason: 'unsupported-shank-version',
+    })
+  })
+
+  test('requires the maker-approved contract to name the exact opal', () => {
+    expect(select({ opal: { ...builderOpal(), id: 'opal-2' } })).toMatchObject({
+      kind: 'procedural',
+      reason: 'unsupported-opal',
+    })
+  })
+
+  test('rejects a depth that the renderer would cap before fitting the stone', () => {
+    expect(
+      select({ opal: builderOpal({ dimensionsMm: { depth: 7, length: 10, width: 8 } }) })
+    ).toMatchObject({
+      kind: 'procedural',
+      reason: 'unrenderable-dimensions',
     })
   })
 

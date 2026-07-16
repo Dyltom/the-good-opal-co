@@ -51,24 +51,39 @@ export function getApprovedAssetAnchorTransform(
   }
 }
 
-/** Fails closed instead of silently drawing a head detached from its shank. */
-export function assertApprovedAssetJoinAlignment(
+/**
+ * Preserves the authored head's join span/skew, then returns the translation
+ * that seats its midpoint onto the current procedural shank. This lets one
+ * calibrated head support multiple ring radii without stretching jewellery.
+ */
+export function getApprovedAssetJoinTranslation(
   actualLeft: Vector3Tuple,
   actualRight: Vector3Tuple,
   expectedLeft: Vector3Tuple,
   expectedRight: Vector3Tuple,
   tolerance: number
-): void {
+): Vector3Tuple {
   if (!finitePositive(tolerance)) throw new Error('Approved ring join tolerance is invalid')
 
-  const distance = (left: Vector3Tuple, right: Vector3Tuple) =>
-    Math.hypot(left[0] - right[0], left[1] - right[1], left[2] - right[2])
-  if (
-    distance(actualLeft, expectedLeft) > tolerance ||
-    distance(actualRight, expectedRight) > tolerance
-  ) {
+  const actualSpan: Vector3Tuple = [
+    actualRight[0] - actualLeft[0],
+    actualRight[1] - actualLeft[1],
+    actualRight[2] - actualLeft[2],
+  ]
+  const expectedSpan: Vector3Tuple = [
+    expectedRight[0] - expectedLeft[0],
+    expectedRight[1] - expectedLeft[1],
+    expectedRight[2] - expectedLeft[2],
+  ]
+  if (Math.hypot(...actualSpan.map((value, index) => value - expectedSpan[index]!)) > tolerance) {
     throw new Error('Approved ring head shank anchors do not match the procedural shank')
   }
+
+  return [
+    (expectedLeft[0] + expectedRight[0] - actualLeft[0] - actualRight[0]) / 2,
+    (expectedLeft[1] + expectedRight[1] - actualLeft[1] - actualRight[1]) / 2,
+    (expectedLeft[2] + expectedRight[2] - actualLeft[2] - actualRight[2]) / 2,
+  ]
 }
 
 function visibleObjectBounds(object: Object3D): Box3 {

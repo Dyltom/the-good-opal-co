@@ -686,6 +686,7 @@ describe('custom builder opal visual profiles', () => {
     )
 
     expect(profile.visual.dimensionsMm).toEqual({ width: 7, length: 8, depth: 3.5 })
+    expect(profile.visual.dimensionEvidence).toBe('maker-measured')
   })
 
   test('never lets legacy calibration replace complete CMS dimensions', () => {
@@ -710,6 +711,7 @@ describe('custom builder opal visual profiles', () => {
     )
 
     expect(profile.visual.dimensionsMm).toEqual({ width: 10, length: 12, depth: 4 })
+    expect(profile.visual.dimensionEvidence).toBe('catalogue')
   })
 
   test('does not describe an unapproved CMS crop as maker-reviewed', () => {

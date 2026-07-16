@@ -20,8 +20,8 @@ export const styleIds = ['gemini', 'coral', 'sun-moon', 'aurora'] as const
  * approval applies only when Payload names this exact version for the style.
  */
 export const proceduralRingModelVersions: Readonly<Record<(typeof styleIds)[number], string>> = {
-  gemini: 'procedural-v3',
-  coral: 'procedural-v3',
+  gemini: 'procedural-v4',
+  coral: 'procedural-v4',
   'sun-moon': 'procedural-v3',
   aurora: 'procedural-v3',
 }
@@ -105,6 +105,7 @@ export interface BuilderOpal {
       length: number
       depth: number
     }
+    dimensionEvidence?: 'catalogue' | 'maker-measured'
   }
 }
 
@@ -137,6 +138,8 @@ export interface RingStyleGeometryProfile {
   bezelLipRadius: number
   /** Oxidized seat visible outside the stone edge, in scene units (10 mm each). */
   patinaSeatReveal: number
+  /** Bright filed rail outside an oxidized clean bezel, in scene units. */
+  brightOuterRailThickness: number
   haloOffset: number
   beadRadius: number
   beadCount: number
@@ -276,6 +279,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
     ...geminiBezelSeat,
+    brightOuterRailThickness: 0.024,
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
@@ -336,6 +340,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.003, finish: 'metal' },
     ],
     ...coralBezelSeat,
+    brightOuterRailThickness: 0.028,
     haloOffset: 0,
     beadRadius: 0,
     beadCount: 0,
@@ -390,6 +395,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
     ],
     ...sunMoonBezelSeat,
+    brightOuterRailThickness: 0,
     // Forty counted reference grains span the face-on head around the 8 × 10 mm
     // draft stone. Keep the small solder grains tight to the bezel so the
     // oxidized web reads as a seam, not a dark moat or detached pearl chain.
@@ -446,6 +452,7 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
       { radialProgress: 1, heightOffset: -0.006, finish: 'metal' },
     ],
     ...auroraBezelSeat,
+    brightOuterRailThickness: 0,
     // Sold Aurora references show broad, low, softly rounded fused granules.
     // Keep them connected to the dark support web without turning them into
     // either faceted gemstones or a mathematically perfect pearl halo.

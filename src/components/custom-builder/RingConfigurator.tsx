@@ -486,6 +486,7 @@ export function RingConfigurator({
       }),
     [config, ringDesignManifests, selectedOpal]
   )
+  const selectedStyle = ringStyles.find((style) => style.id === config.style) ?? ringStyles[0]!
   const isStartingDesign = useMemo(
     () => JSON.stringify(config) === JSON.stringify(initialConfig),
     [config, initialConfig]
@@ -569,6 +570,10 @@ export function RingConfigurator({
             <RingPreview
               config={config}
               description={description}
+              reference={{
+                image: selectedStyle.referenceImage,
+                name: selectedStyle.referenceName,
+              }}
               renderModel={renderModel}
               selectedOpal={selectedOpal}
             />

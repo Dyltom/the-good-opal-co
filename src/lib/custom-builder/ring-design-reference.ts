@@ -122,8 +122,7 @@ const ringAssetStoneFitSchema = z.strictObject({
   allowedOpalIds: z
     .array(z.string().trim().min(1))
     .min(1)
-    .refine((values) => new Set(values).size === values.length, 'Opal IDs must be unique')
-    .optional(),
+    .refine((values) => new Set(values).size === values.length, 'Opal IDs must be unique'),
   reference: z.strictObject({
     contour: builderStoneContourSchema,
     depthMm: z.number().positive(),

@@ -3,12 +3,15 @@
 /* eslint-disable react/no-unknown-property -- React Three Fiber JSX maps these props to Three.js objects. */
 
 import {
+  Component,
   useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
+  type ErrorInfo,
+  type ReactNode,
   type RefObject,
 } from 'react'
 import { Environment, Lightformer, OrbitControls, useGLTF } from '@react-three/drei'
@@ -95,24 +98,63 @@ import {
 } from './geometry'
 import { applyForgedNormalVariation } from './forged-surface'
 import {
-  assertApprovedAssetJoinAlignment,
   getApprovedAssetAnchorTransform,
   getApprovedAssetFraming,
+  getApprovedAssetJoinTranslation,
   type ApprovedAssetFraming,
 } from './approved-asset'
 
 export type RingView = 'three-quarter' | 'front' | 'profile'
 
 interface RingSceneProps {
+  approvedAssetResetKey?: string
   config: RingConfig
   allowMotion: boolean
   onContextLost: () => void
+  onApprovedAssetFailure?: () => void
   onRenderReady?: () => void
   reduceMotion?: boolean
   renderModel: RingRenderModelSelection
   selectedOpal?: BuilderOpal
   view: RingView
   zoomEnabled?: boolean
+}
+
+interface ApprovedAssetErrorBoundaryProps {
+  children: ReactNode
+  fallback: ReactNode
+  onFailure?: () => void
+  resetKey: string
+}
+
+interface ApprovedAssetErrorBoundaryState {
+  failed: boolean
+}
+
+class ApprovedAssetErrorBoundary extends Component<
+  ApprovedAssetErrorBoundaryProps,
+  ApprovedAssetErrorBoundaryState
+> {
+  override state: ApprovedAssetErrorBoundaryState = { failed: false }
+
+  static getDerivedStateFromError(): ApprovedAssetErrorBoundaryState {
+    return { failed: true }
+  }
+
+  override componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Approved ring asset failed; using procedural concept:', error, info.componentStack)
+    this.props.onFailure?.()
+  }
+
+  override componentDidUpdate(previousProps: ApprovedAssetErrorBoundaryProps) {
+    if (this.state.failed && previousProps.resetKey !== this.props.resetKey) {
+      this.setState({ failed: false })
+    }
+  }
+
+  override render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
 }
 
 const metalColours: Record<RingConfig['metal'], string> = {
@@ -1532,7 +1574,7 @@ function Setting({
   const outerBezelOffset = profile.bezelWallOffset + profile.bezelWallThickness / 2
   const usesOxidizedSeat =
     config.metal === 'sterling-silver' && (config.style === 'gemini' || config.style === 'coral')
-  const outerRailThickness = config.style === 'coral' ? 0.016 : 0.012
+  const outerRailThickness = profile.brightOuterRailThickness
   const bezelInnerOffset = profile.bezelWallOffset - profile.bezelWallThickness / 2
   const oxidizedSeatOuterOffset = outerBezelOffset - outerRailThickness
   const oxidizedSeatThickness = oxidizedSeatOuterOffset - bezelInnerOffset
@@ -2121,11 +2163,6 @@ function ApprovedRingModel({
     model.scale.setScalar(selection.variant.runtimeScale)
     let stoneAnchor
     try {
-      stoneAnchor = getApprovedAssetAnchorTransform(
-        model,
-        selection.variant.nodes.stoneAnchor,
-        selection.variant.runtimeScale
-      )
       if (selection.variant.assembly === 'authored-head-procedural-shank') {
         const left = getApprovedAssetAnchorTransform(
           model,
@@ -2137,14 +2174,20 @@ function ApprovedRingModel({
           selection.variant.nodes.shankJoinRight,
           selection.variant.runtimeScale
         )
-        assertApprovedAssetJoinAlignment(
+        const translation = getApprovedAssetJoinTranslation(
           left.position,
           right.position,
           expectedJoins.joinLeft,
           expectedJoins.joinRight,
-          0.05
+          0.01
         )
+        model.position.add(new Vector3(...translation))
       }
+      stoneAnchor = getApprovedAssetAnchorTransform(
+        model,
+        selection.variant.nodes.stoneAnchor,
+        selection.variant.runtimeScale
+      )
     } catch (error) {
       createdMaterials.forEach((material) => material.dispose())
       throw error
@@ -2186,9 +2229,11 @@ function ApprovedRingModel({
 }
 
 export function RingScene({
+  approvedAssetResetKey,
   config,
   allowMotion,
   onContextLost,
+  onApprovedAssetFailure,
   onRenderReady,
   reduceMotion = false,
   renderModel,
@@ -2280,14 +2325,27 @@ export function RingScene({
       {onRenderReady && <RenderReadySignal key={renderSignature} onReady={onRenderReady} />}
 
       {renderModel.kind === 'asset' && selectedOpal ? (
-        <ApprovedRingModel
-          config={config}
-          framingSignature={approvedFramingKey}
-          onFramingChange={handleApprovedFraming}
-          selectedOpal={selectedOpal}
-          selection={renderModel}
-          view={view}
-        />
+        <ApprovedAssetErrorBoundary
+          fallback={
+            <RingModel
+              animateOpalPlacement={!reduceMotion}
+              config={config}
+              selectedOpal={renderedOpal}
+              transitionKey={opalTransitionKey}
+            />
+          }
+          onFailure={onApprovedAssetFailure}
+          resetKey={approvedAssetResetKey ?? approvedFramingKey}
+        >
+          <ApprovedRingModel
+            config={config}
+            framingSignature={approvedFramingKey}
+            onFramingChange={handleApprovedFraming}
+            selectedOpal={selectedOpal}
+            selection={renderModel}
+            view={view}
+          />
+        </ApprovedAssetErrorBoundary>
       ) : (
         <RingModel
           animateOpalPlacement={!reduceMotion}

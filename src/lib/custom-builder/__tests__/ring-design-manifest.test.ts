@@ -41,6 +41,7 @@ const approvedAssetVariant = {
   },
   runtimeScale: 0.1,
   stoneFit: {
+    allowedOpalIds: ['opal-1'],
     reference: { contour: referenceContour, depthMm: 3, lengthMm: 10, widthMm: 8 },
     shape: 'oval',
     toleranceMm: { contour: 0.25, depth: 0.5, length: 0.2, width: 0.2 },
@@ -136,6 +137,13 @@ describe('ring design render manifest boundary', () => {
       },
     ],
     ['missing approved metal', { ...approvedAssetVariant, approvedMetals: [] }],
+    [
+      'asset without explicit opal bindings',
+      {
+        ...approvedAssetVariant,
+        stoneFit: { ...approvedAssetVariant.stoneFit, allowedOpalIds: undefined },
+      },
+    ],
     [
       'overlapping material assignments',
       {

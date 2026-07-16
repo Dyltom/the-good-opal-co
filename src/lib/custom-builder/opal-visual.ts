@@ -110,6 +110,7 @@ const reviewedProfiles: Record<
     | 'textureCrop'
     | 'bodyColour'
     | 'dimensionsMm'
+    | 'dimensionEvidence'
     | 'photoFit'
   >
 > = {
@@ -121,6 +122,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.507, focalY: 0.489, zoom: 4.16 },
     bodyColour: '#d7dcc9',
     dimensionsMm: { width: 6, length: 7, depth: 3 },
+    dimensionEvidence: 'maker-measured',
     photoFit: 'reviewed',
   },
   'mintabie-semi-black-opal-1-05-cts': {
@@ -131,6 +133,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.515, focalY: 0.49, zoom: 7 },
     bodyColour: '#a8c4b8',
     dimensionsMm: { width: 5, length: 6.5, depth: 3.5 },
+    dimensionEvidence: 'maker-measured',
     photoFit: 'reviewed',
   },
   'mintabie-semi-black-opal-1-35-cts': {
@@ -141,6 +144,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.501, focalY: 0.493, zoom: 3.61 },
     bodyColour: '#cbd5c7',
     dimensionsMm: { width: 7, length: 8, depth: 3.5 },
+    dimensionEvidence: 'maker-measured',
     photoFit: 'reviewed',
   },
   'queensland-crystal-pipe-opal-1-05-cts': {
@@ -151,6 +155,7 @@ const reviewedProfiles: Record<
     textureCrop: { focalX: 0.517, focalY: 0.466, zoom: 4.74 },
     bodyColour: '#78c5df',
     dimensionsMm: { width: 5.3, length: 9.5, depth: 2.5 },
+    dimensionEvidence: 'maker-measured',
     photoFit: 'reviewed',
   },
 }
@@ -400,6 +405,7 @@ function cmsReviewedProfile(
     photoFit: 'reviewed',
     contour,
     dimensionsMm,
+    dimensionEvidence: dimensionsMm ? 'catalogue' : undefined,
   }
 }
 
@@ -643,6 +649,10 @@ export function createOpalVisualProfile(
         dimensionsMm ??
         reviewed?.dimensionsMm ??
         approvedReviewed?.dimensionsMm,
+      dimensionEvidence:
+        managed?.dimensionsMm || dimensionsMm
+          ? 'catalogue'
+          : reviewed?.dimensionEvidence ?? approvedReviewed?.dimensionEvidence,
       textureCrop: usesIndividualPhoto ? safeTextureCrop : undefined,
       photoFit: usesIndividualPhoto && safeTextureCrop ? (basePhotoFit ?? 'estimated') : undefined,
     },

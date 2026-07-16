@@ -19,7 +19,9 @@ export type RingRenderModelSelection =
         | 'missing-manifest'
         | 'style-mismatch'
         | 'missing-evidence'
+        | 'unrenderable-dimensions'
         | 'unsupported-shape'
+        | 'unsupported-opal'
         | 'unsupported-metal'
         | 'stone-out-of-range'
         | 'contour-mismatch'
@@ -94,6 +96,10 @@ export function selectRingRenderModel({
     return procedural(config, 'missing-evidence')
   }
   if (opal.visual.silhouette !== config.shape) return procedural(config, 'unsupported-shape')
+  const { depth, length, width } = opal.visual.dimensionsMm
+  if (depth > Math.min(width, length) * 0.75) {
+    return procedural(config, 'unrenderable-dimensions')
+  }
 
   const renderableVariants = manifest.model.variants.filter(
     (variant) =>
@@ -112,18 +118,20 @@ export function selectRingRenderModel({
   }
 
   const shapeVariants = currentAssemblyVariants.filter(
-    (variant) =>
-      variant.stoneFit.shape === opal.visual.silhouette &&
-      (!variant.stoneFit.allowedOpalIds || variant.stoneFit.allowedOpalIds.includes(opal.id))
+    (variant) => variant.stoneFit.shape === opal.visual.silhouette
   )
   if (shapeVariants.length === 0) return procedural(config, 'unsupported-shape')
 
-  const metalVariants = shapeVariants.filter((variant) =>
+  const opalVariants = shapeVariants.filter((variant) =>
+    variant.stoneFit.allowedOpalIds.includes(opal.id)
+  )
+  if (opalVariants.length === 0) return procedural(config, 'unsupported-opal')
+
+  const metalVariants = opalVariants.filter((variant) =>
     variant.approvedMetals.includes(config.metal)
   )
   if (metalVariants.length === 0) return procedural(config, 'unsupported-metal')
 
-  const { depth, length, width } = opal.visual.dimensionsMm
   const dimensionVariants = metalVariants.filter(({ stoneFit }) => {
     const { reference, toleranceMm } = stoneFit
     return (

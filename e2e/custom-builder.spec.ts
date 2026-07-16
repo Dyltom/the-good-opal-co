@@ -12,6 +12,17 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page.getByRole('heading', { name: 'See the possibilities.' })).toBeVisible()
   await expect(page.getByRole('group', { name: '3. Choose an available opal' })).toBeVisible()
 
+  const previewSource = page.getByRole('group', { name: 'Preview source' })
+  await expect(previewSource.getByRole('button', { name: '3D concept' })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  )
+  await previewSource.getByRole('button', { name: 'Sold ring reference' }).click()
+  await expect(page.getByText('Sold reference')).toBeVisible()
+  await expect(page.getByRole('img', { name: /sold Good Opal Co ring reference/ })).toBeVisible()
+  await expect(page.getByText(/Your selected opal changes the final fit and scale/)).toBeVisible()
+  await previewSource.getByRole('button', { name: '3D concept' }).click()
+
   const opalGroup = page.getByRole('group', { name: '3. Choose an available opal' })
   const opals = opalGroup.getByRole('button')
   expect(await opals.count()).toBeGreaterThan(1)

@@ -44,6 +44,7 @@ const completeModelDefinition = {
       ringFit: { mode: 'fixed', sizeUs: 7 },
       runtimeScale: 0.1,
       stoneFit: {
+        allowedOpalIds: ['opal-1'],
         reference: {
           contour: { version: 1, radii: Array.from({ length: 96 }, () => 1) },
           depthMm: 3,
