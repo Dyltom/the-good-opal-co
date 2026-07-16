@@ -145,7 +145,7 @@ export function SearchInput({
       >
         <Search
           className={cn(
-            'absolute left-3 text-opal-electric/60',
+            'absolute left-3 text-opal-electric-accessible',
             variant === 'default' && 'h-4 w-4',
             variant === 'mobile' && 'h-5 w-5'
           )}
@@ -167,7 +167,7 @@ export function SearchInput({
           onKeyDown={handleKeyDown}
           placeholder="Search opals, rings, parcels"
           className={cn(
-            'h-full w-full bg-transparent outline-none placeholder:text-gray-400',
+            'h-full w-full bg-transparent outline-none placeholder:text-charcoal/55',
             variant === 'default' && 'pl-9 pr-9 text-sm',
             variant === 'mobile' && 'pl-11 pr-11 text-base'
           )}
@@ -176,6 +176,11 @@ export function SearchInput({
           aria-autocomplete="list"
           aria-controls="search-suggestions"
           aria-expanded={showSuggestions && suggestions.length > 0}
+          aria-activedescendant={
+            showSuggestions && selectedIndex >= 0 && suggestions[selectedIndex]
+              ? `search-suggestion-${selectedIndex}`
+              : undefined
+          }
         />
         {query && (
           <button
@@ -186,7 +191,7 @@ export function SearchInput({
               inputRef.current?.focus()
             }}
             className={cn(
-              'absolute right-0 flex min-h-[44px] min-w-[44px] items-center justify-center text-gray-400 transition-colors hover:text-gray-600',
+              'absolute right-0 flex min-h-[44px] min-w-[44px] items-center justify-center text-charcoal/60 transition-colors hover:text-charcoal',
               variant === 'default' && 'h-10 w-10 sm:min-h-8 sm:min-w-8',
               variant === 'mobile' && 'h-12 w-12'
             )}
@@ -221,6 +226,7 @@ export function SearchInput({
             suggestions.map((suggestion, index) => (
               <button
                 key={suggestion.href}
+                id={`search-suggestion-${index}`}
                 type="button"
                 role="option"
                 aria-selected={index === selectedIndex}
@@ -233,7 +239,7 @@ export function SearchInput({
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <Search className="h-3.5 w-3.5 shrink-0 text-opal-electric/60" />
+                  <Search className="h-3.5 w-3.5 shrink-0 text-opal-electric-accessible" />
                   <span className="truncate">{suggestion.label}</span>
                 </div>
               </button>

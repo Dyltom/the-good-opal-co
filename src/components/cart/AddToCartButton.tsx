@@ -89,15 +89,15 @@ export function AddToCartButton({
 
         toast({
           title: 'Added to cart',
-          description: `${product.name} has been added to your cart.`,
+          description: product.name,
         })
 
         // Reset success state after animation
         setTimeout(() => setIsSuccess(false), 2000)
       } else {
         toast({
-          title: 'Error',
-          description: result.error ?? 'Failed to add item to cart.',
+          title: "Couldn't add to cart",
+          description: result.error ?? 'Please try again in a moment.',
           variant: 'destructive',
         })
       }
@@ -142,7 +142,7 @@ export function AddToCartButton({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute inset-0 bg-green-500 flex items-center justify-center"
+              className="absolute inset-0 bg-success flex items-center justify-center"
             >
               <Check className="text-white" size={iconSize[size]} />
             </motion.div>
@@ -195,7 +195,7 @@ export function AddToCartButton({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
-              className="flex items-center gap-2 text-green-600"
+              className="flex items-center gap-2 text-success"
             >
               <Check size={iconSize[size]} />
               Added
@@ -208,7 +208,7 @@ export function AddToCartButton({
               className="flex items-center gap-2"
             >
               <Loader2 className="animate-spin" size={iconSize[size]} />
-              Adding...
+              Adding…
             </motion.span>
           ) : (
             <motion.span
@@ -218,7 +218,7 @@ export function AddToCartButton({
               className="flex items-center gap-2"
             >
               <ShoppingBag size={iconSize[size]} />
-              {children || 'Add to Cart'}
+              {children || 'Add to cart'}
             </motion.span>
           )}
         </AnimatePresence>
@@ -263,10 +263,10 @@ export function AddToCartButton({
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
-            className="absolute inset-0 bg-green-500 flex items-center justify-center gap-2"
+            className="absolute inset-0 bg-success flex items-center justify-center gap-2"
           >
             <Check size={iconSize[size]} />
-            <span>Added to Cart!</span>
+            <span>Added</span>
           </motion.div>
         ) : (
           <motion.div
@@ -279,12 +279,12 @@ export function AddToCartButton({
             {isPending ? (
               <>
                 <Loader2 className="animate-spin" size={iconSize[size]} />
-                <span>Adding...</span>
+                <span>Adding…</span>
               </>
             ) : (
               <>
                 <ShoppingBag size={iconSize[size]} />
-                <span>{children || 'Add to Cart'}</span>
+                <span>{children || 'Add to cart'}</span>
               </>
             )}
           </motion.div>
@@ -333,12 +333,12 @@ export function useAddToCart() {
           window.dispatchEvent(new CustomEvent('cart-updated'))
           toast({
             title: 'Added to cart',
-            description: `${product.name} has been added to your cart.`,
+            description: product.name,
           })
         } else {
           toast({
-            title: 'Error',
-            description: result.error ?? 'Failed to add item to cart.',
+            title: "Couldn't add to cart",
+            description: result.error ?? 'Please try again in a moment.',
             variant: 'destructive',
           })
         }

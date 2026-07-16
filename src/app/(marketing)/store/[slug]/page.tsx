@@ -173,7 +173,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   </Link>
                   <span aria-hidden="true">/</span>
                   <Link href="/store" className="transition-colors hover:text-charcoal">
-                    Shop
+                    Store
                   </Link>
                   <span aria-hidden="true">/</span>
                   <span aria-current="page" className="truncate font-medium text-charcoal">
@@ -212,12 +212,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     {/* Price */}
                     <div className="flex items-start gap-4 border-b border-warm-grey/60 pb-7">
                       <div>
-                        <span className="font-serif text-4xl font-semibold leading-none text-charcoal md:text-5xl">
+                        <span className="font-serif text-4xl font-semibold leading-none text-charcoal tabular-nums md:text-5xl">
                           {formatCurrency(product.price, 'AUD')}
                         </span>
                         {product.compareAtPrice && product.compareAtPrice > product.price && (
                           <div className="mt-2 flex items-center gap-3">
-                            <span className="text-lg text-gray-400 line-through">
+                            <span className="text-lg tabular-nums text-charcoal/45 line-through">
                               {formatCurrency(product.compareAtPrice, 'AUD')}
                             </span>
                             <span className="rounded-full bg-opal-emerald-dark px-3 py-1 text-sm font-semibold text-white">
@@ -243,9 +243,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     </div>
 
                     <div className="grid grid-cols-2 border-y border-warm-grey/60 font-sans text-sm text-charcoal/70">
-                      <div className="border-r border-warm-grey/60 px-1 py-4">Australian opal</div>
+                      <div className="border-r border-warm-grey/60 px-4 py-4">Australian opal</div>
                       <div className="px-4 py-4">Origin disclosed where known</div>
-                      <div className="border-r border-t border-warm-grey/60 px-1 py-4">
+                      <div className="border-r border-t border-warm-grey/60 px-4 py-4">
                         Tracked delivery
                       </div>
                       <div className="border-t border-warm-grey/60 px-4 py-4">
@@ -294,7 +294,19 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                           <p className="mt-1">
                             {productShippingProgress.qualifies
                               ? 'This piece qualifies for free shipping.'
-                              : `Shipping is calculated at checkout. Add ${formatCurrency(productShippingProgress.remaining, 'AUD')} to qualify for free shipping.`}
+                              : 'Shipping is calculated at checkout. Orders over $500 ship free.'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="font-sans font-semibold text-charcoal">Returns</p>
+                          <p className="mt-1">
+                            Change of mind is covered.{' '}
+                            <Link
+                              href="/returns"
+                              className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                            >
+                              See what&apos;s included before you buy.
+                            </Link>
                           </p>
                         </div>
                         <div>
@@ -411,7 +423,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <div className="mt-24">
                   <RelatedProductsWithSuspense
                     product={product}
-                    className="border-t border-gray-200 pt-16"
+                    className="border-t border-warm-grey/40 pt-16"
                   />
                 </div>
               </Container>

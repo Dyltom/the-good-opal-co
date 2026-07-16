@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { X, ZoomIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useFocusTrap } from '@/hooks/useFocusTrap'
 
 interface ProductImage {
   url: string
@@ -26,6 +27,7 @@ export function ProductImageGallery({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isZoomed, setIsZoomed] = useState(false)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const lightboxRef = useFocusTrap<HTMLDivElement>({ active: isZoomed })
 
   useEffect(() => {
     if (!isZoomed) return
@@ -123,6 +125,7 @@ export function ProductImageGallery({
             <button
               key={index}
               onClick={() => setSelectedImageIndex(index)}
+              aria-current={selectedImageIndex === index ? 'true' : undefined}
               className={cn(
                 "h-20 w-20 flex-shrink-0 overflow-hidden border-2 transition-colors duration-150",
                 selectedImageIndex === index
@@ -145,6 +148,7 @@ export function ProductImageGallery({
 
       {isZoomed ? (
         <div
+          ref={lightboxRef}
           role="dialog"
           aria-modal="true"
           aria-label={`Large image of ${productName}`}

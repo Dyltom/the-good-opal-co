@@ -50,7 +50,7 @@ export function ProductActions({ product }: ProductActionsProps) {
     <div className="space-y-6">
       {/* Stock Status */}
       {product.stock > 0 && product.stock <= 5 && (
-        <p className="text-sm text-amber-600 font-medium">
+        <p className="text-sm text-warning font-medium">
           {product.stock === 1 ? 'One available' : `${product.stock} available`}
         </p>
       )}
@@ -72,7 +72,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div ref={inlineActionsRef} data-testid="inline-product-actions" className="flex flex-col gap-3 sm:flex-row sm:gap-4">
         {isOutOfStock ? (
           <Button size="lg" className="w-full sm:flex-1" disabled>
-            Out of Stock
+            Collected
           </Button>
         ) : (
           <AddToCartButton
@@ -90,7 +90,7 @@ export function ProductActions({ product }: ProductActionsProps) {
           />
         )}
         <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-          <Link href="/store">Back to Store</Link>
+          <Link href="/store">Back to store</Link>
         </Button>
       </div>
 
@@ -113,7 +113,7 @@ export function ProductActions({ product }: ProductActionsProps) {
             </div>
             {isOutOfStock ? (
               <Button size="lg" className="h-12 flex-1 rounded-xl" disabled>
-                Out of Stock
+                Collected
               </Button>
             ) : (
               <AddToCartButton

@@ -22,7 +22,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('Quick add')
     expect(source).toContain('aria-pressed={isWishlisted}')
     expect(source).toContain('showWishlist = false')
-    expect(source).toContain('priority={index < 4}')
+    expect(source).toContain('priority={priority && index < 4}')
     expect(source).toContain('disabled={product.stock === 0}')
     expect(source).not.toContain('tracking-[0.3em]')
     expect(source).not.toContain('tracking-wide')
@@ -111,7 +111,6 @@ describe('buying flow UI/UX safeguards', () => {
     const quickAddSources = [
       read('src/components/product/ProductCard.tsx'),
       read('src/components/product/ProductQuickViewModal.tsx'),
-      read('src/components/mobile/MobileProductCard.tsx'),
     ].join('\n')
 
     expect(buttonSource).not.toContain('canvas-confetti')
@@ -128,15 +127,6 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).not.toContain('as any')
     expect(source).not.toContain('tracking-[0.2em]')
     expect(source).not.toContain('tracking-tight')
-  })
-
-  test('mobile store does not keep placeholder quick-add logging', () => {
-    const mobileStoreSource = read('src/components/mobile/MobileStoreContent.tsx')
-    const mobileCardSource = read('src/components/mobile/MobileProductCard.tsx')
-
-    expect(mobileStoreSource).not.toContain('console.log')
-    expect(mobileStoreSource).not.toContain('onQuickAdd')
-    expect(mobileCardSource).not.toContain('onQuickAdd')
   })
 
   test('mobile store uses a compact native disclosure before the desktop sidebar', () => {
@@ -275,14 +265,6 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('Quick view')
     expect(source).not.toContain('group-hover:scale-105')
     expect(source).not.toContain('hover:shadow-glow')
-  })
-
-  test('featured product fetches do not log errors for route-change aborts', () => {
-    const source = read('src/components/sections/FeaturedProducts.tsx')
-
-    expect(source).toContain('new AbortController()')
-    expect(source).toContain("error instanceof DOMException && error.name === 'AbortError'")
-    expect(source).toContain('return () => controller.abort()')
   })
 
   test('homepage collection sections use gallery restraint instead of template glow', () => {

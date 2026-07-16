@@ -96,7 +96,7 @@ function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: numb
     >
       {query.page > 1 ? (
         <Link
-          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline"
+          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
           href={storeUrl(query, query.page - 1)}
         >
           Previous
@@ -130,7 +130,7 @@ function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: numb
 
       {query.page < totalPages ? (
         <Link
-          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline"
+          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
           href={storeUrl(query, query.page + 1)}
         >
           Next
@@ -152,7 +152,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
             <p className="mb-5 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
               The collection
             </p>
-            <h1 className="max-w-[12ch] font-serif text-[clamp(3.1rem,7vw,7.25rem)] leading-[0.87] tracking-[-0.045em] text-charcoal">
+            <h1 className="max-w-[12ch] font-serif text-[clamp(3.1rem,7vw,7.25rem)] leading-[0.94] text-charcoal">
               Find the opal that stays with you.
             </h1>
           </div>
@@ -170,7 +170,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
         </div>
       </header>
 
-      <section className="bg-[#f8f5ee] px-5 py-10 sm:px-8 sm:py-14" aria-label="Opal collection">
+      <section className="bg-cream-dark px-5 py-10 sm:px-8 sm:py-14" aria-label="Opal collection">
         <div className="mx-auto max-w-[92rem]">
           <form
             action="/store"
@@ -244,7 +244,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
                   </select>
                   <button
                     type="submit"
-                    className="min-h-11 border-b border-charcoal font-sans text-sm font-semibold"
+                    className="min-h-11 border-b border-charcoal font-sans text-sm font-semibold transition-colors hover:text-charcoal/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
                   >
                     Apply
                   </button>
@@ -262,6 +262,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
                       showWishlist={false}
                       showMetadata
                       animated={false}
+                      priority
                     />
                   ))}
                 </div>
@@ -275,13 +276,13 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
                   <div className="mt-7 flex flex-wrap justify-center gap-3">
                     <Link
                       href="/store"
-                      className="min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream"
+                      className="min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
                     >
                       Clear filters
                     </Link>
                     <Link
                       href="/contact?subject=opal-finder"
-                      className="min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold"
+                      className="min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold transition-colors hover:text-charcoal/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
                     >
                       Ask for help
                     </Link>
@@ -320,7 +321,7 @@ function FilterForm({ query, className }: { query: StoreQuery; className?: strin
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          className="min-h-11 flex-1 rounded-sm bg-charcoal px-5 font-sans text-sm font-semibold text-cream"
+          className="min-h-11 flex-1 rounded-sm bg-charcoal px-5 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
         >
           Apply
         </button>
