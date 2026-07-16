@@ -55,8 +55,8 @@ export function ProductActions({ product }: ProductActionsProps) {
         </p>
       )}
 
-      {/* Quantity Selector */}
-      {!isOutOfStock && (
+      {/* Quantity Selector; pointless for one-of-a-kind pieces */}
+      {!isOutOfStock && product.stock > 1 && (
         <div>
           <label className="block text-sm font-medium mb-2">Quantity</label>
           <QuantitySelector

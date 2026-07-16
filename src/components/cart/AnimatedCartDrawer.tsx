@@ -279,7 +279,8 @@ function AnimatedCartItem({
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-sm mb-1 truncate">{item.name}</h4>
         <p className="text-sm text-gray-500 mb-2">
-          {formatCurrency(item.price, 'AUD')} each
+          {formatCurrency(item.price, 'AUD')}
+          {item.quantity > 1 ? ' each' : ''}
         </p>
 
         {/* Quantity Controls with animation */}

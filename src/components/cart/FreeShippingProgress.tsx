@@ -1,5 +1,5 @@
 import { getFreeShippingProgress } from '@/lib/constants/shipping'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 interface FreeShippingProgressProps {
   total: number
@@ -11,14 +11,9 @@ export function FreeShippingProgress({ total, className }: FreeShippingProgressP
 
   return (
     <div className={cn('space-y-2 rounded-xl border border-warm-grey/40 bg-white p-4', className)}>
-      <div className="flex items-center justify-between gap-4">
-        <p className="font-sans text-sm font-semibold text-charcoal">
-          Free shipping
-        </p>
-        <p className="font-sans text-xs text-charcoal/60">
-          {progress.qualifies ? 'Unlocked' : `${formatCurrency(progress.remaining, 'AUD')} away`}
-        </p>
-      </div>
+      <p className="font-sans text-sm font-semibold text-charcoal">
+        Free shipping
+      </p>
       <div
         className="h-2 overflow-hidden rounded-full bg-warm-grey/40"
         role="progressbar"
@@ -28,8 +23,8 @@ export function FreeShippingProgress({ total, className }: FreeShippingProgressP
         aria-valuenow={progress.percent}
       >
         <div
-          className="h-full rounded-full bg-opal-electric-accessible transition-all duration-300"
-          style={{ width: `${progress.percent}%` }}
+          className="h-full w-full origin-left rounded-full bg-opal-electric-accessible transition-transform duration-500 ease-out-expo motion-reduce:transition-none"
+          style={{ transform: `scaleX(${progress.percent / 100})` }}
         />
       </div>
       <p className="font-sans text-xs leading-relaxed text-charcoal/65" aria-live="polite">

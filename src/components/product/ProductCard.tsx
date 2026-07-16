@@ -66,9 +66,11 @@ export function ProductCard({
   const [showQuickView, setShowQuickView] = useState(false)
   const isAvailable = product.stock > 0
   const stockStatus = isAvailable
-    ? product.stock <= 3
-      ? `Only ${product.stock} left`
-      : 'In stock'
+    ? product.stock === 1
+      ? 'One of a kind'
+      : product.stock <= 3
+        ? `Only ${product.stock} left`
+        : 'In stock'
     : 'Collected'
 
   // Calculate discount percentage
@@ -128,7 +130,7 @@ export function ProductCard({
                       priority={priority && index < 4}
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
                       className={cn(
-                        "object-cover transition-opacity duration-500 group-hover:opacity-95",
+                        "object-cover transition-[opacity,transform] duration-700 ease-out-expo group-hover:scale-[1.04] group-hover:opacity-95 motion-reduce:transition-none motion-reduce:group-hover:scale-100",
                         !isAvailable && "grayscale opacity-60"
                       )}
                       style={variant === 'museum' && isAvailable ? {
@@ -166,7 +168,7 @@ export function ProductCard({
             {isAvailable && (
               <div
                 className={cn(
-                  "absolute bottom-0 left-0 right-0 p-3 opacity-100 sm:opacity-0 sm:translate-y-2 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 transition-all duration-300",
+                  "absolute bottom-0 left-0 right-0 p-3 opacity-100 sm:opacity-0 sm:translate-y-2 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 transition-[opacity,transform] duration-500 ease-out-expo motion-reduce:transition-none motion-reduce:sm:translate-y-0",
                   variant === 'museum'
                     ? "bg-white/95"
                     : "bg-gradient-to-t from-charcoal/75 via-charcoal/40 to-transparent pt-8"
@@ -199,7 +201,9 @@ export function ProductCard({
                     onClick={() => setShowQuickView(true)}
                     title="Quick view"
                     className={cn(
-                      "min-h-[44px] min-w-[44px] rounded-lg p-3 transition-colors sm:min-h-9 sm:min-w-9 sm:p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible",
+                      // Hidden on mobile: tapping the card already opens the piece,
+                      // and the extra button crowds narrow two-up cards.
+                      "hidden sm:block min-h-[44px] min-w-[44px] rounded-lg p-3 transition-colors sm:min-h-9 sm:min-w-9 sm:p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible",
                       variant === 'museum'
                         ? "bg-cream-dark hover:bg-warm-grey text-charcoal/80"
                         : "bg-white/95 hover:bg-white text-charcoal/80"

@@ -251,7 +251,8 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
               </h2>
             </Link>
             <p className="mt-1 text-sm tabular-nums text-charcoal/60">
-              {formatCurrency(item.price, 'AUD')} each
+              {formatCurrency(item.price, 'AUD')}
+              {item.quantity > 1 ? ' each' : ''}
             </p>
           </div>
           <p className="shrink-0 font-semibold tabular-nums text-charcoal">
