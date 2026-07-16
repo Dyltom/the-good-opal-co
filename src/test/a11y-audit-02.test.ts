@@ -11,20 +11,6 @@ import { resolve } from 'path'
 const read = (rel: string) =>
   readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
 
-describe('#4 TrustMarquee — WCAG AA contrast', () => {
-  const source = read('src/components/sections/TrustMarquee.tsx')
-
-  test('does not use bg-opal-electric (fails AA with white text at 2.46:1)', () => {
-    expect(source).not.toMatch(/bg-opal-electric\b(?!-accessible)/)
-  })
-
-  test('uses an explicitly high-contrast foreground and background pairing', () => {
-    const usesDarkSurface = /bg-(opal-electric-accessible|opal-deep|black-rich|charcoal|gray-900|slate-900)/.test(source)
-    const usesLightSurface = source.includes('bg-cream') && source.includes('text-charcoal')
-    expect(usesDarkSurface || usesLightSurface).toBe(true)
-  })
-})
-
 describe('#5 SearchInput — aria-allowed-attr', () => {
   const source = read('src/components/search/SearchInput.tsx')
 

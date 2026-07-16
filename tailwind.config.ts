@@ -455,14 +455,7 @@ const config: Config = {
   		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-  			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-  			'gradient-hero': 'linear-gradient(135deg, #1B4B7C 0%, #9B4DCA 50%, #FFB6C1 100%)',
-  			'gradient-rings': 'linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%)',
-  			'gradient-necklaces': 'linear-gradient(135deg, #2DD4BF 0%, #06B6D4 50%, #3B82F6 100%)',
-  			'gradient-earrings': 'linear-gradient(135deg, #F472B6 0%, #FB7185 50%, #FB923C 100%)',
-  			'gradient-bracelets': 'linear-gradient(135deg, #818CF8 0%, #3B82F6 50%, #14B8A6 100%)',
-  			'gradient-raw': 'linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #FB923C 100%)',
-  			'gradient-custom': 'linear-gradient(135deg, #475569 0%, #64748B 50%, #1E293B 100%)'
+  			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
   		}
   	}
   },
