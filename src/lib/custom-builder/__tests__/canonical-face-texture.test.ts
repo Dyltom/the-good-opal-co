@@ -122,7 +122,7 @@ describe('canonical opal face texture', () => {
       return decoded.data[(y * outputSize + x) * 4 + 3] ?? 0
     }
     expect(alphaAt(0.72)).toBe(255)
-    expect(alphaAt(1.16)).toBe(0)
+    expect(alphaAt(1.16)).toBe(255)
   })
 
   test('derives a lightweight identity from every pixel-affecting contract input', () => {
@@ -217,14 +217,14 @@ describe('canonical opal face texture', () => {
       mediaType: 'image/png',
       sourceImageHash: createHash('sha256').update(source).digest('hex'),
       stoneAspect: 0.75,
-      transparentOutsideContour: true,
+      transparentOutsideContour: false,
       width: 64,
     })
     expect(first.metadata.contentHash).toBe(createHash('sha256').update(first.bytes).digest('hex'))
     expect(first.metadata.inputHash).toMatch(/^[a-f0-9]{64}$/)
     expect(first.metadata.contourHash).toMatch(/^[a-f0-9]{64}$/)
     expect(first.metadata.storageKey).toBe(
-      `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${first.metadata.contentHash}.png`
+      `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${first.metadata.inputHash}.png`
     )
 
     const decoded = await sharp(first.bytes)
@@ -235,10 +235,21 @@ describe('canonical opal face texture', () => {
     const centre = (32 * 64 + 32) * 4
     const corner = 0
     expect(decoded.data[centre + 3]).toBe(255)
-    expect(decoded.data[corner]).toBe(0)
-    expect(decoded.data[corner + 1]).toBe(0)
-    expect(decoded.data[corner + 2]).toBe(0)
-    expect(decoded.data[corner + 3]).toBe(0)
+    expect(decoded.data[corner]).toBeGreaterThan(0)
+    expect(decoded.data[corner + 1]).toBeGreaterThan(0)
+    expect(decoded.data[corner + 2]).toBe(170)
+    for (let offset = 3; offset < decoded.data.length; offset += 4) {
+      expect(decoded.data[offset]).toBe(255)
+    }
+    expect(decoded.data[corner + 3]).toBe(255)
+    for (let offset = 0; offset < decoded.data.length; offset += 4) {
+      expect(decoded.data[offset + 3]).toBe(255)
+      expect(
+        (decoded.data[offset] ?? 0) +
+          (decoded.data[offset + 1] ?? 0) +
+          (decoded.data[offset + 2] ?? 0)
+      ).toBeGreaterThan(0)
+    }
     const edgeAlpha = {
       bottom: Array.from({ length: 64 }, (_, x) => decoded.data[(63 * 64 + x) * 4 + 3] ?? 0),
       left: Array.from({ length: 64 }, (_, y) => decoded.data[y * 64 * 4 + 3] ?? 0),

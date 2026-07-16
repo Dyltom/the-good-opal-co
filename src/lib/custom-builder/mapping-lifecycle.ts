@@ -3,10 +3,11 @@ import {
   ESTIMATED_OPAL_PHOTO_ZOOM,
   inferBuilderStoneType,
 } from './opal-visual'
-import { OPAL_PHOTO_ANALYSIS_VERSION } from './photo-analysis'
+import { BUILDER_PHOTO_PIPELINE_VERSION } from './mapping-version'
 
 export const BUILDER_MAPPING_VERSION = 5
-export const BUILDER_PHOTO_ANALYSIS_VERSION = OPAL_PHOTO_ANALYSIS_VERSION
+export const BUILDER_PHOTO_ANALYSIS_VERSION = BUILDER_PHOTO_PIPELINE_VERSION
+export const BUILDER_MAPPING_WORKER_CONTEXT = 'builderMappingWorkerUpdate'
 
 export const builderMappingStatuses = ['pending', 'reviewed', 'manual', 'stale'] as const
 export const builderMappingModes = ['inferred', 'manual'] as const

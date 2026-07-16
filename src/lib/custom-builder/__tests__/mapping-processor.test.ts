@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
-import { BUILDER_PHOTO_ANALYSIS_VERSION } from '../mapping-lifecycle'
+import {
+  BUILDER_MAPPING_VERSION,
+  BUILDER_MAPPING_WORKER_CONTEXT,
+  BUILDER_PHOTO_ANALYSIS_VERSION,
+} from '../mapping-lifecycle'
 
 const mocks = vi.hoisted(() => {
   const pipeline = {
@@ -32,6 +36,7 @@ const mocks = vi.hoisted(() => {
 vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 vi.mock('sharp', () => ({ default: mocks.sharp }))
 vi.mock('../canonical-face-texture', () => ({
+  CANONICAL_FACE_TEXTURE_VERSION: 3,
   generateCanonicalFaceTexture: mocks.generateCanonicalFaceTexture,
 }))
 vi.mock('../photo-analysis', () => ({
@@ -95,8 +100,12 @@ describe('builder mapping processor', () => {
     vi.unstubAllGlobals()
   })
 
-  test('analyzes every gallery image and keeps the current source when a score gain is ambiguous', async () => {
-    const canonicalFaceArtifactSink = vi.fn()
+  test('analyzes every gallery image and never auto-switches the current source', async () => {
+    const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
+      contentHash: 'a'.repeat(64),
+      pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
+      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
+    })
     mocks.find.mockResolvedValue({
       docs: [
         {
@@ -196,6 +205,7 @@ describe('builder mapping processor', () => {
     })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       id: 42,
       data: expect.objectContaining({
         builderMappingAnalysisError: null,
@@ -282,6 +292,96 @@ describe('builder mapping processor', () => {
     expect(update?.data).not.toHaveProperty('builderMappedImageIndex')
   })
 
+  test('backfills the current canonical artifact for an already-approved mapping', async () => {
+    const currentHash = createHash('sha256').update(imageBytes).digest('hex')
+    const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
+      contentHash: 'a'.repeat(64),
+      pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
+      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
+    })
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderContour: contour,
+          builderContourSourceImageHash: currentHash,
+          builderMappedImageIndex: 0,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'reviewed',
+          builderPhotoFocalX: 0.41,
+          builderPhotoFocalY: 0.57,
+          builderPhotoRotation: -8,
+          builderPhotoZoom: 2.2,
+          dimensions: { length: 8, width: 6 },
+          images: [{ image: { id: 7, url: '/approved.jpg' } }],
+          name: 'Lightning Ridge black opal',
+          slug: 'approved-opal',
+        },
+      ],
+    })
+
+    await expect(
+      processBuilderMappings({ canonicalFaceArtifactSink })
+    ).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+
+    expect(mocks.generateCanonicalFaceTexture).toHaveBeenCalledWith({
+      analysis: {
+        confidence: 0.91,
+        contour,
+        focalX: 0.41,
+        focalY: 0.57,
+        rotation: -8,
+        source: 'image',
+        stoneAspect: 0.75,
+        zoom: 2.2,
+      },
+      source: Buffer.from(imageBytes),
+    })
+    expect(canonicalFaceArtifactSink).toHaveBeenCalledOnce()
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          builderMappingAnalysisError: null,
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        }),
+      })
+    )
+  })
+
+  test('keeps an approved mapping retryable until its canonical artifact persists', async () => {
+    const currentHash = createHash('sha256').update(imageBytes).digest('hex')
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderContour: contour,
+          builderContourSourceImageHash: currentHash,
+          builderMappedImageIndex: 0,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'reviewed',
+          builderPhotoFocalX: 0.41,
+          builderPhotoFocalY: 0.57,
+          builderPhotoRotation: -8,
+          builderPhotoZoom: 2.2,
+          dimensions: { length: 8, width: 6 },
+          images: [{ image: { id: 7, url: '/approved.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+    const canonicalFaceArtifactSink = vi.fn().mockRejectedValue(new Error('blob unavailable'))
+
+    await processBuilderMappings({ canonicalFaceArtifactSink })
+
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          builderMappingAnalysisError: 'Retryable artifact error: blob unavailable',
+        }),
+      })
+    )
+  })
+
   test('does not rewrite absolute owned-storage media through a Vercel origin', async () => {
     vi.stubEnv('VERCEL_URL', 'the-good-opal-co-git-main.example.vercel.app')
     mocks.find.mockResolvedValue({
@@ -308,6 +408,30 @@ describe('builder mapping processor', () => {
     expect(fetch).toHaveBeenCalledWith(
       'https://owned.public.blob.vercel-storage.com/opal.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
+    )
+  })
+
+  test('rejects an unowned stored media URL without requesting it', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: 'https://internal.example/opal.jpg' } }],
+          name: 'Lightning Ridge black opal',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ failed: 1 })
+    expect(fetch).not.toHaveBeenCalled()
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          builderMappingAnalysisError: 'Source image is not in owned storage',
+        }),
+      })
     )
   })
 
@@ -415,10 +539,12 @@ describe('builder mapping processor', () => {
     })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       id: 42,
       data: {
         builderContourCandidate: null,
         builderMappingAnalysisError: 'Mapped product image is unavailable',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         builderPhotoCandidateImageIndex: null,
@@ -448,6 +574,7 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toMatchObject({ failed: 1 })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       id: 42,
       data: expect.objectContaining({
         builderMappingAnalysisError: 'Retryable source error: Source image request failed (503)',
@@ -455,6 +582,108 @@ describe('builder mapping processor', () => {
       }),
       overrideAccess: true,
     })
+  })
+
+  test('retries an owned image that is briefly unavailable after upload', async () => {
+    const product = {
+      id: 42,
+      builderMappingMode: 'inferred',
+      builderMappingStatus: 'pending',
+      images: [{ image: { id: 7, url: '/newly-uploaded.jpg' } }],
+      name: 'Lightning Ridge black opal',
+    }
+    mocks.find.mockResolvedValue({ docs: [product] })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })))
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ failed: 1 })
+    expect(mocks.update).toHaveBeenLastCalledWith({
+      collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
+      id: 42,
+      data: expect.objectContaining({
+        builderMappingAnalysisError: 'Retryable source error: Source image request failed (404)',
+      }),
+      overrideAccess: true,
+    })
+
+    mocks.update.mockClear()
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          ...product,
+          builderMappingAnalysisError:
+            'Retryable source error: Source image request failed (404)',
+          builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+        },
+      ],
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(imageBytes, {
+          headers: { 'content-type': 'image/jpeg' },
+          status: 200,
+        })
+      )
+    )
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        collection: 'products',
+        id: 42,
+        data: expect.objectContaining({ builderContourCandidate: contour }),
+      })
+    )
+  })
+
+  test('scans every page when the available catalogue exceeds one thousand products', async () => {
+    const currentProducts = Array.from({ length: 1000 }, (_, index) => ({
+      id: index + 1,
+      builderMappingAnalyzedImageHash: `hash-${index}`,
+      builderContourCandidate: contour,
+      builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
+      builderPhotoCandidateImageIndex: 0,
+      images: [{ image: { id: index + 1, url: `/current-${index}.jpg` } }],
+      name: `Lightning Ridge black opal ${index}`,
+    }))
+    const pendingProduct = {
+      id: 1001,
+      builderMappingMode: 'inferred',
+      builderMappingStatus: 'pending',
+      images: [{ image: { id: 1001, url: '/pending.jpg' } }],
+      name: 'Lightning Ridge black opal pending',
+    }
+    mocks.find
+      .mockResolvedValueOnce({
+        docs: currentProducts,
+        hasNextPage: true,
+        nextPage: 2,
+      })
+      .mockResolvedValueOnce({ docs: [pendingProduct], hasNextPage: false })
+      .mockResolvedValueOnce({
+        docs: currentProducts,
+        hasNextPage: true,
+        nextPage: 2,
+      })
+      .mockResolvedValueOnce({ docs: [pendingProduct], hasNextPage: false })
+
+    await expect(processBuilderMappings()).resolves.toMatchObject({
+      analyzed: 1,
+      checked: 1,
+      coverage: { total: 1001 },
+    })
+    expect(mocks.find).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ collection: 'products', depth: 1, page: 2 })
+    )
+    expect(mocks.find).toHaveBeenNthCalledWith(
+      4,
+      expect.objectContaining({ collection: 'products', depth: 0, page: 2 })
+    )
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'products', id: 1001 })
+    )
   })
 
   test('selects explicit null fields and retries only current transient errors', async () => {
@@ -546,14 +775,64 @@ describe('builder mapping processor', () => {
     )
   })
 
-  test('stores a clear gallery winner separately without changing a reviewed active source', async () => {
+  test('processes the requested event product even when older candidates exist', async () => {
+    mocks.find.mockResolvedValue({
+      docs: [
+        {
+          id: 41,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 6, url: '/older.jpg' } }],
+          name: 'Lightning Ridge black opal older',
+        },
+        {
+          id: 42,
+          builderMappingMode: 'inferred',
+          builderMappingStatus: 'pending',
+          images: [{ image: { id: 7, url: '/requested.jpg' } }],
+          name: 'Lightning Ridge black opal requested',
+        },
+      ],
+    })
+
+    await expect(processBuilderMappings({ productId: 42 })).resolves.toMatchObject({
+      analyzed: 1,
+      checked: 1,
+    })
+    expect(fetch).toHaveBeenCalledWith(
+      'https://example.com/requested.jpg',
+      expect.objectContaining({ headers: { accept: 'image/*' } })
+    )
+    expect(fetch).not.toHaveBeenCalledWith(
+      'https://example.com/older.jpg',
+      expect.anything()
+    )
+    expect(mocks.update).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: 'products', id: 42 })
+    )
+  })
+
+  test('does not let a high-confidence alternate replace an approved current source', async () => {
+    const activeHash = createHash('sha256').update(new Uint8Array([1, 1, 1])).digest('hex')
+    const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
+      contentHash: 'a'.repeat(64),
+      pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
+      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
+    })
     mocks.find.mockResolvedValue({
       docs: [
         {
           id: 44,
+          builderContour: contour,
+          builderContourSourceImageHash: activeHash,
           builderMappedImageIndex: 0,
           builderMappingMode: 'inferred',
           builderMappingStatus: 'reviewed',
+          builderPhotoFocalX: 0.4,
+          builderPhotoFocalY: 0.5,
+          builderPhotoRotation: 0,
+          builderPhotoZoom: 2.8,
+          dimensions: { length: 8, width: 6 },
           images: [
             { image: { id: 8, url: '/active.jpg' } },
             { image: { id: 9, url: '/clear-winner.jpg' } },
@@ -570,7 +849,7 @@ describe('builder mapping processor', () => {
     })
     mocks.analyzeOpalRaster
       .mockReturnValueOnce({
-        confidence: 0.78,
+        confidence: 0.92,
         contour,
         focalX: 0.4,
         focalY: 0.5,
@@ -579,7 +858,7 @@ describe('builder mapping processor', () => {
         zoom: 2.8,
       })
       .mockReturnValueOnce({
-        confidence: 0.94,
+        confidence: 0.98,
         contour,
         focalX: 0.6,
         focalY: 0.45,
@@ -588,17 +867,30 @@ describe('builder mapping processor', () => {
         zoom: 3.1,
       })
 
-    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
+    await expect(
+      processBuilderMappings({ canonicalFaceArtifactSink })
+    ).resolves.toMatchObject({ analyzed: 1, failed: 0 })
 
     const update = mocks.update.mock.calls[0]?.[0]
     expect(update?.data).toMatchObject({
-      builderMappingAnalyzedImageHash: createHash('sha256')
-        .update(new Uint8Array([9, 9, 9]))
-        .digest('hex'),
-      builderPhotoAnalysisConfidence: 0.94,
-      builderPhotoCandidateImageIndex: 1,
-      builderPhotoCandidateFocalX: 0.6,
+      builderMappingAnalyzedImageHash: activeHash,
+      builderPhotoAnalysisConfidence: 0.92,
+      builderPhotoCandidateImageIndex: 0,
+      builderPhotoCandidateFocalX: 0.4,
     })
+    expect(mocks.generateCanonicalFaceTexture).toHaveBeenCalledWith({
+      analysis: expect.objectContaining({
+        confidence: 0.92,
+        contour,
+        focalX: 0.4,
+        focalY: 0.5,
+        zoom: 2.8,
+      }),
+      source: Buffer.from([1, 1, 1]),
+    })
+    expect(canonicalFaceArtifactSink).toHaveBeenCalledWith(
+      expect.objectContaining({ sourceImageIndex: 0 })
+    )
     expect(update?.data).not.toHaveProperty('builderMappedImageIndex')
     expect(update?.data).not.toHaveProperty('builderContour')
     expect(update?.data).not.toHaveProperty('builderPhotoFocalX')
@@ -711,7 +1003,7 @@ describe('builder mapping processor', () => {
     expect(update?.data).toMatchObject({
       builderContourCandidate: contour,
       builderMappingAnalysisError:
-        'Multiple gallery images are similarly suitable; choose the mapped source before activation',
+        'A different gallery image may be suitable; choose the mapped source before activation',
       builderPhotoAnalysisConfidence: 0.94,
       builderPhotoCandidateImageIndex: 1,
       builderPhotoCandidateFocalX: 0.6,
@@ -809,11 +1101,13 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       id: 42,
       data: {
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderContourCandidate: contour,
         builderMappingAnalysisError: 'Opal contour confidence is too low for automatic activation',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
         builderPhotoAnalysisConfidence: 0.4,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         builderPhotoCandidateImageIndex: 0,
@@ -895,11 +1189,13 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 0, failed: 1 })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       id: 42,
       data: {
         builderContourCandidate: null,
         builderMappingAnalyzedImageHash: expect.stringMatching(/^[0-9a-f]{64}$/),
         builderMappingAnalysisError: 'Opal face could not be isolated from the source image',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         builderPhotoCandidateImageIndex: null,
@@ -955,6 +1251,7 @@ describe('builder mapping processor', () => {
     })
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       where: {
         and: [{ id: { equals: 46 } }, { updatedAt: { equals: '2026-07-14T01:00:00.000Z' } }],
       },
@@ -985,6 +1282,7 @@ describe('builder mapping processor', () => {
     expect(mocks.sharp).not.toHaveBeenCalled()
     expect(mocks.update).toHaveBeenCalledWith({
       collection: 'products',
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       where: {
         and: [{ id: { equals: 42 } }, { updatedAt: { equals: '2026-07-14T01:00:00.123456Z' } }],
       },
@@ -993,6 +1291,7 @@ describe('builder mapping processor', () => {
         builderContourCandidate: null,
         builderMappingAnalysisError:
           'Automatic crop mapping skipped for a non-individual or non-opal listing',
+        builderMappingVersion: BUILDER_MAPPING_VERSION,
         builderPhotoAnalysisConfidence: null,
         builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
         builderPhotoCandidateImageIndex: null,

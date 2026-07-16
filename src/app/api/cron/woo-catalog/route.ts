@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
+import { persistCanonicalFaceArtifact } from '@/lib/custom-builder/canonical-face-artifact-store'
 import { processBuilderMappings } from '@/lib/custom-builder/mapping-processor'
 import { importProductImages } from '@/scripts/import-wordpress-product-images'
 import { syncWooCatalog } from '@/scripts/sync-woocommerce-catalog'
@@ -29,21 +30,42 @@ export async function GET(request: NextRequest) {
       // A paid local order must never be undone by the legacy storefront.
       restock: false,
     })
+    const publishWooIds = catalog.createdWooIds.filter((wooId) =>
+      Number.isSafeInteger(catalog.sourceStockByWooId[wooId])
+    )
     const images = await retrySerializableTransaction(() =>
       importProductImages(true, {
         expectedProductCount: catalog.sourceProducts,
         expectedWooIds: catalog.sourceWooIds,
-        publishWooIds: catalog.createdWooIds,
+        publishWooIds,
         publishStockByWooId: catalog.sourceStockByWooId,
       })
     )
     // The image import can create a new raw-opal listing or mark an approved
     // mapping stale. Analyze that exact post-import state in the same guarded
     // pipeline so no individual stone reaches the builder before review.
-    const builderMappings = await processBuilderMappings({ limit: 25 })
-    const degraded = images.failed > 0
+    const builderMappings = await processBuilderMappings({
+      canonicalFaceArtifactSink: persistCanonicalFaceArtifact,
+      limit: 25,
+    })
+    const degradedReasons = [
+      ...(catalog.blockedPublicationWooIds.length > 0 ? ['blocked-publications'] : []),
+      ...(images.failed > 0 ? ['image-reconciliation-failures'] : []),
+      ...(images.missing > 0 ? ['unmatched-gallery-products'] : []),
+      ...(images.withoutImages > 0 ? ['missing-product-images'] : []),
+      ...(builderMappings.failed > 0 ? ['builder-mapping-failures'] : []),
+      ...(builderMappings.coverage.failedCurrent > 0 ? ['builder-coverage-failures'] : []),
+    ]
+    const degraded = degradedReasons.length > 0
     return NextResponse.json(
-      { builderMappings, catalog, degraded, images },
+      {
+        blockedPublicationWooIds: catalog.blockedPublicationWooIds,
+        builderMappings,
+        catalog,
+        degraded,
+        degradedReasons,
+        images,
+      },
       { status: degraded ? 207 : 200 }
     )
   } catch (error: unknown) {

@@ -9,9 +9,11 @@ import {
 import {
   applyBuilderMappingLifecycle,
   builderMappingNeedsReview,
+  BUILDER_MAPPING_WORKER_CONTEXT,
 } from '../../lib/custom-builder/mapping-lifecycle.ts'
 import { validateBuilderStoneContour } from '../../lib/custom-builder/stone-contour.ts'
 import { BUILDER_MEDIA_REPLACEMENT_CONTEXT } from '../../lib/custom-builder/media-mapping-invalidation.ts'
+import { wakeBuilderMappingWorkerAfterProductChange } from '../../lib/custom-builder/builder-mapping-trigger.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -35,7 +37,7 @@ export const Products: CollectionConfig = {
   hooks: {
     beforeValidate: [
       ({ context, data, originalDoc }) =>
-        context[BUILDER_MEDIA_REPLACEMENT_CONTEXT]
+        context[BUILDER_MEDIA_REPLACEMENT_CONTEXT] || context[BUILDER_MAPPING_WORKER_CONTEXT]
           ? data
           : applyBuilderMappingLifecycle(data, originalDoc, new Date().toISOString()),
       ({ data, originalDoc }) => {
@@ -45,6 +47,7 @@ export const Products: CollectionConfig = {
       },
     ],
     afterChange: [
+      wakeBuilderMappingWorkerAfterProductChange,
       ({ doc, previousDoc, req }) => {
         if (!builderMappingNeedsReview(doc, previousDoc)) return
         req.payload.logger.info({

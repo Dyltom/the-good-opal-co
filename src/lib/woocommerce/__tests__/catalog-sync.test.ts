@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  categoryForWooProduct,
   decodeHtmlEntities,
   fetchWooCatalog,
   parseWooProductPage,
@@ -40,6 +41,16 @@ describe('WooCommerce catalog sync', () => {
         inStock: true,
       },
     ])
+  })
+
+  it('keeps explicitly taxonomized ring stones in the raw-opal catalogue', () => {
+    expect(
+      categoryForWooProduct({
+        categories: [{ name: 'Opals', slug: 'raw-opals' }],
+        name: 'Lightning Ridge ring stone 1.2 ct',
+        tags: [{ name: 'Ring stone', slug: 'ring-stone' }],
+      })
+    ).toBe('raw-opals')
   })
 
   it('rejects malformed or non-AUD source data', () => {

@@ -127,6 +127,30 @@ test.describe('custom ring render fidelity', () => {
     await expectRingSnapshot(page, 'fixture=placed&view=front', 'ring-photo-placed.png')
   })
 
+  test('keeps rendering with the reviewed listing crop when a canonical artifact is missing', async ({
+    page,
+  }) => {
+    test.setTimeout(60_000)
+    const requestedUrls: string[] = []
+    page.on('request', (request) => requestedUrls.push(request.url()))
+
+    const response = await page.goto(
+      '/visual-tests/ring-scene?fixture=canonical-missing&view=front',
+      { waitUntil: 'domcontentloaded' }
+    )
+    expect(response?.status()).toBeLessThan(400)
+
+    const harness = page.getByTestId('ring-scene-visual-harness')
+    await expect(harness).toHaveAttribute('data-render-state', 'ready', { timeout: 30_000 })
+    await expect
+      .poll(() => requestedUrls.some((url) => url.includes('missing-canonical-face.png')))
+      .toBe(true)
+    await expect
+      .poll(() => requestedUrls.some((url) => url.includes('20211104_234659-1-1.jpg')))
+      .toBe(true)
+    await expectPixelSanity(harness.locator('canvas'), 'canonical fallback ring')
+  })
+
   for (const silhouette of ['elongated', 'pear', 'heart'] as const) {
     test(`${silhouette} catalogue opal keeps its reviewed face inside the setting`, async ({
       page,

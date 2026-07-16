@@ -1,87 +1,45 @@
-import { createHash } from 'node:crypto'
 import { NextRequest } from 'next/server'
 import { resolveCanonicalFaceMapping } from '@/lib/custom-builder/canonical-face-mapping'
-import { generateCanonicalFaceTexture } from '@/lib/custom-builder/canonical-face-texture'
+import { lookupCanonicalFaceArtifact } from '@/lib/custom-builder/canonical-face-artifact-store'
+import { CANONICAL_FACE_TEXTURE_VERSION } from '@/lib/custom-builder/canonical-face-texture'
 import { createOpalVisualProfile, inferBuilderStoneType } from '@/lib/custom-builder/opal-visual'
-import { resolveMediaUrl } from '@/lib/media-url'
 import { getPayload } from '@/lib/payload'
-import type { Media, Product } from '@/types/payload-types'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-export const maxDuration = 30
+export const maxDuration = 10
 
-const MAXIMUM_SOURCE_BYTES = 25 * 1024 * 1024
 const immutableHeaders = {
   'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
-  'Content-Type': 'image/png',
   'X-Content-Type-Options': 'nosniff',
 }
 const noStoreHeaders = { 'Cache-Control': 'private, no-store' }
 
-function selectedImage(product: Product): number | Media | undefined {
-  const images = product.images ?? []
-  const requested = product.builderMappedImageIndex
-  const index =
-    typeof requested === 'number' &&
-    Number.isInteger(requested) &&
-    requested >= 0 &&
-    requested < images.length
-      ? requested
-      : 0
-  return (images[index] ?? images[0])?.image ?? undefined
-}
+function publicBlobUrl(value: unknown, expectedPathname: string): string | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const record = value as { pathname?: unknown; url?: unknown }
+  if (record.pathname !== expectedPathname || typeof record.url !== 'string') return undefined
 
-async function selectedMedia(product: Product): Promise<Media | undefined> {
-  const relationship = selectedImage(product)
-  if (relationship && typeof relationship === 'object') return relationship
-  if (typeof relationship !== 'number') return undefined
-  const payload = await getPayload()
-  return payload.findByID({
-    collection: 'media',
-    depth: 0,
-    id: relationship,
-    overrideAccess: true,
-  })
-}
-
-function sourceUrl(request: NextRequest, media: Media): string | undefined {
-  const resolved = resolveMediaUrl(media.url)
-  if (!resolved || resolved.startsWith('//')) return undefined
   try {
-    const url = new URL(resolved, request.nextUrl.origin)
-    // Public generation must not become a stored-URL SSRF primitive. Imported
-    // media is served by this application; remote originals are copied first.
-    if (url.origin !== request.nextUrl.origin || url.username || url.password) return undefined
+    const url = new URL(record.url)
+    if (
+      url.protocol !== 'https:' ||
+      url.port !== '' ||
+      url.username ||
+      url.password ||
+      !url.hostname.endsWith('.blob.vercel-storage.com') ||
+      url.hostname === 'blob.vercel-storage.com'
+    ) {
+      return undefined
+    }
     return url.toString()
   } catch {
     return undefined
   }
 }
 
-async function fetchSource(url: string): Promise<Buffer> {
-  const response = await fetch(url, {
-    cache: 'no-store',
-    headers: { accept: 'image/*' },
-    signal: AbortSignal.timeout(20_000),
-  })
-  if (!response.ok) throw new Error(`Source image request failed (${response.status})`)
-  const mediaType = response.headers.get('content-type')?.toLowerCase()
-  if (mediaType && !mediaType.startsWith('image/')) throw new Error('Source media is not an image')
-  const declaredLength = Number(response.headers.get('content-length'))
-  if (Number.isFinite(declaredLength) && declaredLength > MAXIMUM_SOURCE_BYTES) {
-    throw new Error('Source image exceeds 25 MB generation limit')
-  }
-  const bytes = Buffer.from(await response.arrayBuffer())
-  if (bytes.length === 0) throw new Error('Source image is empty')
-  if (bytes.length > MAXIMUM_SOURCE_BYTES) {
-    throw new Error('Source image exceeds 25 MB generation limit')
-  }
-  return bytes
-}
-
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ inputHash: string; productId: string }> }
 ) {
   const { inputHash, productId } = await params
@@ -94,7 +52,7 @@ export async function GET(
     const payload = await getPayload()
     const product = await payload.findByID({
       collection: 'products',
-      depth: 1,
+      depth: 0,
       id,
       overrideAccess: true,
     })
@@ -114,31 +72,17 @@ export async function GET(
       return new Response('Not found', { headers: noStoreHeaders, status: 404 })
     }
 
-    const media = await selectedMedia(product)
-    const url = media ? sourceUrl(request, media) : undefined
+    const pathname = `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${inputHash}.png`
+    const artifact = await lookupCanonicalFaceArtifact(pathname)
+    const url = publicBlobUrl(artifact, pathname)
     if (!url) return new Response('Not found', { headers: noStoreHeaders, status: 404 })
 
-    const source = await fetchSource(url)
-    const sourceHash = createHash('sha256').update(source).digest('hex')
-    if (sourceHash !== mapping.sourceImageHash) {
-      return new Response('Not found', { headers: noStoreHeaders, status: 404 })
-    }
-
-    const generated = await generateCanonicalFaceTexture({ analysis: mapping.analysis, source })
-    if (generated.status !== 'generated' || generated.metadata.inputHash !== inputHash) {
-      return new Response('Not found', { headers: noStoreHeaders, status: 404 })
-    }
-
-    const etag = `"${generated.metadata.contentHash}"`
-    if (request.headers.get('if-none-match') === etag) {
-      return new Response(null, { headers: { ...immutableHeaders, ETag: etag }, status: 304 })
-    }
-    return new Response(Uint8Array.from(generated.bytes), {
-      headers: { ...immutableHeaders, ETag: etag },
-      status: 200,
+    return new Response(null, {
+      headers: { ...immutableHeaders, Location: url },
+      status: 307,
     })
   } catch (error: unknown) {
-    console.error('Canonical opal face generation failed', error)
+    console.error('Canonical opal face lookup failed', error)
     return new Response('Not found', { headers: noStoreHeaders, status: 404 })
   }
 }

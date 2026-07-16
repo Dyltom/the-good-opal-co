@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { getPayload } from '@/lib/payload'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import { inferBuilderStoneType } from '@/lib/custom-builder/opal-visual'
+import { BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT } from '@/lib/custom-builder/builder-mapping-trigger'
 import {
   fetchWooCatalog,
   reconciledStock,
@@ -144,8 +145,17 @@ function createData(product: WooCatalogProduct) {
   }
 }
 
-function updateData(existing: Product, product: WooCatalogProduct, options: SyncOptions) {
+function updateData(
+  existing: Product,
+  product: WooCatalogProduct,
+  options: SyncOptions,
+  authenticatedInitialStock?: number
+) {
   const hasOwnedImage = Boolean(existing.images?.some(({ image }) => image))
+  const awaitingInitialStock = existing.status === 'draft' && authenticatedInitialStock === undefined
+  const shouldSeedInitialStock =
+    hasOwnedImage && existing.status === 'draft' && authenticatedInitialStock !== undefined
+
   return {
     name: product.name,
     slug: product.slug,
@@ -154,10 +164,20 @@ function updateData(existing: Product, product: WooCatalogProduct, options: Sync
     compareAtPrice: product.compareAtPrice,
     category: product.category,
     tags: product.tags.map((tag) => ({ tag })),
-    status: hasOwnedImage ? ('published' as const) : ('draft' as const),
-    stock: hasOwnedImage
-      ? reconciledStock(existing.stock, product.inStock, options.restock, product.stockQuantity)
-      : 0,
+    status:
+      hasOwnedImage && !awaitingInitialStock ? ('published' as const) : ('draft' as const),
+    stock: !hasOwnedImage
+      ? 0
+      : shouldSeedInitialStock
+        ? authenticatedInitialStock
+        : awaitingInitialStock
+          ? 0
+          : reconciledStock(
+              existing.stock,
+              product.inStock,
+              options.restock,
+              product.stockQuantity
+            ),
     legacyWooId: product.wooId,
     ...(typeof product.manageStock === 'boolean' ? { wooManageStock: product.manageStock } : {}),
     ...(!existing.stoneType ? inferredProductFacts(product) : {}),
@@ -210,6 +230,7 @@ export async function syncWooCatalog(options: SyncOptions) {
 
   let created = 0
   const createdWooIds: number[] = []
+  const blockedPublicationWooIds: number[] = []
   // Only authenticated Woo inventory can unlock first publication. Quantity-
   // managed products use their exact count. The authenticated fetch layer
   // normalizes non-managed Woo stock status to the same 0/1 convention used
@@ -246,6 +267,7 @@ export async function syncWooCatalog(options: SyncOptions) {
       throw new Error(`WooCommerce product ${sourceProduct.wooId} has conflicting identities`)
     }
     const existing = byWooId ?? bySku
+    const authenticatedInitialStock = sourceStockByWooId[sourceProduct.wooId]
     if (existing) {
       stockReconciliation.managedProducts += 1
       if (typeof sourceProduct.stockQuantity === 'number') {
@@ -258,15 +280,18 @@ export async function syncWooCatalog(options: SyncOptions) {
           sourceProduct.stockQuantity
         )
         if (localStock !== sourceStock) {
+          const hasOwnedImage = Boolean(existing.images?.some(({ image }) => image))
           stockReconciliation.mismatches.push({
             localStock,
-            reconciledStock: Boolean(existing.images?.some(({ image }) => image))
-              ? reconciledStock(
-                  localStock,
-                  sourceProduct.inStock,
-                  options.restock,
-                  sourceProduct.stockQuantity
-                )
+            reconciledStock: hasOwnedImage
+              ? existing.status === 'draft' && authenticatedInitialStock !== undefined
+                ? authenticatedInitialStock
+                : reconciledStock(
+                    localStock,
+                    sourceProduct.inStock,
+                    options.restock,
+                    sourceProduct.stockQuantity
+                  )
               : 0,
             sourceStock,
             wooId: sourceProduct.wooId,
@@ -277,6 +302,9 @@ export async function syncWooCatalog(options: SyncOptions) {
           slug: sourceProduct.slug,
           wooId: sourceProduct.wooId,
         })
+      }
+      if (existing.status === 'draft' && authenticatedInitialStock === undefined) {
+        blockedPublicationWooIds.push(sourceProduct.wooId)
       }
     }
     const slugOwner = slugOwners.get(sourceProduct.slug)
@@ -296,7 +324,13 @@ export async function syncWooCatalog(options: SyncOptions) {
         payload.update({
           collection: 'products',
           id: existing.id,
-          data: updateData(existing, sourceProduct, options),
+          data: updateData(
+            existing,
+            sourceProduct,
+            options,
+            sourceStockByWooId[sourceProduct.wooId]
+          ),
+          context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
           overrideAccess: true,
         })
       )
@@ -306,11 +340,15 @@ export async function syncWooCatalog(options: SyncOptions) {
         payload.create({
           collection: 'products',
           data: createData(sourceProduct),
+          context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
           overrideAccess: true,
         })
       )
       created += 1
       createdWooIds.push(sourceProduct.wooId)
+      if (authenticatedInitialStock === undefined) {
+        blockedPublicationWooIds.push(sourceProduct.wooId)
+      }
     }
   }
 
@@ -326,6 +364,7 @@ export async function syncWooCatalog(options: SyncOptions) {
             collection: 'products',
             id: product.id,
             data: { status: 'archived', stock: 0 },
+            context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
             overrideAccess: true,
           })
         )
@@ -335,6 +374,7 @@ export async function syncWooCatalog(options: SyncOptions) {
 
   stockReconciliation.mismatches.sort((left, right) => left.wooId - right.wooId)
   stockReconciliation.productsWithoutExactQuantity.sort((left, right) => left.wooId - right.wooId)
+  blockedPublicationWooIds.sort((left, right) => left - right)
   stockReconciliation.mismatchCount = stockReconciliation.mismatches.length
 
   const mode = options.apply ? 'applied' : 'dry run'
@@ -354,6 +394,7 @@ export async function syncWooCatalog(options: SyncOptions) {
   )
   return {
     mode,
+    blockedPublicationWooIds,
     created,
     createdWooIds,
     sourceStockByWooId,

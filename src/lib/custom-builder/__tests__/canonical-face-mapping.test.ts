@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { CANONICAL_FACE_TEXTURE_VERSION } from '../canonical-face-texture'
-import { OPAL_PHOTO_ANALYSIS_VERSION } from '../photo-analysis'
+import { BUILDER_PHOTO_PIPELINE_VERSION } from '../mapping-version'
 import { resolveCanonicalFaceMapping } from '../canonical-face-mapping'
 
 const contour = {
@@ -14,7 +14,7 @@ const approved = {
   builderMappingAnalyzedImageHash: hash,
   builderMappingStatus: 'reviewed',
   builderPhotoAnalysisConfidence: 0.96,
-  builderPhotoAnalysisVersion: OPAL_PHOTO_ANALYSIS_VERSION,
+  builderPhotoAnalysisVersion: BUILDER_PHOTO_PIPELINE_VERSION,
   builderPhotoFocalX: 0.48,
   builderPhotoFocalY: 0.52,
   builderPhotoRotation: 3,
@@ -43,7 +43,7 @@ describe('canonical face mapping', () => {
   test.each([
     { builderMappingStatus: 'pending' },
     { builderPhotoAnalysisConfidence: 0.89 },
-    { builderPhotoAnalysisVersion: OPAL_PHOTO_ANALYSIS_VERSION - 1 },
+    { builderPhotoAnalysisVersion: BUILDER_PHOTO_PIPELINE_VERSION - 1 },
     { builderContourSourceImageHash: 'b'.repeat(64) },
     { builderContour: null },
     { builderPhotoZoom: null },

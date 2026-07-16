@@ -11,6 +11,17 @@
 
 Products, customers, orders, users, posts, and migration state live in Neon. Images uploaded through Payload live in Blob. Redis contains only short-lived rate-limit counters.
 
+Generated ring-builder opal faces also live in public Vercel Blob storage. Their
+durable identity is the input-addressed pathname
+`builder/opal-faces/v{generatorVersion}/{inputHash}.png`; `inputHash` covers the
+source-image hash, approved contour, crop, aspect, size, and generator version.
+The mapping processor never activates a generated contour until that exact
+pathname has been written. The Products schema does not duplicate Blob URLs.
+The same-origin image route resolves the immutable artifact from its
+generator-provided `storageKey` with
+`lookupCanonicalFaceArtifact()` in
+`src/lib/custom-builder/canonical-face-artifact-store.ts`.
+
 ## Resource setup
 
 1. Import the Git repository into Vercel. Root directory is the repository root; framework is Next.js; production branch is `main`; Node is 22.x.

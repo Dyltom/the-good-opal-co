@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
+import { persistCanonicalFaceArtifact } from '@/lib/custom-builder/canonical-face-artifact-store'
 import { processBuilderMappings } from '@/lib/custom-builder/mapping-processor'
 
 export const maxDuration = 300
@@ -26,12 +27,52 @@ export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const result = await processBuilderMappings({ limit: batchSize() })
-    console.info('Opal builder mapping cron completed', result)
-    return NextResponse.json(result)
+    const result = await processBuilderMappings({
+      canonicalFaceArtifactSink: persistCanonicalFaceArtifact,
+      limit: batchSize(),
+    })
+    const degradedReasons = [
+      ...(result.failed > 0 ? ['processing-failures'] : []),
+      ...(result.coverage.failedCurrent > 0 ? ['coverage-failures'] : []),
+    ]
+    const degraded = degradedReasons.length > 0
+    const body = { ...result, degraded, degradedReasons }
+    if (degraded) {
+      console.error('Opal builder mapping cron completed with failures', body)
+    } else {
+      console.info('Opal builder mapping cron completed', body)
+    }
+    return NextResponse.json(body, { status: degraded ? 503 : 200 })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown builder mapping error'
     console.error('Opal builder mapping cron failed', error)
     return NextResponse.json({ error: message }, { status: 500 })
   }
+}
+
+export async function POST(request: NextRequest) {
+  if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const requestedProductId = request.nextUrl.searchParams.get('productId')
+  const productId = requestedProductId ? Number(requestedProductId) : undefined
+  if (
+    requestedProductId &&
+    (!Number.isSafeInteger(productId) || productId === undefined || productId < 1)
+  ) {
+    return NextResponse.json({ error: 'Invalid productId' }, { status: 400 })
+  }
+
+  after(async () => {
+    try {
+      const result = await processBuilderMappings({
+        canonicalFaceArtifactSink: persistCanonicalFaceArtifact,
+        limit: batchSize(),
+        ...(productId !== undefined ? { productId } : {}),
+      })
+      console.info('Opal builder mapping event trigger completed', result)
+    } catch (error: unknown) {
+      console.error('Opal builder mapping event trigger failed; scheduled cron remains fallback', error)
+    }
+  })
+
+  return NextResponse.json({ queued: true }, { status: 202 })
 }

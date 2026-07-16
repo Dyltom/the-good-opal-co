@@ -106,6 +106,27 @@ export function plainTextFromHtml(value: string): string {
 export function categoryForWooProduct(
   product: Pick<WooProduct, 'name' | 'categories' | 'tags'>
 ): ProductCategory {
+  const taxonomySlugs = [...product.categories, ...product.tags].map(({ slug }) =>
+    slug.toLowerCase()
+  )
+  if (
+    taxonomySlugs.some((slug) =>
+      /^(?:raw-?opals?|loose-?opals?|opal-?stones?|ring-?stones?)$/.test(slug)
+    )
+  ) {
+    return 'raw-opals'
+  }
+  if (taxonomySlugs.some((slug) => /^(?:opal-?)?earrings?$/.test(slug))) {
+    return 'opal-earrings'
+  }
+  if (taxonomySlugs.some((slug) => /^(?:opal-?)?(?:necklaces?|pendants?)$/.test(slug))) {
+    return 'opal-necklaces'
+  }
+  if (taxonomySlugs.some((slug) => /^(?:opal-?)?(?:bracelets?|bangles?)$/.test(slug))) {
+    return 'opal-bracelets'
+  }
+  if (taxonomySlugs.some((slug) => /^(?:opal-?)?rings?$/.test(slug))) return 'opal-rings'
+
   const searchable = [
     product.name,
     ...product.categories.flatMap((category) => [category.name, category.slug]),

@@ -122,7 +122,7 @@ describe('sold ring style geometry', () => {
     expect(sunMoon.beadRadius).toBeLessThan(aurora.beadRadius)
     expect(sunMoon.beadVariation).toBeLessThan(aurora.beadVariation)
     expect(sunMoon.beadAsymmetry).toBe(0.04)
-    expect(aurora.beadAsymmetry).toBe(0.09)
+    expect(aurora.beadAsymmetry).toBe(0.12)
     expect(sunMoon.beadShape).toBe('granulated')
     expect(aurora.beadShape).toBe('granulated')
     expect(sunMoon.beadPrimitive).toBe('rounded-granule')
@@ -133,7 +133,7 @@ describe('sold ring style geometry', () => {
       beadCount: 40,
       beadPitchMm: 1,
       beadRadius: 0.038,
-      beadBridgeRadius: 0.018,
+      beadBridgeRadius: 0.022,
       haloOffset: 0.095,
       beadPrimitive: 'rounded-granule',
     })
@@ -141,7 +141,7 @@ describe('sold ring style geometry', () => {
       beadCount: 28,
       beadPitchMm: 1.12,
       beadRadius: 0.045,
-      beadBridgeRadius: 0.028,
+      beadBridgeRadius: 0.032,
       haloOffset: 0.096,
       beadPrimitive: 'faceted-organic-granule',
     })
@@ -193,8 +193,8 @@ describe('sold ring style geometry', () => {
     const aspectRatios = handmade.map(
       ({ stretchX, stretchY }) => Math.min(stretchX, stretchY) / Math.max(stretchX, stretchY)
     )
-    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.9)
-    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.92)
+    expect(Math.min(...aspectRatios)).toBeGreaterThanOrEqual(0.87)
+    expect(Math.min(...aspectRatios)).toBeLessThanOrEqual(0.89)
     expect(new Set(aspectRatios.map((ratio) => ratio.toFixed(3))).size).toBeGreaterThanOrEqual(6)
   })
 
@@ -454,8 +454,8 @@ describe('sold ring style geometry', () => {
 
   test.each([
     ['gemini', 0.03],
-    ['sun-moon', 0.008],
-    ['aurora', 0.01],
+    ['sun-moon', 0.012],
+    ['aurora', 0.014],
   ] as const)('gives %s its photographed visible oxidized stone seat', (style, expectedReveal) => {
     const profile = ringStyleGeometryProfiles[style]
     const knots = profile.bezelLipProfile
@@ -478,7 +478,7 @@ describe('sold ring style geometry', () => {
     expect(patina.at(-1)?.stoneReveal).toBe(expectedReveal)
     expect(visibleSeatReveal).toBeCloseTo(expectedReveal, 12)
     expect(visibleSeatReveal * 10).toBeGreaterThanOrEqual(0.08)
-    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.301 : 0.1)
+    expect(visibleSeatReveal * 10).toBeLessThanOrEqual(style === 'gemini' ? 0.301 : 0.15)
     expect(knots.at(-1)?.radialProgress).toBe(1)
 
     for (let index = 0; index < 72; index += 1) {

@@ -103,4 +103,48 @@ describe('OpalFaceImage', () => {
       'loading'
     )
   })
+
+  test('falls back to the reviewed listing crop when a canonical face cannot load', () => {
+    const canonicalOpal: BuilderOpal = {
+      ...opal,
+      visual: {
+        ...opal.visual,
+        canonicalFace: {
+          inputHash: 'a'.repeat(64),
+          sourceImageHash: 'b'.repeat(64),
+          url: '/api/builder/opal-face/v1/42/canonical',
+        },
+      },
+    }
+    render(
+      <OpalFaceImage
+        alt="Canonical opal"
+        eager
+        opal={canonicalOpal}
+        placement={placement}
+        sizes="360px"
+      />
+    )
+
+    const canonicalImage = screen.getByRole('img', { name: 'Canonical opal' }) as HTMLImageElement
+    const frame = canonicalImage.parentElement?.parentElement
+    expect(canonicalImage.getAttribute('src')).toBe('/api/builder/opal-face/v1/42/canonical')
+    expect(frame?.getAttribute('data-opal-photo-source')).toBe('canonical-face')
+
+    fireEvent.error(canonicalImage)
+
+    const fallbackImage = screen.getByRole('img', { name: 'Canonical opal' }) as HTMLImageElement
+    expect(fallbackImage.getAttribute('src')).toBe('/rotated-opal.jpg')
+    expect(frame?.getAttribute('data-opal-photo-source')).toBe('listing-photo')
+    expect(frame?.getAttribute('data-opal-photo-state')).toBe('loading')
+
+    Object.defineProperties(fallbackImage, {
+      naturalHeight: { configurable: true, value: 1920 },
+      naturalWidth: { configurable: true, value: 1839 },
+    })
+    fireEvent.load(fallbackImage)
+
+    expect(frame?.getAttribute('data-opal-photo-state')).toBe('ready')
+    expect(fallbackImage.parentElement?.style.transform).toContain('rotate(-75deg)')
+  })
 })

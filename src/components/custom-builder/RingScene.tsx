@@ -11,7 +11,7 @@ import {
   useState,
   type RefObject,
 } from 'react'
-import { Environment, Lightformer, OrbitControls, useGLTF, useTexture } from '@react-three/drei'
+import { Environment, Lightformer, OrbitControls, useGLTF } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import {
   ACESFilmicToneMapping,
@@ -20,7 +20,6 @@ import {
   CanvasTexture,
   ClampToEdgeWrapping,
   Color,
-  CylinderGeometry,
   Float32BufferAttribute,
   LinearFilter,
   type Material,
@@ -31,6 +30,8 @@ import {
   RepeatWrapping,
   SRGBColorSpace,
   SphereGeometry,
+  type Texture,
+  TextureLoader,
   type Group,
   Vector3,
 } from 'three'
@@ -296,17 +297,17 @@ function SolderGrainMaterial({
   return (
     <meshPhysicalMaterial
       color={colour}
-      metalness={faceted ? 0.88 : organic ? 0.88 : 0.9}
+      metalness={faceted ? 0.94 : organic ? 0.92 : 0.94}
       roughness={
         faceted
-          ? Math.max(0.58, Math.min(0.72, roughness))
+          ? Math.max(0.48, Math.min(0.58, roughness * 0.82))
           : organic
-            ? Math.max(0.6, Math.min(0.72, roughness))
-            : Math.max(0.56, Math.min(0.68, roughness))
+            ? Math.max(0.42, Math.min(0.56, roughness * 0.76))
+            : Math.max(0.48, Math.min(0.56, roughness * 0.84))
       }
-      clearcoat={0}
-      clearcoatRoughness={0.62}
-      envMapIntensity={faceted ? 1.05 : organic ? 0.95 : 1.05}
+      clearcoat={0.015}
+      clearcoatRoughness={0.5}
+      envMapIntensity={faceted ? 1.2 : organic ? 1.25 : 1.18}
       flatShading={false}
     />
   )
@@ -340,20 +341,28 @@ function SolderBridgeMaterial({ metal }: { metal: RingConfig['metal'] }) {
 
 function FacetedOrganicSolderGeometry({ radius, seed }: { radius: number; seed: number }) {
   const geometry = useMemo(() => {
-    // Aurora uses clipped solder wire: low tapered nubs with filed tops, not
-    // round granules or crystalline low-poly pebbles. CylinderGeometry keeps
-    // the top planar while its shared side normals preserve a soft silhouette.
-    const nextGeometry = new CylinderGeometry(radius * 0.78, radius, radius * 1.2, 16, 3)
-    nextGeometry.rotateX(Math.PI / 2)
+    // Aurora's sold-ring photos show low, lumpy solder nuggets with uneven
+    // polished crowns. A deformed smooth sphere catches a different highlight
+    // on every grain; the profile's z flattening keeps each nugget filed low.
+    const nextGeometry = new SphereGeometry(radius, 14, 10)
     const positions = nextGeometry.getAttribute('position')
     const point = new Vector3()
 
     for (let index = 0; index < positions.count; index += 1) {
       point.fromBufferAttribute(positions, index)
-      const angle = Math.atan2(point.y, point.x)
+      const length = point.length() || 1
+      const normalizedX = point.x / length
+      const normalizedY = point.y / length
       const variation =
-        1 + Math.sin(angle * 3 + seed * 0.61) * 0.025 + Math.cos(angle * 5 - seed * 0.29) * 0.012
-      positions.setXYZ(index, point.x * variation, point.y * variation, point.z)
+        1 +
+        Math.sin(normalizedX * 6.1 + normalizedY * 2.7 + seed * 0.61) * 0.04 +
+        Math.cos(normalizedY * 7.3 - normalizedX * 2.1 - seed * 0.29) * 0.02
+      positions.setXYZ(
+        index,
+        point.x * variation * (1 + Math.sin(seed * 0.73) * 0.025),
+        point.y * variation * (1 + Math.cos(seed * 0.91) * 0.025),
+        point.z * (0.96 + Math.sin(seed * 0.47) * 0.025)
+      )
     }
 
     positions.needsUpdate = true
@@ -633,6 +642,71 @@ function ProductPhotoGloss({ geometry }: { geometry: BufferGeometry }) {
   )
 }
 
+interface LoadedOpalPhoto {
+  source: ReturnType<typeof getBuilderOpalPhotoSource>
+  texture: Texture
+}
+
+function useResilientOpalPhoto(selectedOpal?: BuilderOpal): LoadedOpalPhoto | undefined {
+  const preferredSource = useMemo(
+    () => (selectedOpal ? getBuilderOpalPhotoSource(selectedOpal) : undefined),
+    [selectedOpal]
+  )
+  const fallbackSource = useMemo(
+    () =>
+      selectedOpal
+        ? {
+            crop: selectedOpal.visual.textureCrop,
+            kind: 'listing-photo' as const,
+            url: selectedOpal.imageUrl,
+          }
+        : undefined,
+    [selectedOpal]
+  )
+  const [loaded, setLoaded] = useState<LoadedOpalPhoto>()
+
+  useEffect(() => {
+    setLoaded(undefined)
+    if (!preferredSource) return
+
+    let cancelled = false
+    let retainedTexture: Texture | undefined
+    const loader = new TextureLoader()
+    const load = (source: NonNullable<typeof preferredSource>, allowFallback: boolean) => {
+      loader.load(
+        source.url,
+        (nextTexture) => {
+          if (cancelled) {
+            nextTexture.dispose()
+            return
+          }
+          retainedTexture = nextTexture
+          setLoaded({ source, texture: nextTexture })
+        },
+        undefined,
+        () => {
+          if (
+            !cancelled &&
+            allowFallback &&
+            source.kind === 'canonical-face' &&
+            fallbackSource
+          ) {
+            load(fallbackSource, false)
+          }
+        }
+      )
+    }
+
+    load(preferredSource, true)
+    return () => {
+      cancelled = true
+      retainedTexture?.dispose()
+    }
+  }, [fallbackSource, preferredSource])
+
+  return loaded
+}
+
 function OpalCabochon({
   config,
   dimensions,
@@ -661,11 +735,13 @@ function OpalCabochon({
     [config.shape, config.style, height, selectedOpal, width]
   )
   const palette = opalPalettes[config.stone]
-  const selectedPhotoSource = selectedOpal ? getBuilderOpalPhotoSource(selectedOpal) : undefined
+  const loadedPhoto = useResilientOpalPhoto(selectedOpal)
+  const selectedPhotoSource = loadedPhoto?.source
   // Catalogue growth must not make the WebGL scene download every product
   // image. Only the selected listing or its canonical reviewed face can load.
-  const sourcePhoto = useTexture(selectedPhotoSource?.url ?? '/images/products/20210923_172817.jpg')
+  const sourcePhoto = loadedPhoto?.texture
   const photoTexture = useMemo(() => {
+    if (!sourcePhoto) return undefined
     const nextTexture = sourcePhoto.clone()
     nextTexture.colorSpace = SRGBColorSpace
     nextTexture.wrapS = ClampToEdgeWrapping
@@ -698,12 +774,13 @@ function OpalCabochon({
   )
 
   useLayoutEffect(() => {
+    if (!photoTexture || !sourcePhoto || !selectedPhotoSource) return
     const crop = selectedPhotoCrop
     if (crop) {
       const rotation = (crop.rotation ?? 0) + customerPhotoRotation
       const image = sourcePhoto.image as { width?: number; height?: number } | undefined
       const samplingSize = getBuilderOpalPhotoSamplingDimensions(
-        selectedPhotoSource!,
+        selectedPhotoSource,
         { height: image?.height ?? 1, width: image?.width ?? 1 },
         stoneAspect
       )
@@ -734,15 +811,15 @@ function OpalCabochon({
     photoTexture,
     selectedPhotoCrop,
     selectedPhotoSource,
-    sourcePhoto.image,
+    sourcePhoto,
     stoneAspect,
   ])
 
   useEffect(() => () => texture.dispose(), [texture])
-  useEffect(() => () => photoTexture.dispose(), [photoTexture])
+  useEffect(() => () => photoTexture?.dispose(), [photoTexture])
   useEffect(() => () => geometry.dispose(), [geometry])
 
-  const usesProductPhoto = Boolean(selectedPhotoCrop)
+  const usesProductPhoto = Boolean(selectedPhotoCrop && photoTexture)
 
   if (usesProductPhoto) {
     return (
@@ -1626,9 +1703,9 @@ function Setting({
               const solderTone = getSolderGrainTone(key, usesHandmadeSurface)
               const maximumTilt =
                 profile.beadPrimitive === 'rounded-granule'
-                  ? 0.045
+                  ? 0.07
                   : profile.beadPrimitive === 'faceted-organic-granule'
-                    ? 0.055
+                    ? 0.12
                     : 0.1
               const grainTiltX = ((((key * 13) % 7) - 3) / 3) * maximumTilt
               const grainTiltY = ((((key * 17) % 9) - 4) / 4) * maximumTilt

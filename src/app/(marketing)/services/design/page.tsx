@@ -75,7 +75,6 @@ const productImageOverrides: Record<string, string> = {
   '20211129_164004': '20211129_164004-1-1.jpg',
   'wp-5499-img_0803': 'IMG_0803.jpg',
   'wp-5507-img': 'IMG-0741-1.jpg',
-  'wp-5481-img_0810': 'IMG_0808.jpg',
 }
 
 function normaliseAssetStem(filename: string): string {

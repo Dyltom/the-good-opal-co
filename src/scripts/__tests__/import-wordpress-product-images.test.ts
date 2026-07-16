@@ -111,6 +111,7 @@ describe('WordPress product image script', () => {
     await expect(importProductImages(true)).resolves.toMatchObject({
       changed: 1,
       quarantined: 1,
+      withoutImages: 1,
     })
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -152,6 +153,33 @@ describe('WordPress product image script', () => {
     await expect(
       importProductImages(true, { expectedProductCount: 1, expectedWooIds: [5000] })
     ).rejects.toThrow('mismatched WordPress gallery snapshot product identities')
+    expect(update).not.toHaveBeenCalled()
+  })
+
+  it('refuses a severe all-empty gallery snapshot before mutating the catalogue', async () => {
+    const update = vi.fn()
+    const find = vi.fn()
+    vi.mocked(getPayload).mockResolvedValue({
+      create: vi.fn(),
+      find,
+      logger: { info: vi.fn() },
+      update,
+    } as never)
+    const source = Array.from({ length: 12 }, (_, index) => ({
+      inStock: true,
+      media: [],
+      productId: 5000 + index,
+      productName: `Opal ${index}`,
+    }))
+    vi.mocked(fetchWordPressProductImages).mockResolvedValue(source)
+
+    await expect(
+      importProductImages(true, {
+        expectedProductCount: source.length,
+        expectedWooIds: source.map(({ productId }) => productId),
+      })
+    ).rejects.toThrow('Refusing severe WordPress gallery drop')
+    expect(find).not.toHaveBeenCalled()
     expect(update).not.toHaveBeenCalled()
   })
 

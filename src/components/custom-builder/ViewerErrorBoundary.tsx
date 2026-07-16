@@ -6,6 +6,7 @@ import type { ErrorInfo, ReactNode } from 'react'
 
 interface ViewerErrorBoundaryProps {
   children: ReactNode
+  resetKey: string
 }
 
 interface ViewerErrorBoundaryState {
@@ -24,6 +25,12 @@ export class ViewerErrorBoundary extends Component<
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Custom ring viewer failed:', error, info.componentStack)
+  }
+
+  override componentDidUpdate(previousProps: ViewerErrorBoundaryProps) {
+    if (this.state.failed && previousProps.resetKey !== this.props.resetKey) {
+      this.setState({ failed: false })
+    }
   }
 
   override render() {

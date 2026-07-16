@@ -4,7 +4,8 @@ import {
   createCanonicalFaceTextureIdentity,
   type CanonicalFaceTextureIdentity,
 } from './canonical-face-texture'
-import { OPAL_PHOTO_ANALYSIS_VERSION, type OpalPhotoAnalysis } from './photo-analysis'
+import type { OpalPhotoAnalysis } from './photo-analysis'
+import { BUILDER_PHOTO_PIPELINE_VERSION } from './mapping-version'
 import { parseBuilderStoneContour } from './stone-contour'
 
 export const CANONICAL_FACE_API_VERSION = 1 as const
@@ -57,7 +58,7 @@ export function resolveCanonicalFaceMapping(
     !approved ||
     !contour ||
     !crop ||
-    fields.builderPhotoAnalysisVersion !== OPAL_PHOTO_ANALYSIS_VERSION ||
+    fields.builderPhotoAnalysisVersion !== BUILDER_PHOTO_PIPELINE_VERSION ||
     typeof confidence !== 'number' ||
     !Number.isFinite(confidence) ||
     confidence < 0.9 ||

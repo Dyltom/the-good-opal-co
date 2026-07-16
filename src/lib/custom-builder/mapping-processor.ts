@@ -3,20 +3,28 @@ import sharp from 'sharp'
 import type { Product } from '@/types/payload-types'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { parseBuilderPhotoCrop } from '@/lib/product-validation'
 import {
   generateCanonicalFaceTexture,
   type GeneratedCanonicalFaceTexture,
 } from './canonical-face-texture'
-import { BUILDER_PHOTO_ANALYSIS_VERSION } from './mapping-lifecycle'
+import {
+  BUILDER_MAPPING_VERSION,
+  BUILDER_MAPPING_WORKER_CONTEXT,
+  BUILDER_PHOTO_ANALYSIS_VERSION,
+} from './mapping-lifecycle'
 import { classifyOpalListing, isAvailableOpalListing } from './opal-visual'
-import { analyzeOpalRaster, type OpalShapeHint } from './photo-analysis'
+import {
+  analyzeOpalRaster,
+  type OpalPhotoAnalysis,
+  type OpalShapeHint,
+} from './photo-analysis'
 import { parseBuilderStoneContour } from './stone-contour'
 
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024
 const ANALYSIS_EDGE_PX = 640
 const STABILITY_ANALYSIS_EDGE_PX = 480
 const MINIMUM_ACTIVE_CONTOUR_CONFIDENCE = 0.9
-const MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN = 0.05
 const MAXIMUM_STABILITY_FOCAL_DELTA = 0.01
 const MAXIMUM_STABILITY_ZOOM_DELTA = 0.03
 const MAXIMUM_STABILITY_ROTATION_DELTA = 2
@@ -65,8 +73,9 @@ const opalShapeHints = new Set<OpalShapeHint>([
 ])
 
 export interface ProcessBuilderMappingsOptions {
-  canonicalFaceArtifactSink?: (event: CanonicalFaceArtifactEvent) => Promise<void> | void
+  canonicalFaceArtifactSink?: CanonicalFaceArtifactSink
   limit?: number
+  productId?: number | string
 }
 
 export interface CanonicalFaceArtifactEvent {
@@ -75,6 +84,16 @@ export interface CanonicalFaceArtifactEvent {
   productSlug?: string
   sourceImageIndex: number
 }
+
+export interface CanonicalFaceArtifactReceipt {
+  contentHash: string
+  pathname: string
+  url: string
+}
+
+export type CanonicalFaceArtifactSink = (
+  event: CanonicalFaceArtifactEvent
+) => Promise<CanonicalFaceArtifactReceipt>
 
 export interface BuilderMappingBatchResult {
   analyzed: number
@@ -164,6 +183,42 @@ function reviewedAnalysisHints(product: ProductRecord):
   }
 }
 
+function approvedCanonicalAnalysis(
+  product: ProductRecord,
+  selected: GalleryAnalysis,
+  currentImageIndex: number
+): OpalPhotoAnalysis | undefined {
+  if (
+    (product.builderMappingStatus !== 'reviewed' && product.builderMappingStatus !== 'manual') ||
+    selected.index !== currentImageIndex ||
+    product.builderContourSourceImageHash !== selected.imageHash ||
+    selected.confidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
+  ) {
+    return undefined
+  }
+
+  const contour = parseBuilderStoneContour(product.builderContour)
+  const crop = parseBuilderPhotoCrop(
+    product.builderPhotoFocalX,
+    product.builderPhotoFocalY,
+    product.builderPhotoZoom,
+    product.builderPhotoRotation
+  )
+  const aspect = stoneAspect(product)
+  if (!contour || !crop || aspect === undefined) return undefined
+
+  return {
+    confidence: selected.confidence,
+    contour,
+    focalX: crop.focalX,
+    focalY: crop.focalY,
+    rotation: crop.rotation ?? 0,
+    source: 'image',
+    stoneAspect: aspect,
+    zoom: crop.zoom,
+  }
+}
+
 function mappingNeedsPhotoAnalysis(value: unknown): boolean {
   if (!isRecord(value)) return false
   const product = value
@@ -171,7 +226,8 @@ function mappingNeedsPhotoAnalysis(value: unknown): boolean {
     typeof product.builderMappingAnalysisError === 'string'
       ? product.builderMappingAnalysisError.trim()
       : ''
-  const currentVersion = product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
+  const currentVersion =
+    product.builderPhotoAnalysisVersion === BUILDER_PHOTO_ANALYSIS_VERSION
 
   if (error) {
     return (
@@ -244,14 +300,10 @@ function selectGalleryAnalysis(
     return { ambiguousSource: false, candidate: best }
   }
 
-  const runnerUp = ranked[1]
-  const hasClearWinner =
-    !runnerUp || best.confidence - runnerUp.confidence >= MINIMUM_SOURCE_SWITCH_CONFIDENCE_GAIN
-  if (hasClearWinner) return { ambiguousSource: false, candidate: best }
-
-  // A reviewed source is safer than choosing arbitrarily between near-equal
-  // alternates. When the active image failed, preserve the best valid candidate
-  // for human source review without activating an arbitrary gallery image.
+  // Segmentation confidence proves that pixels form a stable contour; it does
+  // not prove an alternate gallery frame is a face-on loose-stone photograph.
+  // Keep an analyzable mapped/primary frame even when an alternate scores
+  // higher. If that frame fails, surface the best alternate for maker review.
   return current
     ? { ambiguousSource: false, candidate: current }
     : { ambiguousSource: true, candidate: best }
@@ -304,7 +356,25 @@ function internalApplicationOrigin(): string | undefined {
   )
 }
 
+function isOwnedMediaSource(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    if (parsed.username || parsed.password) return false
+    const applicationOrigin = internalApplicationOrigin()
+    if (applicationOrigin && parsed.origin === applicationOrigin) return true
+    return (
+      parsed.protocol === 'https:' &&
+      parsed.port === '' &&
+      parsed.hostname.endsWith('.blob.vercel-storage.com')
+    )
+  } catch {
+    return false
+  }
+}
+
 async function fetchImage(url: string): Promise<Buffer> {
+  if (!isOwnedMediaSource(url)) throw new Error('Source image is not in owned storage')
+
   let response: Response
   try {
     response = await fetch(url, {
@@ -317,7 +387,12 @@ async function fetchImage(url: string): Promise<Buffer> {
   }
   if (!response.ok) {
     const message = `Source image request failed (${response.status})`
-    if (response.status === 408 || response.status === 429 || response.status >= 500) {
+    if (
+      response.status === 408 ||
+      response.status === 429 ||
+      response.status >= 500 ||
+      (response.status === 404 && isOwnedMediaSource(url))
+    ) {
       throw new RetryableSourceError(message)
     }
     throw new Error(message)
@@ -453,7 +528,8 @@ async function updateProduct(
       where: {
         and: [{ id: { equals: id } }, { updatedAt: { equals: expectedUpdatedAt } }],
       },
-      data: data as Partial<Product>,
+      data: { ...data, builderMappingVersion: BUILDER_MAPPING_VERSION } as Partial<Product>,
+      context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
       overrideAccess: true,
     })
     return result.docs.length === 1
@@ -462,10 +538,42 @@ async function updateProduct(
   await payload.update({
     collection: 'products',
     id,
-    data: data as Partial<Product>,
+    data: { ...data, builderMappingVersion: BUILDER_MAPPING_VERSION } as Partial<Product>,
+    context: { [BUILDER_MAPPING_WORKER_CONTEXT]: true },
     overrideAccess: true,
   })
   return true
+}
+
+async function findAllAvailableProducts(
+  payload: PayloadClient,
+  depth: 0 | 1
+): Promise<Product[]> {
+  const documents: Product[] = []
+  let page = 1
+
+  while (true) {
+    const result = await payload.find({
+      collection: 'products',
+      depth,
+      limit: 1000,
+      ...(page > 1 ? { page } : {}),
+      ...(depth === 1 ? { sort: 'updatedAt' } : {}),
+      overrideAccess: true,
+      where: {
+        and: [
+          { category: { equals: 'raw-opals' } },
+          { status: { equals: 'published' } },
+          { stock: { greater_than: 0 } },
+        ],
+      },
+    })
+    documents.push(...result.docs)
+    if (!result.hasNextPage) break
+    page = result.nextPage ?? page + 1
+  }
+
+  return documents
 }
 
 export async function processBuilderMappings(
@@ -473,21 +581,16 @@ export async function processBuilderMappings(
 ): Promise<BuilderMappingBatchResult> {
   const limit = Math.max(1, Math.min(25, Math.floor(options.limit ?? 10)))
   const payload = await getPayload()
-  const result = await payload.find({
-    collection: 'products',
-    depth: 1,
-    limit: 1000,
-    sort: 'updatedAt',
-    overrideAccess: true,
-    where: {
-      and: [
-        { category: { equals: 'raw-opals' } },
-        { status: { equals: 'published' } },
-        { stock: { greater_than: 0 } },
-      ],
-    },
-  })
-  const selectedDocuments = result.docs
+  const availableProducts = await findAllAvailableProducts(payload, 1)
+  const requestedProductId =
+    typeof options.productId === 'number' || typeof options.productId === 'string'
+      ? String(options.productId)
+      : undefined
+  const selectedDocuments = availableProducts
+    .filter(
+      (document) =>
+        requestedProductId === undefined || String(document.id) === requestedProductId
+    )
     .filter((document) => mappingNeedsPhotoAnalysis(document))
     .sort((left, right) => analysisPriority(left) - analysisPriority(right))
     .slice(0, limit)
@@ -654,20 +757,37 @@ export async function processBuilderMappings(
       }
       let canonicalFaceReady = false
       let canonicalFaceError: string | undefined
-      if (isActivationCandidate && stableAcrossResolutions) {
+      const currentAnalysis = analyses.find((candidate) => candidate.index === currentImageIndex)
+      const approvedAnalysis = currentAnalysis
+        ? approvedCanonicalAnalysis(product, currentAnalysis, currentImageIndex)
+        : undefined
+      const canonicalAnalysis = approvedAnalysis ?? analysis
+      const canonicalSource = approvedAnalysis ? currentAnalysis?.source : selected.source
+      if ((isActivationCandidate && stableAcrossResolutions) || approvedAnalysis) {
         try {
+          if (!canonicalSource) throw new Error('Canonical face source is unavailable')
           const canonicalFace = await generateCanonicalFaceTexture({
-            analysis,
-            source: selected.source,
+            analysis: canonicalAnalysis,
+            source: canonicalSource,
           })
           if (canonicalFace.status === 'generated') {
             try {
-              await options.canonicalFaceArtifactSink?.({
+              if (!options.canonicalFaceArtifactSink) {
+                throw new Error('Canonical face artifact sink is not configured')
+              }
+              const receipt = await options.canonicalFaceArtifactSink({
                 artifact: canonicalFace,
                 productId: id,
                 ...(typeof product.slug === 'string' ? { productSlug: product.slug } : {}),
-                sourceImageIndex: selected.index,
+                sourceImageIndex: approvedAnalysis ? currentImageIndex : selected.index,
               })
+              if (
+                receipt.contentHash !== canonicalFace.metadata.contentHash ||
+                receipt.pathname !== canonicalFace.metadata.storageKey ||
+                !receipt.url
+              ) {
+                throw new Error('Canonical face artifact sink returned a mismatched receipt')
+              }
               canonicalFaceReady = true
             } catch (error: unknown) {
               canonicalFaceError = `${RETRYABLE_ARTIFACT_ERROR_PREFIX}${conciseError(error)}`
@@ -682,8 +802,9 @@ export async function processBuilderMappings(
       }
       const mayActivateContour =
         isActivationCandidate && stableAcrossResolutions && canonicalFaceReady
+      const recordedAnalysis = protectsActiveMapping && currentAnalysis ? currentAnalysis : selected
       const analysisError = selection.ambiguousSource
-        ? 'Multiple gallery images are similarly suitable; choose the mapped source before activation'
+        ? 'A different gallery image may be suitable; choose the mapped source before activation'
         : analysis.source !== 'image'
           ? 'Named-shape fallback requires visual review before activation'
           : analysisConfidence < MINIMUM_ACTIVE_CONTOUR_CONFIDENCE
@@ -710,10 +831,11 @@ export async function processBuilderMappings(
               }
             : {}),
           builderContourCandidate: candidate,
-          builderMappingAnalyzedImageHash: imageHash,
+          builderMappingAnalyzedImageHash: recordedAnalysis.imageHash,
+          builderMappingVersion: BUILDER_MAPPING_VERSION,
           builderPhotoCandidateImageIndex: selected.index,
           builderPhotoAnalysisVersion: BUILDER_PHOTO_ANALYSIS_VERSION,
-          builderPhotoAnalysisConfidence: analysisConfidence,
+          builderPhotoAnalysisConfidence: recordedAnalysis.confidence,
           builderPhotoCandidateFocalX: finiteBetween(analysis.focalX, 0, 1, 'focalX'),
           builderPhotoCandidateFocalY: finiteBetween(analysis.focalY, 0, 1, 'focalY'),
           builderPhotoCandidateZoom: finiteBetween(analysis.zoom, 1, 12, 'zoom'),
@@ -733,6 +855,7 @@ export async function processBuilderMappings(
         id,
         {
           ...(imageHash ? { builderMappingAnalyzedImageHash: imageHash } : {}),
+          builderMappingVersion: BUILDER_MAPPING_VERSION,
           builderContourCandidate: null,
           builderPhotoCandidateImageIndex: null,
           builderPhotoAnalysisConfidence: analysisConfidence ?? null,
@@ -753,21 +876,9 @@ export async function processBuilderMappings(
     }
   }
 
-  const coverage = await payload.find({
-    collection: 'products',
-    depth: 0,
-    limit: 1000,
-    overrideAccess: true,
-    where: {
-      and: [
-        { category: { equals: 'raw-opals' } },
-        { status: { equals: 'published' } },
-        { stock: { greater_than: 0 } },
-      ],
-    },
-  })
-  summary.coverage.total = coverage.docs.length
-  for (const document of coverage.docs) {
+  const coverage = await findAllAvailableProducts(payload, 0)
+  summary.coverage.total = coverage.length
+  for (const document of coverage) {
     const name = typeof document.name === 'string' ? document.name : ''
     const isAvailableIndividual =
       isAvailableOpalListing(name) && classifyOpalListing(name) === 'individual'

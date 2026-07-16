@@ -6,7 +6,7 @@ import {
   type BuilderStoneContourV1,
 } from './stone-contour'
 
-export const OPAL_PHOTO_ANALYSIS_VERSION = 4
+export const OPAL_PHOTO_ANALYSIS_VERSION = 5
 
 export type OpalShapeHint = 'cushion' | 'elongated' | 'heart' | 'oval' | 'pear' | 'round'
 
@@ -561,13 +561,13 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
     input.stoneAspect !== undefined && Number.isFinite(input.stoneAspect) && input.stoneAspect > 0
       ? clamp(input.stoneAspect, 0.2, 5)
       : detectedMinorMajor
-  // Sample inside the detected face. Including a padded bounding box projects
-  // bench, fingers, and shadows onto the 3D cabochon. Rotation adds its own
-  // cover scale later, so persist the base zoom that produces the desired
-  // effective 3.2x-or-tighter stone-only crop.
+  // Fit the full detected face. The traced contour now owns background
+  // removal, so a global 3.2x floor and 16% inward crop only discarded real
+  // edge flash. Keep a 1% guard for segmentation noise while retaining colour
+  // landmarks across the stone. Rotation adds its own cover scale later.
   const usableMinorFraction =
-    Math.min(objectWidth / input.width, objectHeight / input.height) * 0.84
-  const desiredEffectiveZoom = Math.max(3.2, 1 / Math.max(usableMinorFraction, 1 / 12))
+    Math.min(objectWidth / input.width, objectHeight / input.height) * 0.99
+  const desiredEffectiveZoom = 1 / Math.max(usableMinorFraction, 1 / 12)
   const zoom = clamp(desiredEffectiveZoom / rotationCoverScale(stoneAspect, rotation), 1, 12)
 
   const areaFraction = component.indices.length / pixels

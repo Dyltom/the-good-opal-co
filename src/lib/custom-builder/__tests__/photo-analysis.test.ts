@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { computePhotoCrop } from '../photo-crop'
 import { analyzeOpalRaster, OPAL_PHOTO_ANALYSIS_VERSION } from '../photo-analysis'
 import { BUILDER_STONE_CONTOUR_SAMPLE_COUNT, parseBuilderStoneContour } from '../stone-contour'
 
@@ -91,15 +92,15 @@ describe('opal photo crop analysis', () => {
       stoneAspect: 24 / 44,
     })
 
-    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(4)
+    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(5)
     expect(analysis).toBeDefined()
     expect(parseBuilderStoneContour(analysis?.contour)?.radii).toHaveLength(
       BUILDER_STONE_CONTOUR_SAMPLE_COUNT
     )
     expect(analysis?.focalX).toBeCloseTo(0.5, 2)
     expect(analysis?.focalY).toBeCloseTo(0.5, 2)
-    expect(analysis?.zoom).toBeGreaterThanOrEqual(3.2)
-    expect(analysis?.zoom).toBeLessThan(4.1)
+    expect(analysis?.zoom).toBeGreaterThan(3.3)
+    expect(analysis?.zoom).toBeLessThan(3.5)
     expect(analysis?.rotation).toBeCloseTo(0, 4)
     expect(analysis?.source).toBe('image')
     expect(analysis?.confidence).toBeGreaterThan(0.75)
@@ -123,6 +124,50 @@ describe('opal photo crop analysis', () => {
     expect(analysis?.focalX).toBeCloseTo(139 / 200, 2)
     expect(analysis?.focalY).toBeCloseTo(54 / 160, 2)
     expect(analysis?.confidence).toBeGreaterThan(0.65)
+  })
+
+  test('keeps edge colour landmarks when a stone already fills most of the photograph', () => {
+    const width = 200
+    const height = 180
+    const centreX = 103
+    const centreY = 88
+    const radiusX = 68
+    const radiusY = 70
+    const raster = ellipseRaster({
+      width,
+      height,
+      centreX,
+      centreY,
+      radiusX,
+      radiusY,
+      stone: [28, 78, 150, 255],
+    })
+
+    // Distinct edge flash must not cause the crop to keep only the blue centre.
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        const distance =
+          ((x + 0.5 - centreX) / radiusX) ** 2 + ((y + 0.5 - centreY) / radiusY) ** 2
+        if (distance < 0.82 || distance > 1) continue
+        const offset = (y * width + x) * raster.channels
+        raster.data[offset] = x < centreX ? 214 : 35
+        raster.data[offset + 1] = x < centreX ? 54 : 196
+        raster.data[offset + 2] = 62
+      }
+    }
+
+    const stoneAspect = radiusX / radiusY
+    const analysis = analyzeOpalRaster({ ...raster, stoneAspect })
+    expect(analysis).toBeDefined()
+    if (!analysis) return
+
+    const crop = computePhotoCrop(width, height, stoneAspect, analysis)
+    expect(analysis.zoom).toBeGreaterThan(1.4)
+    expect(analysis.zoom).toBeLessThan(1.6)
+    expect(crop.left).toBeLessThanOrEqual((centreX - radiusX * 0.97) / width)
+    expect(crop.left + crop.width).toBeGreaterThanOrEqual((centreX + radiusX * 0.97) / width)
+    expect(crop.top).toBeLessThanOrEqual((centreY - radiusY * 0.97) / height)
+    expect(crop.top + crop.height).toBeGreaterThanOrEqual((centreY + radiusY * 0.97) / height)
   })
 
   test('rotates a horizontal stone toward a vertical aperture', () => {

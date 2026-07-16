@@ -554,12 +554,18 @@ export function RingConfigurator({
     message: `I created a custom ring concept and would like to discuss stone availability, final design, timing, and an exact quote.\n\nConcept: ${description}`,
     design: JSON.stringify(config),
   })
+  const viewerResetKey = JSON.stringify([
+    selectedOpal?.id ?? 'reference-opal',
+    config.style,
+    config.metal,
+    renderModel,
+  ])
 
   return (
     <section aria-labelledby="builder-heading" className="border-y border-warm-grey/60 bg-cream">
       <div className="grid lg:grid-cols-[minmax(0,1.12fr)_minmax(25rem,0.88fr)]">
         <div className="min-w-0 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:self-start">
-          <ViewerErrorBoundary>
+          <ViewerErrorBoundary resetKey={viewerResetKey}>
             <RingPreview
               config={config}
               description={description}

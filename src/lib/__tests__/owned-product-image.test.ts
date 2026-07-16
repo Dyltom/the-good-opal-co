@@ -5,10 +5,14 @@ import { PRODUCTS } from '@/data/products'
 import { ownedProductImageUrl } from '../owned-product-image'
 
 describe('owned catalogue image fallback', () => {
-  test('resolves checked-in product photography by stable slug', () => {
-    expect(ownedProductImageUrl('coober-pedy-carved-heart-parcel')).toBe(
-      '/images/products/IMG_0808.jpg'
-    )
+  test('scopes the corrected carved-heart primary to legacy product 5504', () => {
+    const correctedProduct = PRODUCTS.find(({ id }) => id === '5504')
+    const neighbouringProduct = PRODUCTS.find(({ id }) => id === '5505')
+
+    expect(correctedProduct?.slug).toBe('coober-pedy-carved-heart-parcel')
+    expect(ownedProductImageUrl(correctedProduct?.slug)).toBe('/images/products/IMG_0808.jpg')
+    expect(neighbouringProduct?.slug).toBe('coober-pedy-carved-heart-parcel-2')
+    expect(ownedProductImageUrl(neighbouringProduct?.slug)).toBe('/images/products/IMG_0810.jpg')
     expect(ownedProductImageUrl('missing-product')).toBeUndefined()
   })
 

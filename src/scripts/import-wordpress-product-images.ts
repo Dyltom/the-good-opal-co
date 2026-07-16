@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { downloadWordPressMedia, type WordPressFeaturedMedia } from '@/lib/wordpress/content-import'
 import { fetchWordPressProductImages } from '@/lib/wordpress/product-images'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
+import { BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT } from '@/lib/custom-builder/builder-mapping-trigger'
 
 const TENANT_ID = 'good-opal-co'
 const MAX_OWNED_MEDIA_BYTES = 15 * 1024 * 1024
@@ -121,6 +122,7 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
           tenantId: TENANT_ID,
         },
         ...(!contentMatches ? { file: sourceFile } : {}),
+        context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
         overrideAccess: true,
       })
     )
@@ -142,6 +144,7 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
           tenantId: TENANT_ID,
         },
         file,
+        context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
         overrideAccess: true,
       })
     )
@@ -165,6 +168,7 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
           tenantId: TENANT_ID,
         },
         file,
+        context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
         overrideAccess: true,
       })
       return { changed: true, contentHash: sourceContentHash, id: created.id }
@@ -225,6 +229,17 @@ export async function importProductImages(
     ) {
       throw new Error('Refusing mismatched WordPress gallery snapshot product identities')
     }
+  }
+  const withoutImages = sourceImages.filter(({ media }) => media.length === 0).length
+  const severeGalleryDropThreshold = Math.max(5, Math.ceil(sourceImages.length * 0.25))
+  if (
+    apply &&
+    sourceImages.length >= 10 &&
+    withoutImages >= severeGalleryDropThreshold
+  ) {
+    throw new Error(
+      `Refusing severe WordPress gallery drop: ${withoutImages} of ${sourceImages.length} products have no source images`
+    )
   }
   const publishWooIds = new Set(options.publishWooIds ?? [])
   for (const wooId of publishWooIds) {
@@ -295,6 +310,7 @@ export async function importProductImages(
           collection: 'products',
           id: product.id,
           data: { images: [], status: 'draft', stock: 0 },
+          context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
           overrideAccess: true,
         })
       )
@@ -359,6 +375,7 @@ export async function importProductImages(
                   }
                 : {}),
             },
+            context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
             overrideAccess: true,
           })
         )
@@ -384,7 +401,7 @@ export async function importProductImages(
   }
 
   payload.logger.info(
-    `WordPress product image import ${apply ? 'applied' : 'dry run'}: ${changed} changed, ${published} published, ${quarantined} quarantined, ${mappingRequeued} builder mapping requeued, ${failed} failed, ${missing} unmatched, ${sourceImages.length} source products.`
+    `WordPress product image import ${apply ? 'applied' : 'dry run'}: ${changed} changed, ${published} published, ${quarantined} quarantined, ${withoutImages} without images, ${mappingRequeued} builder mapping requeued, ${failed} failed, ${missing} unmatched, ${sourceImages.length} source products.`
   )
   return {
     mode: apply ? 'applied' : 'dry run',
@@ -395,6 +412,7 @@ export async function importProductImages(
     failed,
     failures,
     missing,
+    withoutImages,
     sourceProducts: sourceImages.length,
   }
 }

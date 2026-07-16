@@ -23,6 +23,7 @@ const fixtures = [
   'none',
   'reviewed',
   'placed',
+  'canonical-missing',
   'elongated',
   'elongated-placed',
   'pear',
@@ -72,6 +73,18 @@ const fixtureOpals = {
   ),
 } as const
 
+const missingCanonicalOpal: BuilderOpal = {
+  ...fixtureOpals.reviewed,
+  visual: {
+    ...fixtureOpals.reviewed.visual,
+    canonicalFace: {
+      inputHash: 'missing-canonical-test-artifact',
+      sourceImageHash: 'missing-canonical-test-source',
+      url: '/visual-tests/missing-canonical-face.png',
+    },
+  },
+}
+
 interface VisualHarnessPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
@@ -92,6 +105,7 @@ function enumParam<const Values extends readonly string[]>(
 
 function selectedOpalForFixture(fixture: (typeof fixtures)[number]): BuilderOpal | undefined {
   if (fixture === 'none') return undefined
+  if (fixture === 'canonical-missing') return missingCanonicalOpal
   if (fixture === 'reviewed' || fixture === 'placed') return fixtureOpals.reviewed
   if (fixture.startsWith('elongated')) return fixtureOpals.elongated
   if (fixture.startsWith('pear')) return fixtureOpals.pear

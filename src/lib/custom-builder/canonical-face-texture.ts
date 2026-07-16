@@ -4,7 +4,7 @@ import { computePhotoCrop, computePhotoTextureTransform, isPhotoCropRenderable }
 import { OPAL_PHOTO_ANALYSIS_VERSION, type OpalPhotoAnalysis } from './photo-analysis'
 import { normalizedBuilderStoneContourPoint, parseBuilderStoneContour } from './stone-contour'
 
-export const CANONICAL_FACE_TEXTURE_VERSION = 2 as const
+export const CANONICAL_FACE_TEXTURE_VERSION = 3 as const
 export const CANONICAL_FACE_TEXTURE_SIZE = 512
 
 const MINIMUM_TEXTURE_SIZE = 32
@@ -36,7 +36,7 @@ export interface CanonicalFaceTextureMetadata {
   sourceImageHash: string
   storageKey: string
   stoneAspect: number
-  transparentOutsideContour: true
+  transparentOutsideContour: false
   width: number
 }
 
@@ -129,31 +129,14 @@ function normalizedContourBoundary(
   )
 }
 
-function pointToSegmentDistanceSquared(
-  x: number,
-  y: number,
-  start: ContourPoint,
-  end: ContourPoint
-): number {
-  const segmentX = end[0] - start[0]
-  const segmentY = end[1] - start[1]
-  const lengthSquared = segmentX * segmentX + segmentY * segmentY
-  const progress =
-    lengthSquared > 0
-      ? clamp(((x - start[0]) * segmentX + (y - start[1]) * segmentY) / lengthSquared, 0, 1)
-      : 0
-  const deltaX = x - (start[0] + segmentX * progress)
-  const deltaY = y - (start[1] + segmentY * progress)
-  return deltaX * deltaX + deltaY * deltaY
-}
-
-function contourMaskAlpha(
+function contourMaskSample(
   x: number,
   y: number,
   boundary: readonly ContourPoint[],
   pixelSpan: number
-): number {
+): { alpha: number; nearest: ContourPoint } {
   let inside = false
+  let nearest: ContourPoint = boundary[0] ?? [0, 0]
   let minimumDistanceSquared = Number.POSITIVE_INFINITY
 
   for (let index = 0; index < boundary.length; index += 1) {
@@ -165,14 +148,28 @@ function contourMaskAlpha(
     ) {
       inside = !inside
     }
-    minimumDistanceSquared = Math.min(
-      minimumDistanceSquared,
-      pointToSegmentDistanceSquared(x, y, start, end)
-    )
+    const segmentX = end[0] - start[0]
+    const segmentY = end[1] - start[1]
+    const lengthSquared = segmentX * segmentX + segmentY * segmentY
+    const progress =
+      lengthSquared > 0
+        ? clamp(((x - start[0]) * segmentX + (y - start[1]) * segmentY) / lengthSquared, 0, 1)
+        : 0
+    const candidate: ContourPoint = [
+      start[0] + segmentX * progress,
+      start[1] + segmentY * progress,
+    ]
+    const deltaX = x - candidate[0]
+    const deltaY = y - candidate[1]
+    const distanceSquared = deltaX * deltaX + deltaY * deltaY
+    if (distanceSquared < minimumDistanceSquared) {
+      minimumDistanceSquared = distanceSquared
+      nearest = candidate
+    }
   }
 
   const signedDistance = Math.sqrt(minimumDistanceSquared) * (inside ? 1 : -1)
-  return clamp(signedDistance / pixelSpan + 0.5, 0, 1)
+  return { alpha: clamp(signedDistance / pixelSpan + 0.5, 0, 1), nearest }
 }
 
 function bilinearChannel(
@@ -254,9 +251,11 @@ export function createCanonicalFaceTextureIdentity(
 /**
  * Rectifies one image-derived opal face into a stable square texture. Output
  * coordinates are normalized Y-up stone coordinates, not source-photo pixels.
- * Alpha is the exact analyzed contour; transparent pixels contain no source
- * photograph data. Canonical named-shape fallbacks deliberately produce no
- * artifact because they are not evidence of a photographed stone boundary.
+ * The texture is an opaque colour plane. Pixels outside the analyzed contour
+ * repeat the nearest inward edge colour so customer pan/rotation can never
+ * expose transparent black wedges. The cabochon mesh and CSS clip remain the
+ * authoritative stone boundary. Canonical named-shape fallbacks deliberately
+ * produce no artifact because they are not evidence of a photographed edge.
  */
 export async function generateCanonicalFaceTexture(
   input: GenerateCanonicalFaceTextureInput
@@ -303,29 +302,16 @@ export async function generateCanonicalFaceTexture(
     const normalizedY = (0.5 - (pixelY + 0.5) / outputSize) * 2 * coordinateExtent
     for (let pixelX = 0; pixelX < outputSize; pixelX += 1) {
       const normalizedX = ((pixelX + 0.5) / outputSize - 0.5) * 2 * coordinateExtent
-      const maskAlpha = contourMaskAlpha(normalizedX, normalizedY, normalizedBoundary, pixelSpan)
+      const mask = contourMaskSample(normalizedX, normalizedY, normalizedBoundary, pixelSpan)
       const offset = (pixelY * outputSize + pixelX) * 4
-
-      if (maskAlpha <= 0) {
-        output[offset] = 0
-        output[offset + 1] = 0
-        output[offset + 2] = 0
-        output[offset + 3] = 0
-        continue
+      let sampledPoint: ContourPoint = [normalizedX, normalizedY]
+      if (mask.alpha <= 0.5) {
+        sampledPoint = [mask.nearest[0] * (1 - pixelSpan), mask.nearest[1] * (1 - pixelSpan)]
       }
-
-      const canonicalU = normalizedX / 2 + 0.5
-      const canonicalV = normalizedY / 2 + 0.5
+      const canonicalU = sampledPoint[0] / 2 + 0.5
+      const canonicalV = sampledPoint[1] / 2 + 0.5
       const sourceU = m00 * canonicalU + m01 * canonicalV + m02
       const sourceV = m10 * canonicalU + m11 * canonicalV + m12
-      const sourceAlpha = bilinearChannel(
-        decoded.data,
-        decoded.info.width,
-        decoded.info.height,
-        sourceU,
-        sourceV,
-        3
-      )
       output[offset] = bilinearChannel(
         decoded.data,
         decoded.info.width,
@@ -350,7 +336,7 @@ export async function generateCanonicalFaceTexture(
         sourceV,
         2
       )
-      output[offset + 3] = Math.round(sourceAlpha * maskAlpha)
+      output[offset + 3] = 255
     }
   }
 
@@ -393,9 +379,9 @@ export async function generateCanonicalFaceTexture(
       inputHash: identity.inputHash,
       mediaType: PNG_MEDIA_TYPE,
       sourceImageHash,
-      storageKey: `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${contentHash}.png`,
+      storageKey: `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${identity.inputHash}.png`,
       stoneAspect: round(input.analysis.stoneAspect),
-      transparentOutsideContour: true,
+      transparentOutsideContour: false,
       width: outputSize,
     },
     status: 'generated',

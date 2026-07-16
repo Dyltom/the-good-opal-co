@@ -12,6 +12,7 @@ import {
 import {
   getBuilderOpalPhotoSamplingDimensions,
   getBuilderOpalPhotoSource,
+  type BuilderOpalPhotoSource,
 } from '@/lib/custom-builder/opal-photo-source'
 import type { BuilderOpal, OpalPlacement } from './config'
 import { cssSilhouetteClipPath, getRenderedStoneAspect } from './geometry'
@@ -40,7 +41,18 @@ export function OpalFaceImage({
     url: string
     width: number
   }>()
-  const photoSource = getBuilderOpalPhotoSource(opal)
+  const [failedCanonicalUrl, setFailedCanonicalUrl] = useState<string>()
+  const photoSource = useMemo<BuilderOpalPhotoSource>(() => {
+    const preferredPhotoSource = getBuilderOpalPhotoSource(opal)
+    return preferredPhotoSource.kind === 'canonical-face' &&
+      failedCanonicalUrl === preferredPhotoSource.url
+      ? {
+          crop: opal.visual.textureCrop,
+          kind: 'listing-photo',
+          url: opal.imageUrl,
+        }
+      : preferredPhotoSource
+  }, [failedCanonicalUrl, opal])
   const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
   const currentImageSize = imageSize?.url === photoSource.url ? imageSize : undefined
   const crop = useMemo(() => {
@@ -95,6 +107,11 @@ export function OpalFaceImage({
       url: photoSource.url,
       width: event.currentTarget.naturalWidth,
     })
+  const handleError: ComponentProps<typeof Image>['onError'] = () => {
+    if (photoSource.kind === 'canonical-face') {
+      setFailedCanonicalUrl(photoSource.url)
+    }
+  }
 
   const cropStyle = crop
     ? {
@@ -128,6 +145,7 @@ export function OpalFaceImage({
             'select-none transition-opacity duration-200 motion-reduce:transition-none',
             crop ? 'opacity-100' : 'opacity-0'
           )}
+          onError={handleError}
           onLoad={handleLoad}
         />
       </div>

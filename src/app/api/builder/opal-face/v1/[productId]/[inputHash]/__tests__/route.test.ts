@@ -1,15 +1,14 @@
-import { createHash } from 'node:crypto'
 import { NextRequest } from 'next/server'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
+import { CANONICAL_FACE_TEXTURE_VERSION } from '@/lib/custom-builder/canonical-face-texture'
 
-const source = Buffer.from('verified-opal-image')
-const sourceHash = createHash('sha256').update(source).digest('hex')
 const inputHash = 'b'.repeat(64)
+const pathname = `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${inputHash}.png`
 
 const mocks = vi.hoisted(() => ({
   findByID: vi.fn(),
-  generateCanonicalFaceTexture: vi.fn(),
   getPayload: vi.fn(),
+  lookupCanonicalFaceArtifact: vi.fn(),
   resolveCanonicalFaceMapping: vi.fn(),
 }))
 
@@ -17,37 +16,29 @@ vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 vi.mock('@/lib/custom-builder/canonical-face-mapping', () => ({
   resolveCanonicalFaceMapping: mocks.resolveCanonicalFaceMapping,
 }))
-vi.mock('@/lib/custom-builder/canonical-face-texture', () => ({
-  generateCanonicalFaceTexture: mocks.generateCanonicalFaceTexture,
+vi.mock('@/lib/custom-builder/canonical-face-artifact-store', () => ({
+  lookupCanonicalFaceArtifact: mocks.lookupCanonicalFaceArtifact,
 }))
 
 import { GET } from '../route'
 
 const product = {
-  builderMappedImageIndex: 0,
   category: 'raw-opals',
   id: 52,
-  images: [
-    {
-      image: {
-        alt: 'Opal',
-        id: 7,
-        url: '/api/media/file/opal.jpg',
-      },
-    },
-  ],
   name: 'Lightning Ridge black opal',
   slug: 'lightning-ridge-black-opal',
   status: 'published',
   stock: 1,
 }
 
-function request(headers?: HeadersInit) {
-  return new NextRequest('https://shop.example/api/builder/opal-face/v1/52/hash', { headers })
+function request() {
+  return new NextRequest(
+    `https://shop.example/api/builder/opal-face/v1/52/${inputHash}`
+  )
 }
 
-function context(hash = inputHash) {
-  return { params: Promise.resolve({ inputHash: hash, productId: '52' }) }
+function context(hash = inputHash, productId = '52') {
+  return { params: Promise.resolve({ inputHash: hash, productId }) }
 }
 
 describe('canonical opal face route', () => {
@@ -55,71 +46,72 @@ describe('canonical opal face route', () => {
     vi.clearAllMocks()
     mocks.getPayload.mockResolvedValue({ findByID: mocks.findByID })
     mocks.findByID.mockResolvedValue(product)
-    mocks.resolveCanonicalFaceMapping.mockReturnValue({
-      analysis: { source: 'image' },
-      identity: { inputHash },
-      sourceImageHash: sourceHash,
+    mocks.resolveCanonicalFaceMapping.mockReturnValue({ identity: { inputHash } })
+    mocks.lookupCanonicalFaceArtifact.mockResolvedValue({
+      pathname,
+      url: `https://store.public.blob.vercel-storage.com/${pathname}`,
     })
-    mocks.generateCanonicalFaceTexture.mockResolvedValue({
-      bytes: Buffer.from('png-bytes'),
-      metadata: { contentHash: 'c'.repeat(64), inputHash },
-      status: 'generated',
-    })
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(source, {
-          headers: { 'content-length': String(source.length), 'content-type': 'image/jpeg' },
-        })
-      )
-    )
   })
 
-  test('returns the verified generated PNG with immutable content-addressed caching', async () => {
+  test('redirects the approved immutable mapping to its durable Blob artifact', async () => {
     const response = await GET(request(), context())
 
-    expect(response.status).toBe(200)
-    expect(response.headers.get('content-type')).toBe('image/png')
+    expect(response.status).toBe(307)
     expect(response.headers.get('cache-control')).toContain('immutable')
-    expect(response.headers.get('etag')).toBe(`"${'c'.repeat(64)}"`)
-    expect(Buffer.from(await response.arrayBuffer())).toEqual(Buffer.from('png-bytes'))
-    expect(fetch).toHaveBeenCalledWith(
-      'https://shop.example/api/media/file/opal.jpg',
-      expect.objectContaining({ cache: 'no-store' })
+    expect(response.headers.get('location')).toBe(
+      `https://store.public.blob.vercel-storage.com/${pathname}`
     )
+    expect(mocks.lookupCanonicalFaceArtifact).toHaveBeenCalledWith(pathname)
   })
 
-  test('returns 304 for the generated artifact ETag', async () => {
-    const response = await GET(request({ 'if-none-match': `"${'c'.repeat(64)}"` }), context())
-    expect(response.status).toBe(304)
-    expect(response.headers.get('etag')).toBe(`"${'c'.repeat(64)}"`)
-  })
-
-  test('rejects a URL hash that does not match the current approved mapping', async () => {
-    const response = await GET(request(), context('d'.repeat(64)))
+  test.each([
+    ['invalid product id', inputHash, '0'],
+    ['invalid hash', 'not-a-hash', '52'],
+    ['stale mapping hash', 'd'.repeat(64), '52'],
+  ])('rejects %s', async (_label, hash, productId) => {
+    if (hash !== 'not-a-hash') {
+      mocks.resolveCanonicalFaceMapping.mockReturnValue({ identity: { inputHash } })
+    }
+    const response = await GET(request(), context(hash, productId))
     expect(response.status).toBe(404)
-    expect(fetch).not.toHaveBeenCalled()
   })
 
-  test('rejects stored remote media URLs without making a request', async () => {
-    mocks.findByID.mockResolvedValue({
-      ...product,
-      images: [{ image: { id: 7, url: 'https://internal.example/opal.jpg' } }],
+  test.each([
+    { ...product, category: 'rings' },
+    { ...product, status: 'draft' },
+    { ...product, stock: 0 },
+  ])('does not expose an unavailable product artifact', async (unavailableProduct) => {
+    mocks.findByID.mockResolvedValue(unavailableProduct)
+    const response = await GET(request(), context())
+    expect(response.status).toBe(404)
+    expect(mocks.lookupCanonicalFaceArtifact).not.toHaveBeenCalled()
+  })
+
+  test.each([
+    'https://internal.example/face.png',
+    'https://owned.public.blob.vercel-storage.com.evil.example/face.png',
+    'https://blob.vercel-storage.com/face.png',
+    'https://user:password@owned.public.blob.vercel-storage.com/face.png',
+    'http://owned.public.blob.vercel-storage.com/face.png',
+  ])('rejects an invalid artifact URL %s', async (url) => {
+    mocks.lookupCanonicalFaceArtifact.mockResolvedValue({ pathname, url })
+    const response = await GET(request(), context())
+    expect(response.status).toBe(404)
+  })
+
+  test('rejects an artifact stored under a mismatched pathname', async () => {
+    mocks.lookupCanonicalFaceArtifact.mockResolvedValue({
+      pathname: `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${'a'.repeat(64)}.png`,
+      url: `https://store.public.blob.vercel-storage.com/${pathname}`,
     })
     const response = await GET(request(), context())
     expect(response.status).toBe(404)
-    expect(fetch).not.toHaveBeenCalled()
   })
 
-  test('rejects source bytes that no longer match the approved hash', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(new Response('changed', { headers: { 'content-type': 'image/jpeg' } }))
-    )
+  test('fails closed when durable storage is unavailable', async () => {
+    mocks.lookupCanonicalFaceArtifact.mockRejectedValue(new Error('blob unavailable'))
     const response = await GET(request(), context())
     expect(response.status).toBe(404)
-    expect(mocks.generateCanonicalFaceTexture).not.toHaveBeenCalled()
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
   })
 })

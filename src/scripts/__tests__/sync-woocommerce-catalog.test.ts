@@ -283,6 +283,7 @@ describe('WooCommerce catalogue mutation retries', () => {
     await expect(
       syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
     ).resolves.toMatchObject({
+      blockedPublicationWooIds: [],
       created: 1,
       createdWooIds: [5681],
       sourceStockByWooId: { 5681: 7 },
@@ -385,6 +386,7 @@ describe('WooCommerce catalogue mutation retries', () => {
     await expect(
       syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
     ).resolves.toMatchObject({
+      blockedPublicationWooIds: [],
       created: 1,
       createdWooIds: [5682],
       sourceStockByWooId: { 5682: 1 },
@@ -490,9 +492,90 @@ describe('WooCommerce catalogue mutation retries', () => {
     await expect(
       syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
     ).resolves.toMatchObject({
+      blockedPublicationWooIds: [5681],
       created: 1,
       createdWooIds: [5681],
       sourceStockByWooId: {},
     })
+  })
+
+  test('stages, seeds, and preserves locally sold stock across three recurring runs', async () => {
+    const products: Array<Record<string, unknown>> = []
+    let remoteStock = 7
+
+    mocks.find.mockImplementation(async () => ({
+      docs: products,
+      hasNextPage: false,
+    }))
+    mocks.create.mockImplementation(async ({ data }: { data: Record<string, unknown> }) => {
+      const product = { id: 91, images: [], ...data }
+      products.push(product)
+      return product
+    })
+    mocks.update.mockImplementation(
+      async ({ data, id }: { data: Record<string, unknown>; id: number }) => {
+        const product = products.find((candidate) => candidate.id === id)
+        if (!product) throw new Error(`Missing test product ${id}`)
+        Object.assign(product, data)
+        return product
+      }
+    )
+    mocks.fetchWooCatalog.mockImplementation(async () => [
+      {
+        category: 'raw-opals',
+        compareAtPrice: null,
+        description: 'New recurring-sync opal',
+        inStock: true,
+        name: 'New recurring-sync opal',
+        price: 220,
+        sku: 'WP-5689',
+        slug: 'new-recurring-sync-opal',
+        tags: ['opal'],
+        wooId: 5689,
+        ...(process.env.WOO_CONSUMER_KEY && process.env.WOO_CONSUMER_SECRET
+          ? { manageStock: true, stockQuantity: remoteStock }
+          : {}),
+      },
+    ])
+
+    const firstRun = await syncWooCatalog({
+      apply: true,
+      archiveMissing: true,
+      restock: false,
+    })
+
+    expect(firstRun).toMatchObject({
+      blockedPublicationWooIds: [5689],
+      createdWooIds: [5689],
+      sourceStockByWooId: {},
+    })
+    expect(products[0]).toMatchObject({ images: [], status: 'draft', stock: 0 })
+
+    // Gallery reconciliation runs after catalogue sync and may safely attach
+    // owned media while exact inventory is unavailable.
+    Object.assign(products[0]!, { images: [{ image: 211 }] })
+    expect(products[0]).toMatchObject({ images: [{ image: 211 }], status: 'draft', stock: 0 })
+
+    vi.stubEnv('WOO_CONSUMER_KEY', 'ck_read_only')
+    vi.stubEnv('WOO_CONSUMER_SECRET', 'cs_private')
+    const secondRun = await syncWooCatalog({
+      apply: true,
+      archiveMissing: true,
+      restock: false,
+    })
+
+    expect(secondRun.sourceStockByWooId).toEqual({ 5689: 7 })
+    expect(secondRun.blockedPublicationWooIds).toEqual([])
+    expect(secondRun.stockReconciliation.mismatches).toEqual([
+      { localStock: 0, reconciledStock: 7, sourceStock: 7, wooId: 5689 },
+    ])
+    expect(products[0]).toMatchObject({ status: 'published', stock: 7 })
+
+    // A paid local order sells the opal before Woo's stale quantity increases.
+    Object.assign(products[0]!, { stock: 0 })
+    remoteStock = 9
+    await syncWooCatalog({ apply: true, archiveMissing: true, restock: false })
+
+    expect(products[0]).toMatchObject({ status: 'published', stock: 0 })
   })
 })
