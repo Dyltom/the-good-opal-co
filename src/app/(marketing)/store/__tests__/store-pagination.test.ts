@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import {
   parseStoreQuery,
+  priceRangeBounds,
+  priceRangeOf,
   PRODUCTS_PER_PAGE,
   storeUrl,
 } from '../store-query'
@@ -51,6 +53,17 @@ describe('/store server query', () => {
     expect(storeUrl(query, 2)).toBe(
       '/store?category=opal-rings&origin=lightning-ridge&sort=price-high&page=2'
     )
+  })
+
+  test('puts a boundary price in the same range chip that the range filter returns it under', () => {
+    for (const price of [0, 249.99, 250, 499, 500, 999.99, 1000, 25000]) {
+      const range = priceRangeOf(price)
+      expect(range).toBeDefined()
+      const [min, max] = priceRangeBounds(range!)
+      expect(price >= min && price < max).toBe(true)
+    }
+    expect(priceRangeOf(250)).toBe('250-500')
+    expect(priceRangeOf(1000)).toBe('1000-plus')
   })
 
   test('omits default values from the canonical URL', () => {

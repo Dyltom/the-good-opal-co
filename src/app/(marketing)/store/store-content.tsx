@@ -1,13 +1,17 @@
 import Link from 'next/link'
+import { ArrowRight, X } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
+import { cn } from '@/lib/utils'
 import {
   PRODUCTS_PER_PAGE,
   STORE_CATEGORIES,
   STORE_ORIGINS,
+  STORE_PRICE_RANGES,
   STORE_STONES,
   storeQueryParams,
   storeUrl,
   type StoreQuery,
+  type StoreSort,
 } from './store-query'
 
 export interface StoreProduct {
@@ -26,11 +30,20 @@ export interface StoreProduct {
   createdAt?: string
 }
 
+export interface StoreFacets {
+  category: Set<string>
+  stone: Set<string>
+  origin: Set<string>
+  price: Set<string>
+  collectedCount: number
+}
+
 interface StoreContentProps {
   products: StoreProduct[]
   query: StoreQuery
   totalDocs: number
   totalPages: number
+  facets: StoreFacets
 }
 
 const categories = STORE_CATEGORIES
@@ -44,41 +57,68 @@ const priceRanges = [
   ['1000-plus', '$1,000 and over'],
 ] as const
 
+const sortOptions: readonly (readonly [StoreSort, string])[] = [
+  ['featured', 'Selected first'],
+  ['newest', 'Newest'],
+  ['price-low', 'Lowest price'],
+  ['price-high', 'Highest price'],
+]
+
 function HiddenQueryFields({ query, omit }: { query: StoreQuery; omit: string[] }) {
   return Array.from(storeQueryParams(query).entries())
     .filter(([name]) => !omit.includes(name))
     .map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)
 }
 
-function FilterSelect({
+type ChipOption = readonly [value: string, label: string]
+
+function chipClass(active: boolean) {
+  return cn(
+    'inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 font-sans text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2',
+    active
+      ? 'border-charcoal bg-charcoal text-cream hover:bg-charcoal-dark'
+      : 'border-warm-grey/80 bg-cream text-charcoal hover:border-charcoal'
+  )
+}
+
+function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link href={href} scroll={false} prefetch={false} aria-current={active ? 'true' : undefined} className={chipClass(active)}>
+      {children}
+      {active ? <X className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+    </Link>
+  )
+}
+
+function ChipGroup({
   label,
-  name,
-  value,
   options,
+  active,
+  present,
+  hrefFor,
 }: {
   label: string
-  name: string
-  value?: string
-  options: readonly (readonly [string, string])[]
+  options: readonly ChipOption[]
+  active?: string
+  present: Set<string>
+  hrefFor: (value: string | undefined) => string
 }) {
+  const visible = options.filter(([value]) => present.has(value) || value === active)
+  if (visible.length === 0) return null
+
   return (
-    <label className="block">
-      <span className="mb-2 block font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-charcoal/55">
-        {label}
-      </span>
-      <select
-        name={name}
-        defaultValue={value ?? ''}
-        className="min-h-11 w-full rounded-sm border border-warm-grey/70 bg-cream px-3 font-sans text-sm text-charcoal outline-none transition-colors focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
-      >
-        <option value="">Any</option>
-        {options.map(([optionValue, optionLabel]) => (
-          <option key={optionValue} value={optionValue}>
-            {optionLabel}
-          </option>
+    <div role="group" aria-label={label}>
+      <p className="mb-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-charcoal/55">{label}</p>
+      <ul className="flex flex-wrap gap-2">
+        {visible.map(([value, optionLabel]) => (
+          <li key={value}>
+            <Chip href={hrefFor(value === active ? undefined : value)} active={value === active}>
+              {optionLabel}
+            </Chip>
+          </li>
         ))}
-      </select>
-    </label>
+      </ul>
+    </div>
   )
 }
 
@@ -140,7 +180,8 @@ function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: numb
   )
 }
 
-export function StoreContent({ products, query, totalDocs, totalPages }: StoreContentProps) {
+export function StoreContent({ products, query, totalDocs, totalPages, facets }: StoreContentProps) {
+  const activeFilters = [query.category, query.stone, query.origin, query.price].filter(Boolean).length
   const start = totalDocs === 0 ? 0 : (query.page - 1) * PRODUCTS_PER_PAGE + 1
   const end = Math.min(query.page * PRODUCTS_PER_PAGE, totalDocs)
 
@@ -202,16 +243,19 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
             <aside>
               <details className="group lg:hidden">
                 <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between border-y border-warm-grey/70 font-sans text-sm font-semibold">
-                  Refine collection
+                  <span>
+                    Refine collection
+                    {activeFilters > 0 ? <span className="ml-2 text-charcoal/55">({activeFilters} on)</span> : null}
+                  </span>
                   <span aria-hidden="true" className="text-lg group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <FilterForm query={query} className="py-6" />
+                <FilterChips query={query} facets={facets} className="py-6" />
               </details>
               <div className="hidden lg:block">
                 <p className="border-b border-warm-grey/70 pb-4 font-serif text-2xl">Refine</p>
-                <FilterForm query={query} className="pt-6" />
+                <FilterChips query={query} facets={facets} className="pt-6" />
               </div>
             </aside>
 
@@ -223,32 +267,7 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
                     ? 'No pieces found'
                     : `Showing ${start}–${end} of ${totalDocs} pieces`}
                 </p>
-                <form action="/store" method="get" className="flex items-center gap-3">
-                  <HiddenQueryFields query={query} omit={['sort', 'page']} />
-                  <label
-                    htmlFor="store-sort"
-                    className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55"
-                  >
-                    Sort
-                  </label>
-                  <select
-                    id="store-sort"
-                    name="sort"
-                    defaultValue={query.sort}
-                    className="min-h-11 rounded-sm border border-warm-grey/70 bg-cream px-3 font-sans text-sm outline-none focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
-                  >
-                    <option value="featured">Selected first</option>
-                    <option value="newest">Newest</option>
-                    <option value="price-low">Price, low to high</option>
-                    <option value="price-high">Price, high to low</option>
-                  </select>
-                  <button
-                    type="submit"
-                    className="min-h-11 border-b border-charcoal font-sans text-sm font-semibold transition-colors hover:text-charcoal/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-                  >
-                    Apply
-                  </button>
-                </form>
+                <SortLinks query={query} />
               </div>
 
               {products.length > 0 ? (
@@ -299,42 +318,91 @@ export function StoreContent({ products, query, totalDocs, totalPages }: StoreCo
   )
 }
 
-function FilterForm({ query, className }: { query: StoreQuery; className?: string }) {
+function FilterChips({ query, facets, className }: { query: StoreQuery; facets: StoreFacets; className?: string }) {
+  const refine = (patch: Partial<StoreQuery>) => storeUrl({ ...query, ...patch }, 1)
+
   return (
-    <form action="/store" method="get" className={`space-y-5 ${className ?? ''}`}>
-      {query.search ? <input type="hidden" name="search" value={query.search} /> : null}
-      {query.sort !== 'featured' ? <input type="hidden" name="sort" value={query.sort} /> : null}
-      <FilterSelect label="Piece" name="category" value={query.category} options={categories} />
-      <FilterSelect label="Stone" name="stone" value={query.stone} options={stones} />
-      <FilterSelect label="Origin" name="origin" value={query.origin} options={origins} />
-      <FilterSelect label="Price" name="price" value={query.price} options={priceRanges} />
-      <label className="flex min-h-11 items-center gap-3 border-y border-warm-grey/60 py-3 font-sans text-sm text-charcoal/75">
-        <input
-          type="checkbox"
-          name="availability"
-          value="all"
-          defaultChecked={query.availability === 'all'}
-          className="h-4 w-4 accent-charcoal"
-        />
-        Include collected pieces
-      </label>
-      <div className="flex gap-3 pt-2">
-        <button
-          type="submit"
-          className="min-h-11 flex-1 rounded-sm bg-charcoal px-5 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-        >
-          Apply
-        </button>
-        {hasAnyFilter(query) ? (
-          <Link
-            href="/store"
-            className="min-h-11 px-3 py-3 font-sans text-sm font-semibold underline underline-offset-4"
+    <div className={cn('space-y-7', className)}>
+      <ChipGroup
+        label="Piece"
+        options={categories}
+        active={query.category}
+        present={facets.category}
+        hrefFor={(category) => refine({ category })}
+      />
+      <ChipGroup
+        label="Stone"
+        options={stones}
+        active={query.stone}
+        present={facets.stone}
+        hrefFor={(stone) => refine({ stone })}
+      />
+      <ChipGroup
+        label="Origin"
+        options={origins}
+        active={query.origin}
+        present={facets.origin}
+        hrefFor={(origin) => refine({ origin })}
+      />
+      <ChipGroup
+        label="Price"
+        options={priceRanges}
+        active={query.price}
+        present={facets.price}
+        hrefFor={(price) => refine({ price: STORE_PRICE_RANGES.find((range) => range === price) })}
+      />
+      {facets.collectedCount > 0 ? (
+        <div role="group" aria-label="Availability" className="space-y-4 border-t border-warm-grey/60 pt-6">
+          <Chip
+            href={refine({ availability: query.availability === 'all' ? 'available' : 'all' })}
+            active={query.availability === 'all'}
           >
-            Clear
+            Include collected pieces
+          </Chip>
+          <Link
+            href="/store/collected"
+            className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
+          >
+            Recently collected
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
-        ) : null}
-      </div>
-    </form>
+        </div>
+      ) : null}
+      {hasAnyFilter(query) ? (
+        <Link
+          href={query.search ? storeUrl({ search: query.search, availability: 'available', sort: query.sort, page: 1 }) : '/store'}
+          scroll={false}
+          className="inline-flex min-h-11 items-center font-sans text-sm font-semibold underline underline-offset-4"
+        >
+          Clear filters
+        </Link>
+      ) : null}
+    </div>
+  )
+}
+
+function SortLinks({ query }: { query: StoreQuery }) {
+  return (
+    <nav aria-label="Sort pieces" className="flex flex-wrap items-center gap-x-5">
+      <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55">Sort</span>
+      {sortOptions.map(([sort, label]) => (
+        <Link
+          key={sort}
+          href={storeUrl({ ...query, sort }, 1)}
+          scroll={false}
+          prefetch={false}
+          aria-current={query.sort === sort ? 'true' : undefined}
+          className={cn(
+            'inline-flex min-h-11 shrink-0 items-center whitespace-nowrap font-sans text-sm underline-offset-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible',
+            query.sort === sort
+              ? 'font-semibold text-charcoal underline decoration-charcoal'
+              : 'text-charcoal/65 hover:text-charcoal'
+          )}
+        >
+          {label}
+        </Link>
+      ))}
+    </nav>
   )
 }
 
