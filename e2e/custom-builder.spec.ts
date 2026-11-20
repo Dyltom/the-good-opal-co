@@ -10,7 +10,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
 
   expect(response?.status()).toBeLessThan(400)
   await expect(page.getByRole('heading', { name: 'Design your opal ring' })).toBeVisible()
-  await expect(page.getByRole('group', { name: '3. Choose an available opal' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Opal' })).toBeVisible()
 
   const previewSource = page.getByRole('group', { name: 'Preview source' })
   await expect(previewSource.getByRole('button', { name: '3D concept' })).toHaveAttribute(
@@ -23,14 +23,14 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page.getByText(/Your selected opal changes the final fit and scale/)).toBeVisible()
   await previewSource.getByRole('button', { name: '3D concept' }).click()
 
-  const opalGroup = page.getByRole('group', { name: '3. Choose an available opal' })
+  const opalGroup = page.getByRole('group', { name: 'Opal' })
   const opals = opalGroup.getByRole('button')
   expect(await opals.count()).toBeGreaterThan(1)
 
   await opalGroup
     .getByRole('combobox', { name: 'Filter available opals' })
     .selectOption('individual')
-  const individualOpals = opalGroup.getByRole('button').filter({ hasText: 'Individual stone' })
+  const individualOpals = opalGroup.locator('button[data-opal-id]')
   expect(await individualOpals.count()).toBeGreaterThan(1)
   await individualOpals.nth(1).click()
   await expect(page).toHaveURL(/[?&]p=\d+/)
@@ -60,7 +60,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(page).toHaveURL(/[?&]ps=1\.35/)
   await expect(page).toHaveURL(/[?&]pr=25/)
 
-  const styles = page.getByRole('group', { name: '2. Choose a collection design' })
+  const styles = page.getByRole('group', { name: 'Design' })
   await expect(styles).toBeVisible()
   await expect(styles.getByRole('button', { name: /Gemini/i })).toBeEnabled()
   await expect(styles.getByRole('button', { name: /Sun & Moon/i })).toBeEnabled()
@@ -75,7 +75,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(selectedStyle).toBeEnabled()
 
   const canvas = page.locator('canvas')
-  const fallback = page.getByText('Interactive 3D is unavailable on this device.')
+  const fallback = page.getByText(/The 3D view needs WebGL/)
   await expect(canvas.or(fallback)).toBeVisible({ timeout: 15_000 })
   await expect
     .poll(async () => (await canvas.count()) + (await fallback.count()), { timeout: 15_000 })

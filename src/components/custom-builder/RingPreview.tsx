@@ -103,7 +103,7 @@ export function RingPreview({
             : 'Multi-stone listing · the preview shows a representative stone'
 
   return (
-    <div className="relative aspect-[4/5] min-h-[28rem] w-full min-w-0 overflow-hidden bg-[#171714] text-cream sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0 [&_canvas]:touch-pan-y">
+    <div className="relative h-[36svh] min-h-[16rem] w-full min-w-0 overflow-hidden bg-[#eae6de] text-cream sm:aspect-[5/4] sm:h-auto sm:min-h-0 lg:aspect-auto lg:h-full [&_canvas]:touch-pan-y">
       {previewSource === 'reference' ? (
         <div className="absolute inset-0 bg-[#11110f]">
           <Image
@@ -133,27 +133,31 @@ export function RingPreview({
         />
       ) : (
         <div className="absolute inset-0">
-          <Image
-            src="/images/customs/custom-2.jpg"
-            alt="Australian opals used as inspiration for a custom jewellery design"
-            fill
-            priority
-            className="object-cover opacity-70"
-            sizes="(max-width: 1024px) 100vw, 58vw"
-          />
-          <div className="absolute inset-0 bg-black-rich/35" />
-          <p className="absolute inset-x-6 bottom-24 max-w-md text-sm leading-6 text-cream/85">
-            {webGlAvailable === null
-              ? 'Preparing your studio preview…'
-              : 'Interactive 3D is unavailable on this device. Your design choices still work and will be included with your enquiry.'}
-          </p>
+          {webGlAvailable === false && (
+            <>
+              <Image
+                src={reference.image}
+                alt={`${reference.name}, sold Good Opal Co ring reference`}
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 62vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black-rich/50 via-transparent to-black-rich/75" />
+              <p className="absolute inset-x-4 bottom-4 max-w-md rounded-lg bg-black-rich/80 p-3 text-xs leading-5 text-cream/85 sm:inset-x-6 sm:bottom-6">
+                Showing our sold {reference.name}. The 3D view needs WebGL, which is off in this
+                browser (often the hardware acceleration setting). Your choices still go with your
+                enquiry.
+              </p>
+            </>
+          )}
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-end p-5 sm:p-7">
-        <p className="sr-only">{description}</p>
-        <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-charcoal">
-          {previewSource === 'reference'
+      <p className="sr-only">{description}</p>
+      <div className="pointer-events-none absolute right-3 top-16 sm:right-5 sm:top-20">
+        <span className="rounded-full bg-cream/90 px-3 py-1 text-xs font-medium text-charcoal shadow-sm">
+          {previewSource === 'reference' || webGlAvailable === false
             ? 'Sold reference'
             : renderModel.makerApproved && !approvedAssetFailed
               ? 'Maker-approved model'
@@ -164,7 +168,7 @@ export function RingPreview({
       <div
         role="group"
         aria-label="Preview source"
-        className="absolute left-5 top-5 flex rounded-full border border-cream/20 bg-black-rich/80 p-1 sm:left-7 sm:top-20"
+        className="absolute left-3 top-3 flex rounded-full border border-cream/20 bg-black-rich/80 p-1 backdrop-blur sm:left-5 sm:top-5"
       >
         <button
           type="button"
@@ -189,7 +193,7 @@ export function RingPreview({
         <div
           role="group"
           aria-label="Ring preview angle"
-          className="absolute right-5 top-20 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 sm:right-7"
+          className="absolute right-3 top-3 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 backdrop-blur sm:right-5 sm:top-5"
         >
           {views.map((option) => (
             <button
@@ -207,7 +211,7 @@ export function RingPreview({
       )}
 
       {previewSource === 'reference' ? (
-        <div className="absolute inset-x-5 bottom-5 rounded-lg bg-black-rich/80 p-4 sm:inset-x-7 sm:bottom-7">
+        <div className="absolute inset-x-3 bottom-3 rounded-lg bg-black-rich/80 p-3 sm:inset-x-5 sm:bottom-5 sm:p-4">
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-opal-light">
             Physical design reference
           </p>
@@ -218,10 +222,10 @@ export function RingPreview({
           </p>
         </div>
       ) : webGlAvailable ? (
-        <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3 sm:inset-x-7 sm:bottom-7">
+        <div className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-3 sm:inset-x-5 sm:bottom-5">
           {selectedOpal ? (
-            <div className="flex max-w-[calc(100%_-_3.75rem)] items-center gap-2.5 rounded-lg bg-black-rich/80 p-2 text-cream sm:max-w-[70%] sm:gap-3 sm:p-2.5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-28">
+            <div className="hidden max-w-[70%] items-center gap-3 rounded-lg bg-black-rich/80 p-2.5 text-cream backdrop-blur sm:flex">
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center xl:h-28 xl:w-28">
                 <OpalFaceImage
                   opal={selectedOpal}
                   placement={opalPlacementFromConfig(config)}

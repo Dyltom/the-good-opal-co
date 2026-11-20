@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft, ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
+import { ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
 import { RingConfigurator, ringConfigFromRecord } from '@/components/custom-builder'
 import type { BuilderOpal } from '@/components/custom-builder/config'
 import { Container } from '@/components/layout'
@@ -266,23 +265,6 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
 
   return (
     <MarketingShell>
-      <header className="border-b border-warm-grey/60 px-5 py-4 sm:px-10 sm:py-6 lg:px-[clamp(3rem,8vw,9rem)]">
-        <Link
-          href="/services"
-          className="inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-        >
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Custom jewellery
-        </Link>
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-6">
-          <h1 className="font-serif text-3xl font-medium leading-tight sm:text-4xl">
-            Design your opal ring
-          </h1>
-          <p className="text-sm leading-6 text-charcoal-light sm:text-base">
-            Choose an opal, a setting and a metal, then send us your design for a personal quote.
-          </p>
-        </div>
-      </header>
-
       <RingConfigurator
         initialConfig={hydratedConfig}
         opals={opals}
@@ -290,12 +272,12 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
         unavailableOpalRequested={unavailableOpalRequested}
       />
 
-      <section className="bg-white py-16 sm:py-20">
+      <section className="border-t border-warm-grey/60 bg-white py-10 sm:py-12">
         <Container>
-          <div className="grid gap-8 border-y border-warm-grey/60 py-10 md:grid-cols-3 md:gap-12">
+          <div className="grid gap-6 md:grid-cols-3 md:gap-10">
             <div>
               <Sparkles aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
-              <h2 className="mt-4 font-serif text-2xl">A visual starting point</h2>
+              <h2 className="mt-3 font-serif text-xl">A visual starting point</h2>
               <p className="mt-2 text-sm leading-6 text-charcoal-light">
                 A guide to proportion and colour. Every natural opal is unique, so your consultation
                 confirms the real stone.
@@ -303,7 +285,7 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
             </div>
             <div>
               <WandSparkles aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
-              <h2 className="mt-4 font-serif text-2xl">Made around your opal</h2>
+              <h2 className="mt-3 font-serif text-xl">Made around your opal</h2>
               <p className="mt-2 text-sm leading-6 text-charcoal-light">
                 We match suitable available stones, confirm dimensions, and refine the setting
                 before making begins.
@@ -311,7 +293,7 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
             </div>
             <div>
               <ShieldCheck aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
-              <h2 className="mt-4 font-serif text-2xl">Quote before commitment</h2>
+              <h2 className="mt-3 font-serif text-xl">Quote before commitment</h2>
               <p className="mt-2 text-sm leading-6 text-charcoal-light">
                 Your consultation confirms scope, timing, and exact AUD price. A builder estimate
                 never becomes an automatic charge.
