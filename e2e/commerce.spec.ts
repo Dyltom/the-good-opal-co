@@ -3,7 +3,7 @@ import { failOnRuntimeErrors } from './support/runtime-errors'
 
 async function firstAvailableProduct(page: Page) {
   await page.goto('/store')
-  const links = page.locator('a[href^="/store/"]')
+  const links = page.locator('a[href^="/store/"]:not([href="/store/collected"])')
   if ((await links.count()) === 0) return null
   const href = await links.first().getAttribute('href')
   if (!href) return null

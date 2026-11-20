@@ -110,6 +110,6 @@ test('contact form exposes validation and accessible field names', async ({ page
   await expect(page.getByLabel('Name *')).toBeVisible()
   await expect(page.getByLabel('Email *')).toBeVisible()
   await expect(page.getByLabel('Message *')).toBeVisible()
-  await page.getByRole('button', { name: 'Send Message' }).click()
+  await page.getByRole('button', { name: 'Send enquiry' }).click()
   await expect(page.getByText('Please enter your name.')).toBeVisible()
 })
