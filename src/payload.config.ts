@@ -78,19 +78,6 @@ function getRequiredEnvironmentValue(name: string): string {
   return ''
 }
 
-function requireOneEnvironmentValue(names: string[], label: string): string {
-  for (const name of names) {
-    const value = process.env[name]?.trim()
-    if (value) return value
-  }
-
-  if (process.env['NODE_ENV'] === 'production') {
-    throw new Error(`${label} environment variable is required in production`)
-  }
-
-  return ''
-}
-
 function getEmailSender(): { address: string; name: string } {
   const configured = getRequiredEnvironmentValue('EMAIL_FROM')
   const match = configured.match(/^\s*(.*?)\s*<([^>]+)>\s*$/)
@@ -113,15 +100,6 @@ const emailSender = getEmailSender()
 for (const name of ['CONTACT_EMAIL', 'ADMIN_EMAIL']) {
   getRequiredEnvironmentValue(name)
 }
-
-requireOneEnvironmentValue(
-  ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_KV_REST_API_URL'],
-  'Upstash Redis URL'
-)
-requireOneEnvironmentValue(
-  ['UPSTASH_REDIS_REST_TOKEN', 'UPSTASH_REDIS_REST_KV_REST_API_TOKEN'],
-  'Upstash Redis token'
-)
 
 function withUploadDir(collection: CollectionConfig): CollectionConfig {
   if (!useLocalStorage || typeof collection.upload !== 'object') return collection

@@ -119,6 +119,19 @@ describe('deployment readiness', () => {
     expect(readiness.issues).toContain('email_delivery_unverified')
   })
 
+  test('counts rate limits in-process on a single host with no Redis configured', () => {
+    const {
+      UPSTASH_REDIS_REST_URL: _url,
+      UPSTASH_REDIS_REST_TOKEN: _token,
+      ...withoutRedis
+    } = validEnvironment
+
+    const readiness = assessDeploymentReadiness(withoutRedis)
+
+    expect(readiness.checks.rateLimiting).toBe(true)
+    expect(readiness.ready).toBe(true)
+  })
+
   test('accepts Upstash Marketplace alias variable names', () => {
     const {
       UPSTASH_REDIS_REST_URL: _url,

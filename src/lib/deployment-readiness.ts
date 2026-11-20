@@ -118,6 +118,7 @@ function getRedisToken(env: Environment): string {
 }
 
 function hasValidRedisUrl(env: Environment): boolean {
+  if (!getRedisUrl(env) && !getRedisToken(env)) return true
   try {
     const url = new URL(getRedisUrl(env))
     return url.protocol === 'https:' && Boolean(url.hostname)
@@ -161,7 +162,9 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
   if (!hasValidRedisUrl(env)) issues.push('redis_url_invalid')
 
   const redisToken = getRedisToken(env)
-  if (!redisToken || isObviousPlaceholder(redisToken)) issues.push('redis_token_missing')
+  if (getRedisUrl(env) && (!redisToken || isObviousPlaceholder(redisToken))) {
+    issues.push('redis_token_missing')
+  }
 
   const core = !issues.some(
     (issue) =>
