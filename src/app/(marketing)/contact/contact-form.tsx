@@ -208,7 +208,7 @@ export function ContactForm({
             <Input
               id="orderNumber"
               {...register('orderNumber')}
-              placeholder="e.g., #1234"
+              placeholder="OPAL-…"
               className="mt-1"
               disabled={isSubmitting}
             />
