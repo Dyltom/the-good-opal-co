@@ -76,6 +76,18 @@ describe('WordPress content import', () => {
     })
   })
 
+  it('imports posts whose embedded terms omit descriptions, as the live WordPress API sends them', () => {
+    const terms = sourcePost._embedded['wp:term'].map((group) =>
+      group.map(({ description: _description, ...term }) => term)
+    )
+    const post = parseWordPressPostPage([
+      { ...sourcePost, _embedded: { ...sourcePost._embedded, 'wp:term': terms } },
+    ])[0]
+    expect(post?.categories).toEqual([
+      { id: 1, name: 'DIY Cabbing Machine', slug: 'diycabbing-machine', description: '' },
+    ])
+  })
+
   it('preserves headings, paragraphs, links, and ordered lists in Lexical content', () => {
     const document = wordpressHtmlToLexical(sourcePost.content.rendered)
     expect(document.root.children.map((node) => node.type)).toEqual([
