@@ -155,10 +155,10 @@ export default function FAQPage() {
                   Product details, delivery, eligible returns, care, and custom work. If your question is specific to one opal, send us the product link.
                 </p>
               </div>
-              <div className="relative aspect-[4/3] overflow-hidden bg-charcoal">
+              <div className="relative aspect-[4/3] overflow-hidden bg-cream-dark">
                 <Image
-                  src="/images/founders.jpg"
-                  alt="A polished Australian opal under direct light"
+                  src="/images/studio/white-opal.jpg"
+                  alt="A polished white Australian opal with green flashes"
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover"

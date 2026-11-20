@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { MarketingShell } from '@/components/marketing'
 import { getPayload } from '@/lib/payload'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { storeLabel } from '../store-query'
@@ -19,7 +20,7 @@ export default async function CollectedPage() {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'products',
-    where: { and: [{ status: { equals: 'published' } }, { stock: { less_than_equal: 0 } }] },
+    where: { and: [LISTED_PRODUCTS, { stock: { less_than_equal: 0 } }] },
     sort: '-updatedAt',
     limit: 48,
     depth: 1,

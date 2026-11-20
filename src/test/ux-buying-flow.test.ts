@@ -55,8 +55,8 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('role="search"')
     expect(source).toContain('type="search"')
     expect(source).toContain('method="get"')
-    expect(source).toContain('<details className="group lg:hidden">')
-    expect(source).toContain('Refine collection')
+    expect(source).toContain('<details className="group flex-1 lg:hidden">')
+    expect(source).toContain('Refine')
     expect(source).toContain('min-h-11')
   })
 
@@ -98,8 +98,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page presents purchase confidence without overtracked labels', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('Tracked shipping, free on orders over $500.')
-    expect(source).toContain('30 days to return unused pieces.')
+    expect(source).toContain('SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD')
+    expect(source).toContain('30-day change-of-mind returns on eligible unused pieces.')
     expect(source).not.toContain('tracking-[0.2em]')
   })
 
@@ -130,8 +130,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('mobile store uses a compact native disclosure before the desktop sidebar', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('<details className="group lg:hidden">')
-    expect(source).toContain('Refine collection')
+    expect(source).toContain('<details className="group flex-1 lg:hidden">')
+    expect(source).toContain('Refine')
     expect(source).toContain('hidden lg:block')
     expect(source).toContain('lg:hidden')
     expect(source).toContain('<FilterChips query={query}')
@@ -140,7 +140,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('mobile filter disclosure and controls provide large targets', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('summary className="flex min-h-12')
+    expect(source).toContain('summary className="flex min-h-11')
     expect(source).toContain('inline-flex min-h-11 items-center')
   })
 
@@ -186,9 +186,9 @@ describe('buying flow UI/UX safeguards', () => {
 
     expect(productHeroSource).toContain('overflow-hidden bg-white')
     expect(productHeroSource).toContain('sizes="(max-width: 1024px) 100vw, 56vw"')
-    expect(productHeroSource).toContain('grid-cols-2 lg:grid-cols-4')
+    expect(productHeroSource).toContain('sm:grid-cols-2 lg:grid-cols-4')
     expect(homeSource).toContain('grid gap-px overflow-hidden')
-    expect(homeSource).toContain('min-h-[32rem]')
+    expect(homeSource).toContain('aspect-[4/3]')
     expect(homeSource).not.toContain('hidden sm:block absolute left-1/4 top-0')
     expect(homeSource).not.toContain('hidden sm:block absolute top-1/2')
     expect(homeSource).not.toContain('hidden sm:block absolute -top-40 -right-40')
@@ -314,8 +314,8 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/components/sections/HomeHero.tsx')
 
     expect(source).toContain("collection: 'products'")
-    expect(source).toContain('Origin disclosed')
-    expect(source).toContain('Authenticity details')
+    expect(source).toContain('Secure checkout by Stripe')
+    expect(source).toContain('Photographed individually, origin disclosed')
     expect(source).not.toContain('scrollY')
     expect(source).not.toContain('blur-3xl')
     expect(source).not.toContain('Quick Stats')
@@ -340,7 +340,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage language avoids leftover template phrases in feature sections', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('Recently added')
+    expect(source).toContain('Featured pieces')
     expect(source).toContain('Begin with the stone, not a template.')
     expect(source).not.toContain('Where dreams become reality.')
     expect(source).not.toContain(

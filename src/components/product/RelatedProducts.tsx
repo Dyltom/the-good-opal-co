@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import { ProductCard } from './ProductCard'
 import type { Where } from 'payload'
 import { getPayload } from '@/lib/payload'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import type { Product } from '@/types/payload-types'
 import { cn } from '@/lib/utils'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -26,7 +27,7 @@ async function findRelatedProducts(product: Product, limit: number): Promise<Pro
           and: [
             scope,
             { id: { not_equals: product.id } },
-            { status: { equals: 'published' } },
+            LISTED_PRODUCTS,
             { stock: { greater_than: 0 } },
           ],
         },

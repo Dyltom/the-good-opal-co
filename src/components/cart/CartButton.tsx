@@ -49,7 +49,7 @@ export function CartButton() {
       <Button
         variant="outline"
         size="sm"
-        className="relative gap-1.5 font-semibold border-opal-electric-accessible text-opal-electric-accessible hover:bg-opal-electric hover:text-white hover:border-opal-electric-accessible transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2"
+        className="relative gap-1.5"
       >
         Cart
         {!isLoading && itemCount > 0 && (

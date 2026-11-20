@@ -1,4 +1,5 @@
 import { getPayload } from '@/lib/payload'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { toCatalogProduct, type CatalogProduct } from '@/lib/catalog'
 import { CONTACT_INFO } from '@/lib/constants/contact'
 import type { DiscoveryArticle, DiscoveryCourse, DiscoveryInput } from '@/lib/discovery'
@@ -7,7 +8,7 @@ export async function getPublishedCatalog(): Promise<CatalogProduct[]> {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'products',
-    where: { status: { equals: 'published' } },
+    where: LISTED_PRODUCTS,
     sort: '-updatedAt',
     limit: 1000,
     depth: 1,

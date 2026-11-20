@@ -5,7 +5,9 @@ import type { FooterProps } from '@/types'
 import { Container } from '@/components/layout'
 import { NewsletterForm } from '@/components/newsletter/NewsletterForm'
 import { CookieSettingsLink } from '@/components/layout/CookieConsent'
-import { SOCIAL_PROFILES } from '@/lib/constants/social'
+import { PUBLIC_CONTACT_EMAIL, SOCIAL_PROFILES } from '@/lib/constants/social'
+import { METHODS_ENABLED_IN_STRIPE } from '@/components/trust'
+import { Lock, Mail } from 'lucide-react'
 
 /**
  * Social Icon Component
@@ -111,7 +113,14 @@ export function Footer({
                     </span>
                   </div>
                 </Link>
-                <p className="mb-8 max-w-md leading-relaxed text-white/60">{description}</p>
+                <p className="mb-6 max-w-md leading-relaxed text-white/60">{description}</p>
+                <a
+                  href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
+                  className="mb-8 inline-flex min-h-11 items-center gap-2.5 rounded text-sm text-white/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal-dark"
+                >
+                  <Mail className="h-4 w-4" aria-hidden="true" />
+                  {PUBLIC_CONTACT_EMAIL}
+                </a>
 
                 {/* Social Links */}
                 {social && social.length > 0 && (
@@ -190,6 +199,23 @@ export function Footer({
                   </li>
                 </ul>
               </div>
+            </div>
+
+            <div className="mb-8 flex flex-col gap-3 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+              <p className="flex items-center gap-2 text-sm text-white/70">
+                <Lock className="h-4 w-4" aria-hidden="true" />
+                Secure checkout by Stripe
+              </p>
+              <ul className="flex flex-wrap gap-2" aria-label="Accepted payment methods">
+                {METHODS_ENABLED_IN_STRIPE.map((method) => (
+                  <li
+                    key={method}
+                    className="rounded border border-white/20 bg-white px-2.5 py-1 font-sans text-[11px] font-semibold leading-none text-charcoal"
+                  >
+                    {method}
+                  </li>
+                ))}
+              </ul>
             </div>
 
             <div className="flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 md:flex-row md:items-center">

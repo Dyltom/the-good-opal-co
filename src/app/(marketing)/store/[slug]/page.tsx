@@ -10,7 +10,7 @@ import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { formatCurrency } from '@/lib/utils'
-import { getFreeShippingProgress } from '@/lib/constants/shipping'
+import { getFreeShippingProgress, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import { PaymentMethods } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
@@ -243,7 +243,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     </div>
                     {stock === 1 ? (
                       <p className="mt-2 font-sans text-sm text-opal-emerald-dark">
-                        One of one. This exact stone is the one you receive.
+                        One available. This exact stone is the one you receive.
                       </p>
                     ) : null}
 
@@ -285,7 +285,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         <span>
                           {productShippingProgress.qualifies
                             ? 'Free tracked shipping.'
-                            : 'Tracked shipping, free on orders over $500.'}{' '}
+                            : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
                           <Link href="/shipping" className="underline underline-offset-4 hover:text-charcoal">
                             Rates
                           </Link>
@@ -294,7 +294,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <li className="flex gap-3">
                         <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
                         <span>
-                          30 days to return unused pieces.{' '}
+                          30-day change-of-mind returns on eligible unused pieces.{' '}
                           <Link href="/returns" className="underline underline-offset-4 hover:text-charcoal">
                             Returns policy
                           </Link>

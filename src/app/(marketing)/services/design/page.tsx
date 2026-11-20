@@ -19,7 +19,6 @@ import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/rin
 import { resolveCanonicalFaceMapping } from '@/lib/custom-builder/canonical-face-mapping'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
-import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   builderCatalogueImageAlt,
   resolveBuilderCatalogueImageUrl,
@@ -267,25 +266,19 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
 
   return (
     <MarketingShell>
-      <header className="border-b border-warm-grey/60 px-5 py-10 sm:px-10 sm:py-14 lg:px-[clamp(3rem,8vw,9rem)] lg:py-16">
+      <header className="border-b border-warm-grey/60 px-5 py-4 sm:px-10 sm:py-6 lg:px-[clamp(3rem,8vw,9rem)]">
         <Link
           href="/services"
           className="inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
         >
           <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Custom jewellery
         </Link>
-        <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_0.72fr] lg:items-end">
-          <div>
-            <Eyebrow>
-              Interactive ring builder
-            </Eyebrow>
-            <h1 className="mt-3 max-w-[12ch] text-balance font-serif text-[clamp(3rem,7vw,6.5rem)] font-medium leading-[0.95]">
-              See the possibilities.
-            </h1>
-          </div>
-          <p className="max-w-xl text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
-            Rotate, zoom, and refine a ring concept around the colour of an Australian opal. Save
-            the combination in your link and bring it into a real design conversation.
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-6">
+          <h1 className="font-serif text-3xl font-medium leading-tight sm:text-4xl">
+            Design your opal ring
+          </h1>
+          <p className="text-sm leading-6 text-charcoal-light sm:text-base">
+            Choose an opal, a setting and a metal, then send us your design for a personal quote.
           </p>
         </div>
       </header>

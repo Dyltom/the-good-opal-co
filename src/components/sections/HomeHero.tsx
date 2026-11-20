@@ -1,8 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, MapPin, RotateCcw, Truck } from 'lucide-react'
+import { ArrowRight, Camera, Lock, RotateCcw, Truck } from 'lucide-react'
 import { getPayload } from '@/lib/payload'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { formatCurrency } from '@/lib/utils'
+import { SHIPPING_CONFIG } from '@/lib/constants/shipping'
 import type { Media } from '@/types/payload-types'
 import { resolveMediaUrl } from '@/lib/media-url'
 
@@ -22,7 +24,7 @@ export async function HomeHero() {
       collection: 'products',
       where: {
         and: [
-          { status: { equals: 'published' } },
+          LISTED_PRODUCTS,
           { stock: { greater_than: 0 } },
           { category: { not_equals: 'raw-opals' } },
         ],
@@ -34,7 +36,7 @@ export async function HomeHero() {
     payload.find({
     collection: 'products',
     where: {
-      and: [{ status: { equals: 'published' } }, { stock: { greater_than: 0 } }],
+      and: [LISTED_PRODUCTS, { stock: { greater_than: 0 } }],
     },
     limit: 12,
     sort: '-updatedAt',
@@ -42,9 +44,7 @@ export async function HomeHero() {
     }),
   ])
 
-  const displayPieces = finishedPieces.filter(
-    (product) => !product.slug.includes('deposit') && product.price >= 100,
-  )
+  const displayPieces = finishedPieces.filter((product) => product.price >= 100)
   const primary = displayPieces[0] ?? finishedPieces[0] ?? products[0]
   const secondary =
     displayPieces[1] ?? finishedPieces.find((product) => product.id !== primary?.id)
@@ -56,10 +56,14 @@ export async function HomeHero() {
   const secondaryImage = secondaryMedia?.url ?? '/images/customs/custom-1.jpg'
 
   const trustItems = [
-    { icon: MapPin, label: 'Origin disclosed' },
-    { icon: BadgeCheck, label: 'Authenticity details' },
-    { icon: Truck, label: 'Tracked delivery' },
-    { icon: RotateCcw, label: 'Returns explained' },
+    { icon: Lock, label: 'Secure checkout by Stripe', detail: 'Card, Apple Pay, Klarna' },
+    {
+      icon: Truck,
+      label: 'Tracked delivery',
+      detail: `Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more`,
+    },
+    { icon: RotateCcw, label: '30-day returns', detail: 'Change of mind, on eligible pieces' },
+    { icon: Camera, label: 'Every stone shown as it is', detail: 'Photographed individually, origin disclosed' },
   ]
 
   return (
@@ -146,17 +150,17 @@ export async function HomeHero() {
       </div>
 
       <div className="border-t border-warm-grey/45 bg-cream">
-        <ul className="mx-auto grid max-w-[96rem] grid-cols-2 lg:grid-cols-4">
+        <ul aria-label="Buying with us" className="mx-auto grid max-w-[96rem] grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {trustItems.map((item) => (
             <li
               key={item.label}
-              className="flex min-h-20 items-center gap-3 border-warm-grey/45 px-5 font-sans text-sm text-charcoal/75 odd:border-r sm:px-8 lg:border-r lg:last:border-r-0"
+              className="flex min-h-20 items-center gap-3 border-b border-warm-grey/45 px-5 py-4 font-sans text-sm sm:px-8 sm:odd:border-r lg:border-b-0 lg:border-r lg:last:border-r-0"
             >
-              <item.icon
-                className="h-5 w-5 shrink-0 text-opal-electric-accessible"
-                aria-hidden="true"
-              />
-              {item.label}
+              <item.icon className="h-5 w-5 shrink-0 text-charcoal/70" aria-hidden="true" />
+              <span>
+                <span className="block font-semibold text-charcoal">{item.label}</span>
+                <span className="block text-charcoal/70">{item.detail}</span>
+              </span>
             </li>
           ))}
         </ul>

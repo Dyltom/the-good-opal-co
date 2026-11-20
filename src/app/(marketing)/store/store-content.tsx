@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, X } from 'lucide-react'
+import { ArrowRight, Search, X } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
 import { cn } from '@/lib/utils'
 import { Eyebrow } from '@/components/ui/eyebrow'
@@ -188,15 +188,15 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
 
   return (
     <>
-      <header className="border-b border-warm-grey/60 bg-cream px-5 py-8 sm:px-8 sm:py-16">
+      <header className="border-b border-warm-grey/60 bg-cream px-5 py-6 sm:px-8 sm:py-16">
         <div className="mx-auto grid max-w-[92rem] gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
-            <Eyebrow className="mb-4">The collection</Eyebrow>
-            <h1 className="max-w-[18ch] font-serif text-[clamp(2.5rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
+            <Eyebrow className="mb-3 sm:mb-4">The collection</Eyebrow>
+            <h1 className="max-w-[18ch] font-serif text-[clamp(2rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
               Find the opal that stays with you.
             </h1>
           </div>
-          <div className="max-w-xl lg:pb-2">
+          <div className="hidden max-w-xl sm:block lg:pb-2">
             <p className="text-charcoal/68 font-sans text-base leading-7 sm:text-lg sm:leading-8">
               One-of-a-kind Australian stones and finished pieces, photographed individually. Use
               the details you know, or browse slowly.
@@ -210,13 +210,13 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
         </div>
       </header>
 
-      <section className="bg-cream-dark px-5 py-8 sm:px-8 sm:py-10" aria-label="Opal collection">
+      <section className="bg-cream-dark px-5 py-5 sm:px-8 sm:py-10" aria-label="Opal collection">
         <div className="mx-auto max-w-[92rem]">
           <form
             action="/store"
             method="get"
             role="search"
-            className="grid gap-3 border-b border-warm-grey/70 pb-6 sm:grid-cols-[1fr_auto]"
+            className="grid grid-cols-[1fr_auto] gap-2 border-b border-warm-grey/70 pb-4 sm:gap-3 sm:pb-6"
           >
             <label className="sr-only" htmlFor="store-search">
               Search the collection
@@ -227,30 +227,46 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
               name="search"
               defaultValue={query.search}
               placeholder="Search by product name or SKU"
-              className="min-h-12 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-base text-charcoal outline-none placeholder:text-charcoal/40 focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
+              className="min-h-12 min-w-0 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-base text-charcoal outline-none placeholder:text-charcoal/40 focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
             />
             <HiddenQueryFields query={query} omit={['search', 'page']} />
             <button
-              className="hover:bg-charcoal/88 min-h-12 rounded-sm bg-charcoal px-7 font-sans text-sm font-semibold text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+              className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-sm bg-charcoal px-3 font-sans text-sm font-semibold text-cream hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 sm:px-7"
               type="submit"
             >
-              Search
+              <Search className="h-5 w-5 sm:hidden" aria-hidden="true" />
+              <span className="sr-only sm:not-sr-only">Search</span>
             </button>
           </form>
 
-          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
-            <aside>
-              <details className="group lg:hidden">
-                <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between border-y border-warm-grey/70 font-sans text-sm font-semibold">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pt-4 sm:gap-8 sm:pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
+            <aside className="relative flex gap-2 lg:block">
+              <details className="group flex-1 lg:hidden">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-sm font-semibold">
                   <span>
-                    Refine collection
-                    {activeFilters > 0 ? <span className="ml-2 text-charcoal/55">({activeFilters} on)</span> : null}
+                    Refine
+                    {activeFilters > 0 ? <span className="ml-1.5 text-charcoal/55">({activeFilters} on)</span> : null}
                   </span>
                   <span aria-hidden="true" className="text-lg group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <FilterChips query={query} facets={facets} className="py-6" />
+                <FilterChips
+                  query={query}
+                  facets={facets}
+                  className="absolute inset-x-0 top-full z-20 mt-2 border border-warm-grey/70 bg-cream p-5 shadow-lg"
+                />
+              </details>
+              <details className="group flex-1 sm:hidden">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-sm font-semibold">
+                  <span className="truncate">Sort: {sortOptions.find(([sort]) => sort === query.sort)?.[1]}</span>
+                  <span aria-hidden="true" className="text-lg group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <div className="absolute inset-x-0 top-full z-20 mt-2 border border-warm-grey/70 bg-cream px-5 py-2 shadow-lg">
+                  <SortLinks query={query} />
+                </div>
               </details>
               <div className="hidden lg:block">
                 <p className="border-b border-warm-grey/70 pb-4 font-serif text-2xl">Refine</p>
@@ -260,13 +276,15 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
 
             <div>
               <h2 className="sr-only">Current collection</h2>
-              <div className="mb-7 flex flex-col gap-4 border-b border-warm-grey/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <div className="mb-4 flex flex-col gap-4 border-b border-warm-grey/70 pb-3 sm:mb-7 sm:flex-row sm:items-end sm:justify-between sm:pb-5">
                 <p className="font-sans text-sm text-charcoal/65" aria-live="polite">
                   {totalDocs === 0
                     ? 'No pieces found'
                     : `Showing ${start}–${end} of ${totalDocs} pieces`}
                 </p>
-                <SortLinks query={query} />
+                <div className="hidden sm:block">
+                  <SortLinks query={query} />
+                </div>
               </div>
 
               {products.length > 0 ? (
@@ -378,8 +396,8 @@ function FilterChips({ query, facets, className }: { query: StoreQuery; facets: 
 
 function SortLinks({ query }: { query: StoreQuery }) {
   return (
-    <nav aria-label="Sort pieces" className="-mx-5 flex items-center gap-x-5 overflow-x-auto px-5 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
-      <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55">Sort</span>
+    <nav aria-label="Sort pieces" className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
+      <span className="hidden font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55 sm:inline">Sort</span>
       {sortOptions.map(([sort, label]) => (
         <Link
           key={sort}
