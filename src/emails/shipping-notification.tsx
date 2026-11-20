@@ -1,4 +1,7 @@
+import { EmailFrame, emailColors, emailText } from './email-frame'
+
 interface ShippingNotificationEmailProps {
+  baseUrl: string
   carrier: string
   customerName: string
   orderNumber: string
@@ -6,112 +9,51 @@ interface ShippingNotificationEmailProps {
   trackingNumber: string
 }
 
+const label = { ...emailText.eyebrow, margin: '0 0 4px' }
+const value = { fontSize: '17px', margin: '0 0 16px' }
+
 export function ShippingNotificationEmail({
+  baseUrl,
   carrier,
   customerName,
   orderNumber,
   supportEmail,
   trackingNumber,
 }: ShippingNotificationEmailProps) {
+  const firstName = customerName.trim().split(/\s+/)[0] || 'there'
+
   return (
-    <html>
-      {/* eslint-disable-next-line @next/next/no-head-element */}
-      <head />
-      <body
-        style={{
-          backgroundColor: '#f5f3ee',
-          color: '#2c2c2c',
-          fontFamily: 'Georgia, serif',
-          margin: 0,
-          padding: '24px 12px',
-        }}
-      >
-        <table
-          width="100%"
-          cellPadding="0"
-          cellSpacing="0"
-          role="presentation"
-          style={{ margin: '0 auto', maxWidth: '600px' }}
-        >
-          <tbody>
-            <tr>
-              <td
-                style={{
-                  backgroundColor: '#171714',
-                  color: '#faf9f6',
-                  padding: '28px 32px',
-                  textAlign: 'center',
-                }}
-              >
-                <h1 style={{ fontSize: '28px', fontWeight: 500, margin: 0 }}>
-                  Your opal is on its way
-                </h1>
-                <p style={{ color: '#d9d9d4', margin: '8px 0 0' }}>The Good Opal Co</p>
-              </td>
-            </tr>
-            <tr>
-              <td style={{ backgroundColor: '#faf9f6', padding: '34px 32px' }}>
-                <p style={{ fontSize: '17px', lineHeight: 1.6, margin: '0 0 18px' }}>
-                  Hi {customerName}, your order has been dispatched.
-                </p>
-                <table
-                  width="100%"
-                  cellPadding="0"
-                  cellSpacing="0"
-                  role="presentation"
-                  style={{ backgroundColor: '#f0ede6', borderRadius: '8px', margin: '20px 0' }}
-                >
-                  <tbody>
-                    <tr>
-                      <td style={{ padding: '20px 22px' }}>
-                        <p style={{ color: '#6b6966', fontSize: '13px', margin: '0 0 4px' }}>
-                          Order
-                        </p>
-                        <p style={{ fontSize: '17px', margin: '0 0 16px' }}>{orderNumber}</p>
-                        <p style={{ color: '#6b6966', fontSize: '13px', margin: '0 0 4px' }}>
-                          Carrier
-                        </p>
-                        <p style={{ fontSize: '17px', margin: '0 0 16px' }}>{carrier}</p>
-                        <p style={{ color: '#6b6966', fontSize: '13px', margin: '0 0 4px' }}>
-                          Tracking number
-                        </p>
-                        <p
-                          style={{
-                            fontFamily: 'Arial, sans-serif',
-                            fontSize: '17px',
-                            margin: 0,
-                            overflowWrap: 'anywhere',
-                          }}
-                        >
-                          {trackingNumber}
-                        </p>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <p style={{ color: '#6b6966', fontSize: '14px', lineHeight: 1.6, margin: 0 }}>
-                  Use the tracking number on the carrier&apos;s website. Tracking can take several
-                  hours to update after dispatch.
-                </p>
-                <p
-                  style={{
-                    color: '#6b6966',
-                    fontSize: '14px',
-                    lineHeight: 1.6,
-                    margin: '22px 0 0',
-                  }}
-                >
-                  Need help? Email{' '}
-                  <a href={`mailto:${supportEmail}`} style={{ color: '#005a87' }}>
-                    {supportEmail}
-                  </a>
-                  .
-                </p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </body>
-    </html>
+    <EmailFrame preview={`Order ${orderNumber} is on its way with ${carrier}.`} baseUrl={baseUrl} supportEmail={supportEmail}>
+      <p style={emailText.eyebrow}>Dispatched</p>
+      <h1 style={emailText.heading}>Your opal is on its way, {firstName}.</h1>
+      <p style={emailText.body}>Your order has left us. Here are the details to follow it.</p>
+
+      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ backgroundColor: emailColors.well, margin: '24px 0' }}>
+        <tbody>
+          <tr>
+            <td style={{ padding: '20px 22px 4px' }}>
+              <p style={label}>Order number</p>
+              <p style={{ ...value, fontFamily: 'Arial, sans-serif', overflowWrap: 'anywhere' }}>{orderNumber}</p>
+              <p style={label}>Carrier</p>
+              <p style={value}>{carrier}</p>
+              <p style={label}>Tracking number</p>
+              <p style={{ ...value, fontFamily: 'Arial, sans-serif', fontWeight: 700, overflowWrap: 'anywhere' }}>{trackingNumber}</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style={emailText.body}>
+        Enter the tracking number on the {carrier} website. Tracking can take a few hours to show
+        the first scan after dispatch.
+      </p>
+      {baseUrl ? (
+        <p style={{ ...emailText.body, margin: 0 }}>
+          You can also see your order status on our{' '}
+          <a href={`${baseUrl}/order-tracking`} style={{ color: emailColors.link }}>order tracking page</a>{' '}
+          with your order number and this email address.
+        </p>
+      ) : null}
+    </EmailFrame>
   )
 }

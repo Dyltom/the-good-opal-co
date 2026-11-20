@@ -25,7 +25,6 @@ export function CustomQuoteEmail({
 
   return (
     <html lang="en">
-      {/* eslint-disable-next-line @next/next/no-head-element */}
       <head>
         <title>Your custom jewellery quote is ready</title>
       </head>

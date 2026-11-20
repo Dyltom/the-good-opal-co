@@ -49,6 +49,7 @@ export async function sendShipmentNotification(
       to: order.customer.email,
       subject: `Your order ${order.orderNumber} has shipped`,
       react: ShippingNotificationEmail({
+        baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
         carrier,
         customerName: order.customer.name,
         orderNumber: order.orderNumber,
