@@ -6,7 +6,7 @@ import { MarketingShell, PageHeader } from '@/components/marketing'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Order Tracking | The Good Opal Co',
+  title: 'Track your order | The Good Opal Co',
   description: 'Track your order status with your order number and email',
   robots: { index: false, follow: false },
 }
@@ -16,14 +16,11 @@ export default function OrderTrackingPage() {
     <MarketingShell>
       <Container className="py-12 sm:py-16">
         <Breadcrumb
-          items={[
-            { label: 'Home', href: '/' },
-            { label: 'Order Tracking' },
-          ]}
+          items={[{ label: 'Home', href: '/' }, { label: 'Track your order' }]}
           className="mb-8"
         />
 
-        <div className="max-w-lg mx-auto">
+        <div className="mx-auto max-w-lg">
           <PageHeader
             title="Track your order"
             description="Enter the order number and email from your confirmation message."
@@ -34,13 +31,9 @@ export default function OrderTrackingPage() {
           />
 
           <OrderTrackingForm />
-
-          {/* Help Section */}
           <div className="mt-12 text-center">
-            <p className="text-sm text-gray-600 mb-2">
-              Can&apos;t find your order?
-            </p>
-            <p className="text-sm text-gray-600">
+            <p className="mb-2 text-sm text-charcoal-light">Can&apos;t find your order?</p>
+            <p className="text-sm text-charcoal-light">
               Send the details through our{' '}
               <Link
                 href="/contact?subject=order"
