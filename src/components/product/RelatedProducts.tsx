@@ -21,7 +21,7 @@ interface RelatedProductsProps {
 export async function RelatedProducts({
   product,
   className,
-  title = 'You May Also Like',
+  title = 'You may also like',
   limit = 4
 }: RelatedProductsProps) {
   const service = getRelatedProductService()
@@ -41,12 +41,12 @@ export async function RelatedProducts({
           href="/store"
           className="text-sm text-opal-electric-accessible hover:underline inline-flex items-center gap-1"
         >
-          View All Products
+          View all pieces
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {relatedProducts.map((relatedProduct, index) => {
           const firstImage = relatedProduct.images?.[0]?.image
           const imageUrl =
@@ -70,7 +70,6 @@ export async function RelatedProducts({
                 category: relatedProduct.category,
                 stoneOrigin: relatedProduct.stoneOrigin ?? undefined,
                 stoneType: relatedProduct.stoneType ?? undefined,
-                createdAt: relatedProduct.createdAt,
               }}
               index={index}
               variant="default"
@@ -94,7 +93,7 @@ export function RelatedProductsSkeleton() {
         <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <div
             key={i}

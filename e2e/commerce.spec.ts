@@ -38,7 +38,7 @@ test('available product can be added, changed, and removed from cookie cart', as
   await expect(page.getByText(/added to (your )?cart/i).first()).toBeVisible()
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Shopping cart' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Continue to checkout', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Checkout', exact: true }).first()).toBeVisible()
 
   const remove = page.getByRole('button', { name: /remove/i }).first()
   await remove.click()
@@ -46,7 +46,7 @@ test('available product can be added, changed, and removed from cookie cart', as
   assertNoErrors()
 })
 
-test('checkout collects destination and blocks invalid contact data before Stripe', async ({ page }) => {
+test('cart sends buyers straight to secure payment with a shipping region', async ({ page }) => {
   const assertNoErrors = failOnRuntimeErrors(page)
   const productUrl = await firstAvailableProduct(page)
   test.skip(!productUrl, 'Catalog is empty; seed/publish products before checkout acceptance testing')
@@ -57,9 +57,8 @@ test('checkout collects destination and blocks invalid contact data before Strip
   await expect(page.getByText(/added to (your )?cart/i).first()).toBeVisible()
   await page.goto('/checkout')
 
-  await expect(page.getByLabel('Delivery country or region')).toBeVisible()
-  await page.getByRole('button', { name: /Continue to secure payment/i }).click()
-  await expect(page.getByText('Enter the name for this order')).toBeVisible()
-  await expect(page.getByText('Enter your email address')).toBeVisible()
+  await expect(page).toHaveURL(/\/cart$/)
+  await expect(page.getByRole('radio', { name: 'Overseas' }).first()).toBeAttached()
+  await expect(page.getByRole('button', { name: 'Checkout', exact: true }).first()).toBeVisible()
   assertNoErrors()
 })

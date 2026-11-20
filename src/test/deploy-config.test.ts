@@ -43,11 +43,9 @@ describe('deployment config', () => {
 
   test('demo discounts are not connected to checkout', () => {
     const action = read('src/app/(marketing)/checkout/actions.ts')
-    const form = read('src/app/(marketing)/checkout/checkout-form.tsx')
 
     expect(action).not.toContain('getDiscountManager')
     expect(action).not.toContain('discountCode')
-    expect(form).not.toContain('DiscountCodeInput')
   })
 
   test('marketing layout defines metadataBase for social image URLs', () => {
@@ -74,7 +72,6 @@ describe('deployment config', () => {
 
     for (const file of [
       'src/app/(marketing)/cart/page.tsx',
-      'src/app/(marketing)/checkout/page.tsx',
       'src/app/(marketing)/checkout/success/page.tsx',
       'src/app/(marketing)/order-tracking/page.tsx',
       'src/app/(marketing)/newsletter/confirm/page.tsx',
@@ -162,14 +159,14 @@ describe('deployment config', () => {
 
   test('commerce conversion analytics run in the browser', () => {
     const checkoutAction = read('src/app/(marketing)/checkout/actions.ts')
-    const checkoutForm = read('src/app/(marketing)/checkout/checkout-form.tsx')
+    const checkoutButton = read('src/components/cart/CheckoutButton.tsx')
     const newsletterAction = read('src/app/(marketing)/newsletter/actions.ts')
     const newsletterConversion = read('src/components/newsletter/NewsletterConversion.tsx')
     const checkoutSuccess = read('src/app/(marketing)/checkout/success/page.tsx')
     const purchaseConversion = read('src/app/(marketing)/checkout/success/clear-cart.tsx')
 
     expect(checkoutAction).not.toContain('trackBeginCheckout')
-    expect(checkoutForm).toContain('trackBeginCheckout(cart.items, pricing.total)')
+    expect(checkoutButton).toContain('trackBeginCheckout(cart.items, cart.total)')
     expect(newsletterAction).not.toContain('trackNewsletterSignup')
     expect(newsletterConversion).toContain("'use client'")
     expect(newsletterConversion).toContain("trackNewsletterSignup('email-confirmation')")

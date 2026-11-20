@@ -14,6 +14,11 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
+import {
+  CheckoutButton,
+  ShippingRegionToggle,
+  type ShippingRegion,
+} from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { formatCurrency } from '@/lib/utils'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
@@ -29,6 +34,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
   const [cart, setCart] = useState<Cart | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
+  const [region, setRegion] = useState<ShippingRegion>('AU')
   const [isPending, startTransition] = useTransition()
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
 
@@ -182,20 +188,12 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
 
               {/* Actions with hover effects */}
               <div className="space-y-2 relative z-10">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    className="w-full h-12 text-base font-semibold bg-black hover:bg-gray-800"
-                    size="lg"
-                    asChild
-                    onClick={() => {
-                      setIsOpen(false)
-                    }}
-                  >
-                    <Link href="/checkout">
-                      Checkout securely
-                    </Link>
-                  </Button>
-                </motion.div>
+                {cart ? (
+                  <>
+                    <ShippingRegionToggle value={region} onChange={setRegion} />
+                    <CheckoutButton cart={cart} region={region} className="h-12 text-base" />
+                  </>
+                ) : null}
 
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                   <Button

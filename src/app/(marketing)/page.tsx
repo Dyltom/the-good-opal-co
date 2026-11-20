@@ -78,7 +78,6 @@ async function LatestPieces() {
               image: image && typeof image === 'object' ? resolveMediaUrl(image.url) : undefined,
               stoneType: product.stoneType ?? undefined,
               stoneOrigin: product.stoneOrigin ?? undefined,
-              createdAt: product.createdAt,
             }}
           />
         )

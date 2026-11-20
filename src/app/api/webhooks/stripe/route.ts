@@ -668,7 +668,9 @@ export async function POST(request: NextRequest) {
       // Stripe line items are the paid, server-authored source of truth.
       // Avoids metadata size limits and never trusts browser cart values.
       const items = await getCheckoutItems(session.id)
-      const customerName = session.metadata?.customerName ?? ''
+      const customerName =
+        session.metadata?.customerName || session.customer_details?.name || ''
+      const sessionEmail = session.customer_details?.email ?? session.customer_email ?? ''
 
       const shippingDetails = getRequiredCheckoutShippingDetails(session)
 
@@ -746,7 +748,7 @@ export async function POST(request: NextRequest) {
             paidAt,
             status: inventoryAvailable ? 'processing' : 'pending',
             customer: {
-              email: session.customer_email ?? '',
+              email: sessionEmail,
               name: customerName || shippingDetails.name,
               phone: session.customer_details?.phone ?? undefined,
             },
@@ -791,7 +793,7 @@ export async function POST(request: NextRequest) {
         console.log(`Order created: ${order.orderNumber}`)
 
         // Update or create customer record for CRM
-        const customerEmail = session.customer_email?.toLowerCase()
+        const customerEmail = sessionEmail.toLowerCase()
         if (customerEmail) {
           const orderTotal = session.amount_total ? session.amount_total / 100 : subtotal
 

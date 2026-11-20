@@ -6,6 +6,11 @@ import Link from 'next/link'
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Container } from '@/components/layout'
+import {
+  CheckoutButton,
+  ShippingRegionToggle,
+  type ShippingRegion,
+} from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
@@ -25,7 +30,11 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
   const [showClearDialog, setShowClearDialog] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
-  const pricing = calculateCheckoutPricing(cart.total)
+  const [region, setRegion] = useState<ShippingRegion>('AU')
+  const pricing = calculateCheckoutPricing(
+    cart.total,
+    region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
+  )
 
   const showMutationError = (description?: string) => {
     toast({
@@ -131,6 +140,8 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
                 Order summary
               </h2>
 
+              <ShippingRegionToggle value={region} onChange={setRegion} className="mt-5" />
+
               <dl className="mt-5 space-y-3 text-sm text-charcoal">
                 <div className="flex justify-between gap-4">
                   <dt>Subtotal</dt>
@@ -149,18 +160,12 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               </dl>
 
               <p className="mt-3 text-xs leading-5 text-charcoal/60">
-                Delivery address and payment details are entered securely at checkout.
+                Pay with card, Apple Pay, Google Pay, Afterpay or Zip on Stripe&apos;s secure checkout.
               </p>
 
               <FreeShippingProgress total={cart.total} className="mt-5 rounded-none bg-white" />
 
-              <Button
-                asChild
-                size="lg"
-                className="mt-6 w-full bg-opal-electric-accessible bg-none hover:bg-opal-deep"
-              >
-                <Link href="/checkout">Continue to checkout</Link>
-              </Button>
+              <CheckoutButton cart={cart} region={region} className="mt-6" />
               <Button asChild variant="link" className="mt-2 w-full">
                 <Link href="/store">Continue shopping</Link>
               </Button>
@@ -186,13 +191,9 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               {formatCurrency(pricing.total, 'AUD')}
             </p>
           </div>
-          <Button
-            asChild
-            size="lg"
-            className="h-12 flex-1 bg-opal-electric-accessible bg-none hover:bg-opal-deep"
-          >
-            <Link href="/checkout">Checkout</Link>
-          </Button>
+          <div className="flex-1">
+            <CheckoutButton cart={cart} region={region} className="h-12" />
+          </div>
         </div>
       </div>
 

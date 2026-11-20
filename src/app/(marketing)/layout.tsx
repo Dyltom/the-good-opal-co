@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
+import { OpalLight } from '@/components/brand/OpalLight'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
 import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE } from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
@@ -115,6 +116,7 @@ export default function MarketingLayout({
         <Toaster />
         <AnalyticsConsentGate />
         <CookieConsent />
+        <OpalLight />
       </body>
     </html>
   )

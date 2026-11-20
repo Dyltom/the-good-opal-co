@@ -429,3 +429,61 @@
                 var(--gradient-prismatic) border-box;
   }
 }
+
+@property --opal-angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 210deg;
+}
+
+@layer utilities {
+  .opal-light {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .opal-light::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--opal-angle) at 50% 55%,
+      #48d1cc,
+      #2ecc71,
+      #f4d35e,
+      #ff6fae,
+      #9b7bff,
+      #00b4d8,
+      #48d1cc
+    );
+    mix-blend-mode: soft-light;
+    opacity: 0.75;
+    transition: --opal-angle 600ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .opal-fire-line {
+    background: linear-gradient(
+      90deg,
+      #48d1cc,
+      #2ecc71,
+      #f4d35e,
+      #ff6fae,
+      #9b7bff,
+      #00b4d8,
+      #48d1cc
+    );
+    background-size: 300% 100%;
+    background-position: calc((var(--opal-angle) - 150deg) / 200deg * 100%) 50%;
+    transition: --opal-angle 600ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .opal-light::after,
+    .opal-fire-line {
+      transition: none;
+    }
+  }
+}

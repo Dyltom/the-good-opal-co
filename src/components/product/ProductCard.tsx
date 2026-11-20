@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, ViewTransition } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { formatCurrency, cn } from '@/lib/utils'
+import { productImageTransitionName } from '@/lib/view-transitions'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { Heart, Eye } from 'lucide-react'
 
@@ -32,7 +33,6 @@ interface ProductCardProduct {
   // Optional metadata for museum variant
   stoneOrigin?: string
   stoneType?: string
-  createdAt?: string
 }
 
 interface ProductCardProps {
@@ -78,10 +78,6 @@ export function ProductCard({
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : 0
 
-  // Check if product is new (created in last 7 days)
-  const isNew = product.createdAt &&
-    new Date(product.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
-
   const productHref = `/store/${product.slug}`
 
   return (
@@ -98,21 +94,12 @@ export function ProductCard({
           variant === 'default' && darkBackground && "overflow-hidden rounded-lg border border-white/10 bg-charcoal-dark transition-colors duration-300 hover:border-white/25",
           variant === 'museum' && "overflow-hidden rounded-lg border border-warm-grey/30 bg-white shadow-sm transition-colors duration-300 hover:border-opal-electric-accessible/25"
         )}>
-          {/* Badges */}
-          {isAvailable && isNew && (
-            <div className="pointer-events-none absolute top-3 left-3 z-10">
-              <span className="px-3 py-1 bg-charcoal text-white text-xs font-medium rounded-full">
-                New
-              </span>
-            </div>
-          )}
-
           <div className="relative">
             <Link
               href={productHref}
               className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 rounded-lg"
             >
-              {/* Image Container */}
+              <ViewTransition name={productImageTransitionName(product.slug)}>
               <div className={cn(
                 "relative aspect-[3/4] overflow-hidden transition-all duration-500",
                 variant === 'default' && !darkBackground && "bg-cream",
@@ -162,6 +149,7 @@ export function ProductCard({
                   </div>
                 )}
               </div>
+              </ViewTransition>
             </Link>
 
             {/* Quick Actions */}

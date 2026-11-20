@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -266,9 +267,9 @@ export function ContactForm({
 
       <p className="text-center text-xs text-charcoal/65">
         By submitting this form, you agree to our{' '}
-        <a href="/legal/privacy" className="underline hover:text-charcoal">
+        <Link href="/legal/privacy" className="underline hover:text-charcoal">
           Privacy Policy
-        </a>
+        </Link>
         .
       </p>
     </form>

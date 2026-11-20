@@ -1,13 +1,5 @@
 'use server'
 
-/**
- * Checkout Server Actions
- *
- * Handles Stripe checkout session creation.
- * Uses Server Actions instead of API routes for cleaner architecture.
- */
-
-import { redirect } from 'next/navigation'
 import Stripe from 'stripe'
 import { z } from 'zod'
 import { getCart } from '@/lib/cart'
@@ -18,7 +10,6 @@ import {
 } from '@/lib/checkout-pricing'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
-import { CHECKOUT_COUNTRIES } from './validation'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
   checkoutReservationExpiresAt,
@@ -28,41 +19,26 @@ import {
   reserveCheckoutInventory,
 } from '@/lib/inventory-reservations'
 
-// Validation schema for checkout form
+const INTERNATIONAL_COUNTRIES = ['NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'] as const
+
 const checkoutSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  name: z
-    .string()
-    .trim()
-    .min(1, 'Please enter the name for this order')
-    .max(100, 'Name must be 100 characters or fewer'),
-  country: z.enum(CHECKOUT_COUNTRIES),
+  region: z.enum(['AU', 'INTL']),
   checkoutAttemptId: z.string().uuid('Invalid checkout attempt'),
 })
 
-/**
- * Result type for checkout action
- */
+export type ShippingRegion = z.infer<typeof checkoutSchema>['region']
+
 interface CheckoutResult {
   success: boolean
   error?: string
   url?: string
 }
 
-/**
- * Create a Stripe Checkout Session
- *
- * @param formData - Form data containing customer email and name
- * @returns Result with checkout URL or error
- */
-export async function createCheckoutSession(formData: FormData): Promise<CheckoutResult> {
-  // Validate form data
-  const validationResult = checkoutSchema.safeParse({
-    email: formData.get('email'),
-    name: formData.get('name'),
-    country: formData.get('country'),
-    checkoutAttemptId: formData.get('checkoutAttemptId'),
-  })
+export async function createCheckoutSession(input: {
+  region: ShippingRegion
+  checkoutAttemptId: string
+}): Promise<CheckoutResult> {
+  const validationResult = checkoutSchema.safeParse(input)
 
   if (!validationResult.success) {
     return {
@@ -80,8 +56,8 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
   }
 
   try {
-    const { email, name, country, checkoutAttemptId } = validationResult.data
-    const identifier = await getRequestIdentifier(email)
+    const { region, checkoutAttemptId } = validationResult.data
+    const identifier = await getRequestIdentifier()
     const allowed = await checkRateLimit({
       scope: 'checkout',
       identifier,
@@ -120,7 +96,7 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
     }
 
     const subtotal = calculateCheckoutSubtotal(cart.items)
-    const destination = country === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
+    const destination = region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
     const pricing = calculateCheckoutPricing(subtotal, destination)
     const expiresAt = checkoutReservationExpiresAt()
 
@@ -130,7 +106,7 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
         mode: 'payment',
         client_reference_id: checkoutAttemptId,
         expires_at: Math.floor(expiresAt.getTime() / 1000),
-        customer_email: email,
+        phone_number_collection: { enabled: true },
         line_items: cart.items.map((item) => ({
           price_data: {
             currency: 'aud',
@@ -147,7 +123,7 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
           quantity: item.quantity,
         })),
         shipping_address_collection: {
-          allowed_countries: [country],
+          allowed_countries: region === 'AU' ? ['AU'] : [...INTERNATIONAL_COUNTRIES],
         },
         shipping_options: [
           {
@@ -167,8 +143,6 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
           },
         ],
         metadata: {
-          customerName: name,
-          shippingCountry: country,
           [INVENTORY_RESERVATION_METADATA_KEY]: checkoutAttemptId,
         },
         success_url: `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -203,7 +177,6 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
       throw error
     }
 
-    // Return the URL for client-side redirect
     return {
       success: true,
       url: session.url,
@@ -226,19 +199,3 @@ export async function createCheckoutSession(formData: FormData): Promise<Checkou
   }
 }
 
-/**
- * Create checkout and redirect
- *
- * Alternative action that redirects directly instead of returning URL
- */
-export async function createCheckoutAndRedirect(formData: FormData): Promise<void> {
-  const result = await createCheckoutSession(formData)
-
-  if (result.success && result.url) {
-    redirect(result.url)
-  }
-
-  // If there's an error, we can't redirect, so throw an error
-  // The form should handle this with useActionState
-  throw new Error(result.error ?? 'Failed to create checkout session')
-}
