@@ -47,9 +47,9 @@ const defaultLinks = [
     title: 'Shop',
     links: [
       { href: '/store', label: 'All products' },
-      { href: '/store?category=raw-opals', label: 'Raw opals' },
+      { href: '/store?category=raw-opals', label: 'Loose opals' },
       { href: '/store?category=opal-rings', label: 'Rings' },
-      { href: '/store?category=opal-necklaces', label: 'Necklaces' },
+      { href: '/store?category=opal-earrings', label: 'Earrings' },
     ],
   },
   {
