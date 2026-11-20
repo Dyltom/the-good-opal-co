@@ -29,7 +29,7 @@ describe('structured data', () => {
       '@type': 'Organization',
       name: 'The Good Opal Co',
       founder: { '@type': 'Person', name: 'Stephanie Caruana' },
-      address: { addressLocality: 'Sydney', addressRegion: 'NSW', addressCountry: 'AU' },
+      address: { addressCountry: 'AU' },
       hasMerchantReturnPolicy: {
         '@type': 'MerchantReturnPolicy',
         merchantReturnDays: 30,

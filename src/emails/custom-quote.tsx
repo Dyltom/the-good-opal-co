@@ -241,7 +241,7 @@ export function CustomQuoteEmail({
                   {supportEmail}
                 </a>
                 .<br />
-                The Good Opal Co · Sydney, NSW, Australia
+                The Good Opal Co · Australia
               </td>
             </tr>
           </tbody>

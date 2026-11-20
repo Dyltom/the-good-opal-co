@@ -83,7 +83,7 @@ export const NewsletterConfirmationEmail: React.FC<NewsletterConfirmationEmailPr
                       © {new Date().getFullYear()} The Good Opal Co. All rights reserved.
                     </p>
                     <p style={{ margin: 0, fontSize: '12px', color: '#999999' }}>
-                      Sydney, NSW, Australia
+                      Australia
                     </p>
                   </td>
                 </tr>

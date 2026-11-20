@@ -55,7 +55,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
                 ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
                 : isCourseIntent
                   ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
-                  : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
+                  : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest topic and share what matters.'}
             </p>
           </div>
         </Container>
@@ -119,8 +119,8 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
                 Send an enquiry
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-charcoal-light">
-                Fields marked with an asterisk are required. Your selected inquiry and product are
-                already carried through from the previous page.
+                Fields marked with an asterisk are required.
+                {initialProduct ? ` We have added ${initialProduct} for you.` : ''}
               </p>
             </div>
             <ContactForm
