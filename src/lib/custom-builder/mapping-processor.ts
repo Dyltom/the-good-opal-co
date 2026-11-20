@@ -15,8 +15,11 @@ import {
 } from './mapping-lifecycle'
 import {
   classifyOpalListing,
+  createOpalVisualProfile,
+  inferBuilderStoneType,
   isAvailableOpalListing,
-  reviewedOpalVisualCalibration,
+  reviewedOpalDimensionsMm,
+  type BuilderVisualFields,
 } from './opal-visual'
 import { analyzeOpalRaster, type OpalPhotoAnalysis, type OpalShapeHint } from './photo-analysis'
 import { parseBuilderStoneContour } from './stone-contour'
@@ -133,7 +136,7 @@ function mappedImageIndex(product: ProductRecord): number {
     : 0
 }
 
-function stoneAspect(product: ProductRecord): number | undefined {
+function measuredStoneAspect(product: ProductRecord): number | undefined {
   const dimensions = isRecord(product.dimensions) ? product.dimensions : undefined
   const length = dimensions?.length
   const width = dimensions?.width
@@ -148,11 +151,21 @@ function stoneAspect(product: ProductRecord): number | undefined {
       : undefined
   if (measured) return measured
 
-  const slug = typeof product.slug === 'string' ? product.slug : ''
-  const calibration = reviewedOpalVisualCalibration(slug)
-  return calibration && Number.isFinite(calibration.aspectRatio) && calibration.aspectRatio > 0
-    ? 1 / calibration.aspectRatio
-    : undefined
+  const makerMeasured = reviewedOpalDimensionsMm(
+    typeof product.slug === 'string' ? product.slug : ''
+  )
+  return makerMeasured ? makerMeasured.width / makerMeasured.length : undefined
+}
+
+function renderedStoneAspect(product: ProductRecord): number {
+  const name = typeof product.name === 'string' ? product.name : ''
+  const { visual } = createOpalVisualProfile(
+    typeof product.slug === 'string' ? product.slug : '',
+    name,
+    inferBuilderStoneType(typeof product.stoneType === 'string' ? product.stoneType : null, name),
+    product as BuilderVisualFields
+  )
+  return 1 / visual.aspectRatio
 }
 
 function reviewedAnalysisHints(product: ProductRecord):
@@ -233,8 +246,7 @@ function approvedBootstrapAnalysis(
     product.builderPhotoZoom,
     product.builderPhotoRotation
   )
-  const aspect = stoneAspect(product)
-  if (!crop || aspect === undefined) return undefined
+  if (!crop) return undefined
 
   return {
     confidence: selected.confidence,
@@ -243,7 +255,12 @@ function approvedBootstrapAnalysis(
     focalY: crop.focalY,
     rotation: crop.rotation ?? 0,
     source: 'image',
-    stoneAspect: aspect,
+    stoneAspect: renderedStoneAspect({
+      ...product,
+      builderContour: selected.contour,
+      builderContourSourceImageHash: selected.imageHash,
+      builderMappingAnalyzedImageHash: selected.imageHash,
+    }),
     zoom: crop.zoom,
   }
 }
@@ -271,8 +288,7 @@ function approvedCanonicalAnalysis(
     product.builderPhotoZoom,
     product.builderPhotoRotation
   )
-  const aspect = stoneAspect(product)
-  if (!contour || !crop || aspect === undefined) return undefined
+  if (!contour || !crop) return undefined
 
   return {
     confidence: selected.confidence,
@@ -281,7 +297,10 @@ function approvedCanonicalAnalysis(
     focalY: crop.focalY,
     rotation: crop.rotation ?? 0,
     source: 'image',
-    stoneAspect: aspect,
+    stoneAspect: renderedStoneAspect({
+      ...product,
+      builderMappingAnalyzedImageHash: selected.imageHash,
+    }),
     zoom: crop.zoom,
   }
 }
@@ -406,7 +425,6 @@ function applicationOrigin(): string | undefined {
   }
 }
 
-
 function isOwnedMediaSource(url: string): boolean {
   try {
     const parsed = new URL(url)
@@ -510,7 +528,7 @@ async function analyzeSourceRaster(
       ? { shapeHint: product.builderSilhouette as OpalShapeHint }
       : {}),
     ...reviewedHints,
-    stoneAspect: stoneAspect(product),
+    stoneAspect: measuredStoneAspect(product),
     width: raster.info.width,
   })
   if (!analysis) throw new Error('Opal face could not be isolated from the source image')

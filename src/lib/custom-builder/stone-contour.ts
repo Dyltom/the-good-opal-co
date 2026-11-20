@@ -7,8 +7,11 @@ const maximumAdjacentDelta = 0.22
 const maximumSecondDifference = 0.18
 const minimumDirectionalExtent = 0.65
 const maximumDirectionalExtent = 1.08
+const minimumAspect = 0.2
+const maximumAspect = 5
 
 export interface BuilderStoneContourV1 {
+  aspect?: number
   radii: number[]
   version: typeof BUILDER_STONE_CONTOUR_VERSION
 }
@@ -96,8 +99,17 @@ export function parseBuilderStoneContour(value: unknown): BuilderStoneContourV1 
   if (circularAdjacentDelta(radii) > maximumAdjacentDelta) return undefined
   if (!hasBoundedCurvature(radii)) return undefined
   if (!hasNormalizedDirectionalExtents(radii)) return undefined
+  if (value.aspect === undefined) return { version: BUILDER_STONE_CONTOUR_VERSION, radii }
+  if (
+    typeof value.aspect !== 'number' ||
+    !Number.isFinite(value.aspect) ||
+    value.aspect < minimumAspect ||
+    value.aspect > maximumAspect
+  ) {
+    return undefined
+  }
 
-  return { version: BUILDER_STONE_CONTOUR_VERSION, radii }
+  return { aspect: value.aspect, version: BUILDER_STONE_CONTOUR_VERSION, radii }
 }
 
 export function validateBuilderStoneContour(value: unknown): true | string {

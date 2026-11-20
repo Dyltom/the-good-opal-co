@@ -781,6 +781,35 @@ describe('custom builder opal visual profiles', () => {
     ).toBeUndefined()
   })
 
+  test('renders an unmeasured adopted stone at the aspect its photo contour traced', () => {
+    const fields = {
+      builderMappingStatus: 'reviewed',
+      builderSilhouette: 'elongated',
+      builderRecommendedStyle: 'gemini',
+      builderBodyColour: '#dce6df',
+      builderFlashColourPrimary: '#55cfff',
+      builderFlashColourSecondary: '#5bea9a',
+      builderFlashColourAccent: '#ffd34e',
+      builderTransmission: 0.16,
+      builderPhotoFocalX: 0.48,
+      builderPhotoFocalY: 0.52,
+      builderPhotoZoom: 4.4,
+      builderContour: { aspect: 0.35, version: 1, radii: Array.from({ length: 96 }, () => 1) },
+      builderContourSourceImageHash: 'current-image',
+      builderMappingAnalyzedImageHash: 'current-image',
+    }
+
+    expect(
+      createOpalVisualProfile('narrow-opal', 'Narrow opal', 'white-opal', fields).visual.aspectRatio
+    ).toBeCloseTo(1 / 0.35, 6)
+    expect(
+      createOpalVisualProfile('narrow-opal', 'Narrow opal', 'white-opal', {
+        ...fields,
+        dimensions: { width: 6, length: 8, depth: 2 },
+      }).visual.aspectRatio
+    ).toBeCloseTo(8 / 6, 6)
+  })
+
   test('keeps high-confidence analyzer candidates out of the customer preview until adoption', () => {
     const contour = {
       version: 1,

@@ -324,11 +324,8 @@ function reviewedProfileFor(slug: string): (typeof reviewedProfiles)[string] | u
   return reviewedProfiles[reviewedSlugAliases[slug] ?? slug]
 }
 
-export function reviewedOpalVisualCalibration(
-  slug: string
-): (typeof reviewedProfiles)[string] | (typeof cataloguePhotoProfiles)[string] | undefined {
-  const reviewedSlug = reviewedSlugAliases[slug] ?? slug
-  return reviewedProfiles[reviewedSlug] ?? cataloguePhotoProfiles[reviewedSlug]
+export function reviewedOpalDimensionsMm(slug: string): VisualProfile['dimensionsMm'] {
+  return reviewedProfileFor(slug)?.dimensionsMm
 }
 
 const validSilhouettes = new Set<RingConfig['shape']>([
@@ -343,8 +340,9 @@ const validStyles = new Set<RingConfig['style']>(['gemini', 'coral', 'sun-moon',
 const hexColourPattern = /^#[0-9a-f]{6}$/i
 
 function cmsReviewedProfile(
-  fields?: BuilderVisualFields,
-  fallbackAspectRatio?: number
+  fields: BuilderVisualFields | undefined,
+  measuredAspectRatio: number | undefined,
+  estimatedAspectRatio: number
 ): VisualProfile | undefined {
   const mappingApproved =
     fields?.builderMappingStatus === 'reviewed' || fields?.builderMappingStatus === 'manual'
@@ -366,6 +364,9 @@ function cmsReviewedProfile(
     fields.builderContourSourceImageHash === fields.builderMappingAnalyzedImageHash
       ? parseBuilderStoneContour(fields.builderContour)
       : undefined
+  const aspectRatio = dimensionsMm
+    ? dimensionsMm.length / dimensionsMm.width
+    : (measuredAspectRatio ?? (contour?.aspect ? 1 / contour.aspect : estimatedAspectRatio))
   const colours = [
     fields.builderFlashColourPrimary,
     fields.builderFlashColourSecondary,
@@ -386,15 +387,15 @@ function cmsReviewedProfile(
     fields.builderTransmission > 1 ||
     !reviewedCrop ||
     (hasBuilderDimensionValue(fields.dimensions) && !dimensionsMm) ||
-    (!dimensionsMm &&
-      (!fallbackAspectRatio || !Number.isFinite(fallbackAspectRatio) || fallbackAspectRatio <= 0))
+    !Number.isFinite(aspectRatio) ||
+    aspectRatio <= 0
   ) {
     return undefined
   }
 
   return {
     silhouette: silhouette as RingConfig['shape'],
-    aspectRatio: dimensionsMm ? dimensionsMm.length / dimensionsMm.width : fallbackAspectRatio!,
+    aspectRatio,
     evidence: 'catalogue',
     recommendedStyle: recommendedStyle as RingConfig['style'],
     textureCrop: reviewedCrop,
@@ -510,9 +511,13 @@ export function isBuilderEligibleOpal(
   if (!fields) return Boolean(reviewed)
 
   const cataloguePhoto = cataloguePhotoProfiles[reviewedSlugAliases[slug] ?? slug]
-  const fallbackAspectRatio =
-    reviewed?.aspectRatio ?? cataloguePhoto?.aspectRatio ?? inferSilhouette(name).aspectRatio
-  return Boolean(cmsReviewedProfile(fields, fallbackAspectRatio))
+  return Boolean(
+    cmsReviewedProfile(
+      fields,
+      reviewed?.aspectRatio,
+      cataloguePhoto?.aspectRatio ?? inferSilhouette(name).aspectRatio
+    )
+  )
 }
 
 function inferSilhouette(
@@ -583,8 +588,11 @@ export function createOpalVisualProfile(
   const silhouette = inferSilhouette(name)
   const reviewed = reviewedProfileFor(slug)
   const cataloguePhoto = cataloguePhotoProfiles[reviewedSlugAliases[slug] ?? slug]
-  const fallbackProfile = reviewed ?? cataloguePhoto ?? silhouette
-  const managed = cmsReviewedProfile(fields, fallbackProfile.aspectRatio)
+  const managed = cmsReviewedProfile(
+    fields,
+    reviewed?.aspectRatio,
+    (cataloguePhoto ?? silhouette).aspectRatio
+  )
   const mappingApproved =
     !fields ||
     fields.builderMappingStatus === 'reviewed' ||
@@ -652,7 +660,7 @@ export function createOpalVisualProfile(
       dimensionEvidence:
         managed?.dimensionsMm || dimensionsMm
           ? 'catalogue'
-          : reviewed?.dimensionEvidence ?? approvedReviewed?.dimensionEvidence,
+          : (reviewed?.dimensionEvidence ?? approvedReviewed?.dimensionEvidence),
       textureCrop: usesIndividualPhoto ? safeTextureCrop : undefined,
       photoFit: usesIndividualPhoto && safeTextureCrop ? (basePhotoFit ?? 'estimated') : undefined,
     },

@@ -252,7 +252,7 @@ export function AdoptBuilderCandidateButton() {
   const frameAspect =
     review.dimensions.width && review.dimensions.length
       ? Math.min(1.6, Math.max(0.4, review.dimensions.width / review.dimensions.length))
-      : 1
+      : (review.candidate.contour?.aspect ?? 1)
   const placementDisabled =
     !review.candidate.placementAdoptable || saveState === 'saving' || saveState === 'saved'
   const fullDisabled =

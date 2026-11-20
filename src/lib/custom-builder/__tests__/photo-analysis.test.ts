@@ -92,7 +92,7 @@ describe('opal photo crop analysis', () => {
       stoneAspect: 24 / 44,
     })
 
-    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(5)
+    expect(OPAL_PHOTO_ANALYSIS_VERSION).toBe(6)
     expect(analysis).toBeDefined()
     expect(parseBuilderStoneContour(analysis?.contour)?.radii).toHaveLength(
       BUILDER_STONE_CONTOUR_SAMPLE_COUNT
@@ -146,8 +146,7 @@ describe('opal photo crop analysis', () => {
     // Distinct edge flash must not cause the crop to keep only the blue centre.
     for (let y = 0; y < height; y += 1) {
       for (let x = 0; x < width; x += 1) {
-        const distance =
-          ((x + 0.5 - centreX) / radiusX) ** 2 + ((y + 0.5 - centreY) / radiusY) ** 2
+        const distance = ((x + 0.5 - centreX) / radiusX) ** 2 + ((y + 0.5 - centreY) / radiusY) ** 2
         if (distance < 0.82 || distance > 1) continue
         const offset = (y * width + x) * raster.channels
         raster.data[offset] = x < centreX ? 214 : 35
@@ -168,6 +167,55 @@ describe('opal photo crop analysis', () => {
     expect(crop.left + crop.width).toBeGreaterThanOrEqual((centreX + radiusX * 0.97) / width)
     expect(crop.top).toBeLessThanOrEqual((centreY - radiusY * 0.97) / height)
     expect(crop.top + crop.height).toBeGreaterThanOrEqual((centreY + radiusY * 0.97) / height)
+  })
+
+  test('frames an unmeasured narrow stone at its photographed aspect', () => {
+    const width = 160
+    const height = 140
+    const radiusX = 15
+    const radiusY = 46
+    const analysis = analyzeOpalRaster(
+      ellipseRaster({ width, height, centreX: 80, centreY: 70, radiusX, radiusY })
+    )
+
+    expect(analysis).toBeDefined()
+    if (!analysis) return
+    expect(analysis.rotation).toBe(0)
+    expect(analysis.stoneAspect).toBeCloseTo(radiusX / radiusY, 1)
+    expect(analysis.contour.aspect).toBeCloseTo(radiusX / radiusY, 1)
+
+    const crop = computePhotoCrop(width, height, analysis.stoneAspect, analysis)
+    expect(crop.width * width).toBeGreaterThanOrEqual(radiusX * 2 * 0.97)
+    expect(crop.width * width).toBeLessThan(radiusX * 2 * 1.1)
+    expect(crop.height * height).toBeGreaterThanOrEqual(radiusY * 2 * 0.97)
+    expect(crop.height * height).toBeLessThan(radiusY * 2 * 1.1)
+  })
+
+  test('smooths a narrow boundary protrusion instead of tracing a jagged step', () => {
+    const raster = ellipseRaster({
+      width: 160,
+      height: 140,
+      centreX: 80,
+      centreY: 70,
+      radiusX: 30,
+      radiusY: 46,
+    })
+    for (let y = 67; y < 73; y += 1) {
+      for (let x = 105; x < 120; x += 1) {
+        const offset = (y * raster.width + x) * raster.channels
+        raster.data[offset] = 22
+        raster.data[offset + 1] = 83
+        raster.data[offset + 2] = 96
+      }
+    }
+
+    const radii = analyzeOpalRaster(raster)?.contour.radii ?? []
+    const largestStep = Math.max(
+      ...radii.map((radius, index) => Math.abs(radius - radii[(index + 1) % radii.length]!))
+    )
+
+    expect(radii).toHaveLength(BUILDER_STONE_CONTOUR_SAMPLE_COUNT)
+    expect(largestStep).toBeLessThan(0.06)
   })
 
   test('rotates a horizontal stone toward a vertical aperture', () => {

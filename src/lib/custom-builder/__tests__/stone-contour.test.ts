@@ -23,6 +23,13 @@ describe('builder stone contour', () => {
     expect(validateBuilderStoneContour(null)).toBe(true)
   })
 
+  test('keeps a traced photo aspect and rejects an implausible one', () => {
+    expect(parseBuilderStoneContour({ ...contour(), aspect: 0.35 })?.aspect).toBe(0.35)
+    expect(parseBuilderStoneContour({ ...contour(), aspect: 0 })).toBeUndefined()
+    expect(parseBuilderStoneContour({ ...contour(), aspect: Number.NaN })).toBeUndefined()
+    expect(parseBuilderStoneContour({ ...contour(), aspect: '0.35' })).toBeUndefined()
+  })
+
   test('rejects malformed, unsafe, and implausibly discontinuous contours', () => {
     expect(parseBuilderStoneContour({ version: 2, radii: contour().radii })).toBeUndefined()
     expect(parseBuilderStoneContour({ version: 1, radii: [1] })).toBeUndefined()

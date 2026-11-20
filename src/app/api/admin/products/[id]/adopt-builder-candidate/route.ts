@@ -56,6 +56,7 @@ function contoursMatch(
     active &&
     candidate &&
     active.version === candidate.version &&
+    active.aspect === candidate.aspect &&
     active.radii.length === candidate.radii.length &&
     active.radii.every((radius, index) => radius === candidate.radii[index])
   )
@@ -331,7 +332,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const adopted = {
     builderMappedImageIndex: candidateImageIndex,
-    builderContour: { version: contour.version, radii: [...contour.radii] },
+    builderContour: { ...contour, radii: [...contour.radii] },
     builderContourSourceImageHash: analyzedHash,
     builderPhotoFocalX: focalX,
     builderPhotoFocalY: focalY,
