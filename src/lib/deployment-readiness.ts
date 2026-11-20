@@ -154,7 +154,10 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
   }
 
   const blobToken = value(env, 'BLOB_READ_WRITE_TOKEN')
-  if (!blobToken || isObviousPlaceholder(blobToken)) issues.push('blob_storage_unavailable')
+  const localStorage = value(env, 'STORAGE_ADAPTER') === 'local'
+  if (!localStorage && (!blobToken || isObviousPlaceholder(blobToken))) {
+    issues.push('blob_storage_unavailable')
+  }
   if (!hasValidRedisUrl(env)) issues.push('redis_url_invalid')
 
   const redisToken = getRedisToken(env)
