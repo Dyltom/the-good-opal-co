@@ -32,7 +32,7 @@ async function findRelatedProducts(product: Product, limit: number): Promise<Pro
           ],
         },
         limit,
-        sort: '-featured,-createdAt',
+        sort: ['-featured', '-createdAt'],
         depth: 2,
       })
       for (const doc of docs) if (found.size < limit && !found.has(String(doc.id))) found.set(String(doc.id), doc)
