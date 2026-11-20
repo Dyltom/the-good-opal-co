@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -8,14 +8,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/hooks/use-toast'
 import { trackEnquirySubmitted } from '@/lib/analytics'
 import { sendContactEmail } from './actions'
 import { contactSchema } from './schema'
 import type { ContactFormData } from './schema'
 import { inquiryLabels, inquiryTypes } from './contact-intent'
 import type { InquiryType } from './contact-intent'
-import { Loader2 } from 'lucide-react'
+import { CheckCircle2, Loader2 } from 'lucide-react'
 
 interface ContactFormProps {
   initialInquiry: InquiryType
@@ -31,7 +30,17 @@ export function ContactForm({
   initialDesignConfiguration = '',
 }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
+  const [sent, setSent] = useState<{ reference: string; email: string; delayed: boolean } | null>(
+    null
+  )
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const sentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!sent) return
+    sentRef.current?.focus()
+    sentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [sent])
 
   const {
     register,
@@ -59,32 +68,56 @@ export function ContactForm({
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
+    setSubmitError(null)
 
     try {
       const result = await sendContactEmail(data)
 
       if (result.success) {
         trackEnquirySubmitted(data.inquiryType)
-        toast({
-          title: 'Enquiry received',
-          description: result.confirmationDelayed
-            ? `Saved as ${result.reference}. Email confirmation may be delayed.`
-            : `Saved as ${result.reference}. We\'ll reply by email.`,
+        setSent({
+          reference: result.reference,
+          email: data.email,
+          delayed: Boolean(result.confirmationDelayed),
         })
         reset()
       } else {
-        throw new Error(result.error)
+        setSubmitError(result.error)
       }
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description:
-          error instanceof Error ? error.message : 'Failed to send message. Please try again.',
-        variant: 'destructive',
-      })
+    } catch {
+      setSubmitError('Your message could not be sent. Please try again, or email us directly.')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (sent) {
+    return (
+      <div ref={sentRef} tabIndex={-1} role="status" className="py-6 text-center outline-none">
+        <CheckCircle2
+          className="mx-auto h-10 w-10 text-opal-electric-accessible"
+          aria-hidden="true"
+        />
+        <h3 className="mt-4 font-serif text-3xl font-medium text-charcoal">Enquiry received</h3>
+        <p className="mx-auto mt-3 max-w-md font-sans leading-7 text-charcoal/70">
+          Thank you. We will reply to <strong className="text-charcoal">{sent.email}</strong>.
+          {sent.delayed
+            ? ' Your message is saved, though our confirmation email may take a little longer to arrive.'
+            : ' A confirmation is on its way to your inbox.'}
+        </p>
+        <p className="mt-4 font-sans text-sm text-charcoal/60">
+          Reference <span className="font-semibold text-charcoal">{sent.reference}</span>
+        </p>
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <Button asChild size="lg">
+            <Link href="/store">Keep browsing</Link>
+          </Button>
+          <Button type="button" variant="outline" size="lg" onClick={() => setSent(null)}>
+            Send another enquiry
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -97,7 +130,7 @@ export function ContactForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="name">
-            Name <span className="text-red-500">*</span>
+            Name <span className="text-red-600">*</span>
           </Label>
           <Input
             id="name"
@@ -108,12 +141,12 @@ export function ContactForm({
             aria-invalid={Boolean(errors.name)}
             required
           />
-          {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
+          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="email">
-            Email <span className="text-red-500">*</span>
+            Email <span className="text-red-600">*</span>
           </Label>
           <Input
             id="email"
@@ -125,7 +158,7 @@ export function ContactForm({
             aria-invalid={Boolean(errors.email)}
             required
           />
-          {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
         </div>
       </div>
 
@@ -164,13 +197,13 @@ export function ContactForm({
             className="mt-1"
             disabled={isSubmitting}
           />
-          {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>}
+          {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
         </div>
 
         {!isCourseIntent ? (
           <div>
             <Label htmlFor="orderNumber">
-              Order Number <span className="text-charcoal/65">(if applicable)</span>
+              Order number <span className="text-charcoal/65">(if applicable)</span>
             </Label>
             <Input
               id="orderNumber"
@@ -180,7 +213,7 @@ export function ContactForm({
               disabled={isSubmitting}
             />
             {errors.orderNumber && (
-              <p className="mt-1 text-sm text-red-500">{errors.orderNumber.message}</p>
+              <p className="mt-1 text-sm text-red-600">{errors.orderNumber.message}</p>
             )}
           </div>
         ) : null}
@@ -235,7 +268,7 @@ export function ContactForm({
 
       <div>
         <Label htmlFor="message">
-          Message <span className="text-red-500">*</span>
+          Message <span className="text-red-600">*</span>
         </Label>
         <Textarea
           id="message"
@@ -251,8 +284,17 @@ export function ContactForm({
           aria-invalid={Boolean(errors.message)}
           required
         />
-        {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message.message}</p>}
+        {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>}
       </div>
+
+      {submitError ? (
+        <p
+          role="alert"
+          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {submitError}
+        </p>
+      ) : null}
 
       <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
         {isSubmitting ? (
@@ -261,7 +303,7 @@ export function ContactForm({
             Sending...
           </>
         ) : isCourseIntent ? (
-          'Send Course Interest'
+          'Send course enquiry'
         ) : (
           'Send enquiry'
         )}
