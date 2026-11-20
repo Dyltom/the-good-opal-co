@@ -1,6 +1,7 @@
 'use server'
 
 import { getPayload } from '@/lib/payload'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 
 export interface SearchSuggestion {
   label: string
@@ -36,7 +37,7 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
     const results = await payload.find({
       collection: 'products',
       where: {
-        and: [{ status: { equals: 'published' } }, { name: { contains: cleanQuery } }],
+        and: [LISTED_PRODUCTS, { name: { contains: cleanQuery } }],
       },
       limit: 5,
       select: { name: true, slug: true },

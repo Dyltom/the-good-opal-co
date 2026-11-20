@@ -45,7 +45,7 @@ export default async function CartPage() {
               <Button
                 asChild
                 size="lg"
-                className="mt-7 bg-opal-electric-accessible bg-none hover:bg-opal-deep"
+                className="mt-7"
               >
                 <Link href="/store">Browse available pieces</Link>
               </Button>

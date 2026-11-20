@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/lib/payload'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { extractPlainText } from '@/lib/rich-text'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
@@ -12,7 +13,7 @@ export async function GET() {
     const payload = await getPayload()
     const { docs: products } = await payload.find({
       collection: 'products',
-      where: { status: { equals: 'published' } },
+      where: LISTED_PRODUCTS,
       limit: 200,
       depth: 2,
       sort: '-createdAt',

@@ -3,8 +3,9 @@
  * Centralized contact details to ensure consistency across the site
  */
 import 'server-only'
+import { PUBLIC_CONTACT_EMAIL } from './social'
 
-const email = process.env.CONTACT_EMAIL?.trim() || 'thegoodopalco@gmail.com'
+const email = process.env.CONTACT_EMAIL?.trim() || PUBLIC_CONTACT_EMAIL
 
 export const CONTACT_INFO = {
   email,

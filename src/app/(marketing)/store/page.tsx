@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import type { Metadata } from 'next'
 import type { Where } from 'payload'
 import { MarketingShell } from '@/components/marketing'
@@ -119,7 +120,7 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
 
 export default async function StorePage({ searchParams }: StorePageProps) {
   const query = parseStoreQuery(await searchParams)
-  const conditions: Where[] = [{ status: { equals: 'published' } }]
+  const conditions: Where[] = [LISTED_PRODUCTS]
 
   if (query.availability === 'available') conditions.push({ stock: { greater_than: 0 } })
   if (query.category) conditions.push({ category: { equals: query.category } })
@@ -152,7 +153,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     }),
     payload.find({
       collection: 'products',
-      where: { status: { equals: 'published' } },
+      where: LISTED_PRODUCTS,
       pagination: false,
       depth: 0,
       select: { category: true, stoneType: true, stoneOrigin: true, price: true, stock: true },

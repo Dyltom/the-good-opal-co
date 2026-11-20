@@ -9,7 +9,7 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   const response = await page.goto('/services/design', { waitUntil: 'domcontentloaded' })
 
   expect(response?.status()).toBeLessThan(400)
-  await expect(page.getByRole('heading', { name: 'See the possibilities.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Design your opal ring' })).toBeVisible()
   await expect(page.getByRole('group', { name: '3. Choose an available opal' })).toBeVisible()
 
   const previewSource = page.getByRole('group', { name: 'Preview source' })

@@ -90,7 +90,7 @@ export function CheckoutButton({ cart, region, className, label = 'Checkout' }: 
         onClick={startCheckout}
         disabled={isPending || cart.items.length === 0}
         aria-busy={isPending}
-        className={cn('w-full bg-opal-electric-accessible bg-none hover:bg-opal-deep', className)}
+        className={cn('w-full', className)}
       >
         <Lock className="h-4 w-4" aria-hidden="true" />
         {isPending ? 'Opening secure checkout' : label}

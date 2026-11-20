@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense, useEffect, useState } from 'react'
-import { ArrowRight, Menu, X } from 'lucide-react'
+import { ArrowRight, Menu, Search, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { CartButton } from '@/components/cart/CartButton'
 import { Container } from '@/components/layout'
@@ -63,7 +63,7 @@ export function Navigation({
         <div className="flex h-20 items-center gap-5">
           <Link
             href="/"
-            className="flex min-w-0 shrink-0 items-center gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+            className="flex min-w-0 shrink-0 items-center gap-2 rounded-sm sm:gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
             aria-label="The Good Opal Co home"
           >
             {logo ? (
@@ -78,9 +78,9 @@ export function Navigation({
                 />
               </span>
             ) : null}
-            <span className="hidden sm:block">
-              <span className="block font-serif text-lg font-semibold leading-5">{logoText}</span>
-              <span className="mt-1 block font-sans text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-charcoal/70">
+            <span className="block whitespace-nowrap">
+              <span className="block font-serif text-base font-semibold leading-5 sm:text-lg">{logoText}</span>
+              <span className="mt-1 hidden font-sans text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-charcoal/70 sm:block">
                 Australian opals
               </span>
             </span>
@@ -121,6 +121,13 @@ export function Navigation({
           ) : null}
 
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
+            <Link
+              href="/search"
+              aria-label="Search"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-charcoal transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible xl:hidden"
+            >
+              <Search className="h-5 w-5" aria-hidden="true" />
+            </Link>
             <CartButton />
             <button
               type="button"

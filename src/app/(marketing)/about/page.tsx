@@ -18,6 +18,12 @@ export const dynamic = 'force-dynamic'
 
 const founderPortrait: { src: string; alt: string } | null = null
 
+const aboutHeroImages = [
+  { src: '/images/studio/halo-opal-ring.jpg', alt: 'An oval white opal in a silver halo ring' },
+  { src: '/images/studio/heart-opal.jpg', alt: 'A heart-shaped white Australian opal' },
+  { src: '/images/studio/black-opal.jpg', alt: 'A loose black opal with green and blue flashes' },
+]
+
 const stephQuotes = [
   {
     text: 'Opal is mysterious and wonderful. I don\u2019t think the uniqueness of opal is matched by many other things in this world\u2026',
@@ -103,15 +109,22 @@ export default async function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="relative min-h-[25rem] bg-charcoal lg:min-h-full">
-              <Image
-                src="/images/about-hero.jpg"
-                alt="A selection of polished Australian opals in gem cases"
-                fill
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                className="object-cover"
-                priority
-              />
+            <div className="grid grid-cols-3 items-center gap-3 bg-cream-dark px-5 py-10 sm:gap-5 sm:px-10 lg:px-12">
+              {aboutHeroImages.map((image, index) => (
+                <div
+                  key={image.src}
+                  className={`relative aspect-[4/5] overflow-hidden bg-cream ${index === 1 ? '' : 'lg:translate-y-8'}`}
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 1024px) 33vw, 18vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </section>
