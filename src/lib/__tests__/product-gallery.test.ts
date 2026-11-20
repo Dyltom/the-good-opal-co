@@ -34,6 +34,13 @@ describe('legacy product gallery completion', () => {
     expect(gallery).toHaveLength(1)
   })
 
+  test('shows a photo attached to the product twice only once', () => {
+    const photo = { url: '/api/media/file/wp-4945-20210627_192839-1.jpg', alt: 'CMS image' }
+    const other = { url: '/api/media/file/wp-4538-20210505_103530.jpg', alt: 'CMS image 2' }
+
+    expect(mergeProductGallery('unmapped-product', 'Opal', [photo, other, photo])).toEqual([photo, other])
+  })
+
   test('all fallback assets are deployed from the public product directory', () => {
     for (const image of legacyGalleryAssetPaths()) {
       expect(existsSync(resolve(process.cwd(), 'public', image.replace(/^\//, '')))).toBe(true)

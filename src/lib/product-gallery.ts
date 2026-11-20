@@ -75,15 +75,16 @@ export function mergeProductGallery(
   productName: string,
   cmsImages: readonly ProductGalleryImage[]
 ): ProductGalleryImage[] {
-  const merged = [...cmsImages]
-  const filenames = new Set(cmsImages.map((image) => filename(image.url)))
+  const legacyImages = (legacyGalleryBySlug[slug] ?? []).map((url) => ({
+    url,
+    alt: `${productName} additional view`,
+  }))
+  const filenames = new Set<string>()
 
-  for (const url of legacyGalleryBySlug[slug] ?? []) {
-    const imageFilename = filename(url)
-    if (filenames.has(imageFilename)) continue
+  return [...cmsImages, ...legacyImages].filter((image) => {
+    const imageFilename = filename(image.url)
+    if (filenames.has(imageFilename)) return false
     filenames.add(imageFilename)
-    merged.push({ url, alt: `${productName} additional view` })
-  }
-
-  return merged
+    return true
+  })
 }

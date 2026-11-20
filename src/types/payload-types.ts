@@ -85,6 +85,7 @@ export interface Config {
     'ring-assets': RingAsset;
     'ring-designs': RingDesign;
     'ring-reference-checks': RingReferenceCheck;
+    reviews: Review;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -110,6 +111,7 @@ export interface Config {
     'ring-assets': RingAssetsSelect<false> | RingAssetsSelect<true>;
     'ring-designs': RingDesignsSelect<false> | RingDesignsSelect<true>;
     'ring-reference-checks': RingReferenceChecksSelect<false> | RingReferenceChecksSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -388,6 +390,19 @@ export interface Product {
   images?:
     | {
         image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Short clips of the stone moving in the light (MP4 or WebM, ideally under 15 seconds and 10 MB). They appear after the first photo, muted and looping.
+   */
+  videos?:
+    | {
+        video: number | Media;
+        /**
+         * Still shown before the clip plays. Use a photo of the same stone.
+         */
+        poster?: (number | null) | Media;
         id?: string | null;
       }[]
     | null;
@@ -1286,6 +1301,46 @@ export interface RingReferenceCheck {
   createdAt: string;
 }
 /**
+ * Only add reviews customers actually wrote. Copy the words exactly and record where and when they were written.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: number;
+  /**
+   * First name and last initial only, for example "Sam T."
+   */
+  authorName: string;
+  /**
+   * The review exactly as the customer wrote it.
+   */
+  body: string;
+  /**
+   * Star rating out of 5. Leave empty if the customer did not give one.
+   */
+  rating?: number | null;
+  /**
+   * The date the customer wrote the review.
+   */
+  reviewedAt: string;
+  /**
+   * Where it was written, for example goodopalco.com, Google, Etsy or Instagram.
+   */
+  source: string;
+  /**
+   * Optional link to the original review.
+   */
+  sourceUrl?: string | null;
+  /**
+   * The piece this review is about, if any. It then shows on that product page.
+   */
+  product?: (number | null) | Product;
+  status: 'draft' | 'published';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -1380,6 +1435,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ring-reference-checks';
         value: number | RingReferenceCheck;
+      } | null)
+    | ({
+        relationTo: 'reviews';
+        value: number | Review;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1593,6 +1652,13 @@ export interface ProductsSelect<T extends boolean = true> {
     | T
     | {
         image?: T;
+        id?: T;
+      };
+  videos?:
+    | T
+    | {
+        video?: T;
+        poster?: T;
         id?: T;
       };
   category?: T;
@@ -2047,6 +2113,22 @@ export interface RingReferenceChecksSelect<T extends boolean = true> {
   httpStatus?: T;
   resolvedUrl?: T;
   durationMs?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  authorName?: T;
+  body?: T;
+  rating?: T;
+  reviewedAt?: T;
+  source?: T;
+  sourceUrl?: T;
+  product?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }

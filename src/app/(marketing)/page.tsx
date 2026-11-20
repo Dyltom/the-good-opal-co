@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { MarketingShell } from '@/components/marketing'
 import { ProductCard } from '@/components/product/ProductCard'
 import { HomeHero } from '@/components/sections'
+import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -208,6 +209,12 @@ export default function HomePage() {
               <LatestPieces />
             </div>
           </section>
+
+          <ReviewsSection
+            eyebrow="Customer reviews"
+            title="In their words."
+            className="mx-auto max-w-[90rem] px-5 py-16 sm:px-8 lg:px-12 lg:py-24"
+          />
 
           <section className="grid bg-charcoal text-cream lg:grid-cols-2">
             <div className="relative min-h-[28rem] lg:min-h-[42rem]">
