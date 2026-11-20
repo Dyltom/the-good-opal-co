@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   Accordion,
   AccordionContent,
@@ -144,9 +145,9 @@ export default function FAQPage() {
           <Container className="py-14 sm:py-20 lg:py-24">
             <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
               <div className="max-w-2xl">
-                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                <Eyebrow>
                   Buyer guide
-                </p>
+                </Eyebrow>
                 <h1 className="mt-5 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl">
                   Clear answers before you choose.
                 </h1>

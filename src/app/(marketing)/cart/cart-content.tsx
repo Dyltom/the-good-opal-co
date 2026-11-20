@@ -19,6 +19,7 @@ import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import type { Cart, CartItem } from '@/lib/cart'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 interface CartPageContentProps {
   initialCart: Cart
@@ -90,9 +91,9 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
     <Container className="py-10 lg:py-14">
       <div className="pb-28 lg:pb-0" aria-busy={isPending}>
         <header className="mb-8 border-b border-warm-grey/50 pb-6">
-          <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-opal-electric-accessible">
+          <Eyebrow>
             Your order
-          </p>
+          </Eyebrow>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-serif text-4xl font-semibold text-charcoal sm:text-5xl">

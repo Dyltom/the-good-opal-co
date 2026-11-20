@@ -20,6 +20,7 @@ import { parseProductDescription } from '@/lib/product-description'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -209,9 +210,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   </div>
 
                   <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-                    <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                    <Eyebrow>
                       {[categoryName, product.stoneOrigin && titleCase(product.stoneOrigin)].filter(Boolean).join(' · ')}
-                    </p>
+                    </Eyebrow>
                     <h1 className="mt-3 font-serif text-3xl font-medium leading-[1.08] text-charcoal sm:text-4xl xl:text-[2.75rem]">
                       {product.name}
                     </h1>

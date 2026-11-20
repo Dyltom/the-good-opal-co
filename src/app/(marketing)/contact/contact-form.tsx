@@ -261,7 +261,7 @@ export function ContactForm({
         ) : isCourseIntent ? (
           'Send Course Interest'
         ) : (
-          'Send Message'
+          'Send enquiry'
         )}
       </Button>
 

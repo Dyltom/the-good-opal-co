@@ -10,6 +10,7 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { courseFormatLabels, courseLevelLabels } from '@/lib/courses'
 import type { Course, Media } from '@/types/payload-types'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const metadata: Metadata = {
   title: 'Opal cutting courses | The Good Opal Co',
@@ -49,9 +50,9 @@ export default async function CoursesPage() {
       <section className="overflow-hidden border-b border-warm-grey/60 bg-cream">
         <Container className="grid gap-10 py-14 sm:py-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-24">
           <div className="relative z-10">
-            <p className="font-sans text-sm font-semibold text-opal-electric-accessible">
+            <Eyebrow>
               Opal education
-            </p>
+            </Eyebrow>
             <h1 className="mt-5 max-w-[10ch] text-balance font-serif text-[clamp(3.5rem,7vw,7rem)] font-medium leading-[0.9]">
               Learn what the stone can become.
             </h1>

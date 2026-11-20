@@ -5,6 +5,7 @@ import { ArrowRight, Check } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const metadata: Metadata = {
   title: 'Custom Opal Jewellery | The Good Opal Co',
@@ -49,9 +50,7 @@ export default function ServicesPage() {
       <section className="grid lg:min-h-[34rem] lg:grid-cols-[0.92fr_1.08fr]">
         <div className="flex items-center px-5 py-12 sm:px-10 sm:py-14 lg:px-[clamp(3rem,6vw,6.5rem)] lg:py-16">
           <div className="max-w-xl">
-            <p className="mb-4 text-sm font-medium text-opal-electric-accessible">
-              Custom opal jewellery
-            </p>
+            <Eyebrow className="mb-4">Custom opal jewellery</Eyebrow>
             <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.75rem,5vw,4.75rem)] font-medium leading-[1.02]">
               Begin with the stone.
             </h1>
@@ -99,7 +98,7 @@ export default function ServicesPage() {
         <Container>
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
             <div>
-              <p className="text-sm font-medium text-opal-electric-accessible">The process</p>
+              <Eyebrow>The process</Eyebrow>
               <h2 className="mt-3 max-w-[16ch] text-balance font-serif text-4xl leading-tight sm:text-5xl">
                 Clear decisions, one at a time.
               </h2>
@@ -142,9 +141,7 @@ export default function ServicesPage() {
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-opal-electric-accessible">
-                Before you enquire
-              </p>
+              <Eyebrow>Before you enquire</Eyebrow>
               <h2 className="mt-3 font-serif text-4xl leading-tight sm:text-5xl">
                 What helps us guide you
               </h2>
@@ -172,7 +169,7 @@ export default function ServicesPage() {
         <Container>
           <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
             <div>
-              <p className="text-sm text-opal-light">Ready when you are</p>
+              <Eyebrow className="text-opal-light">Ready when you are</Eyebrow>
               <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight sm:text-5xl">
                 Tell us what you have in mind.
               </h2>
@@ -184,13 +181,13 @@ export default function ServicesPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
                 href="/services/design"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cream px-7 font-medium text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-cream px-6 font-sans text-sm font-semibold text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
               >
                 Open the design studio <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
               <Link
                 href="/contact?subject=custom-design"
-                className="inline-flex min-h-12 items-center justify-center rounded-full px-4 font-medium text-cream/80 underline-offset-4 transition-colors hover:text-cream hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                className="inline-flex min-h-12 items-center justify-center rounded-md px-4 font-sans text-sm font-semibold text-cream/80 underline-offset-4 transition-colors hover:text-cream hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
               >
                 Start with an enquiry
               </Link>

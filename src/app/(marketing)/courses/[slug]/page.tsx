@@ -13,6 +13,7 @@ import { courseFormatLabels, courseLevelLabels, courseOutlineStats } from '@/lib
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import type { Course, Media } from '@/types/payload-types'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const dynamic = 'force-dynamic'
 
@@ -136,9 +137,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
       <Container className="py-16 sm:py-24">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start lg:gap-20">
           <div>
-            <p className="font-sans text-sm font-semibold text-opal-electric-accessible">
+            <Eyebrow>
               Course overview
-            </p>
+            </Eyebrow>
             <p className="mt-5 max-w-[68ch] whitespace-pre-line font-sans text-base leading-8 text-charcoal/75">
               {course.introduction}
             </p>
@@ -166,9 +167,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
             ) : null}
 
             <section className="mt-16" aria-labelledby="curriculum-heading">
-              <p className="font-sans text-sm font-semibold text-opal-electric-accessible">
+              <Eyebrow>
                 Public outline
-              </p>
+              </Eyebrow>
               <h2
                 id="curriculum-heading"
                 className="mt-3 font-serif text-4xl font-medium sm:text-5xl"

@@ -3,6 +3,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { CONTACT_INFO } from '@/lib/constants/contact'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const metadata: Metadata = {
   title: 'Cookie Policy | The Good Opal Co',
@@ -41,9 +42,9 @@ export default function CookiePolicyPage() {
         />
 
         <article className="mx-auto max-w-3xl">
-          <p className="font-sans text-sm font-semibold text-opal-electric-accessible">
+          <Eyebrow>
             Privacy choices
-          </p>
+          </Eyebrow>
           <h1 className="mt-2 font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
             Cookie Policy
           </h1>

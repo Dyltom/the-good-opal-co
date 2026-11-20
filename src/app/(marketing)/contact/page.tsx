@@ -6,6 +6,7 @@ import { MarketingShell } from '@/components/marketing'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { CONTACT_INFO } from '@/lib/constants/contact'
 import { ContactForm } from './contact-form'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   cleanContactContext,
   cleanContactMessage,
@@ -36,32 +37,31 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   return (
     <MarketingShell>
-      <section className="border-b border-warm-grey/50 px-5 py-14 sm:px-10 sm:py-20 lg:px-[clamp(3rem,8vw,9rem)] lg:py-24">
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-          <div>
-            <p className="text-sm font-medium text-opal-electric-accessible">
-              {inquiryLabels[initialInquiry]}
+      <section className="border-b border-warm-grey/50">
+        <Container className="pb-12 pt-8 sm:pb-16 sm:pt-10 lg:pb-20">
+          <Breadcrumb
+            items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
+            className="mb-10 sm:mb-14"
+          />
+          <div className="grid gap-6 lg:grid-cols-2 lg:items-end lg:gap-16">
+            <div>
+              <Eyebrow>{inquiryLabels[initialInquiry]}</Eyebrow>
+              <h1 className="mt-4 text-balance font-serif text-[clamp(2.75rem,5vw,4.75rem)] font-medium leading-[1.02]">
+                Let&apos;s talk opals.
+              </h1>
+            </div>
+            <p className="max-w-xl text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
+              {isCustomIntent
+                ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
+                : isCourseIntent
+                  ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
+                  : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
             </p>
-            <h1 className="mt-4 max-w-[11ch] text-balance font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-medium leading-[0.95]">
-              Let&apos;s talk opals.
-            </h1>
           </div>
-          <p className="max-w-xl text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
-            {isCustomIntent
-              ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
-              : isCourseIntent
-                ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
-                : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest inquiry type and share what matters.'}
-          </p>
-        </div>
+        </Container>
       </section>
 
       <Container className="py-12 sm:py-16 lg:py-20">
-        <Breadcrumb
-          items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
-          className="mb-10"
-        />
-
         <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <h2 className="font-serif text-3xl">
