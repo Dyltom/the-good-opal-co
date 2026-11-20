@@ -29,6 +29,12 @@ const checkoutSchema = z.object({
 
 export type ShippingRegion = z.infer<typeof checkoutSchema>['region']
 
+function publicUrl(path: string | undefined): string | undefined {
+  if (!path) return undefined
+  const url = new URL(path, APP_URL)
+  return url.protocol === 'https:' ? url.href : undefined
+}
+
 interface CheckoutResult {
   success: boolean
   error?: string
@@ -101,6 +107,7 @@ export async function createCheckoutSession(input: {
     const destination = region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
     const pricing = calculateCheckoutPricing(subtotal, destination)
     const expiresAt = checkoutReservationExpiresAt()
+    const brandIcon = publicUrl('/logo.png')
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create(
@@ -109,12 +116,19 @@ export async function createCheckoutSession(input: {
         client_reference_id: checkoutAttemptId,
         expires_at: Math.floor(expiresAt.getTime() / 1000),
         phone_number_collection: { enabled: true },
+        branding_settings: {
+          display_name: 'The Good Opal Co',
+          background_color: '#FAF9F6',
+          button_color: '#2C2C2C',
+          border_style: 'rounded',
+          ...(brandIcon ? { icon: { type: 'url' as const, url: brandIcon } } : {}),
+        },
         line_items: cart.items.map((item) => ({
           price_data: {
             currency: 'aud',
             product_data: {
               name: item.name,
-              images: item.image?.startsWith('http') ? [item.image] : [],
+              images: [publicUrl(item.image)].filter((url) => url !== undefined),
               metadata: {
                 productId: item.productId,
                 slug: item.slug,
