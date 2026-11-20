@@ -8,7 +8,7 @@ import { Eye } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
-import { STORE_ORIGINS, STORE_STONES } from '@/app/(marketing)/store/store-query'
+import { storeLabel } from '@/app/(marketing)/store/store-query'
 
 const ProductQuickViewModal = dynamic(() =>
   import('./ProductQuickViewModal').then((mod) => mod.ProductQuickViewModal)
@@ -35,13 +35,10 @@ interface ProductCardProps {
   priority?: boolean
 }
 
-const stoneLabels = new Map<string, string>([...STORE_STONES, ...STORE_ORIGINS])
-
-function stoneDetails(product: ProductCardProduct): string {
+function stoneDetails(product: ProductCardProduct): string[] {
   return [product.stoneType, product.stoneOrigin]
     .filter((value): value is string => Boolean(value))
-    .map((value) => stoneLabels.get(value) ?? value)
-    .join(' · ')
+    .map(storeLabel)
 }
 
 export function ProductCard({ product, index = 0, priority = false }: ProductCardProps) {
@@ -137,8 +134,14 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
               {product.name}
             </Link>
           </h3>
-          {details ? (
-            <p className="mt-1 truncate font-sans text-xs text-charcoal/55">{details}</p>
+          {details.length > 0 ? (
+            <p className="mt-1 font-sans text-xs leading-5 text-charcoal/60">
+              {details.map((detail) => (
+                <span key={detail} className="block">
+                  {detail}
+                </span>
+              ))}
+            </p>
           ) : null}
           <p className="mt-2 flex flex-wrap items-baseline gap-x-2 font-sans tabular-nums">
             {isAvailable ? (

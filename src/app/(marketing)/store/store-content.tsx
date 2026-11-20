@@ -188,8 +188,8 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
 
   return (
     <>
-      <header className="border-b border-warm-grey/60 bg-cream px-5 py-12 sm:px-8 sm:py-16">
-        <div className="mx-auto grid max-w-[92rem] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
+      <header className="border-b border-warm-grey/60 bg-cream px-5 py-8 sm:px-8 sm:py-16">
+        <div className="mx-auto grid max-w-[92rem] gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
             <Eyebrow className="mb-4">The collection</Eyebrow>
             <h1 className="max-w-[18ch] font-serif text-[clamp(2.5rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
@@ -201,7 +201,7 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
               One-of-a-kind Australian stones and finished pieces, photographed individually. Use
               the details you know, or browse slowly.
             </p>
-            <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-warm-grey/70 pt-5 font-sans text-xs font-semibold text-charcoal/65 sm:grid-cols-3">
+            <ul className="mt-6 hidden grid-cols-2 gap-x-6 gap-y-3 border-t border-warm-grey/70 pt-5 font-sans text-xs font-semibold text-charcoal/65 sm:grid sm:grid-cols-3">
               <li>Origin disclosed</li>
               <li>Prices in AUD</li>
               <li>Tracked delivery</li>

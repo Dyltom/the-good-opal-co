@@ -6,7 +6,7 @@ import { MarketingShell } from '@/components/marketing'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
-import { STORE_ORIGINS, STORE_STONES } from '../store-query'
+import { storeLabel } from '../store-query'
 
 export const metadata: Metadata = {
   title: 'Recently collected | The Good Opal Co',
@@ -14,9 +14,6 @@ export const metadata: Metadata = {
   alternates: { canonical: '/store/collected' },
 }
 export const dynamic = 'force-dynamic'
-
-const labelOf = (options: readonly (readonly [string, string])[], value?: string | null) =>
-  options.find(([option]) => option === value)?.[1]
 
 export default async function CollectedPage() {
   const payload = await getPayload()
@@ -69,8 +66,8 @@ export default async function CollectedPage() {
             const image =
               (typeof first === 'object' && first ? resolveMediaUrl(first.url) : undefined) ??
               ownedProductImageUrl(product.slug)
-            const details = [labelOf(STORE_STONES, product.stoneType), labelOf(STORE_ORIGINS, product.stoneOrigin)]
-              .filter(Boolean)
+            const details = [product.stoneType, product.stoneOrigin]
+              .flatMap((value) => (value ? [storeLabel(value)] : []))
               .join(' · ')
 
             return (

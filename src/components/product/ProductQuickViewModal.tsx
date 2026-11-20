@@ -8,6 +8,7 @@ import { X, Gem, MapPin } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { storeLabel } from '@/app/(marketing)/store/store-query'
 
 interface ProductQuickViewModalProps {
   product: {
@@ -61,7 +62,7 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
             >
               <div className="grid flex-1 overflow-y-auto md:grid-cols-2">
                 {/* Image Section */}
-                <div className="relative aspect-square bg-cream md:min-h-full">
+                <div className="relative aspect-square bg-cream md:aspect-auto md:min-h-[24rem]">
                   {product.image ? (
                     <>
                       {isImageLoading && (
@@ -116,13 +117,13 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                     {product.stoneType && (
                       <div className="flex items-center gap-1.5 text-charcoal/70">
                         <Gem size={16} className="text-opal-electric-accessible" />
-                        <span>{product.stoneType}</span>
+                        <span>{storeLabel(product.stoneType)}</span>
                       </div>
                     )}
                     {product.stoneOrigin && (
                       <div className="flex items-center gap-1.5 text-charcoal/70">
                         <MapPin size={16} className="text-opal-electric-accessible" />
-                        <span>{product.stoneOrigin}</span>
+                        <span>{storeLabel(product.stoneOrigin)}</span>
                       </div>
                     )}
                   </div>

@@ -18,6 +18,7 @@ import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { parseProductDescription } from '@/lib/product-description'
+import { storeLabel } from '@/app/(marketing)/store/store-query'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
@@ -110,15 +111,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const descriptionText = about.paragraphs.join(' ')
 
   // Format category name
-  const categoryName = product.category ? titleCase(product.category) : undefined
+  const categoryName = product.category ? storeLabel(product.category) : undefined
   const productShippingProgress = getFreeShippingProgress(product.price)
   const facts = [
-    { label: 'Stone', value: product.stoneType && titleCase(product.stoneType) },
-    { label: 'Origin', value: product.stoneOrigin && titleCase(product.stoneOrigin) },
+    { label: 'Stone', value: product.stoneType && storeLabel(product.stoneType) },
+    { label: 'Origin', value: product.stoneOrigin && storeLabel(product.stoneOrigin) },
     { label: 'Weight', value: product.weight && weightUnitLabel(product.weight, product.weightUnit ?? (product.category === 'raw-opals' ? 'carats' : undefined)) },
     { label: 'Ring size', value: product.ringSize },
-    { label: 'Metal', value: product.material && product.material !== 'none' ? titleCase(product.material) : undefined },
-    { label: 'Inclusions', value: about.inclusions },
+    { label: 'Metal', value: product.material && product.material !== 'none' ? storeLabel(product.material) : undefined },
+    { label: 'Inclusions', value: about.inclusions && about.inclusions.charAt(0).toUpperCase() + about.inclusions.slice(1) },
     { label: 'Certificate', value: product.certified ? (product.certificateNumber ?? 'Included') : undefined },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
   const stock = product.stock ?? 0
@@ -223,7 +224,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
                   <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
                     <Eyebrow>
-                      {[categoryName, product.stoneOrigin && titleCase(product.stoneOrigin)].filter(Boolean).join(' · ')}
+                      {[categoryName, product.stoneOrigin && storeLabel(product.stoneOrigin)].filter(Boolean).join(' · ')}
                     </Eyebrow>
                     <h1 className="mt-3 font-serif text-3xl font-medium leading-[1.08] text-charcoal sm:text-4xl xl:text-[2.75rem]">
                       {product.name}
@@ -354,10 +355,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       </ProductViewTracker>
     </>
   )
-}
-
-function titleCase(value: string) {
-  return value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 function weightUnitLabel(weight: number, unit: string | null | undefined) {
