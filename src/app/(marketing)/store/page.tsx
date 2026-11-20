@@ -6,6 +6,7 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { StoreContent, type StoreProduct } from './store-content'
+import { StoreInsights } from './store-insights'
 import {
   parseStoreQuery,
   PRODUCTS_PER_PAGE,
@@ -177,6 +178,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         totalDocs={result.totalDocs}
         totalPages={result.totalPages}
       />
+      <StoreInsights query={query} results={result.totalDocs} />
     </MarketingShell>
   )
 }

@@ -4,6 +4,7 @@
  */
 
 import type { CartItem } from '@/lib/cart'
+import { captureInsight } from '@/lib/insights/client'
 import { getAnalyticsService } from './service'
 import type {
   ProductViewEvent,
@@ -75,6 +76,7 @@ export function trackProductView(product: AnalyticsProduct) {
   }
 
   analytics.trackEvent(event)
+  captureInsight('product_view', { productId: product.id, value: product.price })
 }
 
 /**
@@ -97,6 +99,11 @@ export function trackAddToCart(
   }
 
   analytics.trackEvent(event)
+  captureInsight('add_to_cart', {
+    productId: product.id,
+    value: event.parameters.value,
+    detail: { quantity },
+  })
 }
 
 /**
@@ -115,6 +122,11 @@ export function trackRemoveFromCart(item: CartItem) {
   }
 
   analytics.trackEvent(event)
+  captureInsight('remove_from_cart', {
+    productId: item.productId,
+    value: event.parameters.value,
+    detail: { quantity: item.quantity },
+  })
 }
 
 /**
@@ -133,6 +145,11 @@ export function trackBeginCheckout(items: CartItem[], total: number) {
   }
 
   analytics.trackEvent(event)
+  captureInsight('begin_checkout', { value: total, detail: { items: items.length } })
+}
+
+export function trackCheckoutError(message: string) {
+  captureInsight('checkout_error', { detail: { message: message.slice(0, 300) } })
 }
 
 /**
@@ -165,7 +182,7 @@ export function trackPurchase(
 /**
  * Track search
  */
-export function trackSearch(searchTerm: string) {
+export function trackSearch(searchTerm: string, resultCount: number) {
   const analytics = getAnalyticsService()
 
   const event: SearchEvent = {
@@ -176,6 +193,13 @@ export function trackSearch(searchTerm: string) {
   }
 
   analytics.trackEvent(event)
+  captureInsight('search', {
+    detail: { term: searchTerm.trim().toLowerCase().slice(0, 100), results: resultCount },
+  })
+}
+
+export function trackStoreFilter(filters: Record<string, string>) {
+  captureInsight('store_filter', { detail: filters })
 }
 
 /**
@@ -209,6 +233,31 @@ export function trackNewsletterSignup(source: string) {
   }
 
   analytics.trackEvent(event)
+  captureInsight('newsletter_signup', { detail: { source } })
+}
+
+export function trackEnquirySubmitted(inquiryType: string) {
+  getAnalyticsService().trackEvent({
+    eventName: 'generate_lead',
+    parameters: { lead_type: inquiryType },
+  })
+  captureInsight('enquiry_submitted', { detail: { type: inquiryType } })
+}
+
+export function trackGalleryZoom(productName: string) {
+  captureInsight('gallery_zoom', { detail: { product: productName.slice(0, 120) } })
+}
+
+export function trackGalleryFullscreen(productName: string) {
+  captureInsight('gallery_fullscreen', { detail: { product: productName.slice(0, 120) } })
+}
+
+export function trackClientError(message: string, source?: string) {
+  captureInsight('js_error', {
+    detail: source
+      ? { message: message.slice(0, 300), source: source.slice(0, 300) }
+      : { message: message.slice(0, 300) },
+  })
 }
 
 /**
