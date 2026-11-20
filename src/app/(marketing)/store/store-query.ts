@@ -41,6 +41,24 @@ export const STORE_MATERIALS = [
 export type StoreSort = (typeof STORE_SORTS)[number]
 export type StorePriceRange = (typeof STORE_PRICE_RANGES)[number]
 
+const PRICE_RANGE_BOUNDS: Record<StorePriceRange, readonly [number, number]> = {
+  'under-250': [0, 250],
+  '250-500': [250, 500],
+  '500-1000': [500, 1000],
+  '1000-plus': [1000, Number.POSITIVE_INFINITY],
+}
+
+export function priceRangeBounds(range: StorePriceRange): readonly [number, number] {
+  return PRICE_RANGE_BOUNDS[range]
+}
+
+export function priceRangeOf(price: number): StorePriceRange | undefined {
+  return STORE_PRICE_RANGES.find((range) => {
+    const [min, max] = PRICE_RANGE_BOUNDS[range]
+    return price >= min && price < max
+  })
+}
+
 export interface StoreQuery {
   search: string
   category?: string

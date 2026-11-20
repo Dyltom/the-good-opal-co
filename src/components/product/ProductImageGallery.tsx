@@ -2,25 +2,37 @@
 
 import { useCallback, useEffect, useRef, useState, ViewTransition, type PointerEvent } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { trackGalleryFullscreen, trackGalleryZoom } from '@/lib/analytics'
+import { ProductVideo } from './ProductVideo'
 
 interface ProductImage {
   url: string
   alt: string
 }
 
+export interface ProductGalleryVideo {
+  url: string
+  mimeType: string
+  poster?: string
+}
+
+interface GallerySlide extends ProductImage {
+  video?: ProductGalleryVideo
+}
+
 interface ProductImageGalleryProps {
   productName: string
   images: ProductImage[]
+  videos?: ProductGalleryVideo[]
   transitionName: string
 }
 
 const LOUPE_SCALE = 2.4
 
-export function ProductImageGallery({ productName, images, transitionName }: ProductImageGalleryProps) {
+export function ProductImageGallery({ productName, images, videos = [], transitionName }: ProductImageGalleryProps) {
   const [index, setIndex] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [loupe, setLoupe] = useState<{ x: number; y: number } | null>(null)
@@ -28,7 +40,17 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
   const trackRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const lightboxRef = useFocusTrap<HTMLDivElement>({ active: lightboxOpen })
-  const count = images.length
+  const [firstImage, ...otherImages] = images
+  const slides: GallerySlide[] = [
+    ...(firstImage ? [firstImage] : []),
+    ...videos.map((video, videoIndex) => ({
+      url: video.poster ?? '',
+      alt: `${productName} video ${videoIndex + 1}`,
+      video,
+    })),
+    ...otherImages,
+  ]
+  const count = slides.length
 
   const show = useCallback(
     (next: number) => {
@@ -63,7 +85,7 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
     return <div className="aspect-square w-full border border-warm-grey/55 bg-white" aria-hidden="true" />
   }
 
-  const current = images[Math.min(index, count - 1)] ?? images[0]!
+  const current = slides[Math.min(index, count - 1)] ?? slides[0]!
 
   const pointerPosition = (event: PointerEvent<HTMLElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -89,7 +111,20 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
           onScroll={onTrackScroll}
           className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:overflow-hidden [&::-webkit-scrollbar]:hidden"
         >
-          {images.map((image, imageIndex) => (
+          {slides.map((image, imageIndex) =>
+            image.video ? (
+              <div
+                key={image.video.url}
+                className="relative aspect-square w-full shrink-0 snap-center overflow-hidden border border-warm-grey/55"
+              >
+                <ProductVideo
+                  src={image.video.url}
+                  mimeType={image.video.mimeType}
+                  poster={image.video.poster}
+                  label={image.alt}
+                />
+              </div>
+            ) : (
             <button
               key={image.url}
               type="button"
@@ -120,13 +155,14 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
                 }
               />
             </button>
-          ))}
+            )
+          )}
         </div>
 
         <span
           className={cn(
             'pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-cream/95 px-3 py-2 font-sans text-xs font-semibold text-charcoal transition-opacity',
-            loupe && 'opacity-0'
+            (loupe || current.video) && 'opacity-0'
           )}
         >
           <Search className="h-3.5 w-3.5" aria-hidden="true" />
@@ -144,19 +180,24 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
 
       {count > 1 ? (
         <div className="hidden gap-2 lg:flex" role="group" aria-label="Product images">
-          {images.map((image, imageIndex) => (
+          {slides.map((image, imageIndex) => (
             <button
-              key={image.url}
+              key={image.video?.url ?? image.url}
               type="button"
               onClick={() => show(imageIndex)}
               aria-current={imageIndex === index ? 'true' : undefined}
-              aria-label={`Show image ${imageIndex + 1} of ${count}`}
+              aria-label={image.video ? `Show video ${imageIndex + 1} of ${count}` : `Show image ${imageIndex + 1} of ${count}`}
               className={cn(
                 'relative h-20 w-20 shrink-0 overflow-hidden border bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible',
                 imageIndex === index ? 'border-charcoal' : 'border-warm-grey/55 opacity-75 hover:opacity-100'
               )}
             >
-              <Image src={image.url} alt="" fill sizes="80px" className="object-cover" />
+              {image.url ? <Image src={image.url} alt="" fill sizes="80px" className="object-cover" /> : null}
+              {image.video ? (
+                <span className="absolute inset-0 flex items-center justify-center bg-charcoal/25 text-cream">
+                  <Play className="h-5 w-5" aria-hidden="true" />
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
@@ -174,7 +215,7 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
             <p className="font-sans text-sm tabular-nums text-cream/75">
               {index + 1} / {count}
               <span className="ml-3 hidden sm:inline">
-                {lightboxZoom ? 'Move to explore, click to zoom out' : 'Click the stone to zoom in'}
+                {current.video ? null : lightboxZoom ? 'Move to explore, click to zoom out' : 'Click the stone to zoom in'}
               </span>
             </p>
             <button
@@ -193,6 +234,7 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
               lightboxZoom ? 'cursor-zoom-out' : 'cursor-zoom-in'
             )}
             onClick={(event) => {
+              if (current.video) return
               if (!lightboxZoom) trackGalleryZoom(productName)
               setLightboxZoom((zoomed) => (zoomed ? null : pointerPosition(event as unknown as PointerEvent<HTMLElement>)))
             }}
@@ -200,7 +242,18 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
               if (lightboxZoom && event.pointerType === 'mouse') setLightboxZoom(pointerPosition(event))
             }}
           >
+            {current.video ? (
+              <ProductVideo
+                key={current.video.url}
+                src={current.video.url}
+                mimeType={current.video.mimeType}
+                poster={current.video.poster}
+                label={current.alt}
+                controls
+              />
+            ) : (
             <Image
+              key={current.url}
               src={current.url}
               alt={current.alt}
               fill
@@ -213,6 +266,7 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
                   : undefined
               }
             />
+            )}
           </div>
           {count > 1 ? (
             <div className="flex justify-center gap-2 py-3">

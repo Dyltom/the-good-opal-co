@@ -8,6 +8,7 @@ import { Footer, SiteNavigation } from '@/components/navigation'
 import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
+import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { formatCurrency } from '@/lib/utils'
 import { getFreeShippingProgress } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
@@ -135,6 +136,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         }
       })
       .filter((img): img is { url: string; alt: string } => Boolean(img)) ?? []
+  const productVideos =
+    product.videos?.flatMap((clip) => {
+      const video = typeof clip.video === 'object' ? clip.video : null
+      const url = resolveMediaUrl(video?.url)
+      if (!url || !video?.mimeType?.startsWith('video/')) return []
+      const poster = typeof clip.poster === 'object' ? resolveMediaUrl(clip.poster?.url) : undefined
+      return [{ url, mimeType: video.mimeType, poster }]
+    }) ?? []
   const ownedImage = ownedProductImageUrl(product.slug)
   const productImages = mergeProductGallery(
     product.slug,
@@ -201,6 +210,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     <ProductImageGallery
                       productName={product.name}
                       images={productImages}
+                      videos={productVideos}
                       transitionName={productImageTransitionName(product.slug)}
                     />
 
@@ -322,6 +332,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     <AboutStone id="about-stone-mobile" paragraphs={about.paragraphs} />
                   </section>
                 ) : null}
+
+                <ReviewsSection
+                  productId={product.id}
+                  eyebrow="Customer review"
+                  title="From the person who bought it."
+                  className="mt-24 border-t border-warm-grey/40 pt-16"
+                />
 
                 <div className="mt-24">
                   <RelatedProductsWithSuspense

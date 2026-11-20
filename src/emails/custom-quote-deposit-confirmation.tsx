@@ -11,7 +11,6 @@ export function CustomQuoteDepositConfirmationEmail({
 }) {
   return (
     <html lang="en">
-      {/* eslint-disable-next-line @next/next/no-head-element */}
       <head>
         <title>Your custom jewellery deposit is confirmed</title>
       </head>

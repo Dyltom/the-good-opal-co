@@ -136,24 +136,14 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('Refine collection')
     expect(source).toContain('hidden lg:block')
     expect(source).toContain('lg:hidden')
-    expect(source).toContain('<FilterForm query={query}')
+    expect(source).toContain('<FilterChips query={query}')
   })
 
   test('mobile filter disclosure and controls provide large targets', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
     expect(source).toContain('summary className="flex min-h-12')
-    expect(source).toContain('className="min-h-11 flex-1')
-  })
-
-  test('product filters support prefixed ids for mobile and desktop instances', () => {
-    const source = read('src/components/store/ProductFilters.tsx')
-
-    expect(source).toContain('idPrefix?: string')
-    expect(source).toContain('const fieldId')
-    expect(source).toContain('id={fieldId(')
-    expect(source).toContain('htmlFor={fieldId(')
-    expect(source).not.toContain('tracking-[0.15em]')
+    expect(source).toContain('inline-flex min-h-11 items-center')
   })
 
   test('closed mobile navigation does not reserve page-height hit area', () => {

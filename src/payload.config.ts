@@ -29,6 +29,7 @@ import { RingDesigns } from './payload/collections/RingDesigns.ts'
 import { RingReferenceChecks } from './payload/collections/RingReferenceChecks.ts'
 import { RingAssets } from './payload/collections/RingAssets.ts'
 import { InsightEvents } from './payload/collections/InsightEvents.ts'
+import { Reviews } from './payload/collections/Reviews.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -171,6 +172,7 @@ export default buildConfig({
     RingDesigns,
     RingReferenceChecks,
     InsightEvents,
+    Reviews,
   ],
   editor: lexicalEditor({}),
   email: resendAdapter({

@@ -6,13 +6,16 @@ import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
-import { StoreContent, type StoreProduct } from './store-content'
+import { StoreContent, type StoreFacets, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
   parseStoreQuery,
+  priceRangeBounds,
+  priceRangeOf,
   PRODUCTS_PER_PAGE,
   storeMetadata,
   storeUrl,
+  type StoreQuery,
   type StoreSearchParams,
 } from './store-query'
 
@@ -123,14 +126,11 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   if (query.stone) conditions.push({ stoneType: { equals: query.stone } })
   if (query.origin) conditions.push({ stoneOrigin: { equals: query.origin } })
   if (query.material) conditions.push({ material: { equals: query.material } })
-  if (query.price === 'under-250') conditions.push({ price: { less_than: 250 } })
-  if (query.price === '250-500') {
-    conditions.push({ price: { greater_than_equal: 250 } }, { price: { less_than: 500 } })
+  if (query.price) {
+    const [min, max] = priceRangeBounds(query.price)
+    conditions.push({ price: { greater_than_equal: min } })
+    if (Number.isFinite(max)) conditions.push({ price: { less_than: max } })
   }
-  if (query.price === '500-1000') {
-    conditions.push({ price: { greater_than_equal: 500 } }, { price: { less_than: 1000 } })
-  }
-  if (query.price === '1000-plus') conditions.push({ price: { greater_than_equal: 1000 } })
   if (query.search) {
     conditions.push({
       or: [
@@ -141,14 +141,23 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   }
 
   const payload = await getPayload()
-  const result = await payload.find({
-    collection: 'products',
-    where: { and: conditions },
-    limit: PRODUCTS_PER_PAGE,
-    page: query.page,
-    sort: sortMap[query.sort],
-    depth: 1,
-  })
+  const [result, catalogue] = await Promise.all([
+    payload.find({
+      collection: 'products',
+      where: { and: conditions },
+      limit: PRODUCTS_PER_PAGE,
+      page: query.page,
+      sort: sortMap[query.sort],
+      depth: 1,
+    }),
+    payload.find({
+      collection: 'products',
+      where: { status: { equals: 'published' } },
+      pagination: false,
+      depth: 0,
+      select: { category: true, stoneType: true, stoneOrigin: true, price: true, stock: true },
+    }),
+  ])
 
   if (result.totalPages > 0 && query.page > result.totalPages) {
     redirect(storeUrl(query, result.totalPages))
@@ -177,8 +186,31 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         query={query}
         totalDocs={result.totalDocs}
         totalPages={result.totalPages}
+        facets={storeFacets(catalogue.docs, query)}
       />
       <StoreInsights query={query} results={result.totalDocs} />
     </MarketingShell>
   )
+}
+
+interface CatalogueEntry {
+  category?: string | null
+  stoneType?: string | null
+  stoneOrigin?: string | null
+  price?: number | null
+  stock?: number | null
+}
+
+function storeFacets(entries: CatalogueEntry[], query: StoreQuery): StoreFacets {
+  const inScope = entries.filter((entry) => query.availability === 'all' || (entry.stock ?? 0) > 0)
+  const present = (values: (string | null | undefined)[]) =>
+    new Set(values.filter((value): value is string => Boolean(value)))
+
+  return {
+    category: present(inScope.map((entry) => entry.category)),
+    stone: present(inScope.map((entry) => entry.stoneType)),
+    origin: present(inScope.map((entry) => entry.stoneOrigin)),
+    price: present(inScope.map((entry) => (typeof entry.price === 'number' ? priceRangeOf(entry.price) : undefined))),
+    collectedCount: entries.filter((entry) => (entry.stock ?? 0) <= 0).length,
+  }
 }
