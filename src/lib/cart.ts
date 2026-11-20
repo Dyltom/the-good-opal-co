@@ -26,6 +26,7 @@ export interface CartItem {
   name: string
   price: number
   quantity: number
+  maxQuantity?: number
   image?: string
 }
 
@@ -114,6 +115,7 @@ export async function getCart(): Promise<Cart> {
             price: product.price,
             name: product.name,
             quantity: Math.min(item.quantity, availableStock),
+            maxQuantity: availableStock,
             image,
           })
         }
