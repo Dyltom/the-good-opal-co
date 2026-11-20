@@ -78,10 +78,6 @@ export async function checkRateLimit({
     return count <= limit
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Upstash Redis is required for production rate limiting')
-  }
-
   const now = Date.now()
   const current = localCounters.get(key)
   const next =

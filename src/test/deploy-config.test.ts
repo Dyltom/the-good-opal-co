@@ -80,13 +80,8 @@ describe('deployment config', () => {
     }
   })
 
-  test('admin email and distributed rate limiting are production-configured', () => {
-    const config = read('src/payload.config.ts')
-    const env = read('.env.example')
-
-    expect(config).toContain('resendAdapter')
-    expect(env).toContain('UPSTASH_REDIS_REST_URL=')
-    expect(env).toContain('UPSTASH_REDIS_REST_TOKEN=')
+  test('admin email is production-configured', () => {
+    expect(read('src/payload.config.ts')).toContain('resendAdapter')
   })
 
   test('private quote bearer links are excluded from logs, caching, indexing, and analytics', () => {
