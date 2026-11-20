@@ -36,6 +36,13 @@ export const SHIPPING_CONFIG = {
   }
 } as const
 
+export const SHIPPING_COUNTRIES = {
+  AUSTRALIA: ['AU'],
+  INTERNATIONAL: ['NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'],
+} as const
+
+export const RETURN_WINDOW_DAYS = 30
+
 export const SHIPPING_MESSAGES = {
   // Free shipping banner message
   FREE_SHIPPING_BANNER: `Free shipping on orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}`,

@@ -50,7 +50,12 @@ describe('structured data', () => {
     })
 
     expect(data).toMatchObject({
-      offers: { shippingDetails: { shippingRate: { value: 0, currency: 'AUD' } } },
+      offers: {
+        shippingDetails: [
+          { shippingRate: { value: 0, currency: 'AUD' } },
+          { shippingRate: { value: 0, currency: 'AUD' } },
+        ],
+      },
     })
   })
 
@@ -74,14 +79,34 @@ describe('structured data', () => {
         priceCurrency: 'AUD',
         availability: 'https://schema.org/InStock',
         itemCondition: 'https://schema.org/NewCondition',
-        shippingDetails: {
-          shippingDestination: { addressCountry: 'AU' },
-          shippingRate: { value: 15, currency: 'AUD' },
-        },
+        shippingDetails: [
+          {
+            shippingDestination: [{ addressCountry: 'AU' }],
+            shippingRate: { value: 15, currency: 'AUD' },
+          },
+          {
+            shippingDestination: expect.arrayContaining([{ '@type': 'DefinedRegion', addressCountry: 'NZ' }]),
+            shippingRate: { value: 25, currency: 'AUD' },
+          },
+        ],
       },
     })
   })
 
+  test('marks a sold one-of-a-kind piece as sold out while keeping its offer', () => {
+    const data = productStructuredData({
+      name: 'Sold opal',
+      slug: 'sold-opal',
+      description: 'A sold stone.',
+      price: 245,
+      images: [],
+      stock: 0,
+    })
+
+    expect(data).toMatchObject({
+      offers: { availability: 'https://schema.org/SoldOut', price: 245, priceCurrency: 'AUD' },
+    })
+  })
   test('publishes absolute product and course image URLs', () => {
     const product = productStructuredData({
       name: 'Relative-media opal',

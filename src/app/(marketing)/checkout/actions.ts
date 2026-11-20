@@ -10,6 +10,7 @@ import {
 } from '@/lib/checkout-pricing'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
+import { SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
   checkoutReservationExpiresAt,
@@ -18,8 +19,6 @@ import {
   InventoryUnavailableError,
   reserveCheckoutInventory,
 } from '@/lib/inventory-reservations'
-
-const INTERNATIONAL_COUNTRIES = ['NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'] as const
 
 const checkoutSchema = z.object({
   region: z.enum(['AU', 'INTL']),
@@ -123,7 +122,7 @@ export async function createCheckoutSession(input: {
           quantity: item.quantity,
         })),
         shipping_address_collection: {
-          allowed_countries: region === 'AU' ? ['AU'] : [...INTERNATIONAL_COUNTRIES],
+          allowed_countries: [...SHIPPING_COUNTRIES[destination]],
         },
         shipping_options: [
           {
