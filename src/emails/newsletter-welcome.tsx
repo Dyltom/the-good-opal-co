@@ -100,7 +100,7 @@ export const NewsletterWelcomeEmail: React.FC<NewsletterWelcomeEmailProps> = ({
                       Unsubscribe
                     </a>
                     <p style={{ margin: '20px 0 0 0', fontSize: '12px', color: '#999999' }}>
-                      © {new Date().getFullYear()} The Good Opal Co • Sydney, NSW, Australia
+                      © {new Date().getFullYear()} The Good Opal Co • Australia
                     </p>
                   </td>
                 </tr>

@@ -150,7 +150,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
           <div style="background-color: #f7f7f7; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 0 0 10px 0;"><strong>Name:</strong> ${safeName}</p>
             <p style="margin: 0 0 10px 0;"><strong>Email:</strong> ${safeEmail}</p>
-            <p style="margin: 0 0 10px 0;"><strong>Inquiry:</strong> ${inquiryLabel}</p>
+            <p style="margin: 0 0 10px 0;"><strong>Topic:</strong> ${inquiryLabel}</p>
             <p style="margin: 0 0 10px 0;"><strong>Reference:</strong> ${reference}</p>
             ${optionalDetail('Phone', validated.phone)}
             ${optionalDetail('Order number', validated.orderNumber)}
@@ -207,12 +207,12 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
             </p>
 
             <p style="color: #666; line-height: 1.6;">
-              We&apos;ve received your ${inquiryLabel.toLowerCase()} inquiry. We&apos;ll review the details and reply by email.
+              We&apos;ve received your enquiry. We&apos;ll review the details and reply by email.
             </p>
 
             <div style="background-color: #ffffff; border: 1px solid #e5e5e5; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #1a1a1a; margin-top: 0; font-size: 16px;">Your Message Details:</h3>
-              <p style="color: #666; margin: 0 0 5px 0;"><strong>Inquiry:</strong> ${inquiryLabel}</p>
+              <p style="color: #666; margin: 0 0 5px 0;"><strong>Topic:</strong> ${inquiryLabel}</p>
               <p style="color: #666; margin: 0;"><strong>Message:</strong></p>
               <p style="color: #666; margin: 10px 0 0 0; padding-left: 20px; border-left: 3px solid #e5e5e5;">
                 ${safeMessage}

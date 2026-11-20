@@ -15,7 +15,12 @@ export const metadata: Metadata = {
 export default function ShippingPage() {
   return (
     <MarketingShell>
-      <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Shipping', url: '/shipping' }]} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Shipping', url: '/shipping' },
+        ]}
+      />
       <Container className="py-16 sm:py-20 lg:py-28">
         <PageHeader
           eyebrow="Order information"
@@ -68,7 +73,7 @@ export default function ShippingPage() {
             <p className="mt-6 font-sans text-sm leading-7 text-charcoal/70">
               Supported destinations are charged ${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD
               below the free-shipping threshold. Import duties, taxes, and local handling charges
-              are not included in our price and remain the recipient&apos;s responsibility.
+              are not included in our price and remain the recipient’s responsibility.
             </p>
             <p className="mt-5 font-sans text-sm leading-7 text-charcoal/70">
               Need a piece by a particular date, or cannot select your country?{' '}

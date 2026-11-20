@@ -101,7 +101,7 @@ function storeFacts(contactEmail: string): string[] {
     '## Business',
     '',
     '- Founder: Stephanie Caruana.',
-    '- Location: Sydney, New South Wales, Australia.',
+    '- Location: Australia.',
     '- Prices are in Australian dollars (AUD).',
     `- Contact: ${contactEmail} or ${markdownLink('the contact form', '/contact')}. Ask for extra photographs or a virtual viewing before buying.`,
     '',

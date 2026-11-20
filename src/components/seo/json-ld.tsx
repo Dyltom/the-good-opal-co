@@ -78,8 +78,6 @@ export function organizationStructuredData(contact?: { email: string }): Record<
     },
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Sydney',
-      addressRegion: 'NSW',
       addressCountry: 'AU',
     },
     contactPoint: {

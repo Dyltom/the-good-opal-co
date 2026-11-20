@@ -180,7 +180,7 @@ export function ContactForm({
           ))}
         </select>
         {errors.inquiryType && (
-          <p className="mt-1 text-sm text-red-600">Please choose an inquiry type.</p>
+          <p className="mt-1 text-sm text-red-600">Please choose a topic.</p>
         )}
       </div>
 
