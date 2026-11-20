@@ -121,7 +121,7 @@ export default function CookiePolicyPage() {
                 Optional analytics
               </h2>
               <p className="mt-4">
-                If you select “Accept analytics”, Vercel Web Analytics may collect limited,
+                If you select “Accept analytics”, Google Analytics may collect limited,
                 aggregated information about visits and page use. This helps us understand which
                 pages are useful and where the shopping experience needs improvement. Analytics do
                 not load when you choose necessary storage only.

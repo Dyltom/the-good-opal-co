@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Analytics } from '@vercel/analytics/react'
 import { parseCookiePreferences } from '@/lib/cookie-consent'
 import { GoogleAnalyticsProvider } from './GoogleAnalytics'
 
@@ -28,10 +27,5 @@ export function AnalyticsConsentGate() {
   }, [])
 
   if (!allowed || pathname.startsWith('/quote')) return null
-  return (
-    <>
-      <Analytics />
-      <GoogleAnalyticsProvider />
-    </>
-  )
+  return <GoogleAnalyticsProvider />
 }

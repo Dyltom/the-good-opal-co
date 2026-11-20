@@ -48,10 +48,7 @@ export function shouldWakeBuilderMappingWorker(doc: unknown, previousDoc: unknow
 }
 
 function applicationOrigin(): string | undefined {
-  const vercelOrigin =
-    process.env.VERCEL_URL?.trim() || process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
-  const publicOrigin = process.env.NEXT_PUBLIC_APP_URL?.trim()
-  const configured = vercelOrigin || publicOrigin
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()
   if (!configured) return undefined
 
   try {
@@ -59,11 +56,7 @@ function applicationOrigin(): string | undefined {
     const localHttp =
       url.protocol === 'http:' &&
       (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '[::1]')
-    const localHttps =
-      url.protocol === 'https:' &&
-      (url.hostname === 'localhost' || url.hostname === '127.0.0.1' || url.hostname === '[::1]')
     if (url.protocol !== 'https:' && !localHttp) return undefined
-    if (!vercelOrigin && !localHttp && !localHttps) return undefined
     if (url.username || url.password) return undefined
     return url.origin
   } catch {

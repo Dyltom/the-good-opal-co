@@ -1,15 +1,11 @@
 import { createHash } from 'node:crypto'
-import { afterEach, describe, expect, test, vi } from 'vitest'
+import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { CANONICAL_FACE_TEXTURE_VERSION } from '../canonical-face-texture'
 import { OPAL_PHOTO_ANALYSIS_VERSION } from '../photo-analysis'
 import type { CanonicalFaceArtifactEvent } from '../mapping-processor'
-
-const blob = vi.hoisted(() => ({
-  head: vi.fn(),
-  put: vi.fn(),
-}))
-
-vi.mock('@vercel/blob', () => blob)
 
 import {
   lookupCanonicalFaceArtifact,
@@ -52,56 +48,59 @@ function canonicalFaceEvent(): CanonicalFaceArtifactEvent {
 }
 
 describe('canonical face artifact store', () => {
-  afterEach(() => {
-    vi.clearAllMocks()
+  let uploadDir: string
+
+  beforeEach(async () => {
+    uploadDir = await mkdtemp(path.join(tmpdir(), 'canonical-face-'))
+    vi.stubEnv('UPLOAD_DIR', uploadDir)
   })
 
-  test('writes the deterministic public pathname and returns its durable receipt', async () => {
+  afterEach(async () => {
+    vi.unstubAllEnvs()
+    await rm(uploadDir, { force: true, recursive: true })
+  })
+
+  test('writes the bytes at the deterministic storage key and returns its receipt', async () => {
     const event = canonicalFaceEvent()
-    const pathname = event.artifact.metadata.storageKey
-    blob.put.mockResolvedValue({
-      downloadUrl: `https://store.public.blob.vercel-storage.com/${pathname}?download=1`,
-      pathname,
-      url: `https://store.public.blob.vercel-storage.com/${pathname}`,
-    })
+    const { contentHash, storageKey } = event.artifact.metadata
 
     await expect(persistCanonicalFaceArtifact(event)).resolves.toEqual({
-      contentHash: event.artifact.metadata.contentHash,
-      pathname,
-      url: `https://store.public.blob.vercel-storage.com/${pathname}`,
+      contentHash,
+      pathname: storageKey,
     })
-    expect(blob.put).toHaveBeenCalledWith(pathname, event.artifact.bytes, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      cacheControlMaxAge: 31_536_000,
-      contentType: 'image/png',
-    })
+    await expect(readFile(path.join(uploadDir, storageKey))).resolves.toEqual(event.artifact.bytes)
+    await expect(lookupCanonicalFaceArtifact(storageKey)).resolves.toEqual(event.artifact.bytes)
   })
 
-  test('propagates Blob write failures so mappings remain retryable', async () => {
-    blob.put.mockRejectedValue(new Error('blob unavailable'))
+  test('replays idempotently and replaces a corrupt file without leaving temp files', async () => {
+    const event = canonicalFaceEvent()
+    const filePath = path.join(uploadDir, event.artifact.metadata.storageKey)
 
-    await expect(persistCanonicalFaceArtifact(canonicalFaceEvent())).rejects.toThrow(
-      'blob unavailable'
-    )
+    await persistCanonicalFaceArtifact(event)
+    await writeFile(filePath, 'corrupt')
+    await persistCanonicalFaceArtifact(event)
+    await persistCanonicalFaceArtifact(event)
+
+    await expect(readFile(filePath)).resolves.toEqual(event.artifact.bytes)
+    await expect(readdir(path.dirname(filePath))).resolves.toEqual([path.basename(filePath)])
   })
 
-  test('rejects mutated bytes before attempting a durable write', async () => {
+  test('rejects mutated bytes before writing anything', async () => {
     const event = canonicalFaceEvent()
     event.artifact.bytes[0] = 0
 
     await expect(persistCanonicalFaceArtifact(event)).rejects.toThrow('content hash does not match')
-    expect(blob.put).not.toHaveBeenCalled()
+    await expect(readdir(uploadDir)).resolves.toEqual([])
   })
 
-  test('looks up the artifact by its deterministic public pathname', async () => {
-    const storageKey = canonicalFaceEvent().artifact.metadata.storageKey
-    blob.head.mockResolvedValue({ pathname: storageKey, url: 'https://store.example/face.png' })
+  test('rejects a storage key that could escape the upload directory', async () => {
+    await expect(lookupCanonicalFaceArtifact('../../etc/passwd')).rejects.toThrow(
+      'invalid storage key'
+    )
+  })
 
-    await expect(lookupCanonicalFaceArtifact(storageKey)).resolves.toMatchObject({
-      pathname: storageKey,
-    })
-    expect(blob.head).toHaveBeenCalledWith(storageKey)
+  test('reports a missing artifact as absent', async () => {
+    const storageKey = canonicalFaceEvent().artifact.metadata.storageKey
+    await expect(lookupCanonicalFaceArtifact(storageKey)).resolves.toBeUndefined()
   })
 })

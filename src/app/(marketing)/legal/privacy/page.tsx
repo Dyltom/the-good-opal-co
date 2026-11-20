@@ -142,7 +142,7 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>An essential HTTP-only cart cookie so the server can retain your basket</li>
                 <li>Local storage recording your necessary and analytics consent choice</li>
-                <li>Vercel Analytics after you choose to allow analytics</li>
+                <li>Google Analytics after you choose to allow analytics</li>
               </ul>
               <p className="text-content mb-4">
                 We do not currently use advertising, remarketing, or social-media tracking pixels. You can change optional analytics through Cookie Settings. Blocking essential storage may prevent the cart and privacy controls from working.

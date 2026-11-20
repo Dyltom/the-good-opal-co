@@ -88,7 +88,6 @@ export interface CanonicalFaceArtifactEvent {
 export interface CanonicalFaceArtifactReceipt {
   contentHash: string
   pathname: string
-  url: string
 }
 
 export type CanonicalFaceArtifactSink = (
@@ -387,25 +386,18 @@ function absoluteMediaUrl(value: string | null | undefined): string | undefined 
   try {
     return new URL(resolved).toString()
   } catch {
-    const origin = internalApplicationOrigin()
+    const origin = applicationOrigin()
     if (!origin) return undefined
     return new URL(resolved, origin).toString()
   }
 }
 
-function normalizedOrigin(
-  value: string | undefined,
-  defaultProtocol?: 'https:'
-): string | undefined {
-  const configured = value?.trim()
+function applicationOrigin(): string | undefined {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()
   if (!configured) return undefined
 
   try {
-    const url = new URL(
-      defaultProtocol && !configured.includes('://')
-        ? `${defaultProtocol}//${configured}`
-        : configured
-    )
+    const url = new URL(configured)
     if (url.username || url.password) return undefined
     if (url.protocol !== 'https:' && url.protocol !== 'http:') return undefined
     return url.origin
@@ -414,30 +406,13 @@ function normalizedOrigin(
   }
 }
 
-/**
- * Payload file URLs are application-relative. During a Vercel deployment they
- * must resolve back to that deployment, not through the public canonical domain
- * which may still point at a previous platform during DNS migration.
- */
-function internalApplicationOrigin(): string | undefined {
-  return (
-    normalizedOrigin(process.env.VERCEL_URL, 'https:') ??
-    normalizedOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL, 'https:') ??
-    normalizedOrigin(process.env.NEXT_PUBLIC_APP_URL)
-  )
-}
 
 function isOwnedMediaSource(url: string): boolean {
   try {
     const parsed = new URL(url)
     if (parsed.username || parsed.password) return false
-    const applicationOrigin = internalApplicationOrigin()
-    if (applicationOrigin && parsed.origin === applicationOrigin) return true
-    return (
-      parsed.protocol === 'https:' &&
-      parsed.port === '' &&
-      parsed.hostname.endsWith('.blob.vercel-storage.com')
-    )
+    const origin = applicationOrigin()
+    return Boolean(origin && parsed.origin === origin)
   } catch {
     return false
   }
@@ -861,8 +836,7 @@ export async function processBuilderMappings(
               })
               if (
                 receipt.contentHash !== canonicalFace.metadata.contentHash ||
-                receipt.pathname !== canonicalFace.metadata.storageKey ||
-                !receipt.url
+                receipt.pathname !== canonicalFace.metadata.storageKey
               ) {
                 throw new Error('Canonical face artifact sink returned a mismatched receipt')
               }

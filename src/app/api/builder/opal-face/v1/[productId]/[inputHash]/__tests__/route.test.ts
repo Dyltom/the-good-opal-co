@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { CANONICAL_FACE_TEXTURE_VERSION } from '@/lib/custom-builder/canonical-face-texture'
 
 const inputHash = 'b'.repeat(64)
+const pngBytes = Buffer.from('canonical-face-png')
 const pathname = `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${inputHash}.png`
 
 const mocks = vi.hoisted(() => ({
@@ -47,20 +48,16 @@ describe('canonical opal face route', () => {
     mocks.getPayload.mockResolvedValue({ findByID: mocks.findByID })
     mocks.findByID.mockResolvedValue(product)
     mocks.resolveCanonicalFaceMapping.mockReturnValue({ identity: { inputHash } })
-    mocks.lookupCanonicalFaceArtifact.mockResolvedValue({
-      pathname,
-      url: `https://store.public.blob.vercel-storage.com/${pathname}`,
-    })
+    mocks.lookupCanonicalFaceArtifact.mockResolvedValue(pngBytes)
   })
 
-  test('redirects the approved immutable mapping to its durable Blob artifact', async () => {
+  test('serves the approved immutable mapping PNG from durable storage', async () => {
     const response = await GET(request(), context())
 
-    expect(response.status).toBe(307)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('image/png')
     expect(response.headers.get('cache-control')).toContain('immutable')
-    expect(response.headers.get('location')).toBe(
-      `https://store.public.blob.vercel-storage.com/${pathname}`
-    )
+    expect(Buffer.from(await response.arrayBuffer())).toEqual(pngBytes)
     expect(mocks.lookupCanonicalFaceArtifact).toHaveBeenCalledWith(pathname)
   })
 
@@ -87,29 +84,15 @@ describe('canonical opal face route', () => {
     expect(mocks.lookupCanonicalFaceArtifact).not.toHaveBeenCalled()
   })
 
-  test.each([
-    'https://internal.example/face.png',
-    'https://owned.public.blob.vercel-storage.com.evil.example/face.png',
-    'https://blob.vercel-storage.com/face.png',
-    'https://user:password@owned.public.blob.vercel-storage.com/face.png',
-    'http://owned.public.blob.vercel-storage.com/face.png',
-  ])('rejects an invalid artifact URL %s', async (url) => {
-    mocks.lookupCanonicalFaceArtifact.mockResolvedValue({ pathname, url })
+  test('returns 404 when the artifact has not been generated', async () => {
+    mocks.lookupCanonicalFaceArtifact.mockResolvedValue(undefined)
     const response = await GET(request(), context())
     expect(response.status).toBe(404)
-  })
-
-  test('rejects an artifact stored under a mismatched pathname', async () => {
-    mocks.lookupCanonicalFaceArtifact.mockResolvedValue({
-      pathname: `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${'a'.repeat(64)}.png`,
-      url: `https://store.public.blob.vercel-storage.com/${pathname}`,
-    })
-    const response = await GET(request(), context())
-    expect(response.status).toBe(404)
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
   })
 
   test('fails closed when durable storage is unavailable', async () => {
-    mocks.lookupCanonicalFaceArtifact.mockRejectedValue(new Error('blob unavailable'))
+    mocks.lookupCanonicalFaceArtifact.mockRejectedValue(new Error('disk unavailable'))
     const response = await GET(request(), context())
     expect(response.status).toBe(404)
     expect(response.headers.get('cache-control')).toBe('private, no-store')

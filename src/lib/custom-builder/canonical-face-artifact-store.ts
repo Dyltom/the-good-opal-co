@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto'
-import { head, put } from '@vercel/blob'
+import { createHash, randomUUID } from 'node:crypto'
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import type { CanonicalFaceArtifactEvent, CanonicalFaceArtifactReceipt } from './mapping-processor'
 
 const CANONICAL_FACE_STORAGE_KEY_PATTERN = /^builder\/opal-faces\/v\d+\/[a-f0-9]{64}\.png$/
-const IMMUTABLE_CACHE_SECONDS = 31_536_000
 
 function assertCanonicalFaceStorageKey(storageKey: string): void {
   if (!CANONICAL_FACE_STORAGE_KEY_PATTERN.test(storageKey)) {
@@ -11,15 +11,25 @@ function assertCanonicalFaceStorageKey(storageKey: string): void {
   }
 }
 
-/**
- * Persists a generated face under its input-addressed public Blob pathname.
- * Replays overwrite the same immutable bytes instead of creating random keys.
- */
+function artifactPath(storageKey: string): string {
+  const uploadDir = path.resolve(process.env['UPLOAD_DIR']?.trim() || process.cwd())
+  return path.join(uploadDir, storageKey)
+}
+
+async function storedHash(filePath: string): Promise<string | undefined> {
+  try {
+    return createHash('sha256').update(await readFile(filePath)).digest('hex')
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+    throw error
+  }
+}
+
 export async function persistCanonicalFaceArtifact(
   event: CanonicalFaceArtifactEvent
 ): Promise<CanonicalFaceArtifactReceipt> {
   const { artifact } = event
-  const { contentHash, mediaType, storageKey } = artifact.metadata
+  const { contentHash, storageKey } = artifact.metadata
   const actualHash = createHash('sha256').update(artifact.bytes).digest('hex')
 
   assertCanonicalFaceStorageKey(storageKey)
@@ -30,27 +40,29 @@ export async function persistCanonicalFaceArtifact(
     throw new Error('Canonical face artifact byte length does not match its bytes')
   }
 
-  const blob = await put(storageKey, artifact.bytes, {
-    access: 'public',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: IMMUTABLE_CACHE_SECONDS,
-    contentType: mediaType,
-  })
-
-  if (blob.pathname !== storageKey) {
-    throw new Error('Canonical face artifact Blob pathname does not match its storage key')
+  const filePath = artifactPath(storageKey)
+  if ((await storedHash(filePath)) !== contentHash) {
+    await mkdir(path.dirname(filePath), { recursive: true })
+    const tempPath = `${filePath}.${randomUUID()}.tmp`
+    try {
+      await writeFile(tempPath, artifact.bytes)
+      await rename(tempPath, filePath)
+    } finally {
+      await rm(tempPath, { force: true })
+    }
   }
 
-  return {
-    contentHash,
-    pathname: blob.pathname,
-    url: blob.url,
-  }
+  return { contentHash, pathname: storageKey }
 }
 
-/** Resolves a deterministic canonical-face pathname without storing Blob URLs in Payload. */
-export async function lookupCanonicalFaceArtifact(storageKey: string) {
+export async function lookupCanonicalFaceArtifact(storageKey: string): Promise<Buffer | undefined> {
   assertCanonicalFaceStorageKey(storageKey)
-  return head(storageKey)
+  const filePath = artifactPath(storageKey)
+  try {
+    if (!(await stat(filePath)).isFile()) return undefined
+    return await readFile(filePath)
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined
+    throw error
+  }
 }

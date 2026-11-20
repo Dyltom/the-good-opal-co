@@ -12,10 +12,7 @@ function requestUser(user: unknown): UserWithRole | null {
 }
 
 function isProductionDeployment(): boolean {
-  const vercelEnvironment = process.env.VERCEL_ENV?.trim()
-  return vercelEnvironment
-    ? vercelEnvironment === 'production'
-    : process.env.NODE_ENV === 'production'
+  return process.env.NODE_ENV === 'production'
 }
 
 function matchesBootstrapPassword(requestedPassword: unknown): boolean {

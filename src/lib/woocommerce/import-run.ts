@@ -5,7 +5,6 @@ export type WooImportMode = (typeof wooImportModes)[number]
 export interface WooImportRunConfiguration {
   runId: string
   mode: WooImportMode
-  deploymentId?: string
 }
 
 interface WooImportRunClaimOperations<T> {
@@ -33,12 +32,7 @@ export function parseWooImportRunConfiguration(
     throw new Error('WOO_IMPORT_MODE must be initial or final-delta when applying an import')
   }
 
-  const deploymentId = environment['VERCEL_DEPLOYMENT_ID']?.trim()
-  return {
-    runId,
-    mode,
-    ...(deploymentId ? { deploymentId } : {}),
-  }
+  return { runId, mode }
 }
 
 export async function claimWooImportRun<T>(

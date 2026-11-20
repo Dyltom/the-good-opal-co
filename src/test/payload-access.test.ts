@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import type { Access, PayloadRequest } from 'payload'
 import {
   isAdmin,
@@ -96,10 +96,9 @@ describe('Payload access rules', () => {
   test('production first-user bootstrap requires the temporary bootstrap password', async () => {
     const previousAdminEmail = process.env.ADMIN_EMAIL
     const previousBootstrapPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD
-    const previousVercelEnvironment = process.env.VERCEL_ENV
     process.env.ADMIN_EMAIL = 'owner@example.com'
     process.env.ADMIN_BOOTSTRAP_PASSWORD = 'high-entropy-bootstrap-password'
-    process.env.VERCEL_ENV = 'production'
+    vi.stubEnv('NODE_ENV', 'production')
 
     const request = (password: string | undefined) =>
       ({
@@ -129,8 +128,7 @@ describe('Payload access rules', () => {
       else process.env.ADMIN_EMAIL = previousAdminEmail
       if (previousBootstrapPassword === undefined) delete process.env.ADMIN_BOOTSTRAP_PASSWORD
       else process.env.ADMIN_BOOTSTRAP_PASSWORD = previousBootstrapPassword
-      if (previousVercelEnvironment === undefined) delete process.env.VERCEL_ENV
-      else process.env.VERCEL_ENV = previousVercelEnvironment
+      vi.unstubAllEnvs()
     }
   })
 })

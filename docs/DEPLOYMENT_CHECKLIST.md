@@ -1,6 +1,6 @@
 # Production launch checklist
 
-Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
+Use [DEPLOYMENT.md](./DEPLOYMENT.md) for exact provisioning steps.
 
 ## Automated gates
 
@@ -13,14 +13,13 @@ Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
 - [ ] Fresh Neon database runs every committed migration.
 - [ ] `git diff --check` passes.
 
-## Vercel resources
+## VPS resources
 
-- [ ] Vercel project linked to `main`, root `.`, Node 22.x, region `syd1`.
+- [ ] Coolify app builds the `Dockerfile` from `main` with a persistent volume at `/app/uploads`.
 - [ ] Production Neon database uses pooled TLS URL, backups/PITR, and Australian/AP Southeast region where available.
 - [ ] Preview uses a separate Neon branch/database.
-- [ ] Production and Preview have separate Blob stores.
 - [ ] Production and Preview have separate Upstash Redis resources.
-- [ ] Every required key in `.env.example` is set in the correct Vercel environments.
+- [ ] Every required key in `.env.example` is set in the Coolify app environment.
 - [ ] Canonical domain attached; `NEXT_PUBLIC_APP_URL` matches it exactly.
 
 ## Content and admin
@@ -52,12 +51,12 @@ Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for exact provisioning steps.
 
 - [ ] Home, store, product, cart, checkout, services, about, contact, blog, FAQ, shipping, returns, order tracking, legal pages, 404, and admin checked at desktop and 390px mobile widths.
 - [ ] Keyboard navigation, focus, labels, headings, contrast, and reduced-motion behavior checked.
-- [ ] No unexpected browser console or Vercel runtime errors.
+- [ ] No unexpected browser console or container runtime errors.
 - [ ] `/api/health` fails when the database is unavailable and succeeds when connected.
 - [ ] `/api/readiness` returns 200 only when core, payments, email, storage, rate limiting, and database checks pass.
 - [ ] Sitemap and robots use the canonical production origin.
-- [ ] Vercel logs/alerts, Neon backups, Stripe webhook failure alerts, and Resend bounce handling have named owners.
-- [ ] Rollback procedure tested against the previous Vercel deployment and a compatible database migration state.
+- [ ] Container logs/alerts, Neon backups, Stripe webhook failure alerts, and Resend bounce handling have named owners.
+- [ ] Rollback procedure tested against the previous image and a compatible database migration state.
 
 ## Owner-supplied launch facts
 

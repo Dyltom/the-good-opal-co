@@ -48,8 +48,6 @@ export function CookieConsent() {
     localStorage.setItem('cookie-consent-date', new Date().toISOString())
     window.dispatchEvent(new Event('cookie-consent-updated'))
 
-    // Update Google consent when it is configured. Vercel Analytics reacts to
-    // the event through AnalyticsConsentGate.
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('consent', 'update', {
         analytics_storage: prefs.analytics ? 'granted' : 'denied',

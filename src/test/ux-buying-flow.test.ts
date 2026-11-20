@@ -361,7 +361,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(consentSource).not.toContain('Marketing Cookies')
     expect(consentSource).not.toContain('Preference Cookies')
     expect(consentSource).not.toContain('window.fbq')
-    expect(policySource).toContain('Vercel Web Analytics')
+    expect(policySource).toContain('Google Analytics')
     expect(policySource).toContain('We do not currently use')
     expect(policySource).toContain('advertising, remarketing, or social-media tracking pixels')
     expect(policySource).not.toContain('Facebook Pixel')

@@ -104,7 +104,6 @@ describe('builder mapping processor', () => {
     const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
       contentHash: 'a'.repeat(64),
       pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
-      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
     })
     mocks.find.mockResolvedValue({
       docs: [
@@ -238,9 +237,7 @@ describe('builder mapping processor', () => {
     })
   })
 
-  test('fetches application-relative media from the active Vercel deployment', async () => {
-    vi.stubEnv('VERCEL_URL', 'the-good-opal-co-git-main.example.vercel.app')
-    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', 'the-good-opal-co.example.vercel.app')
+  test('fetches application-relative media from the configured app origin', async () => {
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://goodopalco.com')
     mocks.find.mockResolvedValue({
       docs: [
@@ -257,7 +254,7 @@ describe('builder mapping processor', () => {
     await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
 
     expect(fetch).toHaveBeenCalledWith(
-      'https://the-good-opal-co-git-main.example.vercel.app/api/media/file/opal.jpg',
+      'https://goodopalco.com/api/media/file/opal.jpg',
       expect.objectContaining({ headers: { accept: 'image/*' } })
     )
   })
@@ -297,7 +294,6 @@ describe('builder mapping processor', () => {
     const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
       contentHash: 'a'.repeat(64),
       pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
-      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
     })
     mocks.find.mockResolvedValue({
       docs: [
@@ -354,7 +350,6 @@ describe('builder mapping processor', () => {
     const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
       contentHash: 'a'.repeat(64),
       pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
-      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
     })
     mocks.find.mockResolvedValue({
       docs: [
@@ -487,7 +482,6 @@ describe('builder mapping processor', () => {
     const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
       contentHash: 'a'.repeat(64),
       pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
-      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
     })
     mocks.find.mockResolvedValue({
       docs: [
@@ -526,35 +520,6 @@ describe('builder mapping processor', () => {
       expect.objectContaining({
         data: expect.objectContaining({ builderMappingAnalysisError: null }),
       })
-    )
-  })
-
-  test('does not rewrite absolute owned-storage media through a Vercel origin', async () => {
-    vi.stubEnv('VERCEL_URL', 'the-good-opal-co-git-main.example.vercel.app')
-    mocks.find.mockResolvedValue({
-      docs: [
-        {
-          id: 42,
-          builderMappingMode: 'inferred',
-          builderMappingStatus: 'pending',
-          images: [
-            {
-              image: {
-                id: 7,
-                url: 'https://owned.public.blob.vercel-storage.com/opal.jpg',
-              },
-            },
-          ],
-          name: 'Lightning Ridge black opal',
-        },
-      ],
-    })
-
-    await expect(processBuilderMappings()).resolves.toMatchObject({ analyzed: 1, failed: 0 })
-
-    expect(fetch).toHaveBeenCalledWith(
-      'https://owned.public.blob.vercel-storage.com/opal.jpg',
-      expect.objectContaining({ headers: { accept: 'image/*' } })
     )
   })
 
@@ -963,7 +928,6 @@ describe('builder mapping processor', () => {
     const canonicalFaceArtifactSink = vi.fn().mockResolvedValue({
       contentHash: 'a'.repeat(64),
       pathname: `builder/opal-faces/v2/${'a'.repeat(64)}.png`,
-      url: 'https://store.public.blob.vercel-storage.com/canonical-face.png',
     })
     mocks.find.mockResolvedValue({
       docs: [

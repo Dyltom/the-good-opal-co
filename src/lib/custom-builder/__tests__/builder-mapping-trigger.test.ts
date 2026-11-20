@@ -41,9 +41,7 @@ function hookArguments(
 describe('builder mapping event trigger', () => {
   beforeEach(() => {
     vi.stubEnv('CRON_SECRET', 'cron-secret')
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', '')
-    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', '')
-    vi.stubEnv('VERCEL_URL', 'opal-preview.example.vercel.app')
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://goodopalco.com')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 202 })))
   })
 
@@ -65,7 +63,7 @@ describe('builder mapping event trigger', () => {
     expect(afterMock).toHaveBeenCalledOnce()
     await scheduled?.()
     expect(fetch).toHaveBeenCalledWith(
-      new URL('https://opal-preview.example.vercel.app/api/cron/builder-mappings?productId=42'),
+      new URL('https://goodopalco.com/api/cron/builder-mappings?productId=42'),
       {
         headers: { authorization: 'Bearer cron-secret' },
         method: 'POST',
@@ -168,27 +166,7 @@ describe('builder mapping event trigger', () => {
   })
 
   test('never sends the cron secret to an insecure configured origin', async () => {
-    vi.stubEnv('VERCEL_URL', '')
     vi.stubEnv('NEXT_PUBLIC_APP_URL', 'http://remote.example')
-    let scheduled: (() => Promise<void>) | undefined
-    afterMock.mockImplementation((callback: () => Promise<void>) => {
-      scheduled = callback
-    })
-    const args = hookArguments(availableProduct)
-
-    wakeBuilderMappingWorkerAfterProductChange(args)
-    await scheduled?.()
-
-    expect(fetch).not.toHaveBeenCalled()
-    expect(args.req.payload.logger.warn).toHaveBeenCalledWith(
-      expect.objectContaining({ reason: 'application-origin-missing' })
-    )
-  })
-
-  test('never sends the cron secret to the public storefront fallback', async () => {
-    vi.stubEnv('VERCEL_URL', '')
-    vi.stubEnv('VERCEL_PROJECT_PRODUCTION_URL', '')
-    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://goodopalco.com')
     let scheduled: (() => Promise<void>) | undefined
     afterMock.mockImplementation((callback: () => Promise<void>) => {
       scheduled = callback
