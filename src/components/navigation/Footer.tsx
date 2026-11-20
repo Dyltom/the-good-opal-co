@@ -138,7 +138,7 @@ export function Footer({
                 <p className="mb-6 text-white/60">
                   New pieces, care notes, and workshop updates, sent occasionally.
                 </p>
-                <NewsletterForm variant="compact" source="footer" tone="dark" />
+                <NewsletterForm />
               </div>
             </div>
 
@@ -192,12 +192,11 @@ export function Footer({
               </div>
             </div>
 
-            {/* Bottom Bar */}
-            <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 md:flex-row">
+            <div className="flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 md:flex-row md:items-center">
               <div className="text-sm text-white/70">
                 {copyright || `© ${currentYear} ${logoText}. All rights reserved.`}
               </div>
-              <div className="flex gap-6 text-sm text-white/70">
+              <div className="-mx-1 flex flex-wrap gap-x-5 gap-y-2 whitespace-nowrap text-sm text-white/70">
                 <Link
                   href="/legal/privacy"
                   className="rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, X } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
 import { cn } from '@/lib/utils'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   PRODUCTS_PER_PAGE,
   STORE_CATEGORIES,
@@ -190,9 +191,7 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
       <header className="border-b border-warm-grey/60 bg-cream px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto grid max-w-[92rem] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
-            <p className="mb-4 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
-              The collection
-            </p>
+            <Eyebrow className="mb-4">The collection</Eyebrow>
             <h1 className="max-w-[18ch] font-serif text-[clamp(2.5rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
               Find the opal that stays with you.
             </h1>
@@ -239,7 +238,7 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
             </button>
           </form>
 
-          <div className="grid gap-8 pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
             <aside>
               <details className="group lg:hidden">
                 <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between border-y border-warm-grey/70 font-sans text-sm font-semibold">
@@ -277,10 +276,6 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
                       key={product.id}
                       product={product}
                       index={index}
-                      variant="minimal"
-                      showWishlist={false}
-                      showMetadata
-                      animated={false}
                       priority
                     />
                   ))}
@@ -383,7 +378,7 @@ function FilterChips({ query, facets, className }: { query: StoreQuery; facets: 
 
 function SortLinks({ query }: { query: StoreQuery }) {
   return (
-    <nav aria-label="Sort pieces" className="flex flex-wrap items-center gap-x-5">
+    <nav aria-label="Sort pieces" className="-mx-5 flex items-center gap-x-5 overflow-x-auto px-5 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
       <span className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55">Sort</span>
       {sortOptions.map(([sort, label]) => (
         <Link

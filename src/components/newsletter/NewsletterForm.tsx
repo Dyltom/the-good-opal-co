@@ -7,133 +7,57 @@ import { Input } from '@/components/ui/input'
 import { Mail, CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface NewsletterFormProps {
-  variant?: 'default' | 'compact' | 'hero'
-  source?: 'footer' | 'popup' | 'checkout' | 'account'
-  /** Surface the form renders on; controls text colors for contrast. */
-  tone?: 'light' | 'dark'
-  className?: string
-  showName?: boolean
-}
-
-export function NewsletterForm({
-  variant = 'default',
-  source = 'footer',
-  tone = 'light',
-  className,
-  showName = false
-}: NewsletterFormProps) {
+export function NewsletterForm({ className }: { className?: string }) {
   const [state, formAction, isPending] = useActionState(subscribeToNewsletter, null)
   const emailId = useId()
-  const nameId = useId()
 
   return (
-    <form action={formAction} className={cn('w-full', className)}>
-      <input type="hidden" name="source" value={source} />
-
-      {variant === 'hero' && (
-        <div className="text-center mb-8">
-          <h3 className="text-2xl font-display font-bold text-charcoal mb-2">
-            Stay in the Loop
-          </h3>
-          <p className="text-content">
-            Get exclusive offers and be the first to know about new collections
-          </p>
-        </div>
-      )}
-
-      <div className={cn(
-        'space-y-4',
-        variant === 'compact' && 'space-y-3'
-      )}>
-        {showName && (
-          <div>
-            <label htmlFor={nameId} className="sr-only">Name (optional)</label>
-            <Input
-              id={nameId}
-              name="name"
-              type="text"
-              placeholder="Your name (optional)"
-              className="h-12"
-              autoComplete="name"
-              disabled={isPending}
-            />
-          </div>
-        )}
-
-        <div className={cn(
-          'flex gap-3',
-          variant === 'default' && 'flex-col sm:flex-row',
-          variant === 'compact' && 'flex-row'
-        )}>
-          <div className="relative flex-1">
-            <label htmlFor={emailId} className="sr-only">Email address</label>
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <Input
-              name="email"
-              id={emailId}
-              type="email"
-              placeholder="Enter your email"
-              required
-              className="pl-10 h-12"
-              autoComplete="email"
-              disabled={isPending}
-            />
-          </div>
-          <Button
-            type="submit"
+    <form action={formAction} className={cn('w-full space-y-3', className)}>
+      <input type="hidden" name="source" value="footer" />
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <label htmlFor={emailId} className="sr-only">
+            Email address
+          </label>
+          <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-charcoal/40" aria-hidden="true" />
+          <Input
+            name="email"
+            id={emailId}
+            type="email"
+            placeholder="Your email"
+            required
+            className="h-12 pl-10"
+            autoComplete="email"
             disabled={isPending}
-            size={variant === 'compact' ? 'default' : 'lg'}
-            className={cn(
-              variant === 'default' && 'sm:w-auto',
-              variant === 'hero' && 'px-8'
-            )}
-          >
-            {isPending ? 'Subscribing…' : 'Subscribe'}
-          </Button>
+          />
         </div>
-
-        {/* Status messages */}
-        {state && (
-          <div
-            className={cn(
-              'flex items-start gap-2 text-sm',
-              state.success ? 'text-green-600' : 'text-red-600'
-            )}
-            role="status"
-            aria-live="polite"
-          >
-            {state.success ? (
-              <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            ) : (
-              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-            )}
-            <span>{state.message}</span>
-          </div>
-        )}
-
-        {/* Privacy notice */}
-        <p
-          className={cn(
-            'text-xs text-center',
-            tone === 'dark' ? 'text-white/70' : 'text-charcoal/70'
-          )}
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="h-12 bg-cream px-5 text-charcoal hover:bg-white"
         >
-          By subscribing, you agree to receive marketing emails. Unsubscribe anytime.
-        </p>
+          {isPending ? 'Subscribing…' : 'Subscribe'}
+        </Button>
       </div>
-    </form>
-  )
-}
 
-/**
- * Newsletter form with loading states
- * Interface Segregation: Separate component for advanced features
- */
-export function NewsletterFormWithLoading(props: NewsletterFormProps) {
-  return (
-    <div className={props.className}>
-      <NewsletterForm {...props} />
-    </div>
+      {state ? (
+        <div
+          className={cn('flex items-start gap-2 text-sm', state.success ? 'text-opal-light' : 'text-red-300')}
+          role="status"
+          aria-live="polite"
+        >
+          {state.success ? (
+            <CheckCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          ) : (
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          )}
+          <span>{state.message}</span>
+        </div>
+      ) : null}
+
+      <p className="text-xs leading-5 text-white/60">
+        Occasional emails about new pieces. Unsubscribe anytime.
+      </p>
+    </form>
   )
 }

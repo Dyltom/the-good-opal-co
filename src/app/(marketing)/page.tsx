@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { MarketingShell } from '@/components/marketing'
 import { ProductCard } from '@/components/product/ProductCard'
 import { HomeHero } from '@/components/sections'
@@ -64,8 +65,6 @@ async function LatestPieces() {
           <ProductCard
             key={product.id}
             index={index}
-            animated={false}
-            showWishlist={false}
             product={{
               id: String(product.id),
               slug: product.slug,
@@ -131,9 +130,9 @@ export default function HomePage() {
           <section className="bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
             <div className="mx-auto max-w-[90rem]">
               <div className="mb-10 max-w-3xl lg:mb-12">
-                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                <Eyebrow>
                   Find your way in
-                </p>
+                </Eyebrow>
                 <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl lg:text-6xl">
                   Choose by what matters to you.
                 </h2>
@@ -148,9 +147,9 @@ export default function HomePage() {
                   >
                     <div className="flex flex-col justify-between p-7 sm:p-9 lg:p-11">
                       <div>
-                        <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                        <Eyebrow>
                           {path.eyebrow}
-                        </p>
+                        </Eyebrow>
                         <h3 className="mt-5 max-w-[12ch] text-balance font-serif text-4xl font-medium leading-[1.02] text-charcoal lg:text-5xl">
                           {path.title}
                         </h3>
@@ -191,9 +190,9 @@ export default function HomePage() {
             <div className="mx-auto max-w-[90rem]">
               <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
                 <div>
-                  <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                  <Eyebrow>
                     Recently added
-                  </p>
+                  </Eyebrow>
                   <h2 className="mt-4 font-serif text-4xl font-medium text-charcoal sm:text-5xl">
                     One stone, one piece.
                   </h2>
@@ -228,9 +227,9 @@ export default function HomePage() {
             </div>
             <div className="flex items-center px-6 py-16 sm:px-10 lg:px-16 lg:py-24">
               <div className="max-w-xl">
-                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-opal-light">
+                <Eyebrow className="text-opal-light">
                   Custom work
-                </p>
+                </Eyebrow>
                 <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl">
                   Begin with the stone, not a template.
                 </h2>

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import { MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, JsonLd, OrganizationJsonLd } from '@/components/seo'
 import { APP_NAME, APP_URL } from '@/lib/constants'
@@ -91,9 +92,9 @@ export default async function AboutPage() {
           <div className="grid min-h-[34rem] lg:grid-cols-[0.9fr_1.1fr]">
             <div className="flex items-center bg-cream px-6 py-16 sm:px-10 lg:px-[max(4rem,calc((100vw-80rem)/2))]">
               <div className="max-w-xl">
-                <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                <Eyebrow>
                   Our story
-                </p>
+                </Eyebrow>
                 <h1 className="mt-5 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl lg:text-7xl">
                   A closer look at Australian opal.
                 </h1>
@@ -118,9 +119,9 @@ export default async function AboutPage() {
         <Container className="py-16 sm:py-20 lg:py-28">
           <section className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
             <div>
-              <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+              <Eyebrow>
                 What we do
-              </p>
+              </Eyebrow>
               <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
                 Opals selected one piece at a time.
               </h2>
@@ -152,9 +153,9 @@ export default async function AboutPage() {
               </div>
             ) : null}
             <div>
-              <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+              <Eyebrow>
                 In Steph&apos;s words
-              </p>
+              </Eyebrow>
               <h2 id="steph-heading" className="mt-4 font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
                 Stephanie Caruana, founder.
               </h2>
@@ -223,9 +224,9 @@ export default async function AboutPage() {
               />
             </div>
             <div className="max-w-xl">
-              <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+              <Eyebrow>
                 Buy with context
-              </p>
+              </Eyebrow>
               <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
                 Opal changes with the light. Good information should not.
               </h2>

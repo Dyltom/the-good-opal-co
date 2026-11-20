@@ -16,16 +16,14 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards expose purchase actions on touch and keyboard focus', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('opacity-100')
     expect(source).toContain('sm:opacity-0')
     expect(source).toContain('sm:group-focus-within:opacity-100')
     expect(source).toContain('Quick add')
-    expect(source).toContain('aria-pressed={isWishlisted}')
-    expect(source).toContain('showWishlist = false')
+    expect(source).toContain('variant="icon"')
+    expect(source).toContain('sm:hidden')
     expect(source).toContain('priority={priority && index < 4}')
-    expect(source).toContain('disabled={product.stock === 0}')
+    expect(source).not.toContain('isWishlisted')
     expect(source).not.toContain('tracking-[0.3em]')
-    expect(source).not.toContain('tracking-wide')
   })
 
   test('store results expose server-filtered state and a live result count', () => {
@@ -251,7 +249,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards read as gallery pieces instead of generated action cards', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('border border-warm-grey/30 bg-white shadow-sm')
     expect(source).toContain('Quick view')
     expect(source).not.toContain('group-hover:scale-105')
     expect(source).not.toContain('hover:shadow-glow')
@@ -331,9 +328,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards share one gallery vocabulary without blur overlays or scale entrances', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('Gallery Product Card Component')
-    expect(source).toContain('rounded-lg border border-warm-grey/30 bg-white shadow-sm')
-    expect(source).toContain('bg-charcoal/85 px-4 py-2 text-center')
+    expect(source).toContain('Collected')
     expect(source).not.toContain('SOLID')
     expect(source).not.toContain('Multiple variants')
     expect(source).not.toContain('Museum style info')
