@@ -102,7 +102,7 @@ test('course interest keeps course context through to contact', async ({ page })
     'The Complete Opal Cutting & Valuation Course'
   )
   await expect(page.getByLabel('Message *')).toHaveValue(/not enrolment or payment/i)
-  await expect(page.getByRole('button', { name: 'Send Course Interest' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Send course enquiry' })).toBeVisible()
 })
 
 test('contact form exposes validation and accessible field names', async ({ page }) => {
