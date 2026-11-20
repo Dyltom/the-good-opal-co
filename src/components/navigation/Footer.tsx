@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
-import type { FooterProps, SocialLink } from '@/types'
+import type { FooterProps } from '@/types'
 import { Container } from '@/components/layout'
 import { NewsletterForm } from '@/components/newsletter/NewsletterForm'
 import { CookieSettingsLink } from '@/components/layout/CookieConsent'
+import { SOCIAL_PROFILES } from '@/lib/constants/social'
 
 /**
  * Social Icon Component
@@ -69,8 +70,6 @@ const defaultLinks = [
   },
 ]
 
-const defaultSocial: SocialLink[] = []
-
 /**
  * Footer Component
  */
@@ -79,7 +78,7 @@ export function Footer({
   logoText = 'The Good Opal Co',
   description = 'Australian opals and jewellery, selected and described with care.',
   links = defaultLinks,
-  social = defaultSocial,
+  social = SOCIAL_PROFILES,
   copyright,
   className,
 }: FooterProps) {

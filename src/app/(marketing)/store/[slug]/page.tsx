@@ -21,6 +21,7 @@ import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { summarize } from '@/lib/catalog'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -53,7 +54,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const imageUrl =
     (primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined) ??
     ownedProductImageUrl(product.slug)
-  const description = parseProductDescription(product.description).paragraphs.join(' ').slice(0, 160)
+  const description = summarize(parseProductDescription(product.description).paragraphs.join(' '))
 
   return {
     title: `${product.name} | The Good Opal Co`,
@@ -63,7 +64,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title: product.name,
       description: description || 'Australian opal selected by The Good Opal Co.',
       url: `/store/${product.slug}`,
-      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      images: imageUrl ? [{ url: imageUrl, alt: product.name }] : undefined,
     },
     twitter: {
       card: 'summary_large_image',
@@ -156,6 +157,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           category: categoryName,
           stock: product.stock ?? 0,
           sku: product.sku ?? String(product.id),
+          properties: facts.map((fact) => ({ name: fact.label, value: fact.value })),
         }}
       />
       <BreadcrumbJsonLd

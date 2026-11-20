@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import type { Metadata } from 'next'
 import type { Where } from 'payload'
 import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
@@ -9,20 +10,19 @@ import { StoreContent, type StoreProduct } from './store-content'
 import {
   parseStoreQuery,
   PRODUCTS_PER_PAGE,
+  storeMetadata,
   storeUrl,
   type StoreSearchParams,
 } from './store-query'
 
-export const metadata = {
-  title: 'Shop Australian Opals | The Good Opal Co',
-  description:
-    'Browse one-of-a-kind Australian opals, finished jewellery, loose stones, and pieces for gifting. Every listing includes its known origin and details.',
-  alternates: { canonical: '/store' },
-}
 export const dynamic = 'force-dynamic'
 
 interface StorePageProps {
   searchParams: Promise<StoreSearchParams>
+}
+
+export async function generateMetadata({ searchParams }: StorePageProps): Promise<Metadata> {
+  return storeMetadata(parseStoreQuery(await searchParams))
 }
 
 /**

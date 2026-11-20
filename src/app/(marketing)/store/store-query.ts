@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 export const PRODUCTS_PER_PAGE = 24
 
 export const STORE_SORTS = ['featured', 'newest', 'price-low', 'price-high'] as const
@@ -107,4 +108,19 @@ export function storeUrl(query: StoreQuery, page = query.page): string {
   const params = storeQueryParams(query, page)
   const search = params.toString()
   return search ? `/store?${search}` : '/store'
+}
+
+export function storeMetadata(query: StoreQuery): Metadata {
+  const pageOnly = storeUrl({ ...query, page: 1 }) === '/store'
+  const paginated = pageOnly && query.page > 1
+
+  return {
+    title: paginated
+      ? `Shop Australian Opals, page ${query.page} | The Good Opal Co`
+      : 'Shop Australian Opals | The Good Opal Co',
+    description:
+      'Browse one-of-a-kind Australian opals, finished jewellery, loose stones, and pieces for gifting. Every listing includes its known origin and details.',
+    alternates: { canonical: paginated ? storeUrl(query) : '/store' },
+    robots: pageOnly ? undefined : { index: false, follow: true },
+  }
 }

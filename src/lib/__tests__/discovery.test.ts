@@ -1,5 +1,23 @@
 import { describe, expect, test } from 'vitest'
-import { buildLlmsIndex, buildRssFeed, escapeXml } from '../discovery'
+import { buildLlmsFull, buildLlmsIndex, buildRssFeed, escapeXml } from '../discovery'
+import { catalogProduct } from './catalog-fixture'
+
+const input = {
+  products: [
+    catalogProduct({ stone: 'Black opal', origin: 'Lightning Ridge, NSW', weight: '2.1 ct' }),
+    catalogProduct({ name: 'Sold ring', slug: 'sold-ring', sku: 'WP-2', stock: 0, inStock: false }),
+  ],
+  courses: [{ title: 'Cut opal', slug: 'cut-opal', summary: 'A practical cutting outline.' }],
+  articles: [
+    {
+      title: 'Care guide',
+      slug: 'care-guide',
+      excerpt: 'How to care for opal.',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    },
+  ],
+  contactEmail: 'shop@example.com',
+}
 
 describe('discovery documents', () => {
   test('escapes untrusted text for RSS XML', () => {
@@ -21,33 +39,29 @@ describe('discovery documents', () => {
     expect(feed).toContain('<language>en-AU</language>')
   })
 
-  test('publishes a factual AI discovery index with canonical content links', () => {
-    const index = buildLlmsIndex({
-      products: [
-        { name: 'Blue opal', slug: 'blue-opal', category: 'raw-opals', price: 123, stock: 1 },
-      ],
-      courses: [
-        {
-          title: 'Cut opal',
-          slug: 'cut-opal',
-          summary: 'A practical cutting outline.',
-        },
-      ],
-      articles: [
-        {
-          title: 'Care guide',
-          slug: 'care-guide',
-          excerpt: 'How to care for opal.',
-          updatedAt: '2026-01-02T00:00:00.000Z',
-        },
-      ],
-    })
+  test('indexes every published product with real facts, policies, and contact', () => {
+    const index = buildLlmsIndex(input)
 
-    expect(index).toContain('# The Good Opal Co')
-    expect(index).toContain('[Blue opal](')
-    expect(index).toContain('/store/blue-opal): raw opals; AUD $123.00; available.')
+    expect(index).toContain('/store/blue-opal): Raw opals; Black opal; Lightning Ridge, NSW; 2.1 ct; AUD $123.00; available.')
+    expect(index).toContain('/store/sold-ring): Raw opals; AUD $123.00; sold.')
+    expect(index).toContain('AUD $15.00 per order')
+    expect(index).toContain('Free shipping on orders of AUD $500.00 or more')
+    expect(index).toContain('within 30 days of delivery')
+    expect(index).toContain('shop@example.com')
+    expect(index).toContain('/llms-full.txt')
     expect(index).toContain('/courses/cut-opal)')
     expect(index).toContain('/blog/care-guide)')
-    expect(index).toContain('Product pages and published policies are the source of truth')
+    expect(index).not.toContain('\u2014')
+  })
+
+  test('describes only pieces that can still be bought in the full document', () => {
+    const full = buildLlmsFull(input)
+
+    expect(full).toContain('## Available pieces (1)')
+    expect(full).toContain('### Blue opal')
+    expect(full).toContain('- Origin: Lightning Ridge, NSW')
+    expect(full).toContain('A bright blue opal.')
+    expect(full).not.toContain('Sold ring')
+    expect(full).not.toContain('\u2014')
   })
 })
