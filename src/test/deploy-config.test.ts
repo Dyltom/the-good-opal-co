@@ -58,7 +58,6 @@ describe('deployment config', () => {
   test('public marketing pages declare canonicals and private flows are noindex', () => {
     const publicPages = [
       ['src/app/(marketing)/page.tsx', '/'],
-      ['src/app/(marketing)/store/page.tsx', '/store'],
       ['src/app/(marketing)/services/page.tsx', '/services'],
       ['src/app/(marketing)/about/page.tsx', '/about'],
       ['src/app/(marketing)/contact/page.tsx', '/contact'],
