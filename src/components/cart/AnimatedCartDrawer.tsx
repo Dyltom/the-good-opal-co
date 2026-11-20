@@ -21,6 +21,7 @@ import {
 } from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { formatCurrency } from '@/lib/utils'
+import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import type { Cart, CartItem } from '@/lib/cart'
@@ -71,6 +72,8 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
     startTransition(async () => {
       const result = await removeFromCart(productId)
       if (result.success && result.data) {
+        const removed = cart?.items.find((item) => item.productId === productId)
+        if (removed) trackRemoveFromCart(removed)
         setCart(result.data)
         onCartUpdate?.()
         window.dispatchEvent(new CustomEvent('cart-updated'))

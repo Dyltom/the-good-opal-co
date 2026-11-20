@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
@@ -48,7 +49,7 @@ export default function CookiePolicyPage() {
           <h1 className="mt-2 font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
             Cookie Policy
           </h1>
-          <p className="mt-3 font-sans text-sm text-charcoal/60">Last updated 12 July 2026</p>
+          <p className="mt-3 font-sans text-sm text-charcoal/60">Last updated 20 November 2026</p>
 
           <div className="mt-12 space-y-12 font-sans text-base leading-7 text-charcoal/80">
             <section aria-labelledby="policy-overview">
@@ -58,7 +59,8 @@ export default function CookiePolicyPage() {
               <p className="mt-4">
                 We use a small amount of browser storage to keep the shop working and remember your
                 privacy choice. Optional analytics run only after you agree. We do not currently use
-                advertising, remarketing, or social-media tracking pixels on this site.
+                advertising, remarketing, or social-media tracking pixels on this site. We also count
+                visits on our own server without any cookies, as described below.
               </p>
             </section>
 
@@ -123,6 +125,31 @@ export default function CookiePolicyPage() {
                 aggregated information about visits and page use. This helps us understand which
                 pages are useful and where the shopping experience needs improvement. Analytics do
                 not load when you choose necessary storage only.
+              </p>
+            </section>
+
+            <section aria-labelledby="cookieless-measurement">
+              <h2
+                id="cookieless-measurement"
+                className="font-serif text-2xl font-semibold text-charcoal"
+              >
+                Cookieless measurement
+              </h2>
+              <p className="mt-4">
+                Separately from optional analytics, the site sends a short note to our own server
+                when you view pages and pieces, use the cart, search, filter, start checkout or hit
+                an error. This stores nothing in your browser. Your IP address and browser details
+                are turned into a one-way code with a random value that changes every day, and are
+                never stored themselves, so we can count visits without recognising you from one
+                day to the next. Records are deleted after 400 days. Read more in section 6.1 of
+                our{' '}
+                <Link
+                  href="/legal/privacy"
+                  className="font-semibold text-opal-electric-accessible underline underline-offset-4"
+                >
+                  privacy policy
+                </Link>
+                .
               </p>
             </section>
 

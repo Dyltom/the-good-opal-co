@@ -15,6 +15,7 @@ import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { trackRemoveFromCart } from '@/lib/analytics'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import type { Cart, CartItem } from '@/lib/cart'
 import { formatCurrency } from '@/lib/utils'
@@ -53,6 +54,8 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
         return
       }
 
+      const removed = cart.items.find((item) => item.productId === productId)
+      if (removed) trackRemoveFromCart(removed)
       setCart(result.data)
       window.dispatchEvent(new CustomEvent('cart-updated'))
       toast({ title: 'Removed from cart', description: name })

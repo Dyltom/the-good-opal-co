@@ -11,6 +11,8 @@ import {
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
 import { SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
+import { requestVisitorKey } from '@/lib/insights/visitor'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
   checkoutReservationExpiresAt,
@@ -57,6 +59,7 @@ export async function createCheckoutSession(input: {
   try {
     const { region, checkoutAttemptId } = validationResult.data
     const identifier = await getRequestIdentifier()
+    const insightsVisitor = await requestVisitorKey()
     const allowed = await checkRateLimit({
       scope: 'checkout',
       identifier,
@@ -143,6 +146,7 @@ export async function createCheckoutSession(input: {
         ],
         metadata: {
           [INVENTORY_RESERVATION_METADATA_KEY]: checkoutAttemptId,
+          ...(insightsVisitor ? { [INSIGHTS_VISITOR_METADATA_KEY]: insightsVisitor } : {}),
         },
         success_url: `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${APP_URL}/cart`,

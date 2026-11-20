@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { trackEnquirySubmitted } from '@/lib/analytics'
 import { sendContactEmail } from './actions'
 import { contactSchema } from './schema'
 import type { ContactFormData } from './schema'
@@ -63,6 +64,7 @@ export function ContactForm({
       const result = await sendContactEmail(data)
 
       if (result.success) {
+        trackEnquirySubmitted(data.inquiryType)
         toast({
           title: 'Enquiry received',
           description: result.confirmationDelayed

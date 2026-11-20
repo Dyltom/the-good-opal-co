@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from 'react'
 import { Lock } from 'lucide-react'
 import { createCheckoutSession, type ShippingRegion } from '@/app/(marketing)/checkout/actions'
 import { Button } from '@/components/ui/button'
-import { trackBeginCheckout } from '@/lib/analytics'
+import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics'
 import type { Cart } from '@/lib/cart'
 import { cn } from '@/lib/utils'
 
@@ -76,7 +76,9 @@ export function CheckoutButton({ cart, region, className, label = 'Checkout' }: 
         return
       }
       attemptId.current = null
-      setError(result.error ?? 'Payment could not be started. Please try again.')
+      const message = result.error ?? 'Payment could not be started. Please try again.'
+      trackCheckoutError(message)
+      setError(message)
     })
   }
 

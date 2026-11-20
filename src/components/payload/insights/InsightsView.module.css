@@ -1,0 +1,243 @@
+.view {
+  padding-top: calc(var(--base) * 2);
+  padding-bottom: calc(var(--base) * 4);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--base);
+  margin-bottom: calc(var(--base) * 1.5);
+}
+
+.title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+}
+
+.lede {
+  max-width: 62ch;
+  margin: calc(var(--base) * 0.5) 0 0;
+  color: var(--theme-elevation-650);
+}
+
+.ranges {
+  display: inline-flex;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  overflow: hidden;
+}
+
+.range {
+  padding: calc(var(--base) * 0.4) calc(var(--base) * 0.8);
+  color: var(--theme-elevation-800);
+  text-decoration: none;
+}
+
+.range + .range {
+  border-left: 1px solid var(--theme-elevation-150);
+}
+
+.range[aria-current='page'] {
+  background: var(--theme-elevation-800);
+  color: var(--theme-elevation-0);
+}
+
+.range:focus-visible {
+  outline: 2px solid var(--theme-success-500);
+  outline-offset: -2px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: calc(var(--base) * 0.75);
+  margin: 0 0 calc(var(--base) * 1.5);
+}
+
+.stat {
+  padding: var(--base);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  background: var(--theme-elevation-0);
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: var(--theme-elevation-650);
+}
+
+.statValue {
+  margin: calc(var(--base) * 0.25) 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--theme-elevation-1000);
+}
+
+.statHint {
+  margin: calc(var(--base) * 0.25) 0 0;
+  font-size: 0.75rem;
+  color: var(--theme-elevation-500);
+}
+
+.sectionTitle {
+  margin: calc(var(--base) * 2) 0 calc(var(--base) * 0.75);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+  font-size: 1.375rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: calc(var(--base) * 0.75);
+}
+
+.panel {
+  margin-bottom: calc(var(--base) * 0.75);
+  padding: var(--base);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  background: var(--theme-elevation-0);
+  min-width: 0;
+}
+
+.grid .panel {
+  margin-bottom: 0;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.note {
+  margin: calc(var(--base) * 0.25) 0 0;
+  font-size: 0.8125rem;
+  color: var(--theme-elevation-600);
+}
+
+.empty {
+  margin: calc(var(--base) * 0.75) 0 0;
+  color: var(--theme-elevation-600);
+}
+
+.notice {
+  margin: 0 0 calc(var(--base) * 1.5);
+  padding: calc(var(--base) * 0.75) var(--base);
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  background: var(--theme-elevation-50);
+}
+
+.tableWrap {
+  margin-top: calc(var(--base) * 0.75);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th {
+  padding: calc(var(--base) * 0.35) calc(var(--base) * 0.5);
+  border-bottom: 1px solid var(--theme-elevation-150);
+  font-weight: 600;
+  text-align: left;
+  color: var(--theme-elevation-650);
+}
+
+.table td {
+  padding: calc(var(--base) * 0.35) calc(var(--base) * 0.5);
+  border-bottom: 1px solid var(--theme-elevation-100);
+  vertical-align: top;
+}
+
+.table tbody tr:hover td {
+  background: var(--theme-elevation-50);
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+
+.numeric {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.message {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  word-break: break-word;
+}
+
+.funnel {
+  margin: calc(var(--base) * 0.75) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.funnelStep {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) minmax(0, 1fr) 4.5rem;
+  grid-template-areas:
+    'label track count'
+    '. meta meta';
+  align-items: center;
+  column-gap: calc(var(--base) * 0.75);
+  padding: calc(var(--base) * 0.4) 0;
+}
+
+.funnelLabel {
+  grid-area: label;
+  font-weight: 500;
+}
+
+.funnelTrack {
+  grid-area: track;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--theme-elevation-100);
+  overflow: hidden;
+}
+
+.funnelBar {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--theme-elevation-800);
+}
+
+.funnelCount {
+  grid-area: count;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.funnelMeta {
+  grid-area: meta;
+  font-size: 0.75rem;
+  color: var(--theme-elevation-600);
+}
+
+@media (max-width: 640px) {
+  .funnelStep {
+    grid-template-columns: minmax(0, 1fr) 4rem;
+    grid-template-areas:
+      'label count'
+      'track track'
+      'meta meta';
+    row-gap: 4px;
+  }
+}

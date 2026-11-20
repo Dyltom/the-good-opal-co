@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
+import { trackGalleryFullscreen, trackGalleryZoom } from '@/lib/analytics'
 
 interface ProductImage {
   url: string
@@ -95,6 +96,7 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
               onClick={() => {
                 setIndex(imageIndex)
                 setLightboxOpen(true)
+                trackGalleryFullscreen(productName)
               }}
               onPointerMove={(event) => {
                 if (event.pointerType === 'mouse') setLoupe(pointerPosition(event))
@@ -190,9 +192,10 @@ export function ProductImageGallery({ productName, images, transitionName }: Pro
               'relative min-h-0 flex-1 touch-pinch-zoom overflow-hidden',
               lightboxZoom ? 'cursor-zoom-out' : 'cursor-zoom-in'
             )}
-            onClick={(event) =>
+            onClick={(event) => {
+              if (!lightboxZoom) trackGalleryZoom(productName)
               setLightboxZoom((zoomed) => (zoomed ? null : pointerPosition(event as unknown as PointerEvent<HTMLElement>)))
-            }
+            }}
             onPointerMove={(event) => {
               if (lightboxZoom && event.pointerType === 'mouse') setLightboxZoom(pointerPosition(event))
             }}

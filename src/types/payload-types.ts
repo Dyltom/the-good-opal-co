@@ -85,6 +85,7 @@ export interface Config {
     'ring-assets': RingAsset;
     'ring-designs': RingDesign;
     'ring-reference-checks': RingReferenceCheck;
+    'insight-events': InsightEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -110,6 +111,7 @@ export interface Config {
     'ring-assets': RingAssetsSelect<false> | RingAssetsSelect<true>;
     'ring-designs': RingDesignsSelect<false> | RingDesignsSelect<true>;
     'ring-reference-checks': RingReferenceChecksSelect<false> | RingReferenceChecksSelect<true>;
+    'insight-events': InsightEventsSelect<false> | InsightEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -1286,6 +1288,39 @@ export interface RingReferenceCheck {
   createdAt: string;
 }
 /**
+ * Anonymous first-party visit measurement. Visitors are a daily-rotating hash; no IP address, cookie or full browser string is stored.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "insight-events".
+ */
+export interface InsightEvent {
+  id: number;
+  name: string;
+  occurredAt: string;
+  path: string;
+  productId?: string | null;
+  value?: number | null;
+  visitor?: string | null;
+  landingPage?: string | null;
+  referrerHost?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  country?: string | null;
+  device?: string | null;
+  browser?: string | null;
+  detail?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  dedupeKey?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -2049,6 +2084,28 @@ export interface RingReferenceChecksSelect<T extends boolean = true> {
   durationMs?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "insight-events_select".
+ */
+export interface InsightEventsSelect<T extends boolean = true> {
+  name?: T;
+  occurredAt?: T;
+  path?: T;
+  productId?: T;
+  value?: T;
+  visitor?: T;
+  landingPage?: T;
+  referrerHost?: T;
+  utmSource?: T;
+  utmMedium?: T;
+  utmCampaign?: T;
+  country?: T;
+  device?: T;
+  browser?: T;
+  detail?: T;
+  dedupeKey?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
