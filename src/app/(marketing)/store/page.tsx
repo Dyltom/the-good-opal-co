@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import type { Metadata } from 'next'
-import type { Where } from 'payload'
+import type { Sort, Where } from 'payload'
 import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
@@ -56,11 +56,11 @@ export interface Product {
 }
 
 const sortMap = {
-  featured: '-featured,-createdAt',
+  featured: ['-featured', '-createdAt'],
   newest: '-createdAt',
   'price-low': 'price',
   'price-high': '-price',
-} as const
+} satisfies Record<string, Sort>
 
 function objectRecord(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null

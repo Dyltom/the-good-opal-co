@@ -34,6 +34,8 @@ function descriptionText(description: unknown): string {
     .join(' ')
 }
 
+const MULTI_STONE_LISTING = /parcel|calibrated|priced individually/i
+
 function hasStudioPhoto(product: Product): boolean {
   const image = product.images?.[0]?.image
   return typeof image === 'object' && image !== null && Boolean(image.filename?.startsWith('studio-'))
@@ -47,16 +49,15 @@ async function FeaturedPieces() {
       and: [
         LISTED_PRODUCTS,
         { stock: { greater_than: 0 } },
-        { name: { not_like: 'parcel' } },
-        { name: { not_like: 'calibrated' } },
-        { name: { not_like: 'priced individually' } },
       ],
     },
     limit: 48,
-    sort: '-featured,-price',
+    sort: ['-featured', '-price'],
     depth: 1,
   })
-  const products = docs.filter(hasStudioPhoto).slice(0, 8)
+  const products = docs
+    .filter((product) => hasStudioPhoto(product) && !MULTI_STONE_LISTING.test(product.name))
+    .slice(0, 8)
 
   if (products.length === 0) {
     return (
@@ -116,12 +117,12 @@ const discoveryPaths = [
     copy: 'Learn what colour, origin, setting, and care details matter, in plain language.',
     href: '/blog',
     cta: 'Read the opal guide',
-    image: '/images/studio/opal-ring.jpg',
-    alt: 'A silver ring set with an oval Australian opal',
+    image: '/images/studio/opal-selection.jpg',
+    alt: 'Four polished Australian opals in blue, green and orange on a cream background',
   },
   {
     eyebrow: 'Collector stones',
-    title: 'For the detail-led collector.',
+    title: 'For the serious collector.',
     copy: 'Browse loose and raw opals by colour, type, origin, price, and availability.',
     href: '/store?category=raw-opals',
     cta: 'Browse collector stones',
