@@ -295,7 +295,7 @@ function OpalPicker({
                   )}
                   {opal.selectionKind === 'individual' && !opal.visual.dimensionsMm && (
                     <span className="mt-1 block text-xs leading-4 text-charcoal-light">
-                      Normalized shape preview · measurements pending
+                      Size estimated · confirmed at consultation
                     </span>
                   )}
                   {opal.selectionKind !== 'individual' && (
