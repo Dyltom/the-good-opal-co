@@ -37,6 +37,17 @@ describe('deployment readiness', () => {
     })
   })
 
+  test('accepts local disk storage without a Vercel Blob token', () => {
+    const readiness = assessDeploymentReadiness({
+      ...validEnvironment,
+      BLOB_READ_WRITE_TOKEN: '',
+      STORAGE_ADAPTER: 'local',
+    })
+
+    expect(readiness.checks.storage).toBe(true)
+    expect(readiness.issues).not.toContain('blob_storage_unavailable')
+  })
+
   test('rejects malformed and obvious placeholder values without returning their contents', () => {
     const readiness = assessDeploymentReadiness({
       ...validEnvironment,

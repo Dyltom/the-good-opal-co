@@ -4,7 +4,7 @@ import { seoPlugin } from '@payloadcms/plugin-seo'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { resendAdapter } from '@payloadcms/email-resend'
 import path from 'path'
-import { buildConfig } from 'payload'
+import { buildConfig, type CollectionConfig } from 'payload'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 import { assertValidCoreProductionConfiguration } from './lib/deployment-readiness.ts'
@@ -103,7 +103,9 @@ function getEmailSender(): { address: string; name: string } {
   }
 }
 
-const blobToken = getRequiredEnvironmentValue('BLOB_READ_WRITE_TOKEN')
+const useLocalStorage = process.env['STORAGE_ADAPTER']?.trim() === 'local'
+const uploadDir = path.resolve(process.env['UPLOAD_DIR']?.trim() || path.resolve(dirname, '..'))
+const blobToken = useLocalStorage ? '' : getRequiredEnvironmentValue('BLOB_READ_WRITE_TOKEN')
 const emailSender = getEmailSender()
 
 for (const name of ['CONTACT_EMAIL', 'ADMIN_EMAIL']) {
@@ -119,6 +121,17 @@ requireOneEnvironmentValue(
   'Upstash Redis token'
 )
 
+function withUploadDir(collection: CollectionConfig): CollectionConfig {
+  if (!useLocalStorage || typeof collection.upload !== 'object') return collection
+  return {
+    ...collection,
+    upload: {
+      ...collection.upload,
+      staticDir: path.join(uploadDir, collection.upload.staticDir ?? collection.slug),
+    },
+  }
+}
+
 export default buildConfig({
   serverURL: getRequiredEnvironmentValue('NEXT_PUBLIC_APP_URL') || 'http://localhost:8412',
   admin: {
@@ -133,7 +146,7 @@ export default buildConfig({
   },
   collections: [
     Users,
-    Media,
+    withUploadDir(Media),
     Authors,
     Categories,
     Tags,
@@ -147,7 +160,7 @@ export default buildConfig({
     InventoryReservations,
     CustomQuotes,
     CustomQuoteEvents,
-    RingAssets,
+    withUploadDir(RingAssets),
     RingDesigns,
     RingReferenceChecks,
   ],

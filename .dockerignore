@@ -1,0 +1,14 @@
+.git
+node_modules
+.next
+.env
+.env.*
+!.env.example
+media/
+video/
+docker-data/
+gdopalco-bkup/
+coverage/
+playwright-report/
+test-results/
+e2e/
