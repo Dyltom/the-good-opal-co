@@ -84,11 +84,23 @@ export function RingPreview({
       desktop.removeEventListener('change', updateZoom)
     }
   }, [])
-  const dimensionLabel = selectedOpal?.visual.dimensionsMm
+  const sizeLabel = selectedOpal?.visual.dimensionsMm
     ? selectedOpal.visual.dimensionEvidence === 'maker-measured'
-      ? 'maker-measured'
-      : 'catalogue-sized'
-    : 'normalized'
+      ? 'Shown at measured size'
+      : 'Shown at listed size'
+    : undefined
+  const previewCaption = !selectedOpal
+    ? undefined
+    : selectedOpal.visual.canonicalFace ||
+        (selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed')
+      ? sizeLabel
+      : selectedOpal.visual.textureCrop
+        ? 'Colour from the listing photo · shape is a guide'
+        : selectedOpal.selectionKind === 'individual'
+          ? 'Shape and colour are a guide'
+          : selectedOpal.selectionKind === 'specimen'
+            ? 'Specimen · we confirm at consultation whether it can be set'
+            : 'Multi-stone listing · the preview shows a representative stone'
 
   return (
     <div className="relative aspect-[4/5] min-h-[28rem] w-full min-w-0 overflow-hidden bg-[#171714] text-cream sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0 [&_canvas]:touch-pan-y">
@@ -247,18 +259,9 @@ export function RingPreview({
                       Size estimated · confirmed at consultation
                     </p>
                   )}
-                <p className="mt-1 text-xs leading-4 text-cream/60">
-                  {selectedOpal.visual.canonicalFace ||
-                  (selectedOpal.visual.textureCrop && selectedOpal.visual.photoFit === 'reviewed')
-                    ? `${selectedOpal.visual.silhouette} ${dimensionLabel} setting concept`
-                    : selectedOpal.visual.textureCrop
-                      ? 'Listing photo mapped to an estimated setting profile · visual guide only'
-                      : selectedOpal.selectionKind === 'individual'
-                        ? 'Listing photo shown · 3D shape and colour are a visual guide'
-                        : selectedOpal.selectionKind === 'specimen'
-                          ? 'Specimen photo shown · setting feasibility requires consultation'
-                          : 'Multiple stones pictured · 3D represents material, not one guaranteed stone'}
-                </p>
+                {previewCaption && (
+                  <p className="mt-1 text-xs leading-4 text-cream/60">{previewCaption}</p>
+                )}
               </div>
             </div>
           ) : (

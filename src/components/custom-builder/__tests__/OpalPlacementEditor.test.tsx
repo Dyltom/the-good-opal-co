@@ -60,13 +60,11 @@ describe('OpalPlacementEditor', () => {
     expect(screen.getByText('Colour from this stone’s photo')).not.toBeNull()
     expect(
       screen.getByText(
-        'Move the selected listing colour inside a supported outline preview. Stone scale and setting geometry stay fixed; only the colour framing changes.'
+        'Choose which part of the stone’s colour shows inside the setting outline. The size and setting stay fixed.'
       )
     ).not.toBeNull()
     expect(
-      screen.getByText(
-        'Outline scale is normalized until measurements are verified. Your maker confirms the exact traced seat.'
-      )
+      screen.getByText('Size is estimated until we measure the stone at your consultation.')
     ).not.toBeNull()
     expect(screen.queryByText('Reviewed source photo')).toBeNull()
   })

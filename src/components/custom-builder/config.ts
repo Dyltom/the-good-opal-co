@@ -710,8 +710,8 @@ export function getRingStyleFit(
       kind: 'concept',
       label:
         style.id === opal.visual.recommendedStyle
-          ? 'Recommended concept · measurements pending'
-          : 'Compatible concept · measurements pending',
+          ? 'Our recommended setting for this opal'
+          : 'Works with this opal’s shape',
     }
   }
 

@@ -561,7 +561,7 @@ describe('RingConfigurator store opal selection', () => {
     )
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(1)
     expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
-    expect(screen.getByText('3D shows a representative setting concept')).not.toBeNull()
+    expect(screen.getByText('Preview shows a representative stone')).not.toBeNull()
   })
 
   test('opens a shared parcel in its own listing type without hiding the selection', () => {
@@ -591,9 +591,7 @@ describe('RingConfigurator store opal selection', () => {
     )
     expect(screen.getByRole('button', { name: /Coober Pedy colour parcel/i })).not.toBeNull()
     expect(screen.queryByRole('button', { name: /Lightning Ridge black opal/i })).toBeNull()
-    expect(
-      screen.getByText(/multi-stone listing uses a representative setting concept/i)
-    ).not.toBeNull()
+    expect(screen.getByText(/multi-stone listing shows a representative stone/i)).not.toBeNull()
   })
 
   test('pins a linked deep-catalogue opal without rendering every preceding card', () => {

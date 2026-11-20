@@ -141,11 +141,7 @@ export function OpalPlacementEditor({
   const hasExactContour = Boolean(opal.visual.contour)
   const hasMeasurements = Boolean(opal.visual.dimensionsMm)
   const sourceReviewLabel = opalPhotoFitLabel(opal)
-  const outlineDescription = hasExactContour
-    ? 'its traced stone outline'
-    : hasMeasurements
-      ? 'a measured supported outline'
-      : 'a supported outline preview'
+  const outlineDescription = hasExactContour ? 'its traced outline' : 'the setting outline'
   const baseZoom = photoSource.crop?.zoom ?? 1
   const stoneAspect = getRenderedStoneAspect({ shape: opal.visual.silhouette }, opal)
   const baseRotation = photoSource.crop?.rotation ?? 0
@@ -314,8 +310,8 @@ export function OpalPlacementEditor({
     <fieldset>
       <legend className="font-serif text-xl font-medium">4. Frame the opal&apos;s colour</legend>
       <p className="mt-2 max-w-[62ch] text-sm leading-6 text-charcoal-light">
-        Move the selected listing colour inside {outlineDescription}. Stone scale and setting
-        geometry stay fixed; only the colour framing changes.
+        Choose which part of the stone’s colour shows inside {outlineDescription}. The size and
+        setting stay fixed.
       </p>
 
       <div
@@ -593,10 +589,10 @@ export function OpalPlacementEditor({
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-warm-grey/70 pt-3 sm:col-span-2">
             <p className="max-w-[37ch] text-xs leading-4 text-charcoal-light">
               {hasExactContour && hasMeasurements
-                ? 'Traced outline and catalogue measurements shown. Your maker confirms final seat, stability, and yield.'
+                ? 'Traced outline at the listed size. We confirm the final fit at your consultation.'
                 : hasMeasurements
-                  ? 'Catalogue measurements shown with a supported outline. Your maker confirms the exact traced seat.'
-                  : 'Outline scale is normalized until measurements are verified. Your maker confirms the exact traced seat.'}
+                  ? 'Shown at the listed size. We confirm the exact outline at your consultation.'
+                  : 'Size is estimated until we measure the stone at your consultation.'}
             </p>
             <button
               type="button"

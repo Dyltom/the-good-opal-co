@@ -177,10 +177,9 @@ function OpalPicker({
     <fieldset>
       <legend className="font-serif text-xl font-medium">3. Choose an available opal</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Start with individual stones: their exact listing photo maps onto the preview. Every
-        published, in-stock listing remains available. Parcels, calibrated sets, and specimens use a
-        representative 3D concept; your consultation confirms the individual stone and whether it
-        can be set safely.
+        Individual stones show their own photo in the preview. Parcels, calibrated sets and
+        specimens show a representative stone, and we help you choose the exact opal at your
+        consultation.
       </p>
       <button
         type="button"
@@ -300,7 +299,7 @@ function OpalPicker({
                   )}
                   {opal.selectionKind !== 'individual' && (
                     <span className="mt-1 block text-xs leading-4 text-charcoal-light">
-                      3D shows a representative setting concept
+                      Preview shows a representative stone
                     </span>
                   )}
                 </span>
@@ -334,19 +333,18 @@ function RingStylePicker({
   const usesExactListingPhoto =
     selectedOpal?.selectionKind === 'individual' && Boolean(selectedOpal.visual.textureCrop)
   const mappingDescription = usesExactListingPhoto
-    ? 'The preview maps the selected listing photo into the setting concept.'
+    ? 'The preview uses this stone’s own photo.'
     : selectedOpal
-      ? 'This multi-stone listing uses a representative setting concept.'
-      : 'Select an individual stone to map its listing photo into the setting concept.'
+      ? 'This multi-stone listing shows a representative stone.'
+      : 'Choose an individual stone to see its own photo in the preview.'
 
   return (
     <fieldset>
       <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
       <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Start with the design that suits the selected outline. Each reference is a photographed Good
-        Opal Co ring; incompatible settings stay unavailable instead of stretching the stone into a
-        misleading shape. {mappingDescription} Your maker confirms measurements, final seat, and
-        whether the physical stone can be set safely.
+        Each design is based on a photographed Good Opal Co ring. Designs that don’t suit your
+        opal’s shape are unavailable, so the preview never stretches the stone. {mappingDescription}{' '}
+        We confirm the measurements and fit at your consultation.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {ringStyles.map((style) => {
@@ -357,7 +355,7 @@ function RingStylePicker({
             fit?.kind === 'original'
               ? 'Reference shape'
               : fit?.kind === 'concept'
-                ? 'Concept fit'
+                ? 'Good fit'
                 : fit?.kind === 'incompatible'
                   ? 'Not suitable'
                   : fit
@@ -613,8 +611,8 @@ export function RingConfigurator({
                 onChange={updateConfig}
               />
               <p className="-mt-7 text-xs leading-5 text-charcoal-light">
-                The collection references were made in sterling silver. Gold and platinum are
-                bespoke material adaptations confirmed during consultation.
+                Our reference rings are sterling silver. Gold and platinum are made to order and
+                confirmed at your consultation.
               </p>
               <RingStylePicker
                 selectedOpal={selectedOpal}
@@ -682,8 +680,8 @@ export function RingConfigurator({
               <div className="mt-5 border-t border-charcoal/10 pt-5">
                 <p className="text-sm font-medium">Pricing follows the stone.</p>
                 <p className="mt-1 max-w-[52ch] text-xs leading-5 text-charcoal-light">
-                  Natural opal value, exact dimensions, metal weight, and final engineering
-                  determine your AUD quote. Nothing is charged from this builder.
+                  The opal, its exact size, the metal and the final design set your AUD quote.
+                  Nothing is charged from this builder.
                 </p>
               </div>
               {selectedOpal && (
