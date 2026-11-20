@@ -71,7 +71,7 @@ The original production database was created by Payload development schema sync 
 For later schema changes:
 
 ```bash
-pnpm payload generate:types
+pnpm generate:types
 pnpm payload migrate:create descriptive_name
 ```
 
