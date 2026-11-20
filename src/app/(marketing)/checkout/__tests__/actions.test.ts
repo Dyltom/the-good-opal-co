@@ -28,6 +28,7 @@ const {
 })
 
 vi.mock('@/lib/cart', () => ({ getCart }))
+vi.mock('@/lib/constants', () => ({ APP_URL: 'https://shop.example' }))
 vi.mock('@/lib/stripe-config', () => ({ getConfiguredStripeSecretKey }))
 vi.mock('@/lib/rate-limit', () => ({ getRequestIdentifier, checkRateLimit }))
 vi.mock('@/lib/inventory-reservations', () => ({
@@ -139,6 +140,34 @@ describe('checkout Server Action', () => {
         ],
       })
     )
+  })
+
+  test('shows each piece and the shop brand on the Stripe payment page', async () => {
+    getCart.mockResolvedValue({
+      items: [
+        {
+          productId: '1',
+          slug: 'opal-ring',
+          name: 'Opal ring',
+          price: 150,
+          quantity: 1,
+          image: '/api/media/file/opal-ring.jpg',
+        },
+      ],
+      total: 150,
+      itemCount: 1,
+    })
+
+    await createCheckoutSession(checkoutForm())
+
+    const params = createStripeSession.mock.calls[0]?.[0]
+    expect(params.line_items[0].price_data.product_data.images).toEqual([
+      'https://shop.example/api/media/file/opal-ring.jpg',
+    ])
+    expect(params.branding_settings).toMatchObject({
+      display_name: 'The Good Opal Co',
+      icon: { type: 'url', url: 'https://shop.example/logo.png' },
+    })
   })
 
   test('lets overseas buyers enter any supported non-Australian address', async () => {
