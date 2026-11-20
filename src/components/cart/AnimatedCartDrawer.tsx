@@ -294,39 +294,45 @@ function AnimatedCartItem({
 
         {/* Quantity Controls with animation */}
         <div className="flex items-center gap-2">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
-            disabled={isPending || isRemoving}
-            className="min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={`Decrease quantity of ${item.name}`}
-          >
-            <Minus className="w-4 h-4 sm:w-3 sm:h-3" />
-          </motion.button>
+          {(item.maxQuantity ?? Infinity) > 1 ? (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
+                disabled={isPending || isRemoving}
+                className="min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={`Decrease quantity of ${item.name}`}
+              >
+                <Minus className="w-4 h-4 sm:w-3 sm:h-3" />
+              </motion.button>
 
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={item.quantity}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              className="text-sm font-medium w-8 text-center"
-            >
-              {item.quantity}
-            </motion.span>
-          </AnimatePresence>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={item.quantity}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="text-sm font-medium w-8 text-center"
+                >
+                  {item.quantity}
+                </motion.span>
+              </AnimatePresence>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onUpdateQuantity(item.quantity + 1)}
-            disabled={isPending || isRemoving}
-            className="min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label={`Increase quantity of ${item.name}`}
-          >
-            <Plus className="w-4 h-4 sm:w-3 sm:h-3" />
-          </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onUpdateQuantity(item.quantity + 1)}
+                disabled={isPending || isRemoving || item.quantity >= (item.maxQuantity ?? Infinity)}
+                className="min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={`Increase quantity of ${item.name}`}
+              >
+                <Plus className="w-4 h-4 sm:w-3 sm:h-3" />
+              </motion.button>
+            </>
+          ) : (
+            <span className="text-sm text-gray-500">One of a kind</span>
+          )}
 
           <motion.button
             whileHover={{ scale: 1.05, rotate: 5 }}

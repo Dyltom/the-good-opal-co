@@ -255,10 +255,11 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                 {item.name}
               </h2>
             </Link>
-            <p className="mt-1 text-sm tabular-nums text-charcoal/60">
-              {formatCurrency(item.price, 'AUD')}
-              {item.quantity > 1 ? ' each' : ''}
-            </p>
+            {item.quantity > 1 && (
+              <p className="mt-1 text-sm tabular-nums text-charcoal/60">
+                {formatCurrency(item.price, 'AUD')} each
+              </p>
+            )}
           </div>
           <p className="shrink-0 font-semibold tabular-nums text-charcoal">
             {formatCurrency(item.price * item.quantity, 'AUD')}
@@ -266,39 +267,43 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
         </div>
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
-          <div
-            className="flex items-center border border-warm-grey/60 bg-white"
-            aria-label={`Quantity for ${item.name}`}
-          >
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={() => onUpdateQuantity(item.quantity - 1)}
-              disabled={isPending}
-              aria-label={`Decrease quantity of ${item.name}`}
-              className="rounded-none"
+          {(item.maxQuantity ?? Infinity) > 1 ? (
+            <div
+              className="flex items-center border border-warm-grey/60 bg-white"
+              aria-label={`Quantity for ${item.name}`}
             >
-              <Minus className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <span
-              className="w-10 text-center text-sm font-semibold text-charcoal"
-              aria-live="polite"
-            >
-              {item.quantity}
-            </span>
-            <Button
-              type="button"
-              size="icon"
-              variant="ghost"
-              onClick={() => onUpdateQuantity(item.quantity + 1)}
-              disabled={isPending}
-              aria-label={`Increase quantity of ${item.name}`}
-              className="rounded-none"
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </div>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => onUpdateQuantity(item.quantity - 1)}
+                disabled={isPending}
+                aria-label={`Decrease quantity of ${item.name}`}
+                className="rounded-none"
+              >
+                <Minus className="h-4 w-4" aria-hidden="true" />
+              </Button>
+              <span
+                className="w-10 text-center text-sm font-semibold text-charcoal"
+                aria-live="polite"
+              >
+                {item.quantity}
+              </span>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => onUpdateQuantity(item.quantity + 1)}
+                disabled={isPending || item.quantity >= (item.maxQuantity ?? Infinity)}
+                aria-label={`Increase quantity of ${item.name}`}
+                className="rounded-none"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </div>
+          ) : (
+            <p className="text-sm text-charcoal/60">One of a kind</p>
+          )}
 
           <Button
             type="button"
