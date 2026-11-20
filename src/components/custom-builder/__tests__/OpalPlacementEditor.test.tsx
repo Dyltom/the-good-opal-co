@@ -57,7 +57,7 @@ describe('OpalPlacementEditor', () => {
   test('states crop and outline fidelity without calling a generic outline exact', () => {
     renderEditor(defaultOpalPlacement)
 
-    expect(screen.getByText('Reviewed colour crop')).not.toBeNull()
+    expect(screen.getByText('Colour from this stone’s photo')).not.toBeNull()
     expect(
       screen.getByText(
         'Move the selected listing colour inside a supported outline preview. Stone scale and setting geometry stay fixed; only the colour framing changes.'

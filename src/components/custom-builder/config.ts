@@ -735,6 +735,12 @@ export function getRingStyleFit(
     : { kind: 'adapted', label: 'Adapted proportions' }
 }
 
+export function opalPhotoFitLabel(opal: BuilderOpal): string {
+  return opal.visual.canonicalFace || opal.visual.contour
+    ? 'Traced from this stone’s photo'
+    : 'Colour from this stone’s photo'
+}
+
 export function shapeForOpal(opal: BuilderOpal): RingConfig['shape'] {
   return opal.visual.silhouette === 'elongated' ? 'elongated' : opal.visual.silhouette
 }

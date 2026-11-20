@@ -11,7 +11,7 @@ import {
 } from '@/lib/custom-builder/photo-crop'
 import { getBuilderOpalPhotoSource } from '@/lib/custom-builder/opal-photo-source'
 import type { BuilderOpal, OpalPlacement, RingConfig } from './config'
-import { defaultOpalPlacement, ringStyleGeometryProfiles } from './config'
+import { defaultOpalPlacement, opalPhotoFitLabel, ringStyleGeometryProfiles } from './config'
 import { OpalFaceImage } from './OpalFaceImage'
 import {
   applyHandmadeBeadVariation,
@@ -140,11 +140,7 @@ export function OpalPlacementEditor({
   const photoSource = getBuilderOpalPhotoSource(opal)
   const hasExactContour = Boolean(opal.visual.contour)
   const hasMeasurements = Boolean(opal.visual.dimensionsMm)
-  const sourceReviewLabel = opal.visual.canonicalFace
-    ? 'Rectified stone face'
-    : hasExactContour
-      ? 'Reviewed crop + traced outline'
-      : 'Reviewed colour crop'
+  const sourceReviewLabel = opalPhotoFitLabel(opal)
   const outlineDescription = hasExactContour
     ? 'its traced stone outline'
     : hasMeasurements
