@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type { Media, Product } from '@/types/payload-types'
 import { validateBuilderProduct } from '@/lib/product-validation'
 import { getPayload } from '@/lib/payload'
+import { isSameOriginRequest } from '@/lib/same-origin'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { BUILDER_PHOTO_ANALYSIS_VERSION } from '@/lib/custom-builder/mapping-lifecycle'
 import { BUILDER_MEDIA_REPLACEMENT_CONTEXT } from '@/lib/custom-builder/media-mapping-invalidation'
@@ -35,16 +36,6 @@ function safeMediaUrl(value: string | null | undefined): string | null {
     return relative ? `${url.pathname}${url.search}` : url.toString()
   } catch {
     return null
-  }
-}
-
-function isSameOriginRequest(request: NextRequest): boolean {
-  const origin = request.headers.get('origin')
-  if (!origin) return true
-  try {
-    return new URL(origin).origin === request.nextUrl.origin
-  } catch {
-    return false
   }
 }
 

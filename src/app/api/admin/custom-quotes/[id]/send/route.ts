@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deliverCustomQuote } from '@/lib/custom-quotes/delivery'
 import { getPayload } from '@/lib/payload'
+import { isSameOriginRequest } from '@/lib/same-origin'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const origin = request.headers.get('origin')
-  if (origin && new URL(origin).origin !== request.nextUrl.origin) {
+  if (!isSameOriginRequest(request)) {
     return NextResponse.json({ error: 'Cross-origin request rejected.' }, { status: 403 })
   }
 
