@@ -27,7 +27,7 @@ describe('custom quote evidence', () => {
 
     expect(
       hasCompleteAcceptanceEvidence({
-        acceptedAt: new Date(Date.now() - 1_000).toISOString(),
+        acceptedAt: '2026-07-12T00:00:00.000Z',
         acceptedByEmail: 'BUYER@example.com',
         acceptedTermsHash: hash,
         customerEmail: 'buyer@example.com',
