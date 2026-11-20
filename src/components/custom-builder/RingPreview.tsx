@@ -138,13 +138,8 @@ export function RingPreview({
         </div>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-5 sm:p-7">
-        <div className="max-w-xs">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-opal-light">
-            Studio preview
-          </p>
-          <p className="sr-only">{description}</p>
-        </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-end p-5 sm:p-7">
+        <p className="sr-only">{description}</p>
         <span className="rounded-full bg-cream px-3 py-1 text-xs font-medium text-charcoal">
           {previewSource === 'reference'
             ? 'Sold reference'
@@ -157,7 +152,7 @@ export function RingPreview({
       <div
         role="group"
         aria-label="Preview source"
-        className="absolute left-5 top-16 flex rounded-full border border-cream/20 bg-black-rich/80 p-1 sm:left-7 sm:top-20"
+        className="absolute left-5 top-5 flex rounded-full border border-cream/20 bg-black-rich/80 p-1 sm:left-7 sm:top-20"
       >
         <button
           type="button"
@@ -182,7 +177,7 @@ export function RingPreview({
         <div
           role="group"
           aria-label="Ring preview angle"
-          className="absolute right-5 top-20 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 sm:right-7 sm:top-24"
+          className="absolute right-5 top-20 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 sm:right-7"
         >
           {views.map((option) => (
             <button
@@ -253,7 +248,7 @@ export function RingPreview({
                 {selectedOpal.selectionKind === 'individual' &&
                   !selectedOpal.visual.dimensionsMm && (
                     <p className="mt-1 text-xs text-cream/70">
-                      Normalized shape scale · measurements pending
+                      Size estimated · confirmed at consultation
                     </p>
                   )}
                 <p className="mt-1 text-xs leading-4 text-cream/60">
@@ -272,7 +267,7 @@ export function RingPreview({
               </div>
             </div>
           ) : (
-            <p className="hidden items-center gap-2 text-xs text-cream/65 sm:flex">
+            <p className="hidden items-center gap-2 rounded-full bg-cream/90 px-3 py-1.5 text-xs text-charcoal/75 sm:flex">
               <Rotate3D aria-hidden="true" className="h-4 w-4" /> Drag to rotate · scroll to zoom
             </p>
           )}
