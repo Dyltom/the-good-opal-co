@@ -297,8 +297,8 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
               <Sparkles aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
               <h2 className="mt-4 font-serif text-2xl">A visual starting point</h2>
               <p className="mt-2 text-sm leading-6 text-charcoal-light">
-                The studio communicates proportion and mood. It does not pretend every natural stone
-                looks identical.
+                A guide to proportion and colour. Every natural opal is unique, so your consultation
+                confirms the real stone.
               </p>
             </div>
             <div>
