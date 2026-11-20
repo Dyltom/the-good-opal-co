@@ -6,7 +6,7 @@ import {
   type BuilderStoneContourV1,
 } from './stone-contour'
 
-export const OPAL_PHOTO_ANALYSIS_VERSION = 5
+export const OPAL_PHOTO_ANALYSIS_VERSION = 6
 
 export type OpalShapeHint = 'cushion' | 'elongated' | 'heart' | 'oval' | 'pear' | 'round'
 
@@ -284,9 +284,17 @@ function cleanMask(mask: Uint8Array, width: number, height: number): Uint8Array 
   return dilate(erode(closed, width, height), width, height)
 }
 
+interface StoneFrame {
+  centreX: number
+  centreY: number
+  height: number
+  width: number
+}
+
 interface ContourExtraction {
   angularCoverage: number
   contour: BuilderStoneContourV1
+  frame: StoneFrame
   smoothness: number
 }
 
@@ -313,6 +321,26 @@ function medianOfThree(first: number, second: number, third: number): number {
   return [first, second, third].sort((left, right) => left - right)[1]!
 }
 
+function circularNeighbourhood(values: readonly number[], index: number, reach: number): number[] {
+  return Array.from(
+    { length: reach * 2 + 1 },
+    (_, offset) => values[(index + offset - reach + values.length) % values.length]!
+  )
+}
+
+const binomialWeights = [1, 4, 6, 4, 1] as const
+
+function smoothContourRadii(radii: readonly number[]): number[] {
+  const despiked = radii.map((_, index) => median(circularNeighbourhood(radii, index, 2)))
+  return despiked.map(
+    (_, index) =>
+      circularNeighbourhood(despiked, index, 2).reduce(
+        (sum, radius, offset) => sum + radius * binomialWeights[offset]!,
+        0
+      ) / 16
+  )
+}
+
 function extractContour(
   component: Component,
   width: number,
@@ -322,10 +350,8 @@ function extractContour(
   const selectedMask = new Uint8Array(width * height)
   for (const pixel of component.indices) selectedMask[pixel] = 1
 
-  const centreX = (component.minimumX + component.maximumX + 1) / 2
-  const centreY = (component.minimumY + component.maximumY + 1) / 2
-  const halfWidth = Math.max(1, (component.maximumX - component.minimumX + 1) / 2)
-  const halfHeight = Math.max(1, (component.maximumY - component.minimumY + 1) / 2)
+  const originX = (component.minimumX + component.maximumX + 1) / 2
+  const originY = (component.minimumY + component.maximumY + 1) / 2
   const radians = (-rotationDegrees * Math.PI) / 180
   const cosine = Math.cos(radians)
   const sine = Math.sin(radians)
@@ -345,12 +371,9 @@ function extractContour(
       selectedMask[pixel + width] === 0
     if (!isBoundary) continue
 
-    const normalizedX = (x + 0.5 - centreX) / halfWidth
-    const normalizedY = (centreY - y - 0.5) / halfHeight
-    boundary.push([
-      normalizedX * cosine - normalizedY * sine,
-      normalizedX * sine + normalizedY * cosine,
-    ])
+    const offsetX = x + 0.5 - originX
+    const offsetY = originY - y - 0.5
+    boundary.push([offsetX * cosine - offsetY * sine, offsetX * sine + offsetY * cosine])
   }
   if (boundary.length < BUILDER_STONE_CONTOUR_SAMPLE_COUNT / 2) return undefined
 
@@ -358,18 +381,18 @@ function extractContour(
   const maximumX = Math.max(...boundary.map(([x]) => x))
   const minimumY = Math.min(...boundary.map(([, y]) => y))
   const maximumY = Math.max(...boundary.map(([, y]) => y))
-  const normalizedCentreX = (minimumX + maximumX) / 2
-  const normalizedCentreY = (minimumY + maximumY) / 2
-  const normalizedHalfWidth = (maximumX - minimumX) / 2
-  const normalizedHalfHeight = (maximumY - minimumY) / 2
-  if (normalizedHalfWidth <= 0 || normalizedHalfHeight <= 0) return undefined
+  const rotatedCentreX = (minimumX + maximumX) / 2
+  const rotatedCentreY = (minimumY + maximumY) / 2
+  const halfWidth = (maximumX - minimumX) / 2
+  const halfHeight = (maximumY - minimumY) / 2
+  if (halfWidth <= 0 || halfHeight <= 0) return undefined
 
   const bins: Array<number | undefined> = Array.from({
     length: BUILDER_STONE_CONTOUR_SAMPLE_COUNT,
   })
   for (const [rawX, rawY] of boundary) {
-    const x = (rawX - normalizedCentreX) / normalizedHalfWidth
-    const y = (rawY - normalizedCentreY) / normalizedHalfHeight
+    const x = (rawX - rotatedCentreX) / halfWidth
+    const y = (rawY - rotatedCentreY) / halfHeight
     const angle = (Math.atan2(y, x) + fullTurn) % fullTurn
     const index = Math.min(
       BUILDER_STONE_CONTOUR_SAMPLE_COUNT - 1,
@@ -384,21 +407,33 @@ function extractContour(
   if (angularCoverage < 0.45) return undefined
   const filled = circularlyFill(bins)
   if (!filled) return undefined
-  const smoothed = filled.map((radius, index) =>
+  const storedRadius = (radius: number) => Math.round(clamp(radius, 0.05, 1.75) * 10_000) / 10_000
+  const traced = filled.map((radius, index) =>
     medianOfThree(
       filled[(index - 1 + filled.length) % filled.length]!,
       radius,
       filled[(index + 1) % filled.length]!
     )
   )
-  const radii = smoothed.map((radius) => Math.round(clamp(radius, 0.05, 1.75) * 10_000) / 10_000)
+  if (
+    !parseBuilderStoneContour({
+      version: BUILDER_STONE_CONTOUR_VERSION,
+      radii: traced.map(storedRadius),
+    })
+  ) {
+    return undefined
+  }
+  const radii = smoothContourRadii(filled).map(storedRadius)
   const meanDelta =
     radii.reduce(
       (sum, radius, index) => sum + Math.abs(radius - radii[(index + 1) % radii.length]!),
       0
     ) / radii.length
 
+  const frameWidth = maximumX - minimumX + 1
+  const frameHeight = maximumY - minimumY + 1
   const parsedContour = parseBuilderStoneContour({
+    aspect: Math.round(clamp(frameWidth / frameHeight, 0.2, 5) * 10_000) / 10_000,
     version: BUILDER_STONE_CONTOUR_VERSION,
     radii,
   })
@@ -407,6 +442,12 @@ function extractContour(
   return {
     angularCoverage,
     contour: parsedContour,
+    frame: {
+      centreX: originX + rotatedCentreX * cosine + rotatedCentreY * sine,
+      centreY: originY - (rotatedCentreY * cosine - rotatedCentreX * sine),
+      height: frameHeight,
+      width: frameWidth,
+    },
     smoothness: 1 - clamp(meanDelta / 0.12, 0, 1),
   }
 }
@@ -428,7 +469,7 @@ function normalizeFullTurn(degrees: number): number {
 function halfTurnContour(contour: BuilderStoneContourV1): BuilderStoneContourV1 {
   const half = contour.radii.length / 2
   return {
-    version: BUILDER_STONE_CONTOUR_VERSION,
+    ...contour,
     radii: contour.radii.map((_, index) => contour.radii[(index + half) % contour.radii.length]!),
   }
 }
@@ -555,19 +596,13 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
 
   const objectWidth = component.maximumX - component.minimumX + 1
   const objectHeight = component.maximumY - component.minimumY + 1
-  const detectedMinorMajor =
-    Math.min(objectWidth, objectHeight) / Math.max(objectWidth, objectHeight)
+  const { frame } = extractedContour
   const stoneAspect =
-    input.stoneAspect !== undefined && Number.isFinite(input.stoneAspect) && input.stoneAspect > 0
-      ? clamp(input.stoneAspect, 0.2, 5)
-      : detectedMinorMajor
-  // Fit the full detected face. The traced contour now owns background
-  // removal, so a global 3.2x floor and 16% inward crop only discarded real
-  // edge flash. Keep a 1% guard for segmentation noise while retaining colour
-  // landmarks across the stone. Rotation adds its own cover scale later.
-  const usableMinorFraction =
-    Math.min(objectWidth / input.width, objectHeight / input.height) * 0.99
-  const desiredEffectiveZoom = 1 / Math.max(usableMinorFraction, 1 / 12)
+    measuredStoneAspect !== undefined && measuredStoneAspect > 0
+      ? clamp(measuredStoneAspect, 0.2, 5)
+      : (extractedContour.contour.aspect ?? frame.width / frame.height)
+  const croppedFrameWidth = Math.max(frame.width, frame.height * stoneAspect) * 0.99
+  const desiredEffectiveZoom = Math.min(12, input.width / croppedFrameWidth)
   const zoom = clamp(desiredEffectiveZoom / rotationCoverScale(stoneAspect, rotation), 1, 12)
 
   const areaFraction = component.indices.length / pixels
@@ -598,8 +633,8 @@ function analyzeOpalRasterPixels(input: OpalRasterInput): OpalPhotoAnalysis | un
   if (confidence < 0.35) return undefined
   return {
     contour: orientedContour.contour,
-    focalX: clamp((component.minimumX + component.maximumX + 1) / 2 / input.width, 0, 1),
-    focalY: clamp((component.minimumY + component.maximumY + 1) / 2 / input.height, 0, 1),
+    focalX: clamp(frame.centreX / input.width, 0, 1),
+    focalY: clamp(frame.centreY / input.height, 0, 1),
     zoom,
     rotation: normalizeFullTurn(rotation + orientedContour.rotationOffset),
     source: 'image',
