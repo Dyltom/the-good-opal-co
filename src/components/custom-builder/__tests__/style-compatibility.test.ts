@@ -40,7 +40,7 @@ describe('sold ring style adaptation', () => {
   test('labels an unmeasured shape match as concept scale', () => {
     expect(getRingStyleFit('gemini', opal('oval'))).toEqual({
       kind: 'concept',
-      label: 'Recommended concept · measurements pending',
+      label: 'Our recommended setting for this opal',
     })
   })
 
