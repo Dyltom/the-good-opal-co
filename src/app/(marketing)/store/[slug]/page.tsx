@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { ringStyles } from '@/components/custom-builder/config'
 import { ArrowRight, Camera, MessageCircle, RotateCcw, Truck } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
@@ -124,6 +125,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
   const stock = product.stock ?? 0
   const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
+  const designStyle = ringStyles.find((style) =>
+    product.name.toLowerCase().includes(`${style.label.replace('&', 'and').toLowerCase()} ring`)
+  )
 
   // Collect all product images with alt text
   const cmsImages =
@@ -320,6 +324,23 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                           <span className="block font-serif text-lg text-charcoal">Design a ring around this opal</span>
                           <span className="mt-1 block font-sans text-sm text-charcoal/65">
                             Try this exact stone in settings in the 3D studio, then request a quote.
+                          </span>
+                        </span>
+                        <ArrowRight className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
+                      </Link>
+                    ) : null}
+
+                    {designStyle ? (
+                      <Link
+                        href={`/services/design?y=${designStyle.id}`}
+                        className="group mt-3 flex items-center justify-between gap-4 border border-warm-grey/60 bg-white p-4 transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                      >
+                        <span>
+                          <span className="block font-serif text-lg text-charcoal">
+                            Want the {designStyle.label} with a different opal?
+                          </span>
+                          <span className="mt-1 block font-sans text-sm text-charcoal/65">
+                            Choose a stone, metal and size in the 3D studio, then request a quote.
                           </span>
                         </span>
                         <ArrowRight className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
