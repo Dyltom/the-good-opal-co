@@ -332,7 +332,7 @@ export function OpalPlacementEditor({
               <p className="text-xs font-medium uppercase tracking-[0.14em] text-opal-light">
                 Colour workbench
               </p>
-              <p className="mt-1 line-clamp-1 text-sm text-cream/75">{opal.name}</p>
+              <p className="mt-1 line-clamp-2 text-balance text-sm text-cream/75">{opal.name}</p>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
               <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
