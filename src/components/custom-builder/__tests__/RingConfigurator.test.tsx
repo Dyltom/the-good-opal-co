@@ -193,7 +193,7 @@ describe('RingConfigurator store opal selection', () => {
     )
 
     expect(screen.queryByRole('group', { name: /Adjust the photo crop/i })).toBeNull()
-    expect(screen.getByText('4. Ring size (US)')).not.toBeNull()
+    expect(screen.getByText('Ring size')).not.toBeNull()
   })
 
   test('normalizes an incompatible legacy design to the stone recommendation', async () => {
@@ -539,7 +539,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(<RingConfigurator initialConfig={defaultRingConfig} opals={catalogue} />)
 
-    const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
+    const picker = screen.getByRole('group', { name: 'Opal' })
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(12)
     expect(screen.getByRole('combobox', { name: 'Filter available opals' })).toHaveProperty(
       'value',
@@ -610,8 +610,8 @@ describe('RingConfigurator store opal selection', () => {
       />
     )
 
-    const styles = screen.getByRole('group', { name: '2. Choose a collection design' })
-    const picker = screen.getByRole('group', { name: '3. Choose an available opal' })
+    const styles = screen.getByRole('group', { name: 'Design' })
+    const picker = screen.getByRole('group', { name: 'Opal' })
     expect(styles.compareDocumentPosition(picker) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(12)
     expect(screen.getByRole('button', { name: /Individual opal 81/i })).not.toBeNull()

@@ -308,8 +308,16 @@ export function OpalPlacementEditor({
 
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">4. Frame the opal&apos;s colour</legend>
-      <p className="mt-2 max-w-[62ch] text-sm leading-6 text-charcoal-light">
+      <legend className="flex items-baseline gap-2 font-serif text-lg font-medium text-charcoal">
+        <span
+          aria-hidden="true"
+          className="font-sans text-xs font-semibold tabular-nums text-opal-electric-accessible"
+        >
+          04
+        </span>
+        Frame the colour
+      </legend>
+      <p className="mt-2 max-w-[62ch] text-xs leading-5 text-charcoal-light">
         Choose which part of the stone’s colour shows inside {outlineDescription}. The size and
         setting stay fixed.
       </p>

@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useDeferredValue, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Check, ExternalLink, RotateCcw, Share2 } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { ArrowLeft, ArrowRight, ExternalLink, RotateCcw, Share2 } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/utils'
 import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
 import { getBuilderOpalPhotoSource } from '@/lib/custom-builder/opal-photo-source'
@@ -29,7 +30,7 @@ import { getRenderedStoneAspect } from './geometry'
 const RingPreview = dynamic(() => import('./RingPreview').then((module) => module.RingPreview), {
   ssr: false,
   loading: () => (
-    <div className="aspect-[4/5] min-h-[28rem] animate-pulse bg-black-rich sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0" />
+    <div className="h-[36svh] min-h-[16rem] animate-pulse bg-[#eae6de] sm:aspect-[5/4] sm:h-auto sm:min-h-0 lg:aspect-auto lg:h-full" />
   ),
 })
 
@@ -41,11 +42,20 @@ interface RingConfiguratorProps {
 }
 
 interface OptionGroupProps<K extends keyof RingConfig> {
+  step: string
+  note?: string
   label: string
   configKey: K
   options: readonly ConfigOption<Extract<RingConfig[K], string>>[]
   value: RingConfig[K]
   onChange: (key: K, value: RingConfig[K]) => void
+}
+
+const kindLabels: Record<BuilderOpal['selectionKind'], string> = {
+  individual: 'Individual stone',
+  assortment: 'Choose from set',
+  parcel: 'Whole parcel',
+  specimen: 'Specimen',
 }
 
 function designUrlForConfig(config: RingConfig): URL {
@@ -54,17 +64,34 @@ function designUrlForConfig(config: RingConfig): URL {
   return url
 }
 
+function StepLegend({ step, children }: { step: string; children: ReactNode }) {
+  return (
+    <legend className="flex items-baseline gap-2 font-serif text-lg font-medium text-charcoal">
+      <span
+        aria-hidden="true"
+        className="font-sans text-xs font-semibold tabular-nums text-opal-electric-accessible"
+      >
+        {step}
+      </span>
+      {children}
+    </legend>
+  )
+}
+
 function OptionGroup<K extends keyof RingConfig>({
+  step,
   label,
   configKey,
   options,
   value,
   onChange,
+  note,
 }: OptionGroupProps<K>) {
+  const selectedOption = options.find((option) => option.id === value)
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">{label}</legend>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <StepLegend step={step}>{label}</StepLegend>
+      <div className="mt-3 flex flex-wrap gap-2">
         {options.map((option) => {
           const selected = option.id === value
           return (
@@ -74,35 +101,34 @@ function OptionGroup<K extends keyof RingConfig>({
               aria-pressed={selected}
               onClick={() => onChange(configKey, option.id as RingConfig[K])}
               className={cn(
-                'relative min-h-[4.75rem] rounded-lg border p-3 text-left transition-[border-color,background-color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.98]',
+                'inline-flex min-h-10 items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-3.5 text-sm transition-[border-color,background-color,color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.97]',
                 selected
                   ? 'border-charcoal bg-charcoal text-cream'
-                  : 'border-warm-grey/80 bg-white hover:border-charcoal/50'
+                  : 'border-warm-grey/90 bg-white text-charcoal hover:border-charcoal/50'
               )}
             >
-              <span className="flex items-center gap-2 text-sm font-medium">
-                {option.colour && (
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-4 shrink-0 rounded-full border border-black/10"
-                    style={{ backgroundColor: option.colour }}
-                  />
-                )}
-                {option.label}
-                {selected && <Check aria-hidden="true" className="ml-auto h-4 w-4" />}
-              </span>
-              <span
-                className={cn(
-                  'mt-1 block text-xs leading-5',
-                  selected ? 'text-cream/65' : 'text-charcoal-light'
-                )}
-              >
-                {option.detail}
-              </span>
+              {option.colour && (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'h-7 w-7 shrink-0 rounded-full shadow-[inset_0_-3px_6px_rgb(0_0_0/0.18),inset_0_3px_6px_rgb(255_255_255/0.55)]',
+                    selected ? 'ring-1 ring-cream/40' : 'ring-1 ring-black/10'
+                  )}
+                  style={{ backgroundColor: option.colour }}
+                />
+              )}
+              {option.label}
             </button>
           )
         })}
       </div>
+      {(selectedOption || note) && (
+        <p className="mt-2.5 text-xs leading-5 text-charcoal-light">
+          {selectedOption?.detail}
+          {selectedOption && note ? '. ' : ''}
+          {note}
+        </p>
+      )}
     </fieldset>
   )
 }
@@ -121,7 +147,8 @@ function OpalPicker({
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<'all' | BuilderOpal['selectionKind']>(() => {
     const selected = opals.find((opal) => opal.id === selectedId)
-    return selected?.selectionKind ?? 'individual'
+    if (selected) return selected.selectionKind
+    return opals.some((opal) => opal.selectionKind === 'individual') ? 'individual' : 'all'
   })
   const [visibleCount, setVisibleCount] = useState(12)
   const deferredQuery = useDeferredValue(query.trim().toLocaleLowerCase())
@@ -164,6 +191,8 @@ function OpalPicker({
     setVisibleCount(12)
   }, [deferredQuery, kind])
 
+  const selectedOpal = opals.find((opal) => opal.id === selectedId)
+
   if (opals.length === 0) {
     return (
       <div className="border-y border-warm-grey/60 py-5 text-sm leading-6 text-charcoal-light">
@@ -175,26 +204,8 @@ function OpalPicker({
 
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">3. Choose an available opal</legend>
-      <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Individual stones show their own photo in the preview. Parcels, calibrated sets and
-        specimens show a representative stone, and we help you choose the exact opal at your
-        consultation.
-      </p>
-      <button
-        type="button"
-        aria-pressed={!selectedId}
-        onClick={onClear}
-        className={cn(
-          'mt-4 inline-flex min-h-11 items-center rounded-full border px-5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2',
-          selectedId
-            ? 'border-charcoal/25 bg-white text-charcoal hover:border-charcoal'
-            : 'border-charcoal bg-charcoal text-cream'
-        )}
-      >
-        Preview collection reference
-      </button>
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_11rem]">
+      <StepLegend step="03">Opal</StepLegend>
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
         <div>
           <label htmlFor="opal-search" className="sr-only">
             Search available opals
@@ -204,8 +215,8 @@ function OpalPicker({
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search name, type, or origin"
-            className="min-h-12 w-full rounded-lg border border-warm-grey bg-white px-4 text-sm text-charcoal placeholder:text-charcoal-light focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
+            placeholder="Search type or origin"
+            className="min-h-11 w-full rounded-full border border-warm-grey bg-white px-4 text-sm text-charcoal placeholder:text-charcoal-light focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
           />
         </div>
         <div>
@@ -218,7 +229,7 @@ function OpalPicker({
             onChange={(event) =>
               setKind(event.target.value as 'all' | BuilderOpal['selectionKind'])
             }
-            className="min-h-12 w-full rounded-lg border border-warm-grey bg-white px-3 text-sm text-charcoal focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
+            className="min-h-11 w-full max-w-[11rem] rounded-full border border-warm-grey bg-white px-3 text-sm text-charcoal focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
           >
             <option value="all">All listings ({opals.length})</option>
             <option value="individual">Individual stones ({kindCounts.individual})</option>
@@ -228,23 +239,27 @@ function OpalPicker({
           </select>
         </div>
       </div>
-      <p className="mt-3 text-xs text-charcoal-light" aria-live="polite">
-        {matchingOpals.length} {matchingOpals.length === 1 ? 'listing' : 'listings'} found
-      </p>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <p className="text-xs text-charcoal-light" aria-live="polite">
+          {matchingOpals.length} {matchingOpals.length === 1 ? 'listing' : 'listings'} found
+        </p>
+        <button
+          type="button"
+          aria-pressed={!selectedId}
+          onClick={onClear}
+          className="inline-flex min-h-9 items-center rounded-full px-2 text-xs font-medium text-charcoal-light underline decoration-warm-grey underline-offset-4 transition-colors hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible aria-pressed:text-charcoal aria-pressed:no-underline"
+        >
+          Preview collection reference
+        </button>
+      </div>
       {matchingOpals.length === 0 ? (
-        <div className="mt-4 border-y border-warm-grey/60 py-5 text-sm leading-6 text-charcoal-light">
+        <div className="mt-3 border-y border-warm-grey/60 py-5 text-sm leading-6 text-charcoal-light">
           No available opals match those filters. Clear the search or choose another listing type.
         </div>
       ) : (
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-4 xl:grid-cols-5">
           {visibleOpals.map((opal) => {
             const selected = opal.id === selectedId
-            const kindLabel = {
-              individual: 'Individual stone',
-              assortment: 'Choose from set',
-              parcel: 'Whole parcel',
-              specimen: 'Specimen',
-            }[opal.selectionKind]
             return (
               <button
                 key={opal.id}
@@ -252,55 +267,26 @@ function OpalPicker({
                 data-opal-id={opal.id}
                 aria-pressed={selected}
                 onClick={() => onSelect(opal)}
+                title={`${opal.name} · ${formatCurrency(opal.price)} loose`}
                 className={cn(
-                  'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.99]',
-                  selected
-                    ? 'border-charcoal shadow-md'
-                    : 'border-warm-grey/80 hover:border-charcoal/45'
+                  'group relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border-2 bg-[#171714] p-2 transition-[border-color,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 active:scale-[0.96]',
+                  selected ? 'opal-fire-border' : 'border-transparent hover:border-cream/40'
                 )}
               >
-                <span className="relative flex aspect-square items-center justify-center overflow-hidden bg-[#171714] p-4 sm:p-5">
-                  <OpalFaceImage
-                    opal={opal}
-                    alt=""
-                    clipToStone={opal.selectionKind === 'individual'}
-                    sizes="(max-width: 640px) 36vw, 190px"
-                    className={cn(
-                      'h-[88%] w-auto shadow-[0_6px_18px_rgb(0_0_0/0.28)] transition-transform duration-300 ease-out group-hover:scale-[1.025]',
-                      opal.selectionKind !== 'individual' && 'rounded-md'
-                    )}
-                  />
-                  {selected && (
-                    <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-charcoal text-cream shadow-sm">
-                      <Check aria-hidden="true" className="h-4 w-4" />
-                    </span>
+                <OpalFaceImage
+                  opal={opal}
+                  alt=""
+                  clipToStone={opal.selectionKind === 'individual'}
+                  sizes="96px"
+                  className={cn(
+                    'h-[82%] w-auto drop-shadow-[0_4px_10px_rgb(0_0_0/0.45)] transition-transform duration-300 ease-out group-hover:scale-[1.06]',
+                    opal.selectionKind !== 'individual' && 'rounded'
                   )}
-                </span>
-                <span className="block p-3">
-                  <span className="mb-1 block text-xs font-medium uppercase tracking-[0.1em] text-opal-electric-accessible">
-                    {kindLabel}
-                  </span>
-                  <span className="line-clamp-2 block text-sm font-medium leading-5">
-                    {opal.name}
-                  </span>
-                  <span className="mt-1 block text-xs text-charcoal-light">
-                    {opal.stoneTypeLabel} · {formatCurrency(opal.price)} loose
-                  </span>
-                  {opal.visual.dimensionsMm && (
-                    <span className="mt-1 block text-xs text-charcoal-light">
-                      {opal.visual.dimensionsMm.width} × {opal.visual.dimensionsMm.length} ×{' '}
-                      {opal.visual.dimensionsMm.depth} mm
-                    </span>
-                  )}
-                  {opal.selectionKind === 'individual' && !opal.visual.dimensionsMm && (
-                    <span className="mt-1 block text-xs leading-4 text-charcoal-light">
-                      Size estimated · confirmed at consultation
-                    </span>
-                  )}
+                />
+                <span className="sr-only">
+                  {opal.name}, {opal.stoneTypeLabel}, {formatCurrency(opal.price)} loose.
                   {opal.selectionKind !== 'individual' && (
-                    <span className="mt-1 block text-xs leading-4 text-charcoal-light">
-                      Preview shows a representative stone
-                    </span>
+                    <span> Preview shows a representative stone</span>
                   )}
                 </span>
               </button>
@@ -312,10 +298,32 @@ function OpalPicker({
         <button
           type="button"
           onClick={() => setVisibleCount((current) => current + 12)}
-          className="mt-4 inline-flex min-h-11 items-center rounded-full border border-charcoal/25 bg-white px-5 text-sm font-medium text-charcoal transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+          className="mt-3 inline-flex min-h-10 items-center rounded-full border border-charcoal/25 bg-white px-4 text-xs font-medium text-charcoal transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
         >
           Show {nextOpalCount} more {nextOpalCount === 1 ? 'opal' : 'opals'}
         </button>
+      )}
+      {selectedOpal && (
+        <div className="mt-3 rounded-lg border border-warm-grey/70 bg-white px-3.5 py-3">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-opal-electric-accessible">
+            {kindLabels[selectedOpal.selectionKind]}
+          </p>
+          <p className="mt-1 text-sm font-medium leading-5">{selectedOpal.name}</p>
+          <p className="mt-1 text-xs leading-5 text-charcoal-light">
+            {selectedOpal.stoneTypeLabel} · {formatCurrency(selectedOpal.price)} loose
+            {selectedOpal.visual.dimensionsMm
+              ? ` · ${selectedOpal.visual.dimensionsMm.width} × ${selectedOpal.visual.dimensionsMm.length} × ${selectedOpal.visual.dimensionsMm.depth} mm`
+              : selectedOpal.selectionKind === 'individual'
+                ? ' · size estimated, confirmed at consultation'
+                : ' · preview shows a representative stone'}
+          </p>
+          <Link
+            href={`/store/${selectedOpal.slug}`}
+            className="mt-1 inline-flex min-h-9 items-center gap-1.5 text-xs font-medium underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+          >
+            View selected loose opal <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       )}
     </fieldset>
   )
@@ -338,15 +346,13 @@ function RingStylePicker({
       ? 'This multi-stone listing shows a representative stone.'
       : 'Choose an individual stone to see its own photo in the preview.'
 
+  const selectedStyle = ringStyles.find((style) => style.id === value)
+  const selectedFit = selectedOpal ? getRingStyleFit(value, selectedOpal) : undefined
+
   return (
     <fieldset>
-      <legend className="font-serif text-xl font-medium">2. Choose a collection design</legend>
-      <p className="mt-2 text-sm leading-6 text-charcoal-light">
-        Each design is based on a photographed Good Opal Co ring. Designs that don’t suit your
-        opal’s shape are unavailable, so the preview never stretches the stone. {mappingDescription}{' '}
-        We confirm the measurements and fit at your consultation.
-      </p>
-      <div className="mt-4 grid grid-cols-2 gap-3">
+      <StepLegend step="02">Design</StepLegend>
+      <div className="mt-3 grid grid-cols-4 gap-2">
         {ringStyles.map((style) => {
           const selected = style.id === value
           const fit = selectedOpal ? getRingStyleFit(style.id, selectedOpal) : undefined
@@ -368,56 +374,49 @@ function RingStylePicker({
               aria-pressed={selected}
               disabled={incompatible}
               onClick={() => onSelect(style)}
-              className={cn(
-                'group overflow-hidden rounded-lg border bg-white text-left transition-[border-color,box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 enabled:active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50',
-                selected
-                  ? 'border-charcoal shadow-md'
-                  : 'border-warm-grey/80 hover:border-charcoal/45'
-              )}
+              className="group min-w-0 text-left focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45"
             >
-              <span className="relative block aspect-[4/3] overflow-hidden bg-warm-grey/25">
+              <span
+                className={cn(
+                  'relative block aspect-square overflow-hidden rounded-lg border-2 bg-warm-grey/25 transition-[border-color,transform] duration-200 ease-out group-focus-visible:ring-2 group-focus-visible:ring-opal-electric-accessible group-focus-visible:ring-offset-2 group-enabled:group-active:scale-[0.96]',
+                  selected
+                    ? 'opal-fire-border'
+                    : 'border-transparent group-enabled:group-hover:border-charcoal/30'
+                )}
+              >
                 <Image
                   src={style.referenceImage}
                   alt=""
                   fill
-                  sizes="(max-width: 640px) 45vw, 240px"
-                  className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.025]"
+                  sizes="(max-width: 1024px) 22vw, 110px"
+                  className="rounded-[6px] object-cover transition-transform duration-300 ease-out group-enabled:group-hover:scale-[1.05]"
                 />
-                {selected && (
-                  <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-charcoal text-cream shadow-sm">
-                    <Check aria-hidden="true" className="h-4 w-4" />
-                  </span>
-                )}
               </span>
-              <span className="block p-3">
-                <span className="flex items-start justify-between gap-2">
-                  <span className="block text-sm font-medium">{style.label}</span>
-                  {fitBadge && (
-                    <span
-                      className={cn(
-                        'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-[0.08em]',
-                        fit?.kind === 'original'
-                          ? 'bg-opal-emerald/10 text-opal-emerald-dark'
-                          : 'bg-cream text-charcoal-light'
-                      )}
-                    >
-                      {fitBadge}
-                    </span>
+              <span className="mt-1.5 block truncate text-xs font-medium">{style.label}</span>
+              {fitBadge && (
+                <span
+                  className={cn(
+                    'block truncate text-[0.68rem] leading-4',
+                    fit?.kind === 'original'
+                      ? 'text-opal-emerald-dark'
+                      : incompatible
+                        ? 'text-charcoal-light line-through'
+                        : 'text-charcoal-light'
                   )}
+                >
+                  {fitBadge}
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-charcoal-light">
-                  {style.detail}
-                </span>
-                {fit && (
-                  <span className="mt-2 block text-xs leading-4 text-charcoal-light">
-                    {fit.label}
-                  </span>
-                )}
-              </span>
+              )}
             </button>
           )
         })}
       </div>
+      <p className="mt-2.5 text-xs leading-5 text-charcoal-light">
+        {selectedStyle ? `${selectedStyle.label}: ${selectedStyle.detail}.` : ''}{' '}
+        {selectedFit ? `${selectedFit.label}. ` : ''}
+        {mappingDescription} Each design is a photographed Good Opal Co ring; we confirm fit at your
+        consultation.
+      </p>
     </fieldset>
   )
 }
@@ -561,9 +560,9 @@ export function RingConfigurator({
   ])
 
   return (
-    <section aria-labelledby="builder-heading" className="border-y border-warm-grey/60 bg-cream">
-      <div className="grid lg:grid-cols-[minmax(0,1.12fr)_minmax(25rem,0.88fr)]">
-        <div className="min-w-0 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:self-start">
+    <section aria-labelledby="builder-heading" className="bg-cream">
+      <div className="grid lg:h-[calc(100svh-5rem)] lg:min-h-[36rem] lg:grid-cols-[minmax(0,1fr)_minmax(26rem,30rem)] xl:grid-cols-[minmax(0,1fr)_33rem]">
+        <div className="sticky top-20 z-20 min-w-0 self-start shadow-[0_8px_24px_rgb(31_30_25/0.12)] sm:static sm:shadow-none lg:h-full">
           <ViewerErrorBoundary resetKey={viewerResetKey}>
             <RingPreview
               config={config}
@@ -578,83 +577,94 @@ export function RingConfigurator({
           </ViewerErrorBoundary>
         </div>
 
-        <div className="px-5 py-12 sm:px-10 sm:py-16 lg:px-[clamp(2.5rem,5vw,5.5rem)] lg:py-20">
-          <div className="mx-auto max-w-xl">
-            <p className="text-sm font-medium text-opal-electric-accessible">Design studio</p>
-            <h2
-              id="builder-heading"
-              className="mt-3 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl"
+        <div className="flex min-h-0 min-w-0 flex-col lg:border-l lg:border-warm-grey/60">
+          <div className="flex-1 px-5 pb-8 pt-5 sm:px-8 lg:overflow-y-auto lg:overscroll-contain lg:pt-6">
+            <Link
+              href="/services"
+              className="-ml-1 inline-flex min-h-9 items-center gap-1.5 rounded px-1 text-xs text-charcoal-light hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
             >
-              Shape an idea in real time.
-            </h2>
-            <p className="mt-4 max-w-[62ch] leading-7 text-charcoal-light">
-              Explore proportion, colour, setting, and metal together. This preview starts the
-              conversation; each natural opal and finished piece remains one of a kind.
+              <ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" /> Custom jewellery
+            </Link>
+            <h1
+              id="builder-heading"
+              className="text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl"
+            >
+              Design your opal ring
+            </h1>
+            <p className="mt-2 max-w-[48ch] text-sm leading-6 text-charcoal-light">
+              Pick a metal, one of our designs and a real opal from the shop. We quote the finished
+              ring before anything is made.
             </p>
 
             {unavailableOpalRequested && (
               <p
                 role="status"
-                className="mt-6 border-y border-warm-grey/70 py-4 text-sm leading-6 text-charcoal"
+                className="mt-5 rounded-lg border border-warm-grey/70 bg-white px-4 py-3 text-sm leading-6 text-charcoal"
               >
                 The opal saved in this link is no longer available. We have not substituted a
                 different stone. Choose another available opal below to continue.
               </p>
             )}
 
-            <div className="mt-10 space-y-9">
-              <OptionGroup
-                label="1. Choose a metal"
-                configKey="metal"
-                options={metals}
-                value={config.metal}
-                onChange={updateConfig}
-              />
-              <p className="-mt-7 text-xs leading-5 text-charcoal-light">
-                Our reference rings are sterling silver. Gold and platinum are made to order and
-                confirmed at your consultation.
-              </p>
-              <RingStylePicker
-                selectedOpal={selectedOpal}
-                value={config.style}
-                onSelect={(style) =>
-                  setConfig((current) => {
-                    const styled = applyRingStyle(current, style.id)
-                    return selectedOpal ? { ...styled, shape: shapeForOpal(selectedOpal) } : styled
-                  })
-                }
-              />
-              <OpalPicker
-                opals={opals}
-                selectedId={config.opalId}
-                onSelect={selectOpal}
-                onClear={clearOpal}
-              />
+            <div className="mt-5 divide-y divide-warm-grey/60 [&>*:first-child]:pt-2 [&>*]:py-6">
+              <div>
+                <OptionGroup
+                  step="01"
+                  label="Metal"
+                  configKey="metal"
+                  options={metals}
+                  value={config.metal}
+                  onChange={updateConfig}
+                  note="Our reference rings are sterling silver; gold and platinum are made to order"
+                />
+              </div>
+              <div>
+                <RingStylePicker
+                  selectedOpal={selectedOpal}
+                  value={config.style}
+                  onSelect={(style) =>
+                    setConfig((current) => {
+                      const styled = applyRingStyle(current, style.id)
+                      return selectedOpal
+                        ? { ...styled, shape: shapeForOpal(selectedOpal) }
+                        : styled
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <OpalPicker
+                  opals={opals}
+                  selectedId={config.opalId}
+                  onSelect={selectOpal}
+                  onClear={clearOpal}
+                />
+              </div>
 
               {selectedOpal && hasEditableOpalPhoto && (
-                <OpalPlacementEditor
-                  metal={config.metal}
-                  opal={selectedOpal}
-                  style={config.style}
-                  placement={{
-                    opalPositionX: config.opalPositionX,
-                    opalPositionY: config.opalPositionY,
-                    opalScale: config.opalScale,
-                    opalRotation: config.opalRotation,
-                  }}
-                  onChange={(placement) => setConfig((current) => ({ ...current, ...placement }))}
-                />
+                <div>
+                  <OpalPlacementEditor
+                    metal={config.metal}
+                    opal={selectedOpal}
+                    style={config.style}
+                    placement={{
+                      opalPositionX: config.opalPositionX,
+                      opalPositionY: config.opalPositionY,
+                      opalScale: config.opalScale,
+                      opalRotation: config.opalRotation,
+                    }}
+                    onChange={(placement) => setConfig((current) => ({ ...current, ...placement }))}
+                  />
+                </div>
               )}
 
               <fieldset>
-                <legend className="font-serif text-xl font-medium">
-                  {hasEditableOpalPhoto ? '5. Ring size (US)' : '4. Ring size (US)'}
-                </legend>
+                <StepLegend step={hasEditableOpalPhoto ? '05' : '04'}>Ring size</StepLegend>
                 <div className="mt-3 flex items-center gap-4">
                   <select
                     value={config.size}
                     onChange={(event) => updateConfig('size', Number(event.target.value))}
-                    className="min-h-12 w-36 rounded-lg border border-warm-grey bg-white px-4 text-charcoal focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
+                    className="min-h-11 w-32 shrink-0 rounded-full border border-warm-grey bg-white px-4 text-sm text-charcoal focus-visible:border-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric/30"
                     aria-label="US ring size concept"
                   >
                     {[
@@ -662,11 +672,11 @@ export function RingConfigurator({
                       13,
                     ].map((size) => (
                       <option key={size} value={size}>
-                        Size {size}
+                        US {size}
                       </option>
                     ))}
                   </select>
-                  <p className="text-sm leading-6 text-charcoal-light">
+                  <p className="text-xs leading-5 text-charcoal-light">
                     Know an AU or UK letter size instead? Add it to your enquiry. We confirm sizing
                     before making.
                   </p>
@@ -674,52 +684,51 @@ export function RingConfigurator({
               </fieldset>
             </div>
 
-            <div className="mt-12 border-y border-charcoal/20 py-7" aria-live="polite">
-              <p className="text-sm text-charcoal-light">Your concept</p>
-              <p className="mt-2 font-serif text-2xl leading-tight">{description}</p>
-              <div className="mt-5 border-t border-charcoal/10 pt-5">
-                <p className="text-sm font-medium">Pricing follows the stone.</p>
-                <p className="mt-1 max-w-[52ch] text-xs leading-5 text-charcoal-light">
-                  The opal, its exact size, the metal and the final design set your AUD quote.
-                  Nothing is charged from this builder.
-                </p>
-              </div>
-              {selectedOpal && (
-                <Link
-                  href={`/store/${selectedOpal.slug}`}
-                  className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-                >
-                  View selected loose opal <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                </Link>
-              )}
-            </div>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_auto]">
-              <Link
-                href={`/contact?${contactParams.toString()}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-charcoal px-6 font-medium text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-              >
-                Request my design consultation <ArrowRight aria-hidden="true" className="h-4 w-4" />
-              </Link>
-              <button
-                type="button"
-                onClick={shareDesign}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-charcoal/25 bg-white px-5 font-medium text-charcoal transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-              >
-                <Share2 aria-hidden="true" className="h-4 w-4" /> Share
-              </button>
-            </div>
             <button
               type="button"
               onClick={() => setConfig(initialConfig)}
               disabled={isStartingDesign}
-              className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex min-h-10 items-center gap-2 text-xs text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-45"
             >
-              <RotateCcw aria-hidden="true" className="h-4 w-4" /> Restore starting design
+              <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" /> Restore starting design
             </button>
-            <p className="mt-2 min-h-5 text-xs text-charcoal-light" aria-live="polite">
-              {shareStatus}
-            </p>
+          </div>
+
+          <div className="sticky bottom-0 z-20 border-t border-warm-grey/70 bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/85 lg:static">
+            <span aria-hidden="true" className="opal-fire-line block h-[2px] w-full" />
+            <div className="px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-8 lg:py-4">
+              <p
+                aria-live="polite"
+                className="line-clamp-1 font-serif text-base leading-snug sm:text-lg lg:line-clamp-2"
+              >
+                <span className="sr-only">Your concept: </span>
+                {description}
+              </p>
+              <p className="mt-0.5 hidden text-xs leading-5 text-charcoal-light sm:block">
+                Pricing follows the stone, metal and final design. Quoted in AUD; nothing is charged
+                here.
+              </p>
+              <div className="mt-2.5 flex gap-2">
+                <Link
+                  href={`/contact?${contactParams.toString()}`}
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-charcoal px-5 text-sm font-medium text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 sm:text-base"
+                >
+                  Request my design consultation{' '}
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={shareDesign}
+                  aria-label="Share this design"
+                  className="inline-flex min-h-12 w-12 shrink-0 items-center justify-center rounded-full border border-charcoal/25 bg-white text-charcoal transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+                >
+                  <Share2 aria-hidden="true" className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="min-h-0 text-xs text-charcoal-light empty:hidden" aria-live="polite">
+                {shareStatus}
+              </p>
+            </div>
           </div>
         </div>
       </div>
