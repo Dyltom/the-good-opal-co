@@ -121,7 +121,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('store page query and typography stay deploy-safe', () => {
     const source = read('src/app/(marketing)/store/page.tsx')
 
-    expect(source).toContain("import type { Where } from 'payload'")
+    expect(source).toContain("import type { Sort, Where } from 'payload'")
     expect(source).not.toContain('as any')
     expect(source).not.toContain('tracking-[0.2em]')
     expect(source).not.toContain('tracking-tight')
