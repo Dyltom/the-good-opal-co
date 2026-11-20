@@ -67,3 +67,4 @@ media/
 # WordPress Backup
 gdopalco-bkup/
 .png
+.eslintcache

@@ -13,22 +13,11 @@ interface ProductViewTrackerProps {
   children: React.ReactNode
 }
 
-/**
- * Product View Tracker Component
- * Tracks product views to Google Analytics on mount
- * Single Responsibility: Only handles product view tracking
- */
 export function ProductViewTracker({ product, children }: ProductViewTrackerProps) {
+  const { id, name, category, price } = product
   useEffect(() => {
-    // Track product view when component mounts
-    trackProductView({
-      id: String(product.id),
-      name: product.name,
-      category: product.category ?? undefined,
-      price: product.price,
-    })
-  }, [product])
+    trackProductView({ id: String(id), name, category: category ?? undefined, price })
+  }, [id, name, category, price])
 
-  // Render children without wrapper to avoid layout issues
   return <>{children}</>
 }

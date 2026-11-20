@@ -67,6 +67,14 @@ const config = [
     },
   },
 
+  {
+    files: ['src/emails/**/*.tsx'],
+    rules: {
+      '@next/next/no-head-element': 'off',
+      '@next/next/no-img-element': 'off',
+    },
+  },
+
   // JavaScript files (no TypeScript parsing needed)
   {
     files: ['**/*.{js,mjs,cjs}'],

@@ -122,6 +122,30 @@ export const Products: CollectionConfig = {
       ],
     },
     {
+      name: 'videos',
+      type: 'array',
+      admin: {
+        description:
+          'Short clips of the stone moving in the light (MP4 or WebM, ideally under 15 seconds and 10 MB). They appear after the first photo, muted and looping.',
+      },
+      fields: [
+        {
+          name: 'video',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          filterOptions: { mimeType: { contains: 'video/' } },
+        },
+        {
+          name: 'poster',
+          type: 'upload',
+          relationTo: 'media',
+          filterOptions: { mimeType: { contains: 'image/' } },
+          admin: { description: 'Still shown before the clip plays. Use a photo of the same stone.' },
+        },
+      ],
+    },
+    {
       name: 'category',
       type: 'select',
       required: true,

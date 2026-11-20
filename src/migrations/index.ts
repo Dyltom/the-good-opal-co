@@ -49,6 +49,8 @@ import * as migration_20260715_083000_refine_reviewed_opal_placement from './202
 import * as migration_20260715_141500_remove_misclassified_coral_reel from './20260715_141500_remove_misclassified_coral_reel'
 import * as migration_20260715_223000_expand_instagram_content_review from './20260715_223000_expand_instagram_content_review'
 import * as migration_20260716_120000_ring_asset_ingestion from './20260716_120000_ring_asset_ingestion'
+import * as migration_20261120_090000_insight_events from './20261120_090000_insight_events'
+import * as migration_20261120_100000_reviews_and_product_videos from './20261120_100000_reviews_and_product_videos'
 
 export const migrations = [
   {
@@ -305,5 +307,15 @@ export const migrations = [
     up: migration_20260716_120000_ring_asset_ingestion.up,
     down: migration_20260716_120000_ring_asset_ingestion.down,
     name: '20260716_120000_ring_asset_ingestion',
+  },
+  {
+    up: migration_20261120_090000_insight_events.up,
+    down: migration_20261120_090000_insight_events.down,
+    name: '20261120_090000_insight_events',
+  },
+  {
+    up: migration_20261120_100000_reviews_and_product_videos.up,
+    down: migration_20261120_100000_reviews_and_product_videos.down,
+    name: '20261120_100000_reviews_and_product_videos',
   },
 ]

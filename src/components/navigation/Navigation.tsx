@@ -67,14 +67,16 @@ export function Navigation({
             aria-label="The Good Opal Co home"
           >
             {logo ? (
-              <Image
-                src={logo.url}
-                alt=""
-                width={logo.width || 48}
-                height={logo.height || 48}
-                className="h-11 w-11 rounded-full object-contain"
-                priority
-              />
+              <span className="opal-light h-11 w-11 shrink-0 rounded-full">
+                <Image
+                  src={logo.url}
+                  alt=""
+                  width={logo.width || 48}
+                  height={logo.height || 48}
+                  className="h-11 w-11 rounded-full object-contain"
+                  priority
+                />
+              </span>
             ) : null}
             <span className="hidden sm:block">
               <span className="block font-serif text-lg font-semibold leading-5">{logoText}</span>

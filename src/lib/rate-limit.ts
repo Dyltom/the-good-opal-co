@@ -41,7 +41,7 @@ export function getRateLimitKey({
   return `rate-limit:${getRateLimitNamespace(env)}:${scope}:${identifier}:${bucket}`
 }
 
-function getRedis(): Redis | null {
+export function getRedis(): Redis | null {
   const url =
     process.env.UPSTASH_REDIS_REST_URL?.trim() ||
     process.env.UPSTASH_REDIS_REST_KV_REST_API_URL?.trim()

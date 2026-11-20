@@ -12,9 +12,6 @@ import type { RingConfig } from '@/components/custom-builder/config'
 import { contactCustomerMutation } from '@/lib/contact-customer'
 import type { Enquiry } from '@/types/payload-types'
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export type ContactActionResult =
   | { success: true; reference: string; confirmationDelayed?: boolean }
   | { success: false; error: string }
@@ -139,7 +136,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     // Send email to support team
     let supportError: { message: string } | null = null
     try {
-      const result = await resend.emails.send({
+      const result = await new Resend(process.env.RESEND_API_KEY).emails.send({
         from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
         to: process.env.CONTACT_EMAIL || 'thegoodopalco@gmail.com',
         replyTo: validated.email,
@@ -190,7 +187,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     // Send confirmation email to customer
     let customerError: { message: string } | null = null
     try {
-      const result = await resend.emails.send({
+      const result = await new Resend(process.env.RESEND_API_KEY).emails.send({
         from: process.env['EMAIL_FROM'] ?? 'The Good Opal Co <onboarding@resend.dev>',
         to: validated.email,
         subject: `${reference}: We received your enquiry`,

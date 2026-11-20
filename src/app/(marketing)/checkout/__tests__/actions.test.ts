@@ -51,13 +51,8 @@ vi.mock('stripe', () => ({
 
 import { createCheckoutSession } from '../actions'
 
-function checkoutForm(): FormData {
-  const formData = new FormData()
-  formData.set('email', 'buyer@example.com')
-  formData.set('name', 'Buyer Name')
-  formData.set('country', 'AU')
-  formData.set('checkoutAttemptId', 'd42cead1-0366-4f5f-a173-5f4c334c9513')
-  return formData
+function checkoutForm() {
+  return { region: 'AU' as const, checkoutAttemptId: 'd42cead1-0366-4f5f-a173-5f4c334c9513' }
 }
 
 describe('checkout Server Action', () => {
@@ -144,6 +139,14 @@ describe('checkout Server Action', () => {
         ],
       })
     )
+  })
+
+  test('lets overseas buyers enter any supported non-Australian address', async () => {
+    await createCheckoutSession({ ...checkoutForm(), region: 'INTL' })
+
+    const params = createStripeSession.mock.calls[0]?.[0]
+    expect(params.shipping_address_collection.allowed_countries).not.toContain('AU')
+    expect(params.shipping_address_collection.allowed_countries).toContain('NZ')
   })
 
   test('expires an unreachable Stripe session when stock cannot be reserved', async () => {

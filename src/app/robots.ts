@@ -1,41 +1,44 @@
-/**
- * Dynamic Robots.txt Generator
- *
- * Configures search engine crawling rules.
- * Blocks admin, checkout, and API routes from indexing.
- */
-
 import type { MetadataRoute } from 'next'
 import { APP_URL } from '@/lib/constants'
 
-const BASE_URL = APP_URL
+const AI_CRAWLERS = [
+  'GPTBot',
+  'OAI-SearchBot',
+  'ChatGPT-User',
+  'ClaudeBot',
+  'Claude-User',
+  'Claude-SearchBot',
+  'PerplexityBot',
+  'Perplexity-User',
+  'Google-Extended',
+  'Applebot-Extended',
+]
+
+const PUBLIC_PATHS = ['/', '/api/media/file/']
+
+const PRIVATE_PATHS = [
+  '/admin',
+  '/admin/*',
+  '/api/*',
+  '/checkout',
+  '/checkout/*',
+  '/cart',
+  '/account',
+  '/account/*',
+  '/order-tracking',
+  '/quote',
+  '/quote/*',
+  '/newsletter',
+  '/newsletter/*',
+  '/visual-tests/*',
+]
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      {
-        userAgent: '*',
-        // Payload media is public catalogue content even though it is served
-        // through an API route. The longer allow rule wins over `/api/*`.
-        allow: ['/', '/api/media/file/'],
-        disallow: [
-          '/admin',
-          '/admin/*',
-          '/api/*',
-          '/checkout',
-          '/checkout/*',
-          '/cart',
-          '/account',
-          '/account/*',
-          '/order-tracking',
-          '/quote',
-          '/quote/*',
-          '/newsletter',
-          '/newsletter/*',
-        ],
-      },
+      { userAgent: '*', allow: PUBLIC_PATHS, disallow: PRIVATE_PATHS },
+      { userAgent: AI_CRAWLERS, allow: PUBLIC_PATHS, disallow: PRIVATE_PATHS },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
-    host: BASE_URL,
+    sitemap: `${APP_URL}/sitemap.xml`,
   }
 }

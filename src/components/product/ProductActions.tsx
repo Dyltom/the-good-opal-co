@@ -1,16 +1,8 @@
 'use client'
 
-/**
- * Product Actions Component
- *
- * Client component that handles quantity selection and add to cart.
- * Works with the new cookie-based cart system.
- */
-
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
+import { Button } from '@/components/ui/button'
 import { QuantitySelector } from '@/components/ui/quantity-selector'
 import { formatCurrency } from '@/lib/utils'
 
@@ -30,6 +22,13 @@ export function ProductActions({ product }: ProductActionsProps) {
   const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false)
   const inlineActionsRef = useRef<HTMLDivElement>(null)
   const isOutOfStock = product.stock === 0
+  const cartProduct = {
+    id: product.id,
+    slug: product.slug,
+    name: product.name,
+    price: product.price,
+    image: product.image,
+  }
 
   useEffect(() => {
     const actions = inlineActionsRef.current
@@ -37,7 +36,7 @@ export function ProductActions({ product }: ProductActionsProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setShowStickyPurchaseBar(Boolean(entry && !entry.isIntersecting && entry.boundingClientRect.top < 0))
+        setShowStickyPurchaseBar(Boolean(entry && !entry.isIntersecting))
       },
       { rootMargin: '0px 0px -96px 0px', threshold: 0.1 }
     )
@@ -47,92 +46,64 @@ export function ProductActions({ product }: ProductActionsProps) {
   }, [])
 
   return (
-    <div className="space-y-6">
-      {/* Stock Status */}
-      {product.stock > 0 && product.stock <= 5 && (
-        <p className="text-sm text-warning font-medium">
-          {product.stock === 1 ? 'One available' : `${product.stock} available`}
-        </p>
-      )}
-
-      {/* Quantity Selector; pointless for one-of-a-kind pieces */}
-      {!isOutOfStock && product.stock > 1 && (
+    <div className="space-y-4">
+      {!isOutOfStock && product.stock > 1 ? (
         <div>
-          <label className="block text-sm font-medium mb-2">Quantity</label>
+          <label className="mb-2 block text-sm font-medium">Quantity</label>
           <QuantitySelector
             quantity={quantity}
             onQuantityChange={setQuantity}
             max={Math.min(product.stock, 99)}
-            disabled={isOutOfStock}
           />
         </div>
-      )}
+      ) : null}
 
-      {/* Action Buttons */}
-      <div ref={inlineActionsRef} data-testid="inline-product-actions" className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+      <div ref={inlineActionsRef} data-testid="inline-product-actions">
         {isOutOfStock ? (
-          <Button size="lg" className="w-full sm:flex-1" disabled>
+          <Button size="lg" className="h-14 w-full" disabled>
             Collected
           </Button>
         ) : (
           <AddToCartButton
-            product={{
-              id: product.id,
-              slug: product.slug,
-              name: product.name,
-              price: product.price,
-              image: product.image,
-            }}
+            product={cartProduct}
             quantity={quantity}
             size="lg"
             animated={false}
-            className="w-full sm:flex-1"
+            className="h-14 w-full text-base"
           />
         )}
-        <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-          <Link href="/store">Back to store</Link>
-        </Button>
       </div>
 
-      <div className="h-24 lg:hidden" aria-hidden="true" />
-
-      {/* Mobile sticky purchase bar */}
-      {showStickyPurchaseBar && (
+      {showStickyPurchaseBar ? (
         <div
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-lg backdrop-blur lg:hidden"
+          role="region"
+          aria-label="Quick purchase"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/50 bg-cream px-4 py-3 lg:hidden"
           style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
         >
           <div className="mx-auto flex max-w-screen-sm items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="font-sans text-xs font-medium text-charcoal/55">
-                {isOutOfStock ? 'Currently unavailable' : 'Ready to add'}
-              </p>
-              <p className="truncate font-serif text-lg font-semibold text-charcoal">
+              <p className="truncate font-sans text-xs text-charcoal/60">{product.name}</p>
+              <p className="font-serif text-lg font-semibold tabular-nums text-charcoal">
                 {formatCurrency(product.price, 'AUD')}
               </p>
             </div>
             {isOutOfStock ? (
-              <Button size="lg" className="h-12 flex-1 rounded-xl" disabled>
+              <Button size="lg" className="h-12 flex-1" disabled>
                 Collected
               </Button>
             ) : (
               <AddToCartButton
-                product={{
-                  id: product.id,
-                  slug: product.slug,
-                  name: product.name,
-                  price: product.price,
-                  image: product.image,
-                }}
+                product={cartProduct}
                 quantity={quantity}
                 size="lg"
                 animated={false}
-                className="h-12 flex-1 rounded-xl"
+                className="h-12 flex-1"
               />
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

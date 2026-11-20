@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = new Date('2026-07-11').toLocaleDateString('en-AU', {
+  const lastUpdated = new Date('2026-11-20').toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -76,6 +76,7 @@ export default function PrivacyPolicyPage() {
                 <li>Essential cart and privacy-choice data stored in your browser</li>
                 <li>Request logs that may include IP address, browser information, requested page, and timestamps</li>
                 <li>Optional website usage analytics only after you consent to analytics</li>
+                <li>Cookieless, anonymous measurement of how the site is used, described in section 6</li>
               </ul>
             </section>
 
@@ -146,6 +147,18 @@ export default function PrivacyPolicyPage() {
               <p className="text-content mb-4">
                 We do not currently use advertising, remarketing, or social-media tracking pixels. You can change optional analytics through Cookie Settings. Blocking essential storage may prevent the cart and privacy controls from working.
               </p>
+              <h3 className="text-xl font-medium text-charcoal mb-3">
+                6.1 Cookieless site measurement
+              </h3>
+              <p className="text-content mb-4">
+                We also measure how the shop is used, on our own systems and without cookies or browser storage. When you view a page or a piece, open or zoom a photo, add or remove a piece from your cart, search, use the store filters, start checkout, send an enquiry, join the newsletter, or run into an error, your browser sends a short note of that action to our server.
+              </p>
+              <p className="text-content mb-4">
+                Each note records the page and action, the piece involved, the website or campaign link that brought you here, your country as supplied by our hosting network, your device type and your browser family. We do not store your IP address or your full browser details. They are combined with a random value that is replaced every day and turned into a one-way code, so we can count visits on a single day but cannot recognise you on a later day or work out who you are.
+              </p>
+              <p className="text-content mb-4">
+                When a Stripe checkout is paid or expires unpaid, we record its value and items against the same code. If a checkout expires unpaid and you had already typed your email address into Stripe, that address is kept with the record so we can follow up on the order. We use this measurement only to improve the shop and do not share it with advertisers.
+              </p>
             </section>
 
             <section className="mb-12">
@@ -203,6 +216,9 @@ export default function PrivacyPolicyPage() {
               </h2>
               <p className="text-content mb-4">
                 We retain personal information only as long as reasonably needed for orders, support, fraud prevention, disputes, and legal, tax, or accounting obligations. Different records can have different required retention periods.
+              </p>
+              <p className="text-content mb-4">
+                Site measurement records described in section 6.1 are deleted automatically after 400 days.
               </p>
             </section>
 

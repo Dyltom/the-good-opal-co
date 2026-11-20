@@ -24,6 +24,7 @@ import {
   verifyPaidQuoteDepositSession,
 } from '@/lib/custom-quote-deposits'
 import { sendQuoteDepositConfirmation } from '@/lib/custom-quotes/deposit-confirmation'
+import { recordCheckoutInsight, type CheckoutInsightItem } from '@/lib/insights/record'
 
 /**
  * Stripe Webhook Handler
@@ -96,6 +97,31 @@ async function getCheckoutItems(sessionId: string): Promise<CartItem[]> {
       image: stripeProduct.images[0],
     }
   })
+}
+
+async function abandonedCheckoutItems(sessionId: string): Promise<CheckoutInsightItem[]> {
+  try {
+    const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
+      limit: 100,
+      expand: ['data.price.product'],
+    })
+    return lineItems.data.map((lineItem) => {
+      const stripeProduct = lineItem.price?.product
+      const productId =
+        stripeProduct && typeof stripeProduct !== 'string' && !stripeProduct.deleted
+          ? stripeProduct.metadata['productId']
+          : undefined
+      return {
+        productId,
+        name: lineItem.description ?? 'Item',
+        quantity: lineItem.quantity ?? 1,
+        amount: lineItem.amount_total / 100,
+      }
+    })
+  } catch (error) {
+    console.error(`Line items unavailable for abandoned checkout ${sessionId}:`, error)
+    return []
+  }
 }
 
 /**
@@ -608,6 +634,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true, quoteDepositReleased: true })
     }
     await releaseInventoryReservation(event.data.object, 'checkout-expired')
+    await recordCheckoutInsight({
+      name: 'checkout_abandoned',
+      session: event.data.object,
+      occurredAt: new Date(event.created * 1000),
+      items: await abandonedCheckoutItems(event.data.object.id),
+    })
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
 
@@ -668,7 +700,9 @@ export async function POST(request: NextRequest) {
       // Stripe line items are the paid, server-authored source of truth.
       // Avoids metadata size limits and never trusts browser cart values.
       const items = await getCheckoutItems(session.id)
-      const customerName = session.metadata?.customerName ?? ''
+      const customerName =
+        session.metadata?.customerName || session.customer_details?.name || ''
+      const sessionEmail = session.customer_details?.email ?? session.customer_email ?? ''
 
       const shippingDetails = getRequiredCheckoutShippingDetails(session)
 
@@ -746,7 +780,7 @@ export async function POST(request: NextRequest) {
             paidAt,
             status: inventoryAvailable ? 'processing' : 'pending',
             customer: {
-              email: session.customer_email ?? '',
+              email: sessionEmail,
               name: customerName || shippingDetails.name,
               phone: session.customer_details?.phone ?? undefined,
             },
@@ -791,7 +825,7 @@ export async function POST(request: NextRequest) {
         console.log(`Order created: ${order.orderNumber}`)
 
         // Update or create customer record for CRM
-        const customerEmail = session.customer_email?.toLowerCase()
+        const customerEmail = sessionEmail.toLowerCase()
         if (customerEmail) {
           const orderTotal = session.amount_total ? session.amount_total / 100 : subtotal
 
@@ -890,6 +924,17 @@ export async function POST(request: NextRequest) {
         await payload.db.commitTransaction(transactionID)
         transactionCommitted = true
 
+        await recordCheckoutInsight({
+          name: 'purchase',
+          session,
+          occurredAt: new Date(event.created * 1000),
+          items: items.map((item) => ({
+            productId: item.productId,
+            name: item.name,
+            quantity: item.quantity,
+            amount: item.price * item.quantity,
+          })),
+        })
         await sendOrderConfirmation(order)
         await sendInventoryReviewAlert(order)
 

@@ -28,6 +28,8 @@ import { CustomQuoteEvents } from './payload/collections/CustomQuoteEvents.ts'
 import { RingDesigns } from './payload/collections/RingDesigns.ts'
 import { RingReferenceChecks } from './payload/collections/RingReferenceChecks.ts'
 import { RingAssets } from './payload/collections/RingAssets.ts'
+import { InsightEvents } from './payload/collections/InsightEvents.ts'
+import { Reviews } from './payload/collections/Reviews.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -140,8 +142,14 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
-      afterNavLinks: [],
+      afterNavLinks: ['@/components/payload/insights/InsightsNavLink#InsightsNavLink'],
       beforeNavLinks: [],
+      views: {
+        insights: {
+          Component: '@/components/payload/insights/InsightsView#InsightsView',
+          path: '/insights',
+        },
+      },
     },
   },
   collections: [
@@ -163,6 +171,8 @@ export default buildConfig({
     withUploadDir(RingAssets),
     RingDesigns,
     RingReferenceChecks,
+    InsightEvents,
+    Reviews,
   ],
   editor: lexicalEditor({}),
   email: resendAdapter({

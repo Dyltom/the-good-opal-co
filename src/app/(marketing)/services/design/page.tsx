@@ -19,6 +19,7 @@ import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/rin
 import { resolveCanonicalFaceMapping } from '@/lib/custom-builder/canonical-face-mapping'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
+import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   builderCatalogueImageAlt,
   resolveBuilderCatalogueImageUrl,
@@ -275,9 +276,9 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
         </Link>
         <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_0.72fr] lg:items-end">
           <div>
-            <p className="text-sm font-medium text-opal-electric-accessible">
+            <Eyebrow>
               Interactive ring builder
-            </p>
+            </Eyebrow>
             <h1 className="mt-3 max-w-[12ch] text-balance font-serif text-[clamp(3rem,7vw,6.5rem)] font-medium leading-[0.95]">
               See the possibilities.
             </h1>

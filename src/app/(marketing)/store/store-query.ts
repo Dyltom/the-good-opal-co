@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 export const PRODUCTS_PER_PAGE = 24
 
 export const STORE_SORTS = ['featured', 'newest', 'price-low', 'price-high'] as const
@@ -39,6 +40,24 @@ export const STORE_MATERIALS = [
 
 export type StoreSort = (typeof STORE_SORTS)[number]
 export type StorePriceRange = (typeof STORE_PRICE_RANGES)[number]
+
+const PRICE_RANGE_BOUNDS: Record<StorePriceRange, readonly [number, number]> = {
+  'under-250': [0, 250],
+  '250-500': [250, 500],
+  '500-1000': [500, 1000],
+  '1000-plus': [1000, Number.POSITIVE_INFINITY],
+}
+
+export function priceRangeBounds(range: StorePriceRange): readonly [number, number] {
+  return PRICE_RANGE_BOUNDS[range]
+}
+
+export function priceRangeOf(price: number): StorePriceRange | undefined {
+  return STORE_PRICE_RANGES.find((range) => {
+    const [min, max] = PRICE_RANGE_BOUNDS[range]
+    return price >= min && price < max
+  })
+}
 
 export interface StoreQuery {
   search: string
@@ -107,4 +126,19 @@ export function storeUrl(query: StoreQuery, page = query.page): string {
   const params = storeQueryParams(query, page)
   const search = params.toString()
   return search ? `/store?${search}` : '/store'
+}
+
+export function storeMetadata(query: StoreQuery): Metadata {
+  const pageOnly = storeUrl({ ...query, page: 1 }) === '/store'
+  const paginated = pageOnly && query.page > 1
+
+  return {
+    title: paginated
+      ? `Shop Australian Opals, page ${query.page} | The Good Opal Co`
+      : 'Shop Australian Opals | The Good Opal Co',
+    description:
+      'Browse one-of-a-kind Australian opals, finished jewellery, loose stones, and pieces for gifting. Every listing includes its known origin and details.',
+    alternates: { canonical: paginated ? storeUrl(query) : '/store' },
+    robots: pageOnly ? undefined : { index: false, follow: true },
+  }
 }

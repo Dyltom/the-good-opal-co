@@ -7,6 +7,7 @@ const contentSecurityPolicy = createContentSecurityPolicy()
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  experimental: { viewTransition: true },
   ...(process.env.NEXT_OUTPUT === 'standalone' ? { output: 'standalone' as const } : {}),
 
   async headers() {

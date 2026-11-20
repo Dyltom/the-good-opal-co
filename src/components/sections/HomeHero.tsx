@@ -67,7 +67,8 @@ export async function HomeHero() {
       <div className="mx-auto grid min-h-[42rem] max-w-[96rem] lg:grid-cols-[0.92fr_1.08fr]">
         <div className="flex items-center px-5 py-10 sm:px-8 sm:py-14 lg:px-12 lg:py-20 xl:px-20">
           <div className="max-w-[42rem]">
-            <p className="mb-5 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+            <p className="mb-5 flex items-center gap-3 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+              <span aria-hidden="true" className="opal-fire-line h-[3px] w-10 rounded-full" />
               Personally selected in Australia
             </p>
             <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.7rem,6.2vw,6.5rem)] font-medium leading-[0.94] text-charcoal">

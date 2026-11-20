@@ -13,6 +13,7 @@ import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
+import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const dynamic = 'force-dynamic'
 
@@ -173,9 +174,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </Link>
         <article className="mx-auto mt-12 max-w-4xl">
           {categories.length > 0 ? (
-            <p className="font-sans text-sm font-semibold text-opal-electric-accessible">
+            <Eyebrow>
               {categories.map((category) => category.name).join(' · ')}
-            </p>
+            </Eyebrow>
           ) : null}
           <h1 className="mt-4 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl">
             {post.title}

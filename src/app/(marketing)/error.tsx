@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { Container, Section } from '@/components/layout'
 import { Button } from '@/components/ui/button'
+import { trackClientError } from '@/lib/analytics'
 
 /**
  * Global Error Page
@@ -18,6 +19,7 @@ export default function Error({
   useEffect(() => {
     // Log error to error reporting service
     console.error(error)
+    trackClientError(error.digest ? `Server error ${error.digest}` : error.message, 'error boundary')
   }, [error])
 
   return (

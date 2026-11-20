@@ -14,14 +14,10 @@ interface RelatedProductsProps {
   limit?: number
 }
 
-/**
- * Server component that fetches and displays related products
- * Single Responsibility: Only responsible for displaying related products
- */
 export async function RelatedProducts({
   product,
   className,
-  title = 'You May Also Like',
+  title = 'You may also like',
   limit = 4
 }: RelatedProductsProps) {
   const service = getRelatedProductService()
@@ -33,20 +29,20 @@ export async function RelatedProducts({
 
   return (
     <section className={cn('py-16', className)}>
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-display font-bold text-charcoal">
+      <div className="mb-8 flex items-end justify-between gap-4">
+        <h2 className="font-serif text-3xl font-medium text-charcoal">
           {title}
         </h2>
         <Link
           href="/store"
-          className="text-sm text-opal-electric-accessible hover:underline inline-flex items-center gap-1"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-8 hover:decoration-charcoal"
         >
-          View All Products
-          <ArrowRight className="h-4 w-4" />
+          View all pieces
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
         {relatedProducts.map((relatedProduct, index) => {
           const firstImage = relatedProduct.images?.[0]?.image
           const imageUrl =
@@ -70,11 +66,8 @@ export async function RelatedProducts({
                 category: relatedProduct.category,
                 stoneOrigin: relatedProduct.stoneOrigin ?? undefined,
                 stoneType: relatedProduct.stoneType ?? undefined,
-                createdAt: relatedProduct.createdAt,
               }}
               index={index}
-              variant="default"
-              animated
             />
           )
         })}
@@ -83,23 +76,19 @@ export async function RelatedProducts({
   )
 }
 
-/**
- * Loading skeleton for related products
- */
 export function RelatedProductsSkeleton() {
   return (
     <section className="py-16">
       <div className="flex items-center justify-between mb-8">
-        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
-        <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+        <div className="h-8 w-48 animate-pulse rounded bg-cream-dark" />
+        <div className="h-5 w-32 animate-pulse rounded bg-cream-dark" />
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="bg-gray-100 rounded-lg animate-pulse"
-            style={{ aspectRatio: '3/4' }}
+            className="aspect-[4/5] animate-pulse rounded-md bg-cream-dark"
           />
         ))}
       </div>
@@ -107,10 +96,6 @@ export function RelatedProductsSkeleton() {
   )
 }
 
-/**
- * Client component wrapper with loading state
- * Open/Closed Principle: Can extend with different loading behaviors
- */
 export function RelatedProductsWithSuspense(props: RelatedProductsProps) {
   return (
     <Suspense fallback={<RelatedProductsSkeleton />}>

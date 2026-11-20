@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
+import { trackEnquirySubmitted } from '@/lib/analytics'
 import { sendContactEmail } from './actions'
 import { contactSchema } from './schema'
 import type { ContactFormData } from './schema'
@@ -62,6 +64,7 @@ export function ContactForm({
       const result = await sendContactEmail(data)
 
       if (result.success) {
+        trackEnquirySubmitted(data.inquiryType)
         toast({
           title: 'Enquiry received',
           description: result.confirmationDelayed
@@ -260,15 +263,15 @@ export function ContactForm({
         ) : isCourseIntent ? (
           'Send Course Interest'
         ) : (
-          'Send Message'
+          'Send enquiry'
         )}
       </Button>
 
       <p className="text-center text-xs text-charcoal/65">
         By submitting this form, you agree to our{' '}
-        <a href="/legal/privacy" className="underline hover:text-charcoal">
+        <Link href="/legal/privacy" className="underline hover:text-charcoal">
           Privacy Policy
-        </a>
+        </Link>
         .
       </p>
     </form>

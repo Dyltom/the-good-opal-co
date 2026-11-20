@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowRight, Camera, MessageCircle, RotateCcw, Truck } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
 import { Container } from '@/components/layout'
@@ -7,17 +8,21 @@ import { Footer, SiteNavigation } from '@/components/navigation'
 import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
+import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { formatCurrency } from '@/lib/utils'
 import { getFreeShippingProgress } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
-import { PaymentBadgesCompact } from '@/components/trust'
+import { PaymentMethods } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
 import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
-import { extractPlainText } from '@/lib/rich-text'
+import { parseProductDescription } from '@/lib/product-description'
+import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
+import { Eyebrow } from '@/components/ui/eyebrow'
+import { summarize } from '@/lib/catalog'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -50,7 +55,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const imageUrl =
     (primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined) ??
     ownedProductImageUrl(product.slug)
-  const description = extractPlainText(product.description).slice(0, 160)
+  const description = summarize(parseProductDescription(product.description).paragraphs.join(' '))
 
   return {
     title: `${product.name} | The Good Opal Co`,
@@ -60,7 +65,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title: product.name,
       description: description || 'Australian opal selected by The Good Opal Co.',
       url: `/store/${product.slug}`,
-      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      images: imageUrl ? [{ url: imageUrl, alt: product.name }] : undefined,
     },
     twitter: {
       card: 'summary_large_image',
@@ -101,17 +106,23 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       ? resolveMediaUrl(primaryImage.url)
       : undefined) ?? ownedProductImageUrl(product.slug)
 
-  // Get description as plain text
-  const descriptionText = extractPlainText(product.description)
+  const about = parseProductDescription(product.description)
+  const descriptionText = about.paragraphs.join(' ')
 
   // Format category name
-  const categoryName = product.category
-    ?.replace(/-/g, ' ')
-    .replace(/\b\w/g, (c: string) => c.toUpperCase())
+  const categoryName = product.category ? titleCase(product.category) : undefined
   const productShippingProgress = getFreeShippingProgress(product.price)
+  const facts = [
+    { label: 'Stone', value: product.stoneType && titleCase(product.stoneType) },
+    { label: 'Origin', value: product.stoneOrigin && titleCase(product.stoneOrigin) },
+    { label: 'Weight', value: product.weight && weightUnitLabel(product.weight, product.weightUnit ?? (product.category === 'raw-opals' ? 'carats' : undefined)) },
+    { label: 'Ring size', value: product.ringSize },
+    { label: 'Metal', value: product.material && product.material !== 'none' ? titleCase(product.material) : undefined },
+    { label: 'Inclusions', value: about.inclusions },
+    { label: 'Certificate', value: product.certified ? (product.certificateNumber ?? 'Included') : undefined },
+  ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
+  const stock = product.stock ?? 0
   const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
-  const weightUnit =
-    product.weightUnit ?? (product.category === 'raw-opals' ? ('carats' as const) : undefined)
 
   // Collect all product images with alt text
   const cmsImages =
@@ -125,6 +136,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         }
       })
       .filter((img): img is { url: string; alt: string } => Boolean(img)) ?? []
+  const productVideos =
+    product.videos?.flatMap((clip) => {
+      const video = typeof clip.video === 'object' ? clip.video : null
+      const url = resolveMediaUrl(video?.url)
+      if (!url || !video?.mimeType?.startsWith('video/')) return []
+      const poster = typeof clip.poster === 'object' ? resolveMediaUrl(clip.poster?.url) : undefined
+      return [{ url, mimeType: video.mimeType, poster }]
+    }) ?? []
   const ownedImage = ownedProductImageUrl(product.slug)
   const productImages = mergeProductGallery(
     product.slug,
@@ -147,6 +166,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           category: categoryName,
           stock: product.stock ?? 0,
           sku: product.sku ?? String(product.id),
+          properties: facts.map((fact) => ({ name: fact.label, value: fact.value })),
         }}
       />
       <BreadcrumbJsonLd
@@ -183,243 +203,143 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </Container>
             </section>
 
-            {/* Product Detail */}
             <section className="pb-20 lg:pb-28">
               <Container>
-                <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
-                  {/* Product Image Gallery */}
-                  <div>
+                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-14">
+                  <div className="min-w-0 space-y-12">
                     <ProductImageGallery
                       productName={product.name}
                       images={productImages}
-                      featured={product.featured ?? false}
-                      stock={product.stock ?? 0}
+                      videos={productVideos}
+                      transitionName={productImageTransitionName(product.slug)}
                     />
+
+                    {about.paragraphs.length > 0 ? (
+                      <section aria-labelledby="about-stone" className="hidden max-w-prose lg:block">
+                        <AboutStone id="about-stone" paragraphs={about.paragraphs} />
+                      </section>
+                    ) : null}
                   </div>
 
-                  {/* Product Info */}
-                  <div className="space-y-7 lg:sticky lg:top-28 lg:self-start">
-                    {/* Title */}
-                    <div>
-                      <span className="mb-4 inline-flex items-center font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
-                        {categoryName}
+                  <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+                    <Eyebrow>
+                      {[categoryName, product.stoneOrigin && titleCase(product.stoneOrigin)].filter(Boolean).join(' · ')}
+                    </Eyebrow>
+                    <h1 className="mt-3 font-serif text-3xl font-medium leading-[1.08] text-charcoal sm:text-4xl xl:text-[2.75rem]">
+                      {product.name}
+                    </h1>
+
+                    <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span className="font-serif text-3xl font-semibold tabular-nums text-charcoal">
+                        {formatCurrency(product.price, 'AUD')}
                       </span>
-                      <h1 className="max-w-[14ch] font-serif text-4xl font-medium leading-[1.02] text-charcoal md:text-5xl lg:text-6xl">
-                        {product.name}
-                      </h1>
-                    </div>
-
-                    {/* Price */}
-                    <div className="flex items-start gap-4 border-b border-warm-grey/60 pb-7">
-                      <div>
-                        <span className="font-serif text-4xl font-semibold leading-none text-charcoal tabular-nums md:text-5xl">
-                          {formatCurrency(product.price, 'AUD')}
+                      {product.compareAtPrice && product.compareAtPrice > product.price ? (
+                        <span className="text-base tabular-nums text-charcoal/50 line-through">
+                          {formatCurrency(product.compareAtPrice, 'AUD')}
                         </span>
-                        {product.compareAtPrice && product.compareAtPrice > product.price && (
-                          <div className="mt-2 flex items-center gap-3">
-                            <span className="text-lg tabular-nums text-charcoal/45 line-through">
-                              {formatCurrency(product.compareAtPrice, 'AUD')}
-                            </span>
-                            <span className="rounded-full bg-opal-emerald-dark px-3 py-1 text-sm font-semibold text-white">
-                              Save{' '}
-                              {Math.round(
-                                ((product.compareAtPrice - product.price) /
-                                  product.compareAtPrice) *
-                                  100
-                              )}
-                              %
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                      ) : null}
+                      <span className="text-sm text-charcoal/60">AUD</span>
                     </div>
-
-                    {/* Description */}
-                    <div className="leading-relaxed text-charcoal/75">
-                      <p className="font-sans text-base leading-8 sm:text-lg">
-                        {descriptionText ||
-                          'Contact us for more detail about this piece, including its colour, origin, and condition.'}
+                    {stock === 1 ? (
+                      <p className="mt-2 font-sans text-sm text-opal-emerald-dark">
+                        One of one. This exact stone is the one you receive.
                       </p>
+                    ) : null}
+
+                    {facts.length > 0 ? (
+                      <dl className="mt-6 divide-y divide-warm-grey/50 border-y border-warm-grey/50 font-sans text-sm">
+                        {facts.map((fact) => (
+                          <div key={fact.label} className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 py-2.5">
+                            <dt className="text-charcoal/60">{fact.label}</dt>
+                            <dd className="font-medium text-charcoal">{fact.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ) : null}
+
+                    <div className="mt-6">
+                      <ProductActions
+                        product={{
+                          id: String(product.id),
+                          slug: product.slug,
+                          name: product.name,
+                          price: product.price,
+                          stock,
+                          image: imageUrl ?? undefined,
+                        }}
+                      />
                     </div>
 
-                    <div className="grid grid-cols-2 border-y border-warm-grey/60 font-sans text-sm text-charcoal/70">
-                      <div className="border-r border-warm-grey/60 px-4 py-4">Australian opal</div>
-                      <div className="px-4 py-4">Origin disclosed where known</div>
-                      <div className="border-r border-t border-warm-grey/60 px-4 py-4">
-                        Tracked delivery
-                      </div>
-                      <div className="border-t border-warm-grey/60 px-4 py-4">
-                        Care questions answered
-                      </div>
-                    </div>
+                    <PaymentMethods className="mt-4" />
 
-                    {builderEligible && (product.stock ?? 0) > 0 && (
-                      <div className="border-y border-opal-electric-accessible/25 bg-opal-light/15 p-5">
-                        <p className="font-serif text-xl font-medium text-charcoal">
-                          Build a ring around this opal
-                        </p>
-                        <p className="mt-2 font-sans text-sm leading-6 text-charcoal/70">
-                          Open this exact available stone in the 3D studio and compare compatible
-                          settings before requesting a quote.
-                        </p>
+                    <ul className="mt-6 space-y-3 border-t border-warm-grey/50 pt-6 font-sans text-sm text-charcoal/80">
+                      {about.photographedUnderWhiteLight ? (
+                        <li className="flex gap-3">
+                          <Camera className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                          Photographed under white light. Studio shots have the background replaced; the stone is never retouched.
+                        </li>
+                      ) : null}
+                      <li className="flex gap-3">
+                        <Truck className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                        <span>
+                          {productShippingProgress.qualifies
+                            ? 'Free tracked shipping.'
+                            : 'Tracked shipping, free on orders over $500.'}{' '}
+                          <Link href="/shipping" className="underline underline-offset-4 hover:text-charcoal">
+                            Rates
+                          </Link>
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                        <span>
+                          30 days to return unused pieces.{' '}
+                          <Link href="/returns" className="underline underline-offset-4 hover:text-charcoal">
+                            Returns policy
+                          </Link>
+                        </span>
+                      </li>
+                      <li className="flex gap-3">
+                        <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
                         <Link
-                          href={`/services/design?p=${encodeURIComponent(String(product.id))}`}
-                          className="mt-3 inline-flex min-h-11 items-center font-sans text-sm font-semibold text-charcoal underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                          href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`}
+                          className="underline underline-offset-4 hover:text-charcoal"
                         >
-                          Design with this opal
+                          Ask a question or book a video viewing
                         </Link>
-                      </div>
-                    )}
+                      </li>
+                    </ul>
 
-                    {/* Product Actions */}
-                    <ProductActions
-                      product={{
-                        id: String(product.id),
-                        slug: product.slug,
-                        name: product.name,
-                        price: product.price,
-                        stock: product.stock ?? 0,
-                        image: imageUrl ?? undefined,
-                      }}
-                    />
-
-                    {/* Purchase Confidence */}
-                    <div className="border border-warm-grey/60 bg-white p-5">
-                      <h2 className="mb-4 font-serif text-2xl font-medium text-charcoal">
-                        Delivery and decisions
-                      </h2>
-                      <div className="grid gap-3 text-sm text-charcoal/75 sm:grid-cols-2">
-                        <div>
-                          <p className="font-sans font-semibold text-charcoal">Shipping</p>
-                          <p className="mt-1">
-                            {productShippingProgress.qualifies
-                              ? 'This piece qualifies for free shipping.'
-                              : 'Shipping is calculated at checkout. Orders over $500 ship free.'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-sans font-semibold text-charcoal">Returns</p>
-                          <p className="mt-1">
-                            Change of mind is covered.{' '}
-                            <Link
-                              href="/returns"
-                              className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-                            >
-                              See what&apos;s included before you buy.
-                            </Link>
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-sans font-semibold text-charcoal">
-                            Need a closer look?
-                          </p>
-                          <p className="mt-1">
-                            <Link
-                              href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`}
-                              className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-                            >
-                              Ask a question or book a viewing.
-                            </Link>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Payment Security */}
-                    <div className="border-t border-warm-grey pt-6">
-                      <PaymentBadgesCompact />
-                    </div>
-
-                    <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-warm-grey/60 pt-5 font-sans text-sm text-charcoal/65">
+                    {builderEligible && stock > 0 ? (
                       <Link
-                        href="/shipping"
-                        className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                        href={`/services/design?p=${encodeURIComponent(String(product.id))}`}
+                        className="group mt-6 flex items-center justify-between gap-4 border border-warm-grey/60 bg-white p-4 transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
                       >
-                        Shipping details
+                        <span>
+                          <span className="block font-serif text-lg text-charcoal">Design a ring around this opal</span>
+                          <span className="mt-1 block font-sans text-sm text-charcoal/65">
+                            Try this exact stone in settings in the 3D studio, then request a quote.
+                          </span>
+                        </span>
+                        <ArrowRight className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
                       </Link>
-                      <Link
-                        href="/returns"
-                        className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-                      >
-                        Returns policy
-                      </Link>
-                      <Link
-                        href="/contact"
-                        className="underline underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-                      >
-                        Contact us
-                      </Link>
-                    </div>
+                    ) : null}
                   </div>
                 </div>
 
-                {/* Product Specifications */}
-                {(product.stoneOrigin ||
-                  product.stoneType ||
-                  product.material ||
-                  product.weight) && (
-                  <div className="mt-20 border-t border-warm-grey/40 pt-12">
-                    <h2 className="mb-8 font-serif text-3xl font-medium text-charcoal md:text-4xl">
-                      Piece details
-                    </h2>
-                    <div className="grid gap-x-12 gap-y-4 md:grid-cols-2">
-                      {product.stoneType && (
-                        <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-charcoal/60">Stone Type</span>
-                          <span className="font-semibold text-charcoal">
-                            {product.stoneType
-                              .replace(/-/g, ' ')
-                              .replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                          </span>
-                        </div>
-                      )}
-                      {product.stoneOrigin && (
-                        <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-charcoal/60">Origin</span>
-                          <span className="font-semibold text-charcoal">
-                            {product.stoneOrigin
-                              .replace(/-/g, ' ')
-                              .replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                          </span>
-                        </div>
-                      )}
-                      {product.material && (
-                        <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-charcoal/60">Metal</span>
-                          <span className="font-semibold text-charcoal">
-                            {product.material
-                              .replace(/-/g, ' ')
-                              .replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                          </span>
-                        </div>
-                      )}
-                      {product.weight && weightUnit && (
-                        <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-charcoal/60">Weight</span>
-                          <span className="font-semibold text-charcoal">
-                            {product.weight} {weightUnit}
-                          </span>
-                        </div>
-                      )}
-                      {product.ringSize && (
-                        <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-charcoal/60">Ring Size</span>
-                          <span className="font-semibold text-charcoal">{product.ringSize}</span>
-                        </div>
-                      )}
-                      {product.certified && (
-                        <div className="flex flex-col gap-1 border-b border-warm-grey-light py-3 sm:flex-row sm:items-center sm:justify-between">
-                          <span className="text-charcoal/60">Certificate</span>
-                          <span className="font-semibold text-charcoal">
-                            {product.certificateNumber ?? 'Included'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                {about.paragraphs.length > 0 ? (
+                  <section aria-labelledby="about-stone-mobile" className="mt-12 max-w-prose lg:hidden">
+                    <AboutStone id="about-stone-mobile" paragraphs={about.paragraphs} />
+                  </section>
+                ) : null}
 
-                {/* Related Products */}
+                <ReviewsSection
+                  productId={product.id}
+                  eyebrow="Customer review"
+                  title="From the person who bought it."
+                  className="mt-24 border-t border-warm-grey/40 pt-16"
+                />
+
                 <div className="mt-24">
                   <RelatedProductsWithSuspense
                     product={product}
@@ -432,6 +352,30 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           <Footer />
         </div>
       </ProductViewTracker>
+    </>
+  )
+}
+
+function titleCase(value: string) {
+  return value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function weightUnitLabel(weight: number, unit: string | null | undefined) {
+  if (!unit) return undefined
+  return `${weight} ${unit === 'carats' ? 'ct' : unit}`
+}
+
+function AboutStone({ id, paragraphs }: { id: string; paragraphs: string[] }) {
+  return (
+    <>
+      <h2 id={id} className="font-serif text-2xl font-medium text-charcoal">
+        About this stone
+      </h2>
+      <div className="mt-4 space-y-4 font-sans text-base leading-7 text-charcoal/80">
+        {paragraphs.map((paragraph) => (
+          <p key={paragraph}>{paragraph}</p>
+        ))}
+      </div>
     </>
   )
 }

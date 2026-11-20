@@ -16,16 +16,14 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards expose purchase actions on touch and keyboard focus', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('opacity-100')
     expect(source).toContain('sm:opacity-0')
     expect(source).toContain('sm:group-focus-within:opacity-100')
     expect(source).toContain('Quick add')
-    expect(source).toContain('aria-pressed={isWishlisted}')
-    expect(source).toContain('showWishlist = false')
+    expect(source).toContain('variant="icon"')
+    expect(source).toContain('sm:hidden')
     expect(source).toContain('priority={priority && index < 4}')
-    expect(source).toContain('disabled={product.stock === 0}')
+    expect(source).not.toContain('isWishlisted')
     expect(source).not.toContain('tracking-[0.3em]')
-    expect(source).not.toContain('tracking-wide')
   })
 
   test('store results expose server-filtered state and a live result count', () => {
@@ -91,7 +89,7 @@ describe('buying flow UI/UX safeguards', () => {
 
     expect(source).toContain('FreeShippingProgress')
     expect(source).toContain('SheetDescription')
-    expect(source).toContain('Checkout securely')
+    expect(source).toContain('<CheckoutButton')
     expect(source).not.toContain('Treasure Chest')
     expect(source).not.toContain('Secure Your Treasures')
     expect(source).not.toContain('Sparkles')
@@ -100,8 +98,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page presents purchase confidence without overtracked labels', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('Delivery and decisions')
-    expect(source).toContain('This piece qualifies for free shipping')
+    expect(source).toContain('Tracked shipping, free on orders over $500.')
+    expect(source).toContain('30 days to return unused pieces.')
     expect(source).not.toContain('tracking-[0.2em]')
   })
 
@@ -136,24 +134,14 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('Refine collection')
     expect(source).toContain('hidden lg:block')
     expect(source).toContain('lg:hidden')
-    expect(source).toContain('<FilterForm query={query}')
+    expect(source).toContain('<FilterChips query={query}')
   })
 
   test('mobile filter disclosure and controls provide large targets', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
     expect(source).toContain('summary className="flex min-h-12')
-    expect(source).toContain('className="min-h-11 flex-1')
-  })
-
-  test('product filters support prefixed ids for mobile and desktop instances', () => {
-    const source = read('src/components/store/ProductFilters.tsx')
-
-    expect(source).toContain('idPrefix?: string')
-    expect(source).toContain('const fieldId')
-    expect(source).toContain('id={fieldId(')
-    expect(source).toContain('htmlFor={fieldId(')
-    expect(source).not.toContain('tracking-[0.15em]')
+    expect(source).toContain('inline-flex min-h-11 items-center')
   })
 
   test('closed mobile navigation does not reserve page-height hit area', () => {
@@ -171,12 +159,12 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail exposes a safe-area mobile purchase bar', () => {
     const source = read('src/components/product/ProductActions.tsx')
 
-    expect(source).toContain('Mobile sticky purchase bar')
+    expect(source).toContain('aria-label="Quick purchase"')
     expect(source).toContain('fixed inset-x-0 bottom-0')
     expect(source).toContain('lg:hidden')
     expect(source).toContain('env(safe-area-inset-bottom)')
     expect(source).toContain("formatCurrency(product.price, 'AUD')")
-    expect(source).toContain('className="w-full sm:flex-1"')
+    expect(source).toContain('className="h-14 w-full text-base"')
   })
 
   test('cart page exposes a mobile sticky checkout summary and stacks rows', () => {
@@ -225,8 +213,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('product gallery uses editorial framing instead of gradient glow chrome', () => {
     const source = read('src/components/product/ProductImageGallery.tsx')
 
-    expect(source).toContain('border border-warm-grey/40 bg-white shadow-sm')
-    expect(source).toContain('Featured')
+    expect(source).toContain('border border-warm-grey/55 bg-white')
+    expect(source).toContain('aria-modal="true"')
     expect(source).not.toContain('FEATURED')
     expect(source).not.toContain('shadow-2xl')
     expect(source).not.toContain('bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep')
@@ -237,7 +225,7 @@ describe('buying flow UI/UX safeguards', () => {
 
     expect(source).toContain('showStickyPurchaseBar')
     expect(source).toContain('IntersectionObserver')
-    expect(source).toContain('entry.boundingClientRect.top < 0')
+    expect(source).toContain('!entry.isIntersecting')
     expect(source).toContain('data-testid="inline-product-actions"')
     expect(source).not.toContain(
       'fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/30 bg-white/95 px-4 py-3 shadow-2xl backdrop-blur lg:hidden'
@@ -261,7 +249,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards read as gallery pieces instead of generated action cards', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('border border-warm-grey/30 bg-white shadow-sm')
     expect(source).toContain('Quick view')
     expect(source).not.toContain('group-hover:scale-105')
     expect(source).not.toContain('hover:shadow-glow')
@@ -285,8 +272,8 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
     expect(source).toContain('focus-visible:ring-opal-electric-accessible')
-    expect(source).toContain('flex flex-wrap gap-x-6 gap-y-2')
-    expect(source).toContain('mt-20 border-t border-warm-grey/40 pt-12')
+    expect(source).toContain('flex flex-wrap items-baseline gap-x-3 gap-y-1')
+    expect(source).toContain('border-t border-warm-grey/40 pt-16')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('text-transparent')
     expect(source).not.toContain(
@@ -304,7 +291,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(buttonSource).not.toContain('backdrop-blur')
     expect(buttonSource).not.toContain('hover:scale')
     expect(buttonSource).not.toContain('active:scale')
-    expect(gallerySource).toContain('ring-2 ring-opal-electric-accessible ring-offset-2')
+    expect(gallerySource).toContain('focus-visible:ring-2 focus-visible:ring-opal-electric-accessible')
     expect(gallerySource).not.toContain('scale-105')
   })
 
@@ -341,9 +328,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards share one gallery vocabulary without blur overlays or scale entrances', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('Gallery Product Card Component')
-    expect(source).toContain('rounded-lg border border-warm-grey/30 bg-white shadow-sm')
-    expect(source).toContain('bg-charcoal/85 px-4 py-2 text-center')
+    expect(source).toContain('Collected')
     expect(source).not.toContain('SOLID')
     expect(source).not.toContain('Multiple variants')
     expect(source).not.toContain('Museum style info')
@@ -419,7 +404,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(product).toContain('alternates: { canonical: `/store/${product.slug}` }')
     expect(product).toContain("card: 'summary_large_image'")
     expect(product).toContain('sku: product.sku ?? String(product.id)')
-    expect(sitemap).toContain('`${BASE_URL}/services/design`')
-    expect(sitemap).toContain('`${BASE_URL}/legal/cookies`')
+    expect(sitemap).toContain("path: '/services/design'")
+    expect(sitemap).toContain("path: '/legal/cookies'")
   })
 })

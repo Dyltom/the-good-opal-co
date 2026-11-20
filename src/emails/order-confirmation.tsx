@@ -1,5 +1,5 @@
-import * as React from 'react'
 import { formatCurrency } from '@/lib/utils'
+import { EmailFrame, emailColors, emailText } from './email-frame'
 
 interface OrderItem {
   name: string
@@ -29,7 +29,10 @@ interface OrderConfirmationEmailProps {
   requiresInventoryReview?: boolean
 }
 
-export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
+const cell = { borderBottom: `1px solid ${emailColors.rule}`, padding: '16px 0', verticalAlign: 'top' } as const
+const totalRow = { color: emailColors.muted, fontSize: '15px', padding: '6px 0' } as const
+
+export function OrderConfirmationEmail({
   orderNumber,
   customerName,
   items,
@@ -41,472 +44,113 @@ export const OrderConfirmationEmail: React.FC<OrderConfirmationEmailProps> = ({
   baseUrl,
   supportEmail,
   requiresInventoryReview = false,
-}) => {
+}: OrderConfirmationEmailProps) {
+  const firstName = customerName.trim().split(/\s+/)[0] || 'there'
+  const cityLine = [shippingAddress.city, shippingAddress.state, shippingAddress.postalCode].filter(Boolean).join(' ')
+  const nextSteps = [
+    requiresInventoryReview
+      ? 'We check that your piece is still available, then pack it for dispatch. If anything needs attention, we will email you before it goes.'
+      : 'We pack your piece for dispatch.',
+    'When it ships, you will get an email with the carrier and tracking number.',
+  ]
+
   return (
-    <html>
-      {/* eslint-disable-next-line @next/next/no-head-element */}
-      <head />
-      <body
-        style={{
-          fontFamily: 'Arial, sans-serif',
-          backgroundColor: '#f5f5f5',
-          margin: 0,
-          padding: 0,
-        }}
-      >
-        <table
-          width="100%"
-          cellPadding="0"
-          cellSpacing="0"
-          style={{ backgroundColor: '#f5f5f5', padding: '20px 0' }}
-        >
+    <EmailFrame preview={`Order ${orderNumber} is confirmed.`} baseUrl={baseUrl} supportEmail={supportEmail}>
+      <p style={emailText.eyebrow}>{requiresInventoryReview ? 'Payment received' : 'Order confirmed'}</p>
+      <h1 style={emailText.heading}>Thank you, {firstName}.</h1>
+      <p style={emailText.body}>
+        {requiresInventoryReview
+          ? 'Your payment has gone through. Before we dispatch, we are checking that every piece in your order is still available.'
+          : 'Your order is in and your payment has gone through. Here is what you bought.'}
+      </p>
+
+      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ backgroundColor: emailColors.well, margin: '24px 0 28px' }}>
+        <tbody>
           <tr>
-            <td align="center">
-              <table
-                width="600"
-                cellPadding="0"
-                cellSpacing="0"
-                style={{ backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden' }}
-              >
-                {/* Header */}
-                <tr>
-                  <td style={{ backgroundColor: '#1a1a1a', padding: '30px', textAlign: 'center' }}>
-                    <h1
-                      style={{ color: '#ffffff', margin: 0, fontSize: '28px', fontWeight: 'bold' }}
-                    >
-                      The Good Opal Co
-                    </h1>
-                    <p style={{ color: '#cccccc', margin: '10px 0 0 0', fontSize: '16px' }}>
-                      Thank You for Your Order!
-                    </p>
-                  </td>
-                </tr>
-
-                {/* Order Confirmation */}
-                <tr>
-                  <td
-                    style={{
-                      padding: '40px 30px',
-                      backgroundColor: '#f8f8f8',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: 'inline-block',
-                        padding: '15px 30px',
-                        backgroundColor: '#ffffff',
-                        borderRadius: '8px',
-                        border: '2px solid #e0e0e0',
-                      }}
-                    >
-                      <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>Order Number</p>
-                      <p
-                        style={{
-                          margin: '5px 0 0 0',
-                          fontSize: '24px',
-                          fontWeight: 'bold',
-                          color: '#1a1a1a',
-                        }}
-                      >
-                        {orderNumber}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* Customer Greeting */}
-                <tr>
-                  <td style={{ padding: '30px' }}>
-                    <h2 style={{ fontSize: '24px', margin: '0 0 15px 0', color: '#1a1a1a' }}>
-                      Dear {customerName},
-                    </h2>
-                    <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666' }}>
-                      {requiresInventoryReview
-                        ? 'Thank you for your order. Payment was received, and we are reviewing item availability before dispatch. We will contact you if anything needs attention.'
-                        : 'Thank you for your order. Your order has been received and is being prepared for dispatch.'}
-                    </p>
-                  </td>
-                </tr>
-
-                {/* Order Items */}
-                <tr>
-                  <td style={{ padding: '0 30px 30px' }}>
-                    <h3 style={{ fontSize: '18px', margin: '0 0 20px 0', color: '#1a1a1a' }}>
-                      Order Details
-                    </h3>
-                    <table
-                      width="100%"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderTop: '1px solid #e0e0e0' }}
-                    >
-                      {items.map((item, index) => (
-                        <tr key={index}>
-                          <td style={{ padding: '20px 0', borderBottom: '1px solid #e0e0e0' }}>
-                            <table width="100%" cellPadding="0" cellSpacing="0">
-                              <tr>
-                                <td width="80">
-                                  {item.image ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                      src={item.image}
-                                      alt={item.name}
-                                      style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        objectFit: 'cover',
-                                        borderRadius: '8px',
-                                      }}
-                                    />
-                                  ) : (
-                                    <div
-                                      style={{
-                                        width: '80px',
-                                        height: '80px',
-                                        backgroundColor: '#f0f0f0',
-                                        borderRadius: '8px',
-                                      }}
-                                    />
-                                  )}
-                                </td>
-                                <td style={{ paddingLeft: '20px' }}>
-                                  <p
-                                    style={{
-                                      margin: 0,
-                                      fontSize: '16px',
-                                      fontWeight: 'bold',
-                                      color: '#1a1a1a',
-                                    }}
-                                  >
-                                    {item.name}
-                                  </p>
-                                  <p
-                                    style={{
-                                      margin: '5px 0 0 0',
-                                      fontSize: '14px',
-                                      color: '#666666',
-                                    }}
-                                  >
-                                    Qty: {item.quantity}
-                                  </p>
-                                </td>
-                                <td align="right" style={{ fontSize: '16px', color: '#1a1a1a' }}>
-                                  {formatCurrency(item.price * item.quantity, 'AUD')}
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      ))}
-                    </table>
-
-                    {/* Order Summary */}
-                    <table
-                      width="100%"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ marginTop: '20px' }}
-                    >
-                      <tr>
-                        <td style={{ padding: '10px 0', fontSize: '16px', color: '#666666' }}>
-                          Subtotal
-                        </td>
-                        <td align="right" style={{ fontSize: '16px', color: '#666666' }}>
-                          {formatCurrency(subtotal, 'AUD')}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ padding: '10px 0', fontSize: '16px', color: '#666666' }}>
-                          Shipping
-                        </td>
-                        <td align="right" style={{ fontSize: '16px', color: '#666666' }}>
-                          {shipping === 0 ? 'FREE' : formatCurrency(shipping, 'AUD')}
-                        </td>
-                      </tr>
-                      {tax > 0 && (
-                        <tr>
-                          <td style={{ padding: '10px 0', fontSize: '16px', color: '#666666' }}>
-                            GST
-                          </td>
-                          <td align="right" style={{ fontSize: '16px', color: '#666666' }}>
-                            {formatCurrency(tax, 'AUD')}
-                          </td>
-                        </tr>
-                      )}
-                      <tr>
-                        <td
-                          style={{
-                            padding: '15px 0 0 0',
-                            borderTop: '2px solid #e0e0e0',
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            color: '#1a1a1a',
-                          }}
-                        >
-                          Total
-                        </td>
-                        <td
-                          align="right"
-                          style={{
-                            padding: '15px 0 0 0',
-                            borderTop: '2px solid #e0e0e0',
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            color: '#1a1a1a',
-                          }}
-                        >
-                          {formatCurrency(total, 'AUD')}
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                {/* Shipping Address */}
-                <tr>
-                  <td style={{ padding: '0 30px 30px' }}>
-                    <h3 style={{ fontSize: '18px', margin: '0 0 15px 0', color: '#1a1a1a' }}>
-                      Shipping Address
-                    </h3>
-                    <div
-                      style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}
-                    >
-                      <p
-                        style={{ margin: 0, fontSize: '16px', lineHeight: '1.5', color: '#666666' }}
-                      >
-                        {customerName}
-                        <br />
-                        {shippingAddress.line1}
-                        <br />
-                        {shippingAddress.line2 && (
-                          <>
-                            {shippingAddress.line2}
-                            <br />
-                          </>
-                        )}
-                        {shippingAddress.city}
-                        {shippingAddress.state ? `, ${shippingAddress.state}` : ''}
-                        {shippingAddress.postalCode ? ` ${shippingAddress.postalCode}` : ''}
-                        <br />
-                        {shippingAddress.country}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-
-                {/* What's Next */}
-                <tr>
-                  <td style={{ padding: '0 30px 30px' }}>
-                    <h3 style={{ fontSize: '18px', margin: '0 0 15px 0', color: '#1a1a1a' }}>
-                      What Happens Next?
-                    </h3>
-                    <table width="100%" cellPadding="0" cellSpacing="0">
-                      <tr>
-                        <td width="40" valign="top">
-                          <div
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '50%',
-                              backgroundColor: '#4CAF50',
-                              color: '#ffffff',
-                              textAlign: 'center',
-                              lineHeight: '32px',
-                              fontWeight: 'bold',
-                            }}
-                          >
-                            1
-                          </div>
-                        </td>
-                        <td style={{ paddingBottom: '15px' }}>
-                          <p
-                            style={{
-                              margin: '0 0 5px 0',
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#1a1a1a',
-                            }}
-                          >
-                            Order Processing
-                          </p>
-                          <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>
-                            We&apos;re carefully preparing your opals for shipment (1-2 business
-                            days)
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td width="40" valign="top">
-                          <div
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '50%',
-                              backgroundColor: '#2196F3',
-                              color: '#ffffff',
-                              textAlign: 'center',
-                              lineHeight: '32px',
-                              fontWeight: 'bold',
-                            }}
-                          >
-                            2
-                          </div>
-                        </td>
-                        <td style={{ paddingBottom: '15px' }}>
-                          <p
-                            style={{
-                              margin: '0 0 5px 0',
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#1a1a1a',
-                            }}
-                          >
-                            Shipping Notification
-                          </p>
-                          <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>
-                            You&apos;ll receive tracking information once your order ships
-                          </p>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td width="40" valign="top">
-                          <div
-                            style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '50%',
-                              backgroundColor: '#9C27B0',
-                              color: '#ffffff',
-                              textAlign: 'center',
-                              lineHeight: '32px',
-                              fontWeight: 'bold',
-                            }}
-                          >
-                            3
-                          </div>
-                        </td>
-                        <td>
-                          <p
-                            style={{
-                              margin: '0 0 5px 0',
-                              fontSize: '16px',
-                              fontWeight: 'bold',
-                              color: '#1a1a1a',
-                            }}
-                          >
-                            Delivery
-                          </p>
-                          <p style={{ margin: 0, fontSize: '14px', color: '#666666' }}>
-                            Delivery timing depends on the destination shown at checkout.
-                          </p>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                {/* Help Section */}
-                <tr>
-                  <td style={{ backgroundColor: '#f8f8f8', padding: '30px', textAlign: 'center' }}>
-                    <h3 style={{ fontSize: '18px', margin: '0 0 15px 0', color: '#1a1a1a' }}>
-                      Need Help?
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: '14px',
-                        lineHeight: '1.6',
-                        color: '#666666',
-                        margin: '0 0 20px 0',
-                      }}
-                    >
-                      Our customer support team is here to assist you with any questions about your
-                      order.
-                    </p>
-                    <table cellPadding="0" cellSpacing="0" style={{ margin: '0 auto' }}>
-                      <tr>
-                        <td style={{ paddingRight: '15px' }}>
-                          <a
-                            href={`mailto:${supportEmail}`}
-                            style={{
-                              display: 'inline-block',
-                              padding: '12px 24px',
-                              backgroundColor: '#1a1a1a',
-                              color: '#ffffff',
-                              textDecoration: 'none',
-                              borderRadius: '4px',
-                              fontSize: '14px',
-                            }}
-                          >
-                            Email Support
-                          </a>
-                        </td>
-                        <td>
-                          <a
-                            href={`${baseUrl}/contact`}
-                            style={{
-                              display: 'inline-block',
-                              padding: '12px 24px',
-                              backgroundColor: '#ffffff',
-                              color: '#1a1a1a',
-                              textDecoration: 'none',
-                              borderRadius: '4px',
-                              fontSize: '14px',
-                              border: '1px solid #1a1a1a',
-                            }}
-                          >
-                            Contact Us
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-
-                {/* Footer */}
-                <tr>
-                  <td style={{ backgroundColor: '#1a1a1a', padding: '30px', textAlign: 'center' }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#cccccc' }}>
-                      © {new Date().getFullYear()} The Good Opal Co. All rights reserved.
-                    </p>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#999999' }}>Australia</p>
-                    <div style={{ marginTop: '20px' }}>
-                      <a
-                        href={`${baseUrl}/shipping`}
-                        style={{
-                          color: '#cccccc',
-                          textDecoration: 'none',
-                          fontSize: '12px',
-                          marginRight: '15px',
-                        }}
-                      >
-                        Shipping Info
-                      </a>
-                      <a
-                        href={`${baseUrl}/returns`}
-                        style={{
-                          color: '#cccccc',
-                          textDecoration: 'none',
-                          fontSize: '12px',
-                          marginRight: '15px',
-                        }}
-                      >
-                        Returns
-                      </a>
-                      <a
-                        href={`${baseUrl}/legal/privacy`}
-                        style={{ color: '#cccccc', textDecoration: 'none', fontSize: '12px' }}
-                      >
-                        Privacy
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              </table>
+            <td style={{ padding: '16px 20px' }}>
+              <p style={{ ...emailText.eyebrow, margin: '0 0 4px' }}>Order number</p>
+              <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '17px', fontWeight: 700, margin: 0, overflowWrap: 'anywhere' }}>{orderNumber}</p>
             </td>
           </tr>
-        </table>
-      </body>
-    </html>
+        </tbody>
+      </table>
+
+      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ borderTop: `1px solid ${emailColors.rule}` }}>
+        <tbody>
+          {items.map((item, index) => (
+            <tr key={`${item.name}-${index}`}>
+              <td width="76" style={cell}>
+                {item.image ? (
+                  <img src={item.image} alt="" width="64" height="64" style={{ display: 'block', height: '64px', objectFit: 'cover', width: '64px' }} />
+                ) : null}
+              </td>
+              <td style={{ ...cell, paddingRight: '12px' }}>
+                <p style={{ fontSize: '16px', lineHeight: 1.4, margin: 0 }}>{item.name}</p>
+                {item.quantity > 1 ? <p style={{ ...emailText.small, margin: '4px 0 0' }}>Quantity {item.quantity}</p> : null}
+              </td>
+              <td align="right" style={{ ...cell, fontSize: '16px', whiteSpace: 'nowrap' }}>
+                {formatCurrency(item.price * item.quantity, 'AUD')}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ margin: '12px 0 32px' }}>
+        <tbody>
+          <tr>
+            <td style={totalRow}>Subtotal</td>
+            <td align="right" style={totalRow}>{formatCurrency(subtotal, 'AUD')}</td>
+          </tr>
+          <tr>
+            <td style={totalRow}>Shipping</td>
+            <td align="right" style={totalRow}>{shipping === 0 ? 'Free' : formatCurrency(shipping, 'AUD')}</td>
+          </tr>
+          {tax > 0 ? (
+            <tr>
+              <td style={totalRow}>GST</td>
+              <td align="right" style={totalRow}>{formatCurrency(tax, 'AUD')}</td>
+            </tr>
+          ) : null}
+          <tr>
+            <td style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>Total</td>
+            <td align="right" style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>
+              {formatCurrency(total, 'AUD')} AUD
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 style={emailText.subheading}>Sending to</h2>
+      <p style={{ ...emailText.body, margin: '0 0 32px' }}>
+        {customerName}
+        <br />
+        {shippingAddress.line1}
+        {shippingAddress.line2 ? (
+          <>
+            <br />
+            {shippingAddress.line2}
+          </>
+        ) : null}
+        <br />
+        {cityLine}
+        <br />
+        {shippingAddress.country}
+      </p>
+
+      <h2 style={emailText.subheading}>What happens next</h2>
+      <ol style={{ ...emailText.body, margin: '0 0 8px', paddingLeft: '20px' }}>
+        {nextSteps.map((step) => (
+          <li key={step} style={{ marginBottom: '8px' }}>{step}</li>
+        ))}
+        {baseUrl ? (
+          <li>
+            You can check on your order at any time on our{' '}
+            <a href={`${baseUrl}/order-tracking`} style={{ color: emailColors.link }}>order tracking page</a>{' '}
+            with your order number and this email address.
+          </li>
+        ) : null}
+      </ol>
+    </EmailFrame>
   )
 }

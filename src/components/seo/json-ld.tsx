@@ -5,7 +5,9 @@
  * Supports various schema.org types for products, organization, and breadcrumbs.
  */
 import { APP_NAME, APP_URL } from '@/lib/constants'
-import { SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import { calculateShipping, RETURN_WINDOW_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import { SOCIAL_PROFILES } from '@/lib/constants/social'
+import { absoluteUrl } from '@/lib/catalog'
 
 /**
  * Base JSON-LD component for rendering structured data
@@ -36,31 +38,21 @@ const organizationId = `${APP_URL}/#organization`
 const websiteId = `${APP_URL}/#website`
 const returnPolicyId = `${APP_URL}/returns#policy`
 
-function structuredDataUrl(value: string | undefined): string | undefined {
-  if (!value) return undefined
-
-  try {
-    return new URL(value, `${APP_URL}/`).toString()
-  } catch {
-    return undefined
-  }
-}
-
 export function merchantReturnPolicyStructuredData(): Record<string, unknown> {
   return {
     '@type': 'MerchantReturnPolicy',
     '@id': returnPolicyId,
-    applicableCountry: ['AU', 'NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'],
+    applicableCountry: [...SHIPPING_COUNTRIES.AUSTRALIA, ...SHIPPING_COUNTRIES.INTERNATIONAL],
     returnPolicyCountry: 'AU',
     returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-    merchantReturnDays: 30,
+    merchantReturnDays: RETURN_WINDOW_DAYS,
     returnMethod: 'https://schema.org/ReturnByMail',
     returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
     merchantReturnLink: `${APP_URL}/returns`,
   }
 }
 
-export function organizationStructuredData(): Record<string, unknown> {
+export function organizationStructuredData(contact?: { email: string }): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -94,8 +86,11 @@ export function organizationStructuredData(): Record<string, unknown> {
       '@type': 'ContactPoint',
       contactType: 'customer service',
       url: `${APP_URL}/contact`,
+      email: contact?.email,
+      areaServed: [...SHIPPING_COUNTRIES.AUSTRALIA, ...SHIPPING_COUNTRIES.INTERNATIONAL],
       availableLanguage: ['English'],
     },
+    sameAs: SOCIAL_PROFILES.length > 0 ? SOCIAL_PROFILES.map((profile) => profile.url) : undefined,
     knowsAbout: [
       'Australian opal',
       'Opal jewellery',
@@ -110,8 +105,9 @@ export function organizationStructuredData(): Record<string, unknown> {
 /**
  * Organization structured data for the business
  */
-export function OrganizationJsonLd() {
-  return <JsonLd data={organizationStructuredData()} />
+export async function OrganizationJsonLd() {
+  const { CONTACT_INFO } = await import('@/lib/constants/contact')
+  return <JsonLd data={organizationStructuredData({ email: CONTACT_INFO.email })} />
 }
 
 /**
@@ -127,6 +123,23 @@ interface ProductJsonLdProps {
     category?: string
     stock?: number
     sku?: string
+    properties?: Array<{ name: string; value: string }>
+  }
+}
+
+function shippingDetails(price: number, destination: keyof typeof SHIPPING_COUNTRIES) {
+  return {
+    '@type': 'OfferShippingDetails',
+    shippingDestination: SHIPPING_COUNTRIES[destination].map((country) => ({
+      '@type': 'DefinedRegion',
+      addressCountry: country,
+    })),
+    shippingRate: {
+      '@type': 'MonetaryAmount',
+      value: calculateShipping(price, destination),
+      currency: 'AUD',
+    },
+    shippingLabel: destination === 'AUSTRALIA' ? 'Australia tracked shipping' : 'International tracked shipping',
   }
 }
 
@@ -142,11 +155,18 @@ export function productStructuredData(
     name: product.name,
     description: product.description,
     image: product.images
-      .map((image) => structuredDataUrl(image))
+      .map((image) => absoluteUrl(image))
       .filter((image): image is string => Boolean(image)),
     url: productUrl,
     sku: product.sku ?? product.slug,
     category: product.category ?? 'Gemstones',
+    additionalProperty: product.properties?.length
+      ? product.properties.map((property) => ({
+          '@type': 'PropertyValue',
+          name: property.name,
+          value: property.value,
+        }))
+      : undefined,
     brand: {
       '@type': 'Brand',
       name: APP_NAME,
@@ -160,24 +180,13 @@ export function productStructuredData(
       availability:
         product.stock && product.stock > 0
           ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
+          : 'https://schema.org/SoldOut',
       seller: { '@type': 'Organization', '@id': organizationId, name: APP_NAME },
       hasMerchantReturnPolicy: merchantReturnPolicyStructuredData(),
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingDestination: {
-          '@type': 'DefinedRegion',
-          addressCountry: 'AU',
-        },
-        shippingRate: {
-          '@type': 'MonetaryAmount',
-          value:
-            product.price >= SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD
-              ? 0
-              : SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS,
-          currency: 'AUD',
-        },
-      },
+      shippingDetails: [
+        shippingDetails(product.price, 'AUSTRALIA'),
+        shippingDetails(product.price, 'INTERNATIONAL'),
+      ],
     },
   }
 }
@@ -254,7 +263,7 @@ export function collectionStructuredData({
           '@type': 'Product',
           name: product.name,
           url: `${appUrl}/store/${product.slug}`,
-          image: structuredDataUrl(product.image),
+          image: absoluteUrl(product.image),
           offers: {
             '@type': 'Offer',
             priceCurrency: 'AUD',
@@ -349,7 +358,7 @@ export function courseStructuredData(course: CourseJsonLdProps['course']): Recor
     name: course.name,
     description: course.description,
     url: courseUrl,
-    image: structuredDataUrl(course.image),
+    image: absoluteUrl(course.image),
     inLanguage: 'en-AU',
     educationalLevel: course.level,
     courseMode: course.format,

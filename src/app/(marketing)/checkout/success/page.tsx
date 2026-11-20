@@ -105,7 +105,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
                     <ClearCartOnSuccess purchase={getPurchaseAnalytics(session)} />
                   )}
                   <SuccessState
-                    email={session?.customer_email ?? undefined}
+                    email={session?.customer_details?.email ?? session?.customer_email ?? undefined}
                     orderConfirmed={orderConfirmed}
                   />
                 </>
@@ -257,7 +257,7 @@ function ErrorState({ error }: { error: string }) {
       {/* Action Buttons */}
       <div className="flex flex-col justify-center gap-3 sm:flex-row">
         <Button size="lg" asChild>
-          <Link href="/checkout">Try Again</Link>
+          <Link href="/cart">Try again</Link>
         </Button>
         <Button variant="outline" size="lg" asChild>
           <Link href="/cart">Return to Cart</Link>

@@ -26,7 +26,6 @@ describe('shared storefront component system', () => {
   test.each([
     'about/page.tsx',
     'cart/page.tsx',
-    'checkout/page.tsx',
     'contact/page.tsx',
     'courses/page.tsx',
     'faq/page.tsx',
