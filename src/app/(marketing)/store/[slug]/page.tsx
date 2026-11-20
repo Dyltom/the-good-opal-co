@@ -276,7 +276,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       {about.photographedUnderWhiteLight ? (
                         <li className="flex gap-3">
                           <Camera className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
-                          Photographed under white light. Images are not edited.
+                          Photographed under white light. Studio shots have the background replaced; the stone is never retouched.
                         </li>
                       ) : null}
                       <li className="flex gap-3">
