@@ -2,10 +2,45 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { ProductCard } from './ProductCard'
-import { getRelatedProductService } from '@/lib/products/related-products'
+import type { Where } from 'payload'
+import { getPayload } from '@/lib/payload'
 import type { Product } from '@/types/payload-types'
 import { cn } from '@/lib/utils'
 import { resolveMediaUrl } from '@/lib/media-url'
+
+async function findRelatedProducts(product: Product, limit: number): Promise<Product[]> {
+  const tags = (product.tags ?? []).flatMap((entry) => (entry.tag ? [entry.tag] : []))
+  const scopes: Where[] = [
+    { category: { equals: product.category } },
+    ...(tags.length > 0 ? [{ 'tags.tag': { in: tags } }] : []),
+    { price: { greater_than_equal: product.price * 0.7, less_than_equal: product.price * 1.3 } },
+  ]
+  const found = new Map<string, Product>()
+  try {
+    const payload = await getPayload()
+    for (const scope of scopes) {
+      if (found.size >= limit) break
+      const { docs } = await payload.find({
+        collection: 'products',
+        where: {
+          and: [
+            scope,
+            { id: { not_equals: product.id } },
+            { status: { equals: 'published' } },
+            { stock: { greater_than: 0 } },
+          ],
+        },
+        limit,
+        sort: '-featured,-createdAt',
+        depth: 2,
+      })
+      for (const doc of docs) if (found.size < limit && !found.has(String(doc.id))) found.set(String(doc.id), doc)
+    }
+  } catch (error) {
+    console.error('Failed to fetch related products:', error)
+  }
+  return [...found.values()]
+}
 
 interface RelatedProductsProps {
   product: Product
@@ -20,8 +55,7 @@ export async function RelatedProducts({
   title = 'You may also like',
   limit = 4
 }: RelatedProductsProps) {
-  const service = getRelatedProductService()
-  const relatedProducts = await service.getRelatedProducts(product, limit)
+  const relatedProducts = await findRelatedProducts(product, limit)
 
   if (relatedProducts.length === 0) {
     return null

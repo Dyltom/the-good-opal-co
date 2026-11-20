@@ -38,6 +38,13 @@ export const STORE_MATERIALS = [
   ['none', 'Loose stone'],
 ] as const
 
+const STORE_LABELS = new Map<string, string>([...STORE_CATEGORIES, ...STORE_STONES, ...STORE_ORIGINS, ...STORE_MATERIALS])
+
+export function storeLabel(value: string): string {
+  const label = STORE_LABELS.get(value) ?? value.replace(/-/g, ' ')
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 export type StoreSort = (typeof STORE_SORTS)[number]
 export type StorePriceRange = (typeof STORE_PRICE_RANGES)[number]
 
