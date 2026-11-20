@@ -1,7 +1,7 @@
 import { Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const METHODS = ['Visa', 'Mastercard', 'Amex', 'Apple Pay', 'Google Pay', 'Afterpay', 'Zip']
+const METHODS_ENABLED_IN_STRIPE = ['Visa', 'Mastercard', 'Amex', 'Apple Pay', 'Klarna']
 
 export function PaymentMethods({ className }: { className?: string }) {
   return (
@@ -11,7 +11,7 @@ export function PaymentMethods({ className }: { className?: string }) {
         Secure payment by Stripe. Pay in full or in instalments.
       </p>
       <ul className="flex flex-wrap gap-1.5" aria-label="Accepted payment methods">
-        {METHODS.map((method) => (
+        {METHODS_ENABLED_IN_STRIPE.map((method) => (
           <li
             key={method}
             className="border border-warm-grey/70 bg-white px-2 py-1 font-sans text-[11px] font-semibold leading-none text-charcoal/75"

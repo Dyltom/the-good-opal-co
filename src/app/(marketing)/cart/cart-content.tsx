@@ -164,7 +164,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               </dl>
 
               <p className="mt-3 text-xs leading-5 text-charcoal/60">
-                Pay with card, Apple Pay, Google Pay, Afterpay or Zip on Stripe&apos;s secure checkout.
+                Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout.
               </p>
 
               <FreeShippingProgress total={cart.total} className="mt-5 rounded-none bg-white" />
