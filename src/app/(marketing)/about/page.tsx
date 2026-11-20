@@ -5,12 +5,49 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, JsonLd, OrganizationJsonLd } from '@/components/seo'
 import { APP_NAME, APP_URL } from '@/lib/constants'
+import { getPayload } from '@/lib/payload'
 
 export const metadata: Metadata = {
   title: 'Our Story | The Good Opal Co',
   description:
     'Meet The Good Opal Co, an Australian opal studio focused on clear product details, thoughtful selection, and personal guidance.',
   alternates: { canonical: '/about' },
+}
+export const dynamic = 'force-dynamic'
+
+const founderPortrait: { src: string; alt: string } | null = null
+
+const stephQuotes = [
+  {
+    text: 'Opal is mysterious and wonderful. I don\u2019t think the uniqueness of opal is matched by many other things in this world\u2026',
+    post: 'opal-cutting-a-beginners-guide',
+    title: 'Opal Cutting: A Free Beginner\u2019s Guide',
+    date: 'September 2020',
+  },
+  {
+    text: 'Lightning Ridge Opal cuts incredibly generously compared to opal from other parts of Australia. It can be more predictable which is an opal cutter\u2019s dream.',
+    post: 'lightning-ridge-opal',
+    title: 'Lightning Ridge Opal',
+    date: 'May 2021',
+  },
+  {
+    text: 'We are committed to sourcing all opal ethically and directly from Australian Miners. A majority of the material we source is from Lightning Ridge and Coober Pedy.',
+    post: 'how-opal-is-mined',
+    title: 'How Opal is Mined and Cut',
+    date: 'May 2021',
+  },
+] as const
+
+async function publishedPostSlugs(slugs: readonly string[]): Promise<Set<string>> {
+  const payload = await getPayload()
+  const { docs } = await payload.find({
+    collection: 'posts',
+    where: { and: [{ slug: { in: slugs } }, { _status: { equals: 'published' } }] },
+    select: { slug: true },
+    pagination: false,
+    depth: 0,
+  })
+  return new Set(docs.map((doc) => doc.slug).filter((slug): slug is string => typeof slug === 'string'))
 }
 
 const principles = [
@@ -31,7 +68,9 @@ const principles = [
   },
 ]
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const livePosts = await publishedPostSlugs(stephQuotes.map((quote) => quote.post))
+
   return (
     <MarketingShell>
         <OrganizationJsonLd />
@@ -96,6 +135,58 @@ export default function AboutPage() {
               <p>
                 Founder Stephanie Caruana leads The Good Opal Co and the personal guidance behind each enquiry.
               </p>
+            </div>
+          </section>
+
+          <section
+            aria-labelledby="steph-heading"
+            className={
+              founderPortrait
+                ? 'mt-20 grid gap-10 lg:mt-28 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24'
+                : 'mt-20 lg:mt-28'
+            }
+          >
+            {founderPortrait ? (
+              <div className="relative aspect-[4/5] overflow-hidden bg-cream-dark">
+                <Image src={founderPortrait.src} alt={founderPortrait.alt} fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" />
+              </div>
+            ) : null}
+            <div>
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
+                In Steph&apos;s words
+              </p>
+              <h2 id="steph-heading" className="mt-4 font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
+                Stephanie Caruana, founder.
+              </h2>
+              <p className="mt-6 max-w-2xl font-sans text-base leading-8 text-charcoal/70">
+                Steph has written about opal since 2020: cutting a first stone by hand, building a
+                cutting machine on a budget, and how opal from each field behaves on the wheel. A few
+                lines from those guides.
+              </p>
+              <ul className={founderPortrait ? 'mt-10 space-y-10' : 'mt-12 grid gap-10 md:grid-cols-3 md:gap-8'}>
+                {stephQuotes.map((quote) => (
+                  <li key={quote.post} className="border-t border-warm-grey/60 pt-6">
+                    <figure>
+                      <blockquote className="font-serif text-xl leading-relaxed text-charcoal">
+                        <p>&ldquo;{quote.text}&rdquo;</p>
+                      </blockquote>
+                      <figcaption className="mt-4 font-sans text-sm text-charcoal/65">
+                        {livePosts.has(quote.post) ? (
+                          <Link
+                            href={`/blog/${quote.post}`}
+                            className="underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
+                          >
+                            {quote.title}
+                          </Link>
+                        ) : (
+                          quote.title
+                        )}
+                        , {quote.date}
+                      </figcaption>
+                    </figure>
+                  </li>
+                ))}
+              </ul>
             </div>
           </section>
 
