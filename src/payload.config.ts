@@ -1,7 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { seoPlugin } from '@payloadcms/plugin-seo'
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { resendAdapter } from '@payloadcms/email-resend'
 import path from 'path'
 import { buildConfig, type CollectionConfig } from 'payload'
@@ -92,9 +91,7 @@ function getEmailSender(): { address: string; name: string } {
   }
 }
 
-const useLocalStorage = process.env['STORAGE_ADAPTER']?.trim() === 'local'
 const uploadDir = path.resolve(process.env['UPLOAD_DIR']?.trim() || path.resolve(dirname, '..'))
-const blobToken = useLocalStorage ? '' : getRequiredEnvironmentValue('BLOB_READ_WRITE_TOKEN')
 const emailSender = getEmailSender()
 
 for (const name of ['CONTACT_EMAIL', 'ADMIN_EMAIL']) {
@@ -102,7 +99,7 @@ for (const name of ['CONTACT_EMAIL', 'ADMIN_EMAIL']) {
 }
 
 function withUploadDir(collection: CollectionConfig): CollectionConfig {
-  if (!useLocalStorage || typeof collection.upload !== 'object') return collection
+  if (typeof collection.upload !== 'object') return collection
   return {
     ...collection,
     upload: {
@@ -174,31 +171,6 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
-    vercelBlobStorage({
-      enabled: Boolean(blobToken),
-      addRandomSuffix: true,
-      collections: {
-        media: true,
-      },
-      token: blobToken,
-      clientUploads: true,
-    }),
-    vercelBlobStorage({
-      enabled: Boolean(blobToken),
-      addRandomSuffix: true,
-      collections: {
-        'ring-assets': {
-          // Ring metadata remains admin-only while the immutable model URL stays
-          // fetchable by the public Three.js renderer.
-          disablePayloadAccessControl: true,
-          prefix: 'rings',
-        },
-      },
-      token: blobToken,
-      // Validation must see exact bytes. Keep these small, immutable uploads on
-      // the server path instead of direct-to-Blob client uploads.
-      clientUploads: false,
-    }),
     // SEO plugin - adds meta fields to collections
     seoPlugin({
       collections: ['posts', 'products', 'courses'],

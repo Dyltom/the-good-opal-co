@@ -2,10 +2,10 @@
 
 ## Runtime
 
-- Next.js 16 App Router and React 19 on Vercel Functions.
+- Next.js 16 App Router and React 19 in one Docker container on the VPS (Coolify).
 - Payload CMS 3 for staff admin and content/data access.
 - Neon PostgreSQL 16 as the relational system of record.
-- Vercel Blob for Payload media.
+- Local disk (`UPLOAD_DIR` volume) for Payload media and generated builder opal faces.
 - Stripe Checkout and signed webhooks for payment and fulfilment state.
 - Resend for transactional and newsletter email.
 - Upstash Redis for distributed public-action rate limits.
@@ -46,9 +46,9 @@ locale beyond the reviewed `en-AU` default.
 ## Deployment
 
 Required variables and resource topology are documented in
-[VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md). Production configuration fails
+[DEPLOYMENT.md](./DEPLOYMENT.md). Production configuration fails
 fast when database, media, payment, email, owner, canonical URL, or rate-limit
 credentials are missing.
 
-Committed migrations run before the Vercel build. Preview and Production must use
+Committed migrations run before a release starts. Preview and Production must use
 separate Neon databases, Blob stores, Redis resources, and Stripe credentials.

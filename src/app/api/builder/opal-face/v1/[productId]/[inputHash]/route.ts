@@ -15,29 +15,6 @@ const immutableHeaders = {
 }
 const noStoreHeaders = { 'Cache-Control': 'private, no-store' }
 
-function publicBlobUrl(value: unknown, expectedPathname: string): string | undefined {
-  if (!value || typeof value !== 'object') return undefined
-  const record = value as { pathname?: unknown; url?: unknown }
-  if (record.pathname !== expectedPathname || typeof record.url !== 'string') return undefined
-
-  try {
-    const url = new URL(record.url)
-    if (
-      url.protocol !== 'https:' ||
-      url.port !== '' ||
-      url.username ||
-      url.password ||
-      !url.hostname.endsWith('.blob.vercel-storage.com') ||
-      url.hostname === 'blob.vercel-storage.com'
-    ) {
-      return undefined
-    }
-    return url.toString()
-  } catch {
-    return undefined
-  }
-}
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ inputHash: string; productId: string }> }
@@ -74,12 +51,10 @@ export async function GET(
 
     const pathname = `builder/opal-faces/v${CANONICAL_FACE_TEXTURE_VERSION}/${inputHash}.png`
     const artifact = await lookupCanonicalFaceArtifact(pathname)
-    const url = publicBlobUrl(artifact, pathname)
-    if (!url) return new Response('Not found', { headers: noStoreHeaders, status: 404 })
+    if (!artifact) return new Response('Not found', { headers: noStoreHeaders, status: 404 })
 
-    return new Response(null, {
-      headers: { ...immutableHeaders, Location: url },
-      status: 307,
+    return new Response(new Uint8Array(artifact), {
+      headers: { ...immutableHeaders, 'Content-Type': 'image/png' },
     })
   } catch (error: unknown) {
     console.error('Canonical opal face lookup failed', error)

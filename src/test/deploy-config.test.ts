@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { readFileSync, readdirSync } from 'fs'
+import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
@@ -27,11 +27,6 @@ describe('deployment config', () => {
     expect(source).toContain("process.env['PAYLOAD_DB_PUSH'] !== 'false'")
     expect(source).toContain("parsed.searchParams.set('sslmode', 'verify-full')")
     expect(source).not.toContain('POSTGRES_HOST')
-  })
-
-  test('production media storage token is documented', () => {
-    expect(read('.env.example')).toContain('BLOB_READ_WRITE_TOKEN=')
-    expect(read('src/payload.config.ts')).toContain('addRandomSuffix: true')
   })
 
   test('image optimization avoids the legacy AVIF conversion stall', () => {
@@ -107,50 +102,6 @@ describe('deployment config', () => {
     expect(source).toContain("'**/.agents/**'")
   })
 
-  test('Vercel migrates isolated production and preview databases before building', () => {
-    const config = JSON.parse(read('vercel.json')) as { buildCommand?: string }
-    const buildScript = read('scripts/vercel-build.mjs')
-    const migrations = readdirSync(resolve(__dirname, '..', 'migrations'))
-
-    expect(config.buildCommand).toBe('node scripts/vercel-build.mjs')
-    expect(buildScript).toContain("vercelEnvironment === 'production'")
-    expect(buildScript).toContain("vercelEnvironment === 'preview'")
-    expect(buildScript).toContain(
-      "run('node', ['scripts/reconcile-production-migration-ledger.mjs'])"
-    )
-    expect(buildScript).toContain("run('pnpm', ['payload', 'migrate'])")
-    expect(buildScript).toContain(
-      "vercelEnvironment === 'production' && process.env.WOO_IMPORT_ON_DEPLOY === 'true'"
-    )
-    expect(buildScript).toContain(
-      "vercelEnvironment === 'production' && process.env.WOO_IMPORT_DRY_RUN_ON_DEPLOY === 'true'"
-    )
-    expect(buildScript).toContain("WOO_IMPORT_APPLY: 'false'")
-    expect(buildScript).toContain("process.env.WOO_IMPORT_ON_DEPLOY === 'true'")
-    expect(buildScript).toContain('WOO_IMPORT_RUN_ID is required')
-    expect(buildScript).toContain('WOO_IMPORT_MODE must be initial or final-delta')
-    expect(buildScript).toContain("WOO_IMPORT_APPLY: 'true'")
-    expect(buildScript).toContain("process.env.WORDPRESS_PRODUCT_IMAGES_ON_DEPLOY === 'true'")
-    expect(buildScript).toContain("WORDPRESS_PRODUCT_IMAGES_APPLY: 'true'")
-    expect(buildScript.indexOf("['payload', 'migrate']")).toBeLessThan(
-      buildScript.indexOf("['build']")
-    )
-    expect(migrations.some((file) => file.endsWith('.ts') && file !== 'index.ts')).toBe(true)
-  })
-
-  test('Vercel schedules authenticated builder photo mapping with enough runtime', () => {
-    const config = JSON.parse(read('vercel.json')) as {
-      crons?: Array<{ path: string; schedule: string }>
-      functions?: Record<string, { maxDuration?: number }>
-    }
-
-    expect(config.crons).toContainEqual({
-      path: '/api/cron/builder-mappings',
-      schedule: '7,22,37,52 * * * *',
-    })
-    expect(config.functions?.['src/app/api/cron/builder-mappings/route.ts']?.maxDuration).toBe(300)
-  })
-
   test('commerce conversion analytics run in the browser', () => {
     const checkoutAction = read('src/app/(marketing)/checkout/actions.ts')
     const checkoutButton = read('src/components/cart/CheckoutButton.tsx')
@@ -180,7 +131,7 @@ describe('deployment config', () => {
   test('Payload admin uses the generated import map without a shadowing TypeScript stub', () => {
     const importMap = read('src/app/(payload)/admin/importMap.js')
 
-    expect(importMap).toContain('VercelBlobClientUploadHandler')
+    expect(importMap).toContain('InsightsView')
     expect(() => read('src/app/(payload)/admin/importMap.ts')).toThrow()
   })
 
@@ -195,7 +146,6 @@ describe('deployment config', () => {
     expect(policy).toContain("object-src 'none'")
     expect(policy).toContain("frame-ancestors 'none'")
     expect(policy).toContain("script-src 'self' 'unsafe-inline'")
-    expect(policy).toContain('https://va.vercel-scripts.com')
   })
 
   test('Payload does not maintain an unused transactional search index', () => {

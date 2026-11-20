@@ -1,39 +1,39 @@
-# Vercel deployment
+# Deployment
 
 ## Production architecture
 
-- Application and Next.js functions: Vercel, Node.js 22, `syd1`.
-- Relational system of record: Neon Postgres through Vercel Marketplace.
-- CMS media: Vercel Blob.
+- Application: one Docker container (`Dockerfile`, Next.js standalone, Node.js 22) on the VPS, managed by Coolify.
+- Relational system of record: Postgres (`DATABASE_URL`).
+- Uploads: local disk under `UPLOAD_DIR` (`/app/uploads` in the image), a persistent Coolify volume.
 - Payments: Stripe Checkout plus signed webhooks.
 - Transactional and newsletter email: Resend.
-- Distributed abuse protection: Upstash Redis through Vercel Marketplace.
+- Rate limiting: in-process on the single host, or Upstash Redis when configured.
 
-Products, customers, orders, users, posts, and migration state live in Neon. Images uploaded through Payload live in Blob. Redis contains only short-lived rate-limit counters.
+Payload media and ring assets live in `UPLOAD_DIR/media` and `UPLOAD_DIR/ring-assets`.
 
-Generated ring-builder opal faces also live in public Vercel Blob storage. Their
-durable identity is the input-addressed pathname
-`builder/opal-faces/v{generatorVersion}/{inputHash}.png`; `inputHash` covers the
-source-image hash, approved contour, crop, aspect, size, and generator version.
-The mapping processor never activates a generated contour until that exact
-pathname has been written. The Products schema does not duplicate Blob URLs.
-The same-origin image route resolves the immutable artifact from its
-generator-provided `storageKey` with
-`lookupCanonicalFaceArtifact()` in
-`src/lib/custom-builder/canonical-face-artifact-store.ts`.
+Generated ring-builder opal faces live in the same volume at the input-addressed
+path `UPLOAD_DIR/builder/opal-faces/v{generatorVersion}/{inputHash}.png`;
+`inputHash` covers the source-image hash, approved contour, crop, aspect, size,
+and generator version. The mapping processor never activates a generated contour
+until that exact file has been written. The same-origin route
+`/api/builder/opal-face/v1/{productId}/{inputHash}` streams the PNG with
+immutable cache headers.
 
-## Resource setup
+## Scheduled jobs
 
-1. Import the Git repository into Vercel. Root directory is the repository root; framework is Next.js; production branch is `main`; Node is 22.x.
-2. Add Neon from Vercel Marketplace. Choose an Australian/AP Southeast region when available and enable backups/PITR. Use its pooled TLS URL as `DATABASE_URL`.
-3. Add Vercel Blob. Vercel injects `BLOB_READ_WRITE_TOKEN`.
-4. Add Upstash Redis from Vercel Marketplace. Vercel injects `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
-5. Create separate Neon branches/databases, Blob stores, Stripe test credentials, and Redis resources for Preview. Never connect a preview deployment to the production database.
-6. Attach the final domain before configuring live Stripe or transactional links.
+Coolify scheduled tasks call these routes with `Authorization: Bearer $CRON_SECRET`:
+
+| Route | Schedule |
+| --- | --- |
+| `/api/cron/inventory-reservations` | `*/15 * * * *` |
+| `/api/cron/woo-catalog` | `*/15 * * * *` |
+| `/api/cron/builder-mappings` | `7,22,37,52 * * * *` |
+| `/api/cron/ring-reference-audit` | `23 15 * * *` |
+| `/api/cron/insights-retention` | `41 16 * * *` |
 
 ## Environment variables
 
-Set these for Production. Use isolated test values for Preview and Development.
+Set these for Production. Use isolated test values for development.
 
 ```text
 DATABASE_URL
@@ -48,7 +48,6 @@ RESEND_API_KEY
 EMAIL_FROM
 CONTACT_EMAIL
 EMAIL_DELIVERY_VERIFIED
-BLOB_READ_WRITE_TOKEN
 UPSTASH_REDIS_REST_URL
 UPSTASH_REDIS_REST_TOKEN
 ```
@@ -64,40 +63,9 @@ RING_REFERENCE_AUDIT_ENABLED
 
 ## Database migrations and catalog
 
-`vercel.json` delegates to `scripts/vercel-build.mjs`. Production and Preview builds run committed Payload migrations against their own isolated databases before `next build`; Development builds skip migrations. Never connect Preview to the Production database. Do not run concurrent production deployments. Use a preview database, verify the artifact, then schedule the production deployment.
+Run committed Payload migrations (`pnpm payload migrate`) against the production database before starting a release that includes them. Production never pushes schema changes.
 
-The original production database was created by Payload development schema sync and contains a legacy `dev` migration marker. Before the first migrated Production build, `scripts/reconcile-production-migration-ledger.mjs` verifies that exact historical schema, transactionally replaces the marker with the five migrations already represented by the database, and then allows Payload to apply the remaining migrations. It is a no-op once durable migration history exists and refuses any unrecognized schema.
-
-For later schema changes:
-
-```bash
-pnpm generate:types
-pnpm payload migrate:create descriptive_name
-```
-
-A fresh database has schema but no sellable catalog. The checked-in seed imports the current public WooCommerce fallback catalogue and matching product images into Payload/Blob. Its safe default creates drafts with zero stock:
-
-```bash
-pnpm seed
-```
-
-The public Store API exposes availability but not exact quantity, so the fallback
-never carries sellable stock and `SEED_PUBLISH` is rejected outside isolated CI.
-Run the authenticated WooCommerce import to populate exact inventory before
-publishing. Refresh the checked-in fallback while the legacy store remains live:
-
-```bash
-pnpm fallback:sync:woo
-```
-
-The seed is idempotent by product slug and does not overwrite existing products.
-
-For the final legacy commerce cutover, the importer can authenticate to the old
-WordPress administrator without creating a persistent WooCommerce API key. Set
-`WOO_BASE_URL`, `WOO_ADMIN_USERNAME`, `WOO_ADMIN_PASSWORD`,
-`WOO_IMPORT_ON_DEPLOY=true`, a never-before-used `WOO_IMPORT_RUN_ID`, and an
-explicit `WOO_IMPORT_MODE` (`initial` or `final-delta`) for one controlled
-Production deployment. Use `final-delta` only after checkout on the old store is
+The guarded WooCommerce import runs from `src/scripts/import-woocommerce-commerce.ts` with `WOO_IMPORT_APPLY=true`, `WOO_IMPORT_RUN_ID` and `WOO_IMPORT_MODE`. Use `final-delta` only after checkout on the old store is
 frozen and before checkout on this store opens. The build runs migrations first,
 claims the run ID in the durable Commerce Import Runs ledger, then performs the
 product/order/customer/refund import and reconciles every visible WooCommerce
@@ -106,10 +74,10 @@ are refreshed when the source gallery changes; the import no longer treats any
 non-empty image field as proof of freshness. A claimed ID can never run again, even when
 its first attempt failed; inspect that ledger and the partial import before using
 a new ID. Remove all Woo import variables immediately after success and confirm
-the recorded counts in Payload. Never set the import flag for Preview.
+the recorded counts in Payload.
 
 While the legacy WooCommerce catalogue remains the merchandising source, set
-`WOO_CATALOG_SYNC_ENABLED=true`. Vercel then reconciles visible products, prices,
+`WOO_CATALOG_SYNC_ENABLED=true`. The woo-catalog job then reconciles visible products, prices,
 stock changes, and ordered galleries every 15 minutes. Add a read-only WooCommerce
 REST key as `WOO_CONSUMER_KEY` plus `WOO_CONSUMER_SECRET` to reconcile exact managed
 reductions; source increases never raise local stock because a paid local order must
@@ -129,10 +97,9 @@ routes, follows no redirects, stores no response body, and never treats route
 availability as proof that the post content matches the ring. Keep design records in
 draft until calibrated captures, physical measurements, and maker approval exist.
 
-To reconcile source and target counts without changing data, temporarily set the
-same Woo credentials plus `WOO_IMPORT_DRY_RUN_ON_DEPLOY=true` for one Production
-deployment. Review its build log, then remove all four variables. Dry runs never
-claim an import-run ledger entry and force `WOO_IMPORT_APPLY=false`.
+To reconcile source and target counts without changing data, run the import script
+with the Woo credentials and `WOO_IMPORT_APPLY=false`. Dry runs never claim an
+import-run ledger entry.
 
 ## First administrator
 
@@ -161,7 +128,7 @@ Copy the endpoint-specific signing secret to `STRIPE_WEBHOOK_SECRET`. Checkout s
 
 Order creation, customer totals, and inventory decrement share a serializable database transaction. Confirmation-email failures return an error and retry on webhook replay without duplicating the order. Refund events restock only inventory previously decremented. Disputes mark the order for manual review.
 
-Custom quote links exchange an email URL fragment for a private, quote-scoped HttpOnly cookie, so the bearer token does not enter Vercel request logs or analytics. Quote acceptance and deposit evidence are immutable. Quote deposits use the same webhook endpoint but are classified before product-order and inventory logic; subscribe to the same checkout, refund, and dispute events listed above.
+Custom quote links exchange an email URL fragment for a private, quote-scoped HttpOnly cookie, so the bearer token does not enter request logs or analytics. Quote acceptance and deposit evidence are immutable. Quote deposits use the same webhook endpoint but are classified before product-order and inventory logic; subscribe to the same checkout, refund, and dispute events listed above.
 
 ## Release gates
 
@@ -175,7 +142,7 @@ pnpm validate:build
 pnpm test:e2e
 ```
 
-Then verify on a Vercel Preview:
+Then verify on a staging deployment:
 
 - `/api/health` reports liveness with HTTP 200 while the database is connected;
   `liveness` is `healthy` and `status` may be `degraded` when launch dependencies
@@ -184,13 +151,13 @@ Then verify on a Vercel Preview:
   `revenueReady` is `true`, and do not call the release complete until `ready` is
   `true`. Issue codes are sanitized and never contain environment values.
 - First-admin creation and product/post/media CRUD work.
-- An uploaded image is served from Blob after a new deployment.
+- An uploaded image is still served after a redeploy (the uploads volume persists).
 - Desktop and mobile home, store, product, cart, checkout, contact, newsletter, order tracking, legal, and error routes work without console errors.
 - A Stripe test purchase creates one order, customer update, inventory decrement, and email.
 - Replaying the paid event creates no duplicate and re-sends only an unsent email.
 - Refund and dispute test events update the order; a refund restocks exactly once.
 - Newsletter confirmation accepts only the exact unexpired token; unsubscribe works once.
 - Resend rejection is reported rather than shown as success.
-- Production logs, Vercel Web Analytics/Speed Insights, Neon alerts/backups, Stripe webhook failures, and Resend bounces have owners.
+- Production logs, database backups, Stripe webhook failures, and Resend bounces have owners.
 
 Owner approval remains required for domain, legal entity/ABN, contact address, privacy/terms/returns wording, inventory, product origin/treatment/certificate claims, Resend DNS, and live Stripe settlement details.

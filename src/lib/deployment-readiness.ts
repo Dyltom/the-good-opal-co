@@ -12,7 +12,6 @@ export type ReadinessIssueCode =
   | 'stripe_webhook_secret_invalid'
   | 'resend_api_key_invalid'
   | 'email_delivery_unverified'
-  | 'blob_storage_unavailable'
   | 'redis_url_invalid'
   | 'redis_token_missing'
 
@@ -24,7 +23,6 @@ export type DeploymentReadiness = {
     core: boolean
     payments: boolean
     email: boolean
-    storage: boolean
     rateLimiting: boolean
   }
   issues: ReadinessIssueCode[]
@@ -49,10 +47,7 @@ function value(env: Environment, name: string): string {
 }
 
 function isProductionDeployment(env: Environment): boolean {
-  const vercelEnvironment = value(env, 'VERCEL_ENV')
-  return vercelEnvironment
-    ? vercelEnvironment === 'production'
-    : value(env, 'NODE_ENV') === 'production'
+  return value(env, 'NODE_ENV') === 'production'
 }
 
 function isObviousPlaceholder(candidate: string): boolean {
@@ -154,11 +149,6 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
     issues.push('email_delivery_unverified')
   }
 
-  const blobToken = value(env, 'BLOB_READ_WRITE_TOKEN')
-  const localStorage = value(env, 'STORAGE_ADAPTER') === 'local'
-  if (!localStorage && (!blobToken || isObviousPlaceholder(blobToken))) {
-    issues.push('blob_storage_unavailable')
-  }
   if (!hasValidRedisUrl(env)) issues.push('redis_url_invalid')
 
   const redisToken = getRedisToken(env)
@@ -185,17 +175,16 @@ export function assessDeploymentReadiness(env: Environment = process.env): Deplo
       issue === 'resend_api_key_invalid' ||
       issue === 'email_delivery_unverified'
   )
-  const storage = !issues.includes('blob_storage_unavailable')
   const rateLimiting = !issues.some(
     (issue) => issue === 'redis_url_invalid' || issue === 'redis_token_missing'
   )
-  const ready = core && payments && email && storage && rateLimiting
+  const ready = core && payments && email && rateLimiting
 
   return {
     ready,
     revenueReady: payments && email,
     status: ready ? 'ready' : 'degraded',
-    checks: { core, payments, email, storage, rateLimiting },
+    checks: { core, payments, email, rateLimiting },
     issues,
   }
 }

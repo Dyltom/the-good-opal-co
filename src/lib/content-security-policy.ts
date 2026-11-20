@@ -18,7 +18,7 @@ export function createContentSecurityPolicy(
     "object-src 'none'",
     `script-src 'self' 'unsafe-inline'${
       nodeEnv === 'production' ? '' : " 'unsafe-eval'"
-    } https://va.vercel-scripts.com${googleAnalyticsScriptSource}`,
+    }${googleAnalyticsScriptSource}`,
     "style-src 'self' 'unsafe-inline'",
     "worker-src 'self' blob:",
     'upgrade-insecure-requests',

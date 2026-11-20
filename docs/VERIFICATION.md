@@ -2,13 +2,13 @@
 
 Last updated: 11 July 2026.
 
-This file records evidence, not a blanket production-readiness claim. Live Vercel,
-Blob, Stripe, and Resend behavior must be accepted against the provisioned
+This file records evidence, not a blanket production-readiness claim. Live VPS,
+uploads volume, Stripe, and Resend behavior must be accepted against the provisioned
 production resources before launch.
 
 ## Verified locally
 
-- TypeScript and ESLint pass on supported Node.js 24 (Vercel target: Node.js 22).
+- TypeScript and ESLint pass on supported Node.js 24 (Docker target: Node.js 22).
 - 123 unit and source-regression tests pass.
 - Production dependency audit reports zero known advisories.
 - All committed migrations apply to a fresh PostgreSQL database.
@@ -22,8 +22,8 @@ production resources before launch.
 
 ## Not independently verified without provisioned services
 
-- Vercel Preview and Production deployments.
-- Persistent Payload media upload and retrieval through a real Vercel Blob store.
+- Production deployment on the VPS.
+- Persistent Payload media upload and retrieval through the persistent uploads volume.
 - Stripe test purchase, paid-event replay, refund, dispute, inventory, and email
   effects using the production endpoint configuration.
 - Resend delivery, bounce/rejection behavior, password reset, newsletter confirm,
@@ -46,5 +46,5 @@ pnpm validate:build
 pnpm test:e2e
 ```
 
-Use [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md) for provisioning and
+Use [DEPLOYMENT.md](./DEPLOYMENT.md) for provisioning and
 [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for acceptance.

@@ -635,7 +635,6 @@ async function claimImportRun(
           mode: configuration.mode,
           status: 'running',
           startedAt: new Date().toISOString(),
-          ...(configuration.deploymentId ? { deploymentId: configuration.deploymentId } : {}),
         },
         overrideAccess: true,
       })

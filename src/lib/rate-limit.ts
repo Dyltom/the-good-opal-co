@@ -12,15 +12,6 @@ function hash(value: string): string {
 }
 
 export function getRateLimitNamespace(env: RuntimeEnvironment = process.env): string {
-  const vercelEnvironment = env.VERCEL_ENV?.trim()
-
-  if (vercelEnvironment === 'production') return 'production'
-  if (vercelEnvironment === 'preview') {
-    const previewIdentity = env.VERCEL_GIT_COMMIT_REF?.trim() || env.VERCEL_URL?.trim()
-    return previewIdentity ? `preview-${hash(previewIdentity).slice(0, 12)}` : 'preview'
-  }
-  if (vercelEnvironment === 'development') return 'development'
-
   return env.NODE_ENV === 'production' ? 'production' : 'development'
 }
 

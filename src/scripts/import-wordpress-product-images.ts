@@ -28,8 +28,6 @@ function mediaContentHash(data: Buffer): string {
 }
 
 function applicationOrigin(): string | undefined {
-  const vercelUrl = process.env.VERCEL_URL?.trim()
-  if (vercelUrl) return `https://${vercelUrl}`
   return process.env.NEXT_PUBLIC_APP_URL?.trim()
 }
 
@@ -40,12 +38,6 @@ function ownedMediaDownloadUrl(media: Media): URL | undefined {
     if (parsed.pathname.startsWith('/api/media/file/')) {
       const origin = applicationOrigin()
       return origin ? new URL(`${parsed.pathname}${parsed.search}`, origin) : undefined
-    }
-    if (
-      parsed.protocol === 'https:' &&
-      parsed.hostname.toLowerCase().endsWith('.blob.vercel-storage.com')
-    ) {
-      return parsed
     }
   } catch {
     return undefined

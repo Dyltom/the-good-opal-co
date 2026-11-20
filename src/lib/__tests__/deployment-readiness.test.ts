@@ -15,7 +15,6 @@ const validEnvironment = {
   STRIPE_WEBHOOK_SECRET: `whsec_${'b'.repeat(24)}`,
   RESEND_API_KEY: `re_${'c'.repeat(24)}`,
   EMAIL_DELIVERY_VERIFIED: 'true',
-  BLOB_READ_WRITE_TOKEN: 'vercel_blob_rw_real-token-value',
   UPSTASH_REDIS_REST_URL: 'https://helpful-falcon.upstash.io',
   UPSTASH_REDIS_REST_TOKEN: 'real-redis-token-value',
 } as const
@@ -30,22 +29,10 @@ describe('deployment readiness', () => {
         core: true,
         payments: true,
         email: true,
-        storage: true,
         rateLimiting: true,
       },
       issues: [],
     })
-  })
-
-  test('accepts local disk storage without a Vercel Blob token', () => {
-    const readiness = assessDeploymentReadiness({
-      ...validEnvironment,
-      BLOB_READ_WRITE_TOKEN: '',
-      STORAGE_ADAPTER: 'local',
-    })
-
-    expect(readiness.checks.storage).toBe(true)
-    expect(readiness.issues).not.toContain('blob_storage_unavailable')
   })
 
   test('rejects malformed and obvious placeholder values without returning their contents', () => {
@@ -59,7 +46,6 @@ describe('deployment readiness', () => {
       STRIPE_SECRET_KEY: 'sk_test_xxxxxxxxxxxx',
       STRIPE_WEBHOOK_SECRET: 'whsec_xxxxxxxxxxxx',
       RESEND_API_KEY: 'not-a-resend-key',
-      BLOB_READ_WRITE_TOKEN: '',
       UPSTASH_REDIS_REST_URL: 'not-a-url',
       UPSTASH_REDIS_REST_TOKEN: '',
     })
@@ -72,7 +58,6 @@ describe('deployment readiness', () => {
         core: false,
         payments: false,
         email: false,
-        storage: false,
         rateLimiting: false,
       },
     })
@@ -85,7 +70,6 @@ describe('deployment readiness', () => {
       'stripe_secret_key_invalid',
       'stripe_webhook_secret_invalid',
       'resend_api_key_invalid',
-      'blob_storage_unavailable',
       'redis_url_invalid',
       'redis_token_missing',
     ])
@@ -180,38 +164,5 @@ describe('deployment readiness', () => {
     })
 
     expect(readiness.checks.core).toBe(true)
-  })
-
-  test('uses Vercel deployment target instead of NODE_ENV for preview readiness', () => {
-    const readiness = assessDeploymentReadiness({
-      ...validEnvironment,
-      VERCEL_ENV: 'preview',
-      NEXT_PUBLIC_APP_URL: 'http://preview.goodopal.test',
-      STRIPE_SECRET_KEY: `sk_test_${'a'.repeat(24)}`,
-      EMAIL_DELIVERY_VERIFIED: 'false',
-    })
-
-    expect(readiness.checks.core).toBe(true)
-    expect(readiness.checks.payments).toBe(true)
-    expect(readiness.checks.email).toBe(true)
-    expect(readiness.issues).not.toContain('stripe_live_mode_required')
-    expect(readiness.issues).not.toContain('email_delivery_unverified')
-    expect(() =>
-      assertValidCoreProductionConfiguration({
-        ...validEnvironment,
-        VERCEL_ENV: 'preview',
-        PAYLOAD_SECRET: 'short',
-      })
-    ).not.toThrow()
-  })
-
-  test('still enforces live credentials for Vercel production', () => {
-    const readiness = assessDeploymentReadiness({
-      ...validEnvironment,
-      VERCEL_ENV: 'production',
-      STRIPE_SECRET_KEY: `sk_test_${'a'.repeat(24)}`,
-    })
-
-    expect(readiness.issues).toContain('stripe_live_mode_required')
   })
 })

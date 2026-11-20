@@ -54,7 +54,7 @@ CI starts PostgreSQL 16, applies every committed migration, runs unit/static/bui
 gates, installs Chromium, and runs the browser suite.
 
 Local tests cannot establish that provisioned external services work. Before
-launch, use a Vercel Preview with isolated resources to verify:
+launch, use a staging deployment with isolated resources to verify:
 
 - Payload first-admin bootstrap and product/post/media CRUD.
 - Blob upload, retrieval, and persistence after redeploy.

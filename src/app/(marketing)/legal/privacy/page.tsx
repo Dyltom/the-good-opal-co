@@ -142,7 +142,7 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>An essential HTTP-only cart cookie so the server can retain your basket</li>
                 <li>Local storage recording your necessary and analytics consent choice</li>
-                <li>Vercel Analytics after you choose to allow analytics</li>
+                <li>Google Analytics after you choose to allow analytics</li>
               </ul>
               <p className="text-content mb-4">
                 We do not currently use advertising, remarketing, or social-media tracking pixels. You can change optional analytics through Cookie Settings. Blocking essential storage may prevent the cart and privacy controls from working.
@@ -184,7 +184,7 @@ export default function PrivacyPolicyPage() {
                 8. International Data Transfers
               </h2>
               <p className="text-content mb-4">
-                Stripe, Vercel, Resend, and other service providers may process information outside Australia. Processing locations depend on each provider&apos;s infrastructure and may change. We assess the providers we use and handle overseas disclosures as required by applicable privacy law, but we do not claim that every overseas jurisdiction provides protections identical to Australia.
+                Stripe, OVHcloud, Google, Resend, and other service providers may process information outside Australia. Processing locations depend on each provider&apos;s infrastructure and may change. We assess the providers we use and handle overseas disclosures as required by applicable privacy law, but we do not claim that every overseas jurisdiction provides protections identical to Australia.
               </p>
             </section>
 
@@ -231,7 +231,8 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li><strong>Stripe:</strong> Hosted checkout and payment processing</li>
-                <li><strong>Vercel:</strong> Website hosting and analytics</li>
+                <li><strong>OVHcloud:</strong> Website hosting</li>
+                <li><strong>Google Analytics:</strong> Site analytics, only after you allow analytics</li>
                 <li><strong>Resend:</strong> Email communications</li>
               </ul>
             </section>

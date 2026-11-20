@@ -29,7 +29,6 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { AdoptBuilderCandidateButton as AdoptBuilderCandidateButton_63e639818790ace19eb4d1ea2496f0a0 } from '@/components/payload/AdoptBuilderCandidateButton'
 import { SendCustomQuoteButton as SendCustomQuoteButton_5c85f0b14e3e7428493d4d9930c178f3 } from '@/components/payload/SendCustomQuoteButton'
 import { InsightsNavLink as InsightsNavLink_b313b95c2294183f0d491c6b2400c46e } from '@/components/payload/insights/InsightsNavLink'
-import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
 import { InsightsView as InsightsView_4cf7f556d6ea3e21844486aa5b21376e } from '@/components/payload/insights/InsightsView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -66,7 +65,6 @@ export const importMap = {
   "@/components/payload/AdoptBuilderCandidateButton#AdoptBuilderCandidateButton": AdoptBuilderCandidateButton_63e639818790ace19eb4d1ea2496f0a0,
   "@/components/payload/SendCustomQuoteButton#SendCustomQuoteButton": SendCustomQuoteButton_5c85f0b14e3e7428493d4d9930c178f3,
   "@/components/payload/insights/InsightsNavLink#InsightsNavLink": InsightsNavLink_b313b95c2294183f0d491c6b2400c46e,
-  "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
   "@/components/payload/insights/InsightsView#InsightsView": InsightsView_4cf7f556d6ea3e21844486aa5b21376e,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

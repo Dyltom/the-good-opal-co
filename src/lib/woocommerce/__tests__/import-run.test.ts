@@ -13,20 +13,18 @@ describe('WooCommerce import run configuration', () => {
     ).toThrow('WOO_IMPORT_MODE')
   })
 
-  it('accepts a deliberate final delta and records its deployment', () => {
+  it('accepts a deliberate final delta', () => {
     expect(
       parseWooImportRunConfiguration(
         {
           WOO_IMPORT_RUN_ID: 'final-delta-20260712-01',
           WOO_IMPORT_MODE: 'final-delta',
-          VERCEL_DEPLOYMENT_ID: 'dpl_123',
         },
         true
       )
     ).toEqual({
       runId: 'final-delta-20260712-01',
       mode: 'final-delta',
-      deploymentId: 'dpl_123',
     })
   })
 
