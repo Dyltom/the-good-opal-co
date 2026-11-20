@@ -31,7 +31,7 @@ const termSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1),
   slug: z.string().min(1),
-  description: z.string(),
+  description: z.string().default(''),
   taxonomy: z.enum(['category', 'post_tag']),
 })
 

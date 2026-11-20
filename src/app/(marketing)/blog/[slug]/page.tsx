@@ -188,11 +188,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {publishedDate ? <time>{publishedDate}</time> : null}
             </p>
           ) : null}
-          {post.excerpt ? (
-            <p className="mt-7 max-w-3xl font-sans text-lg leading-8 text-charcoal/70">
-              {post.excerpt}
-            </p>
-          ) : null}
           {imageUrl ? (
             <div className="relative mt-10 aspect-[16/9] overflow-hidden bg-warm-grey/20">
               <Image
