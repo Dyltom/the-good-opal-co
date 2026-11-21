@@ -155,7 +155,7 @@ export default function PrivacyPolicyPage() {
               </ul>
               <p className="mb-4">
                 We do not currently use advertising, remarketing, or social-media tracking pixels.
-                You can change optional analytics through Cookie Settings. Blocking essential
+                You can change optional analytics through Cookie settings. Blocking essential
                 storage may prevent the cart and privacy controls from working.
               </p>
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">
