@@ -26,6 +26,7 @@ import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { summarize } from '@/lib/catalog'
+import { reservedProductIds } from '@/lib/inventory-reservations'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -126,7 +127,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     { label: 'Certificate', value: product.certified ? (product.certificateNumber ?? 'Included') : undefined },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
   const stock = product.stock ?? 0
-  const sold = stock <= 0
+  const reserved = stock <= 0 && (await reservedProductIds()).has(String(product.id))
+  const sold = stock <= 0 && !reserved
   const discount = savePercent(product.price, product.compareAtPrice)
   const similarHref = sold ? await similarPiecesHref(product) : undefined
   const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
@@ -248,7 +250,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       {product.name}
                     </h1>
 
-                    {sold ? (
+                    {reserved ? (
+                      <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <span className="rounded-full bg-charcoal/85 px-3 py-1 font-sans text-sm font-medium text-white">
+                          Reserved
+                        </span>
+                        <span className="font-sans text-sm text-charcoal/70">
+                          Someone is checking out with this piece. If they don&apos;t complete payment, it returns to the shop within 30 minutes.
+                        </span>
+                      </div>
+                    ) : sold ? (
                       <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
                         <span className="rounded-full bg-charcoal/85 px-3 py-1 font-sans text-sm font-medium text-white">
                           Sold
@@ -304,7 +315,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                           Ask us to find one like it
                         </Link>
                       </div>
-                    ) : (
+                    ) : reserved ? null : (
                       <>
                         <div className="mt-6">
                           <ProductActions

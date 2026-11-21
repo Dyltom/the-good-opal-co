@@ -22,6 +22,7 @@ interface ProductCardProduct {
   price: number
   compareAtPrice?: number
   stock: number
+  reserved?: boolean
   featured?: boolean
   category?: string
   image?: string
@@ -126,7 +127,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
             </>
           ) : (
             <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-charcoal/85 px-3 py-1 font-sans text-xs font-medium text-white">
-              Sold
+              {product.reserved ? 'Reserved' : 'Sold'}
             </span>
           )}
         </div>
@@ -157,7 +158,9 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                 ) : null}
               </>
             ) : (
-              <span className="text-sm font-medium text-charcoal/60">Sold</span>
+              <span className="text-sm font-medium text-charcoal/60">
+                {product.reserved ? 'Reserved' : 'Sold'}
+              </span>
             )}
             {product.carats ? (
               <span className="ml-auto text-xs text-charcoal/60">{product.carats} ct</span>

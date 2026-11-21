@@ -31,6 +31,7 @@ export interface StoreProduct {
   price: number
   compareAtPrice?: number
   stock: number
+  reserved?: boolean
   featured?: boolean
   category?: string
   image?: string

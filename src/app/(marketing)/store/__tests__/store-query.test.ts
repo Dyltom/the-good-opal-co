@@ -104,6 +104,13 @@ describe('/store filtering', () => {
     expect(ids(findStoreListings(catalogue, { ...query, availability: 'all' }))).toContain('sold-black')
   })
 
+  test('keeps a piece held by a live checkout in the available listing while a sold piece stays hidden', () => {
+    const held = [...catalogue, listing('held-black', { stock: 0, reserved: true })]
+    const available = ids(findStoreListings(held, parseStoreQuery({})))
+    expect(available).toContain('held-black')
+    expect(available).not.toContain('sold-black')
+  })
+
   test('filters and sorts by carat only where a carat weight is known', () => {
     expect(ids(findStoreListings(catalogue, parseStoreQuery({ carat: 'under-1,6-plus' }))).sort()).toEqual(['black-loose', 'white-ring'])
     expect(ids(findStoreListings(catalogue, parseStoreQuery({ sort: 'carat-high' })))).toEqual([

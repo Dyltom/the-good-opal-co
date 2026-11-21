@@ -83,6 +83,24 @@ export function reservationMatchesCheckoutItems(
   })
 }
 
+export async function reservedProductIds(now = new Date()): Promise<Set<string>> {
+  const payload = await getPayload()
+  const { docs } = await payload.find({
+    collection: 'inventory-reservations',
+    where: {
+      and: [
+        { status: { in: ['active', 'pending-payment'] } },
+        { expiresAt: { greater_than: now.toISOString() } },
+      ],
+    },
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+    select: { items: true },
+  })
+  return new Set(docs.flatMap((reservation) => reservation.items.map((item) => item.productId)))
+}
+
 export async function findReservationByToken(token: string): Promise<InventoryReservation | null> {
   const payload = await getPayload()
   const result = await payload.find({
