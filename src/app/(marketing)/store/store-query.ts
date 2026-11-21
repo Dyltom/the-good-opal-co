@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 export const PRODUCTS_PER_PAGE = 24
 
+export const STORE_VIEW_COOKIES = { three: 'store_three', details: 'store_details' } as const
+
 export const STORE_SORTS = ['featured', 'newest', 'price-low', 'price-high', 'carat-high'] as const
 export const STORE_SORT_LABELS: Record<StoreSort, string> = {
   featured: 'Featured',
