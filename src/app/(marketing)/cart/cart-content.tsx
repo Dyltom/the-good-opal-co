@@ -200,6 +200,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
         </div>
       </div>
       <div
+        data-bottom-bar
         className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
         style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
       >

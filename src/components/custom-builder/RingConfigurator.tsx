@@ -694,7 +694,7 @@ export function RingConfigurator({
             </button>
           </div>
 
-          <div className="sticky bottom-0 z-20 border-t border-rule bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/85 lg:static">
+          <div data-bottom-bar className="sticky bottom-0 z-20 border-t border-rule bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/85 lg:static">
             <div className="px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-8 lg:py-4">
               <p
                 aria-live="polite"

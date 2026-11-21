@@ -70,7 +70,7 @@ export function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 16, opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed bottom-3 left-3 right-3 z-50 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm"
+          className="fixed bottom-3 left-3 right-3 z-50 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm max-lg:[body:has([data-bottom-bar])_&]:bottom-36"
         >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-rule bg-bg px-4 py-3 text-xs leading-5 text-ink shadow-md">
             <p className="min-w-0 flex-1 basis-56">
