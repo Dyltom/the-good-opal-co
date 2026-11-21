@@ -1,12 +1,13 @@
 'use client'
 
-import { startTransition, useCallback, useEffect, useRef, useState, ViewTransition, type PointerEvent } from 'react'
+import { startTransition, useCallback, useLayoutEffect, useRef, useState, ViewTransition, type PointerEvent } from 'react'
+import { flushSync } from 'react-dom'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
+import { Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useFocusTrap } from '@/hooks/useFocusTrap'
-import { trackGalleryFullscreen, trackGalleryZoom } from '@/lib/analytics'
+import { trackGalleryFullscreen } from '@/lib/analytics'
 import { ProductVideo } from './ProductVideo'
+import type { ProductImageViewer, ViewerPreview } from './ProductImageViewer'
 
 interface ProductImage {
   url: string
@@ -31,27 +32,66 @@ interface ProductImageGalleryProps {
 }
 
 const LOUPE_SCALE = 2.4
+const MORPH_NAME = 'opal-inspect'
+const MORPH_DECODE_WAIT = 300
+
+let viewerModule: Promise<typeof ProductImageViewer> | undefined
+
+function loadViewer() {
+  viewerModule ??= import('./ProductImageViewer').then((module) => module.ProductImageViewer)
+  return viewerModule
+}
 
 const focusRing = 'focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-accent'
 
-function pointerPosition(event: PointerEvent<HTMLElement>) {
-  const rect = event.currentTarget.getBoundingClientRect()
-  return {
-    x: ((event.clientX - rect.left) / rect.width) * 100,
-    y: ((event.clientY - rect.top) / rect.height) * 100,
+function canMorph(element: HTMLElement | null | undefined): element is HTMLElement {
+  if (!element || typeof document.startViewTransition !== 'function') return false
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false
+  const rect = element.getBoundingClientRect()
+  return rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth
+}
+
+function morph(from: HTMLElement | null | undefined, update: () => void, target: () => HTMLElement | null | undefined) {
+  if (!canMorph(from)) {
+    flushSync(update)
+    return
   }
+  const root = document.documentElement
+  let to: HTMLElement | null | undefined
+  root.classList.add('vt-inspect')
+  from.style.viewTransitionName = MORPH_NAME
+  const transition = document.startViewTransition(async () => {
+    from.style.viewTransitionName = ''
+    flushSync(update)
+    to = target()
+    if (!to) return
+    to.style.viewTransitionName = MORPH_NAME
+    const image = to.querySelector('img')
+    await Promise.race([
+      image?.decode().catch(() => undefined),
+      new Promise((resolve) => setTimeout(resolve, MORPH_DECODE_WAIT)),
+    ])
+  })
+  void transition.finished.finally(() => {
+    root.classList.remove('vt-inspect')
+    if (to) to.style.viewTransitionName = ''
+  })
 }
 
 export function ProductImageGallery({ productName, images, videos = [], transitionName }: ProductImageGalleryProps) {
   const [mainIndex, setMainIndex] = useState(0)
   const [scrollIndex, setScrollIndex] = useState(0)
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const [loupe, setLoupe] = useState<{ x: number; y: number } | null>(null)
-  const [lightboxZoom, setLightboxZoom] = useState<{ x: number; y: number } | null>(null)
+  const [Viewer, setViewer] = useState<typeof ProductImageViewer | null>(null)
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null)
+  const [preview, setPreview] = useState<ViewerPreview>()
+  const [loupeSource, setLoupeSource] = useState<string | null>(null)
+  const [loupeLoaded, setLoupeLoaded] = useState<string | null>(null)
   const trackRef = useRef<HTMLDivElement>(null)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const lightboxOpen = lightboxIndex !== null
-  const lightboxRef = useFocusTrap<HTMLDivElement>({ active: lightboxOpen })
+  const frames = useRef(new Map<number, HTMLSpanElement>())
+  const viewerFrameRef = useRef<HTMLDivElement>(null)
+  const loupeRef = useRef<HTMLSpanElement>(null)
+  const loupeFrame = useRef(0)
+  const returnFocusTo = useRef<number | null>(null)
   const [firstImage, ...otherImages] = images
   const slides: GallerySlide[] = [
     ...(firstImage ? [firstImage] : []),
@@ -65,45 +105,89 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
   const count = slides.length
 
   const step = useCallback(
-    (delta: number) => {
-      setLightboxZoom(null)
-      setLightboxIndex((current) => (current === null ? current : (current + delta + count) % count))
-    },
+    (delta: number) => setViewerIndex((current) => (current === null ? current : (current + delta + count) % count)),
     [count]
   )
 
-  useEffect(() => {
-    if (!lightboxOpen) return
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    closeButtonRef.current?.focus()
+  useLayoutEffect(() => {
+    if (viewerIndex !== null || returnFocusTo.current === null) return
+    frames.current.get(returnFocusTo.current)?.parentElement?.focus({ preventScroll: true })
+    returnFocusTo.current = null
+  }, [viewerIndex])
 
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setLightboxIndex(null)
-      if (event.key === 'ArrowRight') step(1)
-      if (event.key === 'ArrowLeft') step(-1)
+  const moveLoupe = (event: PointerEvent<HTMLElement> | null) => {
+    const span = loupeRef.current
+    cancelAnimationFrame(loupeFrame.current)
+    if (!span) return
+    if (!event) {
+      span.style.transform = ''
+      return
     }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', onKey)
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = ((event.clientX - rect.left) / rect.width) * 100
+    const y = ((event.clientY - rect.top) / rect.height) * 100
+    loupeFrame.current = requestAnimationFrame(() => {
+      span.style.transformOrigin = `${x}% ${y}%`
+      span.style.transform = `scale(${LOUPE_SCALE})`
+    })
+  }
+
+  const closeViewer = () => {
+    const index = viewerIndex
+    const frame = viewerFrameRef.current
+    if (index === null) return
+    returnFocusTo.current = index
+    const tile = frames.current.get(index)
+    const track = trackRef.current
+    if (tile && track && track.scrollWidth > track.clientWidth) {
+      const slide = tile.parentElement
+      if (slide) track.scrollLeft = slide.offsetLeft - track.offsetLeft
     }
-  }, [lightboxOpen, step])
+    if (frame) {
+      frame.style.transition = 'none'
+      frame.style.transform = ''
+    }
+    morph(
+      slides[index]?.video ? null : frame,
+      () => setViewerIndex(null),
+      () => frames.current.get(index)
+    )
+  }
 
   if (count === 0) {
     return <div className="aspect-[4/5] w-full bg-plinth" aria-hidden="true" />
   }
 
-  const openLightbox = (slideIndex: number) => {
-    setLoupe(null)
-    setLightboxZoom(null)
-    setLightboxIndex(slideIndex)
+  const openViewer = (slideIndex: number) => {
+    cancelAnimationFrame(loupeFrame.current)
+    const loupe = loupeRef.current
+    if (loupe) {
+      loupe.style.transition = 'none'
+      loupe.style.transform = ''
+      void loupe.offsetWidth
+      loupe.style.transition = ''
+    }
+    const tile = frames.current.get(slideIndex)
+    const image = tile?.querySelector('img')
+    const ready = image && image.complete && image.naturalWidth > 0
     trackGalleryFullscreen(productName)
+    void loadViewer().then((component) =>
+      morph(
+        slides[slideIndex]?.video || !ready ? null : tile,
+        () => {
+          setViewer(() => component)
+          setPreview(
+            ready ? { index: slideIndex, src: image.currentSrc || image.src, aspect: image.naturalWidth / image.naturalHeight } : undefined
+          )
+          setViewerIndex(slideIndex)
+        },
+        () => viewerFrameRef.current
+      )
+    )
   }
 
   const order = [mainIndex, ...slides.map((_, slideIndex) => slideIndex).filter((slideIndex) => slideIndex !== mainIndex)]
   const layout = count >= 3 ? 'stack' : count === 2 ? 'pair' : 'single'
-  const current = lightboxIndex === null ? undefined : slides[lightboxIndex]
 
   const onTrackScroll = () => {
     const track = trackRef.current
@@ -149,16 +233,19 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
         onClick={() => {
           const desktop = window.matchMedia('(min-width: 768px)').matches
           if (!isMain && desktop) {
-            setLoupe(null)
+            moveLoupe(null)
             startTransition(() => setMainIndex(slideIndex))
             return
           }
-          openLightbox(slideIndex)
+          openViewer(slideIndex)
+        }}
+        onPointerEnter={(event) => {
+          if (isMain && event.pointerType === 'mouse' && !slide.video) setLoupeSource(slide.url)
         }}
         onPointerMove={(event) => {
-          if (isMain && event.pointerType === 'mouse') setLoupe(pointerPosition(event))
+          if (isMain && event.pointerType === 'mouse') moveLoupe(event)
         }}
-        onPointerLeave={() => setLoupe(null)}
+        onPointerLeave={() => moveLoupe(null)}
         className={cn(slideClass(position), focusRing, 'cursor-zoom-in')}
         aria-label={
           isMain
@@ -168,27 +255,44 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
               : `Show image ${slideIndex + 1} of ${count} larger`
         }
       >
-        <span className={cn('block', frameClass(position))}>
+        <span
+          ref={(node) => {
+            if (node) frames.current.set(slideIndex, node)
+            else frames.current.delete(slideIndex)
+          }}
+          className={cn('block overflow-hidden', frameClass(position))}
+        >
           {slide.url ? (
-            <Image
-              src={slide.url}
-              alt={slide.alt}
-              fill
-              priority={slideIndex === 0}
-              fetchPriority={slideIndex === 0 ? 'high' : undefined}
-              sizes={
-                isMain
-                  ? '(max-width: 767px) 88vw, (max-width: 1023px) 55vw, 50vw'
-                  : '(max-width: 767px) 88vw, (max-width: 1023px) 28vw, 25vw'
-              }
-              quality={90}
-              className="object-cover transition-transform duration-200 ease-out motion-reduce:transition-none"
-              style={
-                isMain && loupe
-                  ? { transform: `scale(${LOUPE_SCALE})`, transformOrigin: `${loupe.x}% ${loupe.y}%` }
-                  : undefined
-              }
-            />
+            <span
+              ref={isMain ? loupeRef : undefined}
+              className="absolute inset-0 transition-transform duration-200 ease-out motion-reduce:transition-none"
+            >
+              <Image
+                src={slide.url}
+                alt={slide.alt}
+                fill
+                priority={slideIndex === 0}
+                fetchPriority={slideIndex === 0 ? 'high' : undefined}
+                sizes={
+                  isMain
+                    ? '(max-width: 767px) 88vw, (max-width: 1023px) 55vw, 50vw'
+                    : '(max-width: 767px) 88vw, (max-width: 1023px) 28vw, 25vw'
+                }
+                quality={90}
+                className="object-cover"
+              />
+              {isMain && loupeSource === slide.url ? (
+                <Image
+                  src={slide.url}
+                  unoptimized
+                  alt=""
+                  fill
+                  loading="eager"
+                  onLoad={() => setLoupeLoaded(slide.url)}
+                  className={cn('object-cover', loupeLoaded === slide.url ? 'opacity-100' : 'opacity-0')}
+                />
+              ) : null}
+            </span>
           ) : null}
           {slide.video ? (
             <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-sm border border-rule bg-bg text-ink">
@@ -205,6 +309,8 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
       <div
         ref={trackRef}
         onScroll={onTrackScroll}
+        onPointerEnter={() => void loadViewer()}
+        onFocus={() => void loadViewer()}
         aria-label={`Photos of ${productName}`}
         role="group"
         className={cn(
@@ -232,92 +338,16 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
         </p>
       ) : null}
 
-      {current && lightboxIndex !== null ? (
-        <div
-          ref={lightboxRef}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${productName}, image ${lightboxIndex + 1} of ${count}`}
-          className="fixed inset-0 z-[70] flex flex-col bg-ink"
-        >
-          <div className="flex items-center justify-between px-4 py-3 text-bg sm:px-6">
-            <p className="font-sans text-sm tabular-nums text-bg/75">
-              {lightboxIndex + 1} / {count}
-              <span className="ml-3 hidden sm:inline">
-                {current.video ? null : lightboxZoom ? 'Move to explore, click to zoom out' : 'Click the stone to zoom in'}
-              </span>
-            </p>
-            <button
-              ref={closeButtonRef}
-              type="button"
-              onClick={() => setLightboxIndex(null)}
-              className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
-              aria-label="Close full screen view"
-            >
-              <X className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-          <div
-            className={cn(
-              'relative min-h-0 flex-1 touch-pinch-zoom overflow-hidden',
-              lightboxZoom ? 'cursor-zoom-out' : 'cursor-zoom-in'
-            )}
-            onClick={(event) => {
-              if (current.video) return
-              if (!lightboxZoom) trackGalleryZoom(productName)
-              setLightboxZoom((zoomed) => (zoomed ? null : pointerPosition(event as unknown as PointerEvent<HTMLElement>)))
-            }}
-            onPointerMove={(event) => {
-              if (lightboxZoom && event.pointerType === 'mouse') setLightboxZoom(pointerPosition(event))
-            }}
-          >
-            {current.video ? (
-              <ProductVideo
-                key={current.video.url}
-                src={current.video.url}
-                mimeType={current.video.mimeType}
-                poster={current.video.poster}
-                label={current.alt}
-                controls
-              />
-            ) : (
-              <Image
-                key={current.url}
-                src={current.url}
-                alt={current.alt}
-                fill
-                sizes="100vw"
-                quality={95}
-                className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none"
-                style={
-                  lightboxZoom
-                    ? { transform: 'scale(2.5)', transformOrigin: `${lightboxZoom.x}% ${lightboxZoom.y}%` }
-                    : undefined
-                }
-              />
-            )}
-          </div>
-          {count > 1 ? (
-            <div className="flex justify-center gap-2 py-3">
-              <button
-                type="button"
-                onClick={() => step(-1)}
-                className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="h-6 w-6" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => step(1)}
-                className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
-                aria-label="Next image"
-              >
-                <ChevronRight className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
-          ) : null}
-        </div>
+      {Viewer && viewerIndex !== null ? (
+        <Viewer
+          productName={productName}
+          slides={slides}
+          index={viewerIndex}
+          preview={preview}
+          frameRef={viewerFrameRef}
+          onStep={step}
+          onClose={closeViewer}
+        />
       ) : null}
     </div>
   )
