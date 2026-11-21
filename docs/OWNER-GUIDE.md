@@ -14,14 +14,14 @@ The guide uses the names you will see in the admin. The admin is the private bac
 
 Only accounts set as **Admin** can use the admin. To add another person, ask Dylan.
 
-Your old WordPress admin, with all your past WooCommerce orders, has moved to https://old.goodopalco.com/wp-admin. Use it to look up orders placed before the switch. Some of those orders may also have been copied into the new admin under Orders. Copied orders never send emails to customers.
+Your past WooCommerce orders were not copied into the new admin, so the Orders list starts empty. After the switch-over, the old shop lives at https://old.goodopalco.com/wp-admin. It is in coming-soon mode with payments turned off, and it stays there so you can look up past orders and customers.
 
 ### Finding your way around
 
 The menu down the left side groups everything:
 
 - **Collections**: Products (your pieces), Media (every photo and video), Reviews, Posts (the blog), Categories, Tags, Authors and Users. Ring Assets, Ring Designs and Ring Reference Checks belong to the ring designer; leave them alone.
-- **E-commerce**: Orders, and Inventory Reservations (pieces held while someone is paying). Commerce Import Runs is a record of the move from the old shop.
+- **E-commerce**: Orders, and Inventory Reservations (pieces held while someone is paying). Commerce Import Runs is a technical record of the move from the old shop.
 - **CRM**: Customers, Enquiries and Custom Quotes. Custom Quote Events is a history log you never need to edit.
 - **Education**: Courses.
 - **Insights**: Insight Events, the raw visit records behind Store insights.
@@ -29,11 +29,11 @@ The menu down the left side groups everything:
 
 The admin still shows the Payload logo rather than yours. Payload is the name of the software it is built on.
 
-## 2. Before you change any piece: the old shop sync
+## 2. Where to edit your pieces
 
-While the old WooCommerce shop is still the main record of your stock, the new site copies names, descriptions, prices, stock and photos from it every 15 minutes. That copy overwrites edits made in the new admin, and any piece that disappears from the old shop is hidden on the new one.
+Make every change to your pieces in the new admin. The old shop is no longer used for products.
 
-Dylan turns this copy off once the new site is the only shop. Until he tells you it is off, keep making product changes in the old shop. After that, make every change in the new admin.
+The new site has an automatic copy from the old shop, and it is switched off. If it is ever turned back on, it overwrites your edits to names, descriptions, prices, stock and photos, so check with Dylan first.
 
 ## 3. Adding a new piece
 
@@ -63,10 +63,11 @@ Dylan turns this copy off once the new site is the only shop. Until he tells you
    - **Care instructions**.
    - **Certified**, with the certificate number. Only tick it if the piece really has a certificate.
 10. **Sku**: your own stock code, optional. It must be different for every piece.
-11. **Tenant Id**: type `good-opal-co` exactly. The piece will not save without it.
-12. Add photos and any videos (see below).
-13. Leave **Status** on **Draft** while you work. Click **Save**.
-14. When it is ready, change **Status** to **Published** and click **Save** again. The piece appears in the shop straight away.
+11. Add photos and any videos (see below).
+12. Leave **Status** on **Draft** while you work. Click **Save**.
+13. When it is ready, change **Status** to **Published** and click **Save** again. The piece appears in the shop straight away.
+
+**Tenant Id**: every piece has a Tenant Id box. Type `good-opal-co` in it exactly. The piece will not save without it.
 
 **Featured**: tick this to move the piece to the front. The home page lists featured pieces first, then the rest by price.
 
@@ -193,20 +194,24 @@ The statuses Quoted, Accepted, Deposit paid and In production are set by the quo
 - The contact form, with the type "Custom jewellery".
 - The ring designer on the Services page. These enquiries also record the design the customer put together, under Design Configuration. It is stored in a technical format; if you cannot read it, ask Dylan.
 
-Both land in **Enquiries**. A quote must be attached to an enquiry, and the admin cannot create an enquiry by hand yet. For a request that came by phone, email or Instagram, ask the customer to send it through the contact form on the site, or ask Dylan.
+Both land in **Enquiries**.
+
+**Requests by phone, email or Instagram**: a quote must be attached to an enquiry, and the admin cannot create an enquiry by hand yet. Ask the customer to send their request through the contact form on the site, or ask Dylan.
 
 ### Sending a quote
 
 1. Go to **Custom Quotes** and click **Create New**.
 2. **Enquiry**: choose the customer's enquiry. Their email is filled in from it.
-3. **Amount Cents**: the full price **in cents**. For $1,250 type 125000.
-4. **Deposit Amount Cents**: also **in cents**. Enter 0 for no deposit.
+3. **Amount Cents**: the full quoted price (see the note on amounts below).
+4. **Deposit Amount Cents**: the deposit. Enter 0 for no deposit.
 5. **Valid Until**: the date the offer ends. The link stops working after this.
 6. **Terms**: exactly what is included: the stone, metal, sizing, timing, what is not included, and cancellation terms. The customer agrees to this text.
 7. Leave **Quote Number**, **Quote Series Id**, **Revision** and **Customer Email** alone; they fill themselves in.
 8. Click **Save**, then **Send / retry quote**.
 
 ![A new quote](owner-guide/new-quote.png)
+
+**Amounts are in cents**: type both amounts in cents, not dollars. For $1,250 type 125000, and for a $300 deposit type 30000. Typing dollars by mistake quotes a hundredth of the price.
 
 The customer receives "Your custom jewellery quote – QUOTE-..." with a private link. Only that link opens the quote. Do not forward it to anyone else.
 
@@ -220,8 +225,9 @@ The customer receives "Your custom jewellery quote – QUOTE-..." with a private
 
 1. The customer opens the link, ticks the agreement box and accepts. The quote and the enquiry both change to **Accepted**.
 2. If there is a deposit, they pay it through Stripe. The quote shows the deposit as paid, the enquiry changes to **Deposit paid**, and the customer gets "Deposit confirmed – QUOTE-...".
-3. **You are not emailed when a quote is accepted or a deposit is paid.** Check Custom Quotes and Enquiries regularly, or watch Stripe for the deposit.
-4. Move the enquiry to **In production** when you start, and **Completed** when it is done.
+3. Move the enquiry to **In production** when you start, and **Completed** when it is done.
+
+**No email to you on acceptance or deposit**: you are not emailed when a quote is accepted or a deposit is paid. Check Custom Quotes and Enquiries regularly, or watch Stripe for the deposit.
 
 Refund a deposit in Stripe, the same as an order.
 
@@ -241,8 +247,9 @@ Refund a deposit in Stripe, the same as an order.
 
 1. Go to **Posts**, then **Create New**.
 2. Fill in the **Title**, **Slug** (the web address), **Content**, an **Author** and at least one **Category**. Add a short **Excerpt** and a **Featured image** if you like.
-3. **Tenant Id**: type `good-opal-co`. New categories, tags and authors need it too.
-4. Use **Save Draft** while writing and **Publish changes** when ready. Earlier versions are kept, so you can go back.
+3. Use **Save Draft** while writing and **Publish changes** when ready. Earlier versions are kept, so you can go back.
+
+**Tenant Id**: posts, categories, tags and authors each have a Tenant Id box. Type `good-opal-co` in it exactly. They will not save without it.
 
 ### Courses
 
@@ -283,7 +290,7 @@ Visits are counted without cookies. Each visitor is an anonymous code that chang
 
 ### Microsoft Clarity
 
-If Dylan has connected Microsoft Clarity, you can watch anonymous recordings and see heatmaps of where people click at https://clarity.microsoft.com. It only records visitors who accept analytics cookies, and never on quote pages. Ask Dylan for access.
+Microsoft Clarity is connected to the site. At https://clarity.microsoft.com you can watch anonymous recordings of visits and see heatmaps of where people click. It only records visitors who accept analytics cookies, and never on quote pages. Ask Dylan for access.
 
 ### Stripe
 
