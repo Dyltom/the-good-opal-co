@@ -194,7 +194,8 @@ describe('buying flow UI/UX safeguards', () => {
   })
 
   test('product gallery uses editorial framing instead of gradient glow chrome', () => {
-    const source = read('src/components/product/ProductImageGallery.tsx')
+    const source =
+      read('src/components/product/ProductImageGallery.tsx') + read('src/components/product/ProductImageViewer.tsx')
 
     expect(source).toContain('aria-modal="true"')
     expect(source).not.toContain('bg-gradient')

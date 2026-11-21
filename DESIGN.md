@@ -229,6 +229,10 @@ progress, region, checkout, "View bag" and "Continue shopping".
   carries from the grid to the product page (Next `experimental.viewTransition`).
   The mast has its own transition name and does not animate. Browsers without
   View Transitions just navigate.
+- **Inspect morph:** opening a product photo full screen carries the tile into
+  the viewer and back (`opal-inspect`, 0.42s). The viewer shows the full-size
+  file, unfiltered, and zooms to its actual pixels with pinch, double-tap, wheel,
+  click, the + / - buttons or keys, and pans by drag or arrow keys.
 - Card photos scale to 1.025 over 900ms on hover; nothing else moves on hover.
 - `prefers-reduced-motion`: all view transitions, transforms and the torch
   movement are off.
