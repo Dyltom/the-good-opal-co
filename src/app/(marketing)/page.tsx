@@ -38,7 +38,9 @@ const MULTI_STONE_LISTING = /parcel|calibrated|priced individually/i
 
 function hasStudioPhoto(product: Product): boolean {
   const image = product.images?.[0]?.image
-  return typeof image === 'object' && image !== null && Boolean(image.filename?.startsWith('studio-'))
+  return (
+    typeof image === 'object' && image !== null && Boolean(image.filename?.startsWith('studio-'))
+  )
 }
 
 async function FeaturedPieces() {
@@ -46,10 +48,7 @@ async function FeaturedPieces() {
   const { docs } = await payload.find({
     collection: 'products',
     where: {
-      and: [
-        LISTED_PRODUCTS,
-        { stock: { greater_than: 0 } },
-      ],
+      and: [LISTED_PRODUCTS, { stock: { greater_than: 0 } }],
     },
     limit: 48,
     sort: ['-featured', '-price'],
@@ -139,163 +138,201 @@ export default function HomePage() {
       <OrganizationJsonLd />
       <WebsiteJsonLd />
       <MarketingShell mainClassName="pt-0">
-          <HomeHero />
+        <HomeHero />
 
-          <section className="bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
-            <div className="mx-auto max-w-[90rem]">
-              <div className="mb-10 max-w-3xl lg:mb-12">
-                <Eyebrow>
-                  Find your way in
-                </Eyebrow>
-                <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl lg:text-6xl">
-                  Choose by what matters to you.
+        <section className="bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+          <div className="mx-auto max-w-[90rem]">
+            <div className="mb-10 max-w-3xl lg:mb-12">
+              <Eyebrow>Find your way in</Eyebrow>
+              <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl lg:text-6xl">
+                Choose by what matters to you.
+              </h2>
+            </div>
+
+            <div className="grid gap-px overflow-hidden border border-warm-grey/55 bg-warm-grey/55 md:grid-cols-3">
+              {discoveryPaths.map((path) => (
+                <Link
+                  key={path.eyebrow}
+                  href={path.href}
+                  className="group flex flex-col bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-opal-electric-accessible"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden border-b border-warm-grey/55 bg-cream-dark">
+                    <Image
+                      src={path.image}
+                      alt={path.alt}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col justify-between p-7 sm:p-9">
+                    <div>
+                      <Eyebrow>{path.eyebrow}</Eyebrow>
+                      <h3 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal lg:text-4xl">
+                        {path.title}
+                      </h3>
+                      <p className="text-charcoal/68 mt-4 font-sans text-sm leading-7 sm:text-base">
+                        {path.copy}
+                      </p>
+                    </div>
+                    <span className="mt-8 inline-flex items-center gap-3 font-sans text-sm font-semibold text-charcoal">
+                      {path.cta}
+                      <ArrowRight
+                        className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+          <div className="mx-auto max-w-[90rem]">
+            <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+              <div>
+                <Eyebrow>Featured pieces</Eyebrow>
+                <h2 className="mt-4 font-serif text-4xl font-medium text-charcoal sm:text-5xl">
+                  One stone, one piece.
                 </h2>
               </div>
-
-              <div className="grid gap-px overflow-hidden border border-warm-grey/55 bg-warm-grey/55 md:grid-cols-3">
-                {discoveryPaths.map((path) => (
-                  <Link
-                    key={path.eyebrow}
-                    href={path.href}
-                    className="group flex flex-col bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-opal-electric-accessible"
-                  >
-                    <div className="relative aspect-[4/3] overflow-hidden border-b border-warm-grey/55 bg-cream-dark">
-                      <Image
-                        src={path.image}
-                        alt={path.alt}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col justify-between p-7 sm:p-9">
-                      <div>
-                        <Eyebrow>{path.eyebrow}</Eyebrow>
-                        <h3 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal lg:text-4xl">
-                          {path.title}
-                        </h3>
-                        <p className="text-charcoal/68 mt-4 font-sans text-sm leading-7 sm:text-base">
-                          {path.copy}
-                        </p>
-                      </div>
-                      <span className="mt-8 inline-flex items-center gap-3 font-sans text-sm font-semibold text-charcoal">
-                        {path.cta}
-                        <ArrowRight
-                          className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-                          aria-hidden="true"
-                        />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+              <Link
+                href="/store"
+                className="inline-flex min-h-11 items-center gap-3 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-8 hover:decoration-charcoal"
+              >
+                View the full collection
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
             </div>
-          </section>
+            <FeaturedPieces />
+          </div>
+        </section>
 
-          <section className="bg-white px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
-            <div className="mx-auto max-w-[90rem]">
-              <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-                <div>
-                  <Eyebrow>
-                    Featured pieces
-                  </Eyebrow>
-                  <h2 className="mt-4 font-serif text-4xl font-medium text-charcoal sm:text-5xl">
-                    One stone, one piece.
-                  </h2>
-                </div>
-                <Link
-                  href="/store"
-                  className="inline-flex min-h-11 items-center gap-3 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-8 hover:decoration-charcoal"
-                >
-                  View the full collection
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </div>
-              <FeaturedPieces />
-            </div>
-          </section>
-
-          <ReviewsSection
-            eyebrow="Customer reviews"
-            title="In their words."
-            className="mx-auto max-w-[90rem] px-5 py-16 sm:px-8 lg:px-12 lg:py-24"
-          />
-
-          <section className="border-t border-warm-grey/55 bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
-            <div className="mx-auto grid max-w-[90rem] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-              <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden bg-cream-dark">
+        <section className="overflow-hidden bg-charcoal text-cream">
+          <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 lg:py-24">
+            <figure className="mx-auto w-full max-w-lg lg:max-w-[34rem]">
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-charcoal-dark">
                 <Image
-                  src="/images/studio/white-opal.jpg"
-                  alt="A polished white Australian opal with green flashes"
+                  src="/images/studio/opal-macro-coober-pedy.jpg"
+                  alt="Close-up of a white opal from Coober Pedy with orange, blue and green flashes"
                   fill
-                  sizes="(max-width: 1024px) 90vw, 24rem"
-                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 34rem"
+                  className="macro-drift object-cover"
                 />
               </div>
-              <div className="max-w-2xl">
-                <Eyebrow>Meet Steph</Eyebrow>
-                <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
-                  The person behind the stones.
-                </h2>
-                <p className="text-charcoal/72 mt-6 font-sans text-base leading-8">
-                  The Good Opal Co is led by founder Stephanie Caruana. Steph has written about cutting
-                  and sourcing Australian opal since 2020, and she leads the personal guidance behind
-                  every enquiry.
-                </p>
-                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                  <Link
-                    href="/about"
-                    className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-charcoal px-6 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-                  >
-                    Read our story
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </Link>
-                  <a
-                    href={INSTAGRAM_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md border border-charcoal/45 px-6 font-sans text-sm font-semibold text-charcoal transition-colors hover:border-charcoal hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-                  >
-                    <Instagram className="h-4 w-4" aria-hidden="true" />
-                    Follow @thegoodopalco
-                  </a>
-                </div>
+              <figcaption className="mt-4 font-sans text-xs tracking-wide text-cream/60">
+                Coober Pedy white opal, 6.35 ct. Close-up, shown as photographed.
+              </figcaption>
+            </figure>
+            <div className="max-w-xl">
+              <Eyebrow className="text-opal-light">Nothing retouched</Eyebrow>
+              <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl">
+                Every flash you see is in the stone.
+              </h2>
+              <p className="text-cream/72 mt-6 font-sans text-base leading-8 sm:text-lg">
+                This is one opal from the shop, up close. Our studio shots replace the background
+                and never the colour, so the stone you choose is the stone that arrives.
+              </p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/store/coober-pedy-white-opal-6-35-cts"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-cream px-6 font-sans text-sm font-semibold text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                >
+                  See this opal
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  href="/store"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md border border-cream/40 px-6 font-sans text-sm font-semibold text-cream transition-colors hover:border-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                >
+                  Shop all opals
+                </Link>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="grid bg-charcoal text-cream lg:grid-cols-2">
-            <div className="relative min-h-[28rem] lg:min-h-[42rem]">
+        <ReviewsSection
+          eyebrow="Customer reviews"
+          title="In their words."
+          className="mx-auto max-w-[90rem] px-5 py-16 sm:px-8 lg:px-12 lg:py-24"
+        />
+
+        <section className="border-t border-warm-grey/55 bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+          <div className="mx-auto grid max-w-[90rem] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden bg-cream-dark">
               <Image
-                src="/images/customs/custom-2.jpg"
-                alt="Australian opals selected for a custom jewellery piece"
+                src="/images/studio/white-opal.jpg"
+                alt="A polished white Australian opal with green flashes"
                 fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 1024px) 90vw, 24rem"
                 className="object-cover"
               />
             </div>
-            <div className="flex items-center px-6 py-16 sm:px-10 lg:px-16 lg:py-24">
-              <div className="max-w-xl">
-                <Eyebrow className="text-opal-light">
-                  Custom work
-                </Eyebrow>
-                <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl">
-                  Begin with the stone, not a template.
-                </h2>
-                <p className="text-cream/72 mt-6 font-sans text-base leading-8 sm:text-lg">
-                  Bring an occasion, an idea, or an opal of your own. We can help shape the brief,
-                  explain the trade-offs, and create a piece around what matters to you.
-                </p>
+            <div className="max-w-2xl">
+              <Eyebrow>Meet Steph</Eyebrow>
+              <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
+                The person behind the stones.
+              </h2>
+              <p className="text-charcoal/72 mt-6 font-sans text-base leading-8">
+                The Good Opal Co is led by founder Stephanie Caruana. Steph has written about
+                cutting and sourcing Australian opal since 2020, and she leads the personal guidance
+                behind every enquiry.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="/services"
-                  className="mt-9 inline-flex min-h-12 items-center gap-3 rounded-md bg-cream px-6 font-sans text-sm font-semibold text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                  href="/about"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md bg-charcoal px-6 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
                 >
-                  Explore custom work
+                  Read our story
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md border border-charcoal/45 px-6 font-sans text-sm font-semibold text-charcoal transition-colors hover:border-charcoal hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+                >
+                  <Instagram className="h-4 w-4" aria-hidden="true" />
+                  Follow @thegoodopalco
+                </a>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
+
+        <section className="grid bg-charcoal text-cream lg:grid-cols-2">
+          <div className="relative min-h-[28rem] lg:min-h-[42rem]">
+            <Image
+              src="/images/customs/custom-2.jpg"
+              alt="Australian opals selected for a custom jewellery piece"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="flex items-center px-6 py-16 sm:px-10 lg:px-16 lg:py-24">
+            <div className="max-w-xl">
+              <Eyebrow className="text-opal-light">Custom work</Eyebrow>
+              <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl">
+                Begin with the stone, not a template.
+              </h2>
+              <p className="text-cream/72 mt-6 font-sans text-base leading-8 sm:text-lg">
+                Bring an occasion, an idea, or an opal of your own. We can help shape the brief,
+                explain the trade-offs, and create a piece around what matters to you.
+              </p>
+              <Link
+                href="/services"
+                className="mt-9 inline-flex min-h-12 items-center gap-3 rounded-md bg-cream px-6 font-sans text-sm font-semibold text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+              >
+                Explore custom work
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </section>
       </MarketingShell>
     </>
   )

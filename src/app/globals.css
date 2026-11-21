@@ -493,3 +493,21 @@
     }
   }
 }
+
+@keyframes macro-drift {
+  from {
+    transform: scale(1.08) translateY(-2%);
+  }
+  to {
+    transform: scale(1) translateY(2%);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .macro-drift {
+      animation: macro-drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
