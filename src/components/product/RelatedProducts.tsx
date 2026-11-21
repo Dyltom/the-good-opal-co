@@ -101,6 +101,7 @@ export async function RelatedProducts({
                 price: relatedProduct.price,
                 compareAtPrice: relatedProduct.compareAtPrice ?? undefined,
                 stock: relatedProduct.stock ?? 0,
+                soldPerUnit: relatedProduct.soldPerUnit ?? false,
                 featured: relatedProduct.featured ?? undefined,
                 image: imageUrl,
                 category: relatedProduct.category,

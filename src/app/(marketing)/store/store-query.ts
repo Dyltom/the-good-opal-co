@@ -27,6 +27,7 @@ export const STORE_STONES = [
   ['fire-opal', 'Fire opal'],
   ['matrix-opal', 'Matrix opal'],
   ['opal-doublet', 'Opal doublet'],
+  ['opal-triplet', 'Opal triplet'],
 ] as const
 export const STORE_ORIGINS = [
   ['lightning-ridge', 'Lightning Ridge, NSW'],
@@ -45,6 +46,11 @@ export const STORE_MATERIALS = [
   ['platinum', 'Platinum'],
   ['none', 'Loose stone'],
 ] as const
+export const STORE_METALS = STORE_MATERIALS.filter(([value]) => value !== 'none')
+export const STORE_RING_SIZES = Array.from({ length: 21 }, (_, index) => {
+  const size = String(3 + index / 2)
+  return [size, `Size ${size}`] as const
+})
 
 type Range = readonly [value: string, label: string, min: number, max: number]
 
@@ -64,7 +70,7 @@ export const STORE_CARAT_RANGES = [
   ['6-plus', '6 ct and over', 6, Number.POSITIVE_INFINITY],
 ] as const satisfies readonly Range[]
 
-export const STORE_FACETS = ['category', 'stone', 'origin', 'carat'] as const
+export const STORE_FACETS = ['category', 'stone', 'origin', 'carat', 'metal', 'size'] as const
 export type StoreFacet = (typeof STORE_FACETS)[number]
 
 export const STORE_FACET_OPTIONS: Record<StoreFacet, readonly (readonly [string, string, ...unknown[]])[]> = {
@@ -72,6 +78,8 @@ export const STORE_FACET_OPTIONS: Record<StoreFacet, readonly (readonly [string,
   stone: STORE_STONES,
   origin: STORE_ORIGINS,
   carat: STORE_CARAT_RANGES,
+  metal: STORE_METALS,
+  size: STORE_RING_SIZES,
 }
 
 export const STORE_FACET_LABELS: Record<StoreFacet, string> = {
@@ -79,6 +87,8 @@ export const STORE_FACET_LABELS: Record<StoreFacet, string> = {
   stone: 'Stone',
   origin: 'Origin',
   carat: 'Carat weight',
+  metal: 'Metal',
+  size: 'Ring size',
 }
 
 const STORE_LABELS = new Map<string, string>([...STORE_CATEGORIES, ...STORE_STONES, ...STORE_ORIGINS, ...STORE_MATERIALS])
@@ -114,6 +124,8 @@ export interface StoreQuery {
   stone: string[]
   origin: string[]
   carat: string[]
+  metal: string[]
+  size: string[]
   priceMin?: number
   priceMax?: number
   availability: 'available' | 'all'
@@ -182,6 +194,8 @@ export function parseStoreQuery(params: StoreSearchParams): StoreQuery {
     stone: listValue(params.stone, STORE_STONES),
     origin: listValue(params.origin, STORE_ORIGINS),
     carat: listValue(params.carat, STORE_CARAT_RANGES),
+    metal: listValue(params.metal, STORE_METALS),
+    size: listValue(params.size, STORE_RING_SIZES),
     ...priceRange(params.price_min, params.price_max),
     availability: firstValue(params.availability) === 'all' ? 'all' : 'available',
     sort: isOneOf(rawSort, STORE_SORTS) ? rawSort : 'featured',
@@ -250,6 +264,8 @@ export interface StoreListing {
   category?: string
   stoneType?: string
   stoneOrigin?: string
+  material?: string
+  ringSize?: string
   price: number
   stock: number
   reserved?: boolean
@@ -268,6 +284,10 @@ function facetValue(item: StoreListing, facet: StoreFacet): string | undefined {
       return item.stoneOrigin
     case 'carat':
       return item.carats === undefined ? undefined : caratRangeOf(item.carats)
+    case 'metal':
+      return item.material === 'none' ? undefined : item.material
+    case 'size':
+      return item.ringSize?.trim()
   }
 }
 
@@ -308,7 +328,7 @@ export function findStoreListings(items: StoreListing[], query: StoreQuery): Sto
 export type StoreFacetCounts = Record<StoreFacet, Record<string, number>>
 
 export function countStoreFacets(items: StoreListing[], query: StoreQuery): StoreFacetCounts {
-  const counts: StoreFacetCounts = { category: {}, stone: {}, origin: {}, carat: {} }
+  const counts: StoreFacetCounts = { category: {}, stone: {}, origin: {}, carat: {}, metal: {}, size: {} }
   for (const item of items) {
     if (!inScope(item, query)) continue
     for (const facet of STORE_FACETS) {

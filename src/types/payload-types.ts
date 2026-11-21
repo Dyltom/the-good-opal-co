@@ -336,6 +336,7 @@ export interface Product {
   status: 'draft' | 'published' | 'archived'
   featured?: boolean | null
   stock?: number | null
+  soldPerUnit?: boolean | null
   sku?: string | null
   legacyWooId?: number | null
   wooStatus?: string | null
@@ -362,6 +363,7 @@ export interface Product {
         | 'fire-opal'
         | 'matrix-opal'
         | 'opal-doublet'
+        | 'opal-triplet'
       )
     | null
   stoneOrigin?:
@@ -1221,6 +1223,7 @@ export interface ProductsSelect<T extends boolean = true> {
   status?: T
   featured?: T
   stock?: T
+  soldPerUnit?: T
   sku?: T
   legacyWooId?: T
   wooStatus?: T
