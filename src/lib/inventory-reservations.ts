@@ -180,7 +180,11 @@ export async function reserveCheckoutInventory(input: {
   return withSerializationRetry(() => reserveCheckoutInventoryOnce(input))
 }
 
-type ReleaseReason = 'checkout-expired' | 'async-payment-failed' | 'checkout-create-failed'
+type ReleaseReason =
+  | 'checkout-expired'
+  | 'async-payment-failed'
+  | 'checkout-create-failed'
+  | 'checkout-replaced'
 
 async function releaseInventoryReservationOnce(
   session: Stripe.Checkout.Session,
