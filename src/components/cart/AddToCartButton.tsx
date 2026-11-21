@@ -6,7 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag, Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
-import { addToCart, addToCartWithQuantity, fetchCart } from '@/app/(marketing)/cart/actions'
+import {
+  addToCart,
+  addToCartFormAction,
+  addToCartWithQuantity,
+  fetchCart,
+} from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
 import { trackAddToCart } from '@/lib/analytics'
 import type { ReactNode } from 'react'
@@ -120,9 +125,26 @@ export function AddToCartButton({
     lg: 20,
   }
 
+  const withForm = (button: ReactNode, tapScale: number) => {
+    const form = (
+      <form action={addToCartFormAction} className="contents">
+        <input type="hidden" name="productId" value={product.id} />
+        <input type="hidden" name="slug" value={product.slug} />
+        <input type="hidden" name="name" value={product.name} />
+        <input type="hidden" name="price" value={product.price} />
+        {product.image ? <input type="hidden" name="image" value={product.image} /> : null}
+        <input type="hidden" name="quantity" value={quantity} />
+        {button}
+      </form>
+    )
+
+    return animated ? <motion.div whileTap={{ scale: tapScale }}>{form}</motion.div> : form
+  }
+
   if (variant === 'icon') {
     const button = (
       <button
+        type="submit"
         onClick={handleClick}
         disabled={disabled || isPending}
         aria-label={`Add ${product.name} to cart`}
@@ -166,16 +188,13 @@ export function AddToCartButton({
       </button>
     )
 
-    return animated ? (
-      <motion.div whileTap={{ scale: 0.95 }}>
-        {button}
-      </motion.div>
-    ) : button
+    return withForm(button, 0.95)
   }
 
   if (variant === 'minimal') {
     const button = (
       <button
+        type="submit"
         onClick={handleClick}
         disabled={disabled || isPending}
         className={cn(
@@ -221,15 +240,12 @@ export function AddToCartButton({
       </button>
     )
 
-    return animated ? (
-      <motion.div whileTap={{ scale: 0.98 }}>
-        {button}
-      </motion.div>
-    ) : button
+    return withForm(button, 0.98)
   }
 
   const button = (
     <button
+      type="submit"
       onClick={handleClick}
       disabled={disabled || isPending}
       className={cn(
@@ -288,9 +304,5 @@ export function AddToCartButton({
     </button>
   )
 
-  return animated ? (
-    <motion.div whileTap={{ scale: 0.98 }}>
-      {button}
-    </motion.div>
-  ) : button
+  return withForm(button, 0.98)
 }
