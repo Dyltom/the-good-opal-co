@@ -14,7 +14,7 @@ async function firstAvailableProduct(page: Page) {
 }
 
 async function expectCartDrawerWith(page: Page, productName: string) {
-  const drawer = page.getByRole('dialog', { name: /your cart/i })
+  const drawer = page.getByRole('dialog', { name: /your bag/i })
   await expect(drawer).toBeVisible()
   await expect(drawer.getByText(productName).first()).toBeVisible()
 }

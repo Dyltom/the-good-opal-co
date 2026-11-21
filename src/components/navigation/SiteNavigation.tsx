@@ -116,7 +116,7 @@ export function SiteNavigation() {
       {panel === 'menu' ? (
         <nav
           id="site-menu"
-          aria-label="Primary navigation"
+          aria-label="Site menu"
           className="absolute inset-x-0 top-full flex flex-col border-b border-rule bg-plinth px-gut pb-3.5 pt-1.5 text-[17px] md:hidden"
         >
           {NAVIGATION_ITEMS.map((item) => (
