@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { QuantitySelector } from '@/components/ui/quantity-selector'
 import { formatCurrency } from '@/lib/utils'
@@ -74,31 +75,38 @@ export function ProductActions({ product, children }: ProductActionsProps) {
         {children}
       </div>
 
-      {showStickyPurchaseBar ? (
-        <div
-          role="region"
-          aria-label="Quick purchase"
-          data-bottom-bar
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
-          style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
-        >
-          <div className="mx-auto flex max-w-screen-sm items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-serif text-[15px] italic leading-5 text-ink">{product.name}</p>
-              <p className="text-sm font-medium text-ink">{formatCurrency(product.price, 'AUD')}</p>
-            </div>
-            <AddToCartButton
-              product={cartProduct}
-              quantity={quantity}
-              size="lg"
-              animated={false}
-              className={`h-12 flex-none px-5 text-[15px] ${addButtonClass}`}
+      {showStickyPurchaseBar
+        ? createPortal(
+            <div
+              role="region"
+              aria-label="Quick purchase"
+              data-bottom-bar
+              className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
+              style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
             >
-              Add to bag
-            </AddToCartButton>
-          </div>
-        </div>
-      ) : null}
+              <div className="mx-auto flex max-w-screen-sm items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-serif text-[15px] italic leading-5 text-ink">
+                    {product.name}
+                  </p>
+                  <p className="text-sm font-medium text-ink">
+                    {formatCurrency(product.price, 'AUD')}
+                  </p>
+                </div>
+                <AddToCartButton
+                  product={cartProduct}
+                  quantity={quantity}
+                  size="lg"
+                  animated={false}
+                  className={`h-12 flex-none px-5 text-[15px] ${addButtonClass}`}
+                >
+                  Add to bag
+                </AddToCartButton>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   )
 }
