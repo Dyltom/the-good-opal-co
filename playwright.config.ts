@@ -40,7 +40,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
     : {
-        command: 'ENABLE_RING_VISUAL_HARNESS=1 pnpm dev',
+        command: process.env.CI ? 'pnpm start -p 8412' : 'ENABLE_RING_VISUAL_HARNESS=1 pnpm dev',
         // Visual regression tests are self-contained and must not require the
         // production database, Stripe, Blob, Resend, or Redis to report ready.
         url: 'http://localhost:8412/visual-tests/ring-scene?style=gemini&view=front',
