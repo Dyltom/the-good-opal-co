@@ -457,7 +457,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
       >
         <aside
           aria-label="Filters"
-          className="sticky top-14 hidden max-h-[calc(100svh-56px)] self-start overflow-y-auto pb-7 pr-0.5 pt-3.5 [scrollbar-width:none] lg:block"
+          className="sticky top-14 hidden self-start pb-7 pr-0.5 pt-3.5 lg:block"
         >
           <SearchForm query={query} id="store-search" />
           <FilterGroups {...filterProps} />
@@ -465,7 +465,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
         </aside>
 
         <div className="min-w-0">
-          <div className="max-lg:contents lg:sticky lg:top-14 lg:z-10 lg:mb-3.5 lg:flex lg:min-h-[58px] lg:items-center lg:gap-5 lg:border-b lg:border-rule lg:bg-bg/[0.92] lg:py-2 lg:backdrop-blur-[14px]">
+          <div className="max-lg:contents lg:sticky lg:top-14 lg:z-20 lg:mb-3.5 lg:flex lg:min-h-[58px] lg:items-center lg:gap-5 lg:border-b lg:border-rule lg:bg-bg/[0.92] lg:py-2 lg:backdrop-blur-[14px]">
             <div className="flex flex-none items-baseline justify-between gap-3.5 px-gut pb-2.5 pt-3.5 lg:justify-start lg:p-0">
               <h1 className="font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]">
                 Australian opals
@@ -475,7 +475,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
               </p>
             </div>
 
-            <div className="sticky top-[52px] z-10 flex min-h-[52px] min-w-0 flex-wrap items-center border-y border-rule bg-bg/[0.94] pl-gut backdrop-blur-[14px] lg:static lg:min-h-0 lg:flex-1 lg:flex-nowrap lg:gap-[18px] lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+            <div className="sticky top-[52px] z-20 flex min-h-[52px] min-w-0 flex-wrap items-center border-y border-rule bg-bg/[0.94] pl-gut backdrop-blur-[14px] lg:static lg:min-h-0 lg:flex-1 lg:flex-nowrap lg:gap-[18px] lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
               <StoreSort
                 options={sortOptions}
                 value={query.sort}
