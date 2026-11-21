@@ -21,7 +21,7 @@ export default async function CartPage() {
       <MarketingShell>
         {cart.items.length === 0 ? (
           <div className="px-gut pb-sec pt-5 md:pt-8">
-            <div className="mx-auto max-w-[1180px]">
+            <div className="mx-auto max-w-[90rem]">
               <h1 className="border-b border-rule pb-4 font-serif text-[clamp(30px,3.4vw,44px)] leading-[1.04] tracking-[-0.02em] text-ink">
                 Your bag is empty
               </h1>

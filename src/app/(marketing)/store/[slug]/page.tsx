@@ -228,7 +228,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               } as CSSProperties
             }
           >
-            <div data-insight-section="photos" className="min-w-0">
+            <div data-insight-section="photos" className={cn('min-w-0', slideCount <= 2 && 'md:sticky md:top-[68px]', slideCount === 3 && 'lg:sticky lg:top-[68px]')}>
               <ProductImageGallery
                 productName={product.name}
                 images={productImages}

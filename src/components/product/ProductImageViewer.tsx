@@ -324,9 +324,7 @@ export function ProductImageViewer({
           </span>
           {slide.video ? null : (
             <>
-              <span className="ml-3">
-                {full ? `Full-size photo, ${full.width} × ${full.height} px` : 'Loading full-size photo'}
-              </span>
+              {full ? null : <span className="ml-3">Loading full-size photo</span>}
               <span className="ml-3 hidden sm:inline [@media(pointer:coarse)]:hidden">
                 Scroll or click to zoom, drag to look around
               </span>
