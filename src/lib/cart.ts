@@ -16,6 +16,7 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { cartAddQuantitySchema, cartUpdateQuantitySchema } from '@/lib/cart-validation'
+import { findReservationByToken } from '@/lib/inventory-reservations'
 
 /**
  * Represents an item in the shopping cart
@@ -42,6 +43,36 @@ export interface Cart {
 const CART_COOKIE_NAME = 'cart'
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 const MAX_CART_LINES = 20
+const CHECKOUT_HOLD_COOKIE_NAME = 'checkout_hold'
+
+export async function checkoutHoldToken(): Promise<string | undefined> {
+  const cookieStore = await cookies()
+  return cookieStore.get(CHECKOUT_HOLD_COOKIE_NAME)?.value
+}
+
+export async function setCheckoutHold(token: string, expiresAt: Date): Promise<void> {
+  const cookieStore = await cookies()
+  cookieStore.set(CHECKOUT_HOLD_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    expires: expiresAt,
+    path: '/',
+  })
+}
+
+async function heldQuantities(): Promise<Map<string, number>> {
+  const token = await checkoutHoldToken()
+  if (!token) return new Map()
+  const reservation = await findReservationByToken(token)
+  if (reservation?.status !== 'active') return new Map()
+  return new Map(reservation.items.map((item) => [item.productId, item.quantity]))
+}
+
+async function stockForBuyer(product: { id: number | string; stock?: number | null }): Promise<number> {
+  const held = await heldQuantities()
+  return (product.stock ?? 0) + (held.get(String(product.id)) ?? 0)
+}
 
 /**
  * Calculate cart totals from items
@@ -78,6 +109,7 @@ export async function getCart(): Promise<Cart> {
     // Validate prices against current database values to prevent stale pricing
     const validatedItems: CartItem[] = []
     const payload = await getPayload()
+    const held = await heldQuantities()
 
     for (const item of storedItems) {
       if (
@@ -101,7 +133,7 @@ export async function getCart(): Promise<Cart> {
           depth: 1,
         })
 
-        const availableStock = product?.stock ?? 0
+        const availableStock = (product?.stock ?? 0) + (held.get(item.productId) ?? 0)
         if (product && availableStock > 0) {
           const primaryImage = product.images?.[0]?.image
           const image =
@@ -202,7 +234,7 @@ export async function addItemToCartWithQuantity(
   const currentCartQuantity = existingItem?.quantity || 0
   const requestedTotalQuantity = currentCartQuantity + quantity
 
-  const availableStock = product.stock ?? 0
+  const availableStock = await stockForBuyer(product)
   if (availableStock < requestedTotalQuantity) {
     throw new Error(
       `Insufficient stock available. Only ${availableStock} items in stock, but ${requestedTotalQuantity} requested.`
@@ -292,7 +324,7 @@ export async function updateCartItemQuantity(productId: string, quantity: number
     throw new Error('Product not found')
   }
 
-  const availableStock = product.stock ?? 0
+  const availableStock = await stockForBuyer(product)
   if (availableStock < quantity) {
     throw new Error(`Insufficient stock available. Only ${availableStock} items in stock.`)
   }

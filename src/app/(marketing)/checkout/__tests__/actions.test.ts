@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 const {
   getCart,
+  checkoutHoldToken,
+  setCheckoutHold,
+  releaseInventoryReservation,
   getConfiguredStripeSecretKey,
   getRequestIdentifier,
   checkRateLimit,
@@ -16,6 +19,9 @@ const {
   class TestInventoryUnavailableError extends Error {}
   return {
     getCart: vi.fn(),
+    checkoutHoldToken: vi.fn(),
+    setCheckoutHold: vi.fn(),
+    releaseInventoryReservation: vi.fn(),
     getConfiguredStripeSecretKey: vi.fn(),
     getRequestIdentifier: vi.fn(),
     checkRateLimit: vi.fn(),
@@ -29,7 +35,7 @@ const {
   }
 })
 
-vi.mock('@/lib/cart', () => ({ getCart }))
+vi.mock('@/lib/cart', () => ({ getCart, checkoutHoldToken, setCheckoutHold }))
 vi.mock('@/lib/constants', () => ({ APP_URL: 'https://shop.example' }))
 vi.mock('@/lib/stripe-config', () => ({ getConfiguredStripeSecretKey }))
 vi.mock('@/lib/rate-limit', () => ({ getRequestIdentifier, checkRateLimit }))
@@ -39,6 +45,7 @@ vi.mock('@/lib/inventory-reservations', () => ({
   findReservationByToken,
   INVENTORY_RESERVATION_METADATA_KEY: 'inventoryReservationToken',
   InventoryUnavailableError,
+  releaseInventoryReservation,
   reserveCheckoutInventory,
 }))
 vi.mock('stripe', () => ({
@@ -214,5 +221,50 @@ describe('checkout Server Action', () => {
     expect(createStripeSession).not.toHaveBeenCalled()
     expect(reserveCheckoutInventory).not.toHaveBeenCalled()
     expect(getCart).not.toHaveBeenCalled()
+  })
+
+  test('a buyer back from Stripe can check out again: their earlier hold is released first', async () => {
+    const order: string[] = []
+    checkoutHoldToken.mockResolvedValue('earlier-attempt')
+    findReservationByToken.mockImplementation(async (token: string) =>
+      token === 'earlier-attempt' ? { status: 'active', stripeSessionId: 'cs_test_earlier' } : null
+    )
+    retrieveStripeSession.mockResolvedValue({ id: 'cs_test_earlier', status: 'open' })
+    expireStripeSession.mockResolvedValue({ id: 'cs_test_earlier', status: 'expired' })
+    releaseInventoryReservation.mockImplementation(async () => {
+      order.push('release')
+    })
+    reserveCheckoutInventory.mockImplementation(async () => {
+      order.push('reserve')
+      return { id: 2 }
+    })
+
+    await expect(createCheckoutSession(checkoutForm())).resolves.toEqual({
+      success: true,
+      url: 'https://checkout.stripe.test/session',
+    })
+    expect(expireStripeSession).toHaveBeenCalledWith('cs_test_earlier')
+    expect(releaseInventoryReservation).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'cs_test_earlier' }),
+      'checkout-replaced'
+    )
+    expect(order).toEqual(['release', 'reserve'])
+    expect(setCheckoutHold).toHaveBeenCalledWith(
+      'd42cead1-0366-4f5f-a173-5f4c334c9513',
+      new Date('2026-07-12T00:31:00.000Z')
+    )
+  })
+
+  test('never releases a hold whose payment already completed', async () => {
+    checkoutHoldToken.mockResolvedValue('paid-attempt')
+    findReservationByToken.mockImplementation(async (token: string) =>
+      token === 'paid-attempt' ? { status: 'active', stripeSessionId: 'cs_test_paid' } : null
+    )
+    retrieveStripeSession.mockResolvedValue({ id: 'cs_test_paid', status: 'complete' })
+
+    await createCheckoutSession(checkoutForm())
+
+    expect(expireStripeSession).not.toHaveBeenCalled()
+    expect(releaseInventoryReservation).not.toHaveBeenCalled()
   })
 })

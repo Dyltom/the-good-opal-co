@@ -2,7 +2,7 @@
 
 import Stripe from 'stripe'
 import { z } from 'zod'
-import { getCart } from '@/lib/cart'
+import { checkoutHoldToken, getCart, setCheckoutHold } from '@/lib/cart'
 import {
   calculateCheckoutPricing,
   calculateCheckoutSubtotal,
@@ -20,6 +20,7 @@ import {
   findReservationByToken,
   INVENTORY_RESERVATION_METADATA_KEY,
   InventoryUnavailableError,
+  releaseInventoryReservation,
   reserveCheckoutInventory,
 } from '@/lib/inventory-reservations'
 
@@ -34,6 +35,17 @@ function publicUrl(path: string | undefined): string | undefined {
   if (!path) return undefined
   const url = new URL(path, APP_URL)
   return url.protocol === 'https:' ? url.href : undefined
+}
+
+async function releaseReplacedCheckout(stripe: Stripe, checkoutAttemptId: string): Promise<void> {
+  const token = await checkoutHoldToken()
+  if (!token || token === checkoutAttemptId) return
+  const reservation = await findReservationByToken(token)
+  if (reservation?.status !== 'active') return
+  const session = await stripe.checkout.sessions.retrieve(reservation.stripeSessionId)
+  if (session.status === 'complete') return
+  const closed = session.status === 'open' ? await stripe.checkout.sessions.expire(session.id) : session
+  await releaseInventoryReservation(closed, 'checkout-replaced')
 }
 
 interface CheckoutResult {
@@ -96,6 +108,7 @@ export async function createCheckoutSession(input: {
     // Read the cart only after replaying an existing attempt. Reserving the last
     // unit intentionally removes it from sellable stock, so a network retry may
     // otherwise appear to have an empty cart and lose its valid Stripe URL.
+    await releaseReplacedCheckout(stripe, checkoutAttemptId)
     const cart = await getCart()
     if (cart.items.length === 0) {
       return {
@@ -195,6 +208,7 @@ export async function createCheckoutSession(input: {
       throw error
     }
 
+    await setCheckoutHold(checkoutAttemptId, expiresAt)
     return {
       success: true,
       url: session.url,
