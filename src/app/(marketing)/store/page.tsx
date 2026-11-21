@@ -6,6 +6,7 @@ import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
+import { mergeProductGallery } from '@/lib/product-gallery'
 import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
@@ -71,11 +72,15 @@ function richTextToPlainText(value: unknown): string {
   return Object.values(record).map(richTextToPlainText).filter(Boolean).join(' ')
 }
 
-function firstImageUrl(value: unknown): string | undefined {
-  if (!Array.isArray(value)) return undefined
-  const first = objectRecord(value[0])
-  const image = objectRecord(first?.image)
-  return typeof image?.url === 'string' ? resolveMediaUrl(image.url) : undefined
+function galleryUrls(slug: string, name: string, images: unknown): string[] {
+  const cmsImages = (Array.isArray(images) ? images : []).flatMap((entry) => {
+    const image = objectRecord(objectRecord(entry)?.image)
+    const url = typeof image?.url === 'string' ? resolveMediaUrl(image.url) : undefined
+    return url ? [{ url, alt: name }] : []
+  })
+  const owned = ownedProductImageUrl(slug)
+  const fallback = cmsImages.length === 0 && owned ? [{ url: owned, alt: name }] : cmsImages
+  return mergeProductGallery(slug, name, fallback).map((image) => image.url)
 }
 
 function optionalString(value: unknown): string | undefined {
@@ -100,6 +105,7 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
   ) {
     return undefined
   }
+  const [image, hoverImage] = galleryUrls(product.slug, product.name, product.images)
 
   return {
     id: String(product.id),
@@ -111,7 +117,8 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
     stock: typeof product.stock === 'number' ? product.stock : 0,
     featured: product.featured === true,
     category: optionalString(product.category),
-    image: firstImageUrl(product.images) ?? ownedProductImageUrl(product.slug),
+    image,
+    hoverImage,
     stoneOrigin: optionalString(product.stoneOrigin),
     stoneType: optionalString(product.stoneType),
     carats: caratsOf(product),
@@ -183,6 +190,21 @@ export default async function StorePage({ searchParams }: StorePageProps) {
       where: { id: { in: shownIds } },
       pagination: false,
       depth: 1,
+      select: {
+        name: true,
+        slug: true,
+        description: true,
+        price: true,
+        compareAtPrice: true,
+        stock: true,
+        featured: true,
+        category: true,
+        images: true,
+        stoneOrigin: true,
+        stoneType: true,
+        weight: true,
+        weightUnit: true,
+      },
     })
     : { docs: [] }
   const byId = new Map(

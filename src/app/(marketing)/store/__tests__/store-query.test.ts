@@ -3,6 +3,7 @@ import {
   countStoreFacets,
   findStoreListings,
   parseStoreQuery,
+  priceRangeLabel,
   storeUrl,
   toggleFacetValue,
   type StoreListing,
@@ -44,12 +45,30 @@ describe('/store query URLs', () => {
   })
 
   test('writes readable comma URLs that parse back to the same query', () => {
-    const query = parseStoreQuery({ stone: 'white-opal,black-opal', price: '500-1000', sort: 'carat-high', page: '2' })
+    const query = parseStoreQuery({ stone: 'white-opal,black-opal', price_min: '500', price_max: '1000', sort: 'carat-high', page: '2' })
     const url = storeUrl(query)
 
-    expect(url).toBe('/store?stone=black-opal,white-opal&price=500-1000&sort=carat-high&page=2')
+    expect(url).toBe('/store?stone=black-opal,white-opal&price_min=500&price_max=1000&sort=carat-high&page=2')
     expect(parseStoreQuery(Object.fromEntries(new URL(url, 'https://x.test').searchParams))).toEqual(query)
     expect(storeUrl(parseStoreQuery({}))).toBe('/store')
+  })
+
+  test('reads whole-dollar price bounds and ignores blanks, words and negatives', () => {
+    expect(parseStoreQuery({ price_min: '$1,250.60', price_max: ' 2000 ' })).toMatchObject({ priceMin: 1251, priceMax: 2000 })
+    expect(parseStoreQuery({ price_min: '', price_max: 'cheap' })).toMatchObject({ priceMin: undefined, priceMax: undefined })
+    expect(parseStoreQuery({ price_min: '-50', price_max: '1e9' })).toMatchObject({ priceMin: undefined, priceMax: undefined })
+    expect(parseStoreQuery({ price_min: '0', price_max: '300' })).toMatchObject({ priceMin: undefined, priceMax: 300 })
+  })
+
+  test('swaps a minimum above the maximum instead of showing nothing', () => {
+    expect(parseStoreQuery({ price_min: '900', price_max: '200' })).toMatchObject({ priceMin: 200, priceMax: 900 })
+  })
+
+  test('labels open and closed price ranges in whole dollars', () => {
+    expect(priceRangeLabel({ priceMin: 500, priceMax: 1000 })).toBe('$500–$1,000')
+    expect(priceRangeLabel({ priceMin: 1000 })).toBe('$1,000+')
+    expect(priceRangeLabel({ priceMax: 250 })).toBe('Up to $250')
+    expect(priceRangeLabel({})).toBeUndefined()
   })
 
   test('toggling a value adds or removes it and returns to the first page', () => {
@@ -86,26 +105,27 @@ describe('/store filtering', () => {
     ])
   })
 
-  test('puts a boundary price in exactly one price range', () => {
-    const atBoundary = [listing('a', { price: 250 }), listing('b', { price: 1000 }), listing('c', { price: 249.99 })]
+  test('includes prices equal to either bound and excludes prices outside them', () => {
+    const prices = [listing('a', { price: 250 }), listing('b', { price: 1000 }), listing('c', { price: 249.99 }), listing('d', { price: 1000.5 })]
 
-    expect(ids(findStoreListings(atBoundary, parseStoreQuery({ price: '250-500' })))).toEqual(['a'])
-    expect(ids(findStoreListings(atBoundary, parseStoreQuery({ price: '1000-plus' })))).toEqual(['b'])
-    expect(ids(findStoreListings(atBoundary, parseStoreQuery({ price: 'under-250' })))).toEqual(['c'])
+    expect(ids(findStoreListings(prices, parseStoreQuery({ price_min: '250', price_max: '1000' }))).sort()).toEqual(['a', 'b'])
+    expect(ids(findStoreListings(prices, parseStoreQuery({ price_min: '1000' }))).sort()).toEqual(['b', 'd'])
+    expect(ids(findStoreListings(prices, parseStoreQuery({ price_max: '250' }))).sort()).toEqual(['a', 'c'])
   })
 })
 
 describe('/store facet counts', () => {
   test('each count equals the results for that option alongside the other active filters', () => {
-    const query = parseStoreQuery({ stone: 'black-opal', price: '1000-plus,250-500' })
+    const query = parseStoreQuery({ stone: 'black-opal', price_min: '400', price_max: '1500' })
     const counts = countStoreFacets(catalogue, query)
 
-    for (const facet of ['category', 'stone', 'price', 'carat'] as const) {
+    for (const facet of ['category', 'stone', 'carat'] as const) {
       for (const [value, count] of Object.entries(counts[facet])) {
         expect(count, `${facet}=${value}`).toBe(findStoreListings(catalogue, { ...query, [facet]: [value] }).length)
       }
     }
-    expect(counts.price).toEqual({ '1000-plus': 1, '250-500': 1 })
+    expect(counts.category).toEqual({ 'opal-rings': 1, 'raw-opals': 1 })
+    expect(counts.stone).toEqual({ 'black-opal': 2, 'boulder-opal': 1 })
   })
 
   test('leaves out options that would show nothing', () => {

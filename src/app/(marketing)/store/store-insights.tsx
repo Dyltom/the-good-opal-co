@@ -9,6 +9,8 @@ function activeFilters(query: StoreQuery): Record<string, string> {
   for (const facet of STORE_FACETS) {
     if (query[facet].length > 0) filters[facet] = query[facet].join(',')
   }
+  if (query.priceMin !== undefined) filters.price_min = String(query.priceMin)
+  if (query.priceMax !== undefined) filters.price_max = String(query.priceMax)
   if (query.availability === 'all') filters.availability = 'all'
   if (query.sort !== 'featured') filters.sort = query.sort
   return filters

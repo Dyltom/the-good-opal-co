@@ -45,7 +45,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(actionSource).toContain("href: '/store?stone=black-opal'")
     expect(actionSource).toContain('`/store/${encodeURIComponent(product.slug)}`')
     expect(inputSource).toContain('router.push(suggestion.href)')
-    expect(storeSource).toContain('placeholder="Search by product name or SKU"')
+    expect(storeSource).toContain('placeholder="Name or SKU"')
     expect(storeSource).not.toContain('label="Setting" name="material"')
   })
 
@@ -130,7 +130,7 @@ describe('buying flow UI/UX safeguards', () => {
 
     expect(source).toContain('<aside className="hidden lg:block"')
     expect(source).toContain('<StoreFilterSheet')
-    expect(source).toContain('className="flex-1 lg:hidden"')
+    expect(source).toContain('className="flex-none lg:hidden"')
     expect(source).toContain('inline-flex min-h-11 items-center')
   })
 

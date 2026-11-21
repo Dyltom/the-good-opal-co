@@ -25,6 +25,7 @@ interface ProductCardProduct {
   featured?: boolean
   category?: string
   image?: string
+  hoverImage?: string
   stoneOrigin?: string
   stoneType?: string
   carats?: number
@@ -78,17 +79,22 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                     priority={priority && index < 4}
                     fetchPriority={priority && index < 2 ? 'high' : undefined}
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className={
-                      isAvailable
-                        ? 'object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100'
-                        : 'object-cover opacity-70 grayscale'
-                    }
+                    className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center font-sans text-xs text-charcoal/50">
                     Photo coming soon
                   </div>
                 )}
+                {product.image && product.hoverImage ? (
+                  <Image
+                    src={product.hoverImage}
+                    alt=""
+                    fill
+                    sizes="(max-width: 1024px) 33vw, 25vw"
+                    className="hidden object-cover opacity-0 transition-opacity duration-500 group-focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:hover)]:block"
+                  />
+                ) : null}
               </div>
             </ViewTransition>
           </Link>
@@ -123,7 +129,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
             </>
           ) : (
             <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-charcoal/85 px-3 py-1 font-sans text-xs font-medium text-white">
-              Collected
+              Sold
             </span>
           )}
         </div>
