@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
+import { priceRange, storeQueryParams, storeUrl, type StoreQuery } from './store-query'
 
 const controlClass =
   'flex min-h-11 items-center gap-2 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-sm font-semibold text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2'
@@ -57,6 +58,70 @@ export function StoreFilterSheet({
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+function PriceInput({ name, label, value }: { name: string; label: string; value?: number }) {
+  return (
+    <label className="flex min-w-0 flex-1 flex-col gap-1 font-sans text-xs text-charcoal/65">
+      {label}
+      <span className="relative flex items-center">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 text-sm text-charcoal/50"
+        >
+          $
+        </span>
+        <input
+          name={name}
+          type="number"
+          inputMode="numeric"
+          min={0}
+          step={1}
+          defaultValue={value ?? ''}
+          className="min-h-11 w-full min-w-0 rounded-sm border border-warm-grey/70 bg-cream pl-6 pr-2 font-sans text-base text-charcoal outline-none focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
+        />
+      </span>
+    </label>
+  )
+}
+
+function formText(data: FormData, name: string): string | undefined {
+  const value = data.get(name)
+  return typeof value === 'string' ? value : undefined
+}
+
+export function PriceForm({ query }: { query: StoreQuery }) {
+  const router = useRouter()
+  const kept = Array.from(storeQueryParams(query).entries()).filter(
+    ([name]) => !['price_min', 'price_max', 'page'].includes(name)
+  )
+
+  return (
+    <form
+      key={`${query.priceMin ?? ''}-${query.priceMax ?? ''}`}
+      action="/store"
+      method="get"
+      onSubmit={(event) => {
+        event.preventDefault()
+        const data = new FormData(event.currentTarget)
+        const range = priceRange(formText(data, 'price_min'), formText(data, 'price_max'))
+        router.push(storeUrl({ ...query, ...range, page: 1 }), { scroll: false })
+      }}
+      className="flex items-end gap-2"
+    >
+      {kept.map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      <PriceInput name="price_min" label="Min price" value={query.priceMin} />
+      <PriceInput name="price_max" label="Max price" value={query.priceMax} />
+      <button
+        type="submit"
+        className={cn(controlClass, 'justify-center bg-charcoal text-cream hover:bg-charcoal-dark')}
+      >
+        Apply
+      </button>
+    </form>
   )
 }
 

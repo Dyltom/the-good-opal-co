@@ -46,12 +46,12 @@ export const STORE_MATERIALS = [
 
 type Range = readonly [value: string, label: string, min: number, max: number]
 
-export const STORE_PRICE_RANGES = [
-  ['under-250', 'Under $250', 0, 250],
-  ['250-500', '$250 to $500', 250, 500],
-  ['500-1000', '$500 to $1,000', 500, 1000],
-  ['1000-plus', '$1,000 and over', 1000, Number.POSITIVE_INFINITY],
-] as const satisfies readonly Range[]
+export const STORE_PRICE_PRESETS: readonly { priceMin?: number; priceMax?: number }[] = [
+  { priceMax: 250 },
+  { priceMin: 250, priceMax: 500 },
+  { priceMin: 500, priceMax: 1000 },
+  { priceMin: 1000 },
+]
 export const STORE_CARAT_RANGES = [
   ['under-1', 'Under 1 ct', 0, 1],
   ['1-3', '1 to 3 ct', 1, 3],
@@ -59,14 +59,13 @@ export const STORE_CARAT_RANGES = [
   ['6-plus', '6 ct and over', 6, Number.POSITIVE_INFINITY],
 ] as const satisfies readonly Range[]
 
-export const STORE_FACETS = ['category', 'stone', 'origin', 'price', 'carat'] as const
+export const STORE_FACETS = ['category', 'stone', 'origin', 'carat'] as const
 export type StoreFacet = (typeof STORE_FACETS)[number]
 
 export const STORE_FACET_OPTIONS: Record<StoreFacet, readonly (readonly [string, string, ...unknown[]])[]> = {
   category: STORE_CATEGORIES,
   stone: STORE_STONES,
   origin: STORE_ORIGINS,
-  price: STORE_PRICE_RANGES,
   carat: STORE_CARAT_RANGES,
 }
 
@@ -74,7 +73,6 @@ export const STORE_FACET_LABELS: Record<StoreFacet, string> = {
   category: 'Piece',
   stone: 'Stone',
   origin: 'Origin',
-  price: 'Price',
   carat: 'Carat weight',
 }
 
@@ -95,10 +93,6 @@ function rangeOf(ranges: readonly Range[], value: number): string | undefined {
   return ranges.find(([, , min, max]) => value >= min && value < max)?.[0]
 }
 
-export function priceRangeOf(price: number): string | undefined {
-  return rangeOf(STORE_PRICE_RANGES, price)
-}
-
 export function caratRangeOf(carats: number): string | undefined {
   return rangeOf(STORE_CARAT_RANGES, carats)
 }
@@ -114,8 +108,9 @@ export interface StoreQuery {
   category: string[]
   stone: string[]
   origin: string[]
-  price: string[]
   carat: string[]
+  priceMin?: number
+  priceMax?: number
   availability: 'available' | 'all'
   sort: StoreSort
   page: number
@@ -132,6 +127,34 @@ function listValue(value: string | string[] | undefined, options: readonly (read
   return options.map(([option]) => option).filter((option) => requested.has(option))
 }
 
+const MAX_PRICE = 10_000_000
+
+function wholeDollars(value: string | string[] | undefined): number | undefined {
+  const text = firstValue(value).replace(/[\s$,]/g, '')
+  if (!/^\d+(\.\d+)?$/.test(text)) return undefined
+  const amount = Math.round(Number(text))
+  return amount <= MAX_PRICE ? amount : undefined
+}
+
+export function priceRange(
+  min: string | string[] | undefined,
+  max: string | string[] | undefined
+): Pick<StoreQuery, 'priceMin' | 'priceMax'> {
+  const low = wholeDollars(min)
+  const high = wholeDollars(max)
+  const [from, to] = low !== undefined && high !== undefined && low > high ? [high, low] : [low, high]
+  return { priceMin: from || undefined, priceMax: to }
+}
+
+const aud = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 })
+
+export function priceRangeLabel({ priceMin, priceMax }: Pick<StoreQuery, 'priceMin' | 'priceMax'>): string | undefined {
+  if (priceMin !== undefined && priceMax !== undefined) return `${aud.format(priceMin)}–${aud.format(priceMax)}`
+  if (priceMin !== undefined) return `${aud.format(priceMin)}+`
+  if (priceMax !== undefined) return `Up to ${aud.format(priceMax)}`
+  return undefined
+}
+
 function isOneOf<T extends string>(value: string, values: readonly T[]): value is T {
   return values.includes(value as T)
 }
@@ -145,8 +168,8 @@ export function parseStoreQuery(params: StoreSearchParams): StoreQuery {
     category: listValue(params.category, STORE_CATEGORIES),
     stone: listValue(params.stone, STORE_STONES),
     origin: listValue(params.origin, STORE_ORIGINS),
-    price: listValue(params.price, STORE_PRICE_RANGES),
     carat: listValue(params.carat, STORE_CARAT_RANGES),
+    ...priceRange(params.price_min, params.price_max),
     availability: firstValue(params.availability) === 'all' ? 'all' : 'available',
     sort: isOneOf(rawSort, STORE_SORTS) ? rawSort : 'featured',
     page: Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1,
@@ -162,6 +185,8 @@ export function storeQueryParams(query: StoreQuery, page = query.page): URLSearc
   for (const facet of STORE_FACETS) {
     if (query[facet].length > 0) params.set(facet, query[facet].join(','))
   }
+  if (query.priceMin !== undefined) params.set('price_min', String(query.priceMin))
+  if (query.priceMax !== undefined) params.set('price_max', String(query.priceMax))
   if (query.availability === 'all') params.set('availability', 'all')
   if (query.sort !== 'featured') params.set('sort', query.sort)
   if (page > 1) params.set('page', String(page))
@@ -180,8 +205,16 @@ export function toggleFacetValue(query: StoreQuery, facet: StoreFacet, value: st
   return { ...query, [facet]: STORE_FACET_OPTIONS[facet].map(([option]) => option).filter((option) => next.includes(option)), page: 1 }
 }
 
+export function hasPriceRange(query: StoreQuery): boolean {
+  return query.priceMin !== undefined || query.priceMax !== undefined
+}
+
 export function activeFilterCount(query: StoreQuery): number {
-  return STORE_FACETS.reduce((total, facet) => total + query[facet].length, 0) + (query.availability === 'all' ? 1 : 0)
+  return (
+    STORE_FACETS.reduce((total, facet) => total + query[facet].length, 0) +
+    (hasPriceRange(query) ? 1 : 0) +
+    (query.availability === 'all' ? 1 : 0)
+  )
 }
 
 export interface StoreListing {
@@ -206,8 +239,6 @@ function facetValue(item: StoreListing, facet: StoreFacet): string | undefined {
       return item.stoneType
     case 'origin':
       return item.stoneOrigin
-    case 'price':
-      return priceRangeOf(item.price)
     case 'carat':
       return item.carats === undefined ? undefined : caratRangeOf(item.carats)
   }
@@ -215,6 +246,8 @@ function facetValue(item: StoreListing, facet: StoreFacet): string | undefined {
 
 function inScope(item: StoreListing, query: StoreQuery): boolean {
   if (query.availability === 'available' && item.stock <= 0) return false
+  if (query.priceMin !== undefined && item.price < query.priceMin) return false
+  if (query.priceMax !== undefined && item.price > query.priceMax) return false
   if (!query.search) return true
   const term = query.search.toLowerCase()
   return item.name.toLowerCase().includes(term) || Boolean(item.sku?.toLowerCase().includes(term))
@@ -248,7 +281,7 @@ export function findStoreListings(items: StoreListing[], query: StoreQuery): Sto
 export type StoreFacetCounts = Record<StoreFacet, Record<string, number>>
 
 export function countStoreFacets(items: StoreListing[], query: StoreQuery): StoreFacetCounts {
-  const counts: StoreFacetCounts = { category: {}, stone: {}, origin: {}, price: {}, carat: {} }
+  const counts: StoreFacetCounts = { category: {}, stone: {}, origin: {}, carat: {} }
   for (const item of items) {
     if (!inScope(item, query)) continue
     for (const facet of STORE_FACETS) {

@@ -16,7 +16,7 @@ async function firstAvailableProduct(page: Page) {
 test('catalog or intentional empty state renders', async ({ page }) => {
   const assertNoErrors = failOnRuntimeErrors(page)
   await page.goto('/store')
-  const countText = page.getByText(/Showing \d+–\d+ of \d+ pieces/)
+  const countText = page.getByText(/^(Showing \d+–\d+ of )?\d+ pieces?$/).filter({ visible: true })
   const emptyText = page.getByText('Nothing matches yet.')
   await expect(countText.or(emptyText)).toBeVisible()
   assertNoErrors()
