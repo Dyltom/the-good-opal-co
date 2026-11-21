@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 
 interface ReviewsSectionProps {
   productId?: number
-  eyebrow: string
+  eyebrow?: string
   title: string
   className?: string
 }
@@ -32,7 +32,9 @@ export async function ReviewsSection({ productId, eyebrow, title, className }: R
 
   return (
     <section aria-labelledby="customer-reviews" className={className}>
-      <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-accent">{eyebrow}</p>
+      {eyebrow ? (
+        <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-accent">{eyebrow}</p>
+      ) : null}
       <h2 id="customer-reviews" className="mt-4 font-serif text-3xl font-medium text-ink sm:text-4xl">
         {title}
       </h2>

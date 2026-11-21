@@ -168,15 +168,13 @@ describe('buying flow UI/UX safeguards', () => {
   })
 
   test('mobile decorative hero content stays bounded within the viewport', () => {
-    const productHeroSource = read('src/components/sections/HomeHero.tsx')
+    const wallSource = read('src/components/sections/LivingWall.tsx')
     const homeSource = read('src/app/(marketing)/page.tsx')
     const blogSource = read('src/app/(marketing)/blog/page.tsx')
 
-    expect(productHeroSource).toContain('overflow-hidden bg-plinth')
-    expect(productHeroSource).toContain('sizes="(max-width: 1024px) 100vw, 56vw"')
-    expect(productHeroSource).toContain('sm:grid-cols-2 lg:grid-cols-4')
-    expect(homeSource).toContain('grid gap-px overflow-hidden')
-    expect(homeSource).toContain('aspect-[4/3]')
+    expect(wallSource).toContain('overflow-hidden bg-plinth')
+    expect(wallSource).toContain('grid grid-cols-6')
+    expect(wallSource).toContain("'max-[760px]:hidden'")
     expect(homeSource).not.toContain('hidden sm:block absolute left-1/4 top-0')
     expect(homeSource).not.toContain('hidden sm:block absolute top-1/2')
     expect(homeSource).not.toContain('hidden sm:block absolute -top-40 -right-40')
@@ -187,11 +185,10 @@ describe('buying flow UI/UX safeguards', () => {
   })
 
   test('homepage hero keeps the fairytale tone without sales-template chrome', () => {
-    const source = read('src/components/sections/HomeHero.tsx')
+    const source = read('src/components/sections/LivingWall.tsx')
 
-    expect(source).toContain('Australian opals, chosen by hand.')
-    expect(source).toContain('Selected one stone at a time.')
-    expect(source).toContain('Shop one-of-a-kind pieces')
+    expect(source).toContain('Australian opals, <i>chosen by hand.</i>')
+    expect(source).toContain('Enter the shop')
     expect(source).not.toContain('Limited Time: Up to')
     expect(source).not.toContain('Sparkles')
     expect(source).not.toContain('text-gradient-prismatic')
@@ -246,8 +243,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage collection sections use gallery restraint instead of template glow', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('Choose by what matters to you.')
-    expect(source).toContain('One stone, one piece.')
+    expect(source).toContain('Walk the <i>collection</i>')
     expect(source).not.toContain('text-gradient-prismatic')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('Sparkles')
@@ -294,11 +290,11 @@ describe('buying flow UI/UX safeguards', () => {
   })
 
   test('hero relies on product-led editorial cues instead of generated atmosphere', () => {
-    const source = read('src/components/sections/HomeHero.tsx')
+    const source = read('src/app/(marketing)/page.tsx')
 
     expect(source).toContain("collection: 'products'")
-    expect(source).toContain('Secure checkout by Stripe')
-    expect(source).toContain('Photographed individually, origin disclosed')
+    expect(source).toContain('Stripe: card, Apple Pay and Klarna.')
+    expect(source).toContain('photographed individually')
     expect(source).not.toContain('scrollY')
     expect(source).not.toContain('blur-3xl')
     expect(source).not.toContain('Quick Stats')
@@ -323,8 +319,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage language avoids leftover template phrases in feature sections', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('Featured pieces')
-    expect(source).toContain('Begin with the stone, not a template.')
+    expect(source).toContain('Design your own ring')
+    expect(source).toContain('Learn to cut opal')
     expect(source).not.toContain('Where dreams become reality.')
     expect(source).not.toContain(
       'Fresh from our workshop - discover new masterpieces crafted with passion'
