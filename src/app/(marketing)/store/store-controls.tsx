@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, startTransition, use, useRef, useState, useTransition, type ReactNode } from 'react'
+import { addTransitionType, createContext, startTransition, use, useRef, useState, useTransition, type ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -38,7 +38,10 @@ export function StoreView({
       return
     }
     document.cookie = `${STORE_VIEW_COOKIES[key]}=${next[key] ? '1' : '0'}; path=/store; max-age=31536000; samesite=lax`
-    startTransition(() => setView(next))
+    startTransition(() => {
+      addTransitionType('store-view')
+      setView(next)
+    })
   }
 
   return (

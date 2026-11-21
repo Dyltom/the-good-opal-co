@@ -536,7 +536,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
               className="grid grid-cols-2 gap-x-2 gap-y-5 px-gut pt-3 group-data-[three]/view:grid-cols-3 group-data-[three]/view:gap-x-[5px] group-data-[three]/view:gap-y-3.5 sm:grid-cols-[repeat(auto-fill,minmax(196px,1fr))] sm:gap-x-3 sm:gap-y-[22px] sm:group-data-[three]/view:grid-cols-3 sm:group-data-[three]/view:gap-x-3 sm:group-data-[three]/view:gap-y-[22px] lg:px-0 lg:pt-0"
             >
               {products.map((product, index) => (
-                <ViewTransition key={product.id} default="store-card">
+                <ViewTransition key={product.id} default="store-card" update={{ 'store-view': 'store-card', default: 'none' }}>
                   <li>
                     <ProductCard product={product} index={index} priority />
                   </li>
