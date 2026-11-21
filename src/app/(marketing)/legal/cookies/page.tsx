@@ -169,7 +169,7 @@ export default function CookiePolicyPage() {
                 Change your choice
               </h2>
               <p className="mt-3">
-                Use “Cookie Settings” in the footer to review your choice. You can also clear this
+                Use “Cookie settings” in the footer to review your choice. You can also clear this
                 site&apos;s cookies and local storage in your browser. Blocking essential storage
                 may prevent the cart from working.
               </p>

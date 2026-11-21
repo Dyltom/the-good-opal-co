@@ -130,7 +130,7 @@ export function SiteNavigation() {
               {item.label}
             </Link>
           ))}
-          <Link href="/contact" onClick={close} className="pt-3 text-[13.5px] text-ink-2">
+          <Link href="/contact" onClick={close} className="flex min-h-11 items-center text-[13.5px] text-ink-2">
             Need help choosing? Talk to us
           </Link>
         </nav>

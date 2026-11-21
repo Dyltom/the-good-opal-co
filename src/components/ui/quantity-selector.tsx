@@ -1,5 +1,6 @@
 'use client'
 
+import { Minus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface QuantitySelectorProps {
@@ -10,12 +11,6 @@ interface QuantitySelectorProps {
   disabled?: boolean
 }
 
-/**
- * Quantity Selector Component
- *
- * Reusable component for selecting item quantity with +/- buttons
- * Includes ARIA labels for accessibility
- */
 export function QuantitySelector({
   quantity,
   onQuantityChange,
@@ -48,12 +43,12 @@ export function QuantitySelector({
         type="button"
         size="sm"
         variant="ghost"
-        className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
+        className="h-11 w-11 p-0"
         onClick={handleDecrease}
         disabled={disabled || quantity <= min}
         aria-label="Decrease quantity"
       >
-        −
+        <Minus className="h-4 w-4" aria-hidden="true" />
       </Button>
       <input
         type="number"
@@ -62,19 +57,19 @@ export function QuantitySelector({
         min={min}
         max={max}
         disabled={disabled}
-        className="w-16 text-center border rounded-sm py-1 px-2"
+        className="h-11 w-14 rounded-sm border border-rule-2 bg-transparent px-2 text-center text-sm text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
         aria-label={`Quantity: ${quantity}`}
       />
       <Button
         type="button"
         size="sm"
         variant="ghost"
-        className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
+        className="h-11 w-11 p-0"
         onClick={handleIncrease}
         disabled={disabled || quantity >= max}
         aria-label="Increase quantity"
       >
-        +
+        <Plus className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   )
