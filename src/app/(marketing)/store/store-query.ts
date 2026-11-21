@@ -250,6 +250,7 @@ export interface StoreListing {
   stoneOrigin?: string
   price: number
   stock: number
+  reserved?: boolean
   featured: boolean
   createdAt: string
   carats?: number
@@ -269,7 +270,7 @@ function facetValue(item: StoreListing, facet: StoreFacet): string | undefined {
 }
 
 function inScope(item: StoreListing, query: StoreQuery): boolean {
-  if (query.availability === 'available' && item.stock <= 0) return false
+  if (query.availability === 'available' && item.stock <= 0 && !item.reserved) return false
   if (query.priceMin !== undefined && item.price < query.priceMin) return false
   if (query.priceMax !== undefined && item.price > query.priceMax) return false
   if (!query.search) return true

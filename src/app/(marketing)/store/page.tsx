@@ -5,6 +5,7 @@ import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { productGalleryUrls } from '@/lib/product-gallery'
+import { reservedProductIds } from '@/lib/inventory-reservations'
 import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
@@ -142,7 +143,7 @@ function toStoreListing(value: unknown): StoreListing | undefined {
 export default async function StorePage({ searchParams }: StorePageProps) {
   const query = parseStoreQuery(await searchParams)
   const payload = await getPayload()
-  const catalogue = await payload.find({
+  const [catalogue, reservedIds] = await Promise.all([payload.find({
     collection: 'products',
     where: LISTED_PRODUCTS,
     pagination: false,
@@ -160,10 +161,11 @@ export default async function StorePage({ searchParams }: StorePageProps) {
       weight: true,
       weightUnit: true,
     },
-  })
+  }), reservedProductIds()])
   const listings = catalogue.docs
     .map(toStoreListing)
     .filter((listing): listing is StoreListing => listing !== undefined)
+    .map((listing) => ({ ...listing, reserved: listing.stock <= 0 && reservedIds.has(listing.id) }))
   const matching = findStoreListings(listings, query)
   const lastPage = Math.max(1, Math.ceil(matching.length / PRODUCTS_PER_PAGE))
 
@@ -201,7 +203,10 @@ export default async function StorePage({ searchParams }: StorePageProps) {
       .filter((product): product is StoreProduct => product !== undefined)
       .map((product) => [product.id, product])
   )
-  const products = shownIds.flatMap((id) => byId.get(id) ?? [])
+  const products = shownIds.flatMap((id) => {
+    const product = byId.get(id)
+    return product ? [{ ...product, reserved: product.stock <= 0 && reservedIds.has(id) }] : []
+  })
 
   return (
     <MarketingShell>
@@ -223,7 +228,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         totalDocs={matching.length}
         facetCounts={countStoreFacets(listings, query)}
         priceCounts={countPriceBands(listings, query)}
-        soldCount={listings.filter((listing) => listing.stock <= 0).length}
+        soldCount={listings.filter((listing) => listing.stock <= 0 && !listing.reserved).length}
       />
       <StoreInsights query={query} results={matching.length} />
     </MarketingShell>
