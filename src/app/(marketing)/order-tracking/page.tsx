@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Container } from '@/components/layout'
-import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { OrderTrackingForm } from './tracking-form'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import Link from 'next/link'
@@ -14,34 +13,28 @@ export const metadata: Metadata = {
 export default function OrderTrackingPage() {
   return (
     <MarketingShell>
-      <Container className="py-12 sm:py-16">
-        <Breadcrumb
-          items={[{ label: 'Home', href: '/' }, { label: 'Track your order' }]}
-          className="mb-8"
-        />
-
-        <div className="mx-auto max-w-lg">
-          <PageHeader
-            title="Track your order"
-            description="Enter the order number and email from your confirmation message."
-            align="center"
-            className="mb-8"
-            titleClassName="text-3xl sm:text-4xl lg:text-5xl"
-            descriptionClassName="text-base"
-          />
-
-          <OrderTrackingForm />
-          <div className="mt-12 text-center">
-            <p className="mb-2 text-sm text-ink-2">Can&apos;t find your order?</p>
-            <p className="text-sm text-ink-2">
-              Send the details through our{' '}
+      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+        <div className="grid gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-[clamp(24px,4vw,72px)]">
+          <div>
+            <PageHeader
+              title="Track your order"
+              titleClassName="text-[2.25rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4vw,3.5rem)]"
+              description="Enter the order number and email from your confirmation message."
+              descriptionClassName="mt-3 text-[15px] leading-[1.6]"
+            />
+            <p className="mt-6 border-t border-rule pt-4 text-sm leading-6 text-ink-2">
+              Can&apos;t find your order? Send the details through our{' '}
               <Link
                 href="/contact?subject=order"
-                className="text-accent hover:underline"
+                className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
               >
                 order help form
               </Link>
+              .
             </p>
+          </div>
+          <div>
+            <OrderTrackingForm />
           </div>
         </div>
       </Container>

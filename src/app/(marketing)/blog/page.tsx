@@ -4,6 +4,7 @@ import { BlogCard } from '@/components/blog/BlogCard'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
+import { Button } from '@/components/ui/button'
 import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -73,32 +74,29 @@ export default async function BlogPage() {
           { name: 'Opal notes', url: '/blog' },
         ]}
       />
-      <Container className="py-10 sm:py-12 lg:py-14">
+      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
         <PageHeader
           title="Learn about opal before you choose."
           description="Straightforward guides on stone types, buying questions, jewellery care, and the details worth checking in a listing."
         />
 
         {cards.length > 0 ? (
-          <div className="mt-10 grid gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid gap-x-[clamp(20px,2.4vw,40px)] gap-y-10 md:grid-cols-2 lg:grid-cols-3">
             {cards.map((post) => (
               <BlogCard key={post.slug} post={post} />
             ))}
           </div>
         ) : (
-          <div className="mt-16 border-y border-rule py-14">
-            <h2 className="font-serif text-3xl font-medium text-ink">
-              No articles published yet.
-            </h2>
-            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-ink-2">
+          <div className="mt-8 border-t border-rule pt-6">
+            <h2>No articles published yet.</h2>
+            <p className="mt-2 max-w-[65ch] text-sm leading-6 text-ink-2">
               The store and product notes remain available while the first guides are prepared.
             </p>
-            <Link
-              href="/store"
-              className="mt-6 inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
-            >
-              Browse available pieces <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
+            <Button asChild variant="ghost" className="mt-5">
+              <Link href="/store">
+                Browse available pieces <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
         )}
       </Container>

@@ -94,11 +94,8 @@ export function ContactForm({
   if (sent) {
     return (
       <div ref={sentRef} tabIndex={-1} role="status" className="py-6 text-center outline-none">
-        <CheckCircle2
-          className="mx-auto h-10 w-10 text-accent"
-          aria-hidden="true"
-        />
-        <h3 className="mt-4 font-serif text-3xl font-medium text-ink">Enquiry received</h3>
+        <CheckCircle2 className="mx-auto h-8 w-8 text-success" aria-hidden="true" />
+        <h3 className="mt-4 text-[1.75rem] leading-[1.1]">Enquiry received</h3>
         <p className="mx-auto mt-3 max-w-md font-sans leading-7 text-ink-2">
           Thank you. We will reply to <strong className="text-ink">{sent.email}</strong>.
           {sent.delayed
@@ -106,7 +103,7 @@ export function ContactForm({
             : ' A confirmation is on its way to your inbox.'}
         </p>
         <p className="mt-4 font-sans text-sm text-ink-2">
-          Reference <span className="font-semibold text-ink">{sent.reference}</span>
+          Reference <span className="font-medium text-ink">{sent.reference}</span>
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild size="lg">
@@ -130,7 +127,7 @@ export function ContactForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="name">
-            Name <span className="text-red-600">*</span>
+            Name <span className="text-destructive">*</span>
           </Label>
           <Input
             id="name"
@@ -141,12 +138,12 @@ export function ContactForm({
             aria-invalid={Boolean(errors.name)}
             required
           />
-          {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+          {errors.name && <p className="mt-1 text-sm text-destructive">{errors.name.message}</p>}
         </div>
 
         <div>
           <Label htmlFor="email">
-            Email <span className="text-red-600">*</span>
+            Email <span className="text-destructive">*</span>
           </Label>
           <Input
             id="email"
@@ -158,13 +155,13 @@ export function ContactForm({
             aria-invalid={Boolean(errors.email)}
             required
           />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>}
         </div>
       </div>
 
       <div>
         <Label htmlFor="inquiryType">
-          What can we help with? <span className="text-red-600">*</span>
+          What can we help with? <span className="text-destructive">*</span>
         </Label>
         <select
           id="inquiryType"
@@ -180,7 +177,7 @@ export function ContactForm({
           ))}
         </select>
         {errors.inquiryType && (
-          <p className="mt-1 text-sm text-red-600">Please choose a topic.</p>
+          <p className="mt-1 text-sm text-destructive">Please choose a topic.</p>
         )}
       </div>
 
@@ -197,7 +194,7 @@ export function ContactForm({
             className="mt-1"
             disabled={isSubmitting}
           />
-          {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
+          {errors.phone && <p className="mt-1 text-sm text-destructive">{errors.phone.message}</p>}
         </div>
 
         {!isCourseIntent ? (
@@ -213,7 +210,7 @@ export function ContactForm({
               disabled={isSubmitting}
             />
             {errors.orderNumber && (
-              <p className="mt-1 text-sm text-red-600">{errors.orderNumber.message}</p>
+              <p className="mt-1 text-sm text-destructive">{errors.orderNumber.message}</p>
             )}
           </div>
         ) : null}
@@ -268,7 +265,7 @@ export function ContactForm({
 
       <div>
         <Label htmlFor="message">
-          Message <span className="text-red-600">*</span>
+          Message <span className="text-destructive">*</span>
         </Label>
         <Textarea
           id="message"
@@ -284,13 +281,15 @@ export function ContactForm({
           aria-invalid={Boolean(errors.message)}
           required
         />
-        {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>}
+        {errors.message && (
+          <p className="mt-1 text-sm text-destructive">{errors.message.message}</p>
+        )}
       </div>
 
       {submitError ? (
         <p
           role="alert"
-          className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="border-l-2 border-destructive bg-plinth px-4 py-3 text-sm text-destructive"
         >
           {submitError}
         </p>

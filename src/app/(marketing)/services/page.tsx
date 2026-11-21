@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
-import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const metadata: Metadata = {
   title: 'Custom Opal Jewellery | The Good Opal Co',
@@ -47,154 +46,143 @@ const goodStartingPoints = [
 export default function ServicesPage() {
   return (
     <MarketingShell>
-      <section className="grid lg:min-h-[34rem] lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="flex items-center px-5 py-12 sm:px-10 sm:py-14 lg:px-[clamp(3rem,6vw,6.5rem)] lg:py-16">
-          <div className="max-w-xl">
-            <Eyebrow className="mb-4">Custom opal jewellery</Eyebrow>
-            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.25rem,4vw,4rem)] font-medium leading-[1.02]">
-              Begin with the stone.
+      <Container className="pb-sec">
+        <header className="grid items-center gap-[18px] pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
+          <div>
+            <h1 className="max-w-[12ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
+              Begin with <i>the stone.</i>
             </h1>
-            <p className="mt-5 max-w-[58ch] text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
+            <p className="mt-3 max-w-[50ch] text-[15px] leading-[1.6] text-ink-2 md:mt-5 md:text-base">
               Bring an idea, a meaningful occasion, or simply a colour you love. We&apos;ll help
               shape a one-of-a-kind piece around an Australian opal.
             </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="w-full bg-ink bg-none text-bg hover:bg-ink sm:w-auto"
-              >
-                <Link href="/services/design">Design a ring in 3D</Link>
+            <div className="mt-5 flex flex-wrap gap-3 md:mt-6">
+              <Button asChild>
+                <Link href="/services/design">
+                  Design a ring in 3D <ArrowRight aria-hidden="true" />
+                </Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="w-full sm:w-auto">
+              <Button asChild variant="ghost">
                 <Link href="/contact?subject=custom-design">Start with an enquiry</Link>
               </Button>
             </div>
-            <p className="mt-4 text-sm leading-6 text-ink-2">
+            <p className="mt-3 text-[13px] leading-5 text-ink-3">
               No finished brief required. We&apos;ll ask the practical questions.
             </p>
           </div>
-        </div>
-
-        <div className="relative min-h-[22rem] overflow-hidden bg-ink sm:min-h-[26rem] lg:min-h-full">
-          <Image
-            src="/images/customs/custom-2.jpg"
-            alt="Four Australian opals viewed together in natural light"
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 54vw"
-          />
-          <div className="absolute bottom-0 left-0 max-w-xs bg-bg p-5 sm:p-7">
-            <p className="font-serif text-2xl leading-tight">Every design starts differently.</p>
-            <p className="mt-2 text-sm leading-6 text-ink-2">
-              Stone first, story first, or budget first. All are useful starting points.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-rule bg-bg py-14 sm:py-20" id="how-it-works">
-        <Container>
-          <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
-            <div>
-              <Eyebrow>The process</Eyebrow>
-              <h2 className="mt-3 max-w-[16ch] text-balance font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
-                Clear decisions, one at a time.
-              </h2>
-              <p className="mt-5 max-w-md leading-7 text-ink-2">
-                Custom work is quoted after we understand the stone, design, material, and timing.
-                Nothing moves ahead until the scope is clear.
-              </p>
-            </div>
-
-            <ol className="divide-y divide-rule border-y border-rule">
-              {process.map((step) => (
-                <li
-                  key={step.number}
-                  className="grid gap-3 py-6 sm:grid-cols-[4rem_0.7fr_1.3fr] sm:gap-6 sm:py-7"
-                >
-                  <span className="text-sm font-medium text-accent">
-                    {step.number}
-                  </span>
-                  <h3 className="font-serif text-2xl leading-tight">{step.title}</h3>
-                  <p className="max-w-[58ch] text-sm leading-6 text-ink-2 sm:text-base sm:leading-7">
-                    {step.copy}
-                  </p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </Container>
-      </section>
-
-      <section className="py-14 sm:py-20">
-        <Container>
-          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-            <div className="relative aspect-[4/3] overflow-hidden bg-plinth">
+          <figure>
+            <div className="relative aspect-[4/3] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(260px,27vw,400px)]">
               <Image
-                src="/images/customs/custom-1.jpg"
-                alt="Three heart-shaped Australian opals considered for a personal piece"
+                src="/images/customs/custom-2.jpg"
+                alt="Four Australian opals viewed together in natural light"
                 fill
+                priority
                 className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 52vw"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-            <div>
-              <Eyebrow>Before you enquire</Eyebrow>
-              <h2 className="mt-3 font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
-                What helps us guide you
-              </h2>
-              <ul className="mt-6 space-y-3">
-                {goodStartingPoints.map((item) => (
-                  <li key={item} className="flex gap-3 leading-7 text-ink-2">
-                    <Check
-                      aria-hidden="true"
-                      className="mt-1 h-5 w-5 shrink-0 text-accent"
-                    />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-6 text-sm leading-6 text-ink-2">
-                Unsure about any of these? Leave the field blank. An enquiry is a conversation, not
-                a commitment.
-              </p>
-            </div>
-          </div>
-        </Container>
-      </section>
+            <figcaption className="mt-3 text-sm leading-6 text-ink-2">
+              <span className="font-serif text-base text-ink">
+                Every design starts differently.
+              </span>{' '}
+              Stone first, story first, or budget first. All are useful starting points.
+            </figcaption>
+          </figure>
+        </header>
 
-      <section className="bg-ink py-14 text-bg sm:py-16">
-        <Container>
-          <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
-            <div>
-              <Eyebrow className="text-bg">Ready when you are</Eyebrow>
-              <h2 className="mt-3 max-w-[14ch] font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
-                Tell us what you have in mind.
-              </h2>
-              <p className="mt-4 max-w-xl leading-7 text-bg/70">
-                Sketch a ring in the 3D studio, or send an enquiry with your stone, budget, and
-                timing. Either way, you&apos;ll get a useful first reply.
-              </p>
-            </div>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <Link
-                href="/services/design"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-bg px-6 font-sans text-sm font-semibold text-ink transition-colors hover:bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-              >
-                Open the design studio <ArrowRight aria-hidden="true" className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/contact?subject=custom-design"
-                className="inline-flex min-h-12 items-center justify-center rounded-sm px-4 font-sans text-sm font-semibold text-bg/80 underline-offset-4 transition-colors hover:text-bg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-              >
-                Start with an enquiry
-              </Link>
-            </div>
+        <section
+          id="how-it-works"
+          aria-labelledby="process-heading"
+          className="grid gap-6 pt-14 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(48px,5.5vw,84px)]"
+        >
+          <div>
+            <h2
+              id="process-heading"
+              className="max-w-[16ch] text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]"
+            >
+              Clear decisions, <i>one at a time.</i>
+            </h2>
+            <p className="mt-4 max-w-[46ch] text-[15px] leading-[1.65] text-ink-2">
+              Custom work is quoted after we understand the stone, design, material, and timing.
+              Nothing moves ahead until the scope is clear.
+            </p>
           </div>
-        </Container>
-      </section>
+          <ol className="border-t border-rule-2">
+            {process.map((step) => (
+              <li
+                key={step.number}
+                className="grid gap-1.5 border-b border-rule py-4 sm:grid-cols-[2.5rem_minmax(0,0.75fr)_minmax(0,1.25fr)] sm:gap-5 sm:py-5"
+              >
+                <span className="pt-1 text-[13px] tabular-nums text-ink-3">{step.number}</span>
+                <h3 className="text-[1.375rem] leading-[1.15]">{step.title}</h3>
+                <p className="max-w-[58ch] text-sm leading-6 text-ink-2">{step.copy}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section
+          aria-labelledby="guide-heading"
+          className="grid items-center gap-6 pt-14 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(48px,5.5vw,84px)]"
+        >
+          <div className="relative aspect-[4/3] overflow-hidden bg-plinth">
+            <Image
+              src="/images/customs/custom-1.jpg"
+              alt="Three heart-shaped Australian opals considered for a personal piece"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 52vw"
+            />
+          </div>
+          <div>
+            <h2
+              id="guide-heading"
+              className="text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]"
+            >
+              What helps us <i>guide you</i>
+            </h2>
+            <ul className="mt-5 border-t border-rule-2">
+              {goodStartingPoints.map((item) => (
+                <li key={item} className="border-b border-rule py-3 text-[15px] leading-6 text-ink">
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 max-w-[52ch] text-sm leading-6 text-ink-2">
+              Unsure about any of these? Leave the field blank. An enquiry is a conversation, not a
+              commitment.
+            </p>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="start-heading"
+          className="mt-14 grid items-end gap-6 bg-plinth p-6 sm:p-8 md:mt-[clamp(48px,5.5vw,84px)] md:grid-cols-[minmax(0,1fr)_auto] md:gap-10 md:p-10"
+        >
+          <div>
+            <h2
+              id="start-heading"
+              className="max-w-[16ch] text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]"
+            >
+              Tell us what you <i>have in mind.</i>
+            </h2>
+            <p className="mt-3 max-w-[56ch] text-[15px] leading-[1.65] text-ink-2">
+              Sketch a ring in the 3D studio, or send an enquiry with your stone, budget, and
+              timing. Either way, you&apos;ll get a useful first reply.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/services/design">
+                Open the design studio <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button asChild variant="ghost">
+              <Link href="/contact?subject=custom-design">Start with an enquiry</Link>
+            </Button>
+          </div>
+        </section>
+      </Container>
     </MarketingShell>
   )
 }

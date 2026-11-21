@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
+import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { submitNewsletterUnsubscribe } from '../actions'
@@ -26,24 +26,24 @@ export default async function UnsubscribePage({ searchParams }: UnsubscribePageP
 
   return (
     <MarketingShell>
-      <Section padding="xl">
-        <Container>
-          <div className="mx-auto max-w-xl border border-rule bg-bg p-8 text-center shadow-sm sm:p-12">
-            <h1 className="font-serif text-4xl font-semibold text-ink">{title}</h1>
-            <p className="mt-4 font-sans text-sm leading-6 text-ink-2">{message}</p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              {!status && token ? (
-                <form action={submitNewsletterUnsubscribe.bind(null, token)}>
-                  <Button type="submit">Unsubscribe</Button>
-                </form>
-              ) : null}
-              <Button asChild variant="ghost">
-                <Link href="/">Return home</Link>
-              </Button>
-            </div>
+      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+        <div className="max-w-[60ch]">
+          <h1 className="text-[2.25rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4vw,3.5rem)]">
+            {title}
+          </h1>
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-[1.6] text-ink-2">{message}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {!status && token ? (
+              <form action={submitNewsletterUnsubscribe.bind(null, token)}>
+                <Button type="submit">Unsubscribe</Button>
+              </form>
+            ) : null}
+            <Button asChild variant="ghost">
+              <Link href="/">Return home</Link>
+            </Button>
           </div>
-        </Container>
-      </Section>
+        </div>
+      </Container>
     </MarketingShell>
   )
 }

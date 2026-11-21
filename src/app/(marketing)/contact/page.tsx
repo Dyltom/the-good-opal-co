@@ -3,15 +3,12 @@ import Link from 'next/link'
 import { ArrowUpRight, Mail } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
-import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { CONTACT_INFO } from '@/lib/constants/contact'
 import { ContactForm } from './contact-form'
-import { Eyebrow } from '@/components/ui/eyebrow'
 import {
   cleanContactContext,
   cleanContactMessage,
   cleanDesignConfiguration,
-  inquiryLabels,
   resolveInquiryType,
 } from './contact-intent'
 
@@ -37,72 +34,59 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   return (
     <MarketingShell>
-      <section className="border-b border-rule">
-        <Container className="pb-8 pt-6 sm:pb-10 sm:pt-8 lg:pb-12">
-          <Breadcrumb
-            items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
-            className="mb-6 sm:mb-8"
-          />
-          <div className="grid gap-6 lg:grid-cols-2 lg:items-end lg:gap-16">
-            <div>
-              <Eyebrow>{inquiryLabels[initialInquiry]}</Eyebrow>
-              <h1 className="mt-4 text-balance font-serif text-[clamp(2.25rem,4vw,4rem)] font-medium leading-[1.02]">
-                Let&apos;s talk opals.
-              </h1>
-            </div>
-            <p className="max-w-xl text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
-              {isCustomIntent
-                ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
-                : isCourseIntent
-                  ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
-                  : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest topic and share what matters.'}
-            </p>
-          </div>
-        </Container>
-      </section>
+      <Container className="pb-sec">
+        <header className="grid gap-3 pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-end md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
+          <h1 className="text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
+            Let&apos;s talk <i>opals.</i>
+          </h1>
+          <p className="max-w-[52ch] text-[15px] leading-[1.6] text-ink-2 md:text-base">
+            {isCustomIntent
+              ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
+              : isCourseIntent
+                ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
+                : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest topic and share what matters.'}
+          </p>
+        </header>
 
-      <Container className="py-10 sm:py-12 lg:py-14">
-        <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
-          <aside className="lg:sticky lg:top-28 lg:self-start">
-            <h2 className="font-serif text-3xl">
+        <div className="mt-8 grid gap-10 border-t border-rule-2 pt-6 md:mt-[clamp(32px,3.5vw,56px)] lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:gap-[clamp(32px,4vw,72px)]">
+          <aside className="lg:sticky lg:top-[calc(theme(spacing.mast)+24px)] lg:self-start">
+            <h2 className="text-[1.75rem] leading-[1.1]">
               {isCourseIntent ? 'What helps us reply' : 'A useful first message'}
             </h2>
-            <p className="mt-4 max-w-md leading-7 text-ink-2">
+            <p className="mt-3 max-w-[48ch] text-sm leading-6 text-ink-2">
               {isCourseIntent
                 ? 'Share your current experience, the cutting method you want to learn, and any tools you already use. Leave anything unknown blank.'
                 : 'Include a product name or link, your approximate budget, and any date that matters. Leave anything unknown blank.'}
             </p>
 
-            <div className="mt-9 border-y border-rule py-6">
-              <div className="flex gap-3">
-                <Mail aria-hidden="true" className="mt-1 h-5 w-5 text-accent" />
-                <div>
-                  <p className="text-sm text-ink-2">Prefer email?</p>
-                  <a
-                    className="mt-1 inline-block font-medium underline decoration-ink-3 underline-offset-4 hover:decoration-ink"
-                    href={`mailto:${CONTACT_INFO.email}`}
-                  >
-                    {CONTACT_INFO.email}
-                  </a>
-                </div>
+            <div className="mt-6 flex gap-3 border-y border-rule py-5">
+              <Mail aria-hidden="true" className="mt-0.5 h-4 w-4 text-ink-3" />
+              <div>
+                <p className="text-[13px] text-ink-3">Prefer email?</p>
+                <a
+                  className="mt-1 inline-block text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
+                  href={`mailto:${CONTACT_INFO.email}`}
+                >
+                  {CONTACT_INFO.email}
+                </a>
               </div>
             </div>
 
-            <nav aria-label="Helpful links" className="mt-7 space-y-3 text-sm">
+            <nav aria-label="Helpful links" className="mt-5 text-sm">
               <Link
-                className="flex max-w-xs items-center justify-between border-b border-rule py-2 hover:text-accent"
+                className="flex min-h-11 max-w-xs items-center justify-between border-b border-rule text-ink-2 transition-colors hover:text-ink"
                 href="/faq"
               >
                 Opal and order questions <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
               </Link>
               <Link
-                className="flex max-w-xs items-center justify-between border-b border-rule py-2 hover:text-accent"
+                className="flex min-h-11 max-w-xs items-center justify-between border-b border-rule text-ink-2 transition-colors hover:text-ink"
                 href="/shipping"
               >
                 Shipping information <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
               </Link>
               <Link
-                className="flex max-w-xs items-center justify-between border-b border-rule py-2 hover:text-accent"
+                className="flex min-h-11 max-w-xs items-center justify-between border-b border-rule text-ink-2 transition-colors hover:text-ink"
                 href="/returns"
               >
                 Returns information <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
@@ -110,15 +94,12 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             </nav>
           </aside>
 
-          <section
-            aria-labelledby="contact-form-heading"
-            className="border border-rule bg-bg p-5 sm:p-8 lg:p-10"
-          >
-            <div className="mb-8 border-b border-rule pb-6">
-              <h2 id="contact-form-heading" className="font-serif text-3xl sm:text-4xl">
+          <section aria-labelledby="contact-form-heading" className="bg-plinth p-5 sm:p-8">
+            <div className="mb-6 border-b border-rule pb-5">
+              <h2 id="contact-form-heading" className="text-[1.75rem] leading-[1.1] md:text-[2rem]">
                 Send an enquiry
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-ink-2">
+              <p className="mt-2 max-w-[60ch] text-sm leading-6 text-ink-2">
                 Fields marked with an asterisk are required.
                 {initialProduct ? ` We have added ${initialProduct} for you.` : ''}
               </p>
