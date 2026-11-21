@@ -74,8 +74,8 @@ export function ensureTouchTarget(className?: string, type: 'icon' | 'button' = 
  */
 export const touchFormClasses = {
   fieldWrapper: 'space-y-2 mb-4', // Space between label and input
-  checkboxWrapper: 'flex items-start space-x-3 min-h-[44px] py-2 cursor-pointer hover:bg-gray-50 rounded-lg px-2 -mx-2',
-  radioWrapper: 'flex items-start space-x-3 min-h-[44px] py-2 cursor-pointer hover:bg-gray-50 rounded-lg px-2 -mx-2',
+  checkboxWrapper: 'flex items-start space-x-3 min-h-[44px] py-2 cursor-pointer hover:bg-plinth rounded-sm px-2 -mx-2',
+  radioWrapper: 'flex items-start space-x-3 min-h-[44px] py-2 cursor-pointer hover:bg-plinth rounded-sm px-2 -mx-2',
   labelWithInput: 'block text-sm font-medium mb-1.5', // Label spacing
 }
 
@@ -111,24 +111,24 @@ export const accessiblePatterns = {
   // Close button (X)
   closeButton: cn(
     touchTargetClasses.iconSm,
-    'rounded-full hover:bg-gray-100 transition-colors',
+    'rounded-full hover:bg-plinth transition-colors',
     'flex items-center justify-center',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opal-electric-accessible'
+    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent'
   ),
 
   // Icon-only button
   iconButton: cn(
     touchTargetClasses.iconSm,
-    'rounded-lg hover:bg-gray-100 transition-colors',
+    'rounded-sm hover:bg-plinth transition-colors',
     'flex items-center justify-center',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opal-electric-accessible'
+    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent'
   ),
 
   // Small action button
   smallButton: cn(
     touchTargetClasses.buttonSm,
-    'rounded-lg font-medium transition-colors',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-opal-electric-accessible'
+    'rounded-sm font-medium transition-colors',
+    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent'
   ),
 
   // Checkbox or radio label
@@ -140,7 +140,7 @@ export const accessiblePatterns = {
   // Clickable list item
   clickableListItem: cn(
     touchTargetClasses.listItem,
-    'hover:bg-gray-50 transition-colors cursor-pointer',
-    'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-opal-electric-accessible'
+    'hover:bg-plinth transition-colors cursor-pointer',
+    'focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent'
   ),
 }

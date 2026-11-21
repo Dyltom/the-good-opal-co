@@ -82,7 +82,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
   }, [lightboxOpen, index, show])
 
   if (count === 0) {
-    return <div className="aspect-square w-full border border-warm-grey/55 bg-white" aria-hidden="true" />
+    return <div className="aspect-square w-full bg-plinth" aria-hidden="true" />
   }
 
   const current = slides[Math.min(index, count - 1)] ?? slides[0]!
@@ -104,7 +104,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
 
   return (
     <div className="space-y-3">
-      <ViewTransition name={transitionName}>
+      <ViewTransition name={transitionName} share="piece">
       <div className="relative">
         <div
           ref={trackRef}
@@ -115,7 +115,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
             image.video ? (
               <div
                 key={image.video.url}
-                className="relative aspect-square w-full shrink-0 snap-center overflow-hidden border border-warm-grey/55"
+                className="relative aspect-square w-full shrink-0 snap-center overflow-hidden border border-rule"
               >
                 <ProductVideo
                   src={image.video.url}
@@ -137,7 +137,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
                 if (event.pointerType === 'mouse') setLoupe(pointerPosition(event))
               }}
               onPointerLeave={() => setLoupe(null)}
-              className="group relative aspect-square w-full shrink-0 snap-center overflow-hidden border border-warm-grey/55 bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-opal-electric-accessible lg:cursor-zoom-in"
+              className="group relative aspect-square w-full shrink-0 snap-center overflow-hidden bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent lg:cursor-zoom-in"
               aria-label={`Open image ${imageIndex + 1} of ${count} of ${productName} full screen`}
             >
               <Image
@@ -162,7 +162,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
 
         <span
           className={cn(
-            'pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-cream/95 px-3 py-2 font-sans text-xs font-semibold text-charcoal transition-opacity',
+            'pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-bg/95 px-3 py-2 font-sans text-xs font-semibold text-ink transition-opacity',
             (loupe || current.video) && 'opacity-0'
           )}
         >
@@ -172,7 +172,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
         </span>
 
         {count > 1 ? (
-          <span className="pointer-events-none absolute bottom-3 left-3 bg-charcoal/80 px-2.5 py-1.5 font-sans text-xs font-semibold tabular-nums text-cream lg:hidden">
+          <span className="pointer-events-none absolute bottom-3 left-3 bg-ink px-2.5 py-1.5 font-sans text-xs font-semibold tabular-nums text-bg lg:hidden">
             {index + 1} / {count}
           </span>
         ) : null}
@@ -189,14 +189,14 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
               aria-current={imageIndex === index ? 'true' : undefined}
               aria-label={image.video ? `Show video ${imageIndex + 1} of ${count}` : `Show image ${imageIndex + 1} of ${count}`}
               className={cn(
-                'relative h-20 w-20 shrink-0 overflow-hidden border bg-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible',
-                imageIndex === index ? 'border-charcoal' : 'border-warm-grey/55 opacity-75 hover:opacity-100'
+                'relative h-20 w-20 shrink-0 overflow-hidden border bg-plinth transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                imageIndex === index ? 'border-ink' : 'border-rule hover:border-rule-2'
               )}
             >
               {image.url ? <Image src={image.url} alt="" fill sizes="80px" className="object-cover" /> : null}
               {image.video ? (
-                <span className="absolute inset-0 flex items-center justify-center bg-charcoal/25 text-cream">
-                  <Play className="h-5 w-5" aria-hidden="true" />
+                <span className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center bg-ink text-bg">
+                  <Play className="h-3.5 w-3.5" aria-hidden="true" />
                 </span>
               ) : null}
             </button>
@@ -210,10 +210,10 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
           role="dialog"
           aria-modal="true"
           aria-label={`${productName}, image ${index + 1} of ${count}`}
-          className="fixed inset-0 z-[70] flex flex-col bg-charcoal"
+          className="fixed inset-0 z-[70] flex flex-col bg-ink"
         >
-          <div className="flex items-center justify-between px-4 py-3 text-cream sm:px-6">
-            <p className="font-sans text-sm tabular-nums text-cream/75">
+          <div className="flex items-center justify-between px-4 py-3 text-bg sm:px-6">
+            <p className="font-sans text-sm tabular-nums text-bg/75">
               {index + 1} / {count}
               <span className="ml-3 hidden sm:inline">
                 {current.video ? null : lightboxZoom ? 'Move to explore, click to zoom out' : 'Click the stone to zoom in'}
@@ -223,7 +223,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
               ref={closeButtonRef}
               type="button"
               onClick={() => setLightboxOpen(false)}
-              className="flex min-h-11 min-w-11 items-center justify-center text-cream hover:bg-cream/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream"
+              className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
               aria-label="Close full screen view"
             >
               <X className="h-5 w-5" aria-hidden="true" />
@@ -274,7 +274,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
               <button
                 type="button"
                 onClick={() => show(index - 1)}
-                className="flex min-h-11 min-w-11 items-center justify-center text-cream hover:bg-cream/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream"
+                className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
                 aria-label="Previous image"
               >
                 <ChevronLeft className="h-6 w-6" aria-hidden="true" />
@@ -282,7 +282,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
               <button
                 type="button"
                 onClick={() => show(index + 1)}
-                className="flex min-h-11 min-w-11 items-center justify-center text-cream hover:bg-cream/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cream"
+                className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
                 aria-label="Next image"
               >
                 <ChevronRight className="h-6 w-6" aria-hidden="true" />

@@ -127,7 +127,7 @@ export function AddToCartButton({
         disabled={disabled || isPending}
         aria-label={`Add ${product.name} to cart`}
         className={cn(
-          "relative flex items-center justify-center rounded-full bg-white text-charcoal shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
+          "relative flex items-center justify-center rounded-full border border-rule bg-bg text-ink shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
           iconSizeClasses[size],
           className
         )}
@@ -179,7 +179,7 @@ export function AddToCartButton({
         onClick={handleClick}
         disabled={disabled || isPending}
         className={cn(
-          "relative flex items-center gap-2 font-medium text-charcoal hover:text-opal-electric-accessible transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+          "relative flex items-center gap-2 font-medium text-ink hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
           sizeClasses[size],
           className
         )}
@@ -233,7 +233,7 @@ export function AddToCartButton({
       onClick={handleClick}
       disabled={disabled || isPending}
       className={cn(
-        "relative flex items-center justify-center gap-2 font-semibold rounded-lg bg-charcoal text-white shadow-md hover:bg-charcoal/90 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
+        "relative flex items-center justify-center gap-2 font-semibold rounded-sm bg-ink text-bg shadow-md hover:bg-[#3a332b] hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
         sizeClasses[size],
         className
       )}

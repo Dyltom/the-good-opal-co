@@ -1,96 +1,89 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-05-06T08:32:01Z",
+  "generatedAt": "2026-11-21T00:00:00Z",
   "title": "Design System: The Good Opal Co",
   "extensions": {
     "colorMeta": {
-      "opal-electric": {
-        "role": "primary",
-        "displayName": "Electric Opal",
-        "canonical": "#00B4D8",
-        "tonalRamp": ["#002A33", "#004B5A", "#00778F", "#00B4D8", "#40C8E2", "#90E0EF", "#CAF0F8", "#F0FCFF"]
-      },
-      "opal-electric-accessible": {
-        "role": "primary",
-        "displayName": "Accessible Opal Deep",
-        "canonical": "#005A87",
-        "tonalRamp": ["#001824", "#00334D", "#005A87", "#0077B6", "#0099D6", "#5CC8EC", "#B5E9FA", "#EFFBFF"]
-      },
-      "fire-pink": {
-        "role": "secondary",
-        "displayName": "Fire Pink",
-        "canonical": "#FF8FAB",
-        "tonalRamp": ["#3D0615", "#7A1830", "#CC5A7A", "#FF8FAB", "#FFB3C4", "#FFD6DD", "#FFEAF0", "#FFF7F9"]
-      },
-      "opal-emerald": {
-        "role": "secondary",
-        "displayName": "Opal Emerald",
-        "canonical": "#2ECC71",
-        "tonalRamp": ["#062414", "#0F4D2A", "#1A7F41", "#2ECC71", "#68DA97", "#A8E6CF", "#D8F6E8", "#F3FCF7"]
-      },
-      "cream": {
+      "bg": {
         "role": "neutral",
-        "displayName": "Warm Cream",
-        "canonical": "#FAF9F6",
-        "tonalRamp": ["#1C1A16", "#3A362E", "#6B675E", "#A9A399", "#E8E6E3", "#F5F4F1", "#FAF9F6", "#FFFFFF"]
+        "displayName": "Gallery wall",
+        "canonical": "#F5F2EC"
       },
-      "black-rich": {
+      "plinth": {
         "role": "neutral",
-        "displayName": "Rich Black",
-        "canonical": "#0A0A12",
-        "tonalRamp": ["#0A0A12", "#171722", "#2C2C2C", "#484848", "#6B6B6B", "#8E8E8E", "#D1D1D1", "#FFFFFF"]
+        "displayName": "Plinth",
+        "canonical": "#EBE6DD"
+      },
+      "plinth-2": {
+        "role": "neutral",
+        "displayName": "Plinth, pressed",
+        "canonical": "#E2DCD1"
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink",
+        "canonical": "#1C1813"
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink, secondary",
+        "canonical": "#544C42"
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink, tertiary",
+        "canonical": "#6F665B"
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Brass",
+        "canonical": "#7A5C24"
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Hero and major editorial moments."
+        "purpose": "Page titles (h1)."
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Section anchors and major page headings."
+        "purpose": "Section heads (h2)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Sub-sections (h3); italic for product names."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Readable commerce and education copy."
+        "purpose": "Reading and buying copy."
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Forms, navigation, metadata, and badges."
+        "purpose": "Footer column and facet heads only."
       }
     },
     "shadows": [
       {
-        "name": "elevation-low",
-        "value": "0 2px 4px rgb(0 0 0 / 0.05)",
-        "purpose": "Small cards, badges, and quiet affordances."
-      },
-      {
-        "name": "elevation-medium",
-        "value": "0 8px 16px rgb(0 0 0 / 0.1)",
-        "purpose": "Product cards, drawers, menus, and purchase panels."
-      },
-      {
-        "name": "elevation-high",
-        "value": "0 16px 32px rgb(0 0 0 / 0.15)",
-        "purpose": "Modals and important overlays only."
+        "name": "floating",
+        "value": "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+        "purpose": "Drawer, dialogs and suggestion lists only. Page sections are flat."
       }
     ],
     "motion": [
       {
-        "name": "fast",
-        "value": "150ms",
-        "purpose": "Immediate hover and focus feedback."
+        "name": "colour",
+        "value": "200ms",
+        "purpose": "Hover and focus colour changes."
       },
       {
-        "name": "normal",
-        "value": "300ms",
-        "purpose": "Default UI state transitions."
+        "name": "gallery",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Photo scale, piece morph and torch fade."
       },
       {
-        "name": "standard",
-        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
-        "purpose": "Default easing for state transitions."
+        "name": "piece-morph",
+        "value": "550ms",
+        "purpose": "Card photo to product gallery view transition."
       }
     ],
     "breakpoints": [
@@ -117,87 +110,86 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Main commerce action with restrained opal gradient and strong focus state.",
-      "html": "<button class=\"ds-btn-primary\">Add to Cart</button>",
-      "css": ".ds-btn-primary { min-height: 44px; padding: 10px 24px; border: 0; border-radius: 9999px; background: linear-gradient(90deg, #00B4D8, #0077B6); color: #FFFFFF; font-family: Merriweather, Georgia, serif; font-size: 14px; font-weight: 500; transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1), background 300ms cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 10px 15px -3px rgb(0 180 216 / 0.25); } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 20px 25px -5px rgb(0 180 216 / 0.35); } .ds-btn-primary:focus-visible { outline: 2px solid #005A87; outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(0) scale(0.98); }"
+      "description": "Dark ink action with light text.",
+      "html": "<button class=\"ds-btn-primary\">Add to bag</button>",
+      "css": ".ds-btn-primary { min-height: 48px; padding: 0 22px; border: 1px solid #1C1813; border-radius: 2px; background: #1C1813; color: #F5F2EC; font: 500 15px 'Schibsted Grotesk', system-ui, sans-serif; transition: background-color 200ms, border-color 200ms; } .ds-btn-primary:hover { background: #3A332B; border-color: #3A332B; } .ds-btn-primary:focus-visible { outline: 2px solid #7A5C24; outline-offset: 3px; }"
     },
     {
       "name": "Ghost Button",
       "kind": "button",
       "refersTo": "button-ghost",
-      "description": "Quiet supporting action for secondary navigation and low-risk commands.",
-      "html": "<button class=\"ds-btn-ghost\">View Details</button>",
-      "css": ".ds-btn-ghost { min-height: 44px; padding: 10px 24px; border: 0; border-radius: 9999px; background: transparent; color: #2C2C2C; font-family: Merriweather, Georgia, serif; font-size: 14px; font-weight: 500; transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-btn-ghost:hover { background: rgb(44 44 44 / 0.05); color: #005A87; } .ds-btn-ghost:focus-visible { outline: 2px solid #005A87; outline-offset: 2px; }"
+      "description": "Outlined secondary action.",
+      "html": "<button class=\"ds-btn-ghost\">View bag</button>",
+      "css": ".ds-btn-ghost { min-height: 48px; padding: 0 22px; border: 1px solid rgba(28,24,19,.24); border-radius: 2px; background: transparent; color: #1C1813; font: 500 15px 'Schibsted Grotesk', system-ui, sans-serif; transition: border-color 200ms; } .ds-btn-ghost:hover { border-color: #1C1813; } .ds-btn-ghost:focus-visible { outline: 2px solid #7A5C24; outline-offset: 3px; }"
     },
     {
       "name": "Product Card",
       "kind": "card",
       "refersTo": "card",
-      "description": "White gallery surface for product imagery and fast commerce facts.",
-      "html": "<article class=\"ds-product-card\"><div class=\"ds-product-image\"></div><div class=\"ds-product-body\"><h3>Lightning Ridge Opal Ring</h3><p>Sterling silver setting</p><strong>AUD 420</strong></div></article>",
-      "css": ".ds-product-card { overflow: hidden; border: 1px solid #E8E6E3; border-radius: 12px; background: #FFFFFF; color: #2C2C2C; box-shadow: 0 2px 4px rgb(0 0 0 / 0.05); transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgb(0 0 0 / 0.1); } .ds-product-image { aspect-ratio: 1 / 1; background: linear-gradient(135deg, #F8F7F6, #E8E6E3); } .ds-product-body { padding: 16px; } .ds-product-body h3 { margin: 0 0 4px; font-family: EB Garamond, Georgia, serif; font-size: 20px; line-height: 1.25; font-weight: 600; } .ds-product-body p { margin: 0 0 12px; font-family: Merriweather, Georgia, serif; font-size: 14px; color: #6B6966; } .ds-product-body strong { font-family: Merriweather, Georgia, serif; font-size: 16px; color: #2C2C2C; }"
+      "description": "Photo on a plinth, italic name, price right, one meta line.",
+      "html": "<a class=\"ds-card\" href=\"#\"><div class=\"ds-ph\"></div><div class=\"ds-cap\"><span class=\"ds-nm\">Boulder opal pendant</span><span class=\"ds-pr\">$420</span><span class=\"ds-mt\">Boulder · Queensland · 4.2 ct</span></div></a>",
+      "css": ".ds-card { display: flex; flex-direction: column; color: #1C1813; text-decoration: none; } .ds-ph { aspect-ratio: 4 / 5; background: #EBE6DD; } .ds-cap { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding-top: 10px; } .ds-nm { font: italic 400 15px 'Bodoni Moda', serif; } .ds-pr { font: 500 14px 'Schibsted Grotesk', sans-serif; font-variant-numeric: tabular-nums; } .ds-mt { grid-column: 1 / -1; font-size: 12.5px; color: #544C42; }"
     },
     {
       "name": "Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Compact transactional field with clear focus and neutral surface.",
+      "description": "Plain field with a hairline outline and a brass focus ring.",
       "html": "<label class=\"ds-field\"><span>Email</span><input placeholder=\"you@example.com\" /></label>",
-      "css": ".ds-field { display: grid; gap: 8px; font-family: Merriweather, Georgia, serif; color: #2C2C2C; } .ds-field span { font-size: 14px; font-weight: 500; } .ds-field input { height: 40px; border: 1px solid #E8E6E3; border-radius: 6px; background: #FFFFFF; color: #2C2C2C; padding: 8px 12px; font: inherit; font-size: 14px; transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-field input:focus-visible { outline: none; border-color: #005A87; box-shadow: 0 0 0 2px rgb(0 90 135 / 0.2); }"
+      "css": ".ds-field { display: grid; gap: 6px; font: 400 15px 'Schibsted Grotesk', sans-serif; color: #1C1813; } .ds-field span { font-size: 14px; font-weight: 500; } .ds-field input { height: 44px; border: 1px solid rgba(28,24,19,.24); border-radius: 2px; background: transparent; padding: 0 12px; font: inherit; } .ds-field input:focus-visible { outline: 2px solid #7A5C24; outline-offset: 3px; }"
     },
     {
       "name": "Navigation Link",
       "kind": "nav",
       "refersTo": "navigation",
-      "description": "Quiet pill navigation with opal underline state.",
-      "html": "<a class=\"ds-nav-link\" href=\"#\">Store</a>",
-      "css": ".ds-nav-link { position: relative; display: inline-flex; align-items: center; min-height: 40px; padding: 8px 16px; border-radius: 9999px; color: #2C2C2C; font-family: Merriweather, Georgia, serif; font-size: 14px; font-weight: 500; text-decoration: none; transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-link::after { content: ''; position: absolute; left: 16px; right: 16px; bottom: 6px; height: 2px; border-radius: 9999px; background: #00B4D8; transform: scaleX(0); transform-origin: left; transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1); } .ds-nav-link:hover, .ds-nav-link:focus-visible { color: #005A87; outline: none; } .ds-nav-link:hover::after, .ds-nav-link:focus-visible::after { transform: scaleX(1); }"
+      "description": "Mast link; the current page gets a brass underline.",
+      "html": "<a class=\"ds-nav-link\" href=\"#\" aria-current=\"page\">Shop</a>",
+      "css": ".ds-nav-link { padding: 6px 0; border-bottom: 1px solid transparent; color: #544C42; font: 400 13.5px 'Schibsted Grotesk', sans-serif; letter-spacing: .01em; text-decoration: none; } .ds-nav-link:hover, .ds-nav-link[aria-current=page] { color: #1C1813; } .ds-nav-link[aria-current=page] { border-bottom-color: #7A5C24; }"
     }
   ],
   "narrative": {
-    "northStar": "The Opal Gallery in the Bush",
-    "overview": "The interface should feel like entering a small, warm Australian opal gallery: intimate, handmade, sunlit, and trustworthy, with moments of iridescent magic only where they help the stone feel alive. Product photography, origin details, price, stock, shipping, returns, and authenticity cues have priority over decorative chrome.",
+    "northStar": "Gallery, lights on",
+    "overview": "A small, well-lit gallery: warm paper walls, stones on plinths, quiet labels, nothing between the visitor and the opal. Pages are dense; pieces start in the first screen.",
     "keyCharacteristics": [
-      "Photography-led product discovery.",
-      "Warm cream, white, charcoal, and opal accent flashes.",
-      "Serif-led editorial hierarchy with readable body text.",
-      "Accessible ecommerce controls with visible focus and clear states.",
-      "Magical details used as punctuation, not wallpaper."
+      "Photographs on plinths in tight grids with small captions.",
+      "Warm off-white page, dark ink text, one brass accent.",
+      "Bodoni Moda for names and headings, Schibsted Grotesk for everything else.",
+      "Hairline rules instead of cards and shadows.",
+      "A soft pointer torch on the wall and photos that carry across pages."
     ],
     "rules": [
       {
-        "name": "The Stone First Rule",
-        "body": "If color treatment competes with product photography, remove the color treatment.",
+        "name": "The Untouched Stone Rule",
+        "body": "No CSS filters, tints, blend modes, gradients, scrims or overlays on product or stone photos.",
         "section": "colors"
       },
       {
-        "name": "The Accessible Opal Rule",
-        "body": "Electric Opal is for fills and accents. For text on white, use Accessible Opal Deep.",
+        "name": "The One Colour Rule",
+        "body": "The opal supplies the colour. No decorative gradients, glows or tinted bands.",
         "section": "colors"
       },
       {
-        "name": "The Accent Restraint Rule",
-        "body": "Dancing Script is only for emotional moments such as success pages, taglines, and celebrations.",
+        "name": "No Eyebrows",
+        "body": "No small labels above headings.",
         "section": "typography"
       },
       {
-        "name": "The No Card Nesting Rule",
-        "body": "Do not put UI cards inside other cards unless the inner item is a repeated product, order, or line item with a clear semantic role.",
+        "name": "Flat Pages",
+        "body": "Hairlines separate content; shadows only on floating layers.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do use Impeccable as a critic and shaping workflow for meaningful UI work.",
-      "Do use product photography, macro image quality, and image framing as the primary design asset.",
-      "Do keep trust badges close to the price, cart, checkout, and shipping decisions.",
-      "Do provide empty, loading, error, overflow, hover, focus, disabled, and mobile states for commerce components."
+      "Start pages with content: pieces or the task in the first screen.",
+      "Keep price, stock, shipping, returns and origin close to the buy action.",
+      "Use tabular numerals for prices.",
+      "Honour prefers-reduced-motion: no view transitions, no torch movement."
     ],
     "donts": [
-      "Don't use generic AI-generated landing page composition.",
-      "Don't use purple-blue SaaS gradients as the dominant visual identity.",
-      "Don't create card grids inside card grids.",
-      "Don't add decorative gradient orbs, bokeh backgrounds, or abstract glows as default atmosphere.",
-      "Don't use dark, blurred, cropped, or atmospheric imagery when users need to inspect the actual opal."
+      "Don't put filters, tints, gradients or overlays on stone photos.",
+      "Don't add tall hero bands, eyebrows or decorative dividers.",
+      "Don't nest cards or shadow flat page sections.",
+      "Don't use React Context as the cart source of truth."
     ]
   }
 }

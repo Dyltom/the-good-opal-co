@@ -126,7 +126,7 @@ export function OpalFaceImage({
 
   return (
     <div
-      className={cn('relative overflow-hidden bg-cream/10', silhouetteClass, className)}
+      className={cn('relative overflow-hidden bg-bg/10', silhouetteClass, className)}
       aria-busy={!crop}
       data-opal-photo-state={crop ? 'ready' : 'loading'}
       data-opal-photo-source={photoSource.kind}

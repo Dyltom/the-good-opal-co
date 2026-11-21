@@ -62,7 +62,7 @@ export function Pagination({ currentPage, totalPages, baseUrl, className }: Pagi
     <nav className={cn('flex items-center justify-center gap-1', className)} aria-label="Pagination">
       {/* Previous Button */}
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         asChild={currentPage > 1}
         disabled={currentPage === 1}
@@ -86,7 +86,7 @@ export function Pagination({ currentPage, totalPages, baseUrl, className }: Pagi
           ) : (
             <Button
               key={page}
-              variant={currentPage === page ? 'default' : 'outline'}
+              variant={currentPage === page ? 'default' : 'ghost'}
               size="sm"
               asChild={currentPage !== page}
               disabled={currentPage === page}
@@ -105,7 +105,7 @@ export function Pagination({ currentPage, totalPages, baseUrl, className }: Pagi
 
       {/* Next Button */}
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         asChild={currentPage < totalPages}
         disabled={currentPage === totalPages}

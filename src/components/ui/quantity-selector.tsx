@@ -47,7 +47,7 @@ export function QuantitySelector({
       <Button
         type="button"
         size="sm"
-        variant="outline"
+        variant="ghost"
         className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
         onClick={handleDecrease}
         disabled={disabled || quantity <= min}
@@ -62,13 +62,13 @@ export function QuantitySelector({
         min={min}
         max={max}
         disabled={disabled}
-        className="w-16 text-center border rounded-md py-1 px-2"
+        className="w-16 text-center border rounded-sm py-1 px-2"
         aria-label={`Quantity: ${quantity}`}
       />
       <Button
         type="button"
         size="sm"
-        variant="outline"
+        variant="ghost"
         className="h-11 w-11 p-0 text-lg md:h-8 md:w-8 md:text-base"
         onClick={handleIncrease}
         disabled={disabled || quantity >= max}

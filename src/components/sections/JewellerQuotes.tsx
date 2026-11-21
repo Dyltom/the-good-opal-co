@@ -26,7 +26,7 @@ function InstagramHandle({ handle }: { handle: string }) {
       href={`https://www.instagram.com/${handle}/`}
       target="_blank"
       rel="noopener noreferrer"
-      className="-my-3 inline-block py-3 underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+      className="-my-3 inline-block py-3 underline decoration-ink-3 underline-offset-4 hover:decoration-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
     >
       @{handle}
     </a>
@@ -37,31 +37,31 @@ export function JewellerQuotes() {
   return (
     <section
       aria-labelledby="jeweller-quotes"
-      className="border-t border-warm-grey/55 bg-white px-5 py-12 sm:px-8 lg:px-12 lg:py-20"
+      className="border-t border-rule bg-bg px-5 py-12 sm:px-8 lg:px-12 lg:py-20"
     >
       <div className="mx-auto max-w-[90rem]">
         <Eyebrow>From their Instagram stories</Eyebrow>
         <h2
           id="jeweller-quotes"
-          className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal sm:text-4xl"
+          className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-ink sm:text-4xl"
         >
           What jewellers say.
         </h2>
         <ul className="mt-8 grid gap-8 md:mt-10 md:grid-cols-3 md:gap-10">
           {JEWELLER_QUOTES.map((quote) => (
-            <li key={quote.text} className="border-t border-warm-grey/60 pt-5 md:pt-6">
+            <li key={quote.text} className="border-t border-rule pt-5 md:pt-6">
               <figure>
-                <blockquote className="font-serif text-lg leading-relaxed text-charcoal sm:text-xl">
+                <blockquote className="font-serif text-lg leading-relaxed text-ink sm:text-xl">
                   <p>&ldquo;{quote.text}&rdquo;</p>
                 </blockquote>
-                <figcaption className="mt-3 font-sans text-sm text-charcoal/65 md:mt-4">
+                <figcaption className="mt-3 font-sans text-sm text-ink-2 md:mt-4">
                   <InstagramHandle handle={quote.handle} />
                 </figcaption>
               </figure>
             </li>
           ))}
         </ul>
-        <p className="mt-8 font-sans text-sm leading-6 text-charcoal/65 md:mt-10">
+        <p className="mt-8 font-sans text-sm leading-6 text-ink-2 md:mt-10">
           Jewellers like <InstagramHandle handle="makerand_element" /> order custom parcels.
         </p>
       </div>

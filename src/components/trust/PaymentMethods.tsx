@@ -6,7 +6,7 @@ export const METHODS_ENABLED_IN_STRIPE = ['Visa', 'Mastercard', 'Amex', 'Apple P
 export function PaymentMethods({ className }: { className?: string }) {
   return (
     <div className={cn('space-y-2', className)}>
-      <p className="flex items-center gap-1.5 font-sans text-xs text-charcoal/65">
+      <p className="flex items-center gap-1.5 font-sans text-xs text-ink-2">
         <Lock className="h-3.5 w-3.5" aria-hidden="true" />
         Secure payment by Stripe. Pay in full or in instalments.
       </p>
@@ -14,7 +14,7 @@ export function PaymentMethods({ className }: { className?: string }) {
         {METHODS_ENABLED_IN_STRIPE.map((method) => (
           <li
             key={method}
-            className="border border-warm-grey/70 bg-white px-2 py-1 font-sans text-[11px] font-semibold leading-none text-charcoal/75"
+            className="border border-rule bg-bg px-2 py-1 font-sans text-[11px] font-semibold leading-none text-ink"
           >
             {method}
           </li>

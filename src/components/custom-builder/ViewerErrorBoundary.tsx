@@ -36,17 +36,16 @@ export class ViewerErrorBoundary extends Component<
   override render() {
     if (this.state.failed) {
       return (
-        <div className="relative aspect-[4/5] min-h-[28rem] overflow-hidden bg-black-rich text-cream sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0">
+        <div className="relative aspect-[4/5] min-h-[28rem] overflow-hidden bg-ink text-bg sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-0">
           <Image
             src="/images/customs/custom-2.jpg"
             alt="Australian opals used as inspiration for a custom jewellery design"
             fill
             priority
-            className="object-cover opacity-65"
+            className="object-cover"
             sizes="(max-width: 1024px) 100vw, 58vw"
           />
-          <div className="absolute inset-0 bg-black-rich/40" />
-          <p className="absolute inset-x-6 bottom-8 max-w-md text-sm leading-6 text-cream/90">
+          <p className="absolute inset-x-6 bottom-8 max-w-md bg-ink p-3 text-sm leading-6 text-bg">
             The interactive preview could not load. Your design controls and consultation request
             still work.
           </p>

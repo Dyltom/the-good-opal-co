@@ -50,7 +50,7 @@ export function ProductVideo({ src, mimeType, poster, label, controls = false, c
   }
 
   return (
-    <div className={cn('relative h-full w-full bg-charcoal', className)}>
+    <div className={cn('relative h-full w-full bg-ink', className)}>
       <video
         ref={videoRef}
         muted
@@ -72,7 +72,7 @@ export function ProductVideo({ src, mimeType, poster, label, controls = false, c
           onClick={toggle}
           aria-label={playing ? `Pause ${label}` : `Play ${label}`}
           className={cn(
-            'absolute flex items-center justify-center bg-cream/95 text-charcoal transition-colors hover:bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible',
+            'absolute flex items-center justify-center bg-bg/95 text-ink transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
             playing
               ? 'right-3 top-3 h-11 w-11'
               : 'left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full'

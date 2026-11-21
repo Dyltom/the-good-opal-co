@@ -150,59 +150,6 @@ export const RESERVED_SUBDOMAINS = [
 
 
 /**
- * Brand color palette
- * Inspired by the vibrant colors of Australian opal
- */
-export const BRAND_COLORS = {
-  // Primary blues from opal
-  blue: {
-    light: '#00CCFF',
-    DEFAULT: '#0099FF',
-    dark: '#0066CC',
-  },
-  // Teals and cyans
-  teal: {
-    light: '#00FFCC',
-    DEFAULT: '#33CCCC',
-    dark: '#009999',
-  },
-  // Pink/magenta fire
-  pink: {
-    light: '#FF66CC',
-    DEFAULT: '#FF3399',
-    dark: '#FF0099',
-  },
-  // Orange/coral fire
-  orange: {
-    light: '#FF9933',
-    DEFAULT: '#FF6600',
-    dark: '#CC5500',
-  },
-  // Accent yellow
-  yellow: {
-    light: '#FFDD00',
-    DEFAULT: '#FFCC00',
-    dark: '#FFAA00',
-  },
-  // Neutrals
-  black: '#000000',
-  white: '#FFFFFF',
-  gray: {
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    200: '#e5e7eb',
-    300: '#d1d5db',
-    400: '#9ca3af',
-    500: '#6b7280',
-    600: '#4b5563',
-    700: '#374151',
-    800: '#1f2937',
-    900: '#111827',
-  },
-} as const
-
-
-/**
  * Rate limiting
  */
 export const RATE_LIMITS = {

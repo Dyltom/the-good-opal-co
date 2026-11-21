@@ -28,16 +28,16 @@ export default async function UnsubscribePage({ searchParams }: UnsubscribePageP
     <MarketingShell>
       <Section padding="xl">
         <Container>
-          <div className="mx-auto max-w-xl border border-warm-grey/60 bg-white p-8 text-center shadow-sm sm:p-12">
-            <h1 className="font-serif text-4xl font-semibold text-charcoal">{title}</h1>
-            <p className="mt-4 font-sans text-sm leading-6 text-charcoal/70">{message}</p>
+          <div className="mx-auto max-w-xl border border-rule bg-bg p-8 text-center shadow-sm sm:p-12">
+            <h1 className="font-serif text-4xl font-semibold text-ink">{title}</h1>
+            <p className="mt-4 font-sans text-sm leading-6 text-ink-2">{message}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {!status && token ? (
                 <form action={submitNewsletterUnsubscribe.bind(null, token)}>
                   <Button type="submit">Unsubscribe</Button>
                 </form>
               ) : null}
-              <Button asChild variant="outline">
+              <Button asChild variant="ghost">
                 <Link href="/">Return home</Link>
               </Button>
             </div>

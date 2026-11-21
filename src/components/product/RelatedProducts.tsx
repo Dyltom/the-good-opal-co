@@ -66,12 +66,12 @@ export async function RelatedProducts({
   return (
     <section className={cn('py-16', className)}>
       <div className="mb-8 flex items-end justify-between gap-4">
-        <h2 className="font-serif text-3xl font-medium text-charcoal">
+        <h2 className="font-serif text-3xl font-medium text-ink">
           {title}
         </h2>
         <Link
           href="/store"
-          className="inline-flex min-h-11 shrink-0 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-8 hover:decoration-charcoal"
+          className="inline-flex min-h-11 shrink-0 items-center gap-2 font-sans text-sm font-semibold text-ink underline decoration-ink-3 underline-offset-8 hover:decoration-ink"
         >
           View all pieces
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -117,15 +117,15 @@ export function RelatedProductsSkeleton() {
   return (
     <section className="py-16">
       <div className="flex items-center justify-between mb-8">
-        <div className="h-8 w-48 animate-pulse rounded bg-cream-dark" />
-        <div className="h-5 w-32 animate-pulse rounded bg-cream-dark" />
+        <div className="h-8 w-48 animate-pulse rounded-sm bg-plinth" />
+        <div className="h-5 w-32 animate-pulse rounded-sm bg-plinth" />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="aspect-[4/5] animate-pulse rounded-md bg-cream-dark"
+            className="aspect-[4/5] animate-pulse rounded-sm bg-plinth"
           />
         ))}
       </div>

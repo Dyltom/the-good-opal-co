@@ -1,35 +1,25 @@
 import '../globals.css'
 import type { Metadata } from 'next'
-import { Figtree, EB_Garamond, Dancing_Script } from 'next/font/google'
+import { Bodoni_Moda, Schibsted_Grotesk } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
-import { OpalLight } from '@/components/brand/OpalLight'
+import { Torch } from '@/components/brand/Torch'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
 import { InsightsTracker } from '@/components/analytics/InsightsTracker'
 import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE } from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
 
-const figtree = Figtree({
+const sans = Schibsted_Grotesk({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
-  preload: true,
 })
 
-const ebGaramond = EB_Garamond({
+const serif = Bodoni_Moda({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+  style: ['normal', 'italic'],
   variable: '--font-serif',
   display: 'swap',
-  preload: true,
-})
-
-const dancingScript = Dancing_Script({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-accent',
-  display: 'swap',
-  preload: false,
 })
 
 export const metadata: Metadata = {
@@ -80,7 +70,7 @@ export default function MarketingLayout({
     <html
       lang={DEFAULT_LOCALE}
       dir={getTextDirection(DEFAULT_LOCALE)}
-      className={`${figtree.variable} ${ebGaramond.variable} ${dancingScript.variable}`}
+      className={`${sans.variable} ${serif.variable}`}
     >
       <head>
         <link
@@ -95,6 +85,7 @@ export default function MarketingLayout({
         <link rel="shortcut icon" href="/favicon.png" />
       </head>
       <body suppressHydrationWarning>
+        <Torch />
         {children}
         <Toaster />
         <AnalyticsConsentGate />
@@ -102,7 +93,6 @@ export default function MarketingLayout({
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ? (
           <CookieConsent />
         ) : null}
-        <OpalLight />
       </body>
     </html>
   )

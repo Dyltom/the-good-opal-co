@@ -9,8 +9,9 @@ describe('shared storefront component system', () => {
     const siteNavigation = read('src/components/navigation/SiteNavigation.tsx')
     const navigationConstants = read('src/lib/constants/navigation.ts')
 
-    expect(siteNavigation).toContain('getNavigationProps')
-    expect(navigationConstants).toContain("{ href: '/services', label: 'Custom' }")
+    expect(siteNavigation).toContain('NAVIGATION_ITEMS.map')
+    expect(navigationConstants).toContain("{ href: '/store', label: 'Shop' }")
+    expect(navigationConstants).toContain("{ href: '/services', label: 'Custom rings' }")
     expect(navigationConstants).toContain("{ href: '/courses', label: 'Courses' }")
   })
 
@@ -43,7 +44,7 @@ describe('shared storefront component system', () => {
   test('shared button variants stay flat and token-driven', () => {
     const source = read('src/components/ui/button.tsx')
 
-    expect(source).toContain("'bg-charcoal text-cream hover:bg-charcoal-dark'")
+    expect(source).toContain("'border-ink bg-ink text-bg hover:border-[#3a332b] hover:bg-[#3a332b]'")
     expect(source).not.toContain('bg-gradient')
     expect(source).not.toContain('glass')
     expect(source).not.toContain('shimmer')

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 import Stripe from 'stripe'
 import { Container, Section } from '@/components/layout'
-import { Footer, SiteNavigation } from '@/components/navigation'
+import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ClearCartOnSuccess } from './clear-cart'
@@ -84,10 +84,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <SiteNavigation />
-
-      <main className="flex-1">
+    <MarketingShell>
         <Section padding="lg">
           <Container>
             <div className="mx-auto max-w-2xl text-center">
@@ -113,10 +110,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
             </div>
           </Container>
         </Section>
-      </main>
-
-      <Footer />
-    </div>
+    </MarketingShell>
   )
 }
 
@@ -154,28 +148,28 @@ function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirme
   return (
     <Card className="p-12">
       {/* Success Icon */}
-      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-opal-emerald/10">
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-success/10">
         <Check className="h-10 w-10 text-success" aria-hidden="true" />
       </div>
 
       {/* Success Message */}
-      <h1 className="mb-2 font-serif text-3xl font-semibold text-charcoal">
+      <h1 className="mb-2 font-serif text-3xl font-semibold text-ink">
         {orderConfirmed ? 'Order confirmed' : 'Payment received'}
       </h1>
-      <p className="mb-4 font-accent text-xl text-charcoal/70">
+      <p className="mb-4 font-serif italic text-xl text-ink-2">
         {orderConfirmed ? 'Thank you for your order' : 'We are finalizing your order now'}
       </p>
 
       {email && orderConfirmed && (
-        <p className="mb-8 text-sm text-muted-foreground">
+        <p className="mb-8 text-sm text-ink-2">
           Confirmation sent to: <span className="font-medium">{email}</span>
         </p>
       )}
 
       {/* What's Next */}
-      <div className="mb-8 rounded-lg bg-muted p-6 text-left">
+      <div className="mb-8 rounded-sm bg-plinth p-6 text-left">
         <h2 className="mb-3 font-semibold">What happens next?</h2>
-        <ul className="space-y-2 text-sm text-muted-foreground">
+        <ul className="space-y-2 text-sm text-ink-2">
           <li className="flex items-center gap-2">
             <Check className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
             {orderConfirmed ? 'Order confirmation is being emailed' : 'Payment received securely'}
@@ -185,19 +179,19 @@ function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirme
             Payment processed successfully
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-opal-electric-accessible">→</span>
+            <span className="text-accent">→</span>
             {orderConfirmed ? 'Your order is being prepared' : 'Order confirmation is processing'}
           </li>
           <li className="flex items-center gap-2">
-            <span className="text-muted-foreground">○</span>
+            <span className="text-ink-2">○</span>
             Shipping notification on its way
           </li>
         </ul>
       </div>
 
       {/* Shipping Info */}
-      <div className="mb-8 rounded-lg bg-opal-light/20 p-4">
-        <p className="text-sm text-charcoal/80">
+      <div className="mb-8 rounded-sm bg-accent/20 p-4">
+        <p className="text-sm text-ink">
           We will email tracking after dispatch. Delivery timing depends on the destination and
           shipping estimate selected during checkout.
         </p>
@@ -208,7 +202,7 @@ function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirme
         <Button size="lg" asChild>
           <Link href="/store">Continue Shopping</Link>
         </Button>
-        <Button variant="outline" size="lg" asChild>
+        <Button variant="ghost" size="lg" asChild>
           <Link href="/">Return Home</Link>
         </Button>
       </div>
@@ -242,13 +236,13 @@ function ErrorState({ error }: { error: string }) {
 
       {/* Error Message */}
       <h1 className="mb-4 text-3xl font-bold">Verification Issue</h1>
-      <p className="mb-8 text-muted-foreground">{error}</p>
+      <p className="mb-8 text-ink-2">{error}</p>
 
       {/* Contact Info */}
-      <div className="mb-8 rounded-lg bg-muted p-4">
-        <p className="text-sm text-muted-foreground">
+      <div className="mb-8 rounded-sm bg-plinth p-4">
+        <p className="text-sm text-ink-2">
           If you believe this is an error, please contact our support team at{' '}
-          <a href={`mailto:${supportEmail}`} className="text-opal-blue hover:underline">
+          <a href={`mailto:${supportEmail}`} className="text-accent hover:underline">
             {supportEmail}
           </a>
         </p>
@@ -259,7 +253,7 @@ function ErrorState({ error }: { error: string }) {
         <Button size="lg" asChild>
           <Link href="/cart">Try again</Link>
         </Button>
-        <Button variant="outline" size="lg" asChild>
+        <Button variant="ghost" size="lg" asChild>
           <Link href="/cart">Return to Cart</Link>
         </Button>
       </div>

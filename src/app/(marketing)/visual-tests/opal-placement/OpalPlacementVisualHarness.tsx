@@ -18,7 +18,7 @@ export function OpalPlacementVisualHarness({ opal }: { opal: BuilderOpal }) {
     <main
       data-testid="opal-placement-visual-harness"
       data-hydrated={hydrated ? 'true' : 'false'}
-      className="w-[390px] bg-cream p-4 lg:w-[806px] lg:p-8"
+      className="w-[390px] bg-bg p-4 lg:w-[806px] lg:p-8"
     >
       <OpalPlacementEditor
         metal="sterling-silver"

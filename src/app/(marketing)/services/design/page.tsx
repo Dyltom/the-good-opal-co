@@ -272,29 +272,29 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
         unavailableOpalRequested={unavailableOpalRequested}
       />
 
-      <section className="border-t border-warm-grey/60 bg-white py-10 sm:py-12">
+      <section className="border-t border-rule bg-bg py-10 sm:py-12">
         <Container>
           <div className="grid gap-6 md:grid-cols-3 md:gap-10">
             <div>
-              <Sparkles aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
+              <Sparkles aria-hidden="true" className="h-5 w-5 text-accent" />
               <h2 className="mt-3 font-serif text-xl">A visual starting point</h2>
-              <p className="mt-2 text-sm leading-6 text-charcoal-light">
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 A guide to proportion and colour. Every natural opal is unique, so your consultation
                 confirms the real stone.
               </p>
             </div>
             <div>
-              <WandSparkles aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
+              <WandSparkles aria-hidden="true" className="h-5 w-5 text-accent" />
               <h2 className="mt-3 font-serif text-xl">Made around your opal</h2>
-              <p className="mt-2 text-sm leading-6 text-charcoal-light">
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 We match suitable available stones, confirm dimensions, and refine the setting
                 before making begins.
               </p>
             </div>
             <div>
-              <ShieldCheck aria-hidden="true" className="h-5 w-5 text-opal-electric-accessible" />
+              <ShieldCheck aria-hidden="true" className="h-5 w-5 text-accent" />
               <h2 className="mt-3 font-serif text-xl">Quote before commitment</h2>
-              <p className="mt-2 text-sm leading-6 text-charcoal-light">
+              <p className="mt-2 text-sm leading-6 text-ink-2">
                 Your consultation confirms scope, timing, and exact AUD price. A builder estimate
                 never becomes an automatic charge.
               </p>

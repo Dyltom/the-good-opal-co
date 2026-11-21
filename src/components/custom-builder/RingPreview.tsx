@@ -103,7 +103,7 @@ export function RingPreview({
             : 'Multi-stone listing · the preview shows a representative stone'
 
   return (
-    <div className="relative h-[36svh] min-h-[16rem] w-full min-w-0 overflow-hidden bg-[#eae6de] text-cream sm:aspect-[5/4] sm:h-auto sm:min-h-0 lg:aspect-auto lg:h-full [&_canvas]:touch-pan-y">
+    <div className="relative h-[36svh] min-h-[16rem] w-full min-w-0 overflow-hidden bg-[#eae6de] text-bg sm:aspect-[5/4] sm:h-auto sm:min-h-0 lg:aspect-auto lg:h-full [&_canvas]:touch-pan-y">
       {previewSource === 'reference' ? (
         <div className="absolute inset-0 bg-[#11110f]">
           <Image
@@ -114,7 +114,6 @@ export function RingPreview({
             className="object-contain"
             sizes="(max-width: 1024px) 100vw, 58vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black-rich/20 via-transparent to-black-rich/60" />
         </div>
       ) : webGlAvailable ? (
         <RingScene
@@ -143,8 +142,7 @@ export function RingPreview({
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 62vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black-rich/50 via-transparent to-black-rich/75" />
-              <p className="absolute inset-x-4 bottom-4 max-w-md rounded-lg bg-black-rich/80 p-3 text-xs leading-5 text-cream/85 sm:inset-x-6 sm:bottom-6">
+              <p className="absolute inset-x-4 bottom-4 max-w-md rounded-sm bg-ink p-3 text-xs leading-5 text-bg sm:inset-x-6 sm:bottom-6">
                 Showing our sold {reference.name}. The 3D view needs WebGL, which is off in this
                 browser (often the hardware acceleration setting). Your choices still go with your
                 enquiry.
@@ -156,7 +154,7 @@ export function RingPreview({
 
       <p className="sr-only">{description}</p>
       <div className="pointer-events-none absolute right-3 top-16 sm:right-5 sm:top-20">
-        <span className="rounded-full bg-cream/90 px-3 py-1 text-xs font-medium text-charcoal shadow-sm">
+        <span className="rounded-full bg-bg/90 px-3 py-1 text-xs font-medium text-ink shadow-sm">
           {previewSource === 'reference' || webGlAvailable === false
             ? 'Sold reference'
             : renderModel.makerApproved && !approvedAssetFailed
@@ -168,13 +166,13 @@ export function RingPreview({
       <div
         role="group"
         aria-label="Preview source"
-        className="absolute left-3 top-3 flex rounded-full border border-cream/20 bg-black-rich/80 p-1 backdrop-blur sm:left-5 sm:top-5"
+        className="absolute left-3 top-3 flex rounded-full border border-bg/20 bg-ink p-1 sm:left-5 sm:top-5"
       >
         <button
           type="button"
           onClick={() => setPreviewSource('concept')}
           aria-pressed={previewSource === 'concept'}
-          className="min-h-11 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
+          className="min-h-11 rounded-full px-3 text-xs font-medium text-bg/70 transition-colors hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth aria-pressed:bg-bg aria-pressed:text-ink"
         >
           3D concept
         </button>
@@ -183,7 +181,7 @@ export function RingPreview({
           onClick={() => setPreviewSource('reference')}
           aria-label="Sold ring reference"
           aria-pressed={previewSource === 'reference'}
-          className="min-h-11 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
+          className="min-h-11 rounded-full px-3 text-xs font-medium text-bg/70 transition-colors hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth aria-pressed:bg-bg aria-pressed:text-ink"
         >
           Sold ring
         </button>
@@ -193,7 +191,7 @@ export function RingPreview({
         <div
           role="group"
           aria-label="Ring preview angle"
-          className="absolute right-3 top-3 flex rounded-full border border-cream/20 bg-black-rich/75 p-1 backdrop-blur sm:right-5 sm:top-5"
+          className="absolute right-3 top-3 flex rounded-full border border-bg/20 bg-ink p-1 sm:right-5 sm:top-5"
         >
           {views.map((option) => (
             <button
@@ -202,7 +200,7 @@ export function RingPreview({
               onClick={() => setView(option.id)}
               aria-label={option.accessibleLabel}
               aria-pressed={view === option.id}
-              className="min-h-11 min-w-11 rounded-full px-3 text-xs font-medium text-cream/70 transition-colors hover:text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light aria-pressed:bg-cream aria-pressed:text-charcoal"
+              className="min-h-11 min-w-11 rounded-full px-3 text-xs font-medium text-bg/70 transition-colors hover:text-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth aria-pressed:bg-bg aria-pressed:text-ink"
             >
               {option.label}
             </button>
@@ -211,12 +209,12 @@ export function RingPreview({
       )}
 
       {previewSource === 'reference' ? (
-        <div className="absolute inset-x-3 bottom-3 rounded-lg bg-black-rich/80 p-3 sm:inset-x-5 sm:bottom-5 sm:p-4">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-opal-light">
+        <div className="absolute inset-x-3 bottom-3 rounded-sm bg-ink p-3 sm:inset-x-5 sm:bottom-5 sm:p-4">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-bg">
             Physical design reference
           </p>
-          <p className="mt-1 font-serif text-lg text-cream">{reference.name}</p>
-          <p className="mt-1 text-xs leading-5 text-cream/70">
+          <p className="mt-1 font-serif text-lg text-bg">{reference.name}</p>
+          <p className="mt-1 text-xs leading-5 text-bg/70">
             Sold-ring photo for construction and proportion. Your selected opal changes the final
             fit and scale.
           </p>
@@ -224,7 +222,7 @@ export function RingPreview({
       ) : webGlAvailable ? (
         <div className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-3 sm:inset-x-5 sm:bottom-5">
           {selectedOpal ? (
-            <div className="hidden max-w-[70%] items-center gap-3 rounded-lg bg-black-rich/80 p-2.5 text-cream backdrop-blur sm:flex">
+            <div className="hidden max-w-[70%] items-center gap-3 rounded-sm bg-ink p-2.5 text-bg sm:flex">
               <div className="flex h-24 w-24 shrink-0 items-center justify-center xl:h-28 xl:w-28">
                 <OpalFaceImage
                   opal={selectedOpal}
@@ -235,23 +233,23 @@ export function RingPreview({
                   className={
                     selectedOpal.selectionKind === 'individual'
                       ? 'h-full w-auto'
-                      : 'h-full w-auto rounded-md'
+                      : 'h-full w-auto rounded-sm'
                   }
                 />
               </div>
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.12em] text-opal-light">
+                <p className="text-xs uppercase tracking-[0.12em] text-bg">
                   {selectedOpal.selectionKind === 'individual'
                     ? opalPhotoFitLabel(selectedOpal)
                     : 'Selected listing photo'}
                 </p>
-                <p className="line-clamp-2 text-xs leading-4 text-cream/85">{selectedOpal.name}</p>
-                <p className="mt-1 text-xs text-cream/70">
+                <p className="line-clamp-2 text-xs leading-4 text-bg/85">{selectedOpal.name}</p>
+                <p className="mt-1 text-xs text-bg/70">
                   {selectedOpal.stoneTypeLabel}
                   {selectedOpal.weight ? ` · ${selectedOpal.weight} ct` : ''}
                 </p>
                 {selectedOpal.visual.dimensionsMm && (
-                  <p className="mt-1 text-xs text-cream/70">
+                  <p className="mt-1 text-xs text-bg/70">
                     {selectedOpal.visual.dimensionsMm.width} ×{' '}
                     {selectedOpal.visual.dimensionsMm.length} ×{' '}
                     {selectedOpal.visual.dimensionsMm.depth} mm
@@ -259,17 +257,17 @@ export function RingPreview({
                 )}
                 {selectedOpal.selectionKind === 'individual' &&
                   !selectedOpal.visual.dimensionsMm && (
-                    <p className="mt-1 text-xs text-cream/70">
+                    <p className="mt-1 text-xs text-bg/70">
                       Size estimated · confirmed at consultation
                     </p>
                   )}
                 {previewCaption && (
-                  <p className="mt-1 text-xs leading-4 text-cream/60">{previewCaption}</p>
+                  <p className="mt-1 text-xs leading-4 text-bg/60">{previewCaption}</p>
                 )}
               </div>
             </div>
           ) : (
-            <p className="hidden items-center gap-2 rounded-full bg-cream/90 px-3 py-1.5 text-xs text-charcoal/75 sm:flex">
+            <p className="hidden items-center gap-2 rounded-full bg-bg/90 px-3 py-1.5 text-xs text-ink sm:flex">
               <Rotate3D aria-hidden="true" className="h-4 w-4" /> Drag to rotate · scroll to zoom
             </p>
           )}
@@ -277,7 +275,7 @@ export function RingPreview({
             type="button"
             onClick={() => setMotionEnabled((current) => !current)}
             disabled={prefersReducedMotion}
-            className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-cream/25 bg-black-rich/70 px-4 text-sm text-cream transition-colors hover:bg-black-rich focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light disabled:cursor-not-allowed disabled:opacity-55"
+            className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-bg/25 bg-ink px-4 text-sm text-bg transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth disabled:cursor-not-allowed disabled:opacity-55"
             aria-pressed={motionEnabled}
           >
             {motionEnabled ? (

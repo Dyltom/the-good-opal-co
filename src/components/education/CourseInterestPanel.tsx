@@ -10,15 +10,15 @@ interface CourseInterestPanelProps {
 export function CourseInterestPanel({ course }: CourseInterestPanelProps) {
   if (course.availability === 'closed') {
     return (
-      <aside className="bg-charcoal p-7 text-cream sm:p-9" aria-label="Course availability">
-        <p className="font-sans text-xs uppercase tracking-[0.14em] text-cream/55">Availability</p>
+      <aside className="bg-ink p-7 text-bg sm:p-9" aria-label="Course availability">
+        <p className="font-sans text-xs uppercase tracking-[0.14em] text-bg/55">Availability</p>
         <h2 className="mt-3 font-serif text-3xl font-medium">Interest is currently closed.</h2>
-        <p className="mt-4 font-sans text-sm leading-6 text-cream/70">
+        <p className="mt-4 font-sans text-sm leading-6 text-bg/70">
           Explore the free cutting guides while the next course decision is made.
         </p>
         <Link
           href="/blog"
-          className="mt-6 inline-flex min-h-11 items-center gap-2 border-b border-cream/60 font-sans text-sm font-semibold"
+          className="mt-6 inline-flex min-h-11 items-center gap-2 border-b border-bg/60 font-sans text-sm font-semibold"
         >
           Read free guides <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
@@ -27,21 +27,21 @@ export function CourseInterestPanel({ course }: CourseInterestPanelProps) {
   }
 
   return (
-    <aside className="bg-charcoal p-7 text-cream sm:p-9" aria-label="Course interest enquiry">
-      <Mail className="h-6 w-6 text-opal-light" aria-hidden="true" />
-      <p className="mt-6 font-sans text-xs uppercase tracking-[0.14em] text-cream/55">
+    <aside className="bg-ink p-7 text-bg sm:p-9" aria-label="Course interest enquiry">
+      <Mail className="h-6 w-6 text-bg" aria-hidden="true" />
+      <p className="mt-6 font-sans text-xs uppercase tracking-[0.14em] text-bg/55">
         {course.availability === 'coming-soon' ? 'Coming soon' : 'Interest enquiries open'}
       </p>
       <h2 className="mt-3 text-balance font-serif text-3xl font-medium leading-tight">
         Hear when the course plan is confirmed.
       </h2>
-      <p className="mt-4 font-sans text-sm leading-6 text-cream/70">
+      <p className="mt-4 font-sans text-sm leading-6 text-bg/70">
         This sends an interest enquiry only. It is not enrolment or payment. Tell us your experience
         level and what you want to learn, then we will reply with confirmed details.
       </p>
       <Link
         href={courseInterestHref(course.title)}
-        className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-cream px-6 font-sans text-sm font-semibold text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+        className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-bg px-6 font-sans text-sm font-semibold text-ink transition-colors hover:bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
       >
         Send course interest <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </Link>

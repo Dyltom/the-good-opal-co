@@ -72,18 +72,18 @@ export function CookieConsent() {
           transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
           className="fixed bottom-3 left-3 right-3 z-50 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm"
         >
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-warm-grey bg-cream px-4 py-3 text-xs leading-5 text-charcoal/75 shadow-md">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-rule bg-bg px-4 py-3 text-xs leading-5 text-ink shadow-md">
             <p className="min-w-0 flex-1 basis-56">
               May we use optional analytics to improve the store?{' '}
-              <Link href="/legal/cookies" className="underline underline-offset-2 hover:text-charcoal">
+              <Link href="/legal/cookies" className="underline underline-offset-2 hover:text-ink">
                 Cookie policy
               </Link>
             </p>
             <div className="flex gap-2">
-              <Button onClick={acceptNecessary} size="sm" variant="ghost" className="min-h-[44px] min-w-[44px] px-3">
+              <Button onClick={acceptNecessary} size="sm" variant="quiet" className="min-h-[44px] min-w-[44px] px-3">
                 Necessary only
               </Button>
-              <Button onClick={acceptAll} size="sm" className="min-h-[44px] min-w-[44px] bg-charcoal px-3 text-cream hover:bg-charcoal-dark">
+              <Button onClick={acceptAll} size="sm" className="min-h-[44px] min-w-[44px] bg-ink px-3 text-bg hover:bg-ink">
                 Accept analytics
               </Button>
             </div>
@@ -114,7 +114,7 @@ export function CookieSettingsLink({ className }: { className?: string }) {
   return hasConsent ? (
     <button
       onClick={openSettings}
-      className={cn('text-sm text-content-muted transition-colors hover:text-charcoal', className)}
+      className={cn('text-sm text-ink-2 transition-colors hover:text-ink', className)}
     >
       Cookie Settings
     </button>

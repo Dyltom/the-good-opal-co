@@ -44,7 +44,7 @@ export function CartClearConfirmDialog({
           <AlertDialogCancel>Keep items</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            className="bg-fire-coral hover:bg-fire-coral/90"
+            className="bg-destructive hover:bg-destructive/90"
           >
             Clear cart
           </AlertDialogAction>

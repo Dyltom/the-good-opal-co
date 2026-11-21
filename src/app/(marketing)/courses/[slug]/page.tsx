@@ -99,16 +99,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
       <Container className="py-10 sm:py-14">
         <Link
           href="/courses"
-          className="inline-flex min-h-11 items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
+          className="inline-flex min-h-11 items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> All courses
         </Link>
       </Container>
 
-      <section className="border-y border-warm-grey/60 bg-cream">
+      <section className="border-y border-rule bg-bg">
         <Container className="grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:py-20">
           <div>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 font-sans text-xs uppercase tracking-[0.1em] text-charcoal/50">
+            <div className="flex flex-wrap gap-x-5 gap-y-2 font-sans text-xs uppercase tracking-[0.1em] text-ink-3">
               <span>{courseFormatLabels[course.format]}</span>
               <span>{courseLevelLabels[course.level]}</span>
               {course.duration ? <span>{course.duration}</span> : null}
@@ -117,11 +117,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <h1 className="mt-5 max-w-[13ch] text-balance font-serif text-[clamp(2.25rem,4.4vw,4.25rem)] font-medium leading-[1]">
               {course.title}
             </h1>
-            <p className="mt-7 max-w-2xl font-sans text-base leading-7 text-charcoal/70 sm:text-lg sm:leading-8">
+            <p className="mt-7 max-w-2xl font-sans text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
               {course.summary}
             </p>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden bg-charcoal">
+          <div className="relative aspect-[4/3] overflow-hidden bg-ink">
             <Image
               src={imageUrl ?? '/images/customs/custom-2.jpg'}
               alt={featured?.alt || 'Four Australian opals showing varied colour and pattern'}
@@ -140,7 +140,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <Eyebrow>
               Course overview
             </Eyebrow>
-            <p className="mt-5 max-w-[68ch] whitespace-pre-line font-sans text-base leading-8 text-charcoal/75">
+            <p className="mt-5 max-w-[68ch] whitespace-pre-line font-sans text-base leading-8 text-ink">
               {course.introduction}
             </p>
 
@@ -153,10 +153,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   {course.outcomes.map(({ item, id }) => (
                     <li
                       key={id ?? item}
-                      className="flex gap-3 font-sans text-sm leading-6 text-charcoal/75"
+                      className="flex gap-3 font-sans text-sm leading-6 text-ink"
                     >
                       <Check
-                        className="mt-1 h-4 w-4 shrink-0 text-opal-emerald-dark"
+                        className="mt-1 h-4 w-4 shrink-0 text-success"
                         aria-hidden="true"
                       />{' '}
                       {item}
@@ -176,7 +176,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               >
                 Course outline
               </h2>
-              <p className="mt-4 max-w-2xl font-sans text-sm leading-6 text-charcoal/65">
+              <p className="mt-4 max-w-2xl font-sans text-sm leading-6 text-ink-2">
                 This public outline shows the planned subjects. It does not include lessons or
                 promise a start date.
               </p>
@@ -186,27 +186,27 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </section>
 
             <section
-              className="mt-16 border-y border-warm-grey/70 py-10"
+              className="mt-16 border-y border-rule py-10"
               aria-labelledby="instructor-heading"
             >
               <div className="flex gap-5">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-charcoal text-cream">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ink text-bg">
                   <UserRound className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="font-sans text-xs uppercase tracking-[0.12em] text-charcoal/50">
+                  <p className="font-sans text-xs uppercase tracking-[0.12em] text-ink-3">
                     Instructor
                   </p>
                   <h2 id="instructor-heading" className="mt-2 font-serif text-3xl font-medium">
                     {course.instructor.name}
                   </h2>
                   {course.instructor.role ? (
-                    <p className="mt-1 font-sans text-sm text-charcoal/60">
+                    <p className="mt-1 font-sans text-sm text-ink-2">
                       {course.instructor.role}
                     </p>
                   ) : null}
                   {course.instructor.bio ? (
-                    <p className="mt-5 max-w-2xl font-sans text-sm leading-7 text-charcoal/70">
+                    <p className="mt-5 max-w-2xl font-sans text-sm leading-7 text-ink-2">
                       {course.instructor.bio}
                     </p>
                   ) : null}
@@ -219,7 +219,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <h2 id="audience-heading" className="font-serif text-3xl font-medium">
                   Who this is for
                 </h2>
-                <ul className="mt-6 space-y-3 font-sans text-sm leading-6 text-charcoal/70">
+                <ul className="mt-6 space-y-3 font-sans text-sm leading-6 text-ink-2">
                   {course.audience.map(({ item, id }) => (
                     <li key={id ?? item}>• {item}</li>
                   ))}

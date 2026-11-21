@@ -105,25 +105,25 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
   return (
     <Container className="py-10 lg:py-14">
       <div className="pb-28 lg:pb-0" aria-busy={isPending}>
-        <header className="mb-8 border-b border-warm-grey/50 pb-6">
+        <header className="mb-8 border-b border-rule pb-6">
           <Eyebrow>
             Your order
           </Eyebrow>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
+              <h1 className="font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
                 Shopping cart
               </h1>
-              <p className="mt-2 text-sm text-charcoal/65" aria-live="polite">
+              <p className="mt-2 text-sm text-ink-2" aria-live="polite">
                 {cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'}, all prices in AUD
               </p>
             </div>
             <Button
-              variant="ghost"
+              variant="quiet"
               size="sm"
               onClick={() => setShowClearDialog(true)}
               disabled={isPending}
-              className="text-charcoal/65 hover:text-fire-coral sm:h-11"
+              className="text-ink-2 hover:text-destructive sm:h-11"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
               Clear cart
@@ -143,7 +143,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <section
             aria-label="Items in your cart"
-            className="min-w-0 divide-y divide-warm-grey/50 border-y border-warm-grey/50"
+            className="min-w-0 divide-y divide-rule border-y border-rule"
           >
             {cart.items.map((item) => (
               <CartItemRow
@@ -157,38 +157,38 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
           </section>
 
           <aside className="min-w-0 lg:sticky lg:top-24" aria-labelledby="cart-summary-heading">
-            <div className="border border-warm-grey/60 bg-cream p-5 sm:p-6">
+            <div className="border border-rule bg-bg p-5 sm:p-6">
               <h2
                 id="cart-summary-heading"
-                className="font-serif text-2xl font-semibold text-charcoal"
+                className="font-serif text-2xl font-semibold text-ink"
               >
                 Order summary
               </h2>
 
               <ShippingRegionToggle value={region} onChange={setRegion} className="mt-5" />
 
-              <dl className="mt-5 space-y-3 text-sm text-charcoal">
+              <dl className="mt-5 space-y-3 text-sm text-ink">
                 <div className="flex justify-between gap-4">
                   <dt>Subtotal</dt>
-                  <dd className="tabular-nums">{formatCurrency(pricing.subtotal, 'AUD')}</dd>
+                  <dd >{formatCurrency(pricing.subtotal, 'AUD')}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt>Shipping</dt>
-                  <dd className="tabular-nums">
+                  <dd >
                     {pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}
                   </dd>
                 </div>
-                <div className="flex justify-between gap-4 border-t border-warm-grey/50 pt-4 text-lg font-semibold">
+                <div className="flex justify-between gap-4 border-t border-rule pt-4 text-lg font-semibold">
                   <dt>Estimated total</dt>
-                  <dd className="tabular-nums">{formatCurrency(pricing.total, 'AUD')}</dd>
+                  <dd >{formatCurrency(pricing.total, 'AUD')}</dd>
                 </div>
               </dl>
 
-              <p className="mt-3 text-xs leading-5 text-charcoal/60">
+              <p className="mt-3 text-xs leading-5 text-ink-2">
                 Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout.
               </p>
 
-              <FreeShippingProgress total={cart.total} className="mt-5 rounded-none bg-white" />
+              <FreeShippingProgress total={cart.total} className="mt-5 rounded-none" />
 
               <CheckoutButton cart={cart} region={region} className="mt-6" />
               <Button asChild variant="link" className="mt-2 w-full">
@@ -196,7 +196,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
               </Button>
             </div>
 
-            <div className="mt-5 flex gap-3 text-sm leading-6 text-charcoal/65">
+            <div className="mt-5 flex gap-3 text-sm leading-6 text-ink-2">
               <ShoppingBag className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>Each piece remains available to other shoppers until payment is complete.</p>
             </div>
@@ -212,7 +212,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
               <button
                 type="button"
                 onClick={() => setFeedback('cart')}
-                className="mt-2 inline-flex min-h-11 items-center text-sm text-charcoal/65 underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                className="mt-2 inline-flex min-h-11 items-center text-sm text-ink-2 underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 Not ready yet? Tell us what would help
               </button>
@@ -221,13 +221,13 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
         </div>
       </div>
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/50 bg-cream px-4 py-3 lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-4 py-3 lg:hidden"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto flex max-w-screen-sm items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-charcoal/60">Estimated total</p>
-            <p className="font-serif text-lg font-semibold tabular-nums text-charcoal">
+            <p className="text-xs text-ink-2">Estimated total</p>
+            <p className="font-serif text-lg font-semibold text-ink">
               {formatCurrency(pricing.total, 'AUD')}
             </p>
           </div>
@@ -259,7 +259,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
     <article className="flex min-w-0 gap-4 py-6 sm:gap-6">
       <Link
         href={`/store/${item.slug}`}
-        className="h-24 w-24 shrink-0 overflow-hidden bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible sm:h-32 sm:w-32"
+        className="h-24 w-24 shrink-0 overflow-hidden bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-32 sm:w-32"
         aria-label={`View ${item.name}`}
       >
         {item.image ? (
@@ -272,7 +272,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
           />
         ) : (
           <div
-            className="flex h-full w-full items-center justify-center text-charcoal/35"
+            className="flex h-full w-full items-center justify-center text-ink-3"
             aria-hidden="true"
           >
             <ShoppingBag className="h-7 w-7" />
@@ -285,19 +285,19 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
           <div className="min-w-0">
             <Link
               href={`/store/${item.slug}`}
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <h2 className="break-words font-serif text-lg font-semibold leading-6 text-charcoal sm:text-xl">
+              <h2 className="break-words font-serif text-lg font-semibold leading-6 text-ink sm:text-xl">
                 {item.name}
               </h2>
             </Link>
             {item.quantity > 1 && (
-              <p className="mt-1 text-sm tabular-nums text-charcoal/60">
+              <p className="mt-1 text-sm text-ink-2">
                 {formatCurrency(item.price, 'AUD')} each
               </p>
             )}
           </div>
-          <p className="shrink-0 font-semibold tabular-nums text-charcoal">
+          <p className="shrink-0 font-semibold text-ink">
             {formatCurrency(item.price * item.quantity, 'AUD')}
           </p>
         </div>
@@ -305,13 +305,13 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
           {(item.maxQuantity ?? Infinity) > 1 ? (
             <div
-              className="flex items-center border border-warm-grey/60 bg-white"
+              className="flex items-center border border-rule bg-bg"
               aria-label={`Quantity for ${item.name}`}
             >
               <Button
                 type="button"
                 size="icon"
-                variant="ghost"
+                variant="quiet"
                 onClick={() => onUpdateQuantity(item.quantity - 1)}
                 disabled={isPending}
                 aria-label={`Decrease quantity of ${item.name}`}
@@ -320,7 +320,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
                 <Minus className="h-4 w-4" aria-hidden="true" />
               </Button>
               <span
-                className="w-10 text-center text-sm font-semibold text-charcoal"
+                className="w-10 text-center text-sm font-semibold text-ink"
                 aria-live="polite"
               >
                 {item.quantity}
@@ -328,7 +328,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
               <Button
                 type="button"
                 size="icon"
-                variant="ghost"
+                variant="quiet"
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending || item.quantity >= (item.maxQuantity ?? Infinity)}
                 aria-label={`Increase quantity of ${item.name}`}
@@ -338,17 +338,17 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
               </Button>
             </div>
           ) : (
-            <p className="text-sm text-charcoal/60">One of a kind</p>
+            <p className="text-sm text-ink-2">One of a kind</p>
           )}
 
           <Button
             type="button"
             size="sm"
-            variant="ghost"
+            variant="quiet"
             onClick={onRemove}
             disabled={isPending}
             aria-label={`Remove ${item.name} from cart`}
-            className="text-charcoal/65 hover:text-fire-coral sm:h-11"
+            className="text-ink-2 hover:text-destructive sm:h-11"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Remove

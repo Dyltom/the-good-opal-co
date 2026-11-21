@@ -34,16 +34,16 @@ export function EmptyState({
   return (
     <div className={`flex flex-col items-center justify-center min-h-[400px] p-8 text-center ${className}`}>
       {icon && (
-        <div className="mb-6 p-4 bg-surface-secondary rounded-full">
+        <div className="mb-6 p-4 bg-bg rounded-full">
           {icon}
         </div>
       )}
 
-      <h3 className="text-2xl font-semibold mb-3 text-content-inverse">
+      <h3 className="text-2xl font-semibold mb-3 text-ink">
         {title}
       </h3>
 
-      <p className="text-content-muted max-w-md mb-8 leading-relaxed">
+      <p className="text-ink-2 max-w-md mb-8 leading-relaxed">
         {description}
       </p>
 
@@ -60,11 +60,11 @@ export function EmptyState({
 
         {secondaryAction && (
           secondaryAction.href ? (
-            <Button variant="outline" asChild>
+            <Button variant="ghost" asChild>
               <Link href={secondaryAction.href}>{secondaryAction.label}</Link>
             </Button>
           ) : (
-            <Button variant="outline" onClick={secondaryAction.onClick}>
+            <Button variant="ghost" onClick={secondaryAction.onClick}>
               {secondaryAction.label}
             </Button>
           )
@@ -80,7 +80,7 @@ export function EmptyState({
 export function CartEmptyState() {
   return (
     <EmptyState
-      icon={<ShoppingBag className="w-12 h-12 text-content-muted" />}
+      icon={<ShoppingBag className="w-12 h-12 text-ink-2" />}
       title="Your cart is empty"
       description="Looks like you haven't added any pieces yet. Explore our collection of unique Australian opals."
       action={{
@@ -101,7 +101,7 @@ export function CartEmptyState() {
 export function SearchEmptyState({ query }: { query: string }) {
   return (
     <EmptyState
-      icon={<Search className="w-12 h-12 text-content-muted" />}
+      icon={<Search className="w-12 h-12 text-ink-2" />}
       title="No results found"
       description={`We couldn't find any opals matching "${query}". Try adjusting your search or browse our categories.`}
       action={{
@@ -122,7 +122,7 @@ export function SearchEmptyState({ query }: { query: string }) {
 export function WishlistEmptyState() {
   return (
     <EmptyState
-      icon={<Heart className="w-12 h-12 text-content-muted" />}
+      icon={<Heart className="w-12 h-12 text-ink-2" />}
       title="Your wishlist is empty"
       description="Save your favorite opals to your wishlist and we'll keep them here for you."
       action={{
@@ -139,7 +139,7 @@ export function WishlistEmptyState() {
 export function OrdersEmptyState() {
   return (
     <EmptyState
-      icon={<Package className="w-12 h-12 text-content-muted" />}
+      icon={<Package className="w-12 h-12 text-ink-2" />}
       title="No orders yet"
       description="When you make your first purchase, your order history will appear here."
       action={{
@@ -164,7 +164,7 @@ export function ErrorEmptyState({
 }) {
   return (
     <EmptyState
-      icon={<AlertCircle className="w-12 h-12 text-status-error" />}
+      icon={<AlertCircle className="w-12 h-12 text-destructive" />}
       title={title}
       description={description}
       action={{

@@ -43,7 +43,7 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-ink/30 z-50"
           />
 
           <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4 pointer-events-none">
@@ -56,14 +56,14 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 24 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="pointer-events-auto flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:max-w-4xl sm:rounded-2xl"
+              className="pointer-events-auto flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-sm bg-bg shadow-2xl sm:max-w-4xl sm:rounded-sm"
             >
               <div className="grid flex-1 overflow-y-auto md:grid-cols-2">
-                <div className="relative aspect-square bg-cream md:aspect-auto md:min-h-[24rem]">
+                <div className="relative aspect-square bg-bg md:aspect-auto md:min-h-[24rem]">
                   {product.image ? (
                     <>
                       {isImageLoading && (
-                        <div className="absolute inset-0 bg-cream-dark animate-pulse" />
+                        <div className="absolute inset-0 bg-plinth animate-pulse" />
                       )}
                       <Image
                         src={product.image}
@@ -77,14 +77,14 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="text-center">
-                        <div className="w-24 h-24 rounded-full bg-warm-grey mx-auto mb-3" />
-                        <p className="text-sm text-charcoal/60">No image available</p>
+                        <div className="w-24 h-24 rounded-full bg-plinth-2 mx-auto mb-3" />
+                        <p className="text-sm text-ink-2">No image available</p>
                       </div>
                     </div>
                   )}
                   {product.featured && (
                     <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-gradient-to-r from-opal-electric to-opal-deep text-white text-xs font-medium rounded-full">
+                      <span className="px-3 py-1 bg-ink text-bg text-xs font-medium rounded-full">
                         Featured
                       </span>
                     </div>
@@ -92,63 +92,63 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                   <button
                     type="button"
                     onClick={onClose}
-                    className="absolute top-4 right-4 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-white/90 text-charcoal shadow-lg backdrop-blur-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                    className="absolute top-4 right-4 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-rule bg-bg text-ink shadow-lg backdrop-blur-sm transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     aria-label="Close quick view"
                   >
                     <X size={20} aria-hidden="true" />
                   </button>
                 </div>
                 <div className="flex flex-col px-4 py-5 sm:px-6 md:p-8">
-                  <h2 id="quick-view-title" className="text-2xl md:text-3xl font-serif text-charcoal mb-2">
+                  <h2 id="quick-view-title" className="text-2xl md:text-3xl font-serif text-ink mb-2">
                     {product.name}
                   </h2>
                   <div className="flex flex-wrap gap-4 mb-4 text-sm">
                     {product.stoneType && (
-                      <div className="flex items-center gap-1.5 text-charcoal/70">
-                        <Gem size={16} className="text-opal-electric-accessible" />
+                      <div className="flex items-center gap-1.5 text-ink-2">
+                        <Gem size={16} className="text-accent" />
                         <span>{storeLabel(product.stoneType)}</span>
                       </div>
                     )}
                     {product.stoneOrigin && (
-                      <div className="flex items-center gap-1.5 text-charcoal/70">
-                        <MapPin size={16} className="text-opal-electric-accessible" />
+                      <div className="flex items-center gap-1.5 text-ink-2">
+                        <MapPin size={16} className="text-accent" />
                         <span>{storeLabel(product.stoneOrigin)}</span>
                       </div>
                     )}
                   </div>
                   {product.description && (
-                    <p className="text-charcoal/70 mb-6 line-clamp-4">
+                    <p className="text-ink-2 mb-6 line-clamp-4">
                       {product.description}
                     </p>
                   )}
-                  <div className="mb-6 p-4 bg-gradient-to-r from-opal-electric/5 to-fire-gold/5 rounded-lg border border-opal-electric/20">
-                    <p className="text-sm font-medium text-charcoal mb-1">
+                  <div className="mb-6 p-4 bg-plinth rounded-sm border border-rule">
+                    <p className="text-sm font-medium text-ink mb-1">
                       One-of-a-kind piece
                     </p>
-                    <p className="text-xs text-charcoal/70">
+                    <p className="text-xs text-ink-2">
                       This is a unique opal. Once sold, it cannot be replaced.
                     </p>
                   </div>
                   <div className="mb-6">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-semibold tabular-nums text-charcoal">
+                      <span className="text-3xl font-semibold text-ink">
                         {formatCurrency(product.price, 'AUD')}
                       </span>
                       {discount && product.compareAtPrice ? (
                         <>
-                          <span className="text-lg line-through tabular-nums text-charcoal/45">
+                          <span className="text-lg line-through text-ink-3">
                             {formatCurrency(product.compareAtPrice, 'AUD')}
                           </span>
-                          <span className="text-sm font-medium text-fire-pink-dark">Save {discount}%</span>
+                          <span className="text-sm font-medium text-accent">Save {discount}%</span>
                         </>
                       ) : null}
                     </div>
-                    <p className="text-sm text-charcoal/70 mt-1">
+                    <p className="text-sm text-ink-2 mt-1">
                       {product.stock === 1 ? 'Only 1 available' : `${product.stock} available`}
                     </p>
                   </div>
                   <div
-                    className="sticky bottom-0 -mx-4 mt-auto flex flex-col gap-3 sm:flex-row border-t border-warm-grey/40 bg-white/95 px-4 pt-3 backdrop-blur sm:static sm:mx-0 sm:border-t-0 sm:bg-transparent sm:px-0 sm:pt-0 sm:backdrop-blur-none"
+                    className="sticky bottom-0 -mx-4 mt-auto flex flex-col gap-3 sm:flex-row border-t border-rule bg-bg px-4 pt-3 sm:static sm:mx-0 sm:border-t-0 sm:bg-transparent sm:px-0 sm:pt-0 sm:backdrop-blur-none"
                     style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
                   >
                     <AddToCartButton
@@ -162,7 +162,7 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                     </AddToCartButton>
                     <Link
                       href={`/store/${product.slug}`}
-                      className="flex min-h-[44px] items-center justify-center rounded-lg border border-warm-grey/60 px-6 py-3 font-medium text-charcoal/80 transition-colors hover:bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                      className="flex min-h-[44px] items-center justify-center rounded-sm border border-rule px-6 py-3 font-medium text-ink transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       View details
                     </Link>

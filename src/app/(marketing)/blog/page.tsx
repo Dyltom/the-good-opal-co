@@ -75,7 +75,6 @@ export default async function BlogPage() {
       />
       <Container className="py-10 sm:py-12 lg:py-14">
         <PageHeader
-          eyebrow="Field notes"
           title="Learn about opal before you choose."
           description="Straightforward guides on stone types, buying questions, jewellery care, and the details worth checking in a listing."
         />
@@ -87,16 +86,16 @@ export default async function BlogPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-16 border-y border-warm-grey/70 py-14">
-            <h2 className="font-serif text-3xl font-medium text-charcoal">
+          <div className="mt-16 border-y border-rule py-14">
+            <h2 className="font-serif text-3xl font-medium text-ink">
               No articles published yet.
             </h2>
-            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-charcoal/65">
+            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-ink-2">
               The store and product notes remain available while the first guides are prepared.
             </p>
             <Link
               href="/store"
-              className="mt-6 inline-flex items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
+              className="mt-6 inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
             >
               Browse available pieces <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>

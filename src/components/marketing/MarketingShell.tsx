@@ -1,24 +1,16 @@
 import type { ReactNode } from 'react'
 import { Footer, SiteNavigation } from '@/components/navigation'
-import { cn } from '@/lib/utils'
 
 export interface MarketingShellProps {
   children: ReactNode
-  className?: string
-  mainClassName?: string
   showFooter?: boolean
 }
 
-export function MarketingShell({
-  children,
-  className,
-  mainClassName,
-  showFooter = true,
-}: MarketingShellProps) {
+export function MarketingShell({ children, showFooter = true }: MarketingShellProps) {
   return (
-    <div className={cn('min-h-screen bg-cream text-charcoal', className)}>
+    <div className="flex min-h-screen flex-col text-ink">
       <SiteNavigation />
-      <main id="main-content" tabIndex={-1} className={cn('pt-20', mainClassName)}>
+      <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
       {showFooter ? <Footer /> : null}

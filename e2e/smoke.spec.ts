@@ -35,8 +35,8 @@ test('navigation works at the active viewport', async ({ page }, testInfo) => {
   await expect(page).toHaveTitle(/The Good Opal Co/)
 
   if (testInfo.project.name.startsWith('mobile')) {
-    await page.getByRole('button', { name: 'Open navigation' }).click()
-    await expect(page.getByRole('dialog', { name: 'Navigation menu' })).toBeVisible()
+    await page.getByRole('button', { name: 'Menu' }).click()
+    await expect(page.getByRole('navigation', { name: 'Site menu' })).toBeVisible()
   }
 
   await page.getByRole('link', { name: /Shop/i }).first().click()

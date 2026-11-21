@@ -20,18 +20,14 @@ export default async function CartPage() {
 
   return (
     <PageTransition>
-      <MarketingShell className="bg-white">
+      <MarketingShell>
           {cart.items.length === 0 ? (
             <Container className="py-12 text-center sm:py-16">
-              <div
-                aria-hidden
-                className="mx-auto mb-6 h-px w-24 bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald opacity-70"
-              />
-              <ShoppingBag className="mx-auto h-8 w-8 text-charcoal/40" aria-hidden="true" />
-              <h1 className="mt-5 font-serif text-4xl font-semibold text-charcoal">
+              <ShoppingBag className="mx-auto h-8 w-8 text-ink-3" aria-hidden="true" />
+              <h1 className="mt-5 font-serif text-4xl font-semibold text-ink">
                 Your cart is empty
               </h1>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-charcoal/65">
+              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-ink-2">
                 Browse available opals and jewellery, then add a piece when you are ready.
               </p>
               <Button
@@ -41,10 +37,10 @@ export default async function CartPage() {
               >
                 <Link href="/store">Browse available pieces</Link>
               </Button>
-              <p className="mt-4 text-sm text-charcoal/65">
+              <p className="mt-4 text-sm text-ink-2">
                 <Link
                   href="/contact"
-                  className="underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                  className="underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   Need help choosing? Talk to us
                 </Link>

@@ -17,13 +17,13 @@ interface BlogCardProps {
 
 export function BlogCard({ post }: BlogCardProps) {
   return (
-    <article className="group border-t border-warm-grey/70 pt-5">
+    <article className="group border-t border-rule pt-5">
       <Link
         href={`/blog/${post.slug}`}
-        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         {post.featuredImage ? (
-          <div className="relative aspect-[4/3] overflow-hidden bg-warm-grey/20">
+          <div className="relative aspect-[4/3] overflow-hidden bg-plinth">
             <Image
               src={post.featuredImage.url}
               alt={post.featuredImage.alt}
@@ -33,9 +33,9 @@ export function BlogCard({ post }: BlogCardProps) {
             />
           </div>
         ) : null}
-        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-xs text-charcoal/55">
+        <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-xs text-ink-2">
           {post.category ? (
-            <span className="font-semibold text-opal-electric-accessible">{post.category}</span>
+            <span className="font-semibold text-accent">{post.category}</span>
           ) : null}
           {post.publishedAt ? (
             <time>
@@ -44,15 +44,15 @@ export function BlogCard({ post }: BlogCardProps) {
           ) : null}
           {post.author ? <span>By {post.author}</span> : null}
         </div>
-        <h2 className="mt-3 font-serif text-2xl font-medium leading-tight text-charcoal">
+        <h2 className="mt-3 font-serif text-2xl font-medium leading-tight text-ink">
           {post.title}
         </h2>
         {post.excerpt ? (
-          <p className="mt-3 line-clamp-3 font-sans text-sm leading-6 text-charcoal/65">
+          <p className="mt-3 line-clamp-3 font-sans text-sm leading-6 text-ink-2">
             {post.excerpt}
           </p>
         ) : null}
-        <span className="mt-5 inline-flex items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold text-charcoal">
+        <span className="mt-5 inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold text-ink">
           Read article <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </span>
       </Link>

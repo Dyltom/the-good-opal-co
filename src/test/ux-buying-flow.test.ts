@@ -136,13 +136,11 @@ describe('buying flow UI/UX safeguards', () => {
   })
 
   test('closed mobile navigation does not reserve page-height hit area', () => {
-    const source = read('src/components/navigation/Navigation.tsx')
+    const source = read('src/components/navigation/SiteNavigation.tsx')
 
-    expect(source).toContain('{mobileMenuOpen ? (')
-    expect(source).toContain('useFocusTrap<HTMLDivElement>')
-    expect(source).toContain('role="dialog"')
-    expect(source).toContain('aria-modal="true"')
-    expect(source).toContain("document.body.style.overflow = 'hidden'")
+    expect(source).toContain("{panel === 'menu' ? (")
+    expect(source).toContain("aria-expanded={panel === 'menu'}")
+    expect(source).toContain("event.key !== 'Escape'")
     expect(source).toContain('disabled={!hydrated}')
     expect(source).toContain('useEffect(() => setHydrated(true), [])')
   })
@@ -174,7 +172,7 @@ describe('buying flow UI/UX safeguards', () => {
     const homeSource = read('src/app/(marketing)/page.tsx')
     const blogSource = read('src/app/(marketing)/blog/page.tsx')
 
-    expect(productHeroSource).toContain('overflow-hidden bg-white')
+    expect(productHeroSource).toContain('overflow-hidden bg-plinth')
     expect(productHeroSource).toContain('sizes="(max-width: 1024px) 100vw, 56vw"')
     expect(productHeroSource).toContain('sm:grid-cols-2 lg:grid-cols-4')
     expect(homeSource).toContain('grid gap-px overflow-hidden')
@@ -203,8 +201,9 @@ describe('buying flow UI/UX safeguards', () => {
   test('product gallery uses editorial framing instead of gradient glow chrome', () => {
     const source = read('src/components/product/ProductImageGallery.tsx')
 
-    expect(source).toContain('border border-warm-grey/55 bg-white')
     expect(source).toContain('aria-modal="true"')
+    expect(source).not.toContain('bg-gradient')
+    expect(source).not.toContain('mix-blend')
     expect(source).not.toContain('FEATURED')
     expect(source).not.toContain('shadow-2xl')
     expect(source).not.toContain('bg-gradient-to-br from-opal-electric via-fire-gold to-opal-deep')
@@ -247,7 +246,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage collection sections use gallery restraint instead of template glow', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('grid gap-px overflow-hidden border border-warm-grey/55')
     expect(source).toContain('Choose by what matters to you.')
     expect(source).toContain('One stone, one piece.')
     expect(source).not.toContain('text-gradient-prismatic')
@@ -261,9 +259,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page keeps commerce hierarchy solid and mobile-friendly', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('focus-visible:ring-opal-electric-accessible')
     expect(source).toContain('flex flex-wrap items-baseline gap-x-3 gap-y-1')
-    expect(source).toContain('border-t border-warm-grey/40 pt-10 lg:pt-16')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('text-transparent')
     expect(source).not.toContain(
@@ -275,21 +271,18 @@ describe('buying flow UI/UX safeguards', () => {
     const buttonSource = read('src/components/ui/button.tsx')
     const gallerySource = read('src/components/product/ProductImageGallery.tsx')
 
-    expect(buttonSource).toContain('transition-colors duration-150')
-    expect(buttonSource).toContain('bg-charcoal text-cream hover:bg-charcoal-dark')
+    expect(buttonSource).toContain('transition-colors duration-200')
     expect(buttonSource).not.toContain('bg-gradient')
     expect(buttonSource).not.toContain('backdrop-blur')
     expect(buttonSource).not.toContain('hover:scale')
     expect(buttonSource).not.toContain('active:scale')
-    expect(gallerySource).toContain('focus-visible:ring-2 focus-visible:ring-opal-electric-accessible')
+    expect(gallerySource).toContain('focus-visible:ring-2 focus-visible:ring-accent')
     expect(gallerySource).not.toContain('scale-105')
   })
 
   test('footer closes the site like a quiet gallery note', () => {
     const source = read('src/components/navigation/Footer.tsx')
 
-    expect(source).toContain('bg-charcoal-dark text-white')
-    expect(source).toContain('border-t border-warm-grey/20')
     expect(source).toContain('From the gallery')
     expect(source).toContain('Australian opal that doesn&apos;t cost the earth.')
     expect(source).not.toContain('Prismatic Top Border')
