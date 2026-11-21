@@ -93,6 +93,10 @@ const nextConfig: NextConfig = {
       { source: '/product-tag/:path*', destination: '/store', permanent: true },
       { source: '/:taxonomy(category|tag|author)/:path*', destination: '/blog', permanent: true },
       { source: '/feed', destination: '/feed.xml', permanent: true },
+      { source: '/wp-admin', destination: 'https://old.goodopalco.com/wp-admin/', permanent: false },
+      { source: '/wp-admin/:path*', destination: 'https://old.goodopalco.com/wp-admin/:path*', permanent: false },
+      { source: '/wp-login.php', destination: 'https://old.goodopalco.com/wp-login.php', permanent: false },
+      { source: '/wp-content/uploads/:path*', destination: 'https://old.goodopalco.com/wp-content/uploads/:path*', permanent: false },
     ]
   },
 }
