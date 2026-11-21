@@ -229,7 +229,7 @@ describe('deployment config', () => {
   test('legacy commerce and editorial URLs retain permanent destinations', () => {
     const config = read('next.config.ts')
 
-    expect(config).toContain('destination: `/blog/${slug}`')
+    expect(config).toContain("destination: '/blog/:slug'")
     expect(config).toContain("['/shop', '/store']")
     expect(config).toContain("source: '/product/:slug'")
     expect(config).toContain("['/privacy-policy', '/legal/privacy']")
