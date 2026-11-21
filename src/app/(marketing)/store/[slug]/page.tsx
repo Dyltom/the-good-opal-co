@@ -26,7 +26,7 @@ import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
-import { summarize } from '@/lib/catalog'
+import { summarize, toCatalogProduct } from '@/lib/catalog'
 import { reservedProductIds } from '@/lib/inventory-reservations'
 
 interface ProductPageProps {
@@ -103,7 +103,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       : undefined) ?? ownedProductImageUrl(product.slug)
 
   const about = parseProductDescription(product.description)
-  const descriptionText = about.paragraphs.join(' ')
 
   const categoryName = product.category ? storeLabel(product.category) : undefined
   const productShippingProgress = getFreeShippingProgress(product.price)
@@ -133,10 +132,27 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     }
   }
   const stock = product.stock ?? 0
-  const reserved = stock <= 0 && (await reservedProductIds()).has(String(product.id))
-  const sold = stock <= 0 && !reserved
+  const catalogProduct = toCatalogProduct(product, stock <= 0 ? await reservedProductIds() : undefined)
+  const reserved = catalogProduct.availability === 'reserved'
+  const sold = catalogProduct.availability === 'sold'
   const discount = savePercent(product.price, product.compareAtPrice)
   const similarHref = sold ? await similarPiecesHref(product) : undefined
+  const isDeposit = product.category === 'custom-commissions'
+  const isLooseOpal = product.category === 'raw-opals'
+  const aboutHeading = isDeposit
+    ? 'About this deposit'
+    : product.soldPerUnit
+      ? 'About these stones'
+      : isLooseOpal
+        ? 'About this stone'
+        : 'About this piece'
+  const availabilityNote = isDeposit
+    ? 'A deposit to start your custom piece.'
+    : product.soldPerUnit
+      ? 'Priced per stone. Stones are selected at random from this batch.'
+      : stock === 1
+        ? 'What is photographed is exactly what you receive.'
+        : null
   const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
   const designStyle = ringStyles.find((style) =>
     product.name.toLowerCase().includes(`${style.label.replace('&', 'and').toLowerCase()} ring`)
@@ -185,23 +201,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   return (
     <>
       <ProductJsonLd
-        product={{
-          name: product.name,
-          slug: product.slug,
-          description: descriptionText,
-          price: product.price,
-          images: productImages.map((img) => img.url),
-          category: categoryName,
-          stock: product.stock ?? 0,
-          sku: product.sku ?? String(product.id),
-          properties: facts.map((fact) => ({ name: fact.label, value: fact.value })),
-        }}
+        product={catalogProduct}
+        properties={facts.map((fact) => ({ name: fact.label, value: fact.value }))}
       />
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: '/' },
           { name: 'Store', url: '/store' },
-          { name: product.name, url: `/store/${product.slug}` },
+          ...(product.category && categoryName
+            ? [{ name: categoryName, url: `/store?category=${product.category}` }]
+            : []),
+          { name: product.name, url: catalogProduct.url },
         ]}
       />
 
@@ -272,7 +282,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <span className="font-medium text-accent">Save {discount}%</span>
                     </span>
                   ) : null}
-                  {stock === 1 ? (
+                  {isDeposit ? null : stock === 1 && !product.soldPerUnit ? (
                     <span className="ml-auto text-[13px] text-accent">One of a kind</span>
                   ) : (
                     <span className="ml-auto text-[13px] text-ink-2">{stock} available</span>
@@ -310,8 +320,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         <Link href={askHref}>Ask about this piece</Link>
                       </Button>
                     </ProductActions>
-                    {stock === 1 ? (
-                      <p className="mt-2 text-[13px] text-ink-2">This exact stone is the one you receive.</p>
+                    {availabilityNote ? (
+                      <p className="mt-2 text-[13px] text-ink-2">{availabilityNote}</p>
                     ) : null}
                     <PaymentMethods className="mt-3" />
                   </>
@@ -332,7 +342,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {notes.length > 0 ? (
                 <section aria-labelledby="about-stone" data-insight-section="details" className="mt-[18px]">
                   <h2 id="about-stone" className="sr-only">
-                    About this stone
+                    {aboutHeading}
                   </h2>
                   <div className="grid max-w-[60ch] gap-2.5 text-[14.5px] leading-[1.6] text-ink-2">
                     {notes.map((paragraph) => (

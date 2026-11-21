@@ -121,6 +121,22 @@ describe('/store filtering', () => {
     ])
   })
 
+  test('filters rings by metal and ring size, never treating a loose stone as a metal', () => {
+    const rings = [
+      listing('silver-7', { category: 'opal-rings', material: 'sterling-silver', ringSize: '7' }),
+      listing('silver-6.5', { category: 'opal-rings', material: 'sterling-silver', ringSize: ' 6.5 ' }),
+      listing('gold-8', { category: 'opal-rings', material: '18k-gold', ringSize: '8' }),
+      listing('loose', { category: 'raw-opals', material: 'none' }),
+    ]
+
+    expect(ids(findStoreListings(rings, parseStoreQuery({ metal: 'sterling-silver', size: '6.5,8' })))).toEqual(['silver-6.5'])
+    expect(parseStoreQuery({ metal: 'none' }).metal).toEqual([])
+    expect(countStoreFacets(rings, parseStoreQuery({}))).toMatchObject({
+      metal: { 'sterling-silver': 2, '18k-gold': 1 },
+      size: { '6.5': 1, '7': 1, '8': 1 },
+    })
+  })
+
   test('includes prices equal to either bound and excludes prices outside them', () => {
     const prices = [listing('a', { price: 250 }), listing('b', { price: 1000 }), listing('c', { price: 249.99 }), listing('d', { price: 1000.5 })]
 

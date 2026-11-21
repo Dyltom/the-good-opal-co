@@ -3,7 +3,7 @@ import { Wordmark } from '@/components/brand/Wordmark'
 import { NewsletterForm } from '@/components/newsletter/NewsletterForm'
 import { CookieSettingsLink } from '@/components/layout/CookieConsent'
 import { PUBLIC_CONTACT_EMAIL, SOCIAL_PROFILES } from '@/lib/constants/social'
-import { METHODS_ENABLED_IN_STRIPE } from '@/components/trust'
+import { METHODS_ENABLED_IN_STRIPE } from '@/lib/constants/payment'
 
 type FooterLink = { href: string; label: string; external?: boolean }
 

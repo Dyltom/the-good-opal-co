@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
-import { BreadcrumbJsonLd, JsonLd, OrganizationJsonLd } from '@/components/seo'
+import { BreadcrumbJsonLd, founderId, JsonLd, OrganizationJsonLd } from '@/components/seo'
 import { Button } from '@/components/ui/button'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
@@ -97,7 +97,7 @@ export default async function AboutPage() {
         data={{
           '@context': 'https://schema.org',
           '@type': 'Person',
-          '@id': `${APP_URL}/about#stephanie-caruana`,
+          '@id': founderId,
           name: 'Stephanie Caruana',
           url: `${APP_URL}/about`,
           jobTitle: 'Founder',

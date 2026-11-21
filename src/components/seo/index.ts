@@ -1,9 +1,3 @@
-/**
- * SEO Components
- *
- * Provides structured data and SEO utilities for the site.
- */
-
 export {
   JsonLd,
   OrganizationJsonLd,
@@ -14,5 +8,6 @@ export {
   WebsiteJsonLd,
   CourseJsonLd,
   CourseListJsonLd,
+  founderId,
   merchantReturnPolicyStructuredData,
 } from './json-ld'

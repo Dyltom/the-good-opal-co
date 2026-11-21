@@ -48,7 +48,7 @@ function merchantItem(product: CatalogProduct): string {
     tag('link', product.url),
     imageLink ? tag('image_link', imageLink) : '',
     ...additionalImages.slice(0, 10).map((image) => tag('additional_image_link', image)),
-    tag('availability', product.inStock ? 'in_stock' : 'out_of_stock'),
+    tag('availability', product.availability === 'in_stock' ? 'in_stock' : 'out_of_stock'),
     tag('price', aud(product.price)),
     tag('brand', APP_NAME),
     tag('condition', 'new'),

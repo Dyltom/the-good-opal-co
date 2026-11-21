@@ -217,7 +217,7 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending, isRemovin
               </button>
             </>
           ) : (
-            <span className="text-[12.5px] text-ink-3">One of a kind</span>
+            <span className="text-[12.5px] text-ink-3">Only one available</span>
           )}
 
           <button

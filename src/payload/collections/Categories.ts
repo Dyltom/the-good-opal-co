@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
+import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -44,9 +45,8 @@ export const Categories: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
-      admin: {
-        description: 'Associated tenant ID for multi-tenancy',
-      },
+      defaultValue: () => SHOP_TENANT_ID,
+      admin: { hidden: true },
       index: true,
     },
   ],

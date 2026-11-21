@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, isAdminField, publishedOrAdmin } from '../../lib/payload-access.ts'
+import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 import {
   validateBuilderProduct,
   validateCurrencyAmount,
@@ -14,6 +15,7 @@ import {
 import { validateBuilderStoneContour } from '../../lib/custom-builder/stone-contour.ts'
 import { BUILDER_MEDIA_REPLACEMENT_CONTEXT } from '../../lib/custom-builder/media-mapping-invalidation.ts'
 import { wakeBuilderMappingWorkerAfterProductChange } from '../../lib/custom-builder/builder-mapping-trigger.ts'
+import { indexNowOnPublish } from '../../lib/indexnow.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -25,14 +27,7 @@ export const Products: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'price', 'status', 'builderMappingStatus', 'stock', 'updatedAt'],
-    components: {
-      edit: {
-        beforeDocumentControls: [
-          '@/components/payload/AdoptBuilderCandidateButton#AdoptBuilderCandidateButton',
-        ],
-      },
-    },
+    defaultColumns: ['name', 'price', 'status', 'stock', 'updatedAt'],
   },
   hooks: {
     beforeValidate: [
@@ -48,6 +43,11 @@ export const Products: CollectionConfig = {
     ],
     afterChange: [
       wakeBuilderMappingWorkerAfterProductChange,
+      indexNowOnPublish((doc) =>
+        doc.status === 'published' && typeof doc.slug === 'string'
+          ? `/store/${encodeURIComponent(doc.slug)}`
+          : null
+      ),
       ({ doc, previousDoc, req }) => {
         if (!builderMappingNeedsReview(doc, previousDoc)) return
         req.payload.logger.info({
@@ -187,11 +187,13 @@ export const Products: CollectionConfig = {
           value: 'archived',
         },
       ],
+      admin: { position: 'sidebar' },
     },
     {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
+      admin: { position: 'sidebar' },
     },
     {
       name: 'stock',
@@ -204,6 +206,16 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'soldPerUnit',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Sold per unit, chosen at random',
+      admin: {
+        description:
+          'Tick for parcels of matched stones priced each, where the buyer receives stones picked from the batch rather than the exact one pictured.',
+      },
+    },
+    {
       name: 'sku',
       type: 'text',
       unique: true,
@@ -212,53 +224,59 @@ export const Products: CollectionConfig = {
       },
     },
     {
-      name: 'legacyWooId',
-      type: 'number',
-      unique: true,
-      index: true,
-      access: { read: isAdminField },
+      type: 'collapsible',
+      label: 'Old shop record',
       admin: {
-        readOnly: true,
         position: 'sidebar',
-        description: 'Original WooCommerce product ID',
+        initCollapsed: true,
+        description: 'Read-only details copied from the previous WooCommerce shop',
       },
-    },
-    {
-      name: 'wooStatus',
-      type: 'text',
-      access: { read: isAdminField },
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-        description: 'Original WooCommerce product status',
-      },
-    },
-    {
-      name: 'wooCatalogVisibility',
-      type: 'text',
-      access: { read: isAdminField },
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'wooManageStock',
-      type: 'checkbox',
-      access: { read: isAdminField },
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'wooModifiedAt',
-      type: 'date',
-      access: { read: isAdminField },
-      admin: {
-        readOnly: true,
-        position: 'sidebar',
-      },
+      fields: [
+        {
+          name: 'legacyWooId',
+          type: 'number',
+          unique: true,
+          index: true,
+          access: { read: isAdminField },
+          admin: {
+            readOnly: true,
+            description: 'Original WooCommerce product ID',
+          },
+        },
+        {
+          name: 'wooStatus',
+          type: 'text',
+          access: { read: isAdminField },
+          admin: {
+            readOnly: true,
+            description: 'Original WooCommerce product status',
+          },
+        },
+        {
+          name: 'wooCatalogVisibility',
+          type: 'text',
+          access: { read: isAdminField },
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'wooManageStock',
+          type: 'checkbox',
+          access: { read: isAdminField },
+          admin: {
+            readOnly: true,
+          },
+        },
+        {
+          name: 'wooModifiedAt',
+          type: 'date',
+          access: { read: isAdminField },
+          admin: {
+            readOnly: true,
+          },
+        },
+      ],
     },
     // Jewelry-specific fields
     {
@@ -288,6 +306,7 @@ export const Products: CollectionConfig = {
         { label: 'Fire Opal', value: 'fire-opal' },
         { label: 'Matrix Opal', value: 'matrix-opal' },
         { label: 'Opal Doublet', value: 'opal-doublet' },
+        { label: 'Opal Triplet', value: 'opal-triplet' },
       ],
       admin: {
         description: 'Type of opal used',
@@ -355,11 +374,21 @@ export const Products: CollectionConfig = {
     },
     {
       type: 'collapsible',
-      label: 'Opal builder mapping lifecycle',
+      label: 'Ring builder: opal mapping review',
       admin: {
+        initCollapsed: true,
         condition: (data) => data.category === 'raw-opals',
       },
       fields: [
+        {
+          name: 'builderMappingReview',
+          type: 'ui',
+          admin: {
+            components: {
+              Field: '@/components/payload/AdoptBuilderCandidateButton#AdoptBuilderCandidateButton',
+            },
+          },
+        },
         {
           type: 'row',
           fields: [
@@ -591,8 +620,9 @@ export const Products: CollectionConfig = {
     },
     {
       type: 'collapsible',
-      label: 'Ring builder visual review and manual overrides',
+      label: 'Ring builder: visual overrides',
       admin: {
+        initCollapsed: true,
         condition: (data) => data.category === 'raw-opals',
       },
       fields: [
@@ -731,9 +761,8 @@ export const Products: CollectionConfig = {
       type: 'text',
       required: true,
       access: { read: isAdminField },
-      admin: {
-        description: 'Associated tenant ID for multi-tenancy',
-      },
+      defaultValue: () => SHOP_TENANT_ID,
+      admin: { hidden: true },
       index: true,
     },
   ],

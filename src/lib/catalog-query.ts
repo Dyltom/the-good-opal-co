@@ -2,19 +2,23 @@ import { getPayload } from '@/lib/payload'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { toCatalogProduct, type CatalogProduct } from '@/lib/catalog'
 import { CONTACT_INFO } from '@/lib/constants/contact'
+import { reservedProductIds } from '@/lib/inventory-reservations'
 import type { DiscoveryArticle, DiscoveryCourse, DiscoveryInput } from '@/lib/discovery'
 
 export async function getPublishedCatalog(): Promise<CatalogProduct[]> {
   const payload = await getPayload()
-  const { docs } = await payload.find({
-    collection: 'products',
-    where: LISTED_PRODUCTS,
-    sort: '-updatedAt',
-    limit: 1000,
-    depth: 1,
-    overrideAccess: false,
-  })
-  return docs.map(toCatalogProduct)
+  const [{ docs }, reservedIds] = await Promise.all([
+    payload.find({
+      collection: 'products',
+      where: LISTED_PRODUCTS,
+      sort: '-updatedAt',
+      limit: 1000,
+      depth: 1,
+      overrideAccess: false,
+    }),
+    reservedProductIds(),
+  ])
+  return docs.map((product) => toCatalogProduct(product, reservedIds))
 }
 
 export async function getDiscoveryInput(): Promise<DiscoveryInput> {

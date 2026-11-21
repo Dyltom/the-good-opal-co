@@ -53,6 +53,24 @@ test('available product can be added, changed, and removed from cookie cart', as
   assertNoErrors()
 })
 
+test.describe('before the page hydrates', () => {
+  test.use({ javaScriptEnabled: false })
+
+  test('Add to bag still puts the piece in the bag', async ({ page }) => {
+    const productUrl = await firstAvailableProduct(page)
+    test.skip(!productUrl, 'Catalog is empty; seed/publish products before catalog acceptance testing')
+
+    const productName = await page.getByRole('heading', { level: 1 }).innerText()
+    const addButton = page.getByRole('button', { name: /Add to bag/i }).first()
+    test.skip(!(await addButton.isVisible()), 'First catalog item is unavailable')
+
+    await addButton.click()
+    await expect(page).toHaveURL(/\/cart$/)
+    await expect(page.getByRole('heading', { name: 'Your bag', exact: true })).toBeVisible()
+    await expect(page.getByText(productName).first()).toBeVisible()
+  })
+})
+
 test('cart sends buyers straight to secure payment with a shipping region', async ({ page }) => {
   const assertNoErrors = failOnRuntimeErrors(page)
   const productUrl = await firstAvailableProduct(page)

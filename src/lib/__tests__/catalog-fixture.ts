@@ -10,7 +10,7 @@ export function catalogProduct(overrides: Partial<CatalogProduct> = {}): Catalog
     summary: 'A bright blue opal.',
     price: 123,
     stock: 1,
-    inStock: true,
+    availability: 'in_stock',
     images: ['https://example.com/blue.jpg'],
     sku: 'WP-1',
     category: 'raw-opals',

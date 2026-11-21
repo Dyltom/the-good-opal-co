@@ -1,6 +1,7 @@
 import type { Media } from '@/types/payload-types'
 import { createHash } from 'node:crypto'
 import { getPayload } from '@/lib/payload'
+import { SHOP_TENANT_ID } from '@/lib/tenant'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { downloadWordPressMedia, type WordPressFeaturedMedia } from '@/lib/wordpress/content-import'
@@ -8,7 +9,6 @@ import { fetchWordPressProductImages } from '@/lib/wordpress/product-images'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import { BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT } from '@/lib/custom-builder/builder-mapping-trigger'
 
-const TENANT_ID = 'good-opal-co'
 const MAX_OWNED_MEDIA_BYTES = 15 * 1024 * 1024
 
 function mediaMatchesSource(media: Media, source: WordPressFeaturedMedia): boolean {
@@ -19,7 +19,7 @@ function mediaMetadataMatches(media: Media, source: WordPressFeaturedMedia): boo
   return (
     media.alt === source.alt &&
     (media.caption ?? '') === source.title &&
-    media.tenantId === TENANT_ID
+    media.tenantId === SHOP_TENANT_ID
   )
 }
 
@@ -111,7 +111,7 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
           legacySourceUrl: source.sourceUrl,
           alt: source.alt,
           caption: source.title,
-          tenantId: TENANT_ID,
+          tenantId: SHOP_TENANT_ID,
         },
         ...(!contentMatches ? { file: sourceFile } : {}),
         context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
@@ -133,7 +133,7 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
           legacySourceUrl: source.sourceUrl,
           alt: source.alt,
           caption: source.title,
-          tenantId: TENANT_ID,
+          tenantId: SHOP_TENANT_ID,
         },
         file,
         context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
@@ -157,7 +157,7 @@ async function findOrCreateMedia(source: WordPressFeaturedMedia): Promise<MediaR
           legacySourceUrl: source.sourceUrl,
           alt: source.alt,
           caption: source.title,
-          tenantId: TENANT_ID,
+          tenantId: SHOP_TENANT_ID,
         },
         file,
         context: { [BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT]: true },
