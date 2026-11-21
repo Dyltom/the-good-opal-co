@@ -68,17 +68,17 @@ export async function HomeHero() {
 
   return (
     <section className="border-b border-warm-grey/40 bg-cream pt-[81px]">
-      <div className="mx-auto grid min-h-[42rem] max-w-[96rem] lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="flex items-center px-5 py-10 sm:px-8 sm:py-14 lg:px-12 lg:py-20 xl:px-20">
+      <div className="mx-auto grid max-w-[96rem] lg:min-h-[40rem] lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="flex items-center px-5 py-8 sm:px-8 sm:py-14 lg:px-12 lg:py-20 xl:px-20">
           <div className="max-w-[42rem]">
             <p className="mb-5 flex items-center gap-3 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">
               <span aria-hidden="true" className="opal-fire-line h-[3px] w-10 rounded-full" />
               Personally selected in Australia
             </p>
-            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.7rem,6.2vw,6.5rem)] font-medium leading-[0.94] text-charcoal">
+            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.4rem,4.4vw,4.5rem)] font-medium leading-[1] text-charcoal">
               Australian opals, chosen by hand.
             </h1>
-            <p className="mt-5 max-w-[35rem] text-pretty font-sans text-base leading-7 text-charcoal/75 sm:mt-7 sm:text-xl sm:leading-8">
+            <p className="mt-5 max-w-[35rem] text-pretty font-sans text-base leading-7 text-charcoal/75 sm:mt-7 sm:text-lg sm:leading-8">
               One-of-a-kind stones and jewellery, sourced here and explained clearly. See the
               colour, provenance, price, and practical details before you choose.
             </p>
@@ -104,7 +104,7 @@ export async function HomeHero() {
           </div>
         </div>
 
-        <div className="relative min-h-[31rem] overflow-hidden bg-white lg:min-h-full">
+        <div className="relative order-first aspect-[5/4] overflow-hidden bg-white sm:aspect-auto sm:min-h-[31rem] lg:order-none lg:min-h-full">
           <Link href={primaryHref} className="group absolute inset-0 block">
             <Image
               src={primaryImage}

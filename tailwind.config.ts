@@ -221,9 +221,9 @@ const config: Config = {
   		fontFamily: {
   			sans: [
   				'var(--font-sans)',
-  				'Merriweather',
-  				'Georgia',
-  				'serif'
+  				'Figtree',
+  				'system-ui',
+  				'sans-serif'
   			],
   			serif: [
   				'var(--font-serif)',

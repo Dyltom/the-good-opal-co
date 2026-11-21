@@ -26,7 +26,7 @@ export default function OrderTrackingPage() {
             description="Enter the order number and email from your confirmation message."
             align="center"
             className="mb-8"
-            titleClassName="text-4xl sm:text-5xl"
+            titleClassName="text-3xl sm:text-4xl lg:text-5xl"
             descriptionClassName="text-base"
           />
 

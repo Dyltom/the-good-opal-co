@@ -53,7 +53,7 @@ export default async function CoursesPage() {
             <Eyebrow>
               Opal education
             </Eyebrow>
-            <h1 className="mt-5 max-w-[10ch] text-balance font-serif text-[clamp(3.5rem,7vw,7rem)] font-medium leading-[0.9]">
+            <h1 className="mt-5 max-w-[10ch] text-balance font-serif text-[clamp(2.5rem,4.8vw,4.5rem)] font-medium leading-[1]">
               Learn what the stone can become.
             </h1>
             <p className="mt-7 max-w-[62ch] font-sans text-base leading-7 text-charcoal/70 sm:text-lg sm:leading-8">
@@ -154,7 +154,7 @@ export default async function CoursesPage() {
                       <span>{courseLevelLabels[course.level]}</span>
                       {course.duration ? <span>{course.duration}</span> : null}
                     </div>
-                    <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl">
+                    <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
                       <Link
                         href={`/courses/${course.slug}`}
                         className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"

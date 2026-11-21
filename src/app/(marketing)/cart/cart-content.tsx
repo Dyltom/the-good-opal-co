@@ -99,7 +99,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
           </Eyebrow>
           <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <h1 className="font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+              <h1 className="font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
                 Shopping cart
               </h1>
               <p className="mt-2 text-sm text-charcoal/65" aria-live="polite">

@@ -51,7 +51,7 @@ export default function ServicesPage() {
         <div className="flex items-center px-5 py-12 sm:px-10 sm:py-14 lg:px-[clamp(3rem,6vw,6.5rem)] lg:py-16">
           <div className="max-w-xl">
             <Eyebrow className="mb-4">Custom opal jewellery</Eyebrow>
-            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.75rem,5vw,4.75rem)] font-medium leading-[1.02]">
+            <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.25rem,4vw,4rem)] font-medium leading-[1.02]">
               Begin with the stone.
             </h1>
             <p className="mt-5 max-w-[58ch] text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
@@ -99,7 +99,7 @@ export default function ServicesPage() {
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
             <div>
               <Eyebrow>The process</Eyebrow>
-              <h2 className="mt-3 max-w-[16ch] text-balance font-serif text-4xl leading-tight sm:text-5xl">
+              <h2 className="mt-3 max-w-[16ch] text-balance font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
                 Clear decisions, one at a time.
               </h2>
               <p className="mt-5 max-w-md leading-7 text-charcoal-light">
@@ -142,7 +142,7 @@ export default function ServicesPage() {
             </div>
             <div>
               <Eyebrow>Before you enquire</Eyebrow>
-              <h2 className="mt-3 font-serif text-4xl leading-tight sm:text-5xl">
+              <h2 className="mt-3 font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
                 What helps us guide you
               </h2>
               <ul className="mt-6 space-y-3">
@@ -170,7 +170,7 @@ export default function ServicesPage() {
           <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
             <div>
               <Eyebrow className="text-opal-light">Ready when you are</Eyebrow>
-              <h2 className="mt-3 max-w-[14ch] font-serif text-4xl leading-tight sm:text-5xl">
+              <h2 className="mt-3 max-w-[14ch] font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
                 Tell us what you have in mind.
               </h2>
               <p className="mt-4 max-w-xl leading-7 text-cream/70">

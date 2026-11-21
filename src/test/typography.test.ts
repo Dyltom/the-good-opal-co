@@ -8,7 +8,7 @@ describe('Typography Configuration', () => {
   test('marketing layout loads the project font families', () => {
     const source = read('src/app/(marketing)/layout.tsx')
 
-    expect(source).toContain('Merriweather')
+    expect(source).toContain('Figtree')
     expect(source).toContain('EB_Garamond')
     expect(source).toContain('Dancing_Script')
   })
@@ -16,7 +16,7 @@ describe('Typography Configuration', () => {
   test('global CSS maps semantic font variables to the project fonts', () => {
     const source = read('src/app/globals.css')
 
-    expect(source).toContain("--font-sans: 'Merriweather'")
+    expect(source).toContain("--font-sans: 'Figtree'")
     expect(source).toContain("--font-serif: 'EB Garamond'")
     expect(source).toContain("--font-accent: 'Dancing Script'")
   })
@@ -26,10 +26,10 @@ describe('Typography Configuration', () => {
     const typographyGuide = read('docs/TYPOGRAPHY_GUIDE.md')
 
     expect(designSystem).toContain("EB Garamond")
-    expect(designSystem).toContain("Merriweather")
+    expect(designSystem).toContain("Figtree")
     expect(designSystem).toContain("Dancing Script")
     expect(typographyGuide).toContain("EB Garamond")
-    expect(typographyGuide).toContain("Merriweather")
+    expect(typographyGuide).toContain("Figtree")
     expect(typographyGuide).toContain("Dancing Script")
     expect(`${designSystem}\n${typographyGuide}`).not.toContain("Playfair Display")
     expect(`${designSystem}\n${typographyGuide}`).not.toContain("Inter")

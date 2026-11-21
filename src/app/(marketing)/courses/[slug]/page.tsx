@@ -114,7 +114,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               {course.duration ? <span>{course.duration}</span> : null}
               {outlineStats.lessons > 0 ? <span>{outlineStats.lessons} lesson groups</span> : null}
             </div>
-            <h1 className="mt-5 max-w-[13ch] text-balance font-serif text-[clamp(3rem,6vw,6.3rem)] font-medium leading-[0.94]">
+            <h1 className="mt-5 max-w-[13ch] text-balance font-serif text-[clamp(2.25rem,4.4vw,4.25rem)] font-medium leading-[1]">
               {course.title}
             </h1>
             <p className="mt-7 max-w-2xl font-sans text-base leading-7 text-charcoal/70 sm:text-lg sm:leading-8">
@@ -172,7 +172,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </Eyebrow>
               <h2
                 id="curriculum-heading"
-                className="mt-3 font-serif text-4xl font-medium sm:text-5xl"
+                className="mt-3 font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
               >
                 Course outline
               </h2>
