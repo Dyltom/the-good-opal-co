@@ -1,16 +1,16 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ringStyles } from '@/components/custom-builder/config'
-import { ArrowRight, Camera, ChevronDown, MessageCircle, RotateCcw, Truck } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
-import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
-import { formatCurrency, savePercent } from '@/lib/utils'
+import { cn, formatCurrency, savePercent } from '@/lib/utils'
 import { getFreeShippingProgress, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import { PaymentMethods } from '@/components/trust'
@@ -24,7 +24,8 @@ import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
-import { Eyebrow } from '@/components/ui/eyebrow'
+import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { Button } from '@/components/ui/button'
 import { summarize } from '@/lib/catalog'
 import { reservedProductIds } from '@/lib/inventory-reservations'
 
@@ -34,9 +35,6 @@ interface ProductPageProps {
 
 export const dynamic = 'force-dynamic'
 
-/**
- * Generate metadata for product pages
- */
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params
   const payload = await getPayload()
@@ -80,11 +78,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 }
 
-/**
- * Product Detail Page
- *
- * Server Component that fetches product data directly from Payload.
- */
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params
   const payload = await getPayload()
@@ -95,7 +88,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       and: [{ slug: { equals: slug } }, { status: { equals: 'published' } }],
     },
     limit: 1,
-    depth: 2, // Include related media
+    depth: 2,
   })
 
   const product = docs[0] as Product | undefined
@@ -103,7 +96,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     notFound()
   }
 
-  // Extract image URL
   const primaryImage = product.images?.[0]?.image
   const imageUrl =
     (typeof primaryImage === 'object' && primaryImage
@@ -113,7 +105,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const about = parseProductDescription(product.description)
   const descriptionText = about.paragraphs.join(' ')
 
-  // Format category name
   const categoryName = product.category ? storeLabel(product.category) : undefined
   const productShippingProgress = getFreeShippingProgress(product.price)
   const facts = [
@@ -126,6 +117,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     { label: 'Inclusions', value: about.inclusions && about.inclusions.charAt(0).toUpperCase() + about.inclusions.slice(1) },
     { label: 'Certificate', value: product.certified ? (product.certificateNumber ?? 'Included') : undefined },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
+  const notes: string[] = []
+  for (const paragraph of about.paragraphs) {
+    const labelled = paragraph.match(/^([A-Z][A-Za-z ]{1,18}):\s*(.{1,80})$/)
+    if (labelled && !facts.some((fact) => fact.label === labelled[1])) {
+      facts.push({ label: labelled[1]!, value: labelled[2]!.replace(/\.$/, '') })
+    } else {
+      notes.push(paragraph)
+    }
+  }
   const stock = product.stock ?? 0
   const reserved = stock <= 0 && (await reservedProductIds()).has(String(product.id))
   const sold = stock <= 0 && !reserved
@@ -136,7 +136,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     product.name.toLowerCase().includes(`${style.label.replace('&', 'and').toLowerCase()} ring`)
   )
 
-  // Collect all product images with alt text
   const cmsImages =
     product.images
       ?.map((img, index: number) => {
@@ -165,9 +164,20 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       : cmsImages
   )
 
+  const askHref = `/contact?subject=product-question&product=${encodeURIComponent(product.name)}`
+  const viewingHref = `/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`
+  const slideCount = productImages.length + productVideos.length
+  const galleryWidth =
+    slideCount >= 3
+      ? 'calc(var(--H) * 1.2 + 8px)'
+      : slideCount === 2
+        ? 'calc(var(--H) * 1.6 + 8px)'
+        : 'calc(var(--H) * 0.8)'
+  const [nameLead, ...nameRest] = product.name.split(' – ')
+  const isRing = product.category === 'opal-rings' || Boolean(designStyle)
+
   return (
     <>
-      {/* Structured Data */}
       <ProductJsonLd
         product={{
           name: product.name,
@@ -191,257 +201,240 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
       <ProductViewTracker product={product}>
         <MarketingShell>
-            {/* Breadcrumb */}
-            <section className="pb-4 pt-4">
-              <Container>
-                <nav
-                  aria-label="Breadcrumb"
-                  className="flex items-center gap-2 overflow-hidden font-sans text-xs text-ink-2 sm:text-sm"
+          <div
+            className="grid items-start md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] md:gap-x-[clamp(24px,3vw,48px)] md:px-gut md:pt-3 lg:grid-cols-[min(var(--gw),calc(100%_-_400px))_minmax(0,1fr)]"
+            style={
+              {
+                '--H': 'max(560px, calc(100svh - 80px))',
+                '--gw': galleryWidth,
+              } as CSSProperties
+            }
+          >
+            <div data-insight-section="photos" className="min-w-0">
+              <ProductImageGallery
+                productName={product.name}
+                images={productImages}
+                videos={productVideos}
+                transitionName={productImageTransitionName(product.slug)}
+              />
+            </div>
+
+            <div className="min-w-0 px-gut pt-3 md:sticky md:top-[68px] md:max-w-[500px] md:px-0 md:pt-1.5">
+              <Breadcrumb
+                items={[
+                  { label: 'Store', href: '/store' },
+                  ...(product.category && categoryName
+                    ? [{ label: categoryName, href: `/store?category=${product.category}` }]
+                    : []),
+                  { label: product.name },
+                ]}
+                className={cn('[&_li:last-child]:hidden md:[&_li:last-child]:flex', slideCount > 1 && 'pr-14 md:pr-0')}
+              />
+              <h1 className="mt-2.5 text-[30px] leading-[1.04] tracking-[-0.02em] text-ink md:mt-3.5 md:text-[clamp(30px,2.6vw,42px)]">
+                {nameRest.length > 0 ? (
+                  <>
+                    {nameLead} – <i>{nameRest.join(' – ')}</i>
+                  </>
+                ) : (
+                  product.name
+                )}
+              </h1>
+
+              {reserved || sold ? (
+                <div data-insight-section="price" className="mt-3 md:mt-4">
+                  <p className="text-[22px] font-medium leading-tight text-ink md:text-2xl">
+                    {reserved ? 'Reserved' : 'Sold'}
+                  </p>
+                  <p className="mt-1.5 text-[13px] text-ink-2">
+                    {reserved
+                      ? "Someone is checking out with this piece. If they don't complete payment, it returns to the shop within 30 minutes."
+                      : 'This piece has found a home.'}
+                  </p>
+                </div>
+              ) : (
+                <div
+                  data-insight-section="price"
+                  className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 md:mt-4"
                 >
-                  <Link href="/" className="transition-colors hover:text-ink">
-                    Home
-                  </Link>
-                  <span aria-hidden="true">/</span>
-                  <Link href="/store" className="transition-colors hover:text-ink">
-                    Store
-                  </Link>
-                  <span aria-hidden="true">/</span>
-                  <span aria-current="page" className="truncate font-medium text-ink">
-                    {product.name}
+                  <span className="text-[22px] font-medium leading-tight text-ink md:text-2xl">
+                    {formatCurrency(product.price, 'AUD')}
                   </span>
-                </nav>
-              </Container>
-            </section>
+                  <span className="text-[13px] text-ink-2">AUD</span>
+                  {discount && product.compareAtPrice ? (
+                    <span className="text-[13px] text-ink-2">
+                      <span className="line-through">{formatCurrency(product.compareAtPrice, 'AUD')}</span>{' '}
+                      <span className="font-medium text-accent">Save {discount}%</span>
+                    </span>
+                  ) : null}
+                  {stock === 1 ? (
+                    <span className="ml-auto text-[13px] text-accent">One of a kind</span>
+                  ) : (
+                    <span className="ml-auto text-[13px] text-ink-2">{stock} available</span>
+                  )}
+                </div>
+              )}
 
-            <section className="pb-20 lg:pb-28">
-              <Container>
-                <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-14">
-                  <div className="min-w-0 space-y-12">
-                    <div data-insight-section="photos">
-                      <ProductImageGallery
-                        productName={product.name}
-                        images={productImages}
-                        videos={productVideos}
-                        transitionName={productImageTransitionName(product.slug)}
-                      />
-                    </div>
-
-                    {about.paragraphs.length > 0 ? (
-                      <section aria-labelledby="about-stone" data-insight-section="details" className="hidden max-w-prose lg:block">
-                        <h2 id="about-stone" className="font-serif text-2xl font-medium text-ink">
-                          About this stone
-                        </h2>
-                        <div className="mt-4 space-y-4 font-sans text-base leading-7 text-ink">
-                          {about.paragraphs.map((paragraph) => (
-                            <p key={paragraph}>{paragraph}</p>
-                          ))}
-                        </div>
-                      </section>
-                    ) : null}
+              <div className="mt-4 md:mt-[18px]">
+                {similarHref ? (
+                  <div className="grid gap-2">
+                    <Button asChild className="min-h-[50px] md:min-h-12">
+                      <Link href={similarHref}>See similar pieces</Link>
+                    </Button>
+                    <Button asChild variant="ghost" className="min-h-[50px] md:min-h-12">
+                      <Link href="/contact?subject=opal-finder">Ask us to find one like it</Link>
+                    </Button>
                   </div>
-
-                  <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-                    <Eyebrow>
-                      {[categoryName, product.stoneOrigin && storeLabel(product.stoneOrigin)].filter(Boolean).join(' · ')}
-                    </Eyebrow>
-                    <h1 className="mt-3 font-serif text-3xl font-medium leading-[1.08] text-ink sm:text-4xl xl:text-[2.75rem]">
-                      {product.name}
-                    </h1>
-
-                    {reserved ? (
-                      <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <span className="rounded-full bg-ink px-3 py-1 font-sans text-sm font-medium text-bg">
-                          Reserved
-                        </span>
-                        <span className="font-sans text-sm text-ink-2">
-                          Someone is checking out with this piece. If they don&apos;t complete payment, it returns to the shop within 30 minutes.
-                        </span>
-                      </div>
-                    ) : sold ? (
-                      <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <span className="rounded-full bg-ink px-3 py-1 font-sans text-sm font-medium text-bg">
-                          Sold
-                        </span>
-                        <span className="font-sans text-sm text-ink-2">This piece has found a home.</span>
-                      </div>
-                    ) : (
-                      <div data-insight-section="price" className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                        <span className="font-serif text-3xl font-semibold text-ink">
-                          {formatCurrency(product.price, 'AUD')}
-                        </span>
-                        {discount && product.compareAtPrice ? (
-                          <>
-                            <span className="text-base text-ink-3 line-through">
-                              {formatCurrency(product.compareAtPrice, 'AUD')}
-                            </span>
-                            <span className="text-sm font-medium text-accent">Save {discount}%</span>
-                          </>
-                        ) : null}
-                        <span className="text-sm text-ink-2">AUD</span>
-                      </div>
-                    )}
+                ) : reserved ? (
+                  <Button asChild variant="ghost" className="min-h-[50px] w-full md:min-h-12">
+                    <Link href={askHref}>Ask about this piece</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <ProductActions
+                      product={{
+                        id: String(product.id),
+                        slug: product.slug,
+                        name: product.name,
+                        price: product.price,
+                        stock,
+                        image: imageUrl ?? undefined,
+                      }}
+                    >
+                      <Button asChild variant="ghost" className="min-h-[50px] px-[18px] md:min-h-12">
+                        <Link href={askHref}>Ask about this piece</Link>
+                      </Button>
+                    </ProductActions>
                     {stock === 1 ? (
-                      <p className="mt-2 font-sans text-sm text-success">
-                        One available. This exact stone is the one you receive.
-                      </p>
+                      <p className="mt-2 text-[13px] text-ink-2">This exact stone is the one you receive.</p>
                     ) : null}
+                    <PaymentMethods className="mt-3" />
+                  </>
+                )}
+              </div>
 
-                    {facts.length > 0 ? (
-                      <dl data-insight-section="details" className="mt-6 divide-y divide-rule border-y border-rule font-sans text-sm">
-                        {facts.map((fact) => (
-                          <div key={fact.label} className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 py-2.5">
-                            <dt className="text-ink-2">{fact.label}</dt>
-                            <dd className="font-medium text-ink">{fact.value}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    ) : null}
-
-                    {similarHref ? (
-                      <div className="mt-6">
-                        <Link
-                          href={similarHref}
-                          className="flex h-14 w-full items-center justify-center gap-2 rounded-sm bg-ink font-sans text-base font-semibold text-white shadow-md transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                        >
-                          See similar pieces
-                          <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                        </Link>
-                        <Link
-                          href="/contact?subject=opal-finder"
-                          className="mt-2 flex min-h-11 items-center justify-center font-sans text-sm text-ink underline underline-offset-4 hover:text-ink"
-                        >
-                          Ask us to find one like it
-                        </Link>
-                      </div>
-                    ) : reserved ? null : (
-                      <>
-                        <div className="mt-6">
-                          <ProductActions
-                            product={{
-                              id: String(product.id),
-                              slug: product.slug,
-                              name: product.name,
-                              price: product.price,
-                              stock,
-                              image: imageUrl ?? undefined,
-                            }}
-                          />
-                        </div>
-
-                        <PaymentMethods className="mt-4" />
-                      </>
-                    )}
-
-                    {sold && !about.photographedUnderWhiteLight ? null : (
-                      <ul className="mt-6 space-y-3 border-t border-rule pt-6 font-sans text-sm text-ink">
-                        {about.photographedUnderWhiteLight ? (
-                          <li className="flex gap-3">
-                            <Camera className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
-                            Photographed under white light. Studio shots have the background replaced; the stone is never retouched.
-                          </li>
-                        ) : null}
-                        {sold ? null : (
-                          <>
-                            <li className="flex gap-3">
-                              <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
-                              <span>
-                                {productShippingProgress.qualifies
-                                  ? 'Free tracked shipping.'
-                                  : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
-                                <Link href="/shipping" className="underline underline-offset-4 hover:text-ink">
-                                  Rates
-                                </Link>
-                              </span>
-                            </li>
-                            <li className="flex gap-3">
-                              <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
-                              <span>
-                                30-day change-of-mind returns on eligible unused pieces.{' '}
-                                <Link href="/returns" className="underline underline-offset-4 hover:text-ink">
-                                  Returns policy
-                                </Link>
-                              </span>
-                            </li>
-                            <li className="flex gap-3">
-                              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
-                              <Link
-                                href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`}
-                                className="underline underline-offset-4 hover:text-ink"
-                              >
-                                Ask a question or book a video viewing
-                              </Link>
-                            </li>
-                          </>
-                        )}
-                      </ul>
-                    )}
-
-                    {builderEligible && stock > 0 ? (
-                      <Link
-                        href={`/services/design?p=${encodeURIComponent(String(product.id))}`}
-                        className="group mt-6 flex items-center justify-between gap-4 border border-rule bg-bg p-4 transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                      >
-                        <span>
-                          <span className="block font-serif text-lg text-ink">Design a ring around this opal</span>
-                          <span className="mt-1 block font-sans text-sm text-ink-2">
-                            Try this exact stone in settings in the 3D studio, then request a quote.
-                          </span>
-                        </span>
-                        <ArrowRight className="h-5 w-5 shrink-0 text-ink-2 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
-                      </Link>
-                    ) : null}
-
-                    {designStyle ? (
-                      <Link
-                        href={`/services/design?y=${designStyle.id}`}
-                        className="group mt-3 flex items-center justify-between gap-4 border border-rule bg-bg p-4 transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                      >
-                        <span>
-                          <span className="block font-serif text-lg text-ink">
-                            Want the {designStyle.label} with a different opal?
-                          </span>
-                          <span className="mt-1 block font-sans text-sm text-ink-2">
-                            Choose a stone, metal and size in the 3D studio, then request a quote.
-                          </span>
-                        </span>
-                        <ArrowRight className="h-5 w-5 shrink-0 text-ink-2 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
-                      </Link>
-                    ) : null}
-                  </div>
-                </div>
-
-                {about.paragraphs.length > 0 ? (
-                  <details data-insight-section="details" className="group mt-8 max-w-prose border-y border-rule lg:hidden">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-serif text-xl font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">
-                      About this stone
-                      <ChevronDown className="h-5 w-5 shrink-0 text-ink-2 transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
-                    </summary>
-                    <div className="space-y-4 pb-5 font-sans text-base leading-7 text-ink">
-                      {about.paragraphs.map((paragraph) => (
-                        <p key={paragraph}>{paragraph}</p>
-                      ))}
+              {facts.length > 0 ? (
+                <dl data-insight-section="details" className="mt-4 border-t border-rule text-sm">
+                  {facts.map((fact) => (
+                    <div key={fact.label} className="grid grid-cols-[104px_minmax(0,1fr)] gap-3 border-b border-rule py-[9px]">
+                      <dt className="text-ink-3">{fact.label}</dt>
+                      <dd className="text-ink">{fact.value}</dd>
                     </div>
-                  </details>
-                ) : null}
+                  ))}
+                </dl>
+              ) : null}
 
-                <ReviewsSection
-                  productId={product.id}
-                  eyebrow="Customer review"
-                  title="From the person who bought it."
-                  className="mt-12 border-t border-rule pt-10 lg:mt-24 lg:pt-16"
-                />
+              {notes.length > 0 ? (
+                <section aria-labelledby="about-stone" data-insight-section="details" className="mt-[18px]">
+                  <h2 id="about-stone" className="sr-only">
+                    About this stone
+                  </h2>
+                  <div className="grid max-w-[60ch] gap-2.5 text-[14.5px] leading-[1.6] text-ink-2">
+                    {notes.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
 
-                <div className="mt-12 lg:mt-24">
-                  <RelatedProductsWithSuspense
-                    product={product}
-                    className="border-t border-rule pt-10 lg:pt-16"
-                  />
+              {sold && !about.photographedUnderWhiteLight ? null : (
+                <ul className="mt-5 grid gap-2 text-[13px] text-ink-2">
+                  {sold ? null : (
+                    <>
+                      <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
+                        <span className="font-medium text-ink-3">Shipping</span>
+                        <span>
+                          {productShippingProgress.qualifies
+                            ? 'Free tracked shipping.'
+                            : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD international. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
+                          <Link href="/shipping" className="text-ink underline underline-offset-4">
+                            Rates
+                          </Link>
+                        </span>
+                      </li>
+                      <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
+                        <span className="font-medium text-ink-3">Returns</span>
+                        <span>
+                          30-day change-of-mind returns on eligible unused pieces.{' '}
+                          <Link href="/returns" className="text-ink underline underline-offset-4">
+                            Policy
+                          </Link>
+                        </span>
+                      </li>
+                    </>
+                  )}
+                  {about.photographedUnderWhiteLight ? (
+                    <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
+                      <span className="font-medium text-ink-3">Photos</span>
+                      <span>
+                        Photographed under white light. Studio shots have the background replaced; the stone is never
+                        retouched.
+                      </span>
+                    </li>
+                  ) : null}
+                  {sold ? null : (
+                    <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
+                      <span className="font-medium text-ink-3">Viewing</span>
+                      <Link href={viewingHref} className="justify-self-start text-ink underline underline-offset-4">
+                        Book a video viewing
+                      </Link>
+                    </li>
+                  )}
+                </ul>
+              )}
+
+              {isRing ? (
+                <div className="mt-[22px] flex flex-wrap items-baseline gap-x-[22px] gap-y-2.5 border border-rule px-[18px] py-4">
+                  <p className="basis-full font-serif text-[19px] italic leading-[1.2] text-ink">
+                    {designStyle
+                      ? `Love the ${designStyle.label} but want your own opal or size?`
+                      : 'Love the style but want your own opal or size?'}
+                  </p>
+                  <TextLink href={designStyle ? `/services/design?y=${designStyle.id}` : '/services/design'}>
+                    Design it in the 3D studio
+                  </TextLink>
+                  <TextLink href="/contact?subject=custom-design">Ask about a custom piece</TextLink>
                 </div>
-              </Container>
-            </section>
+              ) : builderEligible && stock > 0 ? (
+                <div className="mt-[22px] flex flex-wrap items-baseline gap-x-[22px] gap-y-2.5 border border-rule px-[18px] py-4">
+                  <p className="basis-full font-serif text-[19px] italic leading-[1.2] text-ink">
+                    Design a ring around this opal
+                  </p>
+                  <p className="basis-full text-[13px] text-ink-2">
+                    Try this exact stone in settings in the 3D studio, then request a quote.
+                  </p>
+                  <TextLink href={`/services/design?p=${encodeURIComponent(String(product.id))}`}>
+                    Open the 3D studio
+                  </TextLink>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <ReviewsSection
+            productId={product.id}
+            title="From the person who bought it."
+            className="mx-gut mt-12 border-t border-rule pt-10 md:mt-16"
+          />
+
+          <RelatedProductsWithSuspense product={product} limit={5} className="px-gut pb-[clamp(48px,6vw,88px)] pt-[clamp(48px,6vw,88px)]" />
         </MarketingShell>
       </ProductViewTracker>
     </>
+  )
+}
+
+function TextLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="group inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-ink underline decoration-rule-2 underline-offset-4 transition-colors hover:decoration-ink md:min-h-0"
+    >
+      {children}
+      <ArrowRight
+        className="h-4 w-4 transition-transform duration-200 ease-gallery group-hover:translate-x-0.5 motion-reduce:transition-none"
+        aria-hidden="true"
+      />
+    </Link>
   )
 }
 

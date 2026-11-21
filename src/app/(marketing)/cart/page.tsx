@@ -1,16 +1,14 @@
-import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { getCart } from '@/lib/cart'
 import { CartPageContent } from './cart-content'
 import { PageTransition } from '@/components/layout/PageTransition'
 import { Button } from '@/components/ui/button'
-import { ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 
 export const metadata = {
-  title: 'Shopping Cart | The Good Opal Co',
-  description: 'Review your shopping cart and proceed to checkout.',
+  title: 'Your bag | The Good Opal Co',
+  description: 'Review the pieces in your bag and proceed to checkout.',
   robots: { index: false, follow: false },
 }
 
@@ -21,34 +19,31 @@ export default async function CartPage() {
   return (
     <PageTransition>
       <MarketingShell>
-          {cart.items.length === 0 ? (
-            <Container className="py-12 text-center sm:py-16">
-              <ShoppingBag className="mx-auto h-8 w-8 text-ink-3" aria-hidden="true" />
-              <h1 className="mt-5 font-serif text-4xl font-semibold text-ink">
-                Your cart is empty
+        {cart.items.length === 0 ? (
+          <div className="px-gut pb-sec pt-5 md:pt-8">
+            <div className="mx-auto max-w-[1180px]">
+              <h1 className="border-b border-rule pb-4 font-serif text-[clamp(30px,3.4vw,44px)] leading-[1.04] tracking-[-0.02em] text-ink">
+                Your bag is empty
               </h1>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-ink-2">
+              <p className="mt-5 max-w-md text-[14.5px] leading-[1.6] text-ink-2">
                 Browse available opals and jewellery, then add a piece when you are ready.
               </p>
-              <Button
-                asChild
-                size="lg"
-                className="mt-7"
-              >
-                <Link href="/store">Browse available pieces</Link>
-              </Button>
-              <p className="mt-4 text-sm text-ink-2">
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+                <Button asChild>
+                  <Link href="/store">Browse available pieces</Link>
+                </Button>
                 <Link
                   href="/contact"
-                  className="underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="inline-flex min-h-11 items-center text-sm text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   Need help choosing? Talk to us
                 </Link>
-              </p>
-            </Container>
-          ) : (
-            <CartPageContent initialCart={cart} initialRegion={initialRegion} />
-          )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <CartPageContent initialCart={cart} initialRegion={initialRegion} />
+        )}
       </MarketingShell>
     </PageTransition>
   )

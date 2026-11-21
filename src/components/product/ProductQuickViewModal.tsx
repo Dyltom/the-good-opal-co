@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Gem, MapPin } from 'lucide-react'
+import { X } from 'lucide-react'
 import { formatCurrency, savePercent } from '@/lib/utils'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
@@ -59,7 +59,7 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
               className="pointer-events-auto flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-sm bg-bg shadow-2xl sm:max-w-4xl sm:rounded-sm"
             >
               <div className="grid flex-1 overflow-y-auto md:grid-cols-2">
-                <div className="relative aspect-square bg-bg md:aspect-auto md:min-h-[24rem]">
+                <div className="relative aspect-[4/5] bg-plinth md:aspect-auto md:min-h-[24rem]">
                   {product.image ? (
                     <>
                       {isImageLoading && (
@@ -75,16 +75,13 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                       />
                     </>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="w-24 h-24 rounded-full bg-plinth-2 mx-auto mb-3" />
-                        <p className="text-sm text-ink-2">No image available</p>
-                      </div>
+                    <div className="flex h-full w-full items-center justify-center">
+                      <p className="text-sm text-ink-2">No image available</p>
                     </div>
                   )}
                   {product.featured && (
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-ink text-bg text-xs font-medium rounded-full">
+                    <div className="absolute left-3 top-3">
+                      <span className="rounded-sm border border-rule bg-bg px-2 py-1 text-[11px] text-ink">
                         Featured
                       </span>
                     </div>
@@ -92,63 +89,49 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                   <button
                     type="button"
                     onClick={onClose}
-                    className="absolute top-4 right-4 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-rule bg-bg text-ink shadow-lg backdrop-blur-sm transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className="absolute right-3 top-3 flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border border-rule bg-bg text-ink transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     aria-label="Close quick view"
                   >
                     <X size={20} aria-hidden="true" />
                   </button>
                 </div>
                 <div className="flex flex-col px-4 py-5 sm:px-6 md:p-8">
-                  <h2 id="quick-view-title" className="text-2xl md:text-3xl font-serif text-ink mb-2">
+                  <h2 id="quick-view-title" className="mb-2 font-serif text-[26px] italic leading-[1.1] text-ink md:text-[30px]">
                     {product.name}
                   </h2>
-                  <div className="flex flex-wrap gap-4 mb-4 text-sm">
-                    {product.stoneType && (
-                      <div className="flex items-center gap-1.5 text-ink-2">
-                        <Gem size={16} className="text-accent" />
-                        <span>{storeLabel(product.stoneType)}</span>
-                      </div>
-                    )}
-                    {product.stoneOrigin && (
-                      <div className="flex items-center gap-1.5 text-ink-2">
-                        <MapPin size={16} className="text-accent" />
-                        <span>{storeLabel(product.stoneOrigin)}</span>
-                      </div>
-                    )}
-                  </div>
+                  {product.stoneType || product.stoneOrigin ? (
+                    <p className="mb-4 text-[13px] text-ink-2">
+                      {[product.stoneType, product.stoneOrigin]
+                        .filter((value): value is string => Boolean(value))
+                        .map((value) => storeLabel(value))
+                        .join(' · ')}
+                    </p>
+                  ) : null}
                   {product.description && (
-                    <p className="text-ink-2 mb-6 line-clamp-4">
+                    <p className="mb-5 line-clamp-4 text-[14.5px] leading-[1.6] text-ink-2">
                       {product.description}
                     </p>
                   )}
-                  <div className="mb-6 p-4 bg-plinth rounded-sm border border-rule">
-                    <p className="text-sm font-medium text-ink mb-1">
-                      One-of-a-kind piece
-                    </p>
-                    <p className="text-xs text-ink-2">
-                      This is a unique opal. Once sold, it cannot be replaced.
-                    </p>
-                  </div>
-                  <div className="mb-6">
+                  <div className="mb-5">
                     <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-semibold text-ink">
+                      <span className="text-2xl font-medium text-ink">
                         {formatCurrency(product.price, 'AUD')}
                       </span>
                       {discount && product.compareAtPrice ? (
                         <>
-                          <span className="text-lg line-through text-ink-3">
+                          <span className="text-sm text-ink-3 line-through">
                             {formatCurrency(product.compareAtPrice, 'AUD')}
                           </span>
                           <span className="text-sm font-medium text-accent">Save {discount}%</span>
                         </>
                       ) : null}
                     </div>
-                    <p className="text-sm text-ink-2 mt-1">
-                      {product.stock === 1 ? 'Only 1 available' : `${product.stock} available`}
+                    <p className="mt-1 text-[13px] text-accent">
+                      {product.stock === 1 ? 'One of a kind. Once sold, it cannot be replaced.' : `${product.stock} available`}
                     </p>
                   </div>
                   <div
-                    className="sticky bottom-0 -mx-4 mt-auto flex flex-col gap-3 sm:flex-row border-t border-rule bg-bg px-4 pt-3 sm:static sm:mx-0 sm:border-t-0 sm:bg-transparent sm:px-0 sm:pt-0 sm:backdrop-blur-none"
+                    className="sticky bottom-0 -mx-4 mt-auto flex flex-col gap-3 sm:flex-row border-t border-rule bg-bg px-4 pt-3 sm:static sm:mx-0 sm:border-t-0 sm:bg-transparent sm:px-0 sm:pt-0"
                     style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
                   >
                     <AddToCartButton
@@ -158,11 +141,11 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                       className="flex-1"
                       onAdded={onClose}
                     >
-                      Add to cart
+                      Add to bag
                     </AddToCartButton>
                     <Link
                       href={`/store/${product.slug}`}
-                      className="flex min-h-[44px] items-center justify-center rounded-sm border border-rule px-6 py-3 font-medium text-ink transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="flex min-h-[44px] items-center justify-center rounded-sm border border-rule-2 px-6 py-3 font-medium text-ink transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       View details
                     </Link>

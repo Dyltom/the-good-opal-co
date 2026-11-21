@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { QuantitySelector } from '@/components/ui/quantity-selector'
 import { formatCurrency } from '@/lib/utils'
@@ -14,9 +14,12 @@ interface ProductActionsProps {
     stock: number
     image?: string
   }
+  children?: ReactNode
 }
 
-export function ProductActions({ product }: ProductActionsProps) {
+const addButtonClass = 'rounded-sm font-medium shadow-none hover:shadow-none'
+
+export function ProductActions({ product, children }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1)
   const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false)
   const inlineActionsRef = useRef<HTMLDivElement>(null)
@@ -44,10 +47,10 @@ export function ProductActions({ product }: ProductActionsProps) {
   }, [])
 
   return (
-    <div className="space-y-4">
+    <div>
       {product.stock > 1 ? (
-        <div>
-          <label className="mb-2 block text-sm font-medium">Quantity</label>
+        <div className="mb-3 flex items-center justify-between gap-4">
+          <span className="text-[13px] text-ink-2">Quantity</span>
           <QuantitySelector
             quantity={quantity}
             onQuantityChange={setQuantity}
@@ -56,37 +59,42 @@ export function ProductActions({ product }: ProductActionsProps) {
         </div>
       ) : null}
 
-      <div ref={inlineActionsRef} data-testid="inline-product-actions">
-        <AddToCartButton
-          product={cartProduct}
-          quantity={quantity}
-          size="lg"
-          animated={false}
-          className="h-14 w-full text-base"
-        />
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <div ref={inlineActionsRef} data-testid="inline-product-actions">
+          <AddToCartButton
+            product={cartProduct}
+            quantity={quantity}
+            size="lg"
+            animated={false}
+            className={`h-[50px] w-full text-[15px] md:h-12 ${addButtonClass}`}
+          >
+            Add to bag
+          </AddToCartButton>
+        </div>
+        {children}
       </div>
 
       {showStickyPurchaseBar ? (
         <div
           role="region"
           aria-label="Quick purchase"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-4 py-3 lg:hidden"
-          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
+          style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
         >
           <div className="mx-auto flex max-w-screen-sm items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="truncate font-sans text-xs text-ink-2">{product.name}</p>
-              <p className="font-serif text-lg font-semibold text-ink">
-                {formatCurrency(product.price, 'AUD')}
-              </p>
+              <p className="truncate font-serif text-[15px] italic leading-5 text-ink">{product.name}</p>
+              <p className="text-sm font-medium text-ink">{formatCurrency(product.price, 'AUD')}</p>
             </div>
             <AddToCartButton
               product={cartProduct}
               quantity={quantity}
               size="lg"
               animated={false}
-              className="h-12 flex-1"
-            />
+              className={`h-12 flex-none px-5 text-[15px] ${addButtonClass}`}
+            >
+              Add to bag
+            </AddToCartButton>
           </div>
         </div>
       ) : null}

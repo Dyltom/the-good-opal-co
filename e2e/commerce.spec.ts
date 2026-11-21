@@ -34,7 +34,7 @@ test('available product can be added, changed, and removed from cookie cart', as
   test.skip(!productUrl, 'Catalog is empty; seed/publish products before catalog acceptance testing')
 
   const productName = await page.getByRole('heading', { level: 1 }).innerText()
-  const addButton = page.getByRole('button', { name: /Add to cart/i }).first()
+  const addButton = page.getByRole('button', { name: /Add to bag/i }).first()
   if (!(await addButton.isVisible())) {
     await expect(page.getByRole('link', { name: 'See similar pieces' })).toBeVisible()
     assertNoErrors()
@@ -44,12 +44,12 @@ test('available product can be added, changed, and removed from cookie cart', as
   await addButton.click()
   await expectCartDrawerWith(page, productName)
   await page.goto('/cart')
-  await expect(page.getByRole('heading', { name: 'Shopping cart' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your bag', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Checkout', exact: true }).first()).toBeVisible()
 
   const remove = page.getByRole('button', { name: /remove/i }).first()
   await remove.click()
-  await expect(page.getByRole('heading', { name: 'Your cart is empty' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Your bag is empty' })).toBeVisible()
   assertNoErrors()
 })
 
@@ -58,7 +58,7 @@ test('cart sends buyers straight to secure payment with a shipping region', asyn
   const productUrl = await firstAvailableProduct(page)
   test.skip(!productUrl, 'Catalog is empty; seed/publish products before checkout acceptance testing')
 
-  const addButton = page.getByRole('button', { name: /Add to cart/i }).first()
+  const addButton = page.getByRole('button', { name: /Add to bag/i }).first()
   test.skip(!(await addButton.isVisible()), 'First catalog item is unavailable')
   await addButton.click()
   await expectCartDrawerWith(page, await page.getByRole('heading', { level: 1 }).innerText())

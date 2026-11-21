@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 
 interface ReviewsSectionProps {
   productId?: number
-  eyebrow?: string
   title: string
   className?: string
 }
@@ -17,7 +16,7 @@ const reviewDate = new Intl.DateTimeFormat('en-AU', {
   timeZone: 'Australia/Sydney',
 })
 
-export async function ReviewsSection({ productId, eyebrow, title, className }: ReviewsSectionProps) {
+export async function ReviewsSection({ productId, title, className }: ReviewsSectionProps) {
   const payload = await getPayload()
   const published: Where = { status: { equals: 'published' } }
   const { docs: reviews } = await payload.find({
@@ -32,10 +31,7 @@ export async function ReviewsSection({ productId, eyebrow, title, className }: R
 
   return (
     <section aria-labelledby="customer-reviews" className={className}>
-      {eyebrow ? (
-        <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-accent">{eyebrow}</p>
-      ) : null}
-      <h2 id="customer-reviews" className="mt-4 font-serif text-3xl font-medium text-ink sm:text-4xl">
+      <h2 id="customer-reviews" className="font-serif text-3xl font-medium text-ink sm:text-4xl">
         {title}
       </h2>
       <ul className="mt-10 grid gap-x-10 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
