@@ -120,8 +120,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const notes: string[] = []
   for (const paragraph of about.paragraphs) {
     const labelled = paragraph.match(/^([A-Z][A-Za-z ]{1,18}):\s*(.{1,80})$/)
-    if (labelled && !facts.some((fact) => fact.label === labelled[1])) {
-      facts.push({ label: labelled[1]!, value: labelled[2]!.replace(/\.$/, '') })
+    if (labelled) {
+      const label = labelled[1]!
+      const value = labelled[2]!.replace(/\.$/, '')
+      const known = facts.some(
+        (fact) =>
+          fact.label === label || fact.value.toLowerCase() === value.toLowerCase()
+      )
+      if (!known) facts.push({ label, value })
     } else {
       notes.push(paragraph)
     }
