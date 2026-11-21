@@ -141,7 +141,7 @@ export function LivingWall({ pieces }: { pieces: WallPiece[] }) {
             style={{ '--desktop': tile.desktop, '--mobile': tile.mobile } as CSSProperties}
             className={`group relative block overflow-hidden bg-plinth [grid-area:var(--mobile)] min-[1101px]:[grid-area:var(--desktop)] ${index >= 9 ? 'max-[760px]:hidden' : ''}`}
           >
-            <ViewTransition name={productImageTransitionName(piece.slug)} share="piece">
+            <ViewTransition name={productImageTransitionName(piece.slug)} share="piece" update="none">
               <div className="absolute inset-0">
                 <Image
                   src={piece.image}

@@ -68,7 +68,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
     <>
       <article className="group relative flex h-full flex-col">
         <div className="relative">
-          <ViewTransition name={productImageTransitionName(product.slug)} share="piece">
+          <ViewTransition name={productImageTransitionName(product.slug)} share="piece" update="none">
             <div className="relative aspect-[4/5] overflow-hidden bg-plinth">
               {product.image ? (
                 <Image
