@@ -320,7 +320,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
       >
         {order.map((slideIndex, position) =>
           position === 0 ? (
-            <ViewTransition key={`main-${slideIndex}`} name={transitionName} share="piece">
+            <ViewTransition key={`main-${slideIndex}`} name={transitionName} share="piece" update="none">
               {renderSlide(slideIndex, position)}
             </ViewTransition>
           ) : (

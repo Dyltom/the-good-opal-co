@@ -53,6 +53,37 @@ test('available product can be added, changed, and removed from cookie cart', as
   assertNoErrors()
 })
 
+test('quick add and remove leave the store grid still', async ({ page }) => {
+  await page.addInitScript(() => {
+    const calls = { count: 0 }
+    Object.assign(window, { viewTransitions: calls })
+    const start = Document.prototype.startViewTransition
+    if (!start) return
+    Document.prototype.startViewTransition = function (this: Document, ...args: Parameters<Document['startViewTransition']>) {
+      calls.count += 1
+      return start.apply(this, args)
+    }
+  })
+  const viewTransitions = () => page.evaluate(() => (window as unknown as { viewTransitions: { count: number } }).viewTransitions.count)
+
+  await page.goto('/store')
+  const card = page.locator('[data-store-grid] article').filter({ has: page.getByRole('button', { name: /^(Quick add|Add .* to cart)$/, includeHidden: true }) }).first()
+  test.skip((await card.count()) === 0, 'No available piece in the catalog')
+  await page.waitForLoadState('networkidle')
+
+  await card.hover()
+  await card.getByRole('button', { name: /^(Quick add|Add .* to cart)$/ }).filter({ visible: true }).first().click()
+  const drawer = page.getByRole('dialog', { name: /your bag/i })
+  await expect(drawer.getByRole('button', { name: /^Remove .* from cart$/ })).toBeVisible()
+  await page.waitForLoadState('networkidle')
+  expect(await viewTransitions()).toBe(0)
+
+  await drawer.getByRole('button', { name: /^Remove .* from cart$/ }).first().click()
+  await expect(drawer.getByRole('button', { name: /^Remove .* from cart$/ })).toHaveCount(0)
+  await page.waitForLoadState('networkidle')
+  expect(await viewTransitions()).toBe(0)
+})
+
 test.describe('before the page hydrates', () => {
   test.use({ javaScriptEnabled: false })
 
