@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import type { Metadata } from 'next'
@@ -12,9 +13,11 @@ import {
   caratWeight,
   countPriceBands,
   countStoreFacets,
+  EMPTY_STORE_QUERY,
   findStoreListings,
   parseStoreQuery,
   PRODUCTS_PER_PAGE,
+  STORE_VIEW_COOKIES,
   storeMetadata,
   storeUrl,
   type StoreListing,
@@ -142,6 +145,7 @@ function toStoreListing(value: unknown): StoreListing | undefined {
 
 export default async function StorePage({ searchParams }: StorePageProps) {
   const query = parseStoreQuery(await searchParams)
+  const cookieStore = await cookies()
   const payload = await getPayload()
   const [catalogue, reservedIds] = await Promise.all([payload.find({
     collection: 'products',
@@ -167,6 +171,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     .filter((listing): listing is StoreListing => listing !== undefined)
     .map((listing) => ({ ...listing, reserved: listing.stock <= 0 && reservedIds.has(listing.id) }))
   const matching = findStoreListings(listings, query)
+  const catalogueScope = { ...EMPTY_STORE_QUERY, availability: query.availability }
   const lastPage = Math.max(1, Math.ceil(matching.length / PRODUCTS_PER_PAGE))
 
   if (query.page > lastPage) {
@@ -226,9 +231,13 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         products={products}
         query={query}
         totalDocs={matching.length}
-        facetCounts={countStoreFacets(listings, query)}
-        priceCounts={countPriceBands(listings, query)}
+        counts={{ facets: countStoreFacets(listings, query), prices: countPriceBands(listings, query) }}
+        totals={{ facets: countStoreFacets(listings, catalogueScope), prices: countPriceBands(listings, catalogueScope) }}
         soldCount={listings.filter((listing) => listing.stock <= 0 && !listing.reserved).length}
+        view={{
+          three: cookieStore.get(STORE_VIEW_COOKIES.three)?.value === '1',
+          details: cookieStore.get(STORE_VIEW_COOKIES.details)?.value === '1',
+        }}
       />
       <StoreInsights query={query} results={matching.length} />
     </MarketingShell>

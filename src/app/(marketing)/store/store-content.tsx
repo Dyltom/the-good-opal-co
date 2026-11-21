@@ -1,8 +1,18 @@
 import Link from 'next/link'
-import { ArrowRight, Check, Search, X } from 'lucide-react'
+import { ViewTransition, type ReactNode } from 'react'
+import { ArrowRight, Grid2x2, Grid3x3, Search, X } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
+import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { PriceForm, StoreFilterSheet, StoreSort } from './store-controls'
+import {
+  FilterSheet,
+  PriceForm,
+  SearchRow,
+  SearchToggle,
+  StoreSort,
+  StoreView,
+  ViewToggle,
+} from './store-controls'
 import {
   activeFilterCount,
   EMPTY_STORE_QUERY,
@@ -22,6 +32,7 @@ import {
   type StoreFacetCounts,
   type StoreQuery,
 } from './store-query'
+import './store.css'
 
 export interface StoreProduct {
   id: string
@@ -41,32 +52,30 @@ export interface StoreProduct {
   carats?: number
 }
 
+export interface StoreViewPrefs {
+  three: boolean
+  details: boolean
+}
+
+interface Counts {
+  facets: StoreFacetCounts
+  prices: number[]
+}
+
 interface StoreContentProps {
   products: StoreProduct[]
   query: StoreQuery
   totalDocs: number
-  facetCounts: StoreFacetCounts
-  priceCounts: number[]
+  counts: Counts
+  totals: Counts
   soldCount: number
+  view: StoreViewPrefs
 }
-
-const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
 
 function HiddenQueryFields({ query, omit }: { query: StoreQuery; omit: string[] }) {
   return Array.from(storeQueryParams(query).entries())
     .filter(([name]) => !omit.includes(name))
     .map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)
-}
-
-function chipClass(active: boolean) {
-  return cn(
-    'inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 font-sans text-sm transition-colors',
-    focusRing,
-    active
-      ? 'border-ink bg-ink text-bg hover:bg-ink'
-      : 'border-rule bg-bg text-ink hover:border-ink'
-  )
 }
 
 function clearAllUrl(query: StoreQuery): string {
@@ -77,9 +86,13 @@ function hasAnyFilter(query: StoreQuery): boolean {
   return Boolean(query.search) || activeFilterCount(query) > 0
 }
 
-function ChipCount({ count, selected }: { count: number; selected: boolean }) {
+function pieces(count: number): string {
+  return `${count} ${count === 1 ? 'piece' : 'pieces'}`
+}
+
+function Count({ count, className }: { count: number; className?: string }) {
   return (
-    <span className={cn('text-xs tabular-nums', selected ? 'text-bg/70' : 'text-ink-3')}>
+    <span className={cn('tabular-nums', className)}>
       <span className="sr-only">, </span>
       {count}
       <span className="sr-only"> {count === 1 ? 'piece' : 'pieces'}</span>
@@ -87,202 +100,221 @@ function ChipCount({ count, selected }: { count: number; selected: boolean }) {
   )
 }
 
-function FacetChip({
-  facet,
-  value,
+function OptionRow({
+  href,
   label,
   count,
-  query,
+  selected,
+  sheet,
 }: {
-  facet: StoreFacet
-  value: string
+  href: string
   label: string
   count: number
-  query: StoreQuery
+  selected: boolean
+  sheet: boolean
 }) {
-  const selected = query[facet].includes(value)
+  const rowClass = cn(
+    'group/opt flex w-full items-center gap-2.5 text-ink-2 transition-colors',
+    sheet ? 'min-h-11 text-[15px]' : 'py-1 text-sm leading-[1.35]'
+  )
+  const content = (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          'size-[9px] flex-none rounded-full border transition-colors',
+          selected ? 'border-accent bg-accent' : 'border-rule-2 group-hover/opt:border-ink-2'
+        )}
+      />
+      {label}
+      <Count count={count} className="ml-auto text-[12.5px] text-ink-3" />
+    </>
+  )
+
+  if (count === 0 && !selected) {
+    return (
+      <span aria-disabled="true" className={cn(rowClass, 'opacity-40')}>
+        {content}
+      </span>
+    )
+  }
+
   return (
     <Link
-      href={storeUrl(toggleFacetValue(query, facet, value), 1)}
+      href={href}
       scroll={false}
       prefetch={false}
       aria-current={selected ? 'true' : undefined}
-      className={chipClass(selected)}
+      className={cn(rowClass, 'hover:text-ink aria-[current]:text-ink')}
     >
-      {selected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-      {label}
-      <ChipCount count={count} selected={selected} />
+      {content}
     </Link>
   )
 }
 
-function shownOptions(facet: StoreFacet, query: StoreQuery, counts: Record<string, number>) {
-  return STORE_FACET_OPTIONS[facet].filter(
-    ([value]) => (counts[value] ?? 0) > 0 || query[facet].includes(value)
+function Facet({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div role="group" aria-label={label} className="mt-5">
+      <p className="mb-1 text-xs font-medium uppercase tracking-[0.06em] text-ink-3">{label}</p>
+      {children}
+    </div>
   )
 }
-
-const groupLabelClass =
-  'mb-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-2'
 
 function FacetGroup({
   facet,
   query,
   counts,
+  totals,
+  sheet,
 }: {
   facet: StoreFacet
   query: StoreQuery
   counts: Record<string, number>
+  totals: Record<string, number>
+  sheet: boolean
 }) {
-  const options = shownOptions(facet, query, counts)
+  const options = STORE_FACET_OPTIONS[facet].filter(
+    ([value]) => (totals[value] ?? 0) > 0 || query[facet].includes(value)
+  )
   if (options.length === 0) return null
-  const label = STORE_FACET_LABELS[facet]
 
   return (
-    <div role="group" aria-label={label}>
-      <p className={groupLabelClass}>{label}</p>
-      <ul className="flex flex-wrap gap-2">
-        {options.map(([value, optionLabel]) => (
+    <Facet label={STORE_FACET_LABELS[facet]}>
+      <ul>
+        {options.map(([value, label]) => (
           <li key={value}>
-            <FacetChip
-              facet={facet}
-              value={value}
-              label={optionLabel}
+            <OptionRow
+              href={storeUrl(toggleFacetValue(query, facet, value), 1)}
+              label={label}
               count={counts[value] ?? 0}
-              query={query}
+              selected={query[facet].includes(value)}
+              sheet={sheet}
             />
           </li>
         ))}
       </ul>
-    </div>
+    </Facet>
   )
 }
 
-function PriceGroup({ query, counts }: { query: StoreQuery; counts: number[] }) {
+function PriceGroup({ query, counts, totals, sheet }: { query: StoreQuery; counts: number[]; totals: number[]; sheet: boolean }) {
   return (
-    <div role="group" aria-label="Price">
-      <p className={groupLabelClass}>Price (AUD)</p>
-      <PriceForm query={query} />
-      <ul className="mt-3 flex flex-wrap gap-2">
-        {STORE_PRICE_BANDS.map((preset, index) => {
-          const selected = query.priceMin === preset.priceMin && query.priceMax === preset.priceMax
-          const count = counts[index] ?? 0
-          if (count === 0 && !selected) return null
-          const label = priceRangeLabel(preset)
+    <Facet label="Price (AUD)">
+      <ul>
+        {STORE_PRICE_BANDS.map((band, index) => {
+          const selected = query.priceMin === band.priceMin && query.priceMax === band.priceMax
+          if ((totals[index] ?? 0) === 0 && !selected) return null
+          const label = priceRangeLabel(band) ?? ''
           return (
             <li key={label}>
-              <Link
+              <OptionRow
                 href={storeUrl({
                   ...query,
-                  priceMin: selected ? undefined : preset.priceMin,
-                  priceMax: selected ? undefined : preset.priceMax,
+                  priceMin: selected ? undefined : band.priceMin,
+                  priceMax: selected ? undefined : band.priceMax,
                   page: 1,
                 })}
-                scroll={false}
-                prefetch={false}
-                aria-current={selected ? 'true' : undefined}
-                className={chipClass(selected)}
-              >
-                {selected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-                {label}
-                <ChipCount count={count} selected={selected} />
-              </Link>
+                label={label}
+                count={counts[index] ?? 0}
+                selected={selected}
+                sheet={sheet}
+              />
             </li>
           )
         })}
       </ul>
-    </div>
-  )
-}
-
-function QuickChips({ query, facetCounts }: { query: StoreQuery; facetCounts: StoreFacetCounts }) {
-  const chips = (['category', 'stone'] as const).flatMap((facet) =>
-    shownOptions(facet, query, facetCounts[facet]).map(([value, label]) => (
-      <li key={value}>
-        <FacetChip
-          facet={facet}
-          value={value}
-          label={label}
-          count={facetCounts[facet][value] ?? 0}
-          query={query}
-        />
-      </li>
-    ))
-  )
-  if (chips.length === 0) return null
-
-  return (
-    <ul aria-label="Quick filters" className="flex flex-none gap-2 lg:hidden">
-      {chips}
-    </ul>
+      <PriceForm query={query} />
+    </Facet>
   )
 }
 
 function FilterGroups({
   query,
-  facetCounts,
-  priceCounts,
+  counts,
+  totals,
   soldCount,
+  sheet = false,
 }: {
   query: StoreQuery
-  facetCounts: StoreFacetCounts
-  priceCounts: number[]
+  counts: Counts
+  totals: Counts
   soldCount: number
+  sheet?: boolean
 }) {
+  const facet = (name: StoreFacet) => (
+    <FacetGroup
+      facet={name}
+      query={query}
+      counts={counts.facets[name]}
+      totals={totals.facets[name]}
+      sheet={sheet}
+    />
+  )
+
   return (
-    <div className="space-y-7">
-      {(['category', 'stone'] as const).map((facet) => (
-        <FacetGroup key={facet} facet={facet} query={query} counts={facetCounts[facet]} />
-      ))}
-      <PriceGroup query={query} counts={priceCounts} />
-      {(['origin', 'carat'] as const).map((facet) => (
-        <FacetGroup key={facet} facet={facet} query={query} counts={facetCounts[facet]} />
-      ))}
+    <>
+      {facet('category')}
+      {facet('stone')}
+      {facet('origin')}
+      <PriceGroup query={query} counts={counts.prices} totals={totals.prices} sheet={sheet} />
+      {facet('carat')}
       {soldCount > 0 ? (
-        <div
-          role="group"
-          aria-label="Availability"
-          className="space-y-4 border-t border-rule pt-6"
-        >
-          <Link
+        <Facet label="Availability">
+          <OptionRow
             href={storeUrl(
               { ...query, availability: query.availability === 'all' ? 'available' : 'all' },
               1
             )}
-            scroll={false}
-            prefetch={false}
-            aria-current={query.availability === 'all' ? 'true' : undefined}
-            className={chipClass(query.availability === 'all')}
-          >
-            {query.availability === 'all' ? (
-              <Check className="h-3.5 w-3.5" aria-hidden="true" />
-            ) : null}
-            Include sold pieces
-          </Link>
+            label="Include sold pieces"
+            count={soldCount}
+            selected={query.availability === 'all'}
+            sheet={sheet}
+          />
           <Link
             href="/store/collected"
-            className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-ink underline decoration-ink-3 underline-offset-4 hover:decoration-ink"
+            className={cn(
+              'flex items-center gap-1.5 text-sm text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink',
+              sheet ? 'min-h-11' : 'py-1'
+            )}
           >
             Recently sold
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <ArrowRight className="size-3.5" aria-hidden="true" />
           </Link>
-        </div>
+        </Facet>
       ) : null}
-    </div>
+    </>
   )
 }
 
-function ActiveFilters({ query }: { query: StoreQuery }) {
+function SearchForm({ query, id, className }: { query: StoreQuery; id: string; className?: string }) {
+  return (
+    <form action="/store" method="get" role="search" className={cn('relative', className)}>
+      <label className="sr-only" htmlFor={id}>
+        Search the collection
+      </label>
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-1/2 size-[17px] -translate-y-1/2 text-ink-3"
+      />
+      <input
+        id={id}
+        type="search"
+        name="search"
+        defaultValue={query.search}
+        placeholder="Search the collection"
+        className="h-[42px] w-full appearance-none rounded-none border-0 border-b border-rule-2 bg-transparent pl-[27px] pr-0 text-base text-ink outline-none placeholder:text-ink-3 focus:border-accent lg:text-sm"
+      />
+      <HiddenQueryFields query={query} omit={['search', 'page']} />
+    </form>
+  )
+}
+
+function activeChips(query: StoreQuery) {
   const priceLabel = priceRangeLabel(query)
-  const chips = [
+  return [
     ...(query.search
-      ? [
-          {
-            key: 'search',
-            label: `“${query.search}”`,
-            href: storeUrl({ ...query, search: '', page: 1 }),
-          },
-        ]
+      ? [{ key: 'search', label: `“${query.search}”`, href: storeUrl({ ...query, search: '', page: 1 }) }]
       : []),
     ...STORE_FACETS.flatMap((facet) =>
       query[facet].map((value) => ({
@@ -310,35 +342,34 @@ function ActiveFilters({ query }: { query: StoreQuery }) {
         ]
       : []),
   ]
+}
+
+function ActiveFilters({ query, className }: { query: StoreQuery; className?: string }) {
+  const chips = activeChips(query)
   if (chips.length === 0) return null
 
   return (
-    <ul aria-label="Active filters" className="mb-4 flex flex-wrap items-center gap-2 sm:mb-6">
+    <ul aria-label="Active filters" className={cn('relative flex gap-1.5 overflow-x-auto [scrollbar-width:none]', className)}>
       {chips.map((chip) => (
-        <li key={chip.key}>
+        <li key={chip.key} className="flex-none">
           <Link
             href={chip.href}
             scroll={false}
             prefetch={false}
             aria-label={`Remove ${chip.label}`}
-            className={cn(
-              'inline-flex min-h-9 items-center gap-1.5 rounded-full border border-rule-2 bg-bg px-3 font-sans text-sm text-ink hover:bg-ink hover:text-bg',
-              focusRing
-            )}
+            className="inline-flex h-8 items-center gap-1.5 whitespace-nowrap rounded-full border border-rule-2 pl-3 pr-2 text-[12.5px] text-ink transition-colors hover:border-ink-2 lg:h-7"
           >
             {chip.label}
-            <X className="h-3.5 w-3.5" aria-hidden="true" />
+            <X className="size-3" aria-hidden="true" />
           </Link>
         </li>
       ))}
-      <li>
+      <li className="flex-none">
         <Link
           href={clearAllUrl(query)}
           scroll={false}
-          className={cn(
-            'inline-flex min-h-9 items-center px-2 font-sans text-sm font-semibold underline underline-offset-4',
-            focusRing
-          )}
+          prefetch={false}
+          className="inline-flex h-8 items-center whitespace-nowrap px-1.5 text-[12.5px] text-ink-2 underline decoration-rule-2 underline-offset-[0.22em] hover:text-ink lg:h-7"
         >
           Clear all
         </Link>
@@ -347,174 +378,191 @@ function ActiveFilters({ query }: { query: StoreQuery }) {
   )
 }
 
+const chipClass =
+  'inline-flex h-[34px] flex-none items-center gap-1.5 whitespace-nowrap rounded-full border border-rule-2 px-3 text-[13px] text-ink-2 transition-colors'
+
+function QuickChips({ query, counts, totals }: { query: StoreQuery; counts: Counts; totals: Counts }) {
+  return (['category', 'stone'] as const).flatMap((facet) =>
+    STORE_FACET_OPTIONS[facet]
+      .filter(([value]) => (totals.facets[facet][value] ?? 0) > 0 || query[facet].includes(value))
+      .map(([value, label]) => {
+        const selected = query[facet].includes(value)
+        const count = counts.facets[facet][value] ?? 0
+        const inner = (
+          <>
+            {label}
+            <Count count={count} className="text-[11.5px] opacity-70" />
+          </>
+        )
+        if (count === 0 && !selected) {
+          return (
+            <span key={value} aria-disabled="true" className={cn(chipClass, 'opacity-40')}>
+              {inner}
+            </span>
+          )
+        }
+        return (
+          <Link
+            key={value}
+            href={storeUrl(toggleFacetValue(query, facet, value), 1)}
+            scroll={false}
+            prefetch={false}
+            aria-current={selected ? 'true' : undefined}
+            className={cn(chipClass, selected ? 'border-ink bg-ink text-bg' : 'hover:border-ink-2 hover:text-ink')}
+          >
+            {inner}
+          </Link>
+        )
+      })
+  )
+}
+
 function ShowMore({ query, shown, total }: { query: StoreQuery; shown: number; total: number }) {
   if (shown >= total) return null
   const next = Math.min(PRODUCTS_PER_PAGE, total - shown)
 
   return (
-    <div className="mt-10 flex flex-col items-center gap-3 sm:mt-14">
-      <p className="font-sans text-sm text-ink-2">
+    <div className="mt-10 flex flex-col items-center gap-3 px-gut lg:mt-14">
+      <p className="text-[13px] text-ink-2">
         {shown} of {total} pieces shown
       </p>
-      <Link
-        href={storeUrl(query, query.page + 1)}
-        scroll={false}
-        className={cn(
-          'inline-flex min-h-12 items-center rounded-sm border border-ink px-8 font-sans text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-bg',
-          focusRing
-        )}
-      >
+      <Link href={storeUrl(query, query.page + 1)} scroll={false} className={buttonVariants({ variant: 'ghost' })}>
         Show {next} more
       </Link>
     </div>
   )
 }
 
-export function StoreContent({
-  products,
-  query,
-  totalDocs,
-  facetCounts,
-  priceCounts,
-  soldCount,
-}: StoreContentProps) {
-  const shown = products.length
+const iconButton =
+  'grid h-[52px] w-[46px] flex-none place-items-center border-l border-rule text-ink-2 aria-expanded:text-accent aria-pressed:text-accent lg:hidden'
+
+export function StoreContent({ products, query, totalDocs, counts, totals, soldCount, view }: StoreContentProps) {
   const sortOptions = STORE_SORTS.map((sort) => ({
     value: sort,
     label: STORE_SORT_LABELS[sort],
     href: storeUrl({ ...query, sort }, 1),
   }))
-  const filters = (
-    <FilterGroups
-      query={query}
-      facetCounts={facetCounts}
-      priceCounts={priceCounts}
-      soldCount={soldCount}
-    />
-  )
+  const filterProps = { query, counts, totals, soldCount }
 
   return (
-    <section
-      className="px-5 pb-10 pt-2 sm:px-8 sm:pb-14 lg:pt-6"
-      aria-label="Opal collection"
-    >
-      <div className="mx-auto max-w-[92rem]">
-        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 lg:grid-cols-[15.5rem_minmax(0,1fr)_auto] lg:gap-x-12 lg:border-b lg:border-rule lg:pb-5">
-          <div>
-            <h1 className="font-serif text-base leading-5 text-ink lg:text-2xl lg:leading-8">
-              Australian opals
-            </h1>
-            <p
-              className="font-sans text-xs leading-4 text-ink-2 lg:text-sm lg:leading-5"
-              aria-live="polite"
-            >
-              {totalDocs === 0 ? (
-                'No pieces found'
-              ) : (
-                <>
-                  <span className="lg:hidden">
-                    {totalDocs} {totalDocs === 1 ? 'piece' : 'pieces'}
-                  </span>
-                  <span className="hidden lg:inline">{`Showing 1–${shown} of ${totalDocs} pieces`}</span>
-                </>
-              )}
-            </p>
+    <section aria-label="Opal collection">
+      <StoreView
+        three={view.three}
+        details={view.details}
+        search={Boolean(query.search)}
+        className="pb-14 lg:grid lg:grid-cols-[216px_minmax(0,1fr)] lg:gap-x-[clamp(18px,2.2vw,36px)] lg:px-gut lg:pb-20"
+      >
+        <aside
+          aria-label="Filters"
+          className="sticky top-14 hidden max-h-[calc(100svh-56px)] self-start overflow-y-auto pb-7 pr-0.5 pt-3.5 [scrollbar-width:none] lg:block"
+        >
+          <SearchForm query={query} id="store-search" />
+          <FilterGroups {...filterProps} />
+          <p className="mt-6 text-xs leading-5 text-ink-3">Origin disclosed · Prices in AUD · Tracked delivery</p>
+        </aside>
+
+        <div className="min-w-0">
+          <div className="max-lg:contents lg:sticky lg:top-14 lg:z-10 lg:mb-3.5 lg:flex lg:min-h-[58px] lg:items-center lg:gap-5 lg:border-b lg:border-rule lg:bg-bg/[0.92] lg:py-2 lg:backdrop-blur-[14px]">
+            <div className="flex flex-none items-baseline justify-between gap-3.5 px-gut pb-2.5 pt-3.5 lg:justify-start lg:p-0">
+              <h1 className="font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]">
+                Australian opals
+              </h1>
+              <p className="text-[13px] text-ink-2" aria-live="polite">
+                {totalDocs === 0 ? 'No pieces found' : pieces(totalDocs)}
+              </p>
+            </div>
+
+            <div className="sticky top-[52px] z-10 flex min-h-[52px] min-w-0 flex-wrap items-center border-y border-rule bg-bg/[0.94] pl-gut backdrop-blur-[14px] lg:static lg:min-h-0 lg:flex-1 lg:flex-nowrap lg:gap-[18px] lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+              <StoreSort
+                options={sortOptions}
+                value={query.sort}
+                className="h-[52px] border-r border-rule pr-2.5 lg:order-last lg:h-auto lg:border-0 lg:pr-0"
+              />
+              <div className="relative flex h-[52px] min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-x-contain px-2.5 [mask-image:linear-gradient(90deg,transparent,#000_10px,#000_calc(100%-20px),transparent)] [scrollbar-width:none] lg:hidden">
+                <FilterSheet
+                  activeCount={activeFilterCount(query)}
+                  resultCount={totalDocs}
+                  clearHref={hasAnyFilter(query) ? clearAllUrl(query) : undefined}
+                  className={cn(
+                    chipClass,
+                    activeFilterCount(query) > 0 ? 'border-ink text-ink' : 'hover:border-ink-2'
+                  )}
+                >
+                  <SearchForm query={query} id="store-search-sheet" className="mt-3" />
+                  <FilterGroups {...filterProps} sheet />
+                </FilterSheet>
+                <span aria-hidden="true" className="mx-1 h-5 w-px flex-none bg-rule-2" />
+                <QuickChips query={query} counts={counts} totals={totals} />
+              </div>
+              <div className="hidden min-w-0 flex-1 lg:block">
+                <ActiveFilters query={query} />
+              </div>
+              <ViewToggle
+                option="details"
+                className="hidden flex-none items-center gap-[9px] py-1.5 text-[13px] text-ink-2 aria-pressed:text-ink lg:inline-flex [@media(hover:none)]:!hidden"
+              >
+                <span
+                  aria-hidden="true"
+                  className="relative h-3.5 w-[26px] rounded-full border border-rule-2 transition-colors after:absolute after:left-0.5 after:top-0.5 after:size-2 after:rounded-full after:bg-ink-3 after:transition-transform after:duration-300 after:ease-gallery group-aria-pressed/toggle:border-accent group-aria-pressed/toggle:after:translate-x-3 group-aria-pressed/toggle:after:bg-accent"
+                />
+                Details on every card
+              </ViewToggle>
+              <ViewToggle
+                option="three"
+                label="Larger photos"
+                className="hidden size-9 flex-none place-items-center rounded-sm text-ink-2 hover:text-ink aria-pressed:text-accent lg:grid"
+              >
+                <Grid2x2 className="size-[18px]" aria-hidden="true" />
+              </ViewToggle>
+              <SearchToggle className={iconButton} />
+              <ViewToggle option="three" label="Three per row" className={iconButton}>
+                <Grid3x3 className="size-[18px]" aria-hidden="true" />
+              </ViewToggle>
+              <SearchRow className="basis-full pb-2 pr-gut lg:hidden">
+                <SearchForm query={query} id="store-search-mobile" />
+              </SearchRow>
+            </div>
           </div>
 
-          <form action="/store" method="get" role="search" className="flex gap-2 lg:hidden">
-            <label className="sr-only" htmlFor="store-search">
-              Search the collection
-            </label>
-            <input
-              id="store-search"
-              type="search"
-              name="search"
-              defaultValue={query.search}
-              placeholder="Name or SKU"
-              className="min-h-11 min-w-0 flex-1 rounded-sm border border-rule bg-bg px-3 font-sans text-base text-ink outline-none placeholder:text-ink-3 focus:border-ink focus:ring-2 focus:ring-accent/30"
-            />
-            <HiddenQueryFields query={query} omit={['search', 'page']} />
-            <button
-              className={cn(
-                'inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm bg-ink px-3 font-sans text-sm font-semibold text-bg hover:bg-ink lg:px-6',
-                focusRing
-              )}
-              type="submit"
-            >
-              <Search className="h-5 w-5 lg:hidden" aria-hidden="true" />
-              <span className="sr-only lg:not-sr-only">Search</span>
-            </button>
-          </form>
+          <ActiveFilters query={query} className="px-gut pt-3 lg:hidden" />
 
-          <div className="relative col-span-2 -mx-5 flex gap-2 overflow-x-auto px-5 py-1 [mask-image:linear-gradient(to_right,#000_calc(100%-3rem),transparent)] [scrollbar-width:none] after:block after:w-6 after:flex-none after:content-[''] sm:-mx-8 sm:px-8 lg:col-span-1 lg:col-start-3 lg:m-0 lg:overflow-visible lg:p-0 lg:[mask-image:none] lg:after:hidden">
-            <StoreFilterSheet
-              activeCount={activeFilterCount(query)}
-              resultCount={totalDocs}
-              clearHref={hasAnyFilter(query) ? clearAllUrl(query) : undefined}
-              className="flex-none lg:hidden"
+          <h2 className="sr-only">Current collection</h2>
+          {products.length > 0 ? (
+            <ul
+              data-store-grid=""
+              className="grid grid-cols-2 gap-x-2 gap-y-5 px-gut pt-3 group-data-[three]/view:grid-cols-3 group-data-[three]/view:gap-x-[5px] group-data-[three]/view:gap-y-3.5 sm:grid-cols-[repeat(auto-fill,minmax(196px,1fr))] sm:gap-x-3 sm:gap-y-[22px] sm:group-data-[three]/view:grid-cols-3 sm:group-data-[three]/view:gap-x-3 sm:group-data-[three]/view:gap-y-[22px] lg:px-0 lg:pt-0"
             >
-              {filters}
-            </StoreFilterSheet>
-            <StoreSort options={sortOptions} value={query.sort} className="flex-none" />
-            <QuickChips query={query} facetCounts={facetCounts} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pt-1 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12 lg:pt-6">
-          <aside className="hidden lg:block" aria-label="Filters">
-            <p className="border-b border-rule pb-4 font-serif text-2xl">Refine</p>
-            <div className="pt-6">{filters}</div>
-            <ul className="mt-8 space-y-2 border-t border-rule pt-5 font-sans text-xs font-semibold text-ink-2">
-              <li>Origin disclosed</li>
-              <li>Prices in AUD</li>
-              <li>Tracked delivery</li>
+              {products.map((product, index) => (
+                <ViewTransition key={product.id} default="store-card">
+                  <li>
+                    <ProductCard product={product} index={index} priority />
+                  </li>
+                </ViewTransition>
+              ))}
             </ul>
-          </aside>
-
-          <div>
-            <h2 className="sr-only">Current collection</h2>
-            <ActiveFilters query={query} />
-
-            {products.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 xl:grid-cols-4">
-                {products.map((product, index) => (
-                  <ProductCard key={product.id} product={product} index={index} priority />
-                ))}
+          ) : (
+            <div className="max-w-[46ch] px-gut py-12 lg:px-0 lg:py-16">
+              <h2 className="font-serif text-[clamp(28px,3vw,42px)] leading-[1.05] tracking-[-0.02em] text-ink">
+                Nothing matches yet.
+              </h2>
+              <p className="mb-[22px] mt-3 text-ink-2">
+                Try fewer details, browse every available piece, or ask us to help source something
+                particular.
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                <Link href={clearAllUrl(query)} className={buttonVariants()}>
+                  Clear filters
+                </Link>
+                <Link href="/contact?subject=opal-finder" className={buttonVariants({ variant: 'ghost' })}>
+                  Ask for help
+                </Link>
               </div>
-            ) : (
-              <div className="border-y border-rule py-16 text-center sm:py-20">
-                <p className="font-serif text-4xl">Nothing matches yet.</p>
-                <p className="mx-auto mt-4 max-w-md font-sans text-sm leading-6 text-ink-2">
-                  Try fewer details, browse every available piece, or ask us to help source
-                  something particular.
-                </p>
-                <div className="mt-7 flex flex-wrap justify-center gap-3">
-                  <Link
-                    href="/store"
-                    className={cn(
-                      'min-h-11 rounded-sm bg-ink px-6 py-3 font-sans text-sm font-semibold text-bg transition-colors hover:bg-ink',
-                      focusRing
-                    )}
-                  >
-                    Clear filters
-                  </Link>
-                  <Link
-                    href="/contact?subject=opal-finder"
-                    className={cn(
-                      'min-h-11 border-b border-ink px-2 py-3 font-sans text-sm font-semibold transition-colors hover:text-ink-2',
-                      focusRing
-                    )}
-                  >
-                    Ask for help
-                  </Link>
-                </div>
-              </div>
-            )}
+            </div>
+          )}
 
-            <ShowMore query={query} shown={shown} total={totalDocs} />
-          </div>
+          <ShowMore query={query} shown={products.length} total={totalDocs} />
         </div>
-      </div>
+      </StoreView>
     </section>
   )
 }

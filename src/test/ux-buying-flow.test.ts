@@ -30,7 +30,7 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
     expect(source).toContain('aria-live="polite"')
-    expect(source).toContain('Showing 1–${shown} of ${totalDocs} pieces')
+    expect(source).toContain('{shown} of {total} pieces shown')
     expect(source).toContain('products.map((product, index)')
     expect(source).toContain('index={index}')
   })
@@ -46,7 +46,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(actionSource).toContain("href: '/store?stone=black-opal'")
     expect(suggestionSource).toContain('`/store/${encodeURIComponent(match.slug)}`')
     expect(inputSource).toContain('router.push(suggestion.href)')
-    expect(storeSource).toContain('placeholder="Name or SKU"')
+    expect(storeSource).toContain('placeholder="Search the collection"')
     expect(storeSource).not.toContain('label="Setting" name="material"')
   })
 
@@ -56,7 +56,6 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('role="search"')
     expect(source).toContain('type="search"')
     expect(source).toContain('method="get"')
-    expect(source).toContain('Refine')
     expect(source).toContain('min-h-11')
   })
 
@@ -129,10 +128,9 @@ describe('buying flow UI/UX safeguards', () => {
   test('mobile store opens filters in a sheet while desktop keeps the sidebar', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('<aside className="hidden lg:block"')
-    expect(source).toContain('<StoreFilterSheet')
-    expect(source).toContain('className="flex-none lg:hidden"')
-    expect(source).toContain('inline-flex min-h-11 items-center')
+    expect(source).toMatch(/<aside[^>]*className="[^"]*hidden[^"]*lg:block"/)
+    expect(source).toContain('<FilterSheet')
+    expect(read('src/app/(marketing)/store/store-controls.tsx')).toContain('<dialog')
   })
 
   test('closed mobile navigation does not reserve page-height hit area', () => {
