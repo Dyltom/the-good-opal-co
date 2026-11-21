@@ -2,8 +2,11 @@
 
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { useReportWebVitals } from 'next/web-vitals'
 import { trackClientError } from '@/lib/analytics'
-import { captureInsight } from '@/lib/insights/client'
+import { captureInsight, landingPath } from '@/lib/insights/client'
+import { WEB_VITAL_METRICS, type WebVitalMetric } from '@/lib/insights/events'
+import { trackEngagement, trackRageClicks } from '@/lib/insights/page-signals'
 
 const MAX_ERRORS_PER_PAGE = 5
 
@@ -21,12 +24,31 @@ function rejectionMessage(reason: unknown): string {
   return typeof reason === 'string' ? reason : 'Unhandled promise rejection'
 }
 
+type ReportedMetric = Parameters<Parameters<typeof useReportWebVitals>[0]>[0]
+
+function isTrackedMetric(name: string): name is WebVitalMetric {
+  return WEB_VITAL_METRICS.some((metric) => metric === name)
+}
+
+function reportWebVital(metric: ReportedMetric) {
+  if (!isTrackedMetric(metric.name)) return
+  captureInsight('web_vital', {
+    path: landingPath(),
+    value: metric.name === 'CLS' ? Math.round(metric.value * 1000) / 1000 : Math.round(metric.value),
+    detail: { metric: metric.name, rating: metric.rating },
+  })
+}
+
 export function InsightsTracker() {
   const pathname = usePathname()
+  useReportWebVitals(reportWebVital)
 
   useEffect(() => {
     captureInsight('page_view')
+    return trackEngagement(pathname)
   }, [pathname])
+
+  useEffect(() => trackRageClicks(), [])
 
   useEffect(() => {
     const seen = new Set<string>()

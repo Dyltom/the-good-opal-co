@@ -11,6 +11,7 @@ const {
   findReservationByToken,
   reserveCheckoutInventory,
   InventoryUnavailableError,
+  recordServerError,
 } = vi.hoisted(() => {
   class TestInventoryUnavailableError extends Error {}
   return {
@@ -24,6 +25,7 @@ const {
     findReservationByToken: vi.fn(),
     reserveCheckoutInventory: vi.fn(),
     InventoryUnavailableError: TestInventoryUnavailableError,
+    recordServerError: vi.fn(),
   }
 })
 
@@ -31,6 +33,7 @@ vi.mock('@/lib/cart', () => ({ getCart }))
 vi.mock('@/lib/constants', () => ({ APP_URL: 'https://shop.example' }))
 vi.mock('@/lib/stripe-config', () => ({ getConfiguredStripeSecretKey }))
 vi.mock('@/lib/rate-limit', () => ({ getRequestIdentifier, checkRateLimit }))
+vi.mock('@/lib/insights/record', () => ({ recordServerError }))
 vi.mock('@/lib/inventory-reservations', () => ({
   checkoutReservationExpiresAt: () => new Date('2026-07-12T00:31:00.000Z'),
   findReservationByToken,
@@ -106,6 +109,9 @@ describe('checkout Server Action', () => {
       error: 'Payment could not be started. Please try again or contact support.',
     })
     expect(errorLog).toHaveBeenCalledOnce()
+    expect(recordServerError).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'checkout', path: '/checkout' })
+    )
     errorLog.mockRestore()
   })
 

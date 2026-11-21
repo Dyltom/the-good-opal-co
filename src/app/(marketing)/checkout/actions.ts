@@ -12,6 +12,7 @@ import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
 import { SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
+import { recordServerError } from '@/lib/insights/record'
 import { requestVisitorKey } from '@/lib/insights/visitor'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
@@ -163,7 +164,7 @@ export async function createCheckoutSession(input: {
           ...(insightsVisitor ? { [INSIGHTS_VISITOR_METADATA_KEY]: insightsVisitor } : {}),
         },
         success_url: `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${APP_URL}/cart`,
+        cancel_url: `${APP_URL}/cart?checkout=cancelled`,
       },
       { idempotencyKey: `checkout/${checkoutAttemptId}` }
     )
@@ -209,6 +210,7 @@ export async function createCheckoutSession(input: {
       }
     }
 
+    await recordServerError({ kind: 'checkout', path: '/checkout', error })
     return {
       success: false,
       error: 'Payment could not be started. Please try again or contact support.',

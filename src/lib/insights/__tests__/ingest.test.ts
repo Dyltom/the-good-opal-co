@@ -47,8 +47,51 @@ describe('parseInsightBody', () => {
     expect(parseInsightBody(raw)).toEqual({ ok: false, status: 413 })
   })
 
-  it('drops the server-only purchase and abandon events so browsers cannot fake sales', () => {
+  it('drops the server-only purchase, abandon and server error events so browsers cannot fake them', () => {
     expect(parseInsightBody(body({ name: 'checkout_abandoned', path: '/checkout' })).ok).toBe(false)
+    expect(parseInsightBody(body({ name: 'server_error', path: '/', detail: { message: 'x' } })).ok).toBe(false)
+  })
+})
+
+describe('parseInsightBody for page signals and feedback', () => {
+  it.each([
+    ['engagement on a piece page', { name: 'engagement', path: '/store/ring', detail: { seconds: 42, scroll: 80, sawPrice: true, sawDetails: false } }],
+    ['engagement on a plain page', { name: 'engagement', path: '/about', detail: { seconds: 0, scroll: 0 } }],
+    ['a web vital with its value', { name: 'web_vital', path: '/', value: 2310, detail: { metric: 'LCP', rating: 'good' } }],
+    ['a rage click', { name: 'rage_click', path: '/cart', detail: { target: 'button "Checkout"' } }],
+    ['feedback without a note', { name: 'checkout_feedback', path: '/cart', detail: { reason: 'shipping_cost', source: 'cancelled' } }],
+  ])('accepts %s', (_label, event) => {
+    expect(parseInsightBody(body(event))).toEqual({ ok: true, payload: event })
+  })
+
+  it.each([
+    ['engagement longer than half an hour', { name: 'engagement', path: '/', detail: { seconds: 1801, scroll: 10 } }],
+    ['scroll beyond the page', { name: 'engagement', path: '/', detail: { seconds: 5, scroll: 101 } }],
+    ['engagement with typed text', { name: 'engagement', path: '/', detail: { seconds: 5, scroll: 10, text: 'hello' } }],
+    ['a web vital without a value', { name: 'web_vital', path: '/', detail: { metric: 'LCP', rating: 'good' } }],
+    ['an untracked web vital', { name: 'web_vital', path: '/', value: 10, detail: { metric: 'FID', rating: 'good' } }],
+    ['a rage click with no target', { name: 'rage_click', path: '/', detail: { target: '  ' } }],
+    ['a rage click with a long target', { name: 'rage_click', path: '/', detail: { target: 'x'.repeat(81) } }],
+    ['feedback with an unknown reason', { name: 'checkout_feedback', path: '/cart', detail: { reason: 'colour', source: 'cart' } }],
+    ['feedback with no source', { name: 'checkout_feedback', path: '/cart', detail: { reason: 'other' } }],
+    ['feedback with a long note', { name: 'checkout_feedback', path: '/cart', detail: { reason: 'other', source: 'cart', note: 'x'.repeat(281) } }],
+  ])('rejects %s', (_label, event) => {
+    expect(parseInsightBody(body(event))).toEqual({ ok: false, status: 400 })
+  })
+
+  it('trims the feedback note and drops it when blank', () => {
+    const trimmed = parseInsightBody(
+      body({ name: 'checkout_feedback', path: '/cart', detail: { reason: 'other', source: 'cart', note: '  ring sizes?  ' } })
+    )
+    const blank = parseInsightBody(
+      body({ name: 'checkout_feedback', path: '/cart', detail: { reason: 'other', source: 'cart', note: '   ' } })
+    )
+
+    expect(trimmed).toMatchObject({ ok: true, payload: { detail: { reason: 'other', source: 'cart', note: 'ring sizes?' } } })
+    expect(blank).toEqual({
+      ok: true,
+      payload: { name: 'checkout_feedback', path: '/cart', detail: { reason: 'other', source: 'cart' } },
+    })
   })
 })
 

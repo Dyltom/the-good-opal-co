@@ -27,7 +27,12 @@ function captureEntry(): Entry {
   return entry
 }
 
+export function landingPath(): string | undefined {
+  return typeof window === 'undefined' ? undefined : captureEntry().landing
+}
+
 export interface InsightOptions {
+  path?: string
   productId?: string
   value?: number
   detail?: InsightDetail
@@ -35,7 +40,7 @@ export interface InsightOptions {
 
 export function captureInsight(name: ClientInsightEvent, options: InsightOptions = {}): void {
   if (typeof window === 'undefined') return
-  const path = window.location.pathname
+  const path = options.path ?? window.location.pathname
   if (path.startsWith('/admin')) return
   try {
     const { landing, referrer, utmSource, utmMedium, utmCampaign } = captureEntry()

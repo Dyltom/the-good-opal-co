@@ -22,8 +22,15 @@ describe('buildFunnel', () => {
 
     for (const step of steps) {
       expect(step.shareOfStart).toBe(0)
-      expect(Number.isFinite(step.dropOff)).toBe(true)
+      expect(step.dropOff).toBe(0)
     }
+  })
+
+  it('reports a full drop when carts never reach checkout, and none after an empty step', () => {
+    const steps = buildFunnel({ visitors: 10, productViews: 5, carts: 2, checkouts: 0, purchases: 0 })
+
+    expect(steps[3]).toMatchObject({ visitors: 0, dropOff: 1 })
+    expect(steps[4]).toMatchObject({ visitors: 0, dropOff: 0 })
   })
 
   it('never reports a negative drop when a later step outnumbers the one before it', () => {

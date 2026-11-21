@@ -18,4 +18,11 @@ describe('createContentSecurityPolicy', () => {
       'https://www.googletagmanager.com'
     )
   })
+
+  test('allows Microsoft Clarity scripts only when Clarity is configured', () => {
+    expect(createContentSecurityPolicy('production', '', 'opal123')).toContain(
+      'https://www.clarity.ms https://*.clarity.ms'
+    )
+    expect(createContentSecurityPolicy('production', 'G-OPAL', '')).not.toContain('clarity.ms')
+  })
 })

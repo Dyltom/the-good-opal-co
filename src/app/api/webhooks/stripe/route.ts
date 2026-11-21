@@ -24,7 +24,11 @@ import {
   verifyPaidQuoteDepositSession,
 } from '@/lib/custom-quote-deposits'
 import { sendQuoteDepositConfirmation } from '@/lib/custom-quotes/deposit-confirmation'
-import { recordCheckoutInsight, type CheckoutInsightItem } from '@/lib/insights/record'
+import {
+  recordCheckoutInsight,
+  recordServerError,
+  type CheckoutInsightItem,
+} from '@/lib/insights/record'
 
 /**
  * Stripe Webhook Handler
@@ -669,6 +673,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true, quoteDeposit: true, ...result })
       } catch (error) {
         console.error('Error reconciling custom quote deposit:', error)
+        await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })
         return NextResponse.json({ error: 'Failed to reconcile quote deposit' }, { status: 500 })
       }
     }
@@ -949,6 +954,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (error) {
       console.error('Error processing checkout.session.completed:', error)
+      await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })
       return NextResponse.json({ error: 'Failed to process order' }, { status: 500 })
     }
   }

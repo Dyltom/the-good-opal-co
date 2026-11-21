@@ -1,10 +1,12 @@
 export function createContentSecurityPolicy(
   nodeEnv = process.env.NODE_ENV,
-  googleAnalyticsMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+  googleAnalyticsMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+  clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID
 ): string {
   const googleAnalyticsScriptSource = googleAnalyticsMeasurementId?.trim()
     ? ' https://www.googletagmanager.com'
     : ''
+  const clarityScriptSource = clarityProjectId?.trim() ? ' https://www.clarity.ms https://*.clarity.ms' : ''
 
   return [
     "default-src 'self'",
@@ -18,7 +20,7 @@ export function createContentSecurityPolicy(
     "object-src 'none'",
     `script-src 'self' 'unsafe-inline'${
       nodeEnv === 'production' ? '' : " 'unsafe-eval'"
-    }${googleAnalyticsScriptSource}`,
+    }${googleAnalyticsScriptSource}${clarityScriptSource}`,
     "style-src 'self' 'unsafe-inline'",
     "worker-src 'self' blob:",
     'upgrade-insecure-requests',

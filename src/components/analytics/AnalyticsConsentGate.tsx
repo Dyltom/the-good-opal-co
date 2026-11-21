@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { parseCookiePreferences } from '@/lib/cookie-consent'
 import { GoogleAnalyticsProvider } from './GoogleAnalytics'
+import { MicrosoftClarity } from './MicrosoftClarity'
 
 function analyticsAllowed(): boolean {
   try {
@@ -27,5 +28,10 @@ export function AnalyticsConsentGate() {
   }, [])
 
   if (!allowed || pathname.startsWith('/quote')) return null
-  return <GoogleAnalyticsProvider />
+  return (
+    <>
+      <GoogleAnalyticsProvider />
+      <MicrosoftClarity />
+    </>
+  )
 }

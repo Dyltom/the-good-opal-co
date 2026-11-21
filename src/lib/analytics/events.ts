@@ -198,8 +198,8 @@ export function trackSearch(searchTerm: string, resultCount: number) {
   })
 }
 
-export function trackStoreFilter(filters: Record<string, string>) {
-  captureInsight('store_filter', { detail: filters })
+export function trackStoreFilter(filters: Record<string, string>, results: number) {
+  captureInsight('store_filter', { detail: { ...filters, results } })
 }
 
 /**

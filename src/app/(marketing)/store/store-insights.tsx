@@ -27,8 +27,8 @@ export function StoreInsights({ query, results }: { query: StoreQuery; results: 
 
   useEffect(() => {
     const active: Record<string, string> = JSON.parse(filterKey)
-    if (page === 1 && Object.keys(active).length > 0) trackStoreFilter(active)
-  }, [filterKey, page])
+    if (page === 1 && Object.keys(active).length > 0) trackStoreFilter(active, results)
+  }, [filterKey, page, results])
 
   return null
 }

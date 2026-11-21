@@ -212,15 +212,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <Container>
                 <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-14">
                   <div className="min-w-0 space-y-12">
-                    <ProductImageGallery
-                      productName={product.name}
-                      images={productImages}
-                      videos={productVideos}
-                      transitionName={productImageTransitionName(product.slug)}
-                    />
+                    <div data-insight-section="photos">
+                      <ProductImageGallery
+                        productName={product.name}
+                        images={productImages}
+                        videos={productVideos}
+                        transitionName={productImageTransitionName(product.slug)}
+                      />
+                    </div>
 
                     {about.paragraphs.length > 0 ? (
-                      <section aria-labelledby="about-stone" className="hidden max-w-prose lg:block">
+                      <section aria-labelledby="about-stone" data-insight-section="details" className="hidden max-w-prose lg:block">
                         <AboutStone id="about-stone" paragraphs={about.paragraphs} />
                       </section>
                     ) : null}
@@ -234,7 +236,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       {product.name}
                     </h1>
 
-                    <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <div data-insight-section="price" className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       <span className="font-serif text-3xl font-semibold tabular-nums text-charcoal">
                         {formatCurrency(product.price, 'AUD')}
                       </span>
@@ -252,7 +254,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     ) : null}
 
                     {facts.length > 0 ? (
-                      <dl className="mt-6 divide-y divide-warm-grey/50 border-y border-warm-grey/50 font-sans text-sm">
+                      <dl data-insight-section="details" className="mt-6 divide-y divide-warm-grey/50 border-y border-warm-grey/50 font-sans text-sm">
                         {facts.map((fact) => (
                           <div key={fact.label} className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 py-2.5">
                             <dt className="text-charcoal/60">{fact.label}</dt>
@@ -350,7 +352,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {about.paragraphs.length > 0 ? (
-                  <section aria-labelledby="about-stone-mobile" className="mt-12 max-w-prose lg:hidden">
+                  <section aria-labelledby="about-stone-mobile" data-insight-section="details" className="mt-12 max-w-prose lg:hidden">
                     <AboutStone id="about-stone-mobile" paragraphs={about.paragraphs} />
                   </section>
                 ) : null}
