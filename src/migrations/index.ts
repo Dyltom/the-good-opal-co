@@ -51,6 +51,8 @@ import * as migration_20260715_223000_expand_instagram_content_review from './20
 import * as migration_20260716_120000_ring_asset_ingestion from './20260716_120000_ring_asset_ingestion'
 import * as migration_20261120_090000_insight_events from './20261120_090000_insight_events'
 import * as migration_20261120_100000_reviews_and_product_videos from './20261120_100000_reviews_and_product_videos'
+import * as migration_20261121_090000_products_sold_per_unit from './20261121_090000_products_sold_per_unit'
+import * as migration_20261121_090100_flag_per_unit_and_triplet_products from './20261121_090100_flag_per_unit_and_triplet_products'
 
 export const migrations = [
   {
@@ -317,5 +319,15 @@ export const migrations = [
     up: migration_20261120_100000_reviews_and_product_videos.up,
     down: migration_20261120_100000_reviews_and_product_videos.down,
     name: '20261120_100000_reviews_and_product_videos',
+  },
+  {
+    up: migration_20261121_090000_products_sold_per_unit.up,
+    down: migration_20261121_090000_products_sold_per_unit.down,
+    name: '20261121_090000_products_sold_per_unit',
+  },
+  {
+    up: migration_20261121_090100_flag_per_unit_and_triplet_products.up,
+    down: migration_20261121_090100_flag_per_unit_and_triplet_products.down,
+    name: '20261121_090100_flag_per_unit_and_triplet_products',
   },
 ]

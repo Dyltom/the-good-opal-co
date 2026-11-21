@@ -7,6 +7,7 @@ import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { productGalleryUrls } from '@/lib/product-gallery'
 import { reservedProductIds } from '@/lib/inventory-reservations'
+import { parseProductDescription } from '@/lib/product-description'
 import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
@@ -65,16 +66,6 @@ function objectRecord(value: unknown): Record<string, unknown> | undefined {
     : undefined
 }
 
-function richTextToPlainText(value: unknown): string {
-  if (Array.isArray(value)) return value.map(richTextToPlainText).filter(Boolean).join(' ')
-
-  const record = objectRecord(value)
-  if (!record) return ''
-  if (typeof record.text === 'string') return record.text
-
-  return Object.values(record).map(richTextToPlainText).filter(Boolean).join(' ')
-}
-
 function optionalString(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
@@ -103,7 +94,8 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
     id: String(product.id),
     slug: product.slug,
     name: product.name,
-    description: richTextToPlainText(product.description),
+    description: parseProductDescription(product.description).paragraphs.join(' '),
+    soldPerUnit: product.soldPerUnit === true,
     price: product.price,
     compareAtPrice: typeof product.compareAtPrice === 'number' ? product.compareAtPrice : undefined,
     stock: typeof product.stock === 'number' ? product.stock : 0,
@@ -135,6 +127,8 @@ function toStoreListing(value: unknown): StoreListing | undefined {
     category: optionalString(product.category),
     stoneType: optionalString(product.stoneType),
     stoneOrigin: optionalString(product.stoneOrigin),
+    material: optionalString(product.material),
+    ringSize: optionalString(product.ringSize),
     price: product.price,
     stock: typeof product.stock === 'number' ? product.stock : 0,
     featured: product.featured === true,
@@ -158,6 +152,8 @@ export default async function StorePage({ searchParams }: StorePageProps) {
       category: true,
       stoneType: true,
       stoneOrigin: true,
+      material: true,
+      ringSize: true,
       price: true,
       stock: true,
       featured: true,
@@ -197,6 +193,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         images: true,
         stoneOrigin: true,
         stoneType: true,
+        soldPerUnit: true,
         weight: true,
         weightUnit: true,
       },

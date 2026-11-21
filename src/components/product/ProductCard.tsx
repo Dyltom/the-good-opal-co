@@ -23,6 +23,7 @@ interface ProductCardProduct {
   compareAtPrice?: number
   stock: number
   reserved?: boolean
+  soldPerUnit?: boolean
   featured?: boolean
   category?: string
   image?: string

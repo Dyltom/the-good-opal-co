@@ -20,6 +20,7 @@ interface ProductQuickViewModalProps {
     compareAtPrice?: number | null
     image?: string
     stock: number
+    soldPerUnit?: boolean
     stoneType?: string
     stoneOrigin?: string
     featured?: boolean
@@ -127,7 +128,11 @@ export function ProductQuickViewModal({ product, isOpen, onClose }: ProductQuick
                       ) : null}
                     </div>
                     <p className="mt-1 text-[13px] text-accent">
-                      {product.stock === 1 ? 'One of a kind. Once sold, it cannot be replaced.' : `${product.stock} available`}
+                      {product.soldPerUnit
+                        ? 'Priced per stone. Stones are selected at random from this batch.'
+                        : product.stock === 1
+                          ? 'One of a kind. Once sold, it cannot be replaced.'
+                          : `${product.stock} available`}
                     </p>
                   </div>
                   <div

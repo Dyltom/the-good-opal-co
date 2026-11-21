@@ -137,6 +137,22 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const sold = stock <= 0 && !reserved
   const discount = savePercent(product.price, product.compareAtPrice)
   const similarHref = sold ? await similarPiecesHref(product) : undefined
+  const isDeposit = product.category === 'custom-commissions'
+  const isLooseOpal = product.category === 'raw-opals'
+  const aboutHeading = isDeposit
+    ? 'About this deposit'
+    : product.soldPerUnit
+      ? 'About these stones'
+      : isLooseOpal
+        ? 'About this stone'
+        : 'About this piece'
+  const availabilityNote = isDeposit
+    ? 'A deposit to start your custom piece.'
+    : product.soldPerUnit
+      ? 'Priced per stone. Stones are selected at random from this batch.'
+      : stock === 1
+        ? 'What is photographed is exactly what you receive.'
+        : null
   const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
   const designStyle = ringStyles.find((style) =>
     product.name.toLowerCase().includes(`${style.label.replace('&', 'and').toLowerCase()} ring`)
@@ -272,7 +288,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <span className="font-medium text-accent">Save {discount}%</span>
                     </span>
                   ) : null}
-                  {stock === 1 ? (
+                  {isDeposit ? null : stock === 1 && !product.soldPerUnit ? (
                     <span className="ml-auto text-[13px] text-accent">One of a kind</span>
                   ) : (
                     <span className="ml-auto text-[13px] text-ink-2">{stock} available</span>
@@ -310,8 +326,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         <Link href={askHref}>Ask about this piece</Link>
                       </Button>
                     </ProductActions>
-                    {stock === 1 ? (
-                      <p className="mt-2 text-[13px] text-ink-2">This exact stone is the one you receive.</p>
+                    {availabilityNote ? (
+                      <p className="mt-2 text-[13px] text-ink-2">{availabilityNote}</p>
                     ) : null}
                     <PaymentMethods className="mt-3" />
                   </>
@@ -332,7 +348,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {notes.length > 0 ? (
                 <section aria-labelledby="about-stone" data-insight-section="details" className="mt-[18px]">
                   <h2 id="about-stone" className="sr-only">
-                    About this stone
+                    {aboutHeading}
                   </h2>
                   <div className="grid max-w-[60ch] gap-2.5 text-[14.5px] leading-[1.6] text-ink-2">
                     {notes.map((paragraph) => (

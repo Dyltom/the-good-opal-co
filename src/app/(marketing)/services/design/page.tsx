@@ -47,6 +47,7 @@ const stoneTypeLabels: Record<string, string> = {
   'fire-opal': 'Fire opal',
   'matrix-opal': 'Matrix opal',
   'opal-doublet': 'Opal doublet',
+  'opal-triplet': 'Opal triplet',
 }
 
 const originLabels: Record<string, string> = {
