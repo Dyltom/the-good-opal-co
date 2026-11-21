@@ -49,7 +49,7 @@ export function useShippingRegion(initialRegion: ShippingRegion = 'AU') {
 export function ShippingRegionToggle({ value, onChange, className }: ShippingRegionToggleProps) {
   return (
     <fieldset className={cn('min-w-0', className)}>
-      <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-2">
+      <legend className="mb-2 text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
         Shipping to
       </legend>
       <div className="grid grid-cols-2 border border-rule bg-bg p-0.5">

@@ -352,7 +352,7 @@ function ActiveFilters({ query, className }: { query: StoreQuery; className?: st
   if (chips.length === 0) return null
 
   return (
-    <ul aria-label="Active filters" className={cn('relative flex gap-1.5 overflow-x-auto [scrollbar-width:none]', className)}>
+    <ul aria-label="Active filters" className={cn('flex flex-wrap gap-1.5', className)}>
       {chips.map((chip) => (
         <li key={chip.key} className="flex-none">
           <Link
@@ -467,10 +467,10 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
         <div className="min-w-0">
           <div className="max-lg:contents lg:sticky lg:top-14 lg:z-20 lg:mb-3.5 lg:flex lg:min-h-[58px] lg:items-center lg:gap-5 lg:border-b lg:border-rule lg:bg-bg/[0.92] lg:py-2 lg:backdrop-blur-[14px]">
             <div className="flex flex-none items-baseline justify-between gap-3.5 px-gut pb-2.5 pt-3.5 lg:justify-start lg:p-0">
-              <h1 className="font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]">
-                Australian opals
+              <h1 className="min-w-0 break-words font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]">
+                {query.search ? `Results for “${query.search}”` : 'Australian opals'}
               </h1>
-              <p className="text-[13px] text-ink-2" aria-live="polite">
+              <p className="flex-none text-[13px] text-ink-2" aria-live="polite">
                 {totalDocs === 0 ? 'No pieces found' : pieces(totalDocs)}
               </p>
             </div>
@@ -481,7 +481,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
                 value={query.sort}
                 className="h-[52px] border-r border-rule pr-2.5 lg:order-last lg:h-auto lg:border-0 lg:pr-0"
               />
-              <div className="relative flex h-[52px] min-w-0 flex-1 items-center gap-1.5 overflow-x-auto overscroll-x-contain px-2.5 [mask-image:linear-gradient(90deg,transparent,#000_10px,#000_calc(100%-20px),transparent)] [scrollbar-width:none] lg:hidden">
+              <div className="flex h-[52px] min-w-0 flex-1 items-center px-2.5 lg:hidden">
                 <FilterSheet
                   activeCount={activeFilterCount(query)}
                   resultCount={totalDocs}
@@ -494,11 +494,9 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
                   <SearchForm query={query} id="store-search-sheet" className="mt-3" />
                   <FilterGroups {...filterProps} sheet />
                 </FilterSheet>
-                <span aria-hidden="true" className="mx-1 h-5 w-px flex-none bg-rule-2" />
-                <QuickChips query={query} counts={counts} totals={totals} />
               </div>
               <div className="hidden min-w-0 flex-1 lg:block">
-                <ActiveFilters query={query} />
+                <ActiveFilters query={query} className="py-1" />
               </div>
               <ViewToggle
                 option="details"
@@ -527,7 +525,10 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
             </div>
           </div>
 
-          <ActiveFilters query={query} className="px-gut pt-3 lg:hidden" />
+          <div className="relative flex gap-1.5 overflow-x-auto overscroll-x-contain px-gut pt-3 [mask-image:linear-gradient(90deg,#000_calc(100%-24px),transparent)] [scrollbar-width:none] lg:hidden">
+            <QuickChips query={query} counts={counts} totals={totals} />
+          </div>
+          <ActiveFilters query={query} className="px-gut pt-2.5 lg:hidden" />
 
           <h2 className="sr-only">Current collection</h2>
           {products.length > 0 ? (
@@ -546,15 +547,16 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
           ) : (
             <div className="max-w-[46ch] px-gut py-12 lg:px-0 lg:py-16">
               <h2 className="font-serif text-[clamp(28px,3vw,42px)] leading-[1.05] tracking-[-0.02em] text-ink">
-                Nothing matches yet.
+                {query.search ? `Nothing matches “${query.search}”.` : 'Nothing matches yet.'}
               </h2>
               <p className="mb-[22px] mt-3 text-ink-2">
-                Try fewer details, browse every available piece, or ask us to help source something
-                particular.
+                {query.search
+                  ? 'Check the spelling or try a broader word, such as boulder, ring or Lightning Ridge. You can also browse every available piece, or ask us to help source something particular.'
+                  : 'Try fewer details, browse every available piece, or ask us to help source something particular.'}
               </p>
               <div className="flex flex-wrap gap-2.5">
                 <Link href={clearAllUrl(query)} className={buttonVariants()}>
-                  Clear filters
+                  {activeFilterCount(query) > 0 ? 'Clear filters' : 'Browse all pieces'}
                 </Link>
                 <Link href="/contact?subject=opal-finder" className={buttonVariants({ variant: 'ghost' })}>
                   Ask for help
