@@ -74,8 +74,9 @@ export default function TermsOfServicePage() {
 
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">3.2 Pricing</h3>
               <p className="mb-4">
-                All prices are listed in Australian Dollars (AUD) and are inclusive of GST where
-                applicable. We reserve the right to change prices at any time without notice.
+                All prices and shipping charges are listed in Australian Dollars (AUD) and include
+                GST. Your order confirmation shows the GST included in the total. We reserve the
+                right to change prices at any time without notice.
               </p>
               <p className="mb-4">
                 In the event of a pricing error, we reserve the right to cancel any orders placed at
@@ -145,9 +146,11 @@ export default function TermsOfServicePage() {
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">6.1 Return Policy</h3>
               <p className="mb-4">
                 We offer a 30-day change-of-mind return policy for standard, unused pieces in their
-                original condition and packaging. Custom or personalised items are excluded from
-                change-of-mind returns. These exclusions do not limit rights that cannot be excluded
-                under the Australian Consumer Law.
+                original condition and packaging. Custom work is excluded from change-of-mind
+                returns: commissions, custom rings, stones or parcels cut to order, and any deposit
+                paid for custom work. Personalised items are excluded too. These exclusions do not
+                limit rights that cannot be excluded under the Australian Consumer Law, including
+                for custom work.
               </p>
 
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">6.2 Return Process</h3>
@@ -158,9 +161,13 @@ export default function TermsOfServicePage() {
 
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">6.3 Refunds</h3>
               <p className="mb-4">
-                Once your return is received and inspected, we will confirm the outcome. Any
-                approved refund is sent to the original payment method; your bank or card issuer
-                controls the time taken to display it.
+                Once your return is received and inspected, we will confirm the outcome. Approved
+                refunds are made to the original payment method through Stripe; purchases made with
+                Klarna are refunded through Klarna. A change-of-mind refund covers the price of the
+                item; the original shipping charge and return postage are not refunded. For a
+                faulty, damaged or incorrect item we also refund the original shipping charge and
+                cover the return postage. Stripe says refunds usually take 5 to 10 business days to
+                appear; your bank or card issuer controls the exact timing.
               </p>
 
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">6.4 Exchanges</h3>

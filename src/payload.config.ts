@@ -126,11 +126,16 @@ export default buildConfig({
         Icon: '@/components/payload/AdminGraphics#AdminIcon',
       },
       afterNavLinks: ['@/components/payload/insights/InsightsNavLink#InsightsNavLink'],
-      beforeNavLinks: [],
+      beforeNavLinks: ['@/components/payload/help/HelpNavLink#HelpNavLink'],
+      beforeDashboard: ['@/components/payload/help/HelpLinks#HelpDashboardLink'],
       views: {
         insights: {
           Component: '@/components/payload/insights/InsightsView#InsightsView',
           path: '/insights',
+        },
+        help: {
+          Component: '@/components/payload/help/HelpView#HelpView',
+          path: '/help',
         },
       },
     },

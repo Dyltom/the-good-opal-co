@@ -123,13 +123,13 @@ export async function createCheckoutSession(input: {
     const expiresAt = checkoutReservationExpiresAt()
     const brandIcon = publicUrl('/logo.png')
 
-    // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
         client_reference_id: checkoutAttemptId,
         expires_at: Math.floor(expiresAt.getTime() / 1000),
         phone_number_collection: { enabled: true },
+        custom_text: { submit: { message: 'Prices and shipping are in AUD and include GST.' } },
         branding_settings: {
           display_name: 'The Good Opal Co',
           background_color: '#FAF9F6',

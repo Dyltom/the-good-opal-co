@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import type { AdminViewServerProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { Gutter } from '@payloadcms/ui'
@@ -14,6 +13,7 @@ import {
   vitalRating,
   type InsightsReport,
 } from '@/lib/insights/report'
+import { requireAdminViewUser } from '../admin-view-user'
 import styles from './InsightsView.module.css'
 
 const numberFormat = new Intl.NumberFormat('en-AU')
@@ -500,10 +500,10 @@ function Report({ report }: { report: InsightsReport }) {
 
 export async function InsightsView({ initPageResult, params, searchParams }: AdminViewServerProps) {
   const { req, permissions, visibleEntities, locale } = initPageResult
-  if (!req.user) redirect('/admin/login?redirect=%2Fadmin%2Finsights')
+  const user = requireAdminViewUser(req, '/admin/insights')
 
   const days = parseInsightRange(searchParams?.['days'])
-  const isAdmin = req.user.role === 'admin'
+  const isAdmin = user.role === 'admin'
   let report: InsightsReport | null = null
   let failed = false
   if (isAdmin) {
@@ -524,7 +524,7 @@ export async function InsightsView({ initPageResult, params, searchParams }: Adm
       permissions={permissions}
       req={req}
       searchParams={searchParams}
-      user={req.user}
+      user={user}
       visibleEntities={visibleEntities}
     >
       <Gutter className={styles.view}>

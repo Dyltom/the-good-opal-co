@@ -27,6 +27,7 @@ import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { AdoptBuilderCandidateButton as AdoptBuilderCandidateButton_63e639818790ace19eb4d1ea2496f0a0 } from '@/components/payload/AdoptBuilderCandidateButton'
+import { HelpLinks as HelpLinks_766071d33a087fb2f9f338ae9b2cbd0c } from '@/components/payload/help/HelpLinks'
 import { DesignConfigurationSummary as DesignConfigurationSummary_131dce4395534b26fa68a11e4f32e8ac } from '@/components/payload/DesignConfigurationSummary'
 import { DollarAmountCell as DollarAmountCell_f5bdac0c0a82afef58b4366699f8f58f } from '@/components/payload/DollarAmountField'
 import { DollarAmountField as DollarAmountField_f5bdac0c0a82afef58b4366699f8f58f } from '@/components/payload/DollarAmountField'
@@ -34,7 +35,10 @@ import { SendCustomQuoteButton as SendCustomQuoteButton_5c85f0b14e3e7428493d4d99
 import { AdminIcon as AdminIcon_70c327425f836e4cdf74223b86aca25e } from '@/components/payload/AdminGraphics'
 import { AdminLogo as AdminLogo_70c327425f836e4cdf74223b86aca25e } from '@/components/payload/AdminGraphics'
 import { InsightsNavLink as InsightsNavLink_b313b95c2294183f0d491c6b2400c46e } from '@/components/payload/insights/InsightsNavLink'
+import { HelpDashboardLink as HelpDashboardLink_766071d33a087fb2f9f338ae9b2cbd0c } from '@/components/payload/help/HelpLinks'
+import { HelpNavLink as HelpNavLink_1f7cb9b7f9cff29895f6fa2570e64408 } from '@/components/payload/help/HelpNavLink'
 import { InsightsView as InsightsView_4cf7f556d6ea3e21844486aa5b21376e } from '@/components/payload/insights/InsightsView'
+import { HelpView as HelpView_97a56c8b3930177992d7afbdd66fdff3 } from '@/components/payload/help/HelpView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -68,6 +72,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@/components/payload/AdoptBuilderCandidateButton#AdoptBuilderCandidateButton": AdoptBuilderCandidateButton_63e639818790ace19eb4d1ea2496f0a0,
+  "@/components/payload/help/HelpLinks#HelpLinks": HelpLinks_766071d33a087fb2f9f338ae9b2cbd0c,
   "@/components/payload/DesignConfigurationSummary#DesignConfigurationSummary": DesignConfigurationSummary_131dce4395534b26fa68a11e4f32e8ac,
   "@/components/payload/DollarAmountField#DollarAmountCell": DollarAmountCell_f5bdac0c0a82afef58b4366699f8f58f,
   "@/components/payload/DollarAmountField#DollarAmountField": DollarAmountField_f5bdac0c0a82afef58b4366699f8f58f,
@@ -75,6 +80,9 @@ export const importMap = {
   "@/components/payload/AdminGraphics#AdminIcon": AdminIcon_70c327425f836e4cdf74223b86aca25e,
   "@/components/payload/AdminGraphics#AdminLogo": AdminLogo_70c327425f836e4cdf74223b86aca25e,
   "@/components/payload/insights/InsightsNavLink#InsightsNavLink": InsightsNavLink_b313b95c2294183f0d491c6b2400c46e,
+  "@/components/payload/help/HelpLinks#HelpDashboardLink": HelpDashboardLink_766071d33a087fb2f9f338ae9b2cbd0c,
+  "@/components/payload/help/HelpNavLink#HelpNavLink": HelpNavLink_1f7cb9b7f9cff29895f6fa2570e64408,
   "@/components/payload/insights/InsightsView#InsightsView": InsightsView_4cf7f556d6ea3e21844486aa5b21376e,
+  "@/components/payload/help/HelpView#HelpView": HelpView_97a56c8b3930177992d7afbdd66fdff3,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

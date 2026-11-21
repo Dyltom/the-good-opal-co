@@ -27,7 +27,7 @@ const process = [
   {
     number: '03',
     title: 'Agree on the piece',
-    copy: 'We confirm the design direction, quote, expected timing, and what is included before work begins.',
+    copy: 'We confirm the design direction, quote, expected timing, and what is included before work begins. Custom work, including its deposit, is not eligible for change-of-mind returns.',
   },
   {
     number: '04',
