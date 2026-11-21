@@ -14,7 +14,7 @@ export const promoteFirstUser: CollectionBeforeChangeHook = async ({ data, opera
 
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: { useAPIKey: true },
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'role'],
