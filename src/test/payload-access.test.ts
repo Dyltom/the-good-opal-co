@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest'
-import type { Access, PayloadRequest } from 'payload'
+import type { Access, Field, PayloadRequest } from 'payload'
 import {
   isAdmin,
   isAdminField,
@@ -9,6 +9,12 @@ import {
   publishedVersionOrAdmin,
 } from '@/lib/payload-access'
 import { Products } from '@/payload/collections/Products'
+
+function namedFields(fields: Field[]): Field[] {
+  return fields.flatMap((field) =>
+    'fields' in field && !('name' in field) ? namedFields(field.fields) : [field]
+  )
+}
 
 function args(user: PayloadRequest['user']): Parameters<Access>[0] {
   return { req: { user } } as Parameters<Access>[0]
@@ -40,7 +46,7 @@ describe('Payload access rules', () => {
       'wooModifiedAt',
       'tenantId',
     ]) {
-      const field = Products.fields.find(
+      const field = namedFields(Products.fields).find(
         (candidate) => 'name' in candidate && candidate.name === name
       )
       expect(field && 'access' in field ? field.access?.read : undefined, name).toBe(isAdminField)

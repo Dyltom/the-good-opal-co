@@ -1,4 +1,5 @@
 import { getPayload } from '@/lib/payload'
+import { SHOP_TENANT_ID } from '@/lib/tenant'
 import {
   downloadWordPressMedia,
   fetchPublishedWordPressPosts,
@@ -7,8 +8,6 @@ import {
   type WordPressFeaturedMedia,
   type WordPressTerm,
 } from '@/lib/wordpress/content-import'
-
-const TENANT_ID = 'good-opal-co'
 
 function enabled(name: string): boolean {
   return process.env[name] === 'true'
@@ -39,7 +38,7 @@ async function findOrImportMedia(media: WordPressFeaturedMedia): Promise<number>
       legacySourceUrl: media.sourceUrl,
       alt: media.alt,
       caption: media.title,
-      tenantId: TENANT_ID,
+      tenantId: SHOP_TENANT_ID,
     },
     file: await downloadWordPressMedia(media),
     overrideAccess: true,
@@ -96,7 +95,7 @@ async function upsertAuthor(author: WordPressAuthor): Promise<number> {
     name: author.name,
     slug: author.slug,
     bio: author.bio || undefined,
-    tenantId: TENANT_ID,
+    tenantId: SHOP_TENANT_ID,
   }
   if (existing) {
     const updated = await payload.update({
@@ -139,7 +138,7 @@ async function upsertCategory(term: WordPressTerm): Promise<number> {
     name: term.name,
     slug: term.slug,
     description: term.description || undefined,
-    tenantId: TENANT_ID,
+    tenantId: SHOP_TENANT_ID,
   }
   if (existing) {
     const updated = await payload.update({
@@ -182,7 +181,7 @@ async function upsertTag(term: WordPressTerm): Promise<number> {
     name: term.name,
     slug: term.slug,
     description: term.description || undefined,
-    tenantId: TENANT_ID,
+    tenantId: SHOP_TENANT_ID,
   }
   if (existing) {
     const updated = await payload.update({
@@ -267,7 +266,7 @@ async function importContent(): Promise<void> {
       tags,
       _status: 'published' as const,
       publishedAt: post.publishedAt,
-      tenantId: TENANT_ID,
+      tenantId: SHOP_TENANT_ID,
     }
 
     if (existing) {

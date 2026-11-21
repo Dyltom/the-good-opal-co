@@ -11,6 +11,7 @@ import {
   QUOTE_ACCESS_COOKIE,
   type CustomerQuoteAccess,
 } from '@/lib/custom-quotes/customer-access'
+import { notifyOwnerOfQuoteEvent } from '@/lib/custom-quotes/owner-notification'
 import { getPayload } from '@/lib/payload'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
@@ -128,6 +129,7 @@ export async function acceptCustomQuote(
       data: { status: 'accepted' },
     })
     await payload.db.commitTransaction(transactionID)
+    await notifyOwnerOfQuoteEvent(quote.id, 'accepted')
     return { success: true, message: 'Quote accepted. You can now pay the deposit.' }
   } catch (error) {
     await payload.db.rollbackTransaction(transactionID)

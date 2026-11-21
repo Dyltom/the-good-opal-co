@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
+import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 
 export const Tags: CollectionConfig = {
   slug: 'tags',
@@ -44,6 +45,8 @@ export const Tags: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
+      defaultValue: () => SHOP_TENANT_ID,
+      admin: { hidden: true },
       index: true,
     },
   ],

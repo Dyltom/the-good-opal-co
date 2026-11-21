@@ -1,15 +1,19 @@
 'use server'
 
 import { Resend } from 'resend'
-import { randomBytes } from 'node:crypto'
 import { z } from 'zod'
 import { inquiryLabels } from './contact-intent'
 import { contactSchema } from './schema'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { getPayload } from '@/lib/payload'
-import { ringConfigSchema } from '@/components/custom-builder/config'
+import {
+  describeRingConfig,
+  ringConfigSchema,
+  ringConfigToSearchParams,
+} from '@/components/custom-builder/config'
 import type { RingConfig } from '@/components/custom-builder/config'
 import { contactCustomerMutation } from '@/lib/contact-customer'
+import { newEnquiryReference } from '@/lib/enquiry-reference'
 import type { Enquiry } from '@/types/payload-types'
 
 export type ContactActionResult =
@@ -74,7 +78,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     const safeEmail = escapeHtml(validated.email)
     const safeMessage = escapeHtml(validated.message)
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')
-    const reference = `ENQ-${randomBytes(5).toString('hex').toUpperCase()}`
+    const reference = newEnquiryReference()
     const payload = await getPayload()
     const transactionID = await payload.db.beginTransaction()
     if (transactionID === null) throw new Error('Database transactions are required for enquiries')
@@ -157,7 +161,8 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
             ${optionalDetail('Product or piece', validated.product)}
             ${optionalDetail('Budget', validated.budget)}
             ${optionalDetail('Timeline', validated.timeline)}
-            ${optionalDetail('Design configuration', designConfiguration ? JSON.stringify(designConfiguration) : undefined)}
+            ${optionalDetail('Ring design', designConfiguration ? describeRingConfig(designConfiguration) : undefined)}
+            ${optionalDetail('Open the design', designConfiguration ? `${baseUrl}/services/design?${ringConfigToSearchParams(designConfiguration)}` : undefined)}
           </div>
 
           <div style="background-color: #ffffff; border: 1px solid #e5e5e5; padding: 20px; border-radius: 8px;">

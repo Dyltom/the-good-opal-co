@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
+import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 import { invalidateBuilderMappingsForMediaReplacement } from '../../lib/custom-builder/media-mapping-invalidation.ts'
 
 export const Media: CollectionConfig = {
@@ -75,9 +76,8 @@ export const Media: CollectionConfig = {
     {
       name: 'tenantId',
       type: 'text',
-      admin: {
-        description: 'Associated tenant ID for multi-tenancy',
-      },
+      defaultValue: () => SHOP_TENANT_ID,
+      admin: { hidden: true },
       index: true,
     },
   ],

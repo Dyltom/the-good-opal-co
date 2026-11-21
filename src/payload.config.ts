@@ -116,7 +116,15 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      titleSuffix: ' - The Good Opal Co',
+      icons: [{ rel: 'icon', type: 'image/png', url: '/favicon-32x32.png' }],
+    },
     components: {
+      graphics: {
+        Logo: '@/components/payload/AdminGraphics#AdminLogo',
+        Icon: '@/components/payload/AdminGraphics#AdminIcon',
+      },
       afterNavLinks: ['@/components/payload/insights/InsightsNavLink#InsightsNavLink'],
       beforeNavLinks: [],
       views: {
