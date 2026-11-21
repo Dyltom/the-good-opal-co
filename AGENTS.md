@@ -101,12 +101,12 @@ pnpm seed                # Seed local data
 
 ## UI and Typography
 
-- Use the existing `cn()` utility and design tokens from `src/styles/tokens.ts`.
-- Headings use `font-serif` (EB Garamond), body text uses `font-sans`
-  (Merriweather), and `font-accent` (Dancing Script) is reserved for emotional
-  moments such as success pages, taglines, and celebrations.
-- Preserve the warm fairytale aesthetic. Avoid corporate, sharp, or generic SaaS
-  visual language.
+- `DESIGN.md` is the design system ("Gallery, lights on"). Use the `cn()`
+  utility and the Tailwind tokens in `tailwind.config.ts` and
+  `src/app/globals.css`; do not add one-off colours.
+- Headings use `font-serif` (Bodoni Moda) and body text uses `font-sans`
+  (Schibsted Grotesk), loaded with `next/font`.
+- Never filter, tint, overlay or blend a stone photo: the photo is the product.
 - Keep interactive controls accessible: labels, keyboard support, focus states,
   semantic elements, and WCAG AA contrast.
 
