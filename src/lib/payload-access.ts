@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto'
-import type { Access, FieldAccess } from 'payload'
+import type { Access, FieldAccess, Where } from 'payload'
 
 type UserWithRole = {
   id: string | number
@@ -84,12 +84,28 @@ export const publishedOrAdmin: Access = ({ req }) => {
   }
 }
 
-export const publishedVersionOrAdmin: Access = ({ req }) => {
+export const livePostOrAdmin: Access = ({ req }) => {
   if (requestUser(req.user)?.role === 'admin') return true
 
-  return {
-    _status: {
-      equals: 'published',
-    },
+  const live: Where = {
+    and: [
+      { _status: { equals: 'published' } },
+      {
+        or: [
+          { publishedAt: { less_than_equal: new Date().toISOString() } },
+          { publishedAt: { exists: false } },
+        ],
+      },
+    ],
   }
+  return live
+}
+
+export function isLivePost(
+  post: { _status?: unknown; publishedAt?: unknown },
+  now = Date.now()
+): boolean {
+  if (post._status !== 'published') return false
+  if (post.publishedAt === null || post.publishedAt === undefined) return true
+  return typeof post.publishedAt === 'string' && Date.parse(post.publishedAt) <= now
 }

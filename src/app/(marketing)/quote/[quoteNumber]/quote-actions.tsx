@@ -52,8 +52,8 @@ export function QuoteActions({
           />
           <span>
             I accept quote {quoteNumber}, including its scope, price, deposit, timing and
-            cancellation terms. I understand custom work is excluded from change-of-mind returns;
-            Australian Consumer Law rights remain.
+            cancellation terms. I understand custom work and its deposit are excluded from
+            change-of-mind returns; Australian Consumer Law rights remain.
           </span>
         </label>
         <Button type="submit" disabled={accepting} className="mt-5 w-full sm:w-auto">
@@ -70,6 +70,7 @@ export function QuoteActions({
         <h2 className="text-[1.5rem] leading-tight">Secure your commission</h2>
         <p className="mt-2 text-sm leading-6 text-ink-2">
           Your accepted terms are locked. Stripe securely processes the exact deposit shown above.
+          Like the finished piece, the deposit is not refundable for a change of mind.
         </p>
         <Button type="submit" disabled={startingPayment} className="mt-5 w-full sm:w-auto">
           {startingPayment ? 'Opening secure payment…' : 'Pay deposit securely'}

@@ -28,6 +28,11 @@ export const Orders: CollectionConfig = {
     defaultColumns: ['orderNumber', 'status', 'total', 'customer.email', 'orderPlacedAt'],
     group: 'E-commerce',
     description: 'Customer orders with payment and shipping details',
+    components: {
+      beforeListTable: [
+        { path: '@/components/payload/help/HelpLinks#HelpLinks', clientProps: { topic: 'orders' } },
+      ],
+    },
   },
   access: {
     // Trusted server-side Local API calls bypass access control by default.

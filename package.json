@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@next/third-parties": "16.2.10",
     "@payloadcms/db-postgres": "^3.86.0",
     "@payloadcms/email-resend": "3.86.0",
@@ -72,6 +73,7 @@
     "framer-motion": "^12.23.25",
     "graphql": "^16.11.0",
     "lucide-react": "^0.546.0",
+    "marked": "15.0.12",
     "next": "16.2.10",
     "payload": "^3.86.0",
     "postgres": "^3.4.7",

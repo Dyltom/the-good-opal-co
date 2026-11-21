@@ -511,6 +511,9 @@ export const CustomQuotes: CollectionConfig = {
     group: 'CRM',
     description: 'Custom jewellery quotes. Amounts are in Australian dollars.',
     components: {
+      beforeListTable: [
+        { path: '@/components/payload/help/HelpLinks#HelpLinks', clientProps: { topic: 'custom-quotes' } },
+      ],
       edit: {
         beforeDocumentControls: [
           '@/components/payload/SendCustomQuoteButton#SendCustomQuoteButton',

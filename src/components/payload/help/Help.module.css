@@ -1,0 +1,127 @@
+.view {
+  padding-top: calc(var(--base) * 2);
+  padding-bottom: calc(var(--base) * 4);
+}
+
+.layout {
+  display: grid;
+  gap: calc(var(--base) * 2);
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: 220px minmax(0, 72ch);
+    align-items: start;
+  }
+
+  .toc {
+    position: sticky;
+    top: calc(var(--base) * 4);
+  }
+}
+
+.toc ol {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--theme-elevation-650);
+  font-size: 0.875rem;
+  line-height: 1.9;
+}
+
+.toc a,
+.links a,
+.dashboard a {
+  color: var(--theme-elevation-800);
+}
+
+.tocTitle {
+  margin: 0 0 calc(var(--base) * 0.25);
+  font-size: 0.8125rem;
+  color: var(--theme-elevation-650);
+}
+
+.guide {
+  line-height: 1.6;
+}
+
+.guide h1 {
+  margin-top: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+}
+
+.guide h2 {
+  margin-top: calc(var(--base) * 2.5);
+  padding-top: calc(var(--base) * 1);
+  border-top: 1px solid var(--theme-elevation-150);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 500;
+}
+
+.guide h2,
+.guide h3 {
+  scroll-margin-top: calc(var(--base) * 4);
+}
+
+.guide h3 {
+  margin-top: calc(var(--base) * 1.5);
+}
+
+.guide p,
+.guide ul,
+.guide ol,
+.guide table {
+  margin: 0 0 calc(var(--base) * 0.75);
+}
+
+.guide li + li,
+.guide li > ul {
+  margin-top: calc(var(--base) * 0.25);
+}
+
+.guide img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: calc(var(--base) * 0.75) 0;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+}
+
+.guide table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.guide th,
+.guide td {
+  padding: calc(var(--base) * 0.4);
+  border-bottom: 1px solid var(--theme-elevation-150);
+  text-align: left;
+  vertical-align: top;
+}
+
+.guide code {
+  padding: 0 0.25em;
+  background: var(--theme-elevation-50);
+  border-radius: var(--style-radius-s);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--base) * 0.25) calc(var(--base) * 0.75);
+  margin: 0 0 calc(var(--base) * 0.75);
+  font-size: 0.8125rem;
+  color: var(--theme-elevation-650);
+}
+
+.linksLabel {
+  color: var(--theme-elevation-650);
+}
+
+.dashboard {
+  margin: 0 0 calc(var(--base) * 1.5);
+  color: var(--theme-elevation-650);
+}

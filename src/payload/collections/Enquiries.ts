@@ -101,6 +101,11 @@ export const Enquiries: CollectionConfig = {
     defaultColumns: ['reference', 'type', 'status', 'name', 'email', 'submittedAt'],
     group: 'CRM',
     description: 'Website enquiries, custom design leads, and course interest',
+    components: {
+      beforeListTable: [
+        { path: '@/components/payload/help/HelpLinks#HelpLinks', clientProps: { topic: 'enquiries' } },
+      ],
+    },
   },
   access: {
     read: isAdmin,

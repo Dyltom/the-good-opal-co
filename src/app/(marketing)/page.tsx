@@ -77,19 +77,19 @@ function hangWall(listings: Listing[]): WallPiece[] {
 const KINDS = [
   {
     title: 'Rings and earrings',
-    copy: 'Finished pieces, ready to wear.',
+    copy: 'Finished pieces, ready to wear or give.',
     href: '/store?category=opal-rings,opal-earrings',
     matches: (product: ListedProduct) => FINISHED.has(product.category ?? ''),
   },
   {
     title: 'Loose opals',
-    copy: 'Single stones and parcels for setting or collecting.',
+    copy: 'Opals not yet set in jewellery. Keep one, or have it made into a ring.',
     href: '/store?category=raw-opals',
     matches: (product: ListedProduct) => product.category === 'raw-opals',
   },
   {
-    title: 'Calibrated',
-    copy: 'Matched sizes for jewellers.',
+    title: 'For jewellers',
+    copy: 'Calibrated stones: small opals cut to exact sizes for standard settings.',
     href: '/store?search=calibrated',
     matches: (product: ListedProduct) => /calibrated/i.test(product.name),
   },
@@ -141,6 +141,13 @@ const FACTS = [
   ],
   ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
   ['Secure checkout', 'Stripe: card, Apple Pay and Klarna.'],
+] as const
+
+const CUSTOM_STEPS = [
+  ['Bring an idea or an opal', 'Your own stone, one from the shop, or just a colour you love.'],
+  ['Sketch it in 3D', 'Try settings, metals and stones in the designer. Nothing is charged.'],
+  ['Talk it through with Steph', 'A design consultation to confirm the stone, fit and details.'],
+  ['Quote and deposit', 'Your quote sets out the price, timing and any deposit before work begins.'],
 ] as const
 
 const linkArrow =
@@ -215,81 +222,79 @@ export default async function HomePage() {
           </section>
         ) : null}
 
-        <section aria-label="Custom rings and courses" className="grid gap-9 px-gut pt-sec min-[901px]:grid-cols-2 min-[901px]:gap-[clamp(10px,1.4vw,20px)]">
-          {[
-            {
-              title: 'Design your own ring',
-              copy: 'Bring an idea, an occasion, or an opal of your own. Sketch the ring yourself in 3D, then send it to Steph for a personal design consultation.',
-              href: '/services/design',
-              cta: 'Open the 3D designer',
-              image: '/images/customs/custom-3.jpg',
-              alt: 'Six polished opals with blue, pink and green colour on a grey stone surface',
-            },
-            {
-              title: 'Learn to cut opal',
-              copy: 'Steph\u2019s course starts with opal anatomy, then moves through low-cost hand cutting, rotary tools, cabbing machines, polishing, and valuation.',
-              href: '/courses',
-              cta: 'Register interest',
-              image: '/images/studio/opal-macro-coober-pedy.jpg',
-              alt: 'Close view of a Coober Pedy opal showing orange, green and violet colour',
-            },
-          ].map((offer) => (
-            <div
-              key={offer.title}
-              className="grid items-end gap-4 border-t border-rule pt-[clamp(14px,1.4vw,20px)] min-[561px]:grid-cols-2 min-[901px]:gap-[clamp(16px,2vw,28px)]"
-            >
-              <div>
-                <h2 className="text-[26px] leading-[1.04] min-[901px]:text-[clamp(26px,2.6vw,40px)]">{offer.title}</h2>
-                <p className="mb-3.5 mt-2 text-sm text-ink-2 min-[561px]:max-w-[36ch] min-[901px]:mb-5 min-[901px]:mt-3 min-[901px]:text-[14.5px]">
-                  {offer.copy}
-                </p>
-                <Button asChild variant="ghost">
-                  <Link href={offer.href}>
-                    {offer.cta}
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                </Button>
-              </div>
-              <div className="relative order-first aspect-[16/10] overflow-hidden bg-plinth min-[561px]:order-none min-[561px]:aspect-[4/5]">
-                <Image src={offer.image} alt={offer.alt} fill sizes="(max-width: 560px) 100vw, 25vw" className="object-cover" />
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section aria-label="From Steph" className="px-gut pt-sec">
-          <figure className="grid items-center gap-[18px] md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-[clamp(20px,4vw,72px)]">
-            <div className="relative aspect-[16/11] overflow-hidden bg-plinth md:aspect-[3/4]">
+        <section aria-labelledby="custom-heading" className="px-gut pt-sec">
+          <div className="grid gap-5 border-t border-rule pt-[clamp(14px,1.4vw,20px)] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:items-center md:gap-[clamp(20px,4vw,72px)]">
+            <div className="relative aspect-[16/10] overflow-hidden bg-plinth md:aspect-[4/3]">
               <Image
-                src="/images/about-hero.jpg"
-                alt="Gem boxes of Australian opals on a dark table"
+                src="/images/customs/custom-3.jpg"
+                alt="Six polished opals with blue, pink and green colour on a grey stone surface"
                 fill
                 sizes="(max-width: 767px) 100vw, 40vw"
                 className="object-cover"
               />
             </div>
             <div>
-              <blockquote className="text-pretty font-serif text-[25px] leading-[1.14] tracking-[-0.01em] md:max-w-[22ch] md:text-[clamp(26px,3vw,46px)]">
-                <p>
-                  &ldquo;Opal is mysterious and wonderful. I don&rsquo;t think the uniqueness of opal is
-                  matched by many other things in this world&hellip;&rdquo;
-                </p>
-              </blockquote>
-              <figcaption className="mt-3 text-[13px] text-ink-2 md:mt-5 md:text-sm">
-                <b className="font-medium text-ink">Stephanie Caruana</b>, founder. From{' '}
-                <i>Opal Cutting: A Free Beginner&rsquo;s Guide</i>, September 2020.
-              </figcaption>
-              <Link href="/about" className={`${linkArrow} mt-4 md:mt-[26px]`}>
-                Read our story
+              <h2 id="custom-heading" className="text-[clamp(30px,3.4vw,52px)] leading-[1.02]">
+                Design your own <i>ring</i>
+              </h2>
+              <p className="mt-2 max-w-[48ch] text-[15px] text-ink-2">
+                Start with an idea, an occasion, or an opal of your own. Steph makes it with you, one
+                step at a time.
+              </p>
+              <ol className="mt-4 border-t border-rule">
+                {CUSTOM_STEPS.map(([title, detail], index) => (
+                  <li key={title} className="grid grid-cols-[2rem_minmax(0,1fr)] border-b border-rule py-2.5">
+                    <span className="pt-0.5 text-[13px] tabular-nums text-ink-3">{index + 1}</span>
+                    <p className="text-sm text-ink-2">
+                      <b className="font-medium text-ink">{title}.</b> {detail}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <Button asChild>
+                  <Link href="/services/design">
+                    Open the 3D designer
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+                <Link href="/contact?subject=custom-design" className={linkArrow}>
+                  Or start with an enquiry
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="behind-heading" className="px-gut pt-sec">
+          <div className="grid gap-7 border-t border-rule pt-[clamp(14px,1.4vw,20px)] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,4vw,72px)]">
+            <div>
+              <h2 id="behind-heading" className="text-[26px] leading-[1.1] md:text-[clamp(26px,2.4vw,34px)]">
+                Who&rsquo;s behind it
+              </h2>
+              <p className="mt-2 max-w-[46ch] text-[15px] text-ink-2">
+                Stephanie Caruana, founder and opal cutter. She sources opal directly from Australian
+                miners, mostly from Lightning Ridge and Coober Pedy, and has written about cutting it
+                since 2020.
+              </p>
+              <Link href="/about" className={`${linkArrow} mt-4`}>
+                Our story
                 <ArrowRight className="h-[15px] w-[15px]" aria-hidden="true" />
               </Link>
             </div>
-          </figure>
+            <JewellerQuotes />
+          </div>
         </section>
 
         <ReviewsSection title="In their words." className="px-gut pt-sec" />
 
-        <JewellerQuotes />
+        <p className="mx-gut mt-[clamp(40px,5vw,72px)] flex flex-wrap items-baseline gap-x-4 gap-y-2 border-t border-rule pt-4 text-sm text-ink-2">
+          <span>Learn to cut opal: Steph&rsquo;s course runs from hand cutting to polishing and valuation.</span>
+          <Link href="/courses" className={linkArrow}>
+            Register interest
+            <ArrowRight className="h-[15px] w-[15px]" aria-hidden="true" />
+          </Link>
+        </p>
       </MarketingShell>
     </>
   )

@@ -1,3 +1,4 @@
+import { gstIncluded } from '@/lib/checkout-pricing'
 import { formatCurrency } from '@/lib/utils'
 import { EmailFrame, emailColors, emailText } from './email-frame'
 
@@ -14,7 +15,6 @@ interface OrderConfirmationEmailProps {
   items: OrderItem[]
   subtotal: number
   shipping: number
-  tax: number
   total: number
   shippingAddress: {
     line1: string
@@ -38,7 +38,6 @@ export function OrderConfirmationEmail({
   items,
   subtotal,
   shipping,
-  tax,
   total,
   shippingAddress,
   baseUrl,
@@ -106,16 +105,15 @@ export function OrderConfirmationEmail({
             <td style={totalRow}>Shipping</td>
             <td align="right" style={totalRow}>{shipping === 0 ? 'Free' : formatCurrency(shipping, 'AUD')}</td>
           </tr>
-          {tax > 0 ? (
-            <tr>
-              <td style={totalRow}>GST</td>
-              <td align="right" style={totalRow}>{formatCurrency(tax, 'AUD')}</td>
-            </tr>
-          ) : null}
           <tr>
             <td style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>Total</td>
             <td align="right" style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>
               {formatCurrency(total, 'AUD')} AUD
+            </td>
+          </tr>
+          <tr>
+            <td colSpan={2} align="right" style={{ ...emailText.small, padding: '6px 0 0' }}>
+              Includes GST of {formatCurrency(gstIncluded(total), 'AUD')}
             </td>
           </tr>
         </tbody>

@@ -35,7 +35,6 @@ export async function getDiscoveryInput(): Promise<DiscoveryInput> {
     }),
     payload.find({
       collection: 'posts',
-      where: { _status: { equals: 'published' } },
       sort: '-publishedAt',
       limit: 100,
       select: { title: true, slug: true, excerpt: true, publishedAt: true, updatedAt: true },

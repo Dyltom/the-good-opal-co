@@ -129,7 +129,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
         </div>
 
         <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-2.5 gap-y-px px-px pb-0.5 pt-[9px]">
-          <h3 className="line-clamp-2 font-serif text-[15px] italic leading-[1.25] text-ink">
+          <h3 className="col-span-2 line-clamp-2 font-serif text-[15px] italic leading-[1.25] text-ink sm:col-span-1">
             <Link href={productHref} className="no-underline after:absolute after:inset-0 after:content-['']">
               {product.name}
             </Link>

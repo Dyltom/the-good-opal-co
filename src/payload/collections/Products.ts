@@ -28,6 +28,11 @@ export const Products: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'price', 'status', 'stock', 'updatedAt'],
+    components: {
+      beforeListTable: [
+        { path: '@/components/payload/help/HelpLinks#HelpLinks', clientProps: { topic: 'products' } },
+      ],
+    },
   },
   hooks: {
     beforeValidate: [

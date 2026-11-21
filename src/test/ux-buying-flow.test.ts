@@ -318,7 +318,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage language avoids leftover template phrases in feature sections', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('Design your own ring')
+    expect(source).toContain('Design your own <i>ring</i>')
     expect(source).toContain('Learn to cut opal')
     expect(source).not.toContain('Where dreams become reality.')
     expect(source).not.toContain(

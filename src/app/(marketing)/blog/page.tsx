@@ -32,7 +32,6 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const payload = await getPayload()
   const { docs: posts } = await payload.find({
     collection: 'posts',
-    where: { _status: { equals: 'published' } },
     limit: 100,
     sort: '-publishedAt',
     depth: 2,

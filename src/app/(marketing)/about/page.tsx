@@ -57,10 +57,11 @@ async function publishedPostSlugs(slugs: readonly string[]): Promise<Set<string>
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'posts',
-    where: { and: [{ slug: { in: slugs } }, { _status: { equals: 'published' } }] },
+    where: { slug: { in: slugs } },
     select: { slug: true },
     pagination: false,
     depth: 0,
+    overrideAccess: false,
   })
   return new Set(
     docs.map((doc) => doc.slug).filter((slug): slug is string => typeof slug === 'string')
