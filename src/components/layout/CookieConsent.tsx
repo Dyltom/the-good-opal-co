@@ -107,7 +107,7 @@ export function CookieSettingsLink({ className }: { className?: string }) {
   return hasConsent ? (
     <button
       onClick={openSettings}
-      className={cn('text-ink-2 transition-colors hover:text-ink', className)}
+      className={cn('transition-colors', className)}
     >
       Cookie settings
     </button>

@@ -102,7 +102,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
 
   return (
     <div className="px-gut pb-sec pt-5 md:pt-8">
-      <div className="mx-auto max-w-[1180px] pb-28 lg:pb-0" aria-busy={isPending}>
+      <div className="mx-auto max-w-[1180px] pb-14 lg:pb-0" aria-busy={isPending}>
         <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-rule pb-4">
           <div>
             <h1 className="font-serif text-[clamp(30px,3.4vw,44px)] leading-[1.04] tracking-[-0.02em] text-ink">
@@ -172,7 +172,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
 
               <FreeShippingProgress total={cart.total} className="mt-4" />
 
-              <CheckoutButton cart={cart} region={region} className="mt-4 h-12 w-full text-[15px]" />
+              <CheckoutButton cart={cart} region={region} className="mt-4 h-12 w-full text-[15px] max-lg:hidden" />
               <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">
                 Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays available to other
                 shoppers until payment is complete.

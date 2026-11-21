@@ -45,7 +45,7 @@ test('available product can be added, changed, and removed from cookie cart', as
   await expectCartDrawerWith(page, productName)
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Your bag', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Checkout', exact: true }).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Checkout', exact: true }).filter({ visible: true })).toHaveCount(1)
 
   const remove = page.getByRole('button', { name: /remove/i }).first()
   await remove.click()
@@ -115,6 +115,6 @@ test('cart sends buyers straight to secure payment with a shipping region', asyn
 
   await expect(page).toHaveURL(/\/cart$/)
   await expect(page.getByRole('radio', { name: 'Overseas' }).first()).toBeAttached()
-  await expect(page.getByRole('button', { name: 'Checkout', exact: true }).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Checkout', exact: true }).filter({ visible: true })).toHaveCount(1)
   assertNoErrors()
 })
