@@ -25,7 +25,7 @@ interface BlogPageProps {
 }
 
 const topicLink =
-  'inline-flex h-[34px] flex-none items-center whitespace-nowrap rounded-full border px-3 text-[13px] transition-colors'
+  'inline-flex h-11 flex-none items-center whitespace-nowrap rounded-full border px-3 text-[13px] transition-colors md:h-[34px]'
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { category: categoryParam } = await searchParams

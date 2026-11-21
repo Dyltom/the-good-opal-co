@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cache, Fragment, type ReactNode } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { RichText } from '@payloadcms/richtext-lexical/react'
+import { RichText, type JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import type { Author, Category, Media, Post, Tag } from '@/types/payload-types'
 import { Container } from '@/components/layout'
@@ -37,6 +37,33 @@ const getPublishedPost = cache(async (slug: string): Promise<Post | undefined> =
 })
 
 const HERO_WIDTH = 896
+
+const postConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
+  ...defaultConverters,
+  upload: (args) => {
+    const media = args.node.value as Media | number
+    const src = typeof media === 'object' ? resolveMediaUrl(media.url) : undefined
+    if (
+      typeof media !== 'object' ||
+      !src ||
+      !media.width ||
+      !media.height ||
+      !media.mimeType?.startsWith('image/')
+    ) {
+      return typeof defaultConverters.upload === 'function' ? defaultConverters.upload(args) : null
+    }
+    const fields = args.node.fields as { alt?: string } | undefined
+    return (
+      <Image
+        src={src}
+        alt={fields?.alt || media.alt || ''}
+        width={media.width}
+        height={media.height}
+        sizes="(max-width: 700px) 100vw, 640px"
+      />
+    )
+  },
+})
 
 function populatedMedia(media: number | null | Media | undefined): Media | null {
   return media && typeof media === 'object' ? media : null
@@ -215,12 +242,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               height={featuredImage.height}
               priority
               sizes={`(max-width: 900px) 100vw, ${HERO_WIDTH}px`}
-              className="mx-auto mt-8 h-auto max-h-[min(75vh,896px)] w-auto max-w-full"
+              className="mx-auto mt-8 h-auto"
+              style={{
+                width: `min(100%, ${Math.min(featuredImage.width, HERO_WIDTH)}px, calc(min(75vh, ${HERO_WIDTH}px) * ${featuredImage.width / featuredImage.height}))`,
+              }}
             />
           ) : null}
           {post.content ? (
-            <div className="prose mx-auto mt-10 max-w-[40rem] text-base [overflow-wrap:anywhere] prose-headings:font-serif prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-ink prose-h2:mb-4 prose-h2:mt-12 prose-h2:text-[1.875rem] prose-h2:leading-[1.15] prose-h3:mb-3 prose-h3:mt-10 prose-h3:text-[1.4rem] prose-h3:leading-[1.2] prose-h4:mt-8 prose-p:leading-[1.75] prose-p:text-ink prose-a:font-normal prose-a:text-accent prose-a:decoration-accent/40 prose-a:underline-offset-4 hover:prose-a:decoration-accent prose-blockquote:border-rule-2 prose-blockquote:font-serif prose-blockquote:font-normal prose-blockquote:text-ink-2 prose-strong:font-medium prose-strong:text-ink prose-ol:list-decimal prose-ul:list-disc prose-li:text-ink prose-li:my-1.5 prose-li:marker:text-ink-2 prose-img:mx-auto [&_li>p]:my-0">
+            <div className="prose mx-auto mt-10 max-w-[40rem] text-base [overflow-wrap:anywhere] prose-headings:font-serif prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-ink prose-h2:mb-4 prose-h2:mt-12 prose-h2:text-[1.875rem] prose-h2:leading-[1.15] prose-h3:mb-3 prose-h3:mt-10 prose-h3:text-[1.4rem] prose-h3:leading-[1.2] prose-h4:mt-8 prose-p:leading-[1.75] prose-p:text-ink prose-a:font-normal prose-a:text-accent prose-a:decoration-accent/40 prose-a:underline-offset-4 hover:prose-a:decoration-accent prose-blockquote:border-rule-2 prose-blockquote:font-serif prose-blockquote:font-normal prose-blockquote:text-ink-2 prose-strong:font-medium prose-strong:text-ink prose-ol:list-decimal prose-ul:list-disc prose-li:my-1.5 prose-li:text-ink prose-li:marker:normal-nums prose-li:marker:text-ink-2 prose-img:mx-auto [&_li>p]:my-0">
               <RichText
+                converters={postConverters}
                 data={rewriteLegacyPostLinks(
                   post.content as unknown as SerializedEditorState,
                   APP_URL
