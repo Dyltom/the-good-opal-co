@@ -6,7 +6,8 @@ import {
   isAdminOrFirstUser,
   isAdminOrSelf,
   publishedOrAdmin,
-  publishedVersionOrAdmin,
+  isLivePost,
+  livePostOrAdmin,
 } from '@/lib/payload-access'
 import { Products } from '@/payload/collections/Products'
 
@@ -53,10 +54,30 @@ describe('Payload access rules', () => {
     }
   })
 
-  test('public draft-enabled content access uses Payload publication state', async () => {
-    expect(await publishedVersionOrAdmin(args(null))).toEqual({
-      _status: { equals: 'published' },
-    })
+  test('a published post dated in the future stays hidden until that moment', async () => {
+    vi.useFakeTimers({ now: new Date('2026-12-01T09:00:00+11:00') })
+    try {
+      expect(await livePostOrAdmin(args(null))).toEqual({
+        and: [
+          { _status: { equals: 'published' } },
+          {
+            or: [
+              { publishedAt: { less_than_equal: '2026-11-30T22:00:00.000Z' } },
+              { publishedAt: { exists: false } },
+            ],
+          },
+        ],
+      })
+      expect(isLivePost({ _status: 'published', publishedAt: '2026-12-08T09:00:00+11:00' })).toBe(
+        false
+      )
+      expect(isLivePost({ _status: 'published', publishedAt: '2026-12-01T09:00:00+11:00' })).toBe(
+        true
+      )
+      expect(isLivePost({ _status: 'draft', publishedAt: '2026-11-01T09:00:00+11:00' })).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   test('admins retain full access', async () => {
@@ -65,7 +86,7 @@ describe('Payload access rules', () => {
     expect(await isAdmin(request)).toBe(true)
     expect(await isAdminOrSelf(request)).toBe(true)
     expect(await publishedOrAdmin(request)).toBe(true)
-    expect(await publishedVersionOrAdmin(request)).toBe(true)
+    expect(await livePostOrAdmin(request)).toBe(true)
   })
 
   test('only the configured first anonymous user can bootstrap Payload admin locally', async () => {

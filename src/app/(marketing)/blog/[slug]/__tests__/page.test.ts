@@ -79,12 +79,7 @@ describe('blog post metadata', () => {
     expect(find).toHaveBeenCalledWith(
       expect.objectContaining({
         overrideAccess: false,
-        where: {
-          and: [
-            { slug: { equals: 'choose-an-australian-opal' } },
-            { _status: { equals: 'published' } },
-          ],
-        },
+        where: { slug: { equals: 'choose-an-australian-opal' } },
       })
     )
   })

@@ -1,12 +1,12 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin, publishedVersionOrAdmin } from '../../lib/payload-access.ts'
+import { isAdmin, isLivePost, livePostOrAdmin } from '../../lib/payload-access.ts'
 import { indexNowOnPublish } from '../../lib/indexnow.ts'
 import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
   access: {
-    read: publishedVersionOrAdmin,
+    read: livePostOrAdmin,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
@@ -21,7 +21,7 @@ export const Posts: CollectionConfig = {
   hooks: {
     afterChange: [
       indexNowOnPublish((doc) =>
-        doc._status === 'published' && typeof doc.slug === 'string'
+        isLivePost(doc) && typeof doc.slug === 'string'
           ? `/blog/${encodeURIComponent(doc.slug)}`
           : null
       ),
@@ -74,7 +74,9 @@ export const Posts: CollectionConfig = {
       name: 'publishedAt',
       type: 'date',
       admin: {
-        description: 'When this post was published',
+        description:
+          'When this post goes live. A published post with a future date stays hidden until then.',
+        date: { pickerAppearance: 'dayAndTime' },
       },
     },
     {
