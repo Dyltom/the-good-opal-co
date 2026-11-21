@@ -3,11 +3,11 @@ export const PRODUCTS_PER_PAGE = 24
 
 export const STORE_SORTS = ['featured', 'newest', 'price-low', 'price-high', 'carat-high'] as const
 export const STORE_SORT_LABELS: Record<StoreSort, string> = {
-  featured: 'Selected first',
+  featured: 'Featured',
   newest: 'Newest',
-  'price-low': 'Lowest price',
-  'price-high': 'Highest price',
-  'carat-high': 'Largest carat',
+  'price-low': 'Price: low to high',
+  'price-high': 'Price: high to low',
+  'carat-high': 'Carat: high to low',
 }
 export const STORE_CATEGORIES = [
   ['opal-rings', 'Rings'],

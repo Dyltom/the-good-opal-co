@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useState, useTransition, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
+import { Loader2, SlidersHorizontal } from 'lucide-react'
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { priceRange, storeQueryParams, storeUrl, type StoreQuery } from './store-query'
 
@@ -135,26 +136,50 @@ export function StoreSort({
   className?: string
 }) {
   const router = useRouter()
+  const [pending, startTransition] = useTransition()
+  const [selected, setSelected] = useState(value)
+  const current = pending ? selected : value
 
   return (
-    <label className={cn(controlClass, 'relative font-normal focus-within:ring-2 focus-within:ring-opal-electric-accessible focus-within:ring-offset-2', className)}>
-      <span className="text-charcoal/60">Sort</span>
-      <select
-        key={value}
-        defaultValue={value}
-        onChange={(event) => {
-          const option = options.find((entry) => entry.value === event.target.value)
-          if (option) router.push(option.href, { scroll: false })
-        }}
-        className="min-w-0 flex-1 cursor-pointer appearance-none bg-transparent pr-5 font-semibold text-charcoal outline-none"
+    <Select
+      value={current}
+      onOpenChange={(open) => {
+        if (open) options.forEach((option) => router.prefetch(option.href))
+      }}
+      onValueChange={(next) => {
+        const option = options.find((entry) => entry.value === next)
+        if (!option || next === value) return
+        setSelected(next)
+        startTransition(() => router.push(option.href, { scroll: false }))
+      }}
+    >
+      <SelectTrigger
+        aria-label="Sort by"
+        aria-busy={pending}
+        className={cn(
+          controlClass,
+          'h-auto w-auto justify-start rounded-sm border-warm-grey/70 bg-cream py-0 pr-3 shadow-none hover:border-charcoal/50 focus:ring-0 data-[state=open]:border-charcoal [&>span]:line-clamp-none',
+          className
+        )}
+      >
+        <span className="font-normal text-charcoal/60">Sort:</span>
+        <SelectValue />
+        {pending && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-charcoal/60" />}
+      </SelectTrigger>
+      <SelectContent
+        align="end"
+        className="min-w-[13rem] rounded-sm border-warm-grey/70 bg-cream text-charcoal shadow-lg"
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className="min-h-11 cursor-pointer rounded-sm py-2 pl-3 font-sans text-sm text-charcoal focus:bg-cream-dark focus:text-charcoal data-[state=checked]:font-semibold"
+          >
             {option.label}
-          </option>
+          </SelectItem>
         ))}
-      </select>
-      <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 h-4 w-4 text-charcoal/60" />
-    </label>
+      </SelectContent>
+    </Select>
   )
 }

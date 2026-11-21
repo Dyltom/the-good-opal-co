@@ -402,7 +402,7 @@ export function StoreContent({
             </p>
           </div>
 
-          <form action="/store" method="get" role="search" className="flex gap-2 lg:max-w-xl">
+          <form action="/store" method="get" role="search" className="flex gap-2 lg:hidden">
             <label className="sr-only" htmlFor="store-search">
               Search the collection
             </label>
@@ -427,7 +427,7 @@ export function StoreContent({
             </button>
           </form>
 
-          <div className="relative col-span-2 -mx-5 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:col-span-1 lg:m-0 lg:overflow-visible lg:p-0">
+          <div className="relative col-span-2 -mx-5 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:col-span-1 lg:col-start-3 lg:m-0 lg:overflow-visible lg:p-0">
             <StoreFilterSheet
               activeCount={activeFilterCount(query)}
               resultCount={totalDocs}
