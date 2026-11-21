@@ -94,8 +94,8 @@ export default async function AboutPage() {
         />
         <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'About', url: '/about' }]} />
         <section className="border-b border-warm-grey/60">
-          <div className="grid min-h-[34rem] lg:grid-cols-[0.9fr_1.1fr]">
-            <div className="flex items-center bg-cream px-6 py-16 sm:px-10 lg:px-[max(4rem,calc((100vw-80rem)/2))]">
+          <div className="grid lg:min-h-[26rem] lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="flex items-center bg-cream px-6 py-10 sm:px-10 lg:py-12 lg:px-[max(4rem,calc((100vw-80rem)/2))]">
               <div className="max-w-xl">
                 <Eyebrow>
                   Our story
@@ -108,14 +108,14 @@ export default async function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="grid items-center gap-3 bg-cream-dark px-5 py-10 sm:grid-cols-3 sm:gap-5 sm:px-10 lg:px-12">
+            <div className="grid items-center gap-3 bg-cream-dark px-5 py-6 sm:grid-cols-3 lg:py-10 sm:gap-5 sm:px-10 lg:px-12">
               {aboutHeroImages.map((image, index) => (
                 <div
                   key={image.src}
                   className={cn(
                     'relative overflow-hidden bg-cream sm:aspect-[4/5]',
                     index === 0 ? 'aspect-[4/3]' : 'hidden sm:block',
-                    index !== 1 && 'lg:translate-y-8'
+                    index !== 1 && 'lg:translate-y-4'
                   )}
                 >
                   <Image
@@ -132,7 +132,7 @@ export default async function AboutPage() {
           </div>
         </section>
 
-        <Container className="py-16 sm:py-20 lg:py-28">
+        <Container className="py-12 sm:py-14 lg:py-20">
           <section className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24">
             <div>
               <Eyebrow>
@@ -155,7 +155,7 @@ export default async function AboutPage() {
             </div>
           </section>
 
-          <section aria-labelledby="steph-heading" className="mt-20 lg:mt-28">
+          <section aria-labelledby="steph-heading" className="mt-16 lg:mt-20">
             <div>
               <Eyebrow>
                 In Steph&apos;s words

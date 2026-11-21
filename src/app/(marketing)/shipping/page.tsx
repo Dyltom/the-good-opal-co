@@ -21,14 +21,14 @@ export default function ShippingPage() {
           { name: 'Shipping', url: '/shipping' },
         ]}
       />
-      <Container className="py-16 sm:py-20 lg:py-28">
+      <Container className="py-10 sm:py-12 lg:py-16">
         <PageHeader
           eyebrow="Order information"
           title="Shipping, without surprises."
           description="See the current charge before payment. Every dispatched order includes tracking, and delivery estimates begin after dispatch."
         />
 
-        <div className="mt-14 grid border border-warm-grey/60 bg-white md:grid-cols-3">
+        <div className="mt-10 grid border border-warm-grey/60 bg-white md:grid-cols-3">
           <div className="p-7 md:border-r md:border-warm-grey/60">
             <h2 className="font-serif text-2xl font-medium text-charcoal">Tracked delivery</h2>
             <p className="mt-3 font-sans text-sm leading-6 text-charcoal/65">
@@ -50,7 +50,7 @@ export default function ShippingPage() {
           </div>
         </div>
 
-        <div className="mt-16 grid gap-12 border-t border-warm-grey/60 pt-12 lg:grid-cols-2 lg:gap-20">
+        <div className="mt-12 grid gap-12 border-t border-warm-grey/60 pt-12 lg:grid-cols-2 lg:gap-20">
           <section>
             <h2 className="font-serif text-3xl font-medium text-charcoal">What happens next</h2>
             <ol className="mt-6 space-y-5 font-sans text-sm leading-7 text-charcoal/70">

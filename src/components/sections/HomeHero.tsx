@@ -104,7 +104,7 @@ export async function HomeHero() {
           </div>
         </div>
 
-        <div className="relative order-first aspect-[5/4] overflow-hidden bg-white sm:aspect-auto sm:min-h-[31rem] lg:order-none lg:min-h-full">
+        <div className="relative order-first aspect-[3/2] overflow-hidden bg-white sm:aspect-auto sm:min-h-[31rem] lg:order-none lg:min-h-full">
           <Link href={primaryHref} className="group absolute inset-0 block">
             <Image
               src={primaryImage}

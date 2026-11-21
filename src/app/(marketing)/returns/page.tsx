@@ -21,14 +21,14 @@ export default function ReturnsPage() {
         data={{ '@context': 'https://schema.org', ...merchantReturnPolicyStructuredData() }}
       />
       <BreadcrumbJsonLd items={[{ name: 'Home', url: '/' }, { name: 'Returns', url: '/returns' }]} />
-      <Container className="py-16 sm:py-20 lg:py-28">
+      <Container className="py-10 sm:py-12 lg:py-16">
           <PageHeader
             eyebrow="Order information"
             title="A clear way to make things right."
             description="Contact us before sending anything back. We will confirm the correct return steps for your order."
           />
 
-          <div className="mt-14 grid border border-warm-grey/60 bg-white md:grid-cols-2">
+          <div className="mt-10 grid border border-warm-grey/60 bg-white md:grid-cols-2">
             <section className="p-7 sm:p-9 md:border-r md:border-warm-grey/60">
               <h2 className="font-serif text-3xl font-medium text-charcoal">Change of mind</h2>
               <p className="mt-4 font-sans text-sm leading-7 text-charcoal/70">Contact us within 30 days of delivery. Standard, unused pieces may be returned when they remain in their original condition and packaging. Return postage is paid by the customer.</p>
@@ -41,7 +41,7 @@ export default function ReturnsPage() {
             </section>
           </div>
 
-          <div className="mt-16 grid gap-12 border-t border-warm-grey/60 pt-12 lg:grid-cols-2 lg:gap-20">
+          <div className="mt-12 grid gap-12 border-t border-warm-grey/60 pt-12 lg:grid-cols-2 lg:gap-20">
             <section>
               <h2 className="font-serif text-3xl font-medium text-charcoal">Start a return</h2>
               <ol className="mt-6 space-y-5 font-sans text-sm leading-7 text-charcoal/70">

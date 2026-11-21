@@ -142,8 +142,8 @@ export default function FAQPage() {
           items={[{ name: 'Home', url: '/' }, { name: 'Frequently asked questions', url: '/faq' }]}
         />
         <section className="border-b border-warm-grey/60">
-          <Container className="py-14 sm:py-20 lg:py-24">
-            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+          <Container className="py-10 sm:py-12 lg:py-14">
+            <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
               <div className="max-w-2xl">
                 <Eyebrow>
                   Buyer guide
@@ -155,7 +155,7 @@ export default function FAQPage() {
                   Product details, delivery, eligible returns, care, and custom work. If your question is specific to one opal, send us the product link.
                 </p>
               </div>
-              <div className="relative aspect-[4/3] overflow-hidden bg-cream-dark">
+              <div className="relative aspect-[16/9] overflow-hidden bg-cream-dark lg:aspect-[3/2]">
                 <Image
                   src="/images/products/20211012_174237.jpg"
                   alt="Three polished white opals on a dark stone surface"
@@ -169,12 +169,12 @@ export default function FAQPage() {
           </Container>
         </section>
 
-        <Container className="py-16 sm:py-20 lg:py-28">
+        <Container className="py-12 sm:py-14 lg:py-16">
           <div className="mx-auto max-w-4xl">
             {faqCategories.map((category, categoryIndex) => (
               <section
                 key={category.title}
-                className={categoryIndex === 0 ? '' : 'mt-14 border-t border-warm-grey/60 pt-14'}
+                className={categoryIndex === 0 ? '' : 'mt-10 border-t border-warm-grey/60 pt-10'}
               >
                 <div className="grid gap-6 sm:grid-cols-[10rem_1fr] sm:gap-10">
                   <h2 className="font-serif text-2xl font-medium text-charcoal">
@@ -200,7 +200,7 @@ export default function FAQPage() {
               </section>
             ))}
 
-            <section className="mt-20 border-t border-charcoal pt-10 sm:flex sm:items-end sm:justify-between sm:gap-10">
+            <section className="mt-16 border-t border-charcoal pt-10 sm:flex sm:items-end sm:justify-between sm:gap-10">
               <div className="max-w-xl">
                 <h2 className="font-serif text-3xl font-medium text-charcoal">
                   Still deciding?

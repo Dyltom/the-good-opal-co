@@ -38,7 +38,7 @@ export function PageHeader({
       {description ? (
         <div
           className={cn(
-            'mt-7 max-w-2xl font-sans text-lg leading-8 text-charcoal/70',
+            'mt-5 max-w-2xl font-sans text-lg leading-8 text-charcoal/70',
             align === 'center' && 'mx-auto',
             descriptionClassName,
           )}

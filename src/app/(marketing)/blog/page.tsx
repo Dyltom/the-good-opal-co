@@ -73,7 +73,7 @@ export default async function BlogPage() {
           { name: 'Opal notes', url: '/blog' },
         ]}
       />
-      <Container className="py-14 sm:py-20 lg:py-24">
+      <Container className="py-10 sm:py-12 lg:py-14">
         <PageHeader
           eyebrow="Field notes"
           title="Learn about opal before you choose."
@@ -81,7 +81,7 @@ export default async function BlogPage() {
         />
 
         {cards.length > 0 ? (
-          <div className="mt-16 grid gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-x-8 gap-y-14 md:grid-cols-2 lg:grid-cols-3">
             {cards.map((post) => (
               <BlogCard key={post.slug} post={post} />
             ))}

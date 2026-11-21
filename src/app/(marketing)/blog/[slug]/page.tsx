@@ -168,14 +168,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           { name: post.title, url: `/blog/${post.slug}` },
         ]}
       />
-      <Container className="py-14 sm:py-20">
+      <Container className="py-8 sm:py-10 lg:py-12">
         <Link
           href="/blog"
           className="inline-flex items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to opal notes
         </Link>
-        <article className="mx-auto mt-12 max-w-4xl">
+        <article className="mx-auto mt-8 max-w-4xl">
           {categories.length > 0 ? (
             <Eyebrow>
               {categories.map((category) => category.name).join(' · ')}
