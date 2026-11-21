@@ -57,10 +57,12 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const imageUrl =
     (primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined) ??
     ownedProductImageUrl(product.slug)
-  const description = summarize(parseProductDescription(product.description).paragraphs.join(' '))
+  const description =
+    product.meta?.description?.trim() ||
+    summarize(parseProductDescription(product.description).paragraphs.join(' '))
 
   return {
-    title: `${product.name} | The Good Opal Co`,
+    title: product.meta?.title?.trim() || `${product.name} | The Good Opal Co`,
     description: description || 'Discover this unique Australian opal from The Good Opal Co.',
     alternates: { canonical: `/store/${product.slug}` },
     openGraph: {
