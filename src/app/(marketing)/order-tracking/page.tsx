@@ -32,12 +32,12 @@ export default function OrderTrackingPage() {
 
           <OrderTrackingForm />
           <div className="mt-12 text-center">
-            <p className="mb-2 text-sm text-charcoal-light">Can&apos;t find your order?</p>
-            <p className="text-sm text-charcoal-light">
+            <p className="mb-2 text-sm text-ink-2">Can&apos;t find your order?</p>
+            <p className="text-sm text-ink-2">
               Send the details through our{' '}
               <Link
                 href="/contact?subject=order"
-                className="text-opal-electric-accessible hover:underline"
+                className="text-accent hover:underline"
               >
                 order help form
               </Link>

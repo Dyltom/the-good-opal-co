@@ -1,63 +1,43 @@
 'use client'
 
-/**
- * Cart Button Component
- *
- * Shows cart item count and opens cart drawer.
- * Uses server actions for cart data fetching.
- */
-
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState, useCallback } from 'react'
 import { AnimatedCartDrawer } from '@/components/cart/AnimatedCartDrawer'
 import { fetchCart } from '@/app/(marketing)/cart/actions'
-import type { Cart } from '@/lib/cart'
 
 export function CartButton() {
-  const [cart, setCart] = useState<Cart | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const prevCountRef = useRef(0)
+  const [itemCount, setItemCount] = useState<number | null>(null)
 
-  // Fetch cart data on mount and when cart updates
   const loadCart = useCallback(async () => {
     const result = await fetchCart()
-    if (result.success && result.data) {
-      setCart(result.data)
-      prevCountRef.current = result.data.itemCount
-    }
-    setIsLoading(false)
+    setItemCount(result.success && result.data ? result.data.itemCount : 0)
   }, [])
 
   useEffect(() => {
     loadCart()
+    window.addEventListener('cart-updated', loadCart)
+    return () => window.removeEventListener('cart-updated', loadCart)
   }, [loadCart])
 
-  // Listen for cart updates (custom event fired by cart actions)
-  useEffect(() => {
-    const handleCartUpdate = () => {
-      loadCart()
-    }
-    window.addEventListener('cart-updated', handleCartUpdate)
-    return () => window.removeEventListener('cart-updated', handleCartUpdate)
-  }, [loadCart])
-
-  const itemCount = cart?.itemCount ?? 0
-  const itemText = itemCount === 1 ? 'item' : 'items'
+  const count = itemCount ?? 0
 
   return (
-    <AnimatedCartDrawer onCartUpdate={loadCart}>
-      <Button
-        variant="outline"
-        size="sm"
-        className="relative gap-1.5"
+    <AnimatedCartDrawer>
+      <button
+        type="button"
+        aria-label={`Bag, ${count} ${count === 1 ? 'item' : 'items'}`}
+        className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap rounded-sm border border-rule-2 px-2.5 py-1.5 text-[13.5px] text-ink transition-colors hover:border-ink-2 md:px-3 md:py-[7px]"
       >
-        Cart
-        {!isLoading && itemCount > 0 && (
-          <span className="text-xs opacity-70">
-            ({itemCount} {itemText})
-          </span>
-        )}
-      </Button>
+        <span className="hidden md:inline">Bag</span>
+        <svg
+          className="h-[18px] w-[18px] flex-none fill-none stroke-current [stroke-linecap:round] [stroke-linejoin:round] [stroke-width:1.5]"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path d="M5.5 8h13l-1 12.5h-11z" />
+          <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
+        </svg>
+        <b className="min-w-[1ch] font-medium tabular-nums">{itemCount ?? ''}</b>
+      </button>
     </AnimatedCartDrawer>
   )
 }

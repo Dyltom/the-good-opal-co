@@ -10,13 +10,12 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <MarketingShell>
-      <section className="px-5 py-24 sm:px-8 lg:py-32">
+      <section className="px-gut py-16 lg:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <span aria-hidden="true" className="opal-fire-line mx-auto block h-[3px] w-12 rounded-full" />
-          <h1 className="mt-8 font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
+          <h1 className="font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
             This page has wandered off.
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-charcoal/70">
+          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-ink-2">
             The opal you&apos;re after may have found a home, or the address may have changed.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -25,7 +24,7 @@ export default function NotFound() {
             </Button>
             <Link
               href="/contact"
-              className="text-sm text-charcoal/70 underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              className="text-sm text-ink-2 underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Ask us about a piece
             </Link>

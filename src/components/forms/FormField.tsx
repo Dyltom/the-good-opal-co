@@ -70,7 +70,7 @@ export function FormField({
       />
 
       {helpText && !showError && (
-        <p id={`${name}-help`} className="text-sm text-muted-foreground">
+        <p id={`${name}-help`} className="text-sm text-ink-2">
           {helpText}
         </p>
       )}

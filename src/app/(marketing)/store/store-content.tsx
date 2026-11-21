@@ -51,7 +51,7 @@ interface StoreContentProps {
 }
 
 const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2'
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
 
 function HiddenQueryFields({ query, omit }: { query: StoreQuery; omit: string[] }) {
   return Array.from(storeQueryParams(query).entries())
@@ -64,8 +64,8 @@ function chipClass(active: boolean) {
     'inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 font-sans text-sm transition-colors',
     focusRing,
     active
-      ? 'border-charcoal bg-charcoal text-cream hover:bg-charcoal-dark'
-      : 'border-warm-grey/80 bg-cream text-charcoal hover:border-charcoal'
+      ? 'border-ink bg-ink text-bg hover:bg-ink'
+      : 'border-rule bg-bg text-ink hover:border-ink'
   )
 }
 
@@ -79,7 +79,7 @@ function hasAnyFilter(query: StoreQuery): boolean {
 
 function ChipCount({ count, selected }: { count: number; selected: boolean }) {
   return (
-    <span className={cn('text-xs tabular-nums', selected ? 'text-cream/70' : 'text-charcoal/50')}>
+    <span className={cn('text-xs tabular-nums', selected ? 'text-bg/70' : 'text-ink-3')}>
       <span className="sr-only">, </span>
       {count}
       <span className="sr-only"> {count === 1 ? 'piece' : 'pieces'}</span>
@@ -123,7 +123,7 @@ function shownOptions(facet: StoreFacet, query: StoreQuery, counts: Record<strin
 }
 
 const groupLabelClass =
-  'mb-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-charcoal/55'
+  'mb-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-2'
 
 function FacetGroup({
   facet,
@@ -242,7 +242,7 @@ function FilterGroups({
         <div
           role="group"
           aria-label="Availability"
-          className="space-y-4 border-t border-warm-grey/60 pt-6"
+          className="space-y-4 border-t border-rule pt-6"
         >
           <Link
             href={storeUrl(
@@ -261,7 +261,7 @@ function FilterGroups({
           </Link>
           <Link
             href="/store/collected"
-            className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
+            className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-ink underline decoration-ink-3 underline-offset-4 hover:decoration-ink"
           >
             Recently sold
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -322,7 +322,7 @@ function ActiveFilters({ query }: { query: StoreQuery }) {
             prefetch={false}
             aria-label={`Remove ${chip.label}`}
             className={cn(
-              'inline-flex min-h-9 items-center gap-1.5 rounded-full border border-charcoal/70 bg-cream px-3 font-sans text-sm text-charcoal hover:bg-charcoal hover:text-cream',
+              'inline-flex min-h-9 items-center gap-1.5 rounded-full border border-rule-2 bg-bg px-3 font-sans text-sm text-ink hover:bg-ink hover:text-bg',
               focusRing
             )}
           >
@@ -353,14 +353,14 @@ function ShowMore({ query, shown, total }: { query: StoreQuery; shown: number; t
 
   return (
     <div className="mt-10 flex flex-col items-center gap-3 sm:mt-14">
-      <p className="font-sans text-sm text-charcoal/65">
+      <p className="font-sans text-sm text-ink-2">
         {shown} of {total} pieces shown
       </p>
       <Link
         href={storeUrl(query, query.page + 1)}
         scroll={false}
         className={cn(
-          'inline-flex min-h-12 items-center rounded-sm border border-charcoal px-8 font-sans text-sm font-semibold text-charcoal transition-colors hover:bg-charcoal hover:text-cream',
+          'inline-flex min-h-12 items-center rounded-sm border border-ink px-8 font-sans text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-bg',
           focusRing
         )}
       >
@@ -395,17 +395,17 @@ export function StoreContent({
 
   return (
     <section
-      className="bg-cream-dark px-5 pb-10 pt-2 sm:px-8 sm:pb-14 lg:pt-6"
+      className="px-5 pb-10 pt-2 sm:px-8 sm:pb-14 lg:pt-6"
       aria-label="Opal collection"
     >
       <div className="mx-auto max-w-[92rem]">
-        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 lg:grid-cols-[15.5rem_minmax(0,1fr)_auto] lg:gap-x-12 lg:border-b lg:border-warm-grey/70 lg:pb-5">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 lg:grid-cols-[15.5rem_minmax(0,1fr)_auto] lg:gap-x-12 lg:border-b lg:border-rule lg:pb-5">
           <div>
-            <h1 className="font-serif text-base leading-5 text-charcoal lg:text-2xl lg:leading-8">
+            <h1 className="font-serif text-base leading-5 text-ink lg:text-2xl lg:leading-8">
               Australian opals
             </h1>
             <p
-              className="font-sans text-xs leading-4 text-charcoal/65 lg:text-sm lg:leading-5"
+              className="font-sans text-xs leading-4 text-ink-2 lg:text-sm lg:leading-5"
               aria-live="polite"
             >
               {totalDocs === 0 ? (
@@ -431,12 +431,12 @@ export function StoreContent({
               name="search"
               defaultValue={query.search}
               placeholder="Name or SKU"
-              className="min-h-11 min-w-0 flex-1 rounded-sm border border-warm-grey/70 bg-cream px-3 font-sans text-base text-charcoal outline-none placeholder:text-charcoal/40 focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
+              className="min-h-11 min-w-0 flex-1 rounded-sm border border-rule bg-bg px-3 font-sans text-base text-ink outline-none placeholder:text-ink-3 focus:border-ink focus:ring-2 focus:ring-accent/30"
             />
             <HiddenQueryFields query={query} omit={['search', 'page']} />
             <button
               className={cn(
-                'inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm bg-charcoal px-3 font-sans text-sm font-semibold text-cream hover:bg-charcoal-dark lg:px-6',
+                'inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm bg-ink px-3 font-sans text-sm font-semibold text-bg hover:bg-ink lg:px-6',
                 focusRing
               )}
               type="submit"
@@ -462,9 +462,9 @@ export function StoreContent({
 
         <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pt-1 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12 lg:pt-6">
           <aside className="hidden lg:block" aria-label="Filters">
-            <p className="border-b border-warm-grey/70 pb-4 font-serif text-2xl">Refine</p>
+            <p className="border-b border-rule pb-4 font-serif text-2xl">Refine</p>
             <div className="pt-6">{filters}</div>
-            <ul className="mt-8 space-y-2 border-t border-warm-grey/70 pt-5 font-sans text-xs font-semibold text-charcoal/65">
+            <ul className="mt-8 space-y-2 border-t border-rule pt-5 font-sans text-xs font-semibold text-ink-2">
               <li>Origin disclosed</li>
               <li>Prices in AUD</li>
               <li>Tracked delivery</li>
@@ -482,9 +482,9 @@ export function StoreContent({
                 ))}
               </div>
             ) : (
-              <div className="border-y border-warm-grey/70 py-16 text-center sm:py-20">
+              <div className="border-y border-rule py-16 text-center sm:py-20">
                 <p className="font-serif text-4xl">Nothing matches yet.</p>
-                <p className="mx-auto mt-4 max-w-md font-sans text-sm leading-6 text-charcoal/65">
+                <p className="mx-auto mt-4 max-w-md font-sans text-sm leading-6 text-ink-2">
                   Try fewer details, browse every available piece, or ask us to help source
                   something particular.
                 </p>
@@ -492,7 +492,7 @@ export function StoreContent({
                   <Link
                     href="/store"
                     className={cn(
-                      'min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark',
+                      'min-h-11 rounded-sm bg-ink px-6 py-3 font-sans text-sm font-semibold text-bg transition-colors hover:bg-ink',
                       focusRing
                     )}
                   >
@@ -501,7 +501,7 @@ export function StoreContent({
                   <Link
                     href="/contact?subject=opal-finder"
                     className={cn(
-                      'min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold transition-colors hover:text-charcoal/70',
+                      'min-h-11 border-b border-ink px-2 py-3 font-sans text-sm font-semibold transition-colors hover:text-ink-2',
                       focusRing
                     )}
                   >

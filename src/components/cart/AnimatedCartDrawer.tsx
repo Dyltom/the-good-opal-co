@@ -3,7 +3,6 @@
 import { useEffect, useState, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { CartItemSkeleton } from '@/components/ui/LoadingStates'
@@ -17,15 +16,10 @@ import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
+import { Trash2, Plus, Minus } from 'lucide-react'
 import type { Cart, CartItem } from '@/lib/cart'
 
-interface AnimatedCartDrawerProps {
-  children: React.ReactNode
-  onCartUpdate?: () => void
-}
-
-export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawerProps) {
+export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
@@ -73,7 +67,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
         const removed = cart?.items.find((item) => item.productId === productId)
         if (removed) trackRemoveFromCart(removed)
         setCart(result.data)
-        onCartUpdate?.()
         window.dispatchEvent(new CustomEvent('cart-updated'))
       }
       setRemovingItems((prev) => {
@@ -89,7 +82,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
       const result = await updateQuantity(productId, newQuantity)
       if (result.success && result.data) {
         setCart(result.data)
-        onCartUpdate?.()
         window.dispatchEvent(new CustomEvent('cart-updated'))
       }
     })
@@ -104,27 +96,10 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
       <SheetTrigger asChild>
         {children}
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-lg flex flex-col p-0">
-        <SheetHeader className="p-6 pb-4 pr-16 border-b">
-          <SheetTitle className="flex items-center gap-2">
-            <motion.div
-              animate={{ rotate: isLoading ? 360 : 0 }}
-              transition={{ repeat: isLoading ? Infinity : 0, duration: 2, ease: "linear" }}
-            >
-              <ShoppingBag className="w-5 h-5" />
-            </motion.div>
-            <span>Your cart</span>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={itemCount}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                className="text-sm font-normal text-gray-500"
-              >
-                ({itemCount})
-              </motion.span>
-            </AnimatePresence>
+      <SheetContent className="flex w-full flex-col gap-0 bg-bg p-0 sm:max-w-md">
+        <SheetHeader className="border-b border-rule px-5 py-4 pr-14 text-left">
+          <SheetTitle className="font-serif text-xl font-normal">
+            Your bag <span className="font-sans text-sm text-ink-3">({itemCount})</span>
           </SheetTitle>
           <SheetDescription className="sr-only">
             Review your cart items, update quantities, track free shipping progress, and continue to secure checkout.
@@ -132,73 +107,50 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
         </SheetHeader>
 
         {isLoading ? (
-          <div className="space-y-4 p-6">
+          <div className="space-y-4 p-5">
             <CartItemSkeleton />
             <CartItemSkeleton />
             <CartItemSkeleton />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center p-6">
+          <div className="flex flex-1 items-center justify-center p-5">
             <CartEmptyState />
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-6">
-              <AnimatePresence mode="popLayout">
-                {items.map((item) => (
-                  <AnimatedCartItem
-                    key={item.productId}
-                    item={item}
-                    onRemove={() => handleRemove(item.productId)}
-                    onUpdateQuantity={(qty) => handleUpdateQuantity(item.productId, qty)}
-                    isPending={isPending}
-                    isRemoving={removingItems.has(item.productId)}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-            <div className="border-t bg-gradient-to-b from-gray-50 to-white p-6 space-y-4">
-              <div className="relative">
-                <div className="flex justify-between items-center">
-                  <span className="text-base font-semibold text-charcoal">
-                    Subtotal
-                  </span>
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={total}
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -20, opacity: 0 }}
-                      className="text-2xl font-semibold text-charcoal"
-                    >
-                      {formatCurrency(total, 'AUD')}
-                    </motion.span>
-                  </AnimatePresence>
-                </div>
+            <ul className="flex-1 overflow-y-auto px-5">
+              {items.map((item) => (
+                <CartDrawerItem
+                  key={item.productId}
+                  item={item}
+                  onRemove={() => handleRemove(item.productId)}
+                  onUpdateQuantity={(qty) => handleUpdateQuantity(item.productId, qty)}
+                  isPending={isPending}
+                  isRemoving={removingItems.has(item.productId)}
+                />
+              ))}
+            </ul>
+            <div className="space-y-3 border-t border-rule bg-plinth px-5 py-4">
+              <div className="flex items-baseline justify-between">
+                <span className="text-ink-2">Subtotal</span>
+                <span className="text-lg font-medium text-ink">{formatCurrency(total, 'AUD')}</span>
               </div>
 
               <FreeShippingProgress total={total} />
-              <div className="space-y-2 relative z-10">
+              <div className="space-y-2">
                 {cart ? (
                   <>
                     <ShippingRegionToggle value={region} onChange={setRegion} />
-                    <CheckoutButton cart={cart} region={region} className="h-12 text-base" />
+                    <CheckoutButton cart={cart} region={region} className="h-12 w-full text-base" />
                   </>
                 ) : null}
 
-                <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                  <Button
-                    variant="outline"
-                    className="w-full h-11"
-                    asChild
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Link href="/cart">View cart</Link>
-                  </Button>
-                </motion.div>
+                <Button variant="ghost" className="w-full" asChild onClick={() => setIsOpen(false)}>
+                  <Link href="/cart">View bag</Link>
+                </Button>
 
                 <SheetClose asChild>
-                  <Button variant="ghost" className="w-full h-11 text-charcoal/70 hover:text-charcoal">
+                  <Button variant="link" className="w-full text-ink-2 hover:text-ink">
                     Continue shopping
                   </Button>
                 </SheetClose>
@@ -211,7 +163,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
   )
 }
 
-interface AnimatedCartItemProps {
+interface CartDrawerItemProps {
   item: CartItem
   onRemove: () => void
   onUpdateQuantity: (quantity: number) => void
@@ -219,124 +171,66 @@ interface AnimatedCartItemProps {
   isRemoving: boolean
 }
 
-function AnimatedCartItem({
-  item,
-  onRemove,
-  onUpdateQuantity,
-  isPending,
-  isRemoving
-}: AnimatedCartItemProps) {
+const qtyButton =
+  'flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border border-rule-2 text-ink transition-colors hover:border-ink disabled:cursor-not-allowed disabled:opacity-50'
+
+function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending, isRemoving }: CartDrawerItemProps) {
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{
-        opacity: isRemoving ? 0 : 1,
-        x: isRemoving ? 100 : 0,
-        scale: isRemoving ? 0.8 : 1,
-      }}
-      exit={{ opacity: 0, x: 100, scale: 0.8 }}
-      transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="flex gap-4 py-4 border-b last:border-0"
+    <li
+      className={`flex gap-4 border-b border-rule py-4 transition-opacity duration-300 last:border-0 ${isRemoving ? 'opacity-40' : ''}`}
     >
-      <motion.div
-        whileHover={{ scale: 1.05 }}
-        className="w-20 h-20 rounded-xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 relative"
-      >
+      <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden bg-plinth">
         {item.image ? (
-          <Image
-            src={item.image}
-            alt={item.name}
-            width={80}
-            height={80}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-            <ShoppingBag className="w-6 h-6 text-gray-400" />
-          </div>
-        )}
-        <div
-          className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-700"
-          style={{
-            background: 'linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.6) 50%, transparent 60%)',
-            backgroundSize: '200% 200%',
-            animation: 'shimmer-slide 1.5s ease-out infinite',
-          }}
-        />
-      </motion.div>
-      <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm mb-1 truncate">{item.name}</h4>
-        <p className="text-sm text-gray-500 mb-2">
+          <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
+        ) : null}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-3">
+          <h4 className="min-w-0 flex-1 truncate font-serif text-[15.5px] italic">{item.name}</h4>
+          <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity, 'AUD')}</p>
+        </div>
+        <p className="mb-1 text-[12.5px] text-ink-2">
           {formatCurrency(item.price, 'AUD')}
           {item.quantity > 1 ? ' each' : ''}
         </p>
         <div className="flex items-center gap-2">
           {(item.maxQuantity ?? Infinity) > 1 ? (
             <>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
+                type="button"
                 onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
                 disabled={isPending || isRemoving}
-                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={qtyButton}
                 aria-label={`Decrease quantity of ${item.name}`}
               >
-                <Minus className="w-4 h-4" />
-              </motion.button>
-
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={item.quantity}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="text-sm font-medium w-8 text-center"
-                >
-                  {item.quantity}
-                </motion.span>
-              </AnimatePresence>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                <Minus className="h-4 w-4" />
+              </button>
+              <span className="w-8 text-center text-sm">{item.quantity}</span>
+              <button
+                type="button"
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending || isRemoving || item.quantity >= (item.maxQuantity ?? Infinity)}
-                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={qtyButton}
                 aria-label={`Increase quantity of ${item.name}`}
               >
-                <Plus className="w-4 h-4" />
-              </motion.button>
+                <Plus className="h-4 w-4" />
+              </button>
             </>
           ) : (
-            <span className="text-sm text-gray-500">One of a kind</span>
+            <span className="text-[12.5px] text-ink-3">One of a kind</span>
           )}
 
-          <motion.button
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
+          <button
+            type="button"
             onClick={onRemove}
             disabled={isPending || isRemoving}
-            className="ml-auto min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="ml-auto flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center text-ink-3 transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Remove ${item.name} from cart`}
           >
-            <Trash2 className="w-5 h-5" />
-          </motion.button>
+            <Trash2 className="h-4 w-4" />
+          </button>
         </div>
       </div>
-      <div className="text-right">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={item.price * item.quantity}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="font-bold text-sm"
-          >
-            {formatCurrency(item.price * item.quantity, 'AUD')}
-          </motion.p>
-        </AnimatePresence>
-      </div>
-    </motion.div>
+    </li>
   )
 }

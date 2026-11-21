@@ -5,7 +5,7 @@ import { ArrowRight, Camera, ChevronDown, MessageCircle, RotateCcw, Truck } from
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
 import { Container } from '@/components/layout'
-import { Footer, SiteNavigation } from '@/components/navigation'
+import { MarketingShell } from '@/components/marketing'
 import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
@@ -190,25 +190,23 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       />
 
       <ProductViewTracker product={product}>
-        <div className="flex min-h-screen flex-col bg-cream">
-          <SiteNavigation />
-          <main id="main-content" tabIndex={-1} className="flex-1">
+        <MarketingShell>
             {/* Breadcrumb */}
-            <section className="pb-5 pt-28">
+            <section className="pb-4 pt-4">
               <Container>
                 <nav
                   aria-label="Breadcrumb"
-                  className="flex items-center gap-2 overflow-hidden font-sans text-xs text-charcoal/55 sm:text-sm"
+                  className="flex items-center gap-2 overflow-hidden font-sans text-xs text-ink-2 sm:text-sm"
                 >
-                  <Link href="/" className="transition-colors hover:text-charcoal">
+                  <Link href="/" className="transition-colors hover:text-ink">
                     Home
                   </Link>
                   <span aria-hidden="true">/</span>
-                  <Link href="/store" className="transition-colors hover:text-charcoal">
+                  <Link href="/store" className="transition-colors hover:text-ink">
                     Store
                   </Link>
                   <span aria-hidden="true">/</span>
-                  <span aria-current="page" className="truncate font-medium text-charcoal">
+                  <span aria-current="page" className="truncate font-medium text-ink">
                     {product.name}
                   </span>
                 </nav>
@@ -230,10 +228,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
                     {about.paragraphs.length > 0 ? (
                       <section aria-labelledby="about-stone" data-insight-section="details" className="hidden max-w-prose lg:block">
-                        <h2 id="about-stone" className="font-serif text-2xl font-medium text-charcoal">
+                        <h2 id="about-stone" className="font-serif text-2xl font-medium text-ink">
                           About this stone
                         </h2>
-                        <div className="mt-4 space-y-4 font-sans text-base leading-7 text-charcoal/80">
+                        <div className="mt-4 space-y-4 font-sans text-base leading-7 text-ink">
                           {about.paragraphs.map((paragraph) => (
                             <p key={paragraph}>{paragraph}</p>
                           ))}
@@ -246,54 +244,54 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     <Eyebrow>
                       {[categoryName, product.stoneOrigin && storeLabel(product.stoneOrigin)].filter(Boolean).join(' · ')}
                     </Eyebrow>
-                    <h1 className="mt-3 font-serif text-3xl font-medium leading-[1.08] text-charcoal sm:text-4xl xl:text-[2.75rem]">
+                    <h1 className="mt-3 font-serif text-3xl font-medium leading-[1.08] text-ink sm:text-4xl xl:text-[2.75rem]">
                       {product.name}
                     </h1>
 
                     {reserved ? (
                       <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <span className="rounded-full bg-charcoal/85 px-3 py-1 font-sans text-sm font-medium text-white">
+                        <span className="rounded-full bg-ink px-3 py-1 font-sans text-sm font-medium text-bg">
                           Reserved
                         </span>
-                        <span className="font-sans text-sm text-charcoal/70">
+                        <span className="font-sans text-sm text-ink-2">
                           Someone is checking out with this piece. If they don&apos;t complete payment, it returns to the shop within 30 minutes.
                         </span>
                       </div>
                     ) : sold ? (
                       <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <span className="rounded-full bg-charcoal/85 px-3 py-1 font-sans text-sm font-medium text-white">
+                        <span className="rounded-full bg-ink px-3 py-1 font-sans text-sm font-medium text-bg">
                           Sold
                         </span>
-                        <span className="font-sans text-sm text-charcoal/70">This piece has found a home.</span>
+                        <span className="font-sans text-sm text-ink-2">This piece has found a home.</span>
                       </div>
                     ) : (
                       <div data-insight-section="price" className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                        <span className="font-serif text-3xl font-semibold tabular-nums text-charcoal">
+                        <span className="font-serif text-3xl font-semibold text-ink">
                           {formatCurrency(product.price, 'AUD')}
                         </span>
                         {discount && product.compareAtPrice ? (
                           <>
-                            <span className="text-base tabular-nums text-charcoal/50 line-through">
+                            <span className="text-base text-ink-3 line-through">
                               {formatCurrency(product.compareAtPrice, 'AUD')}
                             </span>
-                            <span className="text-sm font-medium text-fire-pink-dark">Save {discount}%</span>
+                            <span className="text-sm font-medium text-accent">Save {discount}%</span>
                           </>
                         ) : null}
-                        <span className="text-sm text-charcoal/60">AUD</span>
+                        <span className="text-sm text-ink-2">AUD</span>
                       </div>
                     )}
                     {stock === 1 ? (
-                      <p className="mt-2 font-sans text-sm text-opal-emerald-dark">
+                      <p className="mt-2 font-sans text-sm text-success">
                         One available. This exact stone is the one you receive.
                       </p>
                     ) : null}
 
                     {facts.length > 0 ? (
-                      <dl data-insight-section="details" className="mt-6 divide-y divide-warm-grey/50 border-y border-warm-grey/50 font-sans text-sm">
+                      <dl data-insight-section="details" className="mt-6 divide-y divide-rule border-y border-rule font-sans text-sm">
                         {facts.map((fact) => (
                           <div key={fact.label} className="grid grid-cols-[7rem_minmax(0,1fr)] gap-4 py-2.5">
-                            <dt className="text-charcoal/60">{fact.label}</dt>
-                            <dd className="font-medium text-charcoal">{fact.value}</dd>
+                            <dt className="text-ink-2">{fact.label}</dt>
+                            <dd className="font-medium text-ink">{fact.value}</dd>
                           </div>
                         ))}
                       </dl>
@@ -303,14 +301,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <div className="mt-6">
                         <Link
                           href={similarHref}
-                          className="flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-charcoal font-sans text-base font-semibold text-white shadow-md transition-colors hover:bg-charcoal/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+                          className="flex h-14 w-full items-center justify-center gap-2 rounded-sm bg-ink font-sans text-base font-semibold text-white shadow-md transition-colors hover:bg-ink/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                         >
                           See similar pieces
                           <ArrowRight className="h-5 w-5" aria-hidden="true" />
                         </Link>
                         <Link
                           href="/contact?subject=opal-finder"
-                          className="mt-2 flex min-h-11 items-center justify-center font-sans text-sm text-charcoal/80 underline underline-offset-4 hover:text-charcoal"
+                          className="mt-2 flex min-h-11 items-center justify-center font-sans text-sm text-ink underline underline-offset-4 hover:text-ink"
                         >
                           Ask us to find one like it
                         </Link>
@@ -335,40 +333,40 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     )}
 
                     {sold && !about.photographedUnderWhiteLight ? null : (
-                      <ul className="mt-6 space-y-3 border-t border-warm-grey/50 pt-6 font-sans text-sm text-charcoal/80">
+                      <ul className="mt-6 space-y-3 border-t border-rule pt-6 font-sans text-sm text-ink">
                         {about.photographedUnderWhiteLight ? (
                           <li className="flex gap-3">
-                            <Camera className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                            <Camera className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
                             Photographed under white light. Studio shots have the background replaced; the stone is never retouched.
                           </li>
                         ) : null}
                         {sold ? null : (
                           <>
                             <li className="flex gap-3">
-                              <Truck className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                              <Truck className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
                               <span>
                                 {productShippingProgress.qualifies
                                   ? 'Free tracked shipping.'
                                   : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
-                                <Link href="/shipping" className="underline underline-offset-4 hover:text-charcoal">
+                                <Link href="/shipping" className="underline underline-offset-4 hover:text-ink">
                                   Rates
                                 </Link>
                               </span>
                             </li>
                             <li className="flex gap-3">
-                              <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                              <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
                               <span>
                                 30-day change-of-mind returns on eligible unused pieces.{' '}
-                                <Link href="/returns" className="underline underline-offset-4 hover:text-charcoal">
+                                <Link href="/returns" className="underline underline-offset-4 hover:text-ink">
                                   Returns policy
                                 </Link>
                               </span>
                             </li>
                             <li className="flex gap-3">
-                              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-ink-2" aria-hidden="true" />
                               <Link
                                 href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`}
-                                className="underline underline-offset-4 hover:text-charcoal"
+                                className="underline underline-offset-4 hover:text-ink"
                               >
                                 Ask a question or book a video viewing
                               </Link>
@@ -381,44 +379,44 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     {builderEligible && stock > 0 ? (
                       <Link
                         href={`/services/design?p=${encodeURIComponent(String(product.id))}`}
-                        className="group mt-6 flex items-center justify-between gap-4 border border-warm-grey/60 bg-white p-4 transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                        className="group mt-6 flex items-center justify-between gap-4 border border-rule bg-bg p-4 transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         <span>
-                          <span className="block font-serif text-lg text-charcoal">Design a ring around this opal</span>
-                          <span className="mt-1 block font-sans text-sm text-charcoal/65">
+                          <span className="block font-serif text-lg text-ink">Design a ring around this opal</span>
+                          <span className="mt-1 block font-sans text-sm text-ink-2">
                             Try this exact stone in settings in the 3D studio, then request a quote.
                           </span>
                         </span>
-                        <ArrowRight className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
+                        <ArrowRight className="h-5 w-5 shrink-0 text-ink-2 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
                       </Link>
                     ) : null}
 
                     {designStyle ? (
                       <Link
                         href={`/services/design?y=${designStyle.id}`}
-                        className="group mt-3 flex items-center justify-between gap-4 border border-warm-grey/60 bg-white p-4 transition-colors hover:border-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                        className="group mt-3 flex items-center justify-between gap-4 border border-rule bg-bg p-4 transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         <span>
-                          <span className="block font-serif text-lg text-charcoal">
+                          <span className="block font-serif text-lg text-ink">
                             Want the {designStyle.label} with a different opal?
                           </span>
-                          <span className="mt-1 block font-sans text-sm text-charcoal/65">
+                          <span className="mt-1 block font-sans text-sm text-ink-2">
                             Choose a stone, metal and size in the 3D studio, then request a quote.
                           </span>
                         </span>
-                        <ArrowRight className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
+                        <ArrowRight className="h-5 w-5 shrink-0 text-ink-2 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" aria-hidden="true" />
                       </Link>
                     ) : null}
                   </div>
                 </div>
 
                 {about.paragraphs.length > 0 ? (
-                  <details data-insight-section="details" className="group mt-8 max-w-prose border-y border-warm-grey/50 lg:hidden">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-serif text-xl font-medium text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible [&::-webkit-details-marker]:hidden">
+                  <details data-insight-section="details" className="group mt-8 max-w-prose border-y border-rule lg:hidden">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-serif text-xl font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">
                       About this stone
-                      <ChevronDown className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
+                      <ChevronDown className="h-5 w-5 shrink-0 text-ink-2 transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
                     </summary>
-                    <div className="space-y-4 pb-5 font-sans text-base leading-7 text-charcoal/80">
+                    <div className="space-y-4 pb-5 font-sans text-base leading-7 text-ink">
                       {about.paragraphs.map((paragraph) => (
                         <p key={paragraph}>{paragraph}</p>
                       ))}
@@ -430,20 +428,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   productId={product.id}
                   eyebrow="Customer review"
                   title="From the person who bought it."
-                  className="mt-12 border-t border-warm-grey/40 pt-10 lg:mt-24 lg:pt-16"
+                  className="mt-12 border-t border-rule pt-10 lg:mt-24 lg:pt-16"
                 />
 
                 <div className="mt-12 lg:mt-24">
                   <RelatedProductsWithSuspense
                     product={product}
-                    className="border-t border-warm-grey/40 pt-10 lg:pt-16"
+                    className="border-t border-rule pt-10 lg:pt-16"
                   />
                 </div>
               </Container>
             </section>
-          </main>
-          <Footer />
-        </div>
+        </MarketingShell>
       </ProductViewTracker>
     </>
   )

@@ -171,7 +171,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <Container className="py-8 sm:py-10 lg:py-12">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
+          className="inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to opal notes
         </Link>
@@ -181,11 +181,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {categories.map((category) => category.name).join(' · ')}
             </Eyebrow>
           ) : null}
-          <h1 className="mt-4 text-balance font-serif text-4xl font-medium leading-none text-charcoal sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 text-balance font-serif text-4xl font-medium leading-none text-ink sm:text-5xl lg:text-6xl">
             {post.title}
           </h1>
           {author || publishedDate ? (
-            <p className="mt-6 font-sans text-sm text-charcoal/60">
+            <p className="mt-6 font-sans text-sm text-ink-2">
               {author ? `By ${author.name}` : null}
               {author && publishedDate ? ' · ' : null}
               {publishedDate ? <time>{publishedDate}</time> : null}
@@ -202,7 +202,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               className="mx-auto mt-10 h-auto max-w-full"
             />
           ) : imageUrl ? (
-            <div className="relative mt-10 aspect-[16/9] overflow-hidden bg-warm-grey/20">
+            <div className="relative mt-10 aspect-[16/9] overflow-hidden bg-plinth">
               <Image
                 src={imageUrl}
                 alt={featuredImage?.alt || post.title}
@@ -214,20 +214,20 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           ) : null}
           {post.content ? (
-            <div className="prose prose-lg mt-12 max-w-none break-words prose-headings:font-serif prose-headings:font-medium prose-headings:text-charcoal prose-p:font-sans prose-p:leading-8 prose-p:text-charcoal/75 prose-a:text-opal-electric-accessible prose-blockquote:border-charcoal/30 prose-blockquote:text-charcoal/70">
+            <div className="prose prose-lg mt-12 max-w-none break-words prose-headings:font-serif prose-headings:font-medium prose-headings:text-ink prose-p:font-sans prose-p:leading-8 prose-p:text-ink prose-a:text-accent prose-blockquote:border-rule prose-blockquote:text-ink-2">
               <RichText data={rewriteLegacyPostLinks(post.content as unknown as SerializedEditorState, APP_URL)} />
             </div>
           ) : null}
           {tags.length > 0 ? (
-            <div className="mt-12 border-t border-warm-grey/70 pt-6" aria-label="Article topics">
-              <p className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/50">
+            <div className="mt-12 border-t border-rule pt-6" aria-label="Article topics">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-ink-3">
                 Topics
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="rounded-full border border-warm-grey bg-cream px-3 py-1.5 font-sans text-xs text-charcoal/70"
+                    className="rounded-full border border-rule bg-bg px-3 py-1.5 font-sans text-xs text-ink-2"
                   >
                     {tag.name}
                   </span>

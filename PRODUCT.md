@@ -82,8 +82,4 @@ Useful Impeccable routes for this project:
 
 - `AGENTS.md` for repository rules and working method.
 - `DESIGN.md` for the compact agent-readable visual contract.
-- `docs/DESIGN_SYSTEM.md` for detailed brand and component guidance.
-- `docs/TYPOGRAPHY_GUIDE.md` for font usage rules.
-- `docs/UI_UX_REDESIGN_GUIDE.md` for deeper redesign direction.
-- `src/styles/tokens.ts`, `src/app/globals.css`, and `tailwind.config.ts` for
-  implementation tokens.
+- `src/app/globals.css` and `tailwind.config.ts` for implementation tokens.

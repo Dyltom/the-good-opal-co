@@ -38,18 +38,22 @@ interface ProductCardProps {
   priority?: boolean
 }
 
-function stoneDetails(product: ProductCardProduct): string[] {
+function metaLine(product: ProductCardProduct): string[] {
   return [
     product.stoneType && storeLabel(product.stoneType),
     product.stoneOrigin && storeLabel(product.stoneOrigin).split(',')[0],
+    product.carats ? `${product.carats} ct` : undefined,
   ].filter((value): value is string => Boolean(value))
 }
+
+const overlayButton =
+  'rounded-sm border border-rule-2 bg-bg text-ink transition-colors hover:border-ink'
 
 export function ProductCard({ product, index = 0, priority = false }: ProductCardProps) {
   const [showQuickView, setShowQuickView] = useState(false)
   const isAvailable = product.stock > 0
   const productHref = `/store/${product.slug}`
-  const details = stoneDetails(product)
+  const meta = metaLine(product)
   const discount = savePercent(product.price, product.compareAtPrice)
   const cartProduct = {
     id: product.id,
@@ -62,49 +66,44 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
   return (
     <>
       <article className="group relative flex h-full flex-col">
-        <div className="relative overflow-hidden rounded-md bg-cream-dark">
-          <Link
-            href={productHref}
-            className="block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-          >
-            <ViewTransition name={productImageTransitionName(product.slug)}>
-              <div className="relative aspect-[4/5]">
-                {product.image ? (
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    priority={priority && index < 4}
-                    fetchPriority={priority && index < 2 ? 'high' : undefined}
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center font-sans text-xs text-charcoal/50">
-                    Photo coming soon
-                  </div>
-                )}
-                {product.image && product.hoverImage ? (
-                  <Image
-                    src={product.hoverImage}
-                    alt=""
-                    fill
-                    sizes="(max-width: 1024px) 33vw, 25vw"
-                    className="hidden object-cover opacity-0 transition-opacity duration-500 group-focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:hover)]:block"
-                  />
-                ) : null}
-              </div>
-            </ViewTransition>
-          </Link>
+        <div className="relative">
+          <ViewTransition name={productImageTransitionName(product.slug)} share="piece">
+            <div className="relative aspect-[4/5] overflow-hidden bg-plinth">
+              {product.image ? (
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  priority={priority && index < 4}
+                  fetchPriority={priority && index < 2 ? 'high' : undefined}
+                  sizes="(max-width: 760px) 50vw, (max-width: 1280px) 25vw, 300px"
+                  className="object-cover transition-transform duration-[900ms] ease-gallery group-hover:scale-[1.025] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-xs text-ink-3">
+                  Photo coming soon
+                </div>
+              )}
+              {product.image && product.hoverImage ? (
+                <Image
+                  src={product.hoverImage}
+                  alt=""
+                  fill
+                  sizes="(max-width: 1280px) 25vw, 300px"
+                  className="hidden object-cover opacity-0 transition-opacity duration-500 group-focus-within:opacity-100 group-hover:opacity-100 motion-reduce:transition-none [@media(hover:hover)]:block"
+                />
+              ) : null}
+            </div>
+          </ViewTransition>
 
           {isAvailable ? (
             <>
-              <div className="absolute inset-x-3 bottom-3 hidden items-center gap-2 opacity-100 transition-[opacity,transform] duration-500 ease-out-expo sm:flex sm:translate-y-2 sm:opacity-0 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 motion-reduce:transition-none motion-reduce:sm:translate-y-0">
+              <div className="absolute inset-x-2 bottom-2 z-10 hidden items-center gap-1.5 opacity-100 transition-opacity duration-300 ease-gallery sm:flex sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100 motion-reduce:transition-none">
                 <AddToCartButton
                   product={cartProduct}
                   variant="minimal"
                   size="sm"
-                  className="flex-1 justify-center rounded-md bg-white/95 text-charcoal shadow-sm hover:bg-white"
+                  className={`flex-1 justify-center ${overlayButton}`}
                 >
                   Quick add
                 </AddToCartButton>
@@ -113,7 +112,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                   onClick={() => setShowQuickView(true)}
                   title="Quick view"
                   aria-label={`Open quick view for ${product.name}`}
-                  className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md bg-white/95 text-charcoal/80 shadow-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                  className={`flex min-h-[44px] min-w-[44px] items-center justify-center ${overlayButton}`}
                 >
                   <Eye size={18} aria-hidden="true" />
                 </button>
@@ -122,54 +121,32 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                 product={cartProduct}
                 variant="icon"
                 size="sm"
-                className="absolute bottom-2 right-2 bg-white/95 sm:hidden"
+                className={`absolute bottom-1.5 right-1.5 z-10 sm:hidden ${overlayButton}`}
               />
             </>
-          ) : (
-            <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-charcoal/85 px-3 py-1 font-sans text-xs font-medium text-white">
-              {product.reserved ? 'Reserved' : 'Sold'}
-            </span>
-          )}
+          ) : null}
         </div>
 
-        <div className="flex flex-1 flex-col pt-3">
-          <h3 className="line-clamp-2 font-serif text-[1.05rem] leading-snug text-charcoal">
-            <Link
-              href={productHref}
-              className="rounded-sm transition-colors hover:text-opal-electric-accessible focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
-            >
+        <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-2.5 gap-y-px px-px pb-0.5 pt-[9px]">
+          <h3 className="line-clamp-2 font-serif text-[15px] italic leading-[1.25] text-ink">
+            <Link href={productHref} className="no-underline after:absolute after:inset-0 after:content-['']">
               {product.name}
             </Link>
           </h3>
-          <p className="mt-1 min-h-5 font-sans text-xs leading-5 text-charcoal/60">{details.join(' · ')}</p>
-          <p className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1.5 font-sans tabular-nums">
-            {isAvailable ? (
-              <>
-                <span className="text-base font-semibold text-charcoal">
-                  {formatCurrency(product.price, 'AUD')}
-                </span>
-                {discount ? (
-                  <>
-                    <span className="text-sm text-charcoal/45 line-through">
-                      {formatCurrency(product.compareAtPrice!, 'AUD')}
-                    </span>
-                    <span className="text-xs font-medium text-fire-pink-dark">Save {discount}%</span>
-                  </>
-                ) : null}
-              </>
-            ) : (
-              <span className="text-sm font-medium text-charcoal/60">
-                {product.reserved ? 'Reserved' : 'Sold'}
-              </span>
-            )}
-            {product.carats ? (
-              <span className="ml-auto text-xs text-charcoal/60">{product.carats} ct</span>
-            ) : null}
+          <p className="text-sm font-medium tracking-[0.01em] text-ink">
+            {isAvailable ? formatCurrency(product.price, 'AUD') : product.reserved ? 'Reserved' : 'Sold'}
           </p>
-          {isAvailable && product.stock > 1 && product.stock <= 3 ? (
-            <p className="mt-1 font-sans text-xs font-medium text-opal-emerald-dark">
-              Only {product.stock} left
+          {meta.length > 0 ? (
+            <p className="col-span-2 text-xs leading-[1.4] tracking-[0.01em] text-ink-2">{meta.join(' · ')}</p>
+          ) : null}
+          {isAvailable && discount ? (
+            <p className="col-span-2 text-xs text-ink-2">
+              <span className="line-through">{formatCurrency(product.compareAtPrice!, 'AUD')}</span>{' '}
+              <span className="font-medium text-accent">Save {discount}%</span>
             </p>
+          ) : null}
+          {isAvailable && product.stock > 1 && product.stock <= 3 ? (
+            <p className="col-span-2 text-xs font-medium text-success">Only {product.stock} left</p>
           ) : null}
         </div>
       </article>

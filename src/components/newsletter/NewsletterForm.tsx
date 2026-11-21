@@ -4,7 +4,7 @@ import { useActionState, useId } from 'react'
 import { subscribeToNewsletter } from '@/app/(marketing)/newsletter/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, CheckCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function NewsletterForm({ className }: { className?: string }) {
@@ -14,19 +14,18 @@ export function NewsletterForm({ className }: { className?: string }) {
   return (
     <form action={formAction} className={cn('w-full space-y-3', className)}>
       <input type="hidden" name="source" value="footer" />
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         <div className="relative flex-1">
           <label htmlFor={emailId} className="sr-only">
             Email address
           </label>
-          <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-charcoal/40" aria-hidden="true" />
           <Input
             name="email"
             id={emailId}
             type="email"
             placeholder="Your email"
             required
-            className="h-12 pl-10"
+            className="h-12"
             autoComplete="email"
             disabled={isPending}
           />
@@ -34,7 +33,7 @@ export function NewsletterForm({ className }: { className?: string }) {
         <Button
           type="submit"
           disabled={isPending}
-          className="h-12 bg-cream px-5 text-charcoal hover:bg-white"
+          className="h-12 px-5"
         >
           {isPending ? 'Subscribing…' : 'Subscribe'}
         </Button>
@@ -42,7 +41,7 @@ export function NewsletterForm({ className }: { className?: string }) {
 
       {state ? (
         <div
-          className={cn('flex items-start gap-2 text-sm', state.success ? 'text-opal-light' : 'text-red-300')}
+          className={cn('flex items-start gap-2 text-sm', state.success ? 'text-success' : 'text-destructive')}
           role="status"
           aria-live="polite"
         >
@@ -55,7 +54,7 @@ export function NewsletterForm({ className }: { className?: string }) {
         </div>
       ) : null}
 
-      <p className="text-xs leading-5 text-white/60">
+      <p className="text-xs leading-5 text-ink-3">
         Occasional emails about new pieces. Unsubscribe anytime.
       </p>
     </form>

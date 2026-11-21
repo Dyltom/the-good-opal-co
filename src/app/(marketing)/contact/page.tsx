@@ -37,7 +37,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   return (
     <MarketingShell>
-      <section className="border-b border-warm-grey/50">
+      <section className="border-b border-rule">
         <Container className="pb-8 pt-6 sm:pb-10 sm:pt-8 lg:pb-12">
           <Breadcrumb
             items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
@@ -50,7 +50,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
                 Let&apos;s talk opals.
               </h1>
             </div>
-            <p className="max-w-xl text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
+            <p className="max-w-xl text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
               {isCustomIntent
                 ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
                 : isCourseIntent
@@ -67,19 +67,19 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
             <h2 className="font-serif text-3xl">
               {isCourseIntent ? 'What helps us reply' : 'A useful first message'}
             </h2>
-            <p className="mt-4 max-w-md leading-7 text-charcoal-light">
+            <p className="mt-4 max-w-md leading-7 text-ink-2">
               {isCourseIntent
                 ? 'Share your current experience, the cutting method you want to learn, and any tools you already use. Leave anything unknown blank.'
                 : 'Include a product name or link, your approximate budget, and any date that matters. Leave anything unknown blank.'}
             </p>
 
-            <div className="mt-9 border-y border-warm-grey/60 py-6">
+            <div className="mt-9 border-y border-rule py-6">
               <div className="flex gap-3">
-                <Mail aria-hidden="true" className="mt-1 h-5 w-5 text-opal-electric-accessible" />
+                <Mail aria-hidden="true" className="mt-1 h-5 w-5 text-accent" />
                 <div>
-                  <p className="text-sm text-charcoal-light">Prefer email?</p>
+                  <p className="text-sm text-ink-2">Prefer email?</p>
                   <a
-                    className="mt-1 inline-block font-medium underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
+                    className="mt-1 inline-block font-medium underline decoration-ink-3 underline-offset-4 hover:decoration-ink"
                     href={`mailto:${CONTACT_INFO.email}`}
                   >
                     {CONTACT_INFO.email}
@@ -90,19 +90,19 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
             <nav aria-label="Helpful links" className="mt-7 space-y-3 text-sm">
               <Link
-                className="flex max-w-xs items-center justify-between border-b border-warm-grey/40 py-2 hover:text-opal-electric-accessible"
+                className="flex max-w-xs items-center justify-between border-b border-rule py-2 hover:text-accent"
                 href="/faq"
               >
                 Opal and order questions <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
               </Link>
               <Link
-                className="flex max-w-xs items-center justify-between border-b border-warm-grey/40 py-2 hover:text-opal-electric-accessible"
+                className="flex max-w-xs items-center justify-between border-b border-rule py-2 hover:text-accent"
                 href="/shipping"
               >
                 Shipping information <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
               </Link>
               <Link
-                className="flex max-w-xs items-center justify-between border-b border-warm-grey/40 py-2 hover:text-opal-electric-accessible"
+                className="flex max-w-xs items-center justify-between border-b border-rule py-2 hover:text-accent"
                 href="/returns"
               >
                 Returns information <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
@@ -112,13 +112,13 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
           <section
             aria-labelledby="contact-form-heading"
-            className="bg-white p-5 shadow-sm sm:p-8 lg:p-10"
+            className="border border-rule bg-bg p-5 sm:p-8 lg:p-10"
           >
-            <div className="mb-8 border-b border-warm-grey/50 pb-6">
+            <div className="mb-8 border-b border-rule pb-6">
               <h2 id="contact-form-heading" className="font-serif text-3xl sm:text-4xl">
                 Send an enquiry
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-charcoal-light">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-ink-2">
                 Fields marked with an asterisk are required.
                 {initialProduct ? ` We have added ${initialProduct} for you.` : ''}
               </p>

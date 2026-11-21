@@ -59,26 +59,26 @@ export function CheckoutFeedback({ source, onClose, onSent, className }: Checkou
   return (
     <section
       aria-label="Checkout feedback"
-      className={cn('relative border border-warm-grey/60 bg-cream p-4 pr-12 sm:p-5 sm:pr-14', className)}
+      className={cn('relative border border-rule bg-bg p-4 pr-12 sm:p-5 sm:pr-14', className)}
     >
       <button
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center text-charcoal/55 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+        className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center text-ink-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <X className="h-4 w-4" aria-hidden="true" />
       </button>
       {sent ? (
-        <p role="status" className="text-sm leading-6 text-charcoal/75">
+        <p role="status" className="text-sm leading-6 text-ink">
           Thank you, that helps us a lot.
         </p>
       ) : (
         <form onSubmit={submit}>
-          <h2 id={titleId} className="font-serif text-xl font-semibold text-charcoal">
+          <h2 id={titleId} className="font-serif text-xl font-semibold text-ink">
             {source === 'cancelled' ? 'Not quite ready?' : 'What would help?'}
           </h2>
-          <p className="mt-1 text-sm leading-6 text-charcoal/65">
+          <p className="mt-1 text-sm leading-6 text-ink-2">
             {source === 'cancelled'
               ? 'No rush, your pieces are still in your cart. If you have a moment, what held you back?'
               : 'Tell us what is holding you back. It helps us make the shop better.'}
@@ -90,10 +90,10 @@ export function CheckoutFeedback({ source, onClose, onSent, className }: Checkou
                 <label
                   key={value}
                   className={cn(
-                    'inline-flex min-h-11 cursor-pointer items-center border px-3 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-opal-electric-accessible',
+                    'inline-flex min-h-11 cursor-pointer items-center border px-3 py-2 text-sm transition-colors focus-within:ring-2 focus-within:ring-accent',
                     reason === value
-                      ? 'border-charcoal bg-charcoal text-cream'
-                      : 'border-warm-grey/70 bg-white text-charcoal/80 hover:border-charcoal'
+                      ? 'border-ink bg-ink text-bg'
+                      : 'border-rule bg-bg text-ink hover:border-ink'
                   )}
                 >
                   <input
@@ -109,14 +109,14 @@ export function CheckoutFeedback({ source, onClose, onSent, className }: Checkou
               ))}
             </div>
           </fieldset>
-          <label className="mt-4 block text-sm text-charcoal/70">
+          <label className="mt-4 block text-sm text-ink-2">
             Anything else? (optional)
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
               maxLength={CHECKOUT_FEEDBACK_NOTE_MAX}
               rows={2}
-              className="mt-1 block w-full resize-y border border-warm-grey/70 bg-white px-3 py-2 text-base text-charcoal sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              className="mt-1 block w-full resize-y border border-rule bg-bg px-3 py-2 text-base text-ink sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             />
           </label>
           <Button type="submit" size="sm" disabled={!reason} className="mt-3 min-h-11">

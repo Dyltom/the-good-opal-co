@@ -185,48 +185,6 @@ export interface CTASectionData {
 }
 
 /**
- * Navigation props
- */
-export interface NavigationProps extends BaseComponentProps {
-  logo?: Image
-  logoText?: string
-  items: NavItem[]
-  cta?: Link
-  sticky?: boolean
-  transparent?: boolean
-}
-
-/**
- * Navigation item
- */
-export interface NavItem {
-  label: string
-  href: string
-  external?: boolean
-  children?: NavItem[]
-}
-
-/**
- * Footer props
- */
-export interface FooterProps extends BaseComponentProps {
-  logo?: Image
-  logoText?: string
-  description?: string
-  links?: FooterLinkGroup[]
-  social?: SocialLink[]
-  copyright?: string
-}
-
-/**
- * Footer link group
- */
-export interface FooterLinkGroup {
-  title: string
-  links: Link[]
-}
-
-/**
  * Social link
  */
 export interface SocialLink {

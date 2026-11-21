@@ -47,7 +47,7 @@ export default async function CoursesPage() {
           }))}
         />
       ) : null}
-      <section className="overflow-hidden border-b border-warm-grey/60 bg-cream">
+      <section className="overflow-hidden border-b border-rule bg-bg">
         <Container className="grid gap-8 py-10 sm:py-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-14">
           <div className="relative z-10">
             <Eyebrow>
@@ -56,7 +56,7 @@ export default async function CoursesPage() {
             <h1 className="mt-5 max-w-[10ch] text-balance font-serif text-[clamp(2.5rem,4.8vw,4.5rem)] font-medium leading-[1]">
               Learn what the stone can become.
             </h1>
-            <p className="mt-7 max-w-[62ch] font-sans text-base leading-7 text-charcoal/70 sm:text-lg sm:leading-8">
+            <p className="mt-7 max-w-[62ch] font-sans text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
               Steph&apos;s course starts with opal anatomy, then moves through low-cost hand
               cutting, rotary tools, cabbing machines, polishing, and valuation.
             </p>
@@ -65,7 +65,7 @@ export default async function CoursesPage() {
             className="grid grid-cols-[0.88fr_1.12fr] gap-3 sm:gap-5"
             aria-label="Australian opals prepared for cutting"
           >
-            <div className="relative mt-8 aspect-[4/5] overflow-hidden bg-charcoal">
+            <div className="relative mt-8 aspect-[4/5] overflow-hidden bg-ink">
               <Image
                 src="/images/customs/custom-1.jpg"
                 alt="Three pale Australian opals cut into heart shapes"
@@ -75,7 +75,7 @@ export default async function CoursesPage() {
                 className="object-cover"
               />
             </div>
-            <div className="relative aspect-[4/5] overflow-hidden bg-charcoal">
+            <div className="relative aspect-[4/5] overflow-hidden bg-ink">
               <Image
                 src="/images/customs/custom-3.jpg"
                 alt="Six bright Australian opals showing varied shapes and colour"
@@ -90,7 +90,7 @@ export default async function CoursesPage() {
       </section>
 
       <Container className="py-12 sm:py-16">
-        <div className="grid gap-8 border-y border-warm-grey/70 py-8 sm:grid-cols-3">
+        <div className="grid gap-8 border-y border-rule py-8 sm:grid-cols-3">
           {[
             {
               icon: Gem,
@@ -110,12 +110,12 @@ export default async function CoursesPage() {
           ].map(({ icon: Icon, title, body }) => (
             <div key={title} className="flex gap-4">
               <Icon
-                className="mt-1 h-5 w-5 shrink-0 text-opal-electric-accessible"
+                className="mt-1 h-5 w-5 shrink-0 text-accent"
                 aria-hidden="true"
               />
               <div>
                 <h2 className="font-serif text-xl font-medium">{title}</h2>
-                <p className="mt-2 font-sans text-sm leading-6 text-charcoal/65">{body}</p>
+                <p className="mt-2 font-sans text-sm leading-6 text-ink-2">{body}</p>
               </div>
             </div>
           ))}
@@ -133,7 +133,7 @@ export default async function CoursesPage() {
                 >
                   <Link
                     href={`/courses/${course.slug}`}
-                    className="group relative aspect-[16/11] overflow-hidden bg-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                    className="group relative aspect-[16/11] overflow-hidden bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     <Image
                       src={
@@ -149,7 +149,7 @@ export default async function CoursesPage() {
                     />
                   </Link>
                   <div>
-                    <div className="flex flex-wrap gap-x-5 gap-y-2 font-sans text-xs uppercase tracking-[0.1em] text-charcoal/50">
+                    <div className="flex flex-wrap gap-x-5 gap-y-2 font-sans text-xs uppercase tracking-[0.1em] text-ink-3">
                       <span>{courseFormatLabels[course.format]}</span>
                       <span>{courseLevelLabels[course.level]}</span>
                       {course.duration ? <span>{course.duration}</span> : null}
@@ -157,20 +157,20 @@ export default async function CoursesPage() {
                     <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
                       <Link
                         href={`/courses/${course.slug}`}
-                        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                       >
                         {course.title}
                       </Link>
                     </h2>
-                    <p className="mt-5 max-w-xl font-sans text-base leading-7 text-charcoal/70">
+                    <p className="mt-5 max-w-xl font-sans text-base leading-7 text-ink-2">
                       {course.summary}
                     </p>
-                    <p className="mt-6 font-sans text-sm text-charcoal/60">
+                    <p className="mt-6 font-sans text-sm text-ink-2">
                       Taught by {course.instructor.name}
                     </p>
                     <Link
                       href={`/courses/${course.slug}`}
-                      className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
+                      className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
                     >
                       Explore the public outline{' '}
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -184,15 +184,15 @@ export default async function CoursesPage() {
             })}
           </div>
         ) : (
-          <div className="mt-20 border-y border-warm-grey/70 py-14">
+          <div className="mt-20 border-y border-rule py-14">
             <h2 className="font-serif text-3xl font-medium">Course details are being reviewed.</h2>
-            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-charcoal/65">
+            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-ink-2">
               The free opal guides remain available while the next course outline, format, and
               timing are confirmed.
             </p>
             <Link
               href="/blog"
-              className="mt-6 inline-flex items-center gap-2 border-b border-charcoal pb-1 font-sans text-sm font-semibold"
+              className="mt-6 inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
             >
               Read free opal guides <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>

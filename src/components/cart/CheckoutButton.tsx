@@ -49,16 +49,16 @@ export function useShippingRegion(initialRegion: ShippingRegion = 'AU') {
 export function ShippingRegionToggle({ value, onChange, className }: ShippingRegionToggleProps) {
   return (
     <fieldset className={cn('min-w-0', className)}>
-      <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/60">
+      <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink-2">
         Shipping to
       </legend>
-      <div className="grid grid-cols-2 border border-warm-grey/70 bg-white p-0.5">
+      <div className="grid grid-cols-2 border border-rule bg-bg p-0.5">
         {REGIONS.map((region) => (
           <label
             key={region.value}
             className={cn(
-              'flex min-h-11 cursor-pointer items-center justify-center px-3 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-opal-electric-accessible',
-              value === region.value ? 'bg-charcoal text-cream' : 'text-charcoal/70 hover:text-charcoal'
+              'flex min-h-11 cursor-pointer items-center justify-center px-3 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-accent',
+              value === region.value ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'
             )}
           >
             <input
@@ -121,7 +121,7 @@ export function CheckoutButton({ cart, region, className, label = 'Checkout' }: 
         {isPending ? 'Opening secure checkout' : label}
       </Button>
       {error ? (
-        <p role="alert" className="mt-2 text-sm text-fire-coral">
+        <p role="alert" className="mt-2 text-sm text-destructive">
           {error}
         </p>
       ) : null}

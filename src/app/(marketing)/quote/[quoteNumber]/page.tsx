@@ -31,16 +31,16 @@ export default async function CustomerQuotePage({
 
   return (
     <MarketingShell>
-      <main className="bg-cream py-14 sm:py-20">
+      <main className="bg-bg py-14 sm:py-20">
         <Container className="max-w-3xl">
-          <div className="bg-ivory rounded-[2rem] border border-charcoal/10 p-6 shadow-sm sm:p-10">
-            <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-opal-deep">
+          <div className="bg-ivory rounded-[2rem] border border-rule p-6 shadow-sm sm:p-10">
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-accent">
               Private custom jewellery quote
             </p>
             <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h1 className="font-serif text-3xl text-charcoal sm:text-4xl lg:text-5xl">Your commission</h1>
-                <p className="mt-2 font-sans text-sm text-charcoal/60">
+                <h1 className="font-serif text-3xl text-ink sm:text-4xl lg:text-5xl">Your commission</h1>
+                <p className="mt-2 font-sans text-sm text-ink-2">
                   {quote.quoteNumber}
                   {quote.revision > 1 ? ` · Revision ${quote.revision}` : ''}
                 </p>
@@ -48,7 +48,7 @@ export default async function CustomerQuotePage({
               <QuoteStatus status={quote.status} depositStatus={quote.depositStatus} />
             </div>
 
-            <dl className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-charcoal/10 bg-charcoal/10 sm:grid-cols-2">
+            <dl className="mt-10 grid gap-px overflow-hidden rounded-sm border border-rule bg-ink/10 sm:grid-cols-2">
               <QuoteFact label="Quoted total" value={`${formatPrice(quote.amountCents)} AUD`} />
               <QuoteFact
                 label="Deposit"
@@ -63,17 +63,17 @@ export default async function CustomerQuotePage({
             </dl>
 
             <section className="mt-10" aria-labelledby="quote-terms">
-              <h2 id="quote-terms" className="font-serif text-3xl text-charcoal">
+              <h2 id="quote-terms" className="font-serif text-3xl text-ink">
                 Scope and terms
               </h2>
-              <div className="mt-5 whitespace-pre-wrap break-words rounded-2xl bg-white p-6 font-sans text-sm leading-7 text-charcoal/80 sm:p-8">
+              <div className="mt-5 whitespace-pre-wrap break-words rounded-sm bg-bg p-6 font-sans text-sm leading-7 text-ink sm:p-8">
                 {quote.terms}
               </div>
             </section>
 
             {query.payment === 'return' && quote.depositStatus !== 'paid' && (
               <p
-                className="bg-opal-pale mt-6 rounded-xl p-4 font-sans text-sm text-charcoal"
+                className="bg-plinth mt-6 rounded-sm p-4 font-sans text-sm text-ink"
                 role="status"
               >
                 Payment returned successfully. Stripe is confirming the deposit; refresh shortly if
@@ -84,7 +84,7 @@ export default async function CustomerQuotePage({
               (quote.stripeRefundedAmountCents ?? 0) === 0 &&
               !disputeActive && (
                 <p
-                  className="mt-6 rounded-xl bg-emerald-50 p-4 font-sans text-sm text-emerald-900"
+                  className="mt-6 rounded-sm bg-emerald-50 p-4 font-sans text-sm text-emerald-900"
                   role="status"
                 >
                   Deposit recorded. We’ll be in touch with the next production update.
@@ -92,7 +92,7 @@ export default async function CustomerQuotePage({
               )}
             {(quote.depositStatus === 'refunded' || (quote.stripeRefundedAmountCents ?? 0) > 0) && (
               <p
-                className="mt-6 rounded-xl bg-amber-50 p-4 font-sans text-sm text-amber-900"
+                className="mt-6 rounded-sm bg-amber-50 p-4 font-sans text-sm text-amber-900"
                 role="status"
               >
                 Refunded through Stripe: {formatPrice(quote.stripeRefundedAmountCents ?? 0)} AUD.
@@ -100,7 +100,7 @@ export default async function CustomerQuotePage({
             )}
             {disputeActive && (
               <p
-                className="mt-6 rounded-xl bg-red-50 p-4 font-sans text-sm text-red-900"
+                className="mt-6 rounded-sm bg-red-50 p-4 font-sans text-sm text-red-900"
                 role="alert"
               >
                 This deposit is under payment review. Production remains paused while it is
@@ -125,11 +125,11 @@ export default async function CustomerQuotePage({
 
 function QuoteFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white p-5 sm:p-6">
-      <dt className="font-sans text-xs font-bold uppercase tracking-wider text-charcoal/55">
+    <div className="bg-bg p-5 sm:p-6">
+      <dt className="font-sans text-xs font-bold uppercase tracking-wider text-ink-2">
         {label}
       </dt>
-      <dd className="mt-2 font-serif text-xl text-charcoal">{value}</dd>
+      <dd className="mt-2 font-serif text-xl text-ink">{value}</dd>
     </div>
   )
 }
@@ -144,7 +144,7 @@ function QuoteStatus({ status, depositStatus }: { status: string; depositStatus:
           ? 'Accepted'
           : 'Awaiting acceptance'
   return (
-    <span className="rounded-full border border-charcoal/15 bg-white px-4 py-2 font-sans text-xs font-bold uppercase tracking-wider text-charcoal">
+    <span className="rounded-full border border-rule bg-bg px-4 py-2 font-sans text-xs font-bold uppercase tracking-wider text-ink">
       {label}
     </span>
   )
@@ -153,10 +153,10 @@ function QuoteStatus({ status, depositStatus }: { status: string; depositStatus:
 function UnavailableQuote() {
   return (
     <MarketingShell>
-      <main className="bg-cream py-24 sm:py-32">
+      <main className="bg-bg py-24 sm:py-32">
         <Container className="max-w-xl text-center">
-          <h1 className="font-serif text-4xl text-charcoal">This quote is unavailable</h1>
-          <p className="mt-5 font-sans leading-7 text-charcoal/70">
+          <h1 className="font-serif text-4xl text-ink">This quote is unavailable</h1>
+          <p className="mt-5 font-sans leading-7 text-ink-2">
             The secure link may have expired or been replaced. Contact us for a fresh copy.
           </p>
         </Container>

@@ -21,11 +21,11 @@ export default async function NewsletterConfirmPage({
     <MarketingShell>
       <Section padding="xl">
         <Container>
-          <div className="mx-auto max-w-xl border border-warm-grey/60 bg-white p-8 text-center shadow-sm sm:p-12">
-            <h1 className="font-serif text-4xl font-semibold text-charcoal">
+          <div className="mx-auto max-w-xl border border-rule bg-bg p-8 text-center shadow-sm sm:p-12">
+            <h1 className="font-serif text-4xl font-semibold text-ink">
               {token ? 'We couldn’t confirm this link' : 'This link is incomplete'}
             </h1>
-            <p className="mt-4 font-sans text-sm leading-6 text-charcoal/70">
+            <p className="mt-4 font-sans text-sm leading-6 text-ink-2">
               {token
                 ? 'It may already have been used, or it is more than 24 hours old. Sign up again from the form at the foot of any page and we will send a fresh link.'
                 : 'Open the confirmation link from your email again, or sign up from the form at the foot of any page.'}
@@ -34,7 +34,7 @@ export default async function NewsletterConfirmPage({
               <Button asChild>
                 <Link href="/store">Browse available pieces</Link>
               </Button>
-              <Button asChild variant="outline">
+              <Button asChild variant="ghost">
                 <Link href="/contact">Contact us</Link>
               </Button>
             </div>

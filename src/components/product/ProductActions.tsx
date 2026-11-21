@@ -70,13 +70,13 @@ export function ProductActions({ product }: ProductActionsProps) {
         <div
           role="region"
           aria-label="Quick purchase"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/50 bg-cream px-4 py-3 lg:hidden"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-4 py-3 lg:hidden"
           style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
         >
           <div className="mx-auto flex max-w-screen-sm items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="truncate font-sans text-xs text-charcoal/60">{product.name}</p>
-              <p className="font-serif text-lg font-semibold tabular-nums text-charcoal">
+              <p className="truncate font-sans text-xs text-ink-2">{product.name}</p>
+              <p className="font-serif text-lg font-semibold text-ink">
                 {formatCurrency(product.price, 'AUD')}
               </p>
             </div>

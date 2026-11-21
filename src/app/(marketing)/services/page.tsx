@@ -54,7 +54,7 @@ export default function ServicesPage() {
             <h1 className="max-w-[12ch] text-balance font-serif text-[clamp(2.25rem,4vw,4rem)] font-medium leading-[1.02]">
               Begin with the stone.
             </h1>
-            <p className="mt-5 max-w-[58ch] text-base leading-7 text-charcoal-light sm:text-lg sm:leading-8">
+            <p className="mt-5 max-w-[58ch] text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
               Bring an idea, a meaningful occasion, or simply a colour you love. We&apos;ll help
               shape a one-of-a-kind piece around an Australian opal.
             </p>
@@ -62,21 +62,21 @@ export default function ServicesPage() {
               <Button
                 asChild
                 size="lg"
-                className="w-full bg-charcoal bg-none text-cream hover:bg-charcoal-dark sm:w-auto"
+                className="w-full bg-ink bg-none text-bg hover:bg-ink sm:w-auto"
               >
                 <Link href="/services/design">Design a ring in 3D</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+              <Button asChild size="lg" variant="ghost" className="w-full sm:w-auto">
                 <Link href="/contact?subject=custom-design">Start with an enquiry</Link>
               </Button>
             </div>
-            <p className="mt-4 text-sm leading-6 text-charcoal-light">
+            <p className="mt-4 text-sm leading-6 text-ink-2">
               No finished brief required. We&apos;ll ask the practical questions.
             </p>
           </div>
         </div>
 
-        <div className="relative min-h-[22rem] overflow-hidden bg-black-rich sm:min-h-[26rem] lg:min-h-full">
+        <div className="relative min-h-[22rem] overflow-hidden bg-ink sm:min-h-[26rem] lg:min-h-full">
           <Image
             src="/images/customs/custom-2.jpg"
             alt="Four Australian opals viewed together in natural light"
@@ -85,16 +85,16 @@ export default function ServicesPage() {
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 54vw"
           />
-          <div className="absolute bottom-0 left-0 max-w-xs bg-cream p-5 sm:p-7">
+          <div className="absolute bottom-0 left-0 max-w-xs bg-bg p-5 sm:p-7">
             <p className="font-serif text-2xl leading-tight">Every design starts differently.</p>
-            <p className="mt-2 text-sm leading-6 text-charcoal-light">
+            <p className="mt-2 text-sm leading-6 text-ink-2">
               Stone first, story first, or budget first. All are useful starting points.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-warm-grey/50 bg-white py-14 sm:py-20" id="how-it-works">
+      <section className="border-y border-rule bg-bg py-14 sm:py-20" id="how-it-works">
         <Container>
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr] lg:gap-16">
             <div>
@@ -102,23 +102,23 @@ export default function ServicesPage() {
               <h2 className="mt-3 max-w-[16ch] text-balance font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
                 Clear decisions, one at a time.
               </h2>
-              <p className="mt-5 max-w-md leading-7 text-charcoal-light">
+              <p className="mt-5 max-w-md leading-7 text-ink-2">
                 Custom work is quoted after we understand the stone, design, material, and timing.
                 Nothing moves ahead until the scope is clear.
               </p>
             </div>
 
-            <ol className="divide-y divide-warm-grey/60 border-y border-warm-grey/60">
+            <ol className="divide-y divide-rule border-y border-rule">
               {process.map((step) => (
                 <li
                   key={step.number}
                   className="grid gap-3 py-6 sm:grid-cols-[4rem_0.7fr_1.3fr] sm:gap-6 sm:py-7"
                 >
-                  <span className="text-sm font-medium text-opal-electric-accessible">
+                  <span className="text-sm font-medium text-accent">
                     {step.number}
                   </span>
                   <h3 className="font-serif text-2xl leading-tight">{step.title}</h3>
-                  <p className="max-w-[58ch] text-sm leading-6 text-charcoal-light sm:text-base sm:leading-7">
+                  <p className="max-w-[58ch] text-sm leading-6 text-ink-2 sm:text-base sm:leading-7">
                     {step.copy}
                   </p>
                 </li>
@@ -131,7 +131,7 @@ export default function ServicesPage() {
       <section className="py-14 sm:py-20">
         <Container>
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-            <div className="relative aspect-[4/3] overflow-hidden bg-warm-grey/30">
+            <div className="relative aspect-[4/3] overflow-hidden bg-plinth">
               <Image
                 src="/images/customs/custom-1.jpg"
                 alt="Three heart-shaped Australian opals considered for a personal piece"
@@ -147,16 +147,16 @@ export default function ServicesPage() {
               </h2>
               <ul className="mt-6 space-y-3">
                 {goodStartingPoints.map((item) => (
-                  <li key={item} className="flex gap-3 leading-7 text-charcoal-light">
+                  <li key={item} className="flex gap-3 leading-7 text-ink-2">
                     <Check
                       aria-hidden="true"
-                      className="mt-1 h-5 w-5 shrink-0 text-opal-electric-accessible"
+                      className="mt-1 h-5 w-5 shrink-0 text-accent"
                     />
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-6 text-sm leading-6 text-charcoal-light">
+              <p className="mt-6 text-sm leading-6 text-ink-2">
                 Unsure about any of these? Leave the field blank. An enquiry is a conversation, not
                 a commitment.
               </p>
@@ -165,15 +165,15 @@ export default function ServicesPage() {
         </Container>
       </section>
 
-      <section className="bg-charcoal py-14 text-cream sm:py-16">
+      <section className="bg-ink py-14 text-bg sm:py-16">
         <Container>
           <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
             <div>
-              <Eyebrow className="text-opal-light">Ready when you are</Eyebrow>
+              <Eyebrow className="text-bg">Ready when you are</Eyebrow>
               <h2 className="mt-3 max-w-[14ch] font-serif text-3xl leading-tight sm:text-4xl lg:text-5xl">
                 Tell us what you have in mind.
               </h2>
-              <p className="mt-4 max-w-xl leading-7 text-cream/70">
+              <p className="mt-4 max-w-xl leading-7 text-bg/70">
                 Sketch a ring in the 3D studio, or send an enquiry with your stone, budget, and
                 timing. Either way, you&apos;ll get a useful first reply.
               </p>
@@ -181,13 +181,13 @@ export default function ServicesPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link
                 href="/services/design"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-cream px-6 font-sans text-sm font-semibold text-charcoal transition-colors hover:bg-opal-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-bg px-6 font-sans text-sm font-semibold text-ink transition-colors hover:bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
               >
                 Open the design studio <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
               <Link
                 href="/contact?subject=custom-design"
-                className="inline-flex min-h-12 items-center justify-center rounded-md px-4 font-sans text-sm font-semibold text-cream/80 underline-offset-4 transition-colors hover:text-cream hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light focus-visible:ring-offset-2 focus-visible:ring-offset-charcoal"
+                className="inline-flex min-h-12 items-center justify-center rounded-sm px-4 font-sans text-sm font-semibold text-bg/80 underline-offset-4 transition-colors hover:text-bg hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
               >
                 Start with an enquiry
               </Link>

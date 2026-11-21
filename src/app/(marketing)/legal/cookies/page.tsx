@@ -41,7 +41,7 @@ const storageRows = [
 
 export default function CookiePolicyPage() {
   return (
-    <MarketingShell mainClassName="bg-white">
+    <MarketingShell>
       <Container className="py-10 sm:py-12">
         <Breadcrumb
           items={[{ label: 'Home', href: '/' }, { label: 'Cookie Policy' }]}
@@ -52,14 +52,14 @@ export default function CookiePolicyPage() {
           <Eyebrow>
             Privacy choices
           </Eyebrow>
-          <h1 className="mt-2 font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
+          <h1 className="mt-2 font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
             Cookie Policy
           </h1>
-          <p className="mt-3 font-sans text-sm text-charcoal/60">Last updated 21 November 2026</p>
+          <p className="mt-3 font-sans text-sm text-ink-2">Last updated 21 November 2026</p>
 
-          <div className="mt-12 space-y-12 font-sans text-base leading-7 text-charcoal/80">
+          <div className="mt-12 space-y-12 font-sans text-base leading-7 text-ink">
             <section aria-labelledby="policy-overview">
-              <h2 id="policy-overview" className="font-serif text-2xl font-semibold text-charcoal">
+              <h2 id="policy-overview" className="font-serif text-2xl font-semibold text-ink">
                 What this site stores
               </h2>
               <p className="mt-4">
@@ -73,7 +73,7 @@ export default function CookiePolicyPage() {
             <section aria-labelledby="essential-storage">
               <h2
                 id="essential-storage"
-                className="font-serif text-2xl font-semibold text-charcoal"
+                className="font-serif text-2xl font-semibold text-ink"
               >
                 Essential storage
               </h2>
@@ -88,7 +88,7 @@ export default function CookiePolicyPage() {
                 <table className="min-w-full border-collapse text-left text-sm">
                   <caption className="sr-only">Storage used by The Good Opal Co</caption>
                   <thead>
-                    <tr className="border-b border-warm-grey text-charcoal">
+                    <tr className="border-b border-rule text-ink">
                       <th scope="col" className="py-3 pr-5 font-semibold">
                         Name
                       </th>
@@ -105,8 +105,8 @@ export default function CookiePolicyPage() {
                   </thead>
                   <tbody>
                     {storageRows.map((row) => (
-                      <tr key={row.name} className="border-b border-warm-grey/70 align-top">
-                        <th scope="row" className="py-4 pr-5 font-medium text-charcoal">
+                      <tr key={row.name} className="border-b border-rule align-top">
+                        <th scope="row" className="py-4 pr-5 font-medium text-ink">
                           <code className="font-mono text-xs">{row.name}</code>
                         </th>
                         <td className="py-4 pr-5">{row.location}</td>
@@ -122,7 +122,7 @@ export default function CookiePolicyPage() {
             <section aria-labelledby="optional-analytics">
               <h2
                 id="optional-analytics"
-                className="font-serif text-2xl font-semibold text-charcoal"
+                className="font-serif text-2xl font-semibold text-ink"
               >
                 Optional analytics
               </h2>
@@ -141,7 +141,7 @@ export default function CookiePolicyPage() {
             <section aria-labelledby="cookieless-measurement">
               <h2
                 id="cookieless-measurement"
-                className="font-serif text-2xl font-semibold text-charcoal"
+                className="font-serif text-2xl font-semibold text-ink"
               >
                 Cookieless measurement
               </h2>
@@ -158,7 +158,7 @@ export default function CookiePolicyPage() {
                 our{' '}
                 <Link
                   href="/legal/privacy"
-                  className="font-semibold text-opal-electric-accessible underline underline-offset-4"
+                  className="font-semibold text-accent underline underline-offset-4"
                 >
                   privacy policy
                 </Link>
@@ -169,7 +169,7 @@ export default function CookiePolicyPage() {
             <section aria-labelledby="checkout-providers">
               <h2
                 id="checkout-providers"
-                className="font-serif text-2xl font-semibold text-charcoal"
+                className="font-serif text-2xl font-semibold text-ink"
               >
                 Checkout and third parties
               </h2>
@@ -181,7 +181,7 @@ export default function CookiePolicyPage() {
             </section>
 
             <section aria-labelledby="manage-choice">
-              <h2 id="manage-choice" className="font-serif text-2xl font-semibold text-charcoal">
+              <h2 id="manage-choice" className="font-serif text-2xl font-semibold text-ink">
                 Change your choice
               </h2>
               <p className="mt-4">
@@ -192,14 +192,14 @@ export default function CookiePolicyPage() {
             </section>
 
             <section aria-labelledby="policy-contact">
-              <h2 id="policy-contact" className="font-serif text-2xl font-semibold text-charcoal">
+              <h2 id="policy-contact" className="font-serif text-2xl font-semibold text-ink">
                 Questions
               </h2>
               <p className="mt-4">
                 Contact The Good Opal Co at{' '}
                 <a
                   href={`mailto:${CONTACT_INFO.privacyEmail}`}
-                  className="font-semibold text-opal-electric-accessible underline underline-offset-4"
+                  className="font-semibold text-accent underline underline-offset-4"
                 >
                   {CONTACT_INFO.privacyEmail}
                 </a>

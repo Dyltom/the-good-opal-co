@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { priceRange, storeQueryParams, storeUrl, type StoreQuery } from './store-query'
 
 const controlClass =
-  'flex min-h-11 items-center gap-2 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-sm font-semibold text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2'
+  'flex min-h-11 items-center gap-2 rounded-sm border border-rule bg-bg px-4 font-sans text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2'
 
 export function StoreFilterSheet({
   activeCount,
@@ -32,28 +32,28 @@ export function StoreFilterSheet({
       <SheetTrigger className={cn(controlClass, 'justify-center', className)}>
         <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
         Filters
-        {activeCount > 0 ? <span className="text-charcoal/55">({activeCount})</span> : null}
+        {activeCount > 0 ? <span className="text-ink-2">({activeCount})</span> : null}
       </SheetTrigger>
       <SheetContent
         side="bottom"
         aria-describedby={undefined}
-        className="flex h-[100dvh] flex-col gap-0 border-0 bg-cream p-0"
+        className="flex h-[100dvh] flex-col gap-0 border-0 bg-bg p-0"
       >
-        <SheetHeader className="border-b border-warm-grey/70 px-5 py-4 pr-16 text-left">
-          <SheetTitle className="font-serif text-2xl font-medium text-charcoal">Filters</SheetTitle>
+        <SheetHeader className="border-b border-rule px-5 py-4 pr-16 text-left">
+          <SheetTitle className="font-serif text-2xl font-medium text-ink">Filters</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-5 py-6">{children}</div>
-        <div className="flex items-center gap-3 border-t border-warm-grey/70 bg-cream px-5 py-4">
+        <div className="flex items-center gap-3 border-t border-rule bg-bg px-5 py-4">
           {clearHref ? (
             <Link
               href={clearHref}
               scroll={false}
-              className="min-h-11 px-2 py-3 font-sans text-sm font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              className="min-h-11 px-2 py-3 font-sans text-sm font-semibold underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               Clear all
             </Link>
           ) : null}
-          <SheetClose className="min-h-12 flex-1 rounded-sm bg-charcoal px-5 font-sans text-sm font-semibold text-cream hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2">
+          <SheetClose className="min-h-12 flex-1 rounded-sm bg-ink px-5 font-sans text-sm font-semibold text-bg hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
             {resultCount === 0 ? 'No pieces match' : `Show ${resultCount} ${resultCount === 1 ? 'piece' : 'pieces'}`}
           </SheetClose>
         </div>
@@ -64,12 +64,12 @@ export function StoreFilterSheet({
 
 function PriceInput({ name, label, value }: { name: string; label: string; value?: number }) {
   return (
-    <label className="flex min-w-0 flex-1 flex-col gap-1 font-sans text-xs text-charcoal/65">
+    <label className="flex min-w-0 flex-1 flex-col gap-1 font-sans text-xs text-ink-2">
       {label}
       <span className="relative flex items-center">
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute left-3 text-sm text-charcoal/50"
+          className="pointer-events-none absolute left-3 text-sm text-ink-3"
         >
           $
         </span>
@@ -80,7 +80,7 @@ function PriceInput({ name, label, value }: { name: string; label: string; value
           min={0}
           step="any"
           defaultValue={value ?? ''}
-          className="min-h-11 w-full min-w-0 rounded-sm border border-warm-grey/70 bg-cream pl-6 pr-2 font-sans text-base text-charcoal outline-none focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
+          className="min-h-11 w-full min-w-0 rounded-sm border border-rule bg-bg pl-6 pr-2 font-sans text-base text-ink outline-none focus:border-ink focus:ring-2 focus:ring-accent/30"
         />
       </span>
     </label>
@@ -118,7 +118,7 @@ export function PriceForm({ query }: { query: StoreQuery }) {
       <PriceInput name="price_max" label="Max price" value={query.priceMax} />
       <button
         type="submit"
-        className={cn(controlClass, 'justify-center bg-charcoal text-cream hover:bg-charcoal-dark')}
+        className={cn(controlClass, 'justify-center bg-ink text-bg hover:bg-ink')}
       >
         Apply
       </button>
@@ -158,23 +158,23 @@ export function StoreSort({
         aria-busy={pending}
         className={cn(
           controlClass,
-          'h-auto w-auto justify-start rounded-sm border-warm-grey/70 bg-cream py-0 pr-3 shadow-none hover:border-charcoal/50 focus:ring-0 data-[state=open]:border-charcoal [&>span]:line-clamp-none',
+          'h-auto w-auto justify-start rounded-sm border-rule bg-bg py-0 pr-3 shadow-none hover:border-rule-2 focus:ring-0 data-[state=open]:border-ink [&>span]:line-clamp-none',
           className
         )}
       >
-        <span className="font-normal text-charcoal/60">Sort:</span>
+        <span className="font-normal text-ink-2">Sort:</span>
         <SelectValue />
-        {pending && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-charcoal/60" />}
+        {pending && <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin text-ink-2" />}
       </SelectTrigger>
       <SelectContent
         align="end"
-        className="min-w-[13rem] rounded-sm border-warm-grey/70 bg-cream text-charcoal shadow-lg"
+        className="min-w-[13rem] rounded-sm border-rule bg-bg text-ink shadow-lg"
       >
         {options.map((option) => (
           <SelectItem
             key={option.value}
             value={option.value}
-            className="min-h-11 cursor-pointer rounded-sm py-2 pl-3 font-sans text-sm text-charcoal focus:bg-cream-dark focus:text-charcoal data-[state=checked]:font-semibold"
+            className="min-h-11 cursor-pointer rounded-sm py-2 pl-3 font-sans text-sm text-ink focus:bg-plinth focus:text-ink data-[state=checked]:font-semibold"
           >
             {option.label}
           </SelectItem>

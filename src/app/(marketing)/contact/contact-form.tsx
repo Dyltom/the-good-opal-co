@@ -95,24 +95,24 @@ export function ContactForm({
     return (
       <div ref={sentRef} tabIndex={-1} role="status" className="py-6 text-center outline-none">
         <CheckCircle2
-          className="mx-auto h-10 w-10 text-opal-electric-accessible"
+          className="mx-auto h-10 w-10 text-accent"
           aria-hidden="true"
         />
-        <h3 className="mt-4 font-serif text-3xl font-medium text-charcoal">Enquiry received</h3>
-        <p className="mx-auto mt-3 max-w-md font-sans leading-7 text-charcoal/70">
-          Thank you. We will reply to <strong className="text-charcoal">{sent.email}</strong>.
+        <h3 className="mt-4 font-serif text-3xl font-medium text-ink">Enquiry received</h3>
+        <p className="mx-auto mt-3 max-w-md font-sans leading-7 text-ink-2">
+          Thank you. We will reply to <strong className="text-ink">{sent.email}</strong>.
           {sent.delayed
             ? ' Your message is saved, though our confirmation email may take a little longer to arrive.'
             : ' A confirmation is on its way to your inbox.'}
         </p>
-        <p className="mt-4 font-sans text-sm text-charcoal/60">
-          Reference <span className="font-semibold text-charcoal">{sent.reference}</span>
+        <p className="mt-4 font-sans text-sm text-ink-2">
+          Reference <span className="font-semibold text-ink">{sent.reference}</span>
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild size="lg">
             <Link href="/store">Keep browsing</Link>
           </Button>
-          <Button type="button" variant="outline" size="lg" onClick={() => setSent(null)}>
+          <Button type="button" variant="ghost" size="lg" onClick={() => setSent(null)}>
             Send another enquiry
           </Button>
         </div>
@@ -169,7 +169,7 @@ export function ContactForm({
         <select
           id="inquiryType"
           {...register('inquiryType')}
-          className="mt-1 min-h-11 w-full rounded-md border border-warm-grey bg-white px-3 py-2 text-base text-charcoal outline-none focus-visible:border-opal-electric-accessible focus-visible:ring-2 focus-visible:ring-opal-electric/30"
+          className="mt-1 min-h-11 w-full rounded-sm border border-rule bg-bg px-3 py-2 text-base text-ink outline-none focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-accent/30"
           disabled={isSubmitting}
           required
         >
@@ -187,7 +187,7 @@ export function ContactForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <Label htmlFor="phone">
-            Phone <span className="text-charcoal/65">(optional)</span>
+            Phone <span className="text-ink-2">(optional)</span>
           </Label>
           <Input
             id="phone"
@@ -203,7 +203,7 @@ export function ContactForm({
         {!isCourseIntent ? (
           <div>
             <Label htmlFor="orderNumber">
-              Order number <span className="text-charcoal/65">(if applicable)</span>
+              Order number <span className="text-ink-2">(if applicable)</span>
             </Label>
             <Input
               id="orderNumber"
@@ -222,7 +222,7 @@ export function ContactForm({
       <div className="grid gap-5 sm:grid-cols-2">
         <div className={isCourseIntent ? 'sm:col-span-2' : undefined}>
           <Label htmlFor="product">
-            Course, product, or piece <span className="text-charcoal/65">(optional)</span>
+            Course, product, or piece <span className="text-ink-2">(optional)</span>
           </Label>
           <Input
             id="product"
@@ -235,7 +235,7 @@ export function ContactForm({
         {!isCourseIntent ? (
           <div>
             <Label htmlFor="budget">
-              Approximate budget <span className="text-charcoal/65">(optional)</span>
+              Approximate budget <span className="text-ink-2">(optional)</span>
             </Label>
             <Input
               id="budget"
@@ -251,7 +251,7 @@ export function ContactForm({
       <div>
         <Label htmlFor="timeline">
           {isCourseIntent ? 'What timing would suit you?' : 'When do you need it?'}{' '}
-          <span className="text-charcoal/65">(optional)</span>
+          <span className="text-ink-2">(optional)</span>
         </Label>
         <Input
           id="timeline"
@@ -290,7 +290,7 @@ export function ContactForm({
       {submitError ? (
         <p
           role="alert"
-          className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="rounded-sm border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           {submitError}
         </p>
@@ -309,9 +309,9 @@ export function ContactForm({
         )}
       </Button>
 
-      <p className="text-center text-xs text-charcoal/65">
+      <p className="text-center text-xs text-ink-2">
         By submitting this form, you agree to our{' '}
-        <Link href="/legal/privacy" className="underline hover:text-charcoal">
+        <Link href="/legal/privacy" className="underline hover:text-ink">
           Privacy Policy
         </Link>
         .

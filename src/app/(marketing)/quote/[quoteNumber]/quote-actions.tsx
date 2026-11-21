@@ -44,14 +44,14 @@ export function QuoteActions({
     return (
       <form
         action={acceptAction}
-        className="rounded-2xl border border-charcoal/15 bg-white p-6 sm:p-8"
+        className="rounded-sm border border-rule bg-bg p-6 sm:p-8"
       >
-        <label className="flex min-h-11 cursor-pointer items-start gap-4 font-sans text-sm leading-6 text-charcoal">
+        <label className="flex min-h-11 cursor-pointer items-start gap-4 font-sans text-sm leading-6 text-ink">
           <input
             type="checkbox"
             name="accepted"
             required
-            className="mt-1 size-5 shrink-0 accent-charcoal"
+            className="mt-1 size-5 shrink-0 accent-ink"
           />
           <span>
             I accept quote {quoteNumber}, including its scope, price, deposit, timing and
@@ -71,10 +71,10 @@ export function QuoteActions({
     return (
       <form
         action={depositAction}
-        className="rounded-2xl border border-charcoal/15 bg-white p-6 sm:p-8"
+        className="rounded-sm border border-rule bg-bg p-6 sm:p-8"
       >
-        <h2 className="font-serif text-2xl text-charcoal">Secure your commission</h2>
-        <p className="mt-3 font-sans text-sm leading-6 text-charcoal/70">
+        <h2 className="font-serif text-2xl text-ink">Secure your commission</h2>
+        <p className="mt-3 font-sans text-sm leading-6 text-ink-2">
           Your accepted terms are locked. Stripe securely processes the exact deposit shown above.
         </p>
         <Button type="submit" disabled={startingPayment} className="mt-6 min-h-11 w-full sm:w-auto">

@@ -10,7 +10,6 @@ import type { SearchSuggestion } from '@/app/(marketing)/search/suggestions'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface SearchInputProps {
-  variant?: 'default' | 'mobile'
   onClose?: () => void
   className?: string
   autoFocus?: boolean
@@ -18,7 +17,6 @@ interface SearchInputProps {
 }
 
 export function SearchInput({
-  variant = 'default',
   onClose,
   className,
   autoFocus = false,
@@ -126,24 +124,15 @@ export function SearchInput({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn('relative', variant === 'mobile' && 'w-full', className)}
+      className={cn('relative w-full', className)}
     >
       <div
         className={cn(
-          'relative flex items-center rounded-lg border bg-white transition-all',
-          'focus-within:border-opal-electric focus-within:ring-2 focus-within:ring-opal-electric/20',
-          variant === 'default' && 'h-10 w-80 border-gray-200',
-          variant === 'mobile' && 'h-12 w-full border-gray-300',
-          className?.includes('w-full') && 'w-full'
+          'relative flex h-12 w-full items-center rounded-sm border border-rule-2 bg-bg transition-colors',
+          'focus-within:border-ink'
         )}
       >
-        <Search
-          className={cn(
-            'absolute left-3 text-opal-electric-accessible',
-            variant === 'default' && 'h-4 w-4',
-            variant === 'mobile' && 'h-5 w-5'
-          )}
-        />
+        <Search className="absolute left-3.5 h-[18px] w-[18px] text-ink-3" aria-hidden="true" />
         <input
           ref={inputRef}
           type="search"
@@ -160,9 +149,7 @@ export function SearchInput({
           onKeyDown={handleKeyDown}
           placeholder="Search opals, rings, parcels"
           className={cn(
-            'h-full w-full bg-transparent outline-none placeholder:text-charcoal/55 [&::-webkit-search-cancel-button]:[-webkit-appearance:none]',
-            variant === 'default' && 'pl-9 pr-9 text-sm',
-            variant === 'mobile' && 'pl-11 pr-11 text-base'
+            'h-full w-full bg-transparent pl-11 pr-11 text-base outline-none placeholder:text-ink-3 [&::-webkit-search-cancel-button]:[-webkit-appearance:none]'
           )}
           role="combobox"
           aria-label="Search products"
@@ -183,24 +170,14 @@ export function SearchInput({
               setSuggestions([])
               inputRef.current?.focus()
             }}
-            className={cn(
-              'absolute right-0 flex min-h-[44px] min-w-[44px] items-center justify-center text-charcoal/60 transition-colors hover:text-charcoal',
-              variant === 'default' && 'h-10 w-10 sm:min-h-8 sm:min-w-8',
-              variant === 'mobile' && 'h-12 w-12'
-            )}
+            className="absolute right-0 flex h-12 w-12 min-h-[44px] min-w-[44px] items-center justify-center text-ink-2 transition-colors hover:text-ink"
             aria-label="Clear search"
           >
-            <X className={variant === 'mobile' ? 'h-5 w-5' : 'h-4 w-4'} aria-hidden="true" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         )}
         {loading && (
-          <Loader2
-            className={cn(
-              'absolute right-3 animate-spin text-gray-400',
-              variant === 'default' && 'h-4 w-4',
-              variant === 'mobile' && 'h-5 w-5'
-            )}
-          />
+          <Loader2 className="absolute right-3 h-5 w-5 animate-spin text-ink-3" />
         )}
       </div>
 
@@ -209,8 +186,8 @@ export function SearchInput({
           id="search-suggestions"
           role="listbox"
           className={cn(
-            'absolute z-50 mt-1 w-full rounded-lg bg-white shadow-lg',
-            'border border-gray-200 py-2',
+            'absolute z-50 mt-1 w-full rounded-sm bg-bg shadow-lg',
+            'border border-rule py-2',
             'max-h-[min(30rem,70vh)] overflow-auto'
           )}
         >
@@ -226,8 +203,8 @@ export function SearchInput({
                 onMouseEnter={() => setSelectedIndex(index)}
                 className={cn(
                   'w-full px-4 py-2 text-left text-sm transition-colors',
-                  'hover:bg-gray-50',
-                  index === selectedIndex && 'bg-gray-50'
+                  'hover:bg-plinth',
+                  index === selectedIndex && 'bg-plinth'
                 )}
               >
                 <div className="flex items-center gap-3">
@@ -237,22 +214,22 @@ export function SearchInput({
                       alt=""
                       width={48}
                       height={48}
-                      className="h-12 w-12 shrink-0 rounded-md bg-warm-grey/30 object-cover"
+                      className="h-12 w-12 shrink-0 rounded-sm bg-plinth object-cover"
                     />
                   ) : suggestion.price === undefined ? (
                     <span className="flex h-8 w-12 shrink-0 items-center justify-center">
-                      <Search className="h-4 w-4 text-opal-electric-accessible" aria-hidden="true" />
+                      <Search className="h-4 w-4 text-accent" aria-hidden="true" />
                     </span>
                   ) : (
-                    <span className="h-12 w-12 shrink-0 rounded-md bg-warm-grey/30" aria-hidden="true" />
+                    <span className="h-12 w-12 shrink-0 rounded-sm bg-plinth" aria-hidden="true" />
                   )}
                   <span className="line-clamp-2 min-w-0 flex-1">{suggestion.label}</span>
                   {suggestion.sold ? (
-                    <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-charcoal/55">
+                    <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-ink-2">
                       Sold
                     </span>
                   ) : suggestion.price !== undefined ? (
-                    <span className="shrink-0 font-semibold tabular-nums text-charcoal">
+                    <span className="shrink-0 font-semibold text-ink">
                       {formatCurrency(suggestion.price, 'AUD')}
                     </span>
                   ) : null}
@@ -260,7 +237,7 @@ export function SearchInput({
               </button>
             ))
           ) : (
-            <div className="px-4 py-3 text-center text-sm text-gray-500">
+            <div className="px-4 py-3 text-center text-sm text-ink-3">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -272,7 +249,7 @@ export function SearchInput({
                 </svg>
                 <span>No results found</span>
               </div>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-ink-3">
                 Try searching for &quot;black opal&quot; or &quot;rings&quot;
               </p>
             </div>

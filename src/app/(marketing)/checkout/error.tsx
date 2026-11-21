@@ -18,23 +18,23 @@ export default function CheckoutError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-plinth py-12">
       <Container>
         <div className="max-w-md mx-auto">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+          <div className="bg-bg rounded-sm shadow-sm border border-rule p-8 text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="h-8 w-8 text-red-600" />
             </div>
 
-            <h1 className="text-2xl font-display font-bold text-charcoal mb-2">
+            <h1 className="text-2xl font-serif font-bold text-ink mb-2">
               Checkout Error
             </h1>
 
-            <p className="text-content mb-6">
+            <p className="mb-6">
               We encountered an issue processing your checkout. Don&apos;t worry - no payment has been taken.
             </p>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div className="bg-amber-50 border border-amber-200 rounded-sm p-4 mb-6">
               <p className="text-sm text-amber-800">
                 <strong>Important:</strong> Your cart items are safe and no charges have been made to your card.
               </p>
@@ -45,7 +45,7 @@ export default function CheckoutError({
                 Try Checkout Again
               </Button>
 
-              <Button asChild variant="outline" className="w-full" size="lg">
+              <Button asChild variant="ghost" className="w-full" size="lg">
                 <Link href="/cart">
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Return to Cart
@@ -53,11 +53,11 @@ export default function CheckoutError({
               </Button>
             </div>
 
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">
+            <div className="mt-8 pt-8 border-t border-rule">
+              <p className="text-sm text-ink-2 mb-3">
                 Still having issues?
               </p>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="quiet" size="sm">
                 <Link href="/contact">
                   <Mail className="h-4 w-4 mr-2" />
                   Contact Support

@@ -141,21 +141,21 @@ export default function FAQPage() {
         <BreadcrumbJsonLd
           items={[{ name: 'Home', url: '/' }, { name: 'Frequently asked questions', url: '/faq' }]}
         />
-        <section className="border-b border-warm-grey/60">
+        <section className="border-b border-rule">
           <Container className="py-10 sm:py-12 lg:py-14">
             <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
               <div className="max-w-2xl">
                 <Eyebrow>
                   Buyer guide
                 </Eyebrow>
-                <h1 className="mt-5 text-balance font-serif text-4xl font-medium leading-none text-charcoal sm:text-5xl lg:text-6xl">
+                <h1 className="mt-5 text-balance font-serif text-4xl font-medium leading-none text-ink sm:text-5xl lg:text-6xl">
                   Clear answers before you choose.
                 </h1>
-                <p className="mt-7 max-w-xl font-sans text-lg leading-8 text-charcoal/70">
+                <p className="mt-7 max-w-xl font-sans text-lg leading-8 text-ink-2">
                   Product details, delivery, eligible returns, care, and custom work. If your question is specific to one opal, send us the product link.
                 </p>
               </div>
-              <div className="relative aspect-[16/9] overflow-hidden bg-cream-dark lg:aspect-[3/2]">
+              <div className="relative aspect-[16/9] overflow-hidden bg-plinth lg:aspect-[3/2]">
                 <Image
                   src="/images/products/20211012_174237.jpg"
                   alt="Three polished white opals on a dark stone surface"
@@ -174,10 +174,10 @@ export default function FAQPage() {
             {faqCategories.map((category, categoryIndex) => (
               <section
                 key={category.title}
-                className={categoryIndex === 0 ? '' : 'mt-10 border-t border-warm-grey/60 pt-10'}
+                className={categoryIndex === 0 ? '' : 'mt-10 border-t border-rule pt-10'}
               >
                 <div className="grid gap-6 sm:grid-cols-[10rem_1fr] sm:gap-10">
-                  <h2 className="font-serif text-2xl font-medium text-charcoal">
+                  <h2 className="font-serif text-2xl font-medium text-ink">
                     {category.title}
                   </h2>
                   <Accordion type="single" collapsible>
@@ -185,12 +185,12 @@ export default function FAQPage() {
                       <AccordionItem
                         key={faq.question}
                         value={`${categoryIndex}-${index}`}
-                        className="border-warm-grey/70"
+                        className="border-rule"
                       >
-                        <AccordionTrigger className="py-5 text-left font-sans text-base font-semibold leading-6 text-charcoal hover:text-opal-electric-accessible hover:no-underline">
+                        <AccordionTrigger className="py-5 text-left font-sans text-base font-semibold leading-6 text-ink hover:text-accent hover:no-underline">
                           {faq.question}
                         </AccordionTrigger>
-                        <AccordionContent className="max-w-2xl pb-6 font-sans text-sm leading-7 text-charcoal/70">
+                        <AccordionContent className="max-w-2xl pb-6 font-sans text-sm leading-7 text-ink-2">
                           {faq.answer}
                         </AccordionContent>
                       </AccordionItem>
@@ -200,18 +200,18 @@ export default function FAQPage() {
               </section>
             ))}
 
-            <section className="mt-16 border-t border-charcoal pt-10 sm:flex sm:items-end sm:justify-between sm:gap-10">
+            <section className="mt-16 border-t border-ink pt-10 sm:flex sm:items-end sm:justify-between sm:gap-10">
               <div className="max-w-xl">
-                <h2 className="font-serif text-3xl font-medium text-charcoal">
+                <h2 className="font-serif text-3xl font-medium text-ink">
                   Still deciding?
                 </h2>
-                <p className="mt-4 font-sans text-sm leading-7 text-charcoal/70">
+                <p className="mt-4 font-sans text-sm leading-7 text-ink-2">
                   Send the product link and tell us what you need to see or understand. We will answer from the details available for that piece.
                 </p>
               </div>
               <Link
                 href="/contact?subject=product-question"
-                className="mt-7 inline-flex min-h-12 shrink-0 items-center justify-center rounded-md bg-charcoal px-6 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 sm:mt-0"
+                className="mt-7 inline-flex min-h-12 shrink-0 items-center justify-center rounded-sm bg-ink px-6 font-sans text-sm font-semibold text-bg transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:mt-0"
               >
                 Ask about a piece
               </Link>

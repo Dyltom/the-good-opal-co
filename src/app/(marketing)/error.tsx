@@ -26,10 +26,10 @@ export default function Error({
     <Section padding="lg">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <h1 className="font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
+          <h1 className="font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
             Something went wrong on our end.
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-charcoal/70">
+          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-ink-2">
             Your cart and any order you completed are safe. Please try again, or contact us if it
             keeps happening.
           </p>
@@ -38,13 +38,13 @@ export default function Error({
             <Button size="lg" onClick={() => reset()}>
               Try again
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="ghost" size="lg">
               <Link href="/">Back to home</Link>
             </Button>
           </div>
 
           {process.env['NODE_ENV'] === 'development' && error.message && (
-            <div className="mt-8 rounded-lg bg-destructive/10 p-4 text-left">
+            <div className="mt-8 rounded-sm bg-destructive/10 p-4 text-left">
               <p className="font-mono text-sm text-destructive">{error.message}</p>
             </div>
           )}

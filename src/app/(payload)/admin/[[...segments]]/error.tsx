@@ -44,7 +44,7 @@ export default function AdminError({
             <Button asChild>
               <Link href="/">Go Home</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="ghost">
               <Link href="/">View storefront</Link>
             </Button>
           </div>

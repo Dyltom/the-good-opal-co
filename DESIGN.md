@@ -1,332 +1,252 @@
 ---
 name: The Good Opal Co
-description: Warm fairytale ecommerce for authentic Australian opals.
+description: Gallery, lights on. A quiet, dense, well-lit room for Australian opals.
 colors:
-  black-rich: "#0A0A12"
-  cream: "#FAF9F6"
-  white: "#FFFFFF"
-  gray-soft: "#E8E6E3"
-  charcoal: "#2C2C2C"
-  charcoal-light: "#6B6966"
-  opal-electric: "#00B4D8"
-  opal-deep: "#0077B6"
-  opal-electric-accessible: "#005A87"
-  opal-light: "#90E0EF"
-  fire-pink: "#FF8FAB"
-  fire-pink-dark: "#CC5A7A"
-  fire-coral: "#FF6B6B"
-  fire-orange: "#FF9F43"
-  fire-gold: "#FFD93D"
-  opal-emerald: "#2ECC71"
-  opal-emerald-dark: "#1A7F41"
-  opal-teal: "#48D1CC"
+  bg: "#f5f2ec"
+  plinth: "#ebe6dd"
+  plinth-2: "#e2dcd1"
+  ink: "#1c1813"
+  ink-2: "#544c42"
+  ink-3: "#6f665b"
+  rule: "rgba(28,24,19,.12)"
+  rule-2: "rgba(28,24,19,.24)"
+  accent: "#7a5c24"
+  ink-hover: "#3a332b"
+  destructive: "#a8321f"
+  success: "#3d6b35"
 typography:
   display:
-    fontFamily: "EB Garamond, Georgia, serif"
-    fontSize: "3rem"
-    fontWeight: 600
-    lineHeight: 1.1
-    letterSpacing: "0"
-  headline:
-    fontFamily: "EB Garamond, Georgia, serif"
-    fontSize: "2.25rem"
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "0"
-  title:
-    fontFamily: "EB Garamond, Georgia, serif"
-    fontSize: "1.5rem"
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "0"
-  body:
-    fontFamily: "Figtree, system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "Bodoni Moda, Didot, serif"
+    fontSize: "clamp(28px, 3vw, 44px)"
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.08
+    letterSpacing: "-0.01em"
+  headline:
+    fontFamily: "Bodoni Moda, Didot, serif"
+    fontSize: "clamp(24px, 2.4vw, 34px)"
+    fontWeight: 400
+    lineHeight: 1.15
+    letterSpacing: "-0.01em"
+  title:
+    fontFamily: "Bodoni Moda, Didot, serif"
+    fontSize: "20px"
+    fontWeight: 400
+    lineHeight: 1.25
+    letterSpacing: "-0.01em"
+  body:
+    fontFamily: "Schibsted Grotesk, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.55
     letterSpacing: "0"
   label:
-    fontFamily: "Figtree, system-ui, sans-serif"
-    fontSize: "0.875rem"
+    fontFamily: "Schibsted Grotesk, system-ui, sans-serif"
+    fontSize: "12px"
     fontWeight: 500
-    lineHeight: 1.375
-    letterSpacing: "0"
+    lineHeight: 1.4
+    letterSpacing: "0.06em"
 rounded:
   sm: "2px"
-  md: "6px"
-  lg: "8px"
-  xl: "12px"
   full: "9999px"
 spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
-  section-gap: "56px"
+  mast: "56px"
+  gut: "clamp(12px, 2vw, 28px)"
+  sec: "clamp(56px, 8vw, 112px)"
 components:
   button-primary:
-    backgroundColor: "{colors.opal-electric}"
-    textColor: "{colors.white}"
-    rounded: "{rounded.full}"
-    padding: "10px 24px"
-    height: "44px"
+    backgroundColor: "{colors.ink}"
+    textColor: "{colors.bg}"
+    rounded: "{rounded.sm}"
+    padding: "0 22px"
+    height: "48px"
   button-primary-hover:
-    backgroundColor: "{colors.opal-deep}"
-    textColor: "{colors.white}"
-    rounded: "{rounded.full}"
-    padding: "10px 24px"
-    height: "44px"
+    backgroundColor: "{colors.ink-hover}"
+    textColor: "{colors.bg}"
+    rounded: "{rounded.sm}"
+    padding: "0 22px"
+    height: "48px"
   button-ghost:
-    backgroundColor: "{colors.white}"
-    textColor: "{colors.charcoal}"
-    rounded: "{rounded.full}"
-    padding: "10px 24px"
-    height: "44px"
+    backgroundColor: "transparent"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.sm}"
+    padding: "0 22px"
+    height: "48px"
   card:
-    backgroundColor: "{colors.white}"
-    textColor: "{colors.charcoal}"
-    rounded: "{rounded.xl}"
-    padding: "24px"
+    backgroundColor: "{colors.plinth}"
+    textColor: "{colors.ink}"
+    rounded: "0"
+    padding: "0"
   input:
-    backgroundColor: "{colors.white}"
-    textColor: "{colors.charcoal}"
-    rounded: "{rounded.md}"
-    padding: "8px 12px"
-    height: "36px"
+    backgroundColor: "{colors.bg}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.sm}"
+    padding: "0 12px"
+    height: "44px"
 ---
 
 # Design System: The Good Opal Co
 
 ## 1. Overview
 
-**Creative North Star: "The Opal Gallery in the Bush"**
+**Creative North Star: "Gallery, lights on"**
 
-The interface should feel like entering a small, warm Australian opal gallery:
-intimate, handmade, sunlit, and trustworthy, with moments of iridescent magic
-only where they help the stone feel alive. The brand is allowed to be beautiful,
-but the buying experience must stay clear and practical.
+A small, well-lit gallery. Warm paper walls, stones on plinths, quiet labels,
+nothing between the visitor and the opal. The page is dense: pieces start in the
+first screen, headers are a title and a line, and there are no tall empty bands.
 
-Design choices should honor the opal first. Product photography, origin details,
-price, stock, shipping, returns, and authenticity cues have priority over
-decorative chrome. Use color as play-of-color: rare flashes, prismatic accents,
-and editorial emphasis, not a full-screen tech gradient.
+The stone is the only colour on the page. Everything else is paper, ink and a
+little brass.
 
-Reject generic AI-generated landing pages, corporate SaaS polish, nested card
-layouts, and dark decorative effects that hide the jewellery. The experience is
-warm fairytale commerce, not fintech, not dashboard, not template luxury.
+**Key characteristics:**
 
-**Key Characteristics:**
+- Photographs on plinths, in tight grids, with small captions.
+- Warm off-white page, dark ink text, one brass accent.
+- Bodoni Moda for names and headings, Schibsted Grotesk for everything you read
+  or press.
+- Hairline rules instead of cards and shadows.
+- Motion that follows the visitor: a soft torch on the wall, photos that carry
+  across pages.
 
-- Photography-led product discovery.
-- Warm cream, white, charcoal, and opal accent flashes.
-- Serif-led editorial hierarchy with readable body text.
-- Accessible ecommerce controls with visible focus and clear states.
-- Magical details used as punctuation, not wallpaper.
+## 2. Colours
 
-## 2. Colors
+Tokens live in `tailwind.config.ts` and are named by role.
 
-The palette is warm neutral commerce with controlled opal fire. Use neutrals for
-surface and legibility, then reserve saturated color for CTAs, active states,
-trust moments, badges, and small emotional highlights.
+| Token | Value | Use |
+| --- | --- | --- |
+| `bg` | #f5f2ec | Page (gallery wall). Set on `html`. |
+| `plinth` | #ebe6dd | Behind photos, panels, the drawer footer, menus. |
+| `plinth-2` | #e2dcd1 | Hover and pressed panels. |
+| `ink` | #1c1813 | Text, primary buttons. Hover #3a332b. |
+| `ink-2` | #544c42 | Secondary text, nav links, leads. |
+| `ink-3` | #6f665b | Labels, meta, separators. AA on bg and plinth. |
+| `rule` / `rule-2` | ink at 12% / 24% | Hairlines; `rule-2` for control outlines. |
+| `accent` | #7a5c24 | Brass: focus ring, current page, selection. Never a fill for large areas. |
+| `destructive` / `success` | #a8321f / #3d6b35 | Form and status messages only. |
 
-### Primary
+The prototype's #7a7166 and #8c6a2c miss AA on the page, so `ink-3` and
+`accent` are darkened to the values above.
 
-- **Electric Opal**: Primary action color. Use for CTAs, active nav states,
-  progress, focus rings, and high-confidence commerce actions.
-- **Accessible Opal Deep**: Text-safe opal blue for links and text on white
-  surfaces. Use this instead of Electric Opal when contrast matters.
-- **Gallery Charcoal**: Main text, quiet outlines, and editorial anchors.
+### Named rules
 
-### Secondary
+**The Untouched Stone Rule.** Never alter how a stone looks. No CSS filters,
+tints, blend modes, gradients, scrims or overlays on product or stone photos.
+Controls that sit over a photo (quick add) use a solid `bg` surface with a
+border and cover only their own box.
 
-- **Fire Pink**: Emotional accent for celebratory or brand moments. Use
-  sparingly in gradients, success accents, and magical section details.
-- **Opal Emerald**: Authenticity, confirmation, and natural opal flashes.
-- **Fire Gold**: Price-adjacent warmth, provenance accents, and premium craft
-  cues when used in small quantities.
-
-### Tertiary
-
-- **Opal Light** and **Opal Teal**: Soft supporting blues for low-pressure
-  backgrounds, badges, education blocks, and subtle hover states.
-- **Fire Coral** and **Fire Orange**: Warm accents for urgency or warmth. Do not
-  use them for destructive actions unless the semantic error palette is also
-  present.
-
-### Neutral
-
-- **Cream**: Brand warmth and gentle section backgrounds.
-- **White**: Product cards, checkout forms, gallery surfaces, and dense UI.
-- **Gray Soft**: Borders, dividers, and subdued surfaces.
-- **Charcoal Light**: Secondary copy and metadata where contrast remains safe.
-- **Black Rich**: Dark hero, footer, and opal-pop backgrounds.
-
-### Named Rules
-
-**The Stone First Rule.** If color treatment competes with product photography,
-remove the color treatment.
-
-**The Accessible Opal Rule.** Electric Opal is for fills and accents. For text on
-white, use Accessible Opal Deep.
-
-**The No Generic Glow Rule.** Do not use purple-blue SaaS gradients, decorative
-orbs, or bokeh backgrounds as default atmosphere.
+**The One Colour Rule.** The opal supplies the colour. No decorative gradients,
+glows or tinted bands anywhere in the UI.
 
 ## 3. Typography
 
-**Display Font:** EB Garamond with Georgia fallback.
-**Body Font:** Figtree with system-ui fallback.
-**Accent Font:** Dancing Script, reserved for emotional moments.
+- **Serif:** Bodoni Moda (`font-serif`), regular weight, italic for product
+  names and the "Opal" in the wordmark.
+- **Sans:** Schibsted Grotesk (`font-sans`), 15px / 1.55 body.
+- Both load through `next/font/google` in `src/app/(marketing)/layout.tsx`.
+- Prices use proportional figures: Schibsted Grotesk's tabular figures give the
+  decimal point a full figure width ("$350 .00"). Use `tabular-nums` only for
+  whole-number counts that must line up.
 
-**Character:** EB Garamond carries luxury and story in headings; Instrument
-Sans keeps buying, education, navigation and form copy crisp and compact. A
-serif body face made every line read large and heavy next to the stones.
-Dancing Script is a rare accent, not a working UI font.
+### Scale
 
-### Hierarchy
+| Role | Size | Notes |
+| --- | --- | --- |
+| h1 | clamp(28px, 3vw, 44px) / 1.08 | Page titles. One line where possible. |
+| h2 | clamp(24px, 2.4vw, 34px) / 1.15 | Section heads. |
+| h3 | 20px / 1.25 | Sub-sections. |
+| Product name | 15px serif italic | Cards; two-line clamp. |
+| Body | 15px / 1.55 | Leads use 16px in `ink-2`, max 60ch. |
+| Nav, meta | 13.5px / 12.5px | Sans, `ink-2` / `ink-3`. |
+| Label | 12px, 500, uppercase, 0.06em | Footer column heads, facet heads only. |
 
-- **Display** (600, 48-72px, 1.05-1.1): Home hero, major campaign moments,
-  product-page hero names, and editorial section leads.
-- **Headline** (600, 36-48px, 1.1-1.2): Section headers, collection headings,
-  about/story page anchors.
-- **Title** (600, 24-30px, 1.25-1.3): Product titles, card titles, checkout
-  panels, and modal headings.
-- **Body** (400, 16-18px, 1.5-1.625): Product descriptions, education copy,
-  checkout instructions, and blog excerpts. Keep long-form copy near 65ch.
-- **Label** (500-600, 12-14px, 1.375): Form labels, metadata, badges, and small
-  navigation. Uppercase only for short labels.
+### Named rules
 
-### Named Rules
+**No eyebrows.** Do not put a small label above a heading. The heading says it.
 
-**The Accent Restraint Rule.** Dancing Script is only for emotional moments such
-as success pages, taglines, and celebrations. Never use it for navigation, form
-labels, product metadata, or body copy.
+**Balanced headings.** Headings use `text-wrap: balance` and -0.01em tracking.
 
-**The No Tiny Serif UI Rule.** If a control label becomes hard to scan, simplify
-the hierarchy before shrinking the type.
+## 4. Layout and elevation
 
-**The Balanced Headline Rule.** Use balanced wrapping for display headings and
-avoid negative letter spacing.
-
-## 4. Elevation
-
-The system uses a hybrid of soft elevation and tonal layering. Product surfaces
-should feel tactile but not heavy. Shadows may appear on cards, sheets, menus,
-and hover states, but the default page composition should not become a field of
-floating panels.
-
-### Shadow Vocabulary
-
-- **Low Elevation** (`0 2px 4px rgb(0 0 0 / 0.05)`): Small cards, badges, and
-  quiet UI affordances.
-- **Medium Elevation** (`0 8px 16px rgb(0 0 0 / 0.1)`): Product cards, drawers,
-  menus, and focused purchase panels.
-- **High Elevation** (`0 16px 32px rgb(0 0 0 / 0.15)`): Modals and important
-  overlays only.
-- **Opal Glow**: Use colored shadow only on primary CTAs or rare hover
-  emphasis. Never use it as general page atmosphere.
-
-### Named Rules
-
-**The Flat Page Rule.** Page sections are full-width bands or unframed layouts.
-Use cards for repeated items, tools, modals, and product surfaces.
-
-**The No Card Nesting Rule.** Do not put UI cards inside other cards unless the
-inner item is a repeated product, order, or line item with a clear semantic role.
+- Page gutter `px-gut` (clamp 12-28px). Section rhythm `py-sec`
+  (clamp 56-112px) for major sections, smaller via `Section padding`.
+- `PageHeader` is a title and an optional lead: no band, no background, no
+  eyebrow. Content starts right under it.
+- Flat. Hairline `border-rule` separates things; shadows are reserved for
+  floating layers (drawer, dialogs, search suggestions).
+- Corners are 2px (`rounded-sm`) on controls; photos are square-cornered.
 
 ## 5. Components
 
-Components should feel handmade but reliable: softened, tactile, accessible, and
-clear. Commerce clarity beats decorative flourish.
+### Mast (`SiteNavigation`)
 
-### Buttons
+Sticky, 56px (52px under md), `bg` at 88% with a 14px backdrop blur and a
+bottom rule. Wordmark left, nav (Shop, Custom rings, Courses, Our story), search,
+the Bag button with a count, and a menu button under md. The menu and search open
+as plinth panels under the mast and close on Escape, outside click or route
+change.
 
-- **Shape:** Fully rounded pills for primary actions; up to 8px radius for dense
-  transactional controls where a pill wastes space.
-- **Primary:** Electric Opal to Opal Deep gradient, white text, minimum 44px
-  mobile touch target, and clear hover/active/focus states.
-- **Hover / Focus:** Hover may deepen color, lift 1-2px, or add restrained opal
-  shadow. Focus must use a visible `focus-visible` ring.
-- **Secondary / Ghost / Tertiary:** Use charcoal, white, and soft neutral
-  surfaces. Do not make secondary actions look as loud as the buy action.
+### Footer
 
-### Chips
+Brand column plus Shop, Buying and Studio columns, then the newsletter, factual
+trust lines and Stripe payment methods, then legal links. Every route dropped
+from the mast lives here.
 
-- **Style:** Compact pill or 8px rounded chip with neutral border, readable text,
-  and selected state using Accessible Opal Deep or a soft opal tint.
-- **State:** Selected, disabled, and count states must remain readable on mobile.
-  Filter state should be visible in the URL where practical.
+### Buttons (`src/components/ui/button.tsx`)
 
-### Cards / Containers
+- `default`: ink fill, `bg` text, hover #3a332b. One per view where possible.
+- `ghost`: transparent with a `rule-2` outline; outline turns ink on hover.
+- `quiet`: text only, `ink-2` to `ink`.
+- `destructive`, `link`.
+- Heights 48 / 44 / 52px; icon buttons are 44px square.
 
-- **Corner Style:** Usually 8-12px. Larger radii are allowed only for product
-  media or brand-led storytelling moments.
-- **Background:** White or warm neutral. Dark cards are reserved for opal-pop
-  visual moments.
-- **Shadow Strategy:** Soft elevation at rest, stronger elevation on hover only
-  when it improves affordance.
-- **Border:** Gray Soft or warm neutral. Avoid thick decorative borders.
-- **Internal Padding:** 16-24px for UI cards, 24-32px for editorial panels.
+### ProductCard
 
-### Inputs / Fields
+One link per card. Photo on a `plinth` box at 4:5, then a two-column caption:
+italic serif name left, price right (tabular, 500). Under it one meta line:
+stone · origin · weight. Sold and Reserved show in the price slot, never on the
+photo. Quick add / quick view appear on hover or focus on solid surfaces.
 
-- **Style:** White or transparent surface, 6px radius, neutral border, readable
-  label, and clear placeholder example when needed.
-- **Focus:** Opal ring or border shift. Never remove outline without replacement.
-- **Error / Disabled:** Inline error near the field with a concrete next step.
-  Disabled state must remain legible.
+### Breadcrumb, PageHeader, Section, Container
 
-### Navigation
+Breadcrumb is 13px `ink-3` with "/" separators and `aria-current` on the
+last item. Container `xl` is 90rem with `px-gut`.
 
-- **Style:** Compact, warm, and scan-friendly. The logo and product search matter
-  more than decorative nav effects.
-- **Desktop:** Preserve command clarity: store, education, services, cart,
-  search, and account controls must remain easy to reach.
-- **Mobile:** Use predictable drawer/sheet behavior, safe-area awareness, and
-  large touch targets.
+### Cart drawer
 
-### Product Surfaces
+Right sheet titled "Your bag (n)". Lines show a plinth thumbnail, italic name,
+tabular price. The footer is a plinth panel with subtotal, free shipping
+progress, region, checkout, "View bag" and "Continue shopping".
 
-- **Product Cards:** Image first, with product name, price, stock/sold status,
-  and key material details. Hover should reveal useful details, not hide the
-  image behind heavy overlays.
-- **Product Detail:** Prioritize image inspection, price, add-to-cart, stock,
-  shipping, returns, authenticity, and origin details above decorative content.
-- **Cart / Checkout:** Product, quantity, total, shipping threshold, errors, and
-  payment actions must be direct and calm.
+## 6. Motion
 
-## 6. Do's and Don'ts
+- Easing: `ease-gallery` = cubic-bezier(0.16, 1, 0.3, 1). Colour changes 200ms.
+- **Torch** (`src/components/brand/Torch.tsx`): a soft white radial glow fixed
+  behind the page (z-index -1). It shows only on bare wall: anything with a
+  background, including every photo's plinth, covers it. It follows a fine
+  pointer with a light lerp, dims when the pointer leaves, and remembers its
+  place across pages. Coarse pointers and reduced motion get it static.
+- **Piece morph:** `<ViewTransition name={productImageTransitionName(slug)}
+  share="piece">` wraps the card photo and the product gallery, so the photo
+  carries from the grid to the product page (Next `experimental.viewTransition`).
+  The mast has its own transition name and does not animate. Browsers without
+  View Transitions just navigate.
+- Card photos scale to 1.025 over 900ms on hover; nothing else moves on hover.
+- `prefers-reduced-motion`: all view transitions, transforms and the torch
+  movement are off.
 
-### Do:
+## 7. Do and don't
 
-- **Do** use Impeccable as a critic and shaping workflow for meaningful UI work.
-- **Do** use product photography, macro image quality, and image framing as the
-  primary design asset.
-- **Do** keep trust badges close to the price, cart, checkout, and shipping
-  decisions.
-- **Do** use `Intl.NumberFormat` and project currency helpers for prices.
-- **Do** keep filters, tabs, pagination, and meaningful state reflected in the
-  URL where practical.
-- **Do** provide empty, loading, error, overflow, hover, focus, disabled, and
-  mobile states for commerce components.
-- **Do** test text overflow with long product names, sold-out labels, and mobile
-  widths.
-- **Do** honor reduced motion and animate transform or opacity where possible.
+Do:
 
-### Don't:
+- Start pages with content: the first screen should show pieces or the task.
+- Keep price, stock, shipping, returns and origin close to the buy action.
+- Use `formatPrice` (cents) and `formatCurrency` (dollars) for money.
+- Provide empty, loading, error, focus, disabled and narrow-screen states.
+- Check AA contrast; use `ink-3` as the lightest text.
 
-- **Don't** use generic AI-generated landing page composition.
-- **Don't** use purple-blue SaaS gradients as the dominant visual identity.
-- **Don't** create card grids inside card grids.
-- **Don't** add decorative gradient orbs, bokeh backgrounds, or abstract glows as
-  default atmosphere.
-- **Don't** use dark, blurred, cropped, or atmospheric imagery when users need to
-  inspect the actual opal.
-- **Don't** turn the brand into corporate fintech, dashboard UI, or template
-  luxury.
-- **Don't** overuse Dancing Script or emoji as a substitute for designed
-  hierarchy and iconography.
-- **Don't** introduce React Context as the cart source of truth.
-- **Don't** decrement stock during checkout session creation; stock updates are
-  webhook-driven.
+Don't:
+
+- Put filters, tints, gradients or overlays on stone photos.
+- Add tall hero bands, eyebrows, decorative dividers or gradient lines.
+- Nest cards, or add shadows to flat page sections.
+- Use React Context as the cart source of truth, or decrement stock at checkout
+  session creation.

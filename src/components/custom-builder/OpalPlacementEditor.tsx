@@ -106,10 +106,10 @@ function RangeControl({
   valueText: string
 }) {
   return (
-    <label className="grid gap-2 text-xs font-medium text-charcoal">
+    <label className="grid gap-2 text-xs font-medium text-ink">
       <span className="flex items-center justify-between gap-3">
         {label}
-        <output className="font-normal tabular-nums text-charcoal-light">{valueText}</output>
+        <output className="font-normal tabular-nums text-ink-2">{valueText}</output>
       </span>
       <input
         type="range"
@@ -121,7 +121,7 @@ function RangeControl({
         value={value}
         aria-valuetext={valueText}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="h-11 w-full cursor-pointer accent-charcoal disabled:cursor-not-allowed disabled:opacity-45"
+        className="h-11 w-full cursor-pointer accent-ink disabled:cursor-not-allowed disabled:opacity-45"
       />
     </label>
   )
@@ -308,50 +308,50 @@ export function OpalPlacementEditor({
 
   return (
     <fieldset>
-      <legend className="flex items-baseline gap-2 font-serif text-lg font-medium text-charcoal">
+      <legend className="flex items-baseline gap-2 font-serif text-lg font-medium text-ink">
         <span
           aria-hidden="true"
-          className="font-sans text-xs font-semibold tabular-nums text-opal-electric-accessible"
+          className="font-sans text-xs font-semibold tabular-nums text-accent"
         >
           04
         </span>
         Frame the colour
       </legend>
-      <p className="mt-2 max-w-[62ch] text-xs leading-5 text-charcoal-light">
+      <p className="mt-2 max-w-[62ch] text-xs leading-5 text-ink-2">
         Choose which part of the stone’s colour shows inside {outlineDescription}. The size and
         setting stay fixed.
       </p>
 
       <div
         data-testid="opal-placement-workbench"
-        className="mt-4 overflow-hidden rounded-xl border border-warm-grey/80 bg-white shadow-[0_10px_30px_rgb(31_30_25/0.06)]"
+        className="mt-4 overflow-hidden rounded-sm border border-rule bg-bg shadow-[0_10px_30px_rgb(31_30_25/0.06)]"
       >
-        <div className="grid gap-5 bg-[#171714] p-4 text-cream sm:p-6">
+        <div className="grid gap-5 bg-[#171714] p-4 text-bg sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-opal-light">
+              <p className="text-xs font-medium uppercase tracking-[0.14em] text-bg">
                 Colour workbench
               </p>
-              <p className="mt-1 line-clamp-2 text-balance text-sm text-cream/75">{opal.name}</p>
+              <p className="mt-1 line-clamp-2 text-balance text-sm text-bg/75">{opal.name}</p>
             </div>
             <div className="flex flex-wrap justify-end gap-2">
-              <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
+              <span className="rounded-full border border-bg/20 px-3 py-1 text-xs text-bg/75">
                 {opal.visual.photoFit === 'reviewed' ? sourceReviewLabel : 'Auto-fitted colour'}
               </span>
-              <span className="rounded-full border border-cream/20 px-3 py-1 text-xs text-cream/75">
+              <span className="rounded-full border border-bg/20 px-3 py-1 text-xs text-bg/75">
                 {styleLabels[style]}
               </span>
             </div>
           </div>
 
-          <div className="relative grid min-h-[21rem] select-none place-items-center gap-4 overflow-hidden rounded-lg border border-cream/10 bg-black-rich/35 px-7 py-7 sm:min-h-[23rem] sm:px-9">
+          <div className="relative grid min-h-[21rem] select-none place-items-center gap-4 overflow-hidden rounded-sm border border-bg/10 bg-ink/35 px-7 py-7 sm:min-h-[23rem] sm:px-9">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-[12%] right-[12%] top-1/2 h-px -translate-y-1/2 bg-cream/10"
+              className="pointer-events-none absolute left-[12%] right-[12%] top-1/2 h-px -translate-y-1/2 bg-bg/10"
             />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute bottom-[12%] left-1/2 top-[12%] w-px -translate-x-1/2 bg-cream/10"
+              className="pointer-events-none absolute bottom-[12%] left-1/2 top-[12%] w-px -translate-x-1/2 bg-bg/10"
             />
             <div
               data-opal-placement-aperture
@@ -404,7 +404,7 @@ export function OpalPlacementEditor({
               )}
               <div
                 className={cn(
-                  'absolute inset-0 bg-charcoal shadow-[inset_0_0_0_1px_rgb(255_255_255/0.25),0_12px_30px_rgb(0_0_0/0.5)] group-focus-visible:drop-shadow-[0_0_6px_rgb(129_221_231/0.95)]',
+                  'absolute inset-0 bg-ink shadow-[inset_0_0_0_1px_rgb(255_255_255/0.25),0_12px_30px_rgb(0_0_0/0.5)] group-focus-visible:drop-shadow-[0_0_6px_rgb(129_221_231/0.95)]',
                   bezelPadding,
                   silhouetteClass(opal.visual.silhouette)
                 )}
@@ -427,7 +427,7 @@ export function OpalPlacementEditor({
                     ref={cropViewport}
                     data-opal-placement-crop-viewport
                     className={cn(
-                      'relative h-full w-full overflow-hidden bg-charcoal',
+                      'relative h-full w-full overflow-hidden bg-ink',
                       silhouetteClass(opal.visual.silhouette)
                     )}
                     style={{ clipPath }}
@@ -449,9 +449,9 @@ export function OpalPlacementEditor({
                           : 'opacity-0 group-hover:opacity-75 group-focus-visible:opacity-100'
                       )}
                     >
-                      <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-cream/45" />
-                      <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-cream/45" />
-                      <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cream/70 bg-black-rich/25" />
+                      <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-bg/45" />
+                      <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-bg/45" />
+                      <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-bg/70 bg-ink/25" />
                     </span>
                   </div>
                 </div>
@@ -461,14 +461,14 @@ export function OpalPlacementEditor({
               <button
                 type="button"
                 onClick={startFraming}
-                className="relative z-20 inline-flex min-h-11 items-center gap-2 rounded-full border border-cream/20 bg-black-rich/85 px-4 text-xs font-medium text-cream transition-colors hover:border-cream/45 hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-light"
+                className="relative z-20 inline-flex min-h-11 items-center gap-2 rounded-full border border-bg/20 bg-ink px-4 text-xs font-medium text-bg transition-colors hover:border-bg/45 hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth"
               >
                 <Move aria-hidden="true" className="h-3.5 w-3.5" /> Start framing colour
               </button>
             ) : (
               <output
                 aria-live="polite"
-                className="pointer-events-none relative z-20 inline-flex max-w-full items-center justify-center gap-1.5 rounded-full border border-cream/15 bg-black-rich/80 px-3 py-2 text-center text-xs leading-4 text-cream/85"
+                className="pointer-events-none relative z-20 inline-flex max-w-full items-center justify-center gap-1.5 rounded-full border border-bg/15 bg-ink px-3 py-2 text-center text-xs leading-4 text-bg/85"
               >
                 <Move aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                 {canAdjustPosition ? (
@@ -514,7 +514,7 @@ export function OpalPlacementEditor({
             }
           />
           <div className="grid gap-2">
-            <span className="text-xs font-medium text-charcoal">Colour orientation</span>
+            <span className="text-xs font-medium text-ink">Colour orientation</span>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
@@ -526,12 +526,12 @@ export function OpalPlacementEditor({
                     clamp(displayedRotation - 15, rotationBounds.min, rotationBounds.max)
                   )
                 }
-                className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
+                className="grid min-h-11 place-items-center rounded-sm border border-rule text-ink transition-colors hover:border-rule-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <RotateCcw aria-hidden="true" className="h-4 w-4" />
               </button>
               <output
-                className="grid min-h-11 place-items-center rounded-lg bg-cream text-sm tabular-nums text-charcoal"
+                className="grid min-h-11 place-items-center rounded-sm bg-bg text-sm tabular-nums text-ink"
                 aria-label={`Rotation ${displayedRotation}`}
               >
                 {Math.round(displayedRotation)}°
@@ -546,17 +546,17 @@ export function OpalPlacementEditor({
                     clamp(displayedRotation + 15, rotationBounds.min, rotationBounds.max)
                   )
                 }
-                className="grid min-h-11 place-items-center rounded-lg border border-warm-grey text-charcoal transition-colors hover:border-charcoal/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:opacity-40"
+                className="grid min-h-11 place-items-center rounded-sm border border-rule text-ink transition-colors hover:border-rule-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <RotateCw aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <details className="group border-t border-warm-grey/70 pt-3 sm:col-span-2">
-            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible [&::-webkit-details-marker]:hidden">
+          <details className="group border-t border-rule pt-3 sm:col-span-2">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">
               <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Fine position
-              <span className="ml-auto text-xs font-normal text-charcoal-light group-open:hidden">
+              <span className="ml-auto text-xs font-normal text-ink-2 group-open:hidden">
                 Optional
               </span>
             </summary>
@@ -594,8 +594,8 @@ export function OpalPlacementEditor({
             </div>
           </details>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-warm-grey/70 pt-3 sm:col-span-2">
-            <p className="max-w-[37ch] text-xs leading-4 text-charcoal-light">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-3 sm:col-span-2">
+            <p className="max-w-[37ch] text-xs leading-4 text-ink-2">
               {hasExactContour && hasMeasurements
                 ? 'Traced outline at the listed size. We confirm the final fit at your consultation.'
                 : hasMeasurements
@@ -606,7 +606,7 @@ export function OpalPlacementEditor({
               type="button"
               disabled={isDefaultPlacement}
               onClick={() => onChange(defaultOpalPlacement)}
-              className="inline-flex min-h-11 items-center gap-2 text-sm text-charcoal-light underline decoration-warm-grey underline-offset-4 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-not-allowed disabled:no-underline disabled:opacity-45"
+              className="inline-flex min-h-11 items-center gap-2 text-sm text-ink-2 underline decoration-ink-3 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:no-underline disabled:opacity-45"
             >
               <Undo2 aria-hidden="true" className="h-4 w-4" /> Reset photo crop
             </button>

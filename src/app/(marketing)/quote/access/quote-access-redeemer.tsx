@@ -41,17 +41,17 @@ export function QuoteAccessRedeemer() {
 
   return (
     <MarketingShell>
-      <main className="bg-cream py-24 sm:py-32">
+      <main className="bg-bg py-24 sm:py-32">
         <Container className="max-w-xl text-center">
-          <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-opal-deep">
+          <p className="font-sans text-xs font-bold uppercase tracking-[0.2em] text-accent">
             Private quote
           </p>
-          <h1 className="mt-4 font-serif text-4xl text-charcoal">Opening your secure quote</h1>
-          <p className="mt-5 font-sans leading-7 text-charcoal/70" aria-live="polite">
+          <h1 className="mt-4 font-serif text-4xl text-ink">Opening your secure quote</h1>
+          <p className="mt-5 font-sans leading-7 text-ink-2" aria-live="polite">
             {error ?? 'Verifying the private link…'}
           </p>
           {error && (
-            <p className="mt-6 font-sans text-sm text-charcoal/70">
+            <p className="mt-6 font-sans text-sm text-ink-2">
               Secure quote links require JavaScript. Contact us if you need another way to review
               the quote.
             </p>

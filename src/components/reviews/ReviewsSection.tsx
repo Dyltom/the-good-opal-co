@@ -32,32 +32,32 @@ export async function ReviewsSection({ productId, eyebrow, title, className }: R
 
   return (
     <section aria-labelledby="customer-reviews" className={className}>
-      <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-fire-pink-dark">{eyebrow}</p>
-      <h2 id="customer-reviews" className="mt-4 font-serif text-3xl font-medium text-charcoal sm:text-4xl">
+      <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-accent">{eyebrow}</p>
+      <h2 id="customer-reviews" className="mt-4 font-serif text-3xl font-medium text-ink sm:text-4xl">
         {title}
       </h2>
       <ul className="mt-10 grid gap-x-10 gap-y-12 md:grid-cols-2 xl:grid-cols-3">
         {reviews.map((review) => {
           const rating = typeof review.rating === 'number' ? Math.round(review.rating) : null
           return (
-            <li key={review.id} className="border-t border-warm-grey/60 pt-6">
+            <li key={review.id} className="border-t border-rule pt-6">
               <figure className="flex h-full flex-col">
                 {rating ? (
-                  <p className="flex gap-0.5 text-charcoal" aria-label={`Rated ${rating} out of 5`}>
+                  <p className="flex gap-0.5 text-ink" aria-label={`Rated ${rating} out of 5`}>
                     {[1, 2, 3, 4, 5].map((step) => (
                       <Star
                         key={step}
-                        className={cn('h-4 w-4', step <= rating ? 'fill-current' : 'text-charcoal/25')}
+                        className={cn('h-4 w-4', step <= rating ? 'fill-current' : 'text-ink-3')}
                         aria-hidden="true"
                       />
                     ))}
                   </p>
                 ) : null}
-                <blockquote className={cn('flex-1 font-serif text-xl leading-8 text-charcoal', rating && 'mt-4')}>
+                <blockquote className={cn('flex-1 font-serif text-xl leading-8 text-ink', rating && 'mt-4')}>
                   <p className="whitespace-pre-line">{review.body}</p>
                 </blockquote>
-                <figcaption className="mt-6 font-sans text-sm leading-6 text-charcoal/65">
-                  <span className="font-semibold text-charcoal">{review.authorName}</span>
+                <figcaption className="mt-6 font-sans text-sm leading-6 text-ink-2">
+                  <span className="font-semibold text-ink">{review.authorName}</span>
                   <span aria-hidden="true"> · </span>
                   <time dateTime={review.reviewedAt}>{reviewDate.format(new Date(review.reviewedAt))}</time>
                   <span aria-hidden="true"> · </span>
@@ -66,7 +66,7 @@ export async function ReviewsSection({ productId, eyebrow, title, className }: R
                       href={review.sourceUrl}
                       rel="noopener noreferrer"
                       target="_blank"
-                      className="underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
+                      className="underline decoration-ink-3 underline-offset-4 hover:decoration-ink"
                     >
                       via {review.source}
                     </a>
