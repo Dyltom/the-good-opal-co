@@ -19,10 +19,8 @@ export function CookieConsent() {
 
   useEffect(() => {
     if (pathname.startsWith('/quote')) return undefined
-    // Check if user has already made a choice
     const consent = localStorage.getItem('cookie-consent')
     if (!consent) {
-      // Show banner after a small delay for better UX
       const timer = window.setTimeout(() => setShowBanner(true), 1000)
       return () => window.clearTimeout(timer)
     }
@@ -43,7 +41,6 @@ export function CookieConsent() {
   }
 
   const savePreferences = (prefs: CookiePreferences) => {
-    // Save to localStorage
     localStorage.setItem('cookie-consent', JSON.stringify(prefs))
     localStorage.setItem('cookie-consent-date', new Date().toISOString())
     window.dispatchEvent(new Event('cookie-consent-updated'))
@@ -54,7 +51,6 @@ export function CookieConsent() {
       })
     }
 
-    // Hide banner
     setShowBanner(false)
   }
 
@@ -70,7 +66,7 @@ export function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 16, opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed bottom-3 left-3 right-3 z-50 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm max-lg:[body:has([data-bottom-bar])_&]:bottom-36"
+          className="fixed bottom-3 left-3 right-3 z-50 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm max-lg:[body:has([data-bottom-bar])_&]:bottom-36 [body:has([role=dialog][data-state=open])_&]:hidden"
         >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-rule bg-bg px-4 py-3 text-xs leading-5 text-ink shadow-md">
             <p className="min-w-0 flex-1 basis-56">
@@ -94,7 +90,6 @@ export function CookieConsent() {
   )
 }
 
-// Cookie Settings Link Component for Footer
 export function CookieSettingsLink({ className }: { className?: string }) {
   const [hasConsent, setHasConsent] = useState(false)
 
@@ -104,10 +99,8 @@ export function CookieSettingsLink({ className }: { className?: string }) {
   }, [])
 
   const openSettings = () => {
-    // Clear consent to show banner again
     localStorage.removeItem('cookie-consent')
     localStorage.removeItem('cookie-consent-date')
-    // Reload page to show banner
     window.location.reload()
   }
 
