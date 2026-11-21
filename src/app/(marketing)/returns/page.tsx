@@ -55,7 +55,7 @@ export default function ReturnsPage() {
               <h2 className="font-serif text-3xl font-medium text-charcoal">Before you decide</h2>
               <p className="mt-6 font-sans text-sm leading-7 text-charcoal/70">Opal colour can change with lighting and screen settings. If colour, scale, or a fine detail matters to your decision, ask for another image or a virtual viewing before purchase.</p>
               <Link href="/contact?subject=return" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-md bg-charcoal px-6 font-sans text-sm font-semibold text-cream hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2">Contact us about an order</Link>
-              <p className="mt-5 font-sans text-xs leading-5 text-charcoal/55">For general information about Australian consumer guarantees, visit the <a href="https://www.accc.gov.au/consumers/buying-products-and-services/consumer-rights-and-guarantees" target="_blank" rel="noreferrer" className="underline underline-offset-4">ACCC consumer rights guide</a>.</p>
+              <p className="mt-5 font-sans text-xs leading-5 text-charcoal/55">For general information about Australian consumer guarantees, visit the <a href="https://www.accc.gov.au/consumers/buying-products-and-services/consumer-rights-and-guarantees" target="_blank" rel="noreferrer" className="-my-3 inline-block py-3 underline underline-offset-4">ACCC consumer rights guide</a>.</p>
             </section>
           </div>
       </Container>

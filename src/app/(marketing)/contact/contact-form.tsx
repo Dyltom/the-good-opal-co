@@ -169,7 +169,7 @@ export function ContactForm({
         <select
           id="inquiryType"
           {...register('inquiryType')}
-          className="mt-1 min-h-11 w-full rounded-md border border-warm-grey bg-white px-3 py-2 text-charcoal outline-none focus-visible:border-opal-electric-accessible focus-visible:ring-2 focus-visible:ring-opal-electric/30"
+          className="mt-1 min-h-11 w-full rounded-md border border-warm-grey bg-white px-3 py-2 text-base text-charcoal outline-none focus-visible:border-opal-electric-accessible focus-visible:ring-2 focus-visible:ring-opal-electric/30"
           disabled={isSubmitting}
           required
         >

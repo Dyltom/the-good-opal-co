@@ -4,9 +4,7 @@ import type { Metadata } from 'next'
 import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
-import { resolveMediaUrl } from '@/lib/media-url'
-import { ownedProductImageUrl } from '@/lib/owned-product-image'
-import { mergeProductGallery } from '@/lib/product-gallery'
+import { productGalleryUrls } from '@/lib/product-gallery'
 import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
@@ -72,17 +70,6 @@ function richTextToPlainText(value: unknown): string {
   return Object.values(record).map(richTextToPlainText).filter(Boolean).join(' ')
 }
 
-function galleryUrls(slug: string, name: string, images: unknown): string[] {
-  const cmsImages = (Array.isArray(images) ? images : []).flatMap((entry) => {
-    const image = objectRecord(objectRecord(entry)?.image)
-    const url = typeof image?.url === 'string' ? resolveMediaUrl(image.url) : undefined
-    return url ? [{ url, alt: name }] : []
-  })
-  const owned = ownedProductImageUrl(slug)
-  const fallback = cmsImages.length === 0 && owned ? [{ url: owned, alt: name }] : cmsImages
-  return mergeProductGallery(slug, name, fallback).map((image) => image.url)
-}
-
 function optionalString(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
@@ -105,7 +92,7 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
   ) {
     return undefined
   }
-  const [image, hoverImage] = galleryUrls(product.slug, product.name, product.images)
+  const [image, hoverImage] = productGalleryUrls(product.slug, product.name, product.images)
 
   return {
     id: String(product.id),

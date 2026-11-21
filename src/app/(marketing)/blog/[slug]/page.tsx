@@ -12,6 +12,7 @@ import { MarketingShell } from '@/components/marketing'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { rewriteLegacyPostLinks } from '@/lib/rich-text'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
 import { Eyebrow } from '@/components/ui/eyebrow'
 
@@ -201,8 +202,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           ) : null}
           {post.content ? (
-            <div className="prose prose-lg mt-12 max-w-none prose-headings:font-serif prose-headings:font-medium prose-headings:text-charcoal prose-p:font-sans prose-p:leading-8 prose-p:text-charcoal/75 prose-a:text-opal-electric-accessible prose-blockquote:border-charcoal/30 prose-blockquote:text-charcoal/70">
-              <RichText data={post.content as unknown as SerializedEditorState} />
+            <div className="prose prose-lg mt-12 max-w-none break-words prose-headings:font-serif prose-headings:font-medium prose-headings:text-charcoal prose-p:font-sans prose-p:leading-8 prose-p:text-charcoal/75 prose-a:text-opal-electric-accessible prose-blockquote:border-charcoal/30 prose-blockquote:text-charcoal/70">
+              <RichText data={rewriteLegacyPostLinks(post.content as unknown as SerializedEditorState, APP_URL)} />
             </div>
           ) : null}
           {tags.length > 0 ? (

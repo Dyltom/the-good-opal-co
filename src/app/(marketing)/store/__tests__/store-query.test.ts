@@ -4,10 +4,12 @@ import {
   findStoreListings,
   parseStoreQuery,
   priceRangeLabel,
+  storeFilterDetail,
   storeUrl,
   toggleFacetValue,
   type StoreListing,
 } from '../store-query'
+import { parseInsightBody } from '@/lib/insights/ingest'
 
 function listing(id: string, fields: Partial<StoreListing>): StoreListing {
   return { id, name: id, price: 100, stock: 1, featured: false, createdAt: '2026-01-01T00:00:00.000Z', ...fields }
@@ -133,5 +135,24 @@ describe('/store facet counts', () => {
 
     expect(counts.stone).toEqual({ 'black-opal': 1, 'white-opal': 1 })
     expect(counts.category).toEqual({ 'opal-rings': 2, 'raw-opals': 1, 'opal-necklaces': 1 })
+  })
+})
+
+describe('/store filter insights', () => {
+  test('a store_filter event with every filter and a price range is accepted by insight ingest', () => {
+    const query = parseStoreQuery({
+      category: 'opal-rings',
+      stone: 'black-opal',
+      origin: 'lightning-ridge',
+      carat: '1-3',
+      price_min: '100',
+      price_max: '500',
+      availability: 'all',
+      sort: 'price-low',
+    })
+    const detail = { ...storeFilterDetail(query), results: 3 }
+
+    expect(detail.price).toBe('100-500')
+    expect(parseInsightBody(JSON.stringify({ name: 'store_filter', path: '/store', detail })).ok).toBe(true)
   })
 })

@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { ArrowRight, Menu, Search, X } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { CartButton } from '@/components/cart/CartButton'
@@ -22,30 +23,40 @@ export function Navigation({
 }: NavigationProps) {
   const [hydrated, setHydrated] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const pathname = usePathname()
   const menuRef = useFocusTrap<HTMLDivElement>({
     active: mobileMenuOpen,
     onEscape: () => setMobileMenuOpen(false),
   })
+  const searchRef = useFocusTrap<HTMLDivElement>({
+    active: searchOpen,
+    onEscape: () => setSearchOpen(false),
+  })
+  const overlayOpen = mobileMenuOpen || searchOpen
 
   useEffect(() => setHydrated(true), [])
 
   useEffect(() => {
-    if (!mobileMenuOpen) return
+    if (!overlayOpen) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
     return () => {
       document.body.style.overflow = previousOverflow
     }
-  }, [mobileMenuOpen])
+  }, [overlayOpen])
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
   const closeMenu = () => setMobileMenuOpen(false)
+  const closeSearch = () => setSearchOpen(false)
+  const openSearch = () => {
+    flushSync(() => setSearchOpen(true))
+    searchRef.current?.querySelector('input')?.focus()
+  }
 
   return (
-    <nav
-      aria-label="Primary navigation"
+    <header
       className={cn(
         'w-full border-b border-warm-grey/55 bg-cream text-charcoal',
         sticky && 'fixed inset-x-0 top-0 z-50',
@@ -86,7 +97,7 @@ export function Navigation({
             </span>
           </Link>
 
-          <div className="ml-auto hidden items-center gap-7 lg:flex">
+          <nav aria-label="Primary navigation" className="ml-auto hidden items-center gap-7 lg:flex">
             {items.map((item) => (
               <Link
                 key={item.href}
@@ -103,7 +114,7 @@ export function Navigation({
                 {item.label}
               </Link>
             ))}
-          </div>
+          </nav>
 
           <div className="ml-auto hidden w-full max-w-[19rem] xl:block">
             <Suspense fallback={<div aria-hidden="true" className="h-11 rounded-md bg-white/65" />}>
@@ -121,13 +132,17 @@ export function Navigation({
           ) : null}
 
           <div className="ml-auto flex shrink-0 items-center gap-1 lg:ml-0">
-            <Link
-              href="/search"
+            <button
+              type="button"
+              onClick={openSearch}
+              disabled={!hydrated}
               aria-label="Search"
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-charcoal transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible xl:hidden"
+              aria-expanded={searchOpen}
+              aria-controls="mobile-search"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-charcoal transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible disabled:cursor-wait disabled:opacity-60 xl:hidden"
             >
               <Search className="h-5 w-5" aria-hidden="true" />
-            </Link>
+            </button>
             <CartButton />
             <button
               type="button"
@@ -143,6 +158,32 @@ export function Navigation({
           </div>
         </div>
       </Container>
+
+      {searchOpen ? (
+        <div className="fixed inset-0 z-[70] bg-charcoal/35 xl:hidden" onMouseDown={closeSearch}>
+          <div
+            ref={searchRef}
+            id="mobile-search"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search"
+            className="flex items-center gap-2 bg-cream px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] shadow-xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <Suspense fallback={<div aria-hidden="true" className="h-12 flex-1 rounded-md bg-white/65" />}>
+              <SearchInput variant="mobile" onClose={closeSearch} className="min-w-0 flex-1" />
+            </Suspense>
+            <button
+              type="button"
+              onClick={closeSearch}
+              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-md hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              aria-label="Close search"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {mobileMenuOpen ? (
         <div
@@ -178,7 +219,7 @@ export function Navigation({
               </Suspense>
             </div>
 
-            <div className="flex flex-col border-t border-warm-grey/55">
+            <nav aria-label="Primary navigation" className="flex flex-col border-t border-warm-grey/55">
               {items.map((item) => (
                 <Link
                   key={item.href}
@@ -190,7 +231,7 @@ export function Navigation({
                   <ArrowRight className="h-4 w-4 text-charcoal/45" aria-hidden="true" />
                 </Link>
               ))}
-            </div>
+            </nav>
 
             <div className="mt-auto border-t border-warm-grey/55 pt-6">
               <Link
@@ -207,6 +248,6 @@ export function Navigation({
           </div>
         </div>
       ) : null}
-    </nav>
+    </header>
   )
 }

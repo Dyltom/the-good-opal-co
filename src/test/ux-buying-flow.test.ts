@@ -37,13 +37,14 @@ describe('buying flow UI/UX safeguards', () => {
 
   test('search suggestions use typed product and filter destinations', () => {
     const actionSource = read('src/app/(marketing)/search/actions.ts')
+    const suggestionSource = read('src/app/(marketing)/search/suggestions.ts')
     const inputSource = read('src/components/search/SearchInput.tsx')
     const storeSource = read('src/app/(marketing)/store/store-content.tsx')
 
     expect(actionSource).toContain("href: '/store?category=opal-rings'")
     expect(actionSource).toContain("href: '/store?category=raw-opals'")
     expect(actionSource).toContain("href: '/store?stone=black-opal'")
-    expect(actionSource).toContain('`/store/${encodeURIComponent(product.slug)}`')
+    expect(suggestionSource).toContain('`/store/${encodeURIComponent(match.slug)}`')
     expect(inputSource).toContain('router.push(suggestion.href)')
     expect(storeSource).toContain('placeholder="Name or SKU"')
     expect(storeSource).not.toContain('label="Setting" name="material"')

@@ -1,3 +1,6 @@
+import { resolveMediaUrl } from '@/lib/media-url'
+import { ownedProductImageUrl } from '@/lib/owned-product-image'
+
 interface ProductGalleryImage {
   alt: string
   url: string
@@ -87,4 +90,21 @@ export function mergeProductGallery(
     filenames.add(imageFilename)
     return true
   })
+}
+
+function cmsImageUrl(entry: unknown): string | undefined {
+  if (typeof entry !== 'object' || entry === null || !('image' in entry)) return undefined
+  const { image } = entry
+  if (typeof image !== 'object' || image === null || !('url' in image)) return undefined
+  return typeof image.url === 'string' ? resolveMediaUrl(image.url) : undefined
+}
+
+export function productGalleryUrls(slug: string, name: string, images: unknown): string[] {
+  const cmsImages = (Array.isArray(images) ? images : []).flatMap((entry) => {
+    const url = cmsImageUrl(entry)
+    return url ? [{ url, alt: name }] : []
+  })
+  const owned = ownedProductImageUrl(slug)
+  const fallback = cmsImages.length === 0 && owned ? [{ url: owned, alt: name }] : cmsImages
+  return mergeProductGallery(slug, name, fallback).map((image) => image.url)
 }

@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
+
+export const metadata: Metadata = {
+  title: 'Page not found | The Good Opal Co',
+}
 
 export default function NotFound() {
   return (

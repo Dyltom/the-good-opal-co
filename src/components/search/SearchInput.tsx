@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, X, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrency } from '@/lib/utils'
 import { getSearchSuggestions } from '@/app/(marketing)/search/actions'
-import type { SearchSuggestion } from '@/app/(marketing)/search/actions'
+import type { SearchSuggestion } from '@/app/(marketing)/search/suggestions'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface SearchInputProps {
@@ -33,7 +34,6 @@ export function SearchInput({
   const [loading, setLoading] = useState(false)
   const debouncedQuery = useDebounce(query, 200)
 
-  // Fetch suggestions
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!debouncedQuery || debouncedQuery.length < 1) {
@@ -42,7 +42,6 @@ export function SearchInput({
         return
       }
 
-      // Show loading only for longer queries to avoid flashing
       if (debouncedQuery.length >= 2) {
         setLoading(true)
       }
@@ -61,7 +60,6 @@ export function SearchInput({
     fetchSuggestions()
   }, [debouncedQuery])
 
-  // Auto-focus on mount if specified
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus()
@@ -72,11 +70,7 @@ export function SearchInput({
     (searchQuery: string) => {
       if (!searchQuery.trim()) return
 
-      // Navigate to search results
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-
-      // Don't reset query - keep it in the search box
-      // setQuery('') // Removed this line
+      router.push(`/store?search=${encodeURIComponent(searchQuery.trim())}`)
       setSuggestions([])
       setShowSuggestions(false)
       onClose?.()
@@ -161,13 +155,12 @@ export function SearchInput({
           }}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => {
-            // Delay to allow suggestion clicks
             setTimeout(() => setShowSuggestions(false), 200)
           }}
           onKeyDown={handleKeyDown}
           placeholder="Search opals, rings, parcels"
           className={cn(
-            'h-full w-full bg-transparent outline-none placeholder:text-charcoal/55',
+            'h-full w-full bg-transparent outline-none placeholder:text-charcoal/55 [&::-webkit-search-cancel-button]:[-webkit-appearance:none]',
             variant === 'default' && 'pl-9 pr-9 text-sm',
             variant === 'mobile' && 'pl-11 pr-11 text-base'
           )}
@@ -211,7 +204,6 @@ export function SearchInput({
         )}
       </div>
 
-      {/* Suggestions dropdown */}
       {showSuggestions && query.length >= 2 && !loading && (
         <div
           id="search-suggestions"
@@ -219,7 +211,7 @@ export function SearchInput({
           className={cn(
             'absolute z-50 mt-1 w-full rounded-lg bg-white shadow-lg',
             'border border-gray-200 py-2',
-            'max-h-64 overflow-auto'
+            'max-h-[min(30rem,70vh)] overflow-auto'
           )}
         >
           {suggestions.length > 0 ? (
@@ -238,9 +230,32 @@ export function SearchInput({
                   index === selectedIndex && 'bg-gray-50'
                 )}
               >
-                <div className="flex items-center gap-2">
-                  <Search className="h-3.5 w-3.5 shrink-0 text-opal-electric-accessible" />
-                  <span className="truncate">{suggestion.label}</span>
+                <div className="flex items-center gap-3">
+                  {suggestion.image ? (
+                    <Image
+                      src={suggestion.image}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 shrink-0 rounded-md bg-warm-grey/30 object-cover"
+                    />
+                  ) : suggestion.price === undefined ? (
+                    <span className="flex h-8 w-12 shrink-0 items-center justify-center">
+                      <Search className="h-4 w-4 text-opal-electric-accessible" aria-hidden="true" />
+                    </span>
+                  ) : (
+                    <span className="h-12 w-12 shrink-0 rounded-md bg-warm-grey/30" aria-hidden="true" />
+                  )}
+                  <span className="line-clamp-2 min-w-0 flex-1">{suggestion.label}</span>
+                  {suggestion.sold ? (
+                    <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-charcoal/55">
+                      Sold
+                    </span>
+                  ) : suggestion.price !== undefined ? (
+                    <span className="shrink-0 font-semibold tabular-nums text-charcoal">
+                      {formatCurrency(suggestion.price, 'AUD')}
+                    </span>
+                  ) : null}
                 </div>
               </button>
             ))

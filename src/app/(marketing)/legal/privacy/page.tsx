@@ -11,12 +11,6 @@ export const metadata: Metadata = {
 }
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = new Date('2026-11-21').toLocaleDateString('en-AU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-
   return (
     <MarketingShell mainClassName="bg-white">
       <Container className="py-12">
@@ -33,7 +27,7 @@ export default function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p className="text-content-muted mb-12">
-            Last updated: {lastUpdated}
+            Last updated: 21 November 2026
           </p>
 
           <div className="prose prose-lg max-w-none">

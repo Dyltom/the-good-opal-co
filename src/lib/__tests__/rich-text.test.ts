@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { extractPlainText } from '@/lib/rich-text'
+import { extractPlainText, rewriteLegacyPostLinks } from '@/lib/rich-text'
 
 describe('rich text plain-text extraction', () => {
   test('returns a trimmed string unchanged', () => {
@@ -25,4 +25,27 @@ describe('rich text plain-text extraction', () => {
       expect(extractPlainText(value)).toBe('')
     }
   )
+})
+
+describe('legacy blog links', () => {
+  function link(url: string, text: string) {
+    return { root: { children: [{ type: 'paragraph', children: [{ type: 'link', fields: { url, newTab: false }, children: [{ type: 'text', text }] }] }] } }
+  }
+
+  test('points dated WordPress post links at the matching /blog page', () => {
+    const legacy = 'https://goodopalco.com/2021/05/27/lightning-ridge-opal/'
+
+    expect(rewriteLegacyPostLinks(link(legacy, legacy), 'https://goodopalco.com')).toEqual(
+      link('/blog/lightning-ridge-opal', 'https://goodopalco.com/blog/lightning-ridge-opal')
+    )
+    expect(rewriteLegacyPostLinks(link(legacy, 'our Lightning Ridge guide'), 'https://goodopalco.com')).toEqual(
+      link('/blog/lightning-ridge-opal', 'our Lightning Ridge guide')
+    )
+  })
+
+  test('leaves other goodopalco.com links alone', () => {
+    const contact = link('https://goodopalco.com/contact/', 'https://goodopalco.com/contact/')
+
+    expect(rewriteLegacyPostLinks(contact, 'https://goodopalco.com')).toEqual(contact)
+  })
 })

@@ -26,7 +26,7 @@ function InstagramHandle({ handle }: { handle: string }) {
       href={`https://www.instagram.com/${handle}/`}
       target="_blank"
       rel="noopener noreferrer"
-      className="underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+      className="-my-3 inline-block py-3 underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
     >
       @{handle}
     </a>
