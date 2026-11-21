@@ -7,7 +7,6 @@ export async function GET(): Promise<Response> {
   const payload = await getPayload()
   const { docs } = await payload.find({
     collection: 'posts',
-    where: { _status: { equals: 'published' } },
     sort: '-publishedAt',
     limit: 100,
     select: {

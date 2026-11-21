@@ -11,11 +11,24 @@ interface SitemapDoc {
   updatedAt: string
 }
 
+interface SitemapPost extends SitemapDoc {
+  publishedAt?: string | null
+  featuredImage?: number | Media | null
+}
+
 type ChangeFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+export const dynamic = 'force-dynamic'
 
 function latest(docs: Array<{ updatedAt: string }>): Date | undefined {
   const times = docs.map((doc) => Date.parse(doc.updatedAt)).filter((time) => !Number.isNaN(time))
   return times.length > 0 ? new Date(Math.max(...times)) : undefined
+}
+
+function goneLiveOrUpdated(post: SitemapPost): SitemapPost {
+  return post.publishedAt && Date.parse(post.publishedAt) > Date.parse(post.updatedAt)
+    ? { ...post, updatedAt: post.publishedAt }
+    : post
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -25,13 +38,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     payload
       .find({
         collection: 'posts',
-        where: { _status: { equals: 'published' } },
         limit: 1000,
         depth: 1,
-        select: { slug: true, updatedAt: true, featuredImage: true },
+        select: { slug: true, updatedAt: true, publishedAt: true, featuredImage: true },
         overrideAccess: false,
       })
-      .then(({ docs }) => docs as Array<SitemapDoc & { featuredImage?: number | Media | null }>),
+      .then(({ docs }) => (docs as SitemapPost[]).map(goneLiveOrUpdated)),
     payload
       .find({
         collection: 'courses',
