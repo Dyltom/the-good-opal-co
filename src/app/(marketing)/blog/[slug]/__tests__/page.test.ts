@@ -88,10 +88,10 @@ describe('blog post metadata', () => {
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'opal-care' }) })
 
     expect(metadata.openGraph).toMatchObject({
-      images: [expect.objectContaining({ url: expect.stringContaining('/images/about-hero.jpg') })],
+      images: [expect.objectContaining({ url: expect.stringContaining('/images/share-card.jpg') })],
     })
     expect(metadata.twitter).toMatchObject({
-      images: [expect.stringContaining('/images/about-hero.jpg')],
+      images: [expect.stringContaining('/images/share-card.jpg')],
     })
   })
 

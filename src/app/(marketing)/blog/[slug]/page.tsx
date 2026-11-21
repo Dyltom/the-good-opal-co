@@ -9,7 +9,7 @@ import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical
 import type { Author, Category, Media, Post, Tag } from '@/types/payload-types'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
-import { APP_NAME, APP_URL } from '@/lib/constants'
+import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { rewriteLegacyPostLinks } from '@/lib/rich-text'
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     'Practical guidance about Australian opals, jewellery, buying, and care.'
   const canonical = new URL(`/blog/${encodeURIComponent(post.slug)}`, APP_URL).toString()
   const socialImage = populatedMedia(post.seo?.ogImage) || populatedMedia(post.featuredImage)
-  const imageUrl = resolveMediaUrl(socialImage?.url) || `${APP_URL}/images/about-hero.jpg`
+  const imageUrl = resolveMediaUrl(socialImage?.url) || SHARE_IMAGE_URL
   const author = populatedAuthor(post.author)
 
   return {

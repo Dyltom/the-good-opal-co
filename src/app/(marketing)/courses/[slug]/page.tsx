@@ -8,7 +8,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseCurriculum, CourseInterestPanel } from '@/components/education'
 import { BreadcrumbJsonLd, CourseJsonLd } from '@/components/seo'
-import { APP_NAME, APP_URL } from '@/lib/constants'
+import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
 import { courseFormatLabels, courseLevelLabels, courseOutlineStats } from '@/lib/courses'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
   const title = course.meta?.title?.trim() || `${course.title} | ${APP_NAME}`
   const description = course.meta?.description?.trim() || course.summary
   const image = mediaObject(course.meta?.image) || mediaObject(course.featuredImage)
-  const imageUrl = resolveMediaUrl(image?.url) || `${APP_URL}/images/about-hero.jpg`
+  const imageUrl = resolveMediaUrl(image?.url) || SHARE_IMAGE_URL
   const canonical = new URL(`/courses/${encodeURIComponent(course.slug)}`, APP_URL).toString()
   return {
     title,
