@@ -10,7 +10,7 @@ import { ProductActions } from '@/components/product/ProductActions'
 import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, savePercent } from '@/lib/utils'
 import { getFreeShippingProgress, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import { PaymentMethods } from '@/components/trust'
@@ -19,7 +19,8 @@ import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { parseProductDescription } from '@/lib/product-description'
-import { storeLabel } from '@/app/(marketing)/store/store-query'
+import { parseStoreQuery, storeLabel, storeUrl } from '@/app/(marketing)/store/store-query'
+import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
@@ -125,6 +126,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     { label: 'Certificate', value: product.certified ? (product.certificateNumber ?? 'Included') : undefined },
   ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
   const stock = product.stock ?? 0
+  const sold = stock <= 0
+  const discount = savePercent(product.price, product.compareAtPrice)
+  const similarHref = sold ? await similarPiecesHref(product) : undefined
   const builderEligible = isBuilderEligibleOpal(product.slug, product.name, product)
   const designStyle = ringStyles.find((style) =>
     product.name.toLowerCase().includes(`${style.label.replace('&', 'and').toLowerCase()} ring`)
@@ -244,17 +248,29 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       {product.name}
                     </h1>
 
-                    <div data-insight-section="price" className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <span className="font-serif text-3xl font-semibold tabular-nums text-charcoal">
-                        {formatCurrency(product.price, 'AUD')}
-                      </span>
-                      {product.compareAtPrice && product.compareAtPrice > product.price ? (
-                        <span className="text-base tabular-nums text-charcoal/50 line-through">
-                          {formatCurrency(product.compareAtPrice, 'AUD')}
+                    {sold ? (
+                      <div data-insight-section="price" className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <span className="rounded-full bg-charcoal/85 px-3 py-1 font-sans text-sm font-medium text-white">
+                          Sold
                         </span>
-                      ) : null}
-                      <span className="text-sm text-charcoal/60">AUD</span>
-                    </div>
+                        <span className="font-sans text-sm text-charcoal/70">This piece has found a home.</span>
+                      </div>
+                    ) : (
+                      <div data-insight-section="price" className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="font-serif text-3xl font-semibold tabular-nums text-charcoal">
+                          {formatCurrency(product.price, 'AUD')}
+                        </span>
+                        {discount && product.compareAtPrice ? (
+                          <>
+                            <span className="text-base tabular-nums text-charcoal/50 line-through">
+                              {formatCurrency(product.compareAtPrice, 'AUD')}
+                            </span>
+                            <span className="text-sm font-medium text-fire-pink-dark">Save {discount}%</span>
+                          </>
+                        ) : null}
+                        <span className="text-sm text-charcoal/60">AUD</span>
+                      </div>
+                    )}
                     {stock === 1 ? (
                       <p className="mt-2 font-sans text-sm text-opal-emerald-dark">
                         One available. This exact stone is the one you receive.
@@ -272,58 +288,84 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       </dl>
                     ) : null}
 
-                    <div className="mt-6">
-                      <ProductActions
-                        product={{
-                          id: String(product.id),
-                          slug: product.slug,
-                          name: product.name,
-                          price: product.price,
-                          stock,
-                          image: imageUrl ?? undefined,
-                        }}
-                      />
-                    </div>
-
-                    <PaymentMethods className="mt-4" />
-
-                    <ul className="mt-6 space-y-3 border-t border-warm-grey/50 pt-6 font-sans text-sm text-charcoal/80">
-                      {about.photographedUnderWhiteLight ? (
-                        <li className="flex gap-3">
-                          <Camera className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
-                          Photographed under white light. Studio shots have the background replaced; the stone is never retouched.
-                        </li>
-                      ) : null}
-                      <li className="flex gap-3">
-                        <Truck className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
-                        <span>
-                          {productShippingProgress.qualifies
-                            ? 'Free tracked shipping.'
-                            : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
-                          <Link href="/shipping" className="underline underline-offset-4 hover:text-charcoal">
-                            Rates
-                          </Link>
-                        </span>
-                      </li>
-                      <li className="flex gap-3">
-                        <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
-                        <span>
-                          30-day change-of-mind returns on eligible unused pieces.{' '}
-                          <Link href="/returns" className="underline underline-offset-4 hover:text-charcoal">
-                            Returns policy
-                          </Link>
-                        </span>
-                      </li>
-                      <li className="flex gap-3">
-                        <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                    {similarHref ? (
+                      <div className="mt-6">
                         <Link
-                          href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`}
-                          className="underline underline-offset-4 hover:text-charcoal"
+                          href={similarHref}
+                          className="flex h-14 w-full items-center justify-center gap-2 rounded-lg bg-charcoal font-sans text-base font-semibold text-white shadow-md transition-colors hover:bg-charcoal/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
                         >
-                          Ask a question or book a video viewing
+                          See similar pieces
+                          <ArrowRight className="h-5 w-5" aria-hidden="true" />
                         </Link>
-                      </li>
-                    </ul>
+                        <Link
+                          href="/contact?subject=opal-finder"
+                          className="mt-2 flex min-h-11 items-center justify-center font-sans text-sm text-charcoal/80 underline underline-offset-4 hover:text-charcoal"
+                        >
+                          Ask us to find one like it
+                        </Link>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mt-6">
+                          <ProductActions
+                            product={{
+                              id: String(product.id),
+                              slug: product.slug,
+                              name: product.name,
+                              price: product.price,
+                              stock,
+                              image: imageUrl ?? undefined,
+                            }}
+                          />
+                        </div>
+
+                        <PaymentMethods className="mt-4" />
+                      </>
+                    )}
+
+                    {sold && !about.photographedUnderWhiteLight ? null : (
+                      <ul className="mt-6 space-y-3 border-t border-warm-grey/50 pt-6 font-sans text-sm text-charcoal/80">
+                        {about.photographedUnderWhiteLight ? (
+                          <li className="flex gap-3">
+                            <Camera className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                            Photographed under white light. Studio shots have the background replaced; the stone is never retouched.
+                          </li>
+                        ) : null}
+                        {sold ? null : (
+                          <>
+                            <li className="flex gap-3">
+                              <Truck className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                              <span>
+                                {productShippingProgress.qualifies
+                                  ? 'Free tracked shipping.'
+                                  : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
+                                <Link href="/shipping" className="underline underline-offset-4 hover:text-charcoal">
+                                  Rates
+                                </Link>
+                              </span>
+                            </li>
+                            <li className="flex gap-3">
+                              <RotateCcw className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                              <span>
+                                30-day change-of-mind returns on eligible unused pieces.{' '}
+                                <Link href="/returns" className="underline underline-offset-4 hover:text-charcoal">
+                                  Returns policy
+                                </Link>
+                              </span>
+                            </li>
+                            <li className="flex gap-3">
+                              <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/55" aria-hidden="true" />
+                              <Link
+                                href={`/contact?subject=virtual-viewing&product=${encodeURIComponent(product.name)}`}
+                                className="underline underline-offset-4 hover:text-charcoal"
+                              >
+                                Ask a question or book a video viewing
+                              </Link>
+                            </li>
+                          </>
+                        )}
+                      </ul>
+                    )}
 
                     {builderEligible && stock > 0 ? (
                       <Link
@@ -394,6 +436,35 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       </ProductViewTracker>
     </>
   )
+}
+
+async function similarPiecesHref(product: Product): Promise<string> {
+  const payload = await getPayload()
+  const { category, stone } = parseStoreQuery({
+    category: product.category ?? undefined,
+    stone: product.stoneType ?? undefined,
+  })
+  const candidates = [
+    { category, stone },
+    { category, stone: [] },
+    { category: [], stone },
+  ].filter((candidate) => candidate.category.length + candidate.stone.length > 0)
+
+  for (const candidate of candidates) {
+    const { totalDocs } = await payload.count({
+      collection: 'products',
+      where: {
+        and: [
+          LISTED_PRODUCTS,
+          { stock: { greater_than: 0 } },
+          ...candidate.category.map((value) => ({ category: { equals: value } })),
+          ...candidate.stone.map((value) => ({ stoneType: { equals: value } })),
+        ],
+      },
+    })
+    if (totalDocs > 0) return storeUrl({ ...parseStoreQuery({}), ...candidate })
+  }
+  return '/store'
 }
 
 function weightUnitLabel(weight: number, unit: string | null | undefined) {

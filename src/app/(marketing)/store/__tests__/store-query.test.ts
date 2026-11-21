@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import {
+  countPriceBands,
   countStoreFacets,
   findStoreListings,
   parseStoreQuery,
   priceRangeLabel,
+  STORE_PRICE_BANDS,
   storeFilterDetail,
   storeUrl,
   toggleFacetValue,
@@ -55,8 +57,10 @@ describe('/store query URLs', () => {
     expect(storeUrl(parseStoreQuery({}))).toBe('/store')
   })
 
-  test('reads whole-dollar price bounds and ignores blanks, words and negatives', () => {
-    expect(parseStoreQuery({ price_min: '$1,250.60', price_max: ' 2000 ' })).toMatchObject({ priceMin: 1251, priceMax: 2000 })
+  test('reads price bounds to the cent and ignores blanks, words, negatives and zero', () => {
+    expect(parseStoreQuery({ price_min: '$1,250.60', price_max: ' 2000 ' })).toMatchObject({ priceMin: 1250.6, priceMax: 2000 })
+    expect(parseStoreQuery({ price_min: '17.5', price_max: '.99' })).toMatchObject({ priceMin: 0.99, priceMax: 17.5 })
+    expect(parseStoreQuery({ price_min: '0', price_max: '0' })).toMatchObject({ priceMin: undefined, priceMax: undefined })
     expect(parseStoreQuery({ price_min: '', price_max: 'cheap' })).toMatchObject({ priceMin: undefined, priceMax: undefined })
     expect(parseStoreQuery({ price_min: '-50', price_max: '1e9' })).toMatchObject({ priceMin: undefined, priceMax: undefined })
     expect(parseStoreQuery({ price_min: '0', price_max: '300' })).toMatchObject({ priceMin: undefined, priceMax: 300 })
@@ -66,10 +70,13 @@ describe('/store query URLs', () => {
     expect(parseStoreQuery({ price_min: '900', price_max: '200' })).toMatchObject({ priceMin: 200, priceMax: 900 })
   })
 
-  test('labels open and closed price ranges in whole dollars', () => {
+  test('labels typed ranges inclusively and preset bands as half-open', () => {
     expect(priceRangeLabel({ priceMin: 500, priceMax: 1000 })).toBe('$500–$1,000')
     expect(priceRangeLabel({ priceMin: 1000 })).toBe('$1,000+')
     expect(priceRangeLabel({ priceMax: 250 })).toBe('Up to $250')
+    expect(priceRangeLabel({ priceMin: 17.5 })).toBe('$17.50+')
+    expect(priceRangeLabel({ priceMax: 249.99 })).toBe('Under $250')
+    expect(priceRangeLabel({ priceMin: 250, priceMax: 499.99 })).toBe('$250–$500')
     expect(priceRangeLabel({})).toBeUndefined()
   })
 
@@ -90,7 +97,7 @@ describe('/store filtering', () => {
     expect(ids(findStoreListings(catalogue, looseBlackOrWhite))).toEqual(['black-loose'])
   })
 
-  test('hides sold pieces unless collected pieces are included', () => {
+  test('hides sold pieces unless sold pieces are included', () => {
     const query = parseStoreQuery({ stone: 'black-opal' })
 
     expect(ids(findStoreListings(catalogue, query))).not.toContain('sold-black')
@@ -117,6 +124,19 @@ describe('/store filtering', () => {
 })
 
 describe('/store facet counts', () => {
+  test('each price lands in exactly one preset band and band counts match their results', () => {
+    const prices = [99.99, 100, 249.99, 250, 499.99, 500, 1000, 4999.99, 5000, 12000].map((price) =>
+      listing(String(price), { price })
+    )
+    const query = parseStoreQuery({})
+    const counts = countPriceBands(prices, query)
+
+    expect(counts.reduce((sum, count) => sum + count, 0)).toBe(prices.length)
+    STORE_PRICE_BANDS.forEach((band, index) => {
+      expect(counts[index], priceRangeLabel(band)).toBe(findStoreListings(prices, { ...query, ...band }).length)
+    })
+  })
+
   test('each count equals the results for that option alongside the other active filters', () => {
     const query = parseStoreQuery({ stone: 'black-opal', price_min: '400', price_max: '1500' })
     const counts = countStoreFacets(catalogue, query)

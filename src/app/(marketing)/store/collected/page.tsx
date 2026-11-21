@@ -10,7 +10,7 @@ import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { storeLabel } from '../store-query'
 
 export const metadata: Metadata = {
-  title: 'Recently collected | The Good Opal Co',
+  title: 'Recently sold | The Good Opal Co',
   description: 'One-of-a-kind Australian opals and pieces that have already found a home.',
   alternates: { canonical: '/store/collected' },
 }
@@ -34,7 +34,7 @@ export default async function CollectedPage() {
       <header className="border-b border-warm-grey/60 px-5 py-12 sm:px-8 sm:py-16">
         <div className="mx-auto max-w-[92rem]">
           <p className="mb-4 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
-            Recently collected
+            Recently sold
           </p>
           <h1 className="max-w-[18ch] font-serif text-[clamp(2.1rem,3.4vw,3.5rem)] leading-[1.02] text-charcoal">
             Pieces that have found a home.
@@ -60,7 +60,7 @@ export default async function CollectedPage() {
         </div>
       </header>
 
-      <section aria-label="Collected pieces" className="bg-cream-dark px-5 py-12 sm:px-8 sm:py-16">
+      <section aria-label="Sold pieces" className="bg-cream-dark px-5 py-12 sm:px-8 sm:py-16">
         <ul className="mx-auto grid max-w-[92rem] grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
           {docs.map((product) => {
             const first = product.images?.[0]?.image
@@ -88,7 +88,7 @@ export default async function CollectedPage() {
                       />
                     ) : null}
                     <span className="absolute left-3 top-3 rounded-full bg-cream px-3 py-1 font-sans text-xs font-semibold text-charcoal">
-                      Collected
+                      Sold
                     </span>
                   </div>
                   <h2 className="mt-3 font-serif text-base leading-tight text-charcoal group-hover:underline group-hover:underline-offset-4">

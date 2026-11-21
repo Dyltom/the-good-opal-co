@@ -1,11 +1,5 @@
 'use client'
 
-/**
- * Animated Cart Drawer Component
- *
- * Enhanced version with smooth animations and delightful interactions
- */
-
 import { useEffect, useState, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -17,7 +11,7 @@ import { CartEmptyState } from '@/components/ui/EmptyStates'
 import {
   CheckoutButton,
   ShippingRegionToggle,
-  type ShippingRegion,
+  useShippingRegion,
 } from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { formatCurrency } from '@/lib/utils'
@@ -35,7 +29,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
   const [cart, setCart] = useState<Cart | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
-  const [region, setRegion] = useState<ShippingRegion>('AU')
+  const [region, setRegion] = useShippingRegion()
   const [isPending, startTransition] = useTransition()
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
 
@@ -47,14 +41,18 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
     setIsLoading(false)
   }, [])
 
-  // Load cart when drawer opens
   useEffect(() => {
     if (isOpen) {
       loadCart()
     }
   }, [isOpen, loadCart])
 
-  // Listen for cart updates
+  useEffect(() => {
+    const open = () => setIsOpen(true)
+    window.addEventListener('cart-open', open)
+    return () => window.removeEventListener('cart-open', open)
+  }, [])
+
   useEffect(() => {
     const handleCartUpdate = () => {
       if (isOpen) {
@@ -107,8 +105,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
         {children}
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-lg flex flex-col p-0">
-        {/* Animated Header */}
-        {/* pr-16 keeps the title clear of the close button */}
         <SheetHeader className="p-6 pb-4 pr-16 border-b">
           <SheetTitle className="flex items-center gap-2">
             <motion.div
@@ -147,9 +143,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
           </div>
         ) : (
           <>
-            {/* Cart Items - Scrollable. Native overflow instead of Radix
-                ScrollArea, whose display:table viewport defeats min-w-0
-                truncation and lets rows overflow on narrow screens. */}
             <div className="flex-1 overflow-y-auto p-6">
               <AnimatePresence mode="popLayout">
                 {items.map((item) => (
@@ -164,10 +157,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                 ))}
               </AnimatePresence>
             </div>
-
-            {/* Cart Summary */}
             <div className="border-t bg-gradient-to-b from-gray-50 to-white p-6 space-y-4">
-              {/* Total with animation */}
               <div className="relative">
                 <div className="flex justify-between items-center">
                   <span className="text-base font-semibold text-charcoal">
@@ -188,8 +178,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
               </div>
 
               <FreeShippingProgress total={total} />
-
-              {/* Actions with hover effects */}
               <div className="space-y-2 relative z-10">
                 {cart ? (
                   <>
@@ -201,7 +189,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
                   <Button
                     variant="outline"
-                    className="w-full h-10"
+                    className="w-full h-11"
                     asChild
                     onClick={() => setIsOpen(false)}
                   >
@@ -210,7 +198,7 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
                 </motion.div>
 
                 <SheetClose asChild>
-                  <Button variant="ghost" className="w-full h-10 text-charcoal/70 hover:text-charcoal">
+                  <Button variant="ghost" className="w-full h-11 text-charcoal/70 hover:text-charcoal">
                     Continue shopping
                   </Button>
                 </SheetClose>
@@ -223,9 +211,6 @@ export function AnimatedCartDrawer({ children, onCartUpdate }: AnimatedCartDrawe
   )
 }
 
-/**
- * Individual animated cart item
- */
 interface AnimatedCartItemProps {
   item: CartItem
   onRemove: () => void
@@ -254,7 +239,6 @@ function AnimatedCartItem({
       transition={{ type: "spring", stiffness: 200, damping: 20 }}
       className="flex gap-4 py-4 border-b last:border-0"
     >
-      {/* Product Image with hover effect */}
       <motion.div
         whileHover={{ scale: 1.05 }}
         className="w-20 h-20 rounded-xl overflow-hidden bg-white border border-gray-100 flex-shrink-0 relative"
@@ -272,8 +256,6 @@ function AnimatedCartItem({
             <ShoppingBag className="w-6 h-6 text-gray-400" />
           </div>
         )}
-
-        {/* Shimmer effect on hover */}
         <div
           className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-700"
           style={{
@@ -283,16 +265,12 @@ function AnimatedCartItem({
           }}
         />
       </motion.div>
-
-      {/* Product Info */}
       <div className="flex-1 min-w-0">
         <h4 className="font-medium text-sm mb-1 truncate">{item.name}</h4>
         <p className="text-sm text-gray-500 mb-2">
           {formatCurrency(item.price, 'AUD')}
           {item.quantity > 1 ? ' each' : ''}
         </p>
-
-        {/* Quantity Controls with animation */}
         <div className="flex items-center gap-2">
           {(item.maxQuantity ?? Infinity) > 1 ? (
             <>
@@ -301,10 +279,10 @@ function AnimatedCartItem({
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onUpdateQuantity(Math.max(1, item.quantity - 1))}
                 disabled={isPending || isRemoving}
-                className="min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={`Decrease quantity of ${item.name}`}
               >
-                <Minus className="w-4 h-4 sm:w-3 sm:h-3" />
+                <Minus className="w-4 h-4" />
               </motion.button>
 
               <AnimatePresence mode="wait">
@@ -324,10 +302,10 @@ function AnimatedCartItem({
                 whileTap={{ scale: 0.95 }}
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending || isRemoving || item.quantity >= (item.maxQuantity ?? Infinity)}
-                className="min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={`Increase quantity of ${item.name}`}
               >
-                <Plus className="w-4 h-4 sm:w-3 sm:h-3" />
+                <Plus className="w-4 h-4" />
               </motion.button>
             </>
           ) : (
@@ -339,15 +317,13 @@ function AnimatedCartItem({
             whileTap={{ scale: 0.95 }}
             onClick={onRemove}
             disabled={isPending || isRemoving}
-            className="ml-auto min-w-[44px] min-h-[44px] w-11 h-11 sm:w-8 sm:h-8 sm:min-w-[32px] sm:min-h-[32px] rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="ml-auto min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             aria-label={`Remove ${item.name} from cart`}
           >
-            <Trash2 className="w-5 h-5 sm:w-4 sm:h-4" />
+            <Trash2 className="w-5 h-5" />
           </motion.button>
         </div>
       </div>
-
-      {/* Item Total with animation */}
       <div className="text-right">
         <AnimatePresence mode="wait">
           <motion.p

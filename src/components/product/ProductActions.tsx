@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
-import { Button } from '@/components/ui/button'
 import { QuantitySelector } from '@/components/ui/quantity-selector'
 import { formatCurrency } from '@/lib/utils'
 
@@ -21,7 +20,6 @@ export function ProductActions({ product }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1)
   const [showStickyPurchaseBar, setShowStickyPurchaseBar] = useState(false)
   const inlineActionsRef = useRef<HTMLDivElement>(null)
-  const isOutOfStock = product.stock === 0
   const cartProduct = {
     id: product.id,
     slug: product.slug,
@@ -47,7 +45,7 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   return (
     <div className="space-y-4">
-      {!isOutOfStock && product.stock > 1 ? (
+      {product.stock > 1 ? (
         <div>
           <label className="mb-2 block text-sm font-medium">Quantity</label>
           <QuantitySelector
@@ -59,19 +57,13 @@ export function ProductActions({ product }: ProductActionsProps) {
       ) : null}
 
       <div ref={inlineActionsRef} data-testid="inline-product-actions">
-        {isOutOfStock ? (
-          <Button size="lg" className="h-14 w-full" disabled>
-            Collected
-          </Button>
-        ) : (
-          <AddToCartButton
-            product={cartProduct}
-            quantity={quantity}
-            size="lg"
-            animated={false}
-            className="h-14 w-full text-base"
-          />
-        )}
+        <AddToCartButton
+          product={cartProduct}
+          quantity={quantity}
+          size="lg"
+          animated={false}
+          className="h-14 w-full text-base"
+        />
       </div>
 
       {showStickyPurchaseBar ? (
@@ -88,19 +80,13 @@ export function ProductActions({ product }: ProductActionsProps) {
                 {formatCurrency(product.price, 'AUD')}
               </p>
             </div>
-            {isOutOfStock ? (
-              <Button size="lg" className="h-12 flex-1" disabled>
-                Collected
-              </Button>
-            ) : (
-              <AddToCartButton
-                product={cartProduct}
-                quantity={quantity}
-                size="lg"
-                animated={false}
-                className="h-12 flex-1"
-              />
-            )}
+            <AddToCartButton
+              product={cartProduct}
+              quantity={quantity}
+              size="lg"
+              animated={false}
+              className="h-12 flex-1"
+            />
           </div>
         </div>
       ) : null}

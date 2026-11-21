@@ -9,6 +9,7 @@ import { Container } from '@/components/layout'
 import {
   CheckoutButton,
   ShippingRegionToggle,
+  useShippingRegion,
   type ShippingRegion,
 } from '@/components/cart/CheckoutButton'
 import {
@@ -29,15 +30,16 @@ import { Eyebrow } from '@/components/ui/eyebrow'
 
 interface CartPageContentProps {
   initialCart: Cart
+  initialRegion: ShippingRegion
 }
 
-export function CartPageContent({ initialCart }: CartPageContentProps) {
+export function CartPageContent({ initialCart, initialRegion }: CartPageContentProps) {
   const [cart, setCart] = useState(initialCart)
   const [isPending, startTransition] = useTransition()
   const [showClearDialog, setShowClearDialog] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
-  const [region, setRegion] = useState<ShippingRegion>('AU')
+  const [region, setRegion] = useShippingRegion(initialRegion)
   const [feedback, setFeedback] = useState<CheckoutFeedbackSource | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
   useCancelledCheckoutPrompt(useCallback(() => setFeedback('cancelled'), []))
@@ -121,7 +123,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               size="sm"
               onClick={() => setShowClearDialog(true)}
               disabled={isPending}
-              className="text-charcoal/65 hover:text-fire-coral"
+              className="text-charcoal/65 hover:text-fire-coral sm:h-11"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
               Clear cart
@@ -210,7 +212,7 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               <button
                 type="button"
                 onClick={() => setFeedback('cart')}
-                className="mt-4 text-sm text-charcoal/65 underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+                className="mt-2 inline-flex min-h-11 items-center text-sm text-charcoal/65 underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
               >
                 Not ready yet? Tell us what would help
               </button>
@@ -218,8 +220,6 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
           </aside>
         </div>
       </div>
-
-      {/* Mobile checkout summary */}
       <div
         className="fixed inset-x-0 bottom-0 z-40 border-t border-warm-grey/50 bg-cream px-4 py-3 lg:hidden"
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
@@ -348,7 +348,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
             onClick={onRemove}
             disabled={isPending}
             aria-label={`Remove ${item.name} from cart`}
-            className="text-charcoal/65 hover:text-fire-coral"
+            className="text-charcoal/65 hover:text-fire-coral sm:h-11"
           >
             <Trash2 className="h-4 w-4" aria-hidden="true" />
             Remove

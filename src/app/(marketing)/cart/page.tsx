@@ -6,25 +6,17 @@ import { PageTransition } from '@/components/layout/PageTransition'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 
-/**
- * Cart Page Metadata
- */
 export const metadata = {
   title: 'Shopping Cart | The Good Opal Co',
   description: 'Review your shopping cart and proceed to checkout.',
   robots: { index: false, follow: false },
 }
 
-/**
- * Cart Page
- *
- * Server Component that fetches cart from cookies.
- * Cart manipulation is handled by the client component.
- */
 export default async function CartPage() {
-  // Get cart from server (cookies)
   const cart = await getCart()
+  const initialRegion = (await cookies()).get('shipping-region')?.value === 'INTL' ? 'INTL' : 'AU'
 
   return (
     <PageTransition>
@@ -59,7 +51,7 @@ export default async function CartPage() {
               </p>
             </Container>
           ) : (
-            <CartPageContent initialCart={cart} />
+            <CartPageContent initialCart={cart} initialRegion={initialRegion} />
           )}
       </MarketingShell>
     </PageTransition>

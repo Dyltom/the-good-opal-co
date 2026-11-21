@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useTransition } from 'react'
+import { useCallback, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { Lock } from 'lucide-react'
 import { createCheckoutSession, type ShippingRegion } from '@/app/(marketing)/checkout/actions'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,31 @@ const REGIONS: { value: ShippingRegion; label: string }[] = [
   { value: 'INTL', label: 'Overseas' },
 ]
 
+const REGION_COOKIE = 'shipping-region'
+
+function readRegion(): ShippingRegion | undefined {
+  const match = document.cookie.match(/(?:^|; )shipping-region=(AU|INTL)(?:;|$)/)
+  return match ? (match[1] as ShippingRegion) : undefined
+}
+
+function subscribeToRegion(onChange: () => void) {
+  window.addEventListener(REGION_COOKIE, onChange)
+  return () => window.removeEventListener(REGION_COOKIE, onChange)
+}
+
+export function useShippingRegion(initialRegion: ShippingRegion = 'AU') {
+  const region = useSyncExternalStore(
+    subscribeToRegion,
+    () => readRegion() ?? initialRegion,
+    () => initialRegion
+  )
+  const setRegion = useCallback((next: ShippingRegion) => {
+    document.cookie = `${REGION_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`
+    window.dispatchEvent(new Event(REGION_COOKIE))
+  }, [])
+  return [region, setRegion] as const
+}
+
 export function ShippingRegionToggle({ value, onChange, className }: ShippingRegionToggleProps) {
   return (
     <fieldset className={cn('min-w-0', className)}>
@@ -32,7 +57,7 @@ export function ShippingRegionToggle({ value, onChange, className }: ShippingReg
           <label
             key={region.value}
             className={cn(
-              'cursor-pointer px-3 py-2 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-opal-electric-accessible',
+              'flex min-h-11 cursor-pointer items-center justify-center px-3 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-opal-electric-accessible',
               value === region.value ? 'bg-charcoal text-cream' : 'text-charcoal/70 hover:text-charcoal'
             )}
           >

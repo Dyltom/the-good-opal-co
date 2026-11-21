@@ -119,6 +119,12 @@ export function formatCurrency(
   }).format(amount)
 }
 
+export function savePercent(price: number, compareAtPrice?: number | null): number | undefined {
+  return compareAtPrice && compareAtPrice > price
+    ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
+    : undefined
+}
+
 /**
  * Generate a slug from a string
  * @param text - Text to slugify

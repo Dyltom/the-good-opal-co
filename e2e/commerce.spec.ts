@@ -13,6 +13,12 @@ async function firstAvailableProduct(page: Page) {
   return href
 }
 
+async function expectCartDrawerWith(page: Page, productName: string) {
+  const drawer = page.getByRole('dialog', { name: /your cart/i })
+  await expect(drawer).toBeVisible()
+  await expect(drawer.getByText(productName).first()).toBeVisible()
+}
+
 test('catalog or intentional empty state renders', async ({ page }) => {
   const assertNoErrors = failOnRuntimeErrors(page)
   await page.goto('/store')
@@ -27,15 +33,16 @@ test('available product can be added, changed, and removed from cookie cart', as
   const productUrl = await firstAvailableProduct(page)
   test.skip(!productUrl, 'Catalog is empty; seed/publish products before catalog acceptance testing')
 
+  const productName = await page.getByRole('heading', { level: 1 }).innerText()
   const addButton = page.getByRole('button', { name: /Add to cart/i }).first()
   if (!(await addButton.isVisible())) {
-    await expect(page.getByRole('button', { name: 'Out of Stock' }).first()).toBeDisabled()
+    await expect(page.getByRole('link', { name: 'See similar pieces' })).toBeVisible()
     assertNoErrors()
     return
   }
 
   await addButton.click()
-  await expect(page.getByText(/added to (your )?cart/i).first()).toBeVisible()
+  await expectCartDrawerWith(page, productName)
   await page.goto('/cart')
   await expect(page.getByRole('heading', { name: 'Shopping cart' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Checkout', exact: true }).first()).toBeVisible()
@@ -54,7 +61,7 @@ test('cart sends buyers straight to secure payment with a shipping region', asyn
   const addButton = page.getByRole('button', { name: /Add to cart/i }).first()
   test.skip(!(await addButton.isVisible()), 'First catalog item is unavailable')
   await addButton.click()
-  await expect(page.getByText(/added to (your )?cart/i).first()).toBeVisible()
+  await expectCartDrawerWith(page, await page.getByRole('heading', { level: 1 }).innerText())
   await page.goto('/checkout')
 
   await expect(page).toHaveURL(/\/cart$/)

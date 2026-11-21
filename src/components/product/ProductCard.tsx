@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import { Eye } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, savePercent } from '@/lib/utils'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { AddToCartButton } from '@/components/cart/AddToCartButton'
 import { storeLabel } from '@/app/(marketing)/store/store-query'
@@ -49,10 +49,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
   const isAvailable = product.stock > 0
   const productHref = `/store/${product.slug}`
   const details = stoneDetails(product)
-  const onSale = Boolean(product.compareAtPrice && product.compareAtPrice > product.price)
-  const discount = onSale
-    ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
-    : 0
+  const discount = savePercent(product.price, product.compareAtPrice)
   const cartProduct = {
     id: product.id,
     slug: product.slug,
@@ -63,7 +60,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
 
   return (
     <>
-      <article className="group relative">
+      <article className="group relative flex h-full flex-col">
         <div className="relative overflow-hidden rounded-md bg-cream-dark">
           <Link
             href={productHref}
@@ -134,7 +131,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
           )}
         </div>
 
-        <div className="pt-3">
+        <div className="flex flex-1 flex-col pt-3">
           <h3 className="line-clamp-2 font-serif text-[1.05rem] leading-snug text-charcoal">
             <Link
               href={productHref}
@@ -143,16 +140,14 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
               {product.name}
             </Link>
           </h3>
-          {details.length > 0 ? (
-            <p className="mt-1 font-sans text-xs leading-5 text-charcoal/60">{details.join(' · ')}</p>
-          ) : null}
-          <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2 font-sans tabular-nums">
+          <p className="mt-1 min-h-5 font-sans text-xs leading-5 text-charcoal/60">{details.join(' · ')}</p>
+          <p className="mt-auto flex flex-wrap items-baseline gap-x-2 pt-1.5 font-sans tabular-nums">
             {isAvailable ? (
               <>
                 <span className="text-base font-semibold text-charcoal">
                   {formatCurrency(product.price, 'AUD')}
                 </span>
-                {onSale ? (
+                {discount ? (
                   <>
                     <span className="text-sm text-charcoal/45 line-through">
                       {formatCurrency(product.compareAtPrice!, 'AUD')}
@@ -162,7 +157,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                 ) : null}
               </>
             ) : (
-              <span className="text-sm font-medium text-charcoal/60">Collected</span>
+              <span className="text-sm font-medium text-charcoal/60">Sold</span>
             )}
             {product.carats ? (
               <span className="ml-auto text-xs text-charcoal/60">{product.carats} ct</span>

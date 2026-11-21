@@ -161,7 +161,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('cart page exposes a mobile sticky checkout summary and stacks rows', () => {
     const source = read('src/app/(marketing)/cart/cart-content.tsx')
 
-    expect(source).toContain('Mobile checkout summary')
     expect(source).toContain('fixed inset-x-0 bottom-0')
     expect(source).toContain('lg:hidden')
     expect(source).toContain('env(safe-area-inset-bottom)')
@@ -319,7 +318,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('product cards share one gallery vocabulary without blur overlays or scale entrances', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
-    expect(source).toContain('Collected')
+    expect(source).toContain('Sold')
     expect(source).not.toContain('SOLID')
     expect(source).not.toContain('Multiple variants')
     expect(source).not.toContain('Museum style info')

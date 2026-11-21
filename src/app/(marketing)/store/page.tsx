@@ -9,6 +9,7 @@ import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
   caratWeight,
+  countPriceBands,
   countStoreFacets,
   findStoreListings,
   parseStoreQuery,
@@ -221,7 +222,8 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         query={query}
         totalDocs={matching.length}
         facetCounts={countStoreFacets(listings, query)}
-        collectedCount={listings.filter((listing) => listing.stock <= 0).length}
+        priceCounts={countPriceBands(listings, query)}
+        soldCount={listings.filter((listing) => listing.stock <= 0).length}
       />
       <StoreInsights query={query} results={matching.length} />
     </MarketingShell>
