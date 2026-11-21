@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { inquiryTypes } from './contact-intent'
 
+z.config({ jitless: true })
+
 export const contactSchema = z.object({
   name: z.string().trim().min(2, 'Please enter your name.').max(100),
   email: z.string().trim().email('Please enter a valid email address.').max(254),

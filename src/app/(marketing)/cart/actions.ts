@@ -11,6 +11,7 @@
  */
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import {
   getCart,
   addItemToCart,
@@ -182,40 +183,16 @@ export async function fetchCart(): Promise<ActionResult<Cart>> {
   }
 }
 
-/**
- * Form action version of addToCart for use with forms
- * Extracts product data from FormData
- *
- * @param formData - Form data containing product details
- * @returns ActionResult with updated cart
- */
-export async function addToCartFormAction(formData: FormData): Promise<ActionResult<Cart>> {
-  const productId = formData.get('productId') as string
-  const slug = formData.get('slug') as string
-  const name = formData.get('name') as string
-  const priceStr = formData.get('price') as string
-  const image = formData.get('image') as string | null
-
-  if (!productId || !slug || !name || !priceStr) {
-    return {
-      success: false,
-      error: 'Missing required product information',
-    }
-  }
-
-  const price = parseFloat(priceStr)
-  if (isNaN(price) || price < 0) {
-    return {
-      success: false,
-      error: 'Invalid price',
-    }
-  }
-
-  return addToCart({
-    productId,
-    slug,
-    name,
-    price,
-    image: image ?? undefined,
-  })
+export async function addToCartFormAction(formData: FormData): Promise<void> {
+  await addToCartWithQuantity(
+    {
+      productId: formData.get('productId'),
+      slug: formData.get('slug'),
+      name: formData.get('name'),
+      price: Number(formData.get('price')),
+      image: formData.get('image') ?? undefined,
+    },
+    Number(formData.get('quantity'))
+  )
+  redirect('/cart')
 }
