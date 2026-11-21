@@ -11,6 +11,13 @@ import {
   STORE_STONES,
 } from '@/app/(marketing)/store/store-query'
 
+export type Availability = 'in_stock' | 'reserved' | 'sold'
+
+export interface Weight {
+  value: number
+  unit: 'ct' | 'g'
+}
+
 export interface CatalogProduct {
   id: string
   name: string
@@ -20,14 +27,14 @@ export interface CatalogProduct {
   summary: string
   price: number
   stock: number
-  inStock: boolean
+  availability: Availability
   images: string[]
   sku: string
   category: string
   categoryLabel: string
   stone?: string
   origin?: string
-  weight?: string
+  weight?: Weight
   metal?: string
   ringSize?: string
   updatedAt: string
@@ -54,10 +61,14 @@ function label(options: readonly (readonly [string, string])[], value: string | 
   return value ? options.find(([option]) => option === value)?.[1] : undefined
 }
 
-function weightLabel(product: Product): string | undefined {
+function productWeight(product: Product): Weight | undefined {
   const unit = product.weightUnit ?? (product.category === 'raw-opals' ? 'carats' : undefined)
   if (!product.weight || !unit) return undefined
-  return `${product.weight} ${unit === 'carats' ? 'ct' : 'g'}`
+  return { value: product.weight, unit: unit === 'carats' ? 'ct' : 'g' }
+}
+
+export function weightLabel(weight: Weight): string {
+  return `${weight.value} ${weight.unit}`
 }
 
 export function productImageUrls(product: Product): string[] {
@@ -75,13 +86,17 @@ export function productImageUrls(product: Product): string[] {
   return gallery.flatMap((image) => absoluteUrl(image.url) ?? [])
 }
 
-export function toCatalogProduct(product: Product): CatalogProduct {
+export function toCatalogProduct(
+  product: Product,
+  reservedIds: ReadonlySet<string> = new Set()
+): CatalogProduct {
   const about = parseProductDescription(product.description)
   const description = about.paragraphs.join(' ')
   const stock = product.stock ?? 0
+  const id = String(product.id)
 
   return {
-    id: String(product.id),
+    id,
     name: product.name,
     slug: product.slug,
     url: `${APP_URL}/store/${encodeURIComponent(product.slug)}`,
@@ -89,14 +104,14 @@ export function toCatalogProduct(product: Product): CatalogProduct {
     summary: summarize(description),
     price: product.price,
     stock,
-    inStock: stock > 0,
+    availability: stock > 0 ? 'in_stock' : reservedIds.has(id) ? 'reserved' : 'sold',
     images: productImageUrls(product),
     sku: product.sku ?? String(product.id),
     category: product.category,
     categoryLabel: label(STORE_CATEGORIES, product.category) ?? product.category,
     stone: label(STORE_STONES, product.stoneType),
     origin: label(STORE_ORIGINS, product.stoneOrigin),
-    weight: weightLabel(product),
+    weight: productWeight(product),
     metal: product.material && product.material !== 'none' ? label(STORE_MATERIALS, product.material) : undefined,
     ringSize: product.ringSize ?? undefined,
     updatedAt: product.updatedAt,

@@ -13,7 +13,7 @@ import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { rewriteLegacyPostLinks } from '@/lib/rich-text'
-import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
+import { BreadcrumbJsonLd, founderId, JsonLd } from '@/components/seo'
 
 export const dynamic = 'force-dynamic'
 
@@ -147,7 +147,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       ? {
           '@type': 'Person',
           name: author.name,
-          ...(author.name === 'Stephanie Caruana' ? { url: `${APP_URL}/about` } : {}),
+          ...(author.name === 'Stephanie Caruana' ? { '@id': founderId, url: `${APP_URL}/about` } : {}),
         }
       : { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },
     publisher: { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },

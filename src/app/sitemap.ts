@@ -1,29 +1,22 @@
 import type { MetadataRoute } from 'next'
+import type { Media } from '@/types/payload-types'
 import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { getPublishedCatalog } from '@/lib/catalog-query'
+import { absoluteUrl } from '@/lib/catalog'
+import { resolveMediaUrl } from '@/lib/media-url'
 
 interface SitemapDoc {
   slug: string
   updatedAt: string
 }
 
-const STATIC_PAGES: Array<{ path: string; changeFrequency: 'daily' | 'weekly' | 'monthly' | 'yearly'; priority: number }> = [
-  { path: '', changeFrequency: 'daily', priority: 1 },
-  { path: '/store', changeFrequency: 'daily', priority: 0.9 },
-  { path: '/services', changeFrequency: 'monthly', priority: 0.8 },
-  { path: '/services/design', changeFrequency: 'weekly', priority: 0.8 },
-  { path: '/courses', changeFrequency: 'weekly', priority: 0.8 },
-  { path: '/blog', changeFrequency: 'weekly', priority: 0.7 },
-  { path: '/about', changeFrequency: 'monthly', priority: 0.5 },
-  { path: '/faq', changeFrequency: 'monthly', priority: 0.5 },
-  { path: '/contact', changeFrequency: 'monthly', priority: 0.5 },
-  { path: '/shipping', changeFrequency: 'monthly', priority: 0.4 },
-  { path: '/returns', changeFrequency: 'monthly', priority: 0.4 },
-  { path: '/legal/privacy', changeFrequency: 'yearly', priority: 0.2 },
-  { path: '/legal/terms', changeFrequency: 'yearly', priority: 0.2 },
-  { path: '/legal/cookies', changeFrequency: 'yearly', priority: 0.2 },
-]
+type ChangeFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+function latest(docs: Array<{ updatedAt: string }>): Date | undefined {
+  const times = docs.map((doc) => Date.parse(doc.updatedAt)).filter((time) => !Number.isNaN(time))
+  return times.length > 0 ? new Date(Math.max(...times)) : undefined
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayload()
@@ -34,10 +27,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         collection: 'posts',
         where: { _status: { equals: 'published' } },
         limit: 1000,
-        select: { slug: true, updatedAt: true },
+        depth: 1,
+        select: { slug: true, updatedAt: true, featuredImage: true },
         overrideAccess: false,
       })
-      .then(({ docs }) => docs as SitemapDoc[]),
+      .then(({ docs }) => docs as Array<SitemapDoc & { featuredImage?: number | Media | null }>),
     payload
       .find({
         collection: 'courses',
@@ -49,25 +43,55 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .then(({ docs }) => docs as SitemapDoc[]),
   ])
 
+  const catalogUpdated = latest(products)
+  const page = (
+    path: string,
+    changeFrequency: ChangeFrequency,
+    priority: number,
+    lastModified?: Date
+  ): MetadataRoute.Sitemap[number] => ({
+    url: `${APP_URL}${path}`,
+    lastModified,
+    changeFrequency,
+    priority,
+  })
+
   return [
-    ...STATIC_PAGES.map((page) => ({
-      url: `${APP_URL}${page.path}`,
-      changeFrequency: page.changeFrequency,
-      priority: page.priority,
-    })),
+    page('', 'daily', 1, catalogUpdated),
+    page('/store', 'daily', 0.9, catalogUpdated),
+    ...(products.some((product) => product.stock <= 0) ? [page('/store/collected', 'weekly', 0.4)] : []),
+    page('/services', 'monthly', 0.8),
+    page('/services/design', 'weekly', 0.8),
+    page('/courses', 'weekly', 0.8, latest(courses)),
+    page('/blog', 'weekly', 0.7, latest(posts)),
+    page('/about', 'monthly', 0.5),
+    page('/faq', 'monthly', 0.5),
+    page('/contact', 'monthly', 0.5),
+    page('/shipping', 'monthly', 0.4),
+    page('/returns', 'monthly', 0.4),
+    page('/legal/privacy', 'yearly', 0.2),
+    page('/legal/terms', 'yearly', 0.2),
+    page('/legal/cookies', 'yearly', 0.2),
     ...products.map((product) => ({
       url: product.url,
       lastModified: new Date(product.updatedAt),
       changeFrequency: 'weekly' as const,
-      priority: product.inStock ? 0.8 : 0.4,
+      priority: product.availability === 'sold' ? 0.4 : 0.8,
       images: product.images,
     })),
-    ...posts.map((post) => ({
-      url: `${APP_URL}/blog/${encodeURIComponent(post.slug)}`,
-      lastModified: new Date(post.updatedAt),
-      changeFrequency: 'monthly' as const,
-      priority: 0.6,
-    })),
+    ...posts.map((post) => {
+      const image =
+        post.featuredImage && typeof post.featuredImage === 'object'
+          ? absoluteUrl(resolveMediaUrl(post.featuredImage.url))
+          : undefined
+      return {
+        url: `${APP_URL}/blog/${encodeURIComponent(post.slug)}`,
+        lastModified: new Date(post.updatedAt),
+        changeFrequency: 'monthly' as const,
+        priority: 0.6,
+        images: image ? [image] : undefined,
+      }
+    }),
     ...courses.map((course) => ({
       url: `${APP_URL}/courses/${encodeURIComponent(course.slug)}`,
       lastModified: new Date(course.updatedAt),

@@ -1,17 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronDown } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
 import { Button } from '@/components/ui/button'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
 
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions | The Good Opal Co',
@@ -181,22 +175,20 @@ export default function FAQPage() {
               >
                 {category.title}
               </h2>
-              <Accordion type="single" collapsible>
-                {category.faqs.map((faq, index) => (
-                  <AccordionItem
-                    key={faq.question}
-                    value={`${categoryIndex}-${index}`}
-                    className="border-rule"
-                  >
-                    <AccordionTrigger className="py-4 text-left text-[15px] leading-6 text-ink hover:no-underline">
+              <div>
+                {category.faqs.map((faq) => (
+                  <details key={faq.question} name={`faq-${categoryIndex}`} className="group">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-left text-[15px] leading-6 text-ink [&::-webkit-details-marker]:hidden">
                       {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="max-w-[65ch] pb-5 text-sm leading-6 text-ink-2">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
+                      <ChevronDown
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 text-ink-3 group-open:rotate-180 group-open:text-accent motion-safe:transition-transform motion-safe:duration-200"
+                      />
+                    </summary>
+                    <p className="max-w-[65ch] pb-5 text-sm leading-6 text-ink-2">{faq.answer}</p>
+                  </details>
                 ))}
-              </Accordion>
+              </div>
             </section>
           ))}
         </div>

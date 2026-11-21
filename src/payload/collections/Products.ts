@@ -15,6 +15,7 @@ import {
 import { validateBuilderStoneContour } from '../../lib/custom-builder/stone-contour.ts'
 import { BUILDER_MEDIA_REPLACEMENT_CONTEXT } from '../../lib/custom-builder/media-mapping-invalidation.ts'
 import { wakeBuilderMappingWorkerAfterProductChange } from '../../lib/custom-builder/builder-mapping-trigger.ts'
+import { indexNowOnPublish } from '../../lib/indexnow.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -42,6 +43,11 @@ export const Products: CollectionConfig = {
     ],
     afterChange: [
       wakeBuilderMappingWorkerAfterProductChange,
+      indexNowOnPublish((doc) =>
+        doc.status === 'published' && typeof doc.slug === 'string'
+          ? `/store/${encodeURIComponent(doc.slug)}`
+          : null
+      ),
       ({ doc, previousDoc, req }) => {
         if (!builderMappingNeedsReview(doc, previousDoc)) return
         req.payload.logger.info({

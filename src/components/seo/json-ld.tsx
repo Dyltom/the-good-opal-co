@@ -1,17 +1,8 @@
-/**
- * JSON-LD Structured Data Component
- *
- * Provides SEO-friendly structured data for search engines.
- * Supports various schema.org types for products, organization, and breadcrumbs.
- */
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { calculateShipping, RETURN_WINDOW_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
 import { SOCIAL_PROFILES } from '@/lib/constants/social'
-import { absoluteUrl } from '@/lib/catalog'
+import { absoluteUrl, type Availability, type CatalogProduct } from '@/lib/catalog'
 
-/**
- * Base JSON-LD component for rendering structured data
- */
 interface JsonLdProps {
   data: Record<string, unknown>
 }
@@ -37,12 +28,14 @@ export function JsonLd({ data }: JsonLdProps) {
 const organizationId = `${APP_URL}/#organization`
 const websiteId = `${APP_URL}/#website`
 const returnPolicyId = `${APP_URL}/returns#policy`
+export const founderId = `${APP_URL}/about#stephanie-caruana`
+const shippingCountries = [...SHIPPING_COUNTRIES.AUSTRALIA, ...SHIPPING_COUNTRIES.INTERNATIONAL]
 
 export function merchantReturnPolicyStructuredData(): Record<string, unknown> {
   return {
     '@type': 'MerchantReturnPolicy',
     '@id': returnPolicyId,
-    applicableCountry: [...SHIPPING_COUNTRIES.AUSTRALIA, ...SHIPPING_COUNTRIES.INTERNATIONAL],
+    applicableCountry: shippingCountries,
     returnPolicyCountry: 'AU',
     returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
     merchantReturnDays: RETURN_WINDOW_DAYS,
@@ -52,10 +45,18 @@ export function merchantReturnPolicyStructuredData(): Record<string, unknown> {
   }
 }
 
+const customWorkReturnPolicy = {
+  '@type': 'MerchantReturnPolicy',
+  applicableCountry: shippingCountries,
+  returnPolicyCountry: 'AU',
+  returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
+  merchantReturnLink: `${APP_URL}/returns`,
+}
+
 export function organizationStructuredData(contact?: { email: string }): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': 'OnlineStore',
     '@id': organizationId,
     name: APP_NAME,
     description: 'Australian opals, jewellery, custom ring design, and practical opal education.',
@@ -72,7 +73,7 @@ export function organizationStructuredData(contact?: { email: string }): Record<
     image: `${APP_URL}/images/about-hero.jpg`,
     founder: {
       '@type': 'Person',
-      '@id': `${APP_URL}/about#stephanie-caruana`,
+      '@id': founderId,
       name: 'Stephanie Caruana',
       url: `${APP_URL}/about`,
     },
@@ -80,12 +81,13 @@ export function organizationStructuredData(contact?: { email: string }): Record<
       '@type': 'PostalAddress',
       addressCountry: 'AU',
     },
+    currenciesAccepted: 'AUD',
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
       url: `${APP_URL}/contact`,
       email: contact?.email,
-      areaServed: [...SHIPPING_COUNTRIES.AUSTRALIA, ...SHIPPING_COUNTRIES.INTERNATIONAL],
+      areaServed: shippingCountries,
       availableLanguage: ['English'],
     },
     sameAs: SOCIAL_PROFILES.length > 0 ? SOCIAL_PROFILES.map((profile) => profile.url) : undefined,
@@ -100,29 +102,15 @@ export function organizationStructuredData(contact?: { email: string }): Record<
   }
 }
 
-/**
- * Organization structured data for the business
- */
 export async function OrganizationJsonLd() {
   const { CONTACT_INFO } = await import('@/lib/constants/contact')
   return <JsonLd data={organizationStructuredData({ email: CONTACT_INFO.email })} />
 }
 
-/**
- * Product structured data
- */
-interface ProductJsonLdProps {
-  product: {
-    name: string
-    slug: string
-    description: string
-    price: number
-    images: string[]
-    category?: string
-    stock?: number
-    sku?: string
-    properties?: Array<{ name: string; value: string }>
-  }
+const SCHEMA_AVAILABILITY: Record<Availability, string> = {
+  in_stock: 'https://schema.org/InStock',
+  reserved: 'https://schema.org/Reserved',
+  sold: 'https://schema.org/SoldOut',
 }
 
 function shippingDetails(price: number, destination: keyof typeof SHIPPING_COUNTRIES) {
@@ -141,25 +129,39 @@ function shippingDetails(price: number, destination: keyof typeof SHIPPING_COUNT
   }
 }
 
+interface ProductProperty {
+  name: string
+  value: string
+}
+
 export function productStructuredData(
-  product: ProductJsonLdProps['product']
+  product: CatalogProduct,
+  properties: ProductProperty[] = []
 ): Record<string, unknown> {
-  const productUrl = `${APP_URL}/store/${product.slug}`
+  const material = [product.metal, product.stone].filter((value): value is string => Boolean(value))
 
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    '@id': `${productUrl}#product`,
+    '@id': `${product.url}#product`,
     name: product.name,
-    description: product.description,
-    image: product.images
-      .map((image) => absoluteUrl(image))
-      .filter((image): image is string => Boolean(image)),
-    url: productUrl,
-    sku: product.sku ?? product.slug,
-    category: product.category ?? 'Gemstones',
-    additionalProperty: product.properties?.length
-      ? product.properties.map((property) => ({
+    description: product.description || undefined,
+    image: product.images,
+    url: product.url,
+    sku: product.sku,
+    category: product.categoryLabel,
+    material: material.length > 0 ? material : undefined,
+    weight: product.weight
+      ? {
+          '@type': 'QuantitativeValue',
+          value: product.weight.value,
+          unitCode: product.weight.unit === 'ct' ? 'CTM' : 'GRM',
+          unitText: product.weight.unit,
+        }
+      : undefined,
+    size: product.ringSize ? `Ring size ${product.ringSize}` : undefined,
+    additionalProperty: properties.length
+      ? properties.map((property) => ({
           '@type': 'PropertyValue',
           name: property.name,
           value: property.value,
@@ -171,16 +173,16 @@ export function productStructuredData(
     },
     offers: {
       '@type': 'Offer',
-      url: productUrl,
+      url: product.url,
       priceCurrency: 'AUD',
       price: product.price,
       itemCondition: 'https://schema.org/NewCondition',
-      availability:
-        product.stock && product.stock > 0
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/SoldOut',
-      seller: { '@type': 'Organization', '@id': organizationId, name: APP_NAME },
-      hasMerchantReturnPolicy: merchantReturnPolicyStructuredData(),
+      availability: SCHEMA_AVAILABILITY[product.availability],
+      seller: { '@type': 'OnlineStore', '@id': organizationId, name: APP_NAME },
+      hasMerchantReturnPolicy:
+        product.category === 'custom-commissions'
+          ? customWorkReturnPolicy
+          : merchantReturnPolicyStructuredData(),
       shippingDetails: [
         shippingDetails(product.price, 'AUSTRALIA'),
         shippingDetails(product.price, 'INTERNATIONAL'),
@@ -189,50 +191,46 @@ export function productStructuredData(
   }
 }
 
-export function ProductJsonLd({ product }: ProductJsonLdProps) {
-  return <JsonLd data={productStructuredData(product)} />
+export function ProductJsonLd({
+  product,
+  properties,
+}: {
+  product: CatalogProduct
+  properties?: ProductProperty[]
+}) {
+  return <JsonLd data={productStructuredData(product, properties)} />
 }
 
-/**
- * Breadcrumb structured data
- */
 interface BreadcrumbItem {
   name: string
   url: string
 }
 
-interface BreadcrumbJsonLdProps {
-  items: BreadcrumbItem[]
+export function BreadcrumbJsonLd({ items }: { items: BreadcrumbItem[] }) {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: items.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: absoluteUrl(item.url),
+        })),
+      }}
+    />
+  )
 }
 
-export function BreadcrumbJsonLd({ items }: BreadcrumbJsonLdProps) {
-  const appUrl = APP_URL
-
-  const data = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: items.map((item, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: item.name,
-      item: item.url.startsWith('http') ? item.url : `${appUrl}${item.url}`,
-    })),
-  }
-
-  return <JsonLd data={data} />
-}
-
-/**
- * Collection/Category page structured data
- */
 interface CollectionJsonLdProps {
   name: string
   description: string
   url: string
+  total: number
   products: Array<{
     name: string
     slug: string
-    price: number
     image?: string
   }>
 }
@@ -241,33 +239,28 @@ export function collectionStructuredData({
   name,
   description,
   url,
+  total,
   products,
 }: CollectionJsonLdProps): Record<string, unknown> {
-  const appUrl = APP_URL
+  const pageUrl = absoluteUrl(url)
 
   return {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
+    '@id': `${pageUrl}#collection`,
     name,
     description,
-    url: url.startsWith('http') ? url : `${appUrl}${url}`,
+    url: pageUrl,
+    isPartOf: { '@type': 'WebSite', '@id': websiteId },
     mainEntity: {
       '@type': 'ItemList',
-      numberOfItems: products.length,
-      itemListElement: products.slice(0, 10).map((product, index) => ({
+      numberOfItems: total,
+      itemListElement: products.map((product, index) => ({
         '@type': 'ListItem',
         position: index + 1,
-        item: {
-          '@type': 'Product',
-          name: product.name,
-          url: `${appUrl}/store/${product.slug}`,
-          image: absoluteUrl(product.image),
-          offers: {
-            '@type': 'Offer',
-            priceCurrency: 'AUD',
-            price: product.price,
-          },
-        },
+        url: `${APP_URL}/store/${encodeURIComponent(product.slug)}`,
+        name: product.name,
+        image: absoluteUrl(product.image),
       })),
     },
   }
@@ -277,60 +270,52 @@ export function CollectionJsonLd(props: CollectionJsonLdProps) {
   return <JsonLd data={collectionStructuredData(props)} />
 }
 
-/**
- * FAQ structured data
- */
 interface FaqItem {
   question: string
   answer: string
 }
 
-interface FaqJsonLdProps {
-  items: FaqItem[]
+export function FaqJsonLd({ items }: { items: FaqItem[] }) {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: items.map((item) => ({
+          '@type': 'Question',
+          name: item.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.answer,
+          },
+        })),
+      }}
+    />
+  )
 }
 
-export function FaqJsonLd({ items }: FaqJsonLdProps) {
-  const data = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: items.map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.answer,
-      },
-    })),
-  }
-
-  return <JsonLd data={data} />
-}
-
-/**
- * Website structured data with search action
- */
 export function WebsiteJsonLd() {
-  const appUrl = APP_URL
-
-  const data = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    '@id': websiteId,
-    name: APP_NAME,
-    url: appUrl,
-    publisher: { '@id': organizationId },
-    inLanguage: 'en-AU',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${appUrl}/store?search={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  }
-
-  return <JsonLd data={data} />
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        '@id': websiteId,
+        name: APP_NAME,
+        url: APP_URL,
+        publisher: { '@id': organizationId },
+        inLanguage: 'en-AU',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${APP_URL}/store?search={search_term_string}`,
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      }}
+    />
+  )
 }
 
 interface CourseJsonLdProps {
@@ -369,6 +354,7 @@ export function courseStructuredData(course: CourseJsonLdProps['course']): Recor
     instructor: course.instructor
       ? {
           '@type': 'Person',
+          ...(course.instructor === 'Stephanie Caruana' ? { '@id': founderId } : {}),
           name: course.instructor,
         }
       : undefined,

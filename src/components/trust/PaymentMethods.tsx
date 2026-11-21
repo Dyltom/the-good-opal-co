@@ -1,7 +1,6 @@
 import { Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-export const METHODS_ENABLED_IN_STRIPE = ['Visa', 'Mastercard', 'Amex', 'Apple Pay', 'Klarna']
+import { METHODS_ENABLED_IN_STRIPE } from '@/lib/constants/payment'
 
 export function PaymentMethods({ className }: { className?: string }) {
   return (

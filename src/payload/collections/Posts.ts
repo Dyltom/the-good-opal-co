@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, publishedVersionOrAdmin } from '../../lib/payload-access.ts'
+import { indexNowOnPublish } from '../../lib/indexnow.ts'
 import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 
 export const Posts: CollectionConfig = {
@@ -16,6 +17,15 @@ export const Posts: CollectionConfig = {
   },
   versions: {
     drafts: true,
+  },
+  hooks: {
+    afterChange: [
+      indexNowOnPublish((doc) =>
+        doc._status === 'published' && typeof doc.slug === 'string'
+          ? `/blog/${encodeURIComponent(doc.slug)}`
+          : null
+      ),
+    ],
   },
   fields: [
     {
