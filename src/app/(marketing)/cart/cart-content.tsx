@@ -263,7 +263,7 @@ function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRo
         <p className="mt-1 text-[12.5px] text-ink-2">
           {(item.maxQuantity ?? Infinity) > 1
             ? `${formatCurrency(item.price, 'AUD')} each`
-            : 'One of a kind'}
+            : 'Only one available'}
         </p>
 
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">

@@ -204,6 +204,16 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'soldPerUnit',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Sold per unit, chosen at random',
+      admin: {
+        description:
+          'Tick for parcels of matched stones priced each, where the buyer receives stones picked from the batch rather than the exact one pictured.',
+      },
+    },
+    {
       name: 'sku',
       type: 'text',
       unique: true,
@@ -288,6 +298,7 @@ export const Products: CollectionConfig = {
         { label: 'Fire Opal', value: 'fire-opal' },
         { label: 'Matrix Opal', value: 'matrix-opal' },
         { label: 'Opal Doublet', value: 'opal-doublet' },
+        { label: 'Opal Triplet', value: 'opal-triplet' },
       ],
       admin: {
         description: 'Type of opal used',

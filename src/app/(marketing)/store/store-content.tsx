@@ -43,6 +43,7 @@ export interface StoreProduct {
   compareAtPrice?: number
   stock: number
   reserved?: boolean
+  soldPerUnit?: boolean
   featured?: boolean
   category?: string
   image?: string
@@ -259,6 +260,8 @@ function FilterGroups({
       {facet('origin')}
       <PriceGroup query={query} counts={counts.prices} totals={totals.prices} sheet={sheet} />
       {facet('carat')}
+      {facet('metal')}
+      {facet('size')}
       {soldCount > 0 ? (
         <Facet label="Availability">
           <OptionRow
