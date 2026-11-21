@@ -8,6 +8,7 @@ import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import type { Product } from '@/types/payload-types'
 import { cn } from '@/lib/utils'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { caratWeight } from '@/app/(marketing)/store/store-query'
 
 async function findRelatedProducts(product: Product, limit: number): Promise<Product[]> {
   const tags = (product.tags ?? []).flatMap((entry) => (entry.tag ? [entry.tag] : []))
@@ -101,6 +102,7 @@ export async function RelatedProducts({
                 category: relatedProduct.category,
                 stoneOrigin: relatedProduct.stoneOrigin ?? undefined,
                 stoneType: relatedProduct.stoneType ?? undefined,
+                carats: caratWeight(relatedProduct),
               }}
               index={index}
             />

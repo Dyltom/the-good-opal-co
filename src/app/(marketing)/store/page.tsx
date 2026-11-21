@@ -1,22 +1,22 @@
 import { redirect } from 'next/navigation'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import type { Metadata } from 'next'
-import type { Sort, Where } from 'payload'
 import { MarketingShell } from '@/components/marketing'
 import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
-import { StoreContent, type StoreFacets, type StoreProduct } from './store-content'
+import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
 import {
+  caratWeight,
+  countStoreFacets,
+  findStoreListings,
   parseStoreQuery,
-  priceRangeBounds,
-  priceRangeOf,
   PRODUCTS_PER_PAGE,
   storeMetadata,
   storeUrl,
-  type StoreQuery,
+  type StoreListing,
   type StoreSearchParams,
 } from './store-query'
 
@@ -55,13 +55,6 @@ export interface Product {
   updatedAt: string
 }
 
-const sortMap = {
-  featured: ['-featured', '-createdAt'],
-  newest: '-createdAt',
-  'price-low': 'price',
-  'price-high': '-price',
-} satisfies Record<string, Sort>
-
 function objectRecord(value: unknown): Record<string, unknown> | undefined {
   return typeof value === 'object' && value !== null
     ? value as Record<string, unknown>
@@ -89,6 +82,13 @@ function optionalString(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
+function caratsOf(product: Record<string, unknown>): number | undefined {
+  return caratWeight({
+    weight: typeof product.weight === 'number' ? product.weight : undefined,
+    weightUnit: optionalString(product.weightUnit),
+  })
+}
+
 function toStoreProduct(value: unknown): StoreProduct | undefined {
   const product = objectRecord(value)
   if (
@@ -114,59 +114,84 @@ function toStoreProduct(value: unknown): StoreProduct | undefined {
     image: firstImageUrl(product.images) ?? ownedProductImageUrl(product.slug),
     stoneOrigin: optionalString(product.stoneOrigin),
     stoneType: optionalString(product.stoneType),
-    createdAt: optionalString(product.createdAt),
+    carats: caratsOf(product),
+  }
+}
+
+function toStoreListing(value: unknown): StoreListing | undefined {
+  const product = objectRecord(value)
+  if (
+    !product ||
+    (typeof product.id !== 'string' && typeof product.id !== 'number') ||
+    typeof product.name !== 'string' ||
+    typeof product.price !== 'number'
+  ) {
+    return undefined
+  }
+
+  return {
+    id: String(product.id),
+    name: product.name,
+    sku: optionalString(product.sku),
+    category: optionalString(product.category),
+    stoneType: optionalString(product.stoneType),
+    stoneOrigin: optionalString(product.stoneOrigin),
+    price: product.price,
+    stock: typeof product.stock === 'number' ? product.stock : 0,
+    featured: product.featured === true,
+    createdAt: optionalString(product.createdAt) ?? '',
+    carats: caratsOf(product),
   }
 }
 
 export default async function StorePage({ searchParams }: StorePageProps) {
   const query = parseStoreQuery(await searchParams)
-  const conditions: Where[] = [LISTED_PRODUCTS]
-
-  if (query.availability === 'available') conditions.push({ stock: { greater_than: 0 } })
-  if (query.category) conditions.push({ category: { equals: query.category } })
-  if (query.stone) conditions.push({ stoneType: { equals: query.stone } })
-  if (query.origin) conditions.push({ stoneOrigin: { equals: query.origin } })
-  if (query.material) conditions.push({ material: { equals: query.material } })
-  if (query.price) {
-    const [min, max] = priceRangeBounds(query.price)
-    conditions.push({ price: { greater_than_equal: min } })
-    if (Number.isFinite(max)) conditions.push({ price: { less_than: max } })
-  }
-  if (query.search) {
-    conditions.push({
-      or: [
-        { name: { contains: query.search } },
-        { sku: { contains: query.search } },
-      ],
-    })
-  }
-
   const payload = await getPayload()
-  const [result, catalogue] = await Promise.all([
-    payload.find({
-      collection: 'products',
-      where: { and: conditions },
-      limit: PRODUCTS_PER_PAGE,
-      page: query.page,
-      sort: sortMap[query.sort],
-      depth: 1,
-    }),
-    payload.find({
-      collection: 'products',
-      where: LISTED_PRODUCTS,
-      pagination: false,
-      depth: 0,
-      select: { category: true, stoneType: true, stoneOrigin: true, price: true, stock: true },
-    }),
-  ])
+  const catalogue = await payload.find({
+    collection: 'products',
+    where: LISTED_PRODUCTS,
+    pagination: false,
+    depth: 0,
+    select: {
+      name: true,
+      sku: true,
+      category: true,
+      stoneType: true,
+      stoneOrigin: true,
+      price: true,
+      stock: true,
+      featured: true,
+      createdAt: true,
+      weight: true,
+      weightUnit: true,
+    },
+  })
+  const listings = catalogue.docs
+    .map(toStoreListing)
+    .filter((listing): listing is StoreListing => listing !== undefined)
+  const matching = findStoreListings(listings, query)
+  const lastPage = Math.max(1, Math.ceil(matching.length / PRODUCTS_PER_PAGE))
 
-  if (result.totalPages > 0 && query.page > result.totalPages) {
-    redirect(storeUrl(query, result.totalPages))
+  if (query.page > lastPage) {
+    redirect(storeUrl(query, lastPage))
   }
 
-  const products = result.docs
-    .map(toStoreProduct)
-    .filter((product): product is StoreProduct => product !== undefined)
+  const shownIds = matching.slice(0, query.page * PRODUCTS_PER_PAGE).map((listing) => listing.id)
+  const shown = shownIds.length > 0
+    ? await payload.find({
+      collection: 'products',
+      where: { id: { in: shownIds } },
+      pagination: false,
+      depth: 1,
+    })
+    : { docs: [] }
+  const byId = new Map(
+    shown.docs
+      .map(toStoreProduct)
+      .filter((product): product is StoreProduct => product !== undefined)
+      .map((product) => [product.id, product])
+  )
+  const products = shownIds.flatMap((id) => byId.get(id) ?? [])
 
   return (
     <MarketingShell>
@@ -185,33 +210,11 @@ export default async function StorePage({ searchParams }: StorePageProps) {
       <StoreContent
         products={products}
         query={query}
-        totalDocs={result.totalDocs}
-        totalPages={result.totalPages}
-        facets={storeFacets(catalogue.docs, query)}
+        totalDocs={matching.length}
+        facetCounts={countStoreFacets(listings, query)}
+        collectedCount={listings.filter((listing) => listing.stock <= 0).length}
       />
-      <StoreInsights query={query} results={result.totalDocs} />
+      <StoreInsights query={query} results={matching.length} />
     </MarketingShell>
   )
-}
-
-interface CatalogueEntry {
-  category?: string | null
-  stoneType?: string | null
-  stoneOrigin?: string | null
-  price?: number | null
-  stock?: number | null
-}
-
-function storeFacets(entries: CatalogueEntry[], query: StoreQuery): StoreFacets {
-  const inScope = entries.filter((entry) => query.availability === 'all' || (entry.stock ?? 0) > 0)
-  const present = (values: (string | null | undefined)[]) =>
-    new Set(values.filter((value): value is string => Boolean(value)))
-
-  return {
-    category: present(inScope.map((entry) => entry.category)),
-    stone: present(inScope.map((entry) => entry.stoneType)),
-    origin: present(inScope.map((entry) => entry.stoneOrigin)),
-    price: present(inScope.map((entry) => (typeof entry.price === 'number' ? priceRangeOf(entry.price) : undefined))),
-    collectedCount: entries.filter((entry) => (entry.stock ?? 0) <= 0).length,
-  }
 }

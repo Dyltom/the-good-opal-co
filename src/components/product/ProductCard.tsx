@@ -27,6 +27,7 @@ interface ProductCardProduct {
   image?: string
   stoneOrigin?: string
   stoneType?: string
+  carats?: number
 }
 
 interface ProductCardProps {
@@ -36,9 +37,10 @@ interface ProductCardProps {
 }
 
 function stoneDetails(product: ProductCardProduct): string[] {
-  return [product.stoneType, product.stoneOrigin]
-    .filter((value): value is string => Boolean(value))
-    .map(storeLabel)
+  return [
+    product.stoneType && storeLabel(product.stoneType),
+    product.stoneOrigin && storeLabel(product.stoneOrigin).split(',')[0],
+  ].filter((value): value is string => Boolean(value))
 }
 
 export function ProductCard({ product, index = 0, priority = false }: ProductCardProps) {
@@ -136,15 +138,9 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
             </Link>
           </h3>
           {details.length > 0 ? (
-            <p className="mt-1 font-sans text-xs leading-5 text-charcoal/60">
-              {details.map((detail) => (
-                <span key={detail} className="block">
-                  {detail}
-                </span>
-              ))}
-            </p>
+            <p className="mt-1 font-sans text-xs leading-5 text-charcoal/60">{details.join(' · ')}</p>
           ) : null}
-          <p className="mt-2 flex flex-wrap items-baseline gap-x-2 font-sans tabular-nums">
+          <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2 font-sans tabular-nums">
             {isAvailable ? (
               <>
                 <span className="text-base font-semibold text-charcoal">
@@ -162,6 +158,9 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
             ) : (
               <span className="text-sm font-medium text-charcoal/60">Collected</span>
             )}
+            {product.carats ? (
+              <span className="ml-auto text-xs text-charcoal/60">{product.carats} ct</span>
+            ) : null}
           </p>
           {isAvailable && product.stock > 1 && product.stock <= 3 ? (
             <p className="mt-1 font-sans text-xs font-medium text-opal-emerald-dark">

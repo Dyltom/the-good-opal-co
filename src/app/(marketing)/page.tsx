@@ -11,6 +11,7 @@ import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
+import { caratWeight } from '@/app/(marketing)/store/store-query'
 import type { Product } from '@/types/payload-types'
 
 export const metadata: Metadata = {
@@ -92,6 +93,7 @@ async function FeaturedPieces() {
               image: image && typeof image === 'object' ? resolveMediaUrl(image.url) : undefined,
               stoneType: product.stoneType ?? undefined,
               stoneOrigin: product.stoneOrigin ?? undefined,
+              carats: caratWeight(product),
             }}
           />
         )
