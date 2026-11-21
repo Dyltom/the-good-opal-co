@@ -194,6 +194,19 @@ export function storeQueryParams(query: StoreQuery, page = query.page): URLSearc
   return params
 }
 
+export function storeFilterDetail(query: StoreQuery): Record<string, string> {
+  const detail: Record<string, string> = {}
+  for (const facet of STORE_FACETS) {
+    if (query[facet].length > 0) detail[facet] = query[facet].join(',')
+  }
+  if (query.priceMin !== undefined || query.priceMax !== undefined) {
+    detail.price = `${query.priceMin ?? ''}-${query.priceMax ?? ''}`
+  }
+  if (query.availability === 'all') detail.availability = 'all'
+  if (query.sort !== 'featured') detail.sort = query.sort
+  return detail
+}
+
 export function storeUrl(query: StoreQuery, page = query.page): string {
   const search = storeQueryParams(query, page).toString().replace(/%2C/g, ',')
   return search ? `/store?${search}` : '/store'

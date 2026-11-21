@@ -2,11 +2,8 @@
 
 import { getPayload } from '@/lib/payload'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
-
-export interface SearchSuggestion {
-  label: string
-  href: string
-}
+import { productGalleryUrls } from '@/lib/product-gallery'
+import { rankProductSuggestions, type SearchSuggestion } from './suggestions'
 
 const filterSuggestions: readonly SearchSuggestion[] = [
   { label: 'Black opal', href: '/store?stone=black-opal' },
@@ -39,20 +36,24 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
       where: {
         and: [LISTED_PRODUCTS, { name: { contains: cleanQuery } }],
       },
-      limit: 5,
-      select: { name: true, slug: true },
+      sort: ['-featured', '-createdAt'],
+      limit: 40,
+      depth: 1,
+      select: { name: true, slug: true, price: true, stock: true, category: true, images: true },
     })
 
-    const productSuggestions = results.docs.map((product) => ({
-      label: product.name,
-      href: `/store/${encodeURIComponent(product.slug)}`,
-    }))
-    const seen = new Set(productSuggestions.map((suggestion) => suggestion.href))
+    const productSuggestions = rankProductSuggestions(
+      results.docs.map((product) => ({
+        name: product.name,
+        slug: product.slug,
+        price: product.price,
+        stock: product.stock ?? 0,
+        category: product.category,
+        image: productGalleryUrls(product.slug, product.name, product.images)[0],
+      }))
+    ).slice(0, 5)
 
-    return [
-      ...productSuggestions,
-      ...matchingFilters.filter((suggestion) => !seen.has(suggestion.href)),
-    ].slice(0, 5)
+    return [...productSuggestions, ...matchingFilters.slice(0, 2)]
   } catch (error) {
     console.error('Search suggestions error:', error)
     return []

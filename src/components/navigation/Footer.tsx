@@ -222,20 +222,20 @@ export function Footer({
               <div className="text-sm text-white/70">
                 {copyright || `© ${currentYear} ${logoText}. All rights reserved.`}
               </div>
-              <div className="-mx-1 flex flex-wrap gap-x-5 gap-y-2 whitespace-nowrap text-sm text-white/70">
+              <div className="-mx-1 flex flex-wrap gap-x-5 whitespace-nowrap text-sm text-white/70">
                 <Link
                   href="/legal/privacy"
-                  className="rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
+                  className="inline-flex min-h-11 items-center rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
                 >
                   Privacy policy
                 </Link>
                 <Link
                   href="/legal/terms"
-                  className="rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
+                  className="inline-flex min-h-11 items-center rounded px-1 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark"
                 >
                   Terms of service
                 </Link>
-                <CookieSettingsLink className="rounded px-1 text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark" />
+                <CookieSettingsLink className="inline-flex min-h-11 items-center rounded px-1 text-white/70 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric focus-visible:ring-offset-1 focus-visible:ring-offset-charcoal-dark" />
               </div>
               <div className="text-xs text-white/70">
                 Australian opal that doesn&apos;t cost the earth.
