@@ -1,4 +1,4 @@
-import { APP_NAME, APP_URL } from '@/lib/constants'
+import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
 import { calculateShipping, RETURN_WINDOW_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
 import { SOCIAL_PROFILES } from '@/lib/constants/social'
 import { absoluteUrl, type Availability, type CatalogProduct } from '@/lib/catalog'
@@ -70,7 +70,7 @@ export function organizationStructuredData(contact?: { email: string }): Record<
       height: 600,
       caption: APP_NAME,
     },
-    image: `${APP_URL}/images/about-hero.jpg`,
+    image: SHARE_IMAGE_URL,
     founder: {
       '@type': 'Person',
       '@id': founderId,
