@@ -10,6 +10,7 @@ export const APP_NAME = 'The Good Opal Co' as const
 export const APP_DESCRIPTION =
   'Australian opals and jewellery, with clear product details and personal service.' as const
 export const APP_URL = (process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:8412').replace(/\/$/, '')
+export const SHARE_IMAGE_URL = `${APP_URL}/images/share-card.jpg`
 
 /**
  * API versioning
