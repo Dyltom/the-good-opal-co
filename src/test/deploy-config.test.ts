@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
+import sharp from 'sharp'
 
 const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
 
@@ -123,9 +124,17 @@ describe('deployment config', () => {
     const layout = read('src/app/(marketing)/layout.tsx')
 
     expect(layout).toContain("'application/rss+xml': `${APP_URL}/feed.xml`")
-    expect(layout).toContain("url: `${APP_URL}/images/about-hero.jpg`")
+    expect(layout).toContain('url: SHARE_IMAGE_URL')
     expect(layout).toContain("'max-image-preview': 'large'")
     expect(layout).toContain("'max-snippet': -1")
+  })
+
+  test('the link-preview image is small, upright and 1200x630 so chat apps render it', async () => {
+    const path = resolve(__dirname, '..', '..', 'public/images/share-card.jpg')
+    const { width, height, orientation, size } = await sharp(path).metadata()
+
+    expect({ width, height, orientation }).toEqual({ width: 1200, height: 630, orientation: undefined })
+    expect(size ?? readFileSync(path).length).toBeLessThan(300_000)
   })
 
   test('Payload admin uses the generated import map without a shadowing TypeScript stub', () => {

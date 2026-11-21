@@ -6,7 +6,7 @@ import { CookieConsent } from '@/components/layout/CookieConsent'
 import { Torch } from '@/components/brand/Torch'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
 import { InsightsTracker } from '@/components/analytics/InsightsTracker'
-import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE } from '@/lib/constants'
+import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE, SHARE_IMAGE_URL } from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
 
 const sans = Schibsted_Grotesk({
@@ -37,16 +37,16 @@ export const metadata: Metadata = {
     locale: DEFAULT_LOCALE.replace('-', '_'),
     images: [
       {
-        url: `${APP_URL}/images/about-hero.jpg`,
+        url: SHARE_IMAGE_URL,
         width: 1200,
-        height: 900,
-        alt: 'Australian opals selected by The Good Opal Co',
+        height: 630,
+        alt: 'Opal rings and stones from The Good Opal Co',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    images: [`${APP_URL}/images/about-hero.jpg`],
+    images: [SHARE_IMAGE_URL],
   },
   robots: {
     index: true,
