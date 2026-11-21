@@ -56,7 +56,7 @@ export function SiteNavigation() {
     >
       <a
         href="#main-content"
-        className="sr-only bg-ink px-3.5 py-2.5 text-bg focus:not-sr-only focus:fixed focus:left-3 focus:top-2 focus:z-50"
+        className="sr-only bg-ink px-3.5 py-2.5 text-bg focus-visible:not-sr-only focus-visible:fixed focus-visible:left-3 focus-visible:top-2 focus-visible:z-50"
       >
         Skip to main content
       </a>
