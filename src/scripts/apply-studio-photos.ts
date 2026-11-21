@@ -32,10 +32,14 @@ async function studioMediaFor(original: Media): Promise<number> {
 
 async function main() {
   const payload = await getPayload()
-  const stems = (await readdir(STUDIO_DIR)).filter((f) => f.endsWith('.jpg')).map((f) => parse(f).name)
+  const stems = (await readdir(STUDIO_DIR))
+    .filter((f) => f.endsWith('.jpg'))
+    .map((f) => parse(f).name)
   const originals = await payload.find({
     collection: 'media',
-    where: { filename: { in: stems.flatMap((stem) => SOURCE_EXTENSIONS.map((ext) => stem + ext)) } },
+    where: {
+      filename: { in: stems.flatMap((stem) => SOURCE_EXTENSIONS.map((ext) => stem + ext)) },
+    },
     pagination: false,
     overrideAccess: true,
   })
@@ -53,15 +57,14 @@ async function main() {
     const ids = (product.images ?? []).map((entry) =>
       typeof entry.image === 'object' && entry.image ? entry.image.id : entry.image
     )
-    const studio = ids.flatMap((id) => (id != null && studioFor.has(id) ? [studioFor.get(id)!] : []))
-    const rest = ids.filter((id): id is number => id != null && !studioFor.has(id))
+    const images = [...new Set(ids.flatMap((id) => (id == null ? [] : [studioFor.get(id) ?? id])))]
     await payload.update({
       collection: 'products',
       id: product.id,
-      data: { images: [...studio, ...rest].map((image) => ({ image })) },
+      data: { images: images.map((image) => ({ image })) },
       overrideAccess: true,
     })
-    console.log(`${product.slug}: ${studio.length} studio, ${rest.length} kept`)
+    console.log(`${product.slug}: ${images.length} photos`)
   }
   console.log(`${studioFor.size} studio photos, ${products.docs.length} products updated`)
   process.exit(0)
