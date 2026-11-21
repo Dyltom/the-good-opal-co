@@ -1,5 +1,3 @@
-import { Eyebrow } from '@/components/ui/eyebrow'
-
 type JewellerQuote = {
   handle: string
   text: string
@@ -26,7 +24,7 @@ function InstagramHandle({ handle }: { handle: string }) {
       href={`https://www.instagram.com/${handle}/`}
       target="_blank"
       rel="noopener noreferrer"
-      className="-my-3 inline-block py-3 underline decoration-ink-3 underline-offset-4 hover:decoration-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      className="-my-3 inline-block py-3 text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink hover:decoration-ink"
     >
       @{handle}
     </a>
@@ -35,36 +33,25 @@ function InstagramHandle({ handle }: { handle: string }) {
 
 export function JewellerQuotes() {
   return (
-    <section
-      aria-labelledby="jeweller-quotes"
-      className="border-t border-rule bg-bg px-5 py-12 sm:px-8 lg:px-12 lg:py-20"
-    >
-      <div className="mx-auto max-w-[90rem]">
-        <Eyebrow>From their Instagram stories</Eyebrow>
-        <h2
-          id="jeweller-quotes"
-          className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-ink sm:text-4xl"
-        >
-          What jewellers say.
-        </h2>
-        <ul className="mt-8 grid gap-8 md:mt-10 md:grid-cols-3 md:gap-10">
-          {JEWELLER_QUOTES.map((quote) => (
-            <li key={quote.text} className="border-t border-rule pt-5 md:pt-6">
-              <figure>
-                <blockquote className="font-serif text-lg leading-relaxed text-ink sm:text-xl">
-                  <p>&ldquo;{quote.text}&rdquo;</p>
-                </blockquote>
-                <figcaption className="mt-3 font-sans text-sm text-ink-2 md:mt-4">
-                  <InstagramHandle handle={quote.handle} />
-                </figcaption>
-              </figure>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-8 font-sans text-sm leading-6 text-ink-2 md:mt-10">
-          Jewellers like <InstagramHandle handle="makerand_element" /> order custom parcels.
-        </p>
-      </div>
+    <section aria-labelledby="jeweller-quotes" className="px-gut pt-sec">
+      <h2 id="jeweller-quotes">What jewellers say</h2>
+      <ul className="mt-[clamp(28px,3vw,44px)] grid gap-[22px] md:grid-cols-3 md:gap-[clamp(16px,2.4vw,40px)]">
+        {JEWELLER_QUOTES.map((quote) => (
+          <li key={quote.text} className="border-t border-rule-2 pt-5">
+            <figure>
+              <blockquote className="text-pretty font-serif text-[clamp(20px,1.6vw,25px)] leading-[1.3] tracking-[-0.01em] text-ink">
+                <p>&ldquo;{quote.text}&rdquo;</p>
+              </blockquote>
+              <figcaption className="mt-3.5 text-[13px] text-ink-3">
+                <InstagramHandle handle={quote.handle} />, in their Instagram stories
+              </figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-8 text-sm leading-6 text-ink-2">
+        Jewellers like <InstagramHandle handle="makerand_element" /> order custom parcels.
+      </p>
     </section>
   )
 }

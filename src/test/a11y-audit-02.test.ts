@@ -25,11 +25,12 @@ describe('#5 SearchInput — aria-allowed-attr', () => {
 })
 
 describe('#6 Home hero/category LCP image — priority', () => {
-  const source = read('src/components/sections/HomeHero.tsx')
+  const source = read('src/components/sections/LivingWall.tsx')
 
-  test('the product-led hero image is marked priority', () => {
-    expect(source).toContain('priority')
-    expect(source).toContain('sizes="(max-width: 1024px) 100vw, 56vw"')
+  test('the first wall piece is marked priority with responsive sizes', () => {
+    expect(source).toContain('priority={index === 0}')
+    expect(source).toContain("fetchPriority={index === 0 ? 'high' : undefined}")
+    expect(source).toContain('sizes={tileSizes(tile.desktop, tile.mobile)}')
   })
 })
 

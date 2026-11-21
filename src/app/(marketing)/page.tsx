@@ -1,18 +1,18 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Instagram } from 'lucide-react'
-import { Eyebrow } from '@/components/ui/eyebrow'
+import { ArrowRight } from 'lucide-react'
 import { MarketingShell } from '@/components/marketing'
-import { ProductCard } from '@/components/product/ProductCard'
-import { HomeHero } from '@/components/sections/HomeHero'
+import { Button } from '@/components/ui/button'
+import { LivingWall, type WallPiece } from '@/components/sections/LivingWall'
 import { JewellerQuotes } from '@/components/sections/JewellerQuotes'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
-import { caratWeight } from '@/app/(marketing)/store/store-query'
+import { RETURN_WINDOW_DAYS, SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import { caratWeight, storeLabel } from '@/app/(marketing)/store/store-query'
 import type { Product } from '@/types/payload-types'
 
 export const metadata: Metadata = {
@@ -24,320 +24,272 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic'
 
-function descriptionText(description: unknown): string {
-  if (typeof description === 'string') return description
-  const richText = description as {
-    root?: { children?: Array<{ children?: Array<{ text?: string }> }> }
+const FINISHED = new Set(['opal-rings', 'opal-earrings'])
+const PRICED_PER_STONE = /calibrated|priced individually/i
+const FINISHED_SLOTS = [0, 1, 4, 6, 10, 14]
+const WALL_SIZE = 15
+
+type ListedProduct = Pick<
+  Product,
+  'name' | 'slug' | 'price' | 'category' | 'stoneType' | 'stoneOrigin' | 'weight' | 'weightUnit' | 'images'
+>
+
+type Listing = {
+  product: ListedProduct
+  image: string
+  studio: boolean
+}
+
+function firstImage(product: ListedProduct): Omit<Listing, 'product'> | undefined {
+  const media = product.images?.[0]?.image
+  if (typeof media !== 'object' || media === null) return undefined
+  const image = resolveMediaUrl(media.url)
+  return image ? { image, studio: Boolean(media.filename?.startsWith('studio-')) } : undefined
+}
+
+function toWallPiece({ product, image }: Listing): WallPiece {
+  return {
+    slug: product.slug,
+    name: product.name,
+    price: product.price,
+    image,
+    kind: product.category ? storeLabel(product.category) : 'Opal',
+    stone: product.stoneType ? storeLabel(product.stoneType) : undefined,
+    origin: product.stoneOrigin ? storeLabel(product.stoneOrigin) : undefined,
+    carats: caratWeight(product),
   }
-
-  return (richText.root?.children ?? [])
-    .flatMap((node) => (node.children ?? []).map((child) => child.text ?? ''))
-    .filter(Boolean)
-    .join(' ')
 }
 
-const MULTI_STONE_LISTING = /parcel|calibrated|priced individually/i
-
-function hasStudioPhoto(product: Product): boolean {
-  const image = product.images?.[0]?.image
-  return (
-    typeof image === 'object' && image !== null && Boolean(image.filename?.startsWith('studio-'))
-  )
-}
-
-async function FeaturedPieces() {
-  const payload = await getPayload()
-  const { docs } = await payload.find({
-    collection: 'products',
-    where: {
-      and: [LISTED_PRODUCTS, { stock: { greater_than: 0 } }],
-    },
-    limit: 48,
-    sort: ['-featured', '-price'],
-    depth: 1,
-  })
-  const products = docs
-    .filter((product) => hasStudioPhoto(product) && !MULTI_STONE_LISTING.test(product.name))
-    .slice(0, 8)
-
-  if (products.length === 0) {
-    return (
-      <div className="border-y border-rule py-14 text-center">
-        <h3 className="font-serif text-2xl font-semibold text-ink">
-          New pieces are being prepared.
-        </h3>
-        <p className="mx-auto mt-3 max-w-xl font-sans text-sm leading-6 text-ink-2">
-          Join the gallery notes or contact us if you are looking for a particular opal.
-        </p>
-      </div>
-    )
+function hangWall(listings: Listing[]): WallPiece[] {
+  const single = listings
+    .filter((listing) => !PRICED_PER_STONE.test(listing.product.name))
+    .sort((a, b) => Number(b.studio) - Number(a.studio))
+  const finished = single.filter((listing) => FINISHED.has(listing.product.category ?? ''))
+  const loose = single.filter((listing) => !FINISHED.has(listing.product.category ?? ''))
+  const wall: Listing[] = []
+  for (let slot = 0; slot < WALL_SIZE; slot++) {
+    const next = FINISHED_SLOTS.includes(slot) ? finished.shift() ?? loose.shift() : loose.shift() ?? finished.shift()
+    if (next) wall.push(next)
   }
-
-  return (
-    <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
-      {products.map((product, index) => {
-        const image = product.images?.[0]?.image
-        return (
-          <ProductCard
-            key={product.id}
-            index={index}
-            product={{
-              id: String(product.id),
-              slug: product.slug,
-              name: product.name,
-              description: descriptionText(product.description),
-              price: product.price,
-              compareAtPrice: product.compareAtPrice ?? undefined,
-              stock: product.stock ?? 0,
-              featured: product.featured ?? false,
-              category: product.category,
-              image: image && typeof image === 'object' ? resolveMediaUrl(image.url) : undefined,
-              stoneType: product.stoneType ?? undefined,
-              stoneOrigin: product.stoneOrigin ?? undefined,
-              carats: caratWeight(product),
-            }}
-          />
-        )
-      })}
-    </div>
-  )
+  return wall.map(toWallPiece)
 }
 
-const discoveryPaths = [
+const KINDS = [
   {
-    eyebrow: 'Gifts',
-    title: 'A piece with a story.',
-    copy: 'Start with pieces that are ready to give, then ask us anything before you decide.',
-    href: '/store',
-    cta: 'Explore gift-worthy pieces',
-    image: '/images/products/heartthing-1.jpg',
-    alt: 'A heart-shaped white opal on a dark stone surface',
+    title: 'Rings and earrings',
+    copy: 'Finished pieces, ready to wear.',
+    href: '/store?category=opal-rings,opal-earrings',
+    matches: (product: ListedProduct) => FINISHED.has(product.category ?? ''),
   },
   {
-    eyebrow: 'First opal',
-    title: 'New to opals? Start here.',
-    copy: 'Learn what colour, origin, setting, and care details matter, in plain language.',
-    href: '/blog',
-    cta: 'Read the opal guide',
-    image: '/images/products/20211104_234957.jpg',
-    alt: 'Four polished opals with blue, green and orange colour on a dark stone surface',
-  },
-  {
-    eyebrow: 'Collector stones',
-    title: 'For the serious collector.',
-    copy: 'Browse loose and raw opals by colour, type, origin, price, and availability.',
+    title: 'Loose opals',
+    copy: 'Single stones and parcels for setting or collecting.',
     href: '/store?category=raw-opals',
-    cta: 'Browse collector stones',
-    image: '/images/products/20211129_164004-1-1.jpg',
-    alt: 'A polished black opal with green and orange fire',
+    matches: (product: ListedProduct) => product.category === 'raw-opals',
+  },
+  {
+    title: 'Calibrated',
+    copy: 'Matched sizes for jewellers.',
+    href: '/store?search=calibrated',
+    matches: (product: ListedProduct) => /calibrated/i.test(product.name),
   },
 ]
 
-const INSTAGRAM_URL = 'https://www.instagram.com/thegoodopalco'
+function walkTheCollection(listings: Listing[], onWall: Set<string>) {
+  return KINDS.map((kind) => {
+    const members = listings.filter((listing) => kind.matches(listing.product))
+    const cover =
+      members.find((listing) => listing.studio && !onWall.has(listing.product.slug)) ??
+      members.find((listing) => !onWall.has(listing.product.slug)) ??
+      members[0]
+    return { ...kind, count: members.length, cover }
+  }).filter((kind) => kind.count > 0)
+}
 
-export default function HomePage() {
+async function loadInStock(): Promise<Listing[]> {
+  const payload = await getPayload()
+  const { docs } = await payload.find({
+    collection: 'products',
+    where: { and: [LISTED_PRODUCTS, { stock: { greater_than: 0 } }] },
+    pagination: false,
+    sort: ['-featured', '-price'],
+    depth: 1,
+    select: {
+      name: true,
+      slug: true,
+      price: true,
+      category: true,
+      stoneType: true,
+      stoneOrigin: true,
+      weight: true,
+      weightUnit: true,
+      images: true,
+    },
+  })
+  return docs.flatMap((product) => {
+    const image = firstImage(product)
+    return image ? [{ product, ...image }] : []
+  })
+}
+
+const FACTS = [
+  ['One of a kind', 'Most pieces are a single stone, photographed individually.'],
+  ['Shown as it is', 'Studio shots change the background, never the colour.'],
+  [
+    'Shipping',
+    `$${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} tracked in Australia. Free from $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}.`,
+  ],
+  ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
+  ['Secure checkout', 'Stripe: card, Apple Pay and Klarna.'],
+] as const
+
+const linkArrow =
+  'inline-flex items-center gap-2 border-b border-rule-2 pb-[3px] text-sm text-ink no-underline transition-colors hover:border-ink'
+
+function pieceCount(count: number) {
+  return `${count} ${count === 1 ? 'piece' : 'pieces'}`
+}
+
+export default async function HomePage() {
+  const listings = await loadInStock()
+  const wall = hangWall(listings)
+  const kinds = walkTheCollection(listings, new Set(wall.map((piece) => piece.slug)))
+
   return (
     <>
       <OrganizationJsonLd />
       <WebsiteJsonLd />
       <MarketingShell>
-        <HomeHero />
+        <LivingWall pieces={wall} />
 
-        <section className="bg-bg px-5 py-12 sm:px-8 lg:px-12 lg:py-20">
-          <div className="mx-auto max-w-[90rem]">
-            <div className="mb-10 max-w-3xl lg:mb-12">
-              <Eyebrow>Find your way in</Eyebrow>
-              <h2 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-ink sm:text-4xl lg:text-5xl">
-                Choose by what matters to you.
-              </h2>
+        <dl className="mx-gut mt-[clamp(28px,4vw,48px)] grid grid-cols-2 border-y border-rule min-[901px]:grid-cols-5">
+          {FACTS.map(([term, detail]) => (
+            <div
+              key={term}
+              className="py-3.5 pr-3 even:border-l even:border-rule even:pl-3.5 last:col-span-2 last:border-l-0 last:pl-0 [&:nth-child(n+3)]:border-t [&:nth-child(n+3)]:border-rule min-[901px]:py-[18px] min-[901px]:pr-5 min-[901px]:last:col-span-1 min-[901px]:[&:nth-child(n+2)]:border-l min-[901px]:[&:nth-child(n+2)]:pl-5 min-[901px]:[&:nth-child(n+3)]:border-t-0"
+            >
+              <dt className="mb-[5px] text-xs uppercase tracking-[0.06em] text-ink-3">{term}</dt>
+              <dd className="text-[14.5px] leading-[1.45] text-ink">{detail}</dd>
             </div>
+          ))}
+        </dl>
 
-            <div className="grid gap-px overflow-hidden border border-rule bg-plinth-2 md:grid-cols-3">
-              {discoveryPaths.map((path) => (
-                <Link
-                  key={path.eyebrow}
-                  href={path.href}
-                  className="group grid grid-cols-[7.5rem_1fr] bg-bg md:flex md:flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
-                >
-                  <div className="relative aspect-square overflow-hidden border-r border-rule bg-plinth md:aspect-[4/3] md:border-b md:border-r-0">
-                    <Image
-                      src={path.image}
-                      alt={path.alt}
-                      fill
-                      sizes="(max-width: 768px) 7.5rem, 33vw"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
-                    />
-                  </div>
-                  <div className="flex flex-1 flex-col justify-between p-5 md:p-9">
-                    <div>
-                      <Eyebrow>{path.eyebrow}</Eyebrow>
-                      <h3 className="mt-4 text-balance font-serif text-2xl font-medium leading-tight text-ink lg:text-3xl">
-                        {path.title}
-                      </h3>
-                      <p className="text-ink-2 mt-4 hidden font-sans text-sm leading-7 sm:text-base md:block">
-                        {path.copy}
-                      </p>
-                    </div>
-                    <span className="mt-3 inline-flex items-center gap-3 font-sans text-sm font-semibold text-ink md:mt-8">
-                      {path.cta}
-                      <ArrowRight
-                        className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-                        aria-hidden="true"
+        {kinds.length > 0 ? (
+          <section aria-labelledby="kinds-heading" className="px-gut pt-sec">
+            <div className="mb-[22px] flex items-end justify-between gap-5">
+              <h2 id="kinds-heading" className="text-[clamp(30px,3.4vw,52px)] leading-[1.02]">
+                Walk the <i>collection</i>
+              </h2>
+              <Link href="/store" className={`${linkArrow} shrink-0`}>
+                All pieces
+                <ArrowRight className="h-[15px] w-[15px]" aria-hidden="true" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 items-start gap-x-2 gap-y-4 md:grid-cols-[1.5fr_1fr_1fr] md:gap-[clamp(10px,1.4vw,20px)]">
+              {kinds.map((kind) => (
+                <Link key={kind.title} href={kind.href} className="group block text-ink no-underline first:col-span-2 md:first:col-span-1">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-plinth group-first:aspect-[5/4] md:aspect-auto md:h-[clamp(300px,36vw,540px)] md:group-first:aspect-auto">
+                    {kind.cover ? (
+                      <Image
+                        src={kind.cover.image}
+                        alt={kind.cover.product.name}
+                        fill
+                        sizes="(max-width: 767px) 100vw, 40vw"
+                        className="object-cover transition-transform duration-1000 ease-gallery group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                       />
-                    </span>
+                    ) : null}
                   </div>
+                  <h3 className="mt-3 flex items-center justify-between gap-3 text-[21px] md:text-[clamp(22px,2vw,30px)]">
+                    {kind.title}
+                    <ArrowRight
+                      className="h-5 w-5 shrink-0 transition-transform duration-300 ease-gallery group-hover:translate-x-1 motion-reduce:transition-none"
+                      aria-hidden="true"
+                    />
+                  </h3>
+                  <p className="mt-1 max-w-[40ch] text-[13px] text-ink-2 md:text-sm">
+                    {kind.copy} <span className="tabular-nums text-ink-3">{pieceCount(kind.count)}</span>
+                  </p>
                 </Link>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
-        <section className="bg-bg px-5 py-12 sm:px-8 lg:px-12 lg:py-20">
-          <div className="mx-auto max-w-[90rem]">
-            <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+        <section aria-label="Custom rings and courses" className="grid gap-9 px-gut pt-sec min-[901px]:grid-cols-2 min-[901px]:gap-[clamp(10px,1.4vw,20px)]">
+          {[
+            {
+              title: 'Design your own ring',
+              copy: 'Bring an idea, an occasion, or an opal of your own. Sketch the ring yourself in 3D, then send it to Steph for a personal design consultation.',
+              href: '/services/design',
+              cta: 'Open the 3D designer',
+              image: '/images/customs/custom-3.jpg',
+              alt: 'Six polished opals with blue, pink and green colour on a grey stone surface',
+            },
+            {
+              title: 'Learn to cut opal',
+              copy: 'Steph\u2019s course starts with opal anatomy, then moves through low-cost hand cutting, rotary tools, cabbing machines, polishing, and valuation.',
+              href: '/courses',
+              cta: 'Register interest',
+              image: '/images/studio/opal-macro-coober-pedy.jpg',
+              alt: 'Close view of a Coober Pedy opal showing orange, green and violet colour',
+            },
+          ].map((offer) => (
+            <div
+              key={offer.title}
+              className="grid items-end gap-4 border-t border-rule pt-[clamp(14px,1.4vw,20px)] min-[561px]:grid-cols-2 min-[901px]:gap-[clamp(16px,2vw,28px)]"
+            >
               <div>
-                <Eyebrow>Featured pieces</Eyebrow>
-                <h2 className="mt-4 font-serif text-3xl font-medium text-ink sm:text-4xl lg:text-5xl">
-                  One stone, one piece.
-                </h2>
+                <h2 className="text-[26px] leading-[1.04] min-[901px]:text-[clamp(26px,2.6vw,40px)]">{offer.title}</h2>
+                <p className="mb-3.5 mt-2 text-sm text-ink-2 min-[561px]:max-w-[36ch] min-[901px]:mb-5 min-[901px]:mt-3 min-[901px]:text-[14.5px]">
+                  {offer.copy}
+                </p>
+                <Button asChild variant="ghost">
+                  <Link href={offer.href}>
+                    {offer.cta}
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
               </div>
-              <Link
-                href="/store"
-                className="inline-flex min-h-11 items-center gap-3 font-sans text-sm font-semibold text-ink underline decoration-ink-3 underline-offset-8 hover:decoration-ink"
-              >
-                View the full collection
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </div>
-            <FeaturedPieces />
-          </div>
-        </section>
-
-        <section className="overflow-hidden bg-ink text-bg">
-          <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 lg:py-20">
-            <figure className="mx-auto w-full max-w-lg lg:max-w-[34rem]">
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-ink">
-                <Image
-                  src="/images/studio/opal-macro-coober-pedy.jpg"
-                  alt="Close-up of a white opal from Coober Pedy with orange, blue and green flashes"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 34rem"
-                  className="macro-drift object-cover"
-                />
-              </div>
-              <figcaption className="mt-4 font-sans text-xs tracking-wide text-bg/60">
-                Coober Pedy white opal, 6.35 ct. Close-up, shown as photographed.
-              </figcaption>
-            </figure>
-            <div className="max-w-xl">
-              <Eyebrow className="text-bg">Nothing retouched</Eyebrow>
-              <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
-                Every flash you see is in the stone.
-              </h2>
-              <p className="text-bg/72 mt-6 font-sans text-base leading-8 sm:text-lg">
-                This is one opal from the shop, up close. Our studio shots replace the background
-                and never the colour, so the stone you choose is the stone that arrives.
-              </p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/store/coober-pedy-white-opal-6-35-cts"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-sm bg-bg px-6 font-sans text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-                >
-                  See this opal
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-                <Link
-                  href="/store"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-sm border border-bg/40 px-6 font-sans text-sm font-semibold text-bg transition-colors hover:border-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-                >
-                  Shop all opals
-                </Link>
+              <div className="relative order-first aspect-[16/10] overflow-hidden bg-plinth min-[561px]:order-none min-[561px]:aspect-[4/5]">
+                <Image src={offer.image} alt={offer.alt} fill sizes="(max-width: 560px) 100vw, 25vw" className="object-cover" />
               </div>
             </div>
-          </div>
+          ))}
         </section>
 
-        <ReviewsSection
-          eyebrow="Customer reviews"
-          title="In their words."
-          className="mx-auto max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-20"
-        />
-
-        <section className="border-t border-rule bg-bg px-5 py-12 sm:px-8 lg:px-12 lg:py-20">
-          <div className="mx-auto grid max-w-[90rem] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden bg-plinth">
+        <section aria-label="From Steph" className="px-gut pt-sec">
+          <figure className="grid items-center gap-[18px] md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:gap-[clamp(20px,4vw,72px)]">
+            <div className="relative aspect-[16/11] overflow-hidden bg-plinth md:aspect-[3/4]">
               <Image
-                src="/images/products/20211104_232926.jpg"
-                alt="Four polished opals held between fingers"
+                src="/images/about-hero.jpg"
+                alt="Gem boxes of Australian opals on a dark table"
                 fill
-                sizes="(max-width: 1024px) 90vw, 24rem"
+                sizes="(max-width: 767px) 100vw, 40vw"
                 className="object-cover"
               />
             </div>
-            <div className="max-w-2xl">
-              <Eyebrow>Meet Steph</Eyebrow>
-              <h2 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-ink sm:text-4xl lg:text-5xl">
-                The person behind the stones.
-              </h2>
-              <p className="text-ink-2 mt-6 font-sans text-base leading-8">
-                The Good Opal Co is led by founder Stephanie Caruana. Steph has written about
-                cutting and sourcing Australian opal since 2020, and she leads the personal guidance
-                behind every enquiry.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/about"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-sm bg-ink px-6 font-sans text-sm font-semibold text-bg transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                >
-                  Read our story
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-                <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-sm border border-rule-2 px-6 font-sans text-sm font-semibold text-ink transition-colors hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                >
-                  <Instagram className="h-4 w-4" aria-hidden="true" />
-                  Follow @thegoodopalco
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <JewellerQuotes />
-
-        <section className="grid bg-ink text-bg lg:grid-cols-2">
-          <div className="relative min-h-[28rem] lg:min-h-[42rem]">
-            <Image
-              src="/images/customs/custom-2.jpg"
-              alt="Australian opals selected for a custom jewellery piece"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
-          <div className="flex items-center px-6 py-12 sm:px-10 lg:px-16 lg:py-20">
-            <div className="max-w-xl">
-              <Eyebrow className="text-bg">Custom work</Eyebrow>
-              <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
-                Begin with the stone, not a template.
-              </h2>
-              <p className="text-bg/72 mt-6 font-sans text-base leading-8 sm:text-lg">
-                Bring an occasion, an idea, or an opal of your own. We can help shape the brief,
-                explain the trade-offs, and create a piece around what matters to you.
-              </p>
-              <Link
-                href="/services"
-                className="mt-9 inline-flex min-h-12 items-center gap-3 rounded-sm bg-bg px-6 font-sans text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-              >
-                Explore custom work
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <div>
+              <blockquote className="text-pretty font-serif text-[25px] leading-[1.14] tracking-[-0.01em] md:max-w-[22ch] md:text-[clamp(26px,3vw,46px)]">
+                <p>
+                  &ldquo;Opal is mysterious and wonderful. I don&rsquo;t think the uniqueness of opal is
+                  matched by many other things in this world&hellip;&rdquo;
+                </p>
+              </blockquote>
+              <figcaption className="mt-3 text-[13px] text-ink-2 md:mt-5 md:text-sm">
+                <b className="font-medium text-ink">Stephanie Caruana</b>, founder. From{' '}
+                <i>Opal Cutting: A Free Beginner&rsquo;s Guide</i>, September 2020.
+              </figcaption>
+              <Link href="/about" className={`${linkArrow} mt-4 md:mt-[26px]`}>
+                Read our story
+                <ArrowRight className="h-[15px] w-[15px]" aria-hidden="true" />
               </Link>
             </div>
-          </div>
+          </figure>
         </section>
+
+        <ReviewsSection title="In their words." className="px-gut pt-sec" />
+
+        <JewellerQuotes />
       </MarketingShell>
     </>
   )
