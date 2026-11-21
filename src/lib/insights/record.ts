@@ -8,7 +8,13 @@ export type InsightEventData = Omit<InsightEvent, 'id'>
 
 export async function saveInsight(data: InsightEventData): Promise<void> {
   const payload = await getPayload()
-  await payload.create({ collection: 'insight-events', data, overrideAccess: true })
+  await payload.create({
+    collection: 'insight-events',
+    data,
+    overrideAccess: true,
+    disableTransaction: true,
+    depth: 0,
+  })
 }
 
 export interface CheckoutInsightItem {
