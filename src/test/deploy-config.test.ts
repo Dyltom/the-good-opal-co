@@ -189,7 +189,7 @@ describe('deployment config', () => {
     expect(webhook).toContain('commitTransaction')
     expect(webhook).toContain('rollbackTransaction')
     expect(webhook).toContain('idempotencyKey: `order-confirmation/${order.id}`')
-    expect(webhook).toContain('idempotencyKey: `inventory-review/${order.id}`')
+    expect(webhook).toContain('idempotencyKey: `owner-order/${order.id}`')
     expect(webhook).toContain("event.type === 'checkout.session.expired'")
     expect(webhook).toContain("event.type === 'checkout.session.async_payment_failed'")
     expect(webhook).toContain('reservedInventoryAvailable')
