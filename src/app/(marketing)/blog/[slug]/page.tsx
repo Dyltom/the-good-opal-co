@@ -34,6 +34,8 @@ const getPublishedPost = cache(async (slug: string): Promise<Post | undefined> =
   return docs[0]
 })
 
+const HERO_WIDTH = 896
+
 function populatedMedia(media: number | null | Media | undefined): Media | null {
   return media && typeof media === 'object' ? media : null
 }
@@ -188,14 +190,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {publishedDate ? <time>{publishedDate}</time> : null}
             </p>
           ) : null}
-          {imageUrl ? (
+          {imageUrl && featuredImage?.width && featuredImage.height && featuredImage.width < HERO_WIDTH ? (
+            <Image
+              src={imageUrl}
+              alt={featuredImage.alt || post.title}
+              width={featuredImage.width}
+              height={featuredImage.height}
+              priority
+              sizes={`${featuredImage.width}px`}
+              className="mx-auto mt-10 h-auto max-w-full"
+            />
+          ) : imageUrl ? (
             <div className="relative mt-10 aspect-[16/9] overflow-hidden bg-warm-grey/20">
               <Image
                 src={imageUrl}
                 alt={featuredImage?.alt || post.title}
                 fill
                 priority
-                sizes="(max-width: 1024px) 100vw, 896px"
+                sizes={`(max-width: 1024px) 100vw, ${HERO_WIDTH}px`}
                 className="object-cover"
               />
             </div>

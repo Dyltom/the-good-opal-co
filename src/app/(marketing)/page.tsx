@@ -110,8 +110,8 @@ const discoveryPaths = [
     copy: 'Start with pieces that are ready to give, then ask us anything before you decide.',
     href: '/store',
     cta: 'Explore gift-worthy pieces',
-    image: '/images/studio/heart-opal.jpg',
-    alt: 'A heart-shaped white Australian opal on a cream background',
+    image: '/images/products/heartthing-1.jpg',
+    alt: 'A heart-shaped white opal on a dark stone surface',
   },
   {
     eyebrow: 'First opal',
@@ -119,8 +119,8 @@ const discoveryPaths = [
     copy: 'Learn what colour, origin, setting, and care details matter, in plain language.',
     href: '/blog',
     cta: 'Read the opal guide',
-    image: '/images/studio/opal-selection.jpg',
-    alt: 'Four polished Australian opals in blue, green and orange on a cream background',
+    image: '/images/products/20211104_234957.jpg',
+    alt: 'Four polished opals with blue, green and orange colour on a dark stone surface',
   },
   {
     eyebrow: 'Collector stones',
@@ -128,8 +128,8 @@ const discoveryPaths = [
     copy: 'Browse loose and raw opals by colour, type, origin, price, and availability.',
     href: '/store?category=raw-opals',
     cta: 'Browse collector stones',
-    image: '/images/studio/black-opal.jpg',
-    alt: 'A loose black opal with green and blue flashes',
+    image: '/images/products/20211129_164004-1-1.jpg',
+    alt: 'A polished black opal with green and orange fire',
   },
 ]
 
@@ -267,8 +267,8 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-[90rem] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden bg-cream-dark">
               <Image
-                src="/images/studio/white-opal.jpg"
-                alt="A polished white Australian opal with green flashes"
+                src="/images/products/20211104_232926.jpg"
+                alt="Four polished opals held between fingers"
                 fill
                 sizes="(max-width: 1024px) 90vw, 24rem"
                 className="object-cover"
