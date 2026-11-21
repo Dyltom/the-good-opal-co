@@ -142,7 +142,11 @@ class ApprovedAssetErrorBoundary extends Component<
   }
 
   override componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Approved ring asset failed; using procedural concept:', error, info.componentStack)
+    console.error(
+      'Approved ring asset failed; using procedural concept:',
+      error,
+      info.componentStack
+    )
     this.props.onFailure?.()
   }
 
@@ -727,12 +731,7 @@ function useResilientOpalPhoto(selectedOpal?: BuilderOpal): LoadedOpalPhoto | un
         },
         undefined,
         () => {
-          if (
-            !cancelled &&
-            allowFallback &&
-            source.kind === 'canonical-face' &&
-            fallbackSource
-          ) {
+          if (!cancelled && allowFallback && source.kind === 'canonical-face' && fallbackSource) {
             load(fallbackSource, false)
           }
         }
@@ -2304,7 +2303,10 @@ export function RingScene({
         gl.outputColorSpace = SRGBColorSpace
         gl.toneMapping = ACESFilmicToneMapping
         gl.toneMappingExposure = 0.95
-        gl.domElement.addEventListener('webglcontextlost', onContextLost, { once: true })
+        const canvas = gl.domElement
+        canvas.addEventListener('webglcontextlost', () => {
+          if (canvas.isConnected) onContextLost()
+        })
       }}
     >
       <ambientLight intensity={0.18} />

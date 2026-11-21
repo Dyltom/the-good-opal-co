@@ -74,14 +74,9 @@ test('custom ring builder keeps live opal state with a progressive 3D preview', 
   await expect(selectedStyle).toHaveCount(1)
   await expect(selectedStyle).toBeEnabled()
 
-  const canvas = page.locator('canvas')
-  const fallback = page.getByText(/The 3D view needs WebGL/)
-  await expect(canvas.or(fallback)).toBeVisible({ timeout: 15_000 })
-  await expect
-    .poll(async () => (await canvas.count()) + (await fallback.count()), { timeout: 15_000 })
-    .toBe(1)
-  const fallbackCount = await fallback.count()
-  if (fallbackCount === 0) assertNoErrors()
+  await expect(page.locator('canvas')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText(/The 3D view needs WebGL/)).toHaveCount(0)
+  assertNoErrors()
 })
 
 test('every sold design silhouette renders as a complete 3D scene', async ({ page }) => {
