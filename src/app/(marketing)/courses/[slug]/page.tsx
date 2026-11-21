@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cache } from 'react'
-import { ArrowLeft, Check, UserRound } from 'lucide-react'
+import { ArrowLeft, Check } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseCurriculum, CourseInterestPanel } from '@/components/education'
@@ -13,7 +13,6 @@ import { courseFormatLabels, courseLevelLabels, courseOutlineStats } from '@/lib
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import type { Course, Media } from '@/types/payload-types'
-import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const dynamic = 'force-dynamic'
 
@@ -96,69 +95,65 @@ export default async function CoursePage({ params }: CoursePageProps) {
           { name: course.title, url: `/courses/${course.slug}` },
         ]}
       />
-      <Container className="py-10 sm:py-14">
+      <Container className="pb-sec">
         <Link
           href="/courses"
-          className="inline-flex min-h-11 items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
+          className="mt-[18px] inline-flex min-h-11 items-center gap-2 text-sm text-ink-2 transition-colors hover:text-ink md:mt-5"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> All courses
         </Link>
-      </Container>
 
-      <section className="border-y border-rule bg-bg">
-        <Container className="grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:py-20">
+        <header className="mt-3 grid items-center gap-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)]">
           <div>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 font-sans text-xs uppercase tracking-[0.1em] text-ink-3">
+            <p className="flex flex-wrap gap-x-2 text-[13px] text-ink-3">
               <span>{courseFormatLabels[course.format]}</span>
+              <span aria-hidden="true">&middot;</span>
               <span>{courseLevelLabels[course.level]}</span>
-              {course.duration ? <span>{course.duration}</span> : null}
-              {outlineStats.lessons > 0 ? <span>{outlineStats.lessons} lesson groups</span> : null}
-            </div>
-            <h1 className="mt-5 max-w-[13ch] text-balance font-serif text-[clamp(2.25rem,4.4vw,4.25rem)] font-medium leading-[1]">
+              {course.duration ? (
+                <>
+                  <span aria-hidden="true">&middot;</span>
+                  <span>{course.duration}</span>
+                </>
+              ) : null}
+              {outlineStats.lessons > 0 ? (
+                <>
+                  <span aria-hidden="true">&middot;</span>
+                  <span>{outlineStats.lessons} lesson groups</span>
+                </>
+              ) : null}
+            </p>
+            <h1 className="mt-3 max-w-[13ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
               {course.title}
             </h1>
-            <p className="mt-7 max-w-2xl font-sans text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
+            <p className="mt-3 max-w-[52ch] text-[15px] leading-[1.6] text-ink-2 md:mt-5 md:text-base">
               {course.summary}
             </p>
           </div>
-          <div className="relative aspect-[4/3] overflow-hidden bg-ink">
+          <div className="relative aspect-[4/3] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(260px,27vw,400px)]">
             <Image
               src={imageUrl ?? '/images/customs/custom-2.jpg'}
               alt={featured?.alt || 'Four Australian opals showing varied colour and pattern'}
               fill
               priority
-              sizes="(max-width: 1024px) 100vw, 48vw"
+              sizes="(max-width: 768px) 100vw, 52vw"
               className="object-cover"
             />
           </div>
-        </Container>
-      </section>
+        </header>
 
-      <Container className="py-16 sm:py-24">
-        <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start lg:gap-20">
+        <div className="mt-14 grid gap-12 md:mt-[clamp(48px,5.5vw,84px)] lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-[clamp(32px,4vw,72px)]">
           <div>
-            <Eyebrow>
-              Course overview
-            </Eyebrow>
-            <p className="mt-5 max-w-[68ch] whitespace-pre-line font-sans text-base leading-8 text-ink">
+            <p className="max-w-[65ch] whitespace-pre-line text-base leading-[1.7] text-ink">
               {course.introduction}
             </p>
 
             {course.outcomes?.length ? (
-              <section className="mt-14" aria-labelledby="outcomes-heading">
-                <h2 id="outcomes-heading" className="font-serif text-3xl font-medium sm:text-4xl">
-                  What you will learn
-                </h2>
-                <ul className="mt-7 grid gap-4 sm:grid-cols-2">
+              <section className="mt-12" aria-labelledby="outcomes-heading">
+                <h2 id="outcomes-heading">What you will learn</h2>
+                <ul className="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2">
                   {course.outcomes.map(({ item, id }) => (
-                    <li
-                      key={id ?? item}
-                      className="flex gap-3 font-sans text-sm leading-6 text-ink"
-                    >
-                      <Check
-                        className="mt-1 h-4 w-4 shrink-0 text-success"
-                        aria-hidden="true"
-                      />{' '}
+                    <li key={id ?? item} className="flex gap-3 text-sm leading-6 text-ink">
+                      <Check className="mt-1 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
                       {item}
                     </li>
                   ))}
@@ -166,68 +161,44 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </section>
             ) : null}
 
-            <section className="mt-16" aria-labelledby="curriculum-heading">
-              <Eyebrow>
-                Public outline
-              </Eyebrow>
-              <h2
-                id="curriculum-heading"
-                className="mt-3 font-serif text-3xl font-medium sm:text-4xl lg:text-5xl"
-              >
-                Course outline
-              </h2>
-              <p className="mt-4 max-w-2xl font-sans text-sm leading-6 text-ink-2">
+            <section className="mt-12" aria-labelledby="curriculum-heading">
+              <h2 id="curriculum-heading">Course outline</h2>
+              <p className="mt-2 max-w-[65ch] text-sm leading-6 text-ink-2">
                 This public outline shows the planned subjects. It does not include lessons or
                 promise a start date.
               </p>
-              <div className="mt-8">
+              <div className="mt-6">
                 <CourseCurriculum modules={course.curriculum} />
               </div>
             </section>
 
             <section
-              className="mt-16 border-y border-rule py-10"
+              className="mt-12 border-t border-rule pt-8"
               aria-labelledby="instructor-heading"
             >
-              <div className="flex gap-5">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-ink text-bg">
-                  <UserRound className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="font-sans text-xs uppercase tracking-[0.12em] text-ink-3">
-                    Instructor
-                  </p>
-                  <h2 id="instructor-heading" className="mt-2 font-serif text-3xl font-medium">
-                    {course.instructor.name}
-                  </h2>
-                  {course.instructor.role ? (
-                    <p className="mt-1 font-sans text-sm text-ink-2">
-                      {course.instructor.role}
-                    </p>
-                  ) : null}
-                  {course.instructor.bio ? (
-                    <p className="mt-5 max-w-2xl font-sans text-sm leading-7 text-ink-2">
-                      {course.instructor.bio}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
+              <h2 id="instructor-heading">{course.instructor.name}</h2>
+              {course.instructor.role ? (
+                <p className="mt-1 text-sm text-ink-2">{course.instructor.role}</p>
+              ) : null}
+              {course.instructor.bio ? (
+                <p className="mt-4 max-w-[65ch] text-sm leading-7 text-ink-2">
+                  {course.instructor.bio}
+                </p>
+              ) : null}
             </section>
 
             {course.audience?.length ? (
-              <section className="mt-14" aria-labelledby="audience-heading">
-                <h2 id="audience-heading" className="font-serif text-3xl font-medium">
-                  Who this is for
-                </h2>
-                <ul className="mt-6 space-y-3 font-sans text-sm leading-6 text-ink-2">
+              <section className="mt-12" aria-labelledby="audience-heading">
+                <h2 id="audience-heading">Who this is for</h2>
+                <ul className="mt-4 max-w-[65ch] list-disc space-y-2 pl-5 text-sm leading-6 text-ink-2 marker:text-ink-3">
                   {course.audience.map(({ item, id }) => (
-                    <li key={id ?? item}>• {item}</li>
+                    <li key={id ?? item}>{item}</li>
                   ))}
                 </ul>
               </section>
             ) : null}
           </div>
-          <div className="lg:sticky lg:top-28">
+          <div className="lg:sticky lg:top-[calc(theme(spacing.mast)+24px)]">
             <CourseInterestPanel course={course} />
           </div>
         </div>

@@ -2,13 +2,10 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { Container, Section } from '@/components/layout'
+import { Container } from '@/components/layout'
 import { Button } from '@/components/ui/button'
 import { trackClientError } from '@/lib/analytics'
 
-/**
- * Global Error Page
- */
 export default function Error({
   error,
   reset,
@@ -17,39 +14,37 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log error to error reporting service
     console.error(error)
-    trackClientError(error.digest ? `Server error ${error.digest}` : error.message, 'error boundary')
+    trackClientError(
+      error.digest ? `Server error ${error.digest}` : error.message,
+      'error boundary'
+    )
   }, [error])
 
   return (
-    <Section padding="lg">
-      <Container>
-        <div className="mx-auto max-w-2xl text-center">
-          <h1 className="font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
-            Something went wrong on our end.
-          </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-ink-2">
-            Your cart and any order you completed are safe. Please try again, or contact us if it
-            keeps happening.
-          </p>
+    <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+      <div className="max-w-[60ch]">
+        <h1 className="text-[2.25rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4vw,3.5rem)]">
+          Something went wrong on our end.
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-[15px] leading-[1.6] text-ink-2">
+          Your cart and any order you completed are safe. Please try again, or contact us if it
+          keeps happening.
+        </p>
 
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Button size="lg" onClick={() => reset()}>
-              Try again
-            </Button>
-            <Button asChild variant="ghost" size="lg">
-              <Link href="/">Back to home</Link>
-            </Button>
-          </div>
-
-          {process.env['NODE_ENV'] === 'development' && error.message && (
-            <div className="mt-8 rounded-sm bg-destructive/10 p-4 text-left">
-              <p className="font-mono text-sm text-destructive">{error.message}</p>
-            </div>
-          )}
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button onClick={() => reset()}>Try again</Button>
+          <Button asChild variant="ghost">
+            <Link href="/">Back to home</Link>
+          </Button>
         </div>
-      </Container>
-    </Section>
+
+        {process.env['NODE_ENV'] === 'development' && error.message && (
+          <div className="mt-6 border-l-2 border-destructive bg-plinth px-4 py-3">
+            <p className="font-mono text-sm text-destructive">{error.message}</p>
+          </div>
+        )}
+      </div>
+    </Container>
   )
 }

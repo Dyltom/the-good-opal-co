@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { ArrowRight, Mail } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { Course } from '@/types/payload-types'
+import { Button } from '@/components/ui/button'
 import { courseInterestHref } from '@/lib/courses'
 
 interface CourseInterestPanelProps {
@@ -10,41 +11,35 @@ interface CourseInterestPanelProps {
 export function CourseInterestPanel({ course }: CourseInterestPanelProps) {
   if (course.availability === 'closed') {
     return (
-      <aside className="bg-ink p-7 text-bg sm:p-9" aria-label="Course availability">
-        <p className="font-sans text-xs uppercase tracking-[0.14em] text-bg/55">Availability</p>
-        <h2 className="mt-3 font-serif text-3xl font-medium">Interest is currently closed.</h2>
-        <p className="mt-4 font-sans text-sm leading-6 text-bg/70">
+      <aside className="bg-plinth p-6 sm:p-7" aria-label="Course availability">
+        <h2 className="text-[1.5rem] leading-tight">Interest is currently closed.</h2>
+        <p className="mt-3 text-sm leading-6 text-ink-2">
           Explore the free cutting guides while the next course decision is made.
         </p>
-        <Link
-          href="/blog"
-          className="mt-6 inline-flex min-h-11 items-center gap-2 border-b border-bg/60 font-sans text-sm font-semibold"
-        >
-          Read free guides <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        <Button asChild variant="ghost" className="mt-5">
+          <Link href="/blog">
+            Read free guides <ArrowRight aria-hidden="true" />
+          </Link>
+        </Button>
       </aside>
     )
   }
 
   return (
-    <aside className="bg-ink p-7 text-bg sm:p-9" aria-label="Course interest enquiry">
-      <Mail className="h-6 w-6 text-bg" aria-hidden="true" />
-      <p className="mt-6 font-sans text-xs uppercase tracking-[0.14em] text-bg/55">
+    <aside className="bg-plinth p-6 sm:p-7" aria-label="Course interest enquiry">
+      <h2 className="text-[1.5rem] leading-tight">Hear when the course plan is confirmed.</h2>
+      <p className="mt-2 text-[13px] text-ink-3">
         {course.availability === 'coming-soon' ? 'Coming soon' : 'Interest enquiries open'}
       </p>
-      <h2 className="mt-3 text-balance font-serif text-3xl font-medium leading-tight">
-        Hear when the course plan is confirmed.
-      </h2>
-      <p className="mt-4 font-sans text-sm leading-6 text-bg/70">
+      <p className="mt-3 text-sm leading-6 text-ink-2">
         This sends an interest enquiry only. It is not enrolment or payment. Tell us your experience
         level and what you want to learn, then we will reply with confirmed details.
       </p>
-      <Link
-        href={courseInterestHref(course.title)}
-        className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-bg px-6 font-sans text-sm font-semibold text-ink transition-colors hover:bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-plinth focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-      >
-        Send course interest <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
+      <Button asChild className="mt-5">
+        <Link href={courseInterestHref(course.title)}>
+          Send course interest <ArrowRight aria-hidden="true" />
+        </Link>
+      </Button>
     </aside>
   )
 }

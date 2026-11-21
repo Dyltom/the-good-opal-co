@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
+import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 
@@ -10,27 +12,26 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <MarketingShell>
-      <section className="px-gut py-16 lg:py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <h1 className="font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
-            This page has wandered off.
+      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+        <div className="max-w-[60ch]">
+          <h1 className="text-[2.25rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4vw,3.5rem)]">
+            This page has <i>wandered off.</i>
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-ink-2">
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-[1.6] text-ink-2">
             The opal you&apos;re after may have found a home, or the address may have changed.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/store">Browse the collection</Link>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button asChild>
+              <Link href="/store">
+                Browse the collection <ArrowRight aria-hidden="true" />
+              </Link>
             </Button>
-            <Link
-              href="/contact"
-              className="text-sm text-ink-2 underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              Ask us about a piece
-            </Link>
+            <Button asChild variant="ghost">
+              <Link href="/contact">Ask us about a piece</Link>
+            </Button>
           </div>
         </div>
-      </section>
+      </Container>
     </MarketingShell>
   )
 }

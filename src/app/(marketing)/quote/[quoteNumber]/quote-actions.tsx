@@ -42,11 +42,8 @@ export function QuoteActions({
 
   if (status === 'sent') {
     return (
-      <form
-        action={acceptAction}
-        className="rounded-sm border border-rule bg-bg p-6 sm:p-8"
-      >
-        <label className="flex min-h-11 cursor-pointer items-start gap-4 font-sans text-sm leading-6 text-ink">
+      <form action={acceptAction} className="bg-plinth p-5 sm:p-7">
+        <label className="flex min-h-11 cursor-pointer items-start gap-4 text-sm leading-6 text-ink">
           <input
             type="checkbox"
             name="accepted"
@@ -59,7 +56,7 @@ export function QuoteActions({
             Australian Consumer Law rights remain.
           </span>
         </label>
-        <Button type="submit" disabled={accepting} className="mt-6 min-h-11 w-full sm:w-auto">
+        <Button type="submit" disabled={accepting} className="mt-5 w-full sm:w-auto">
           {accepting ? 'Recording acceptance…' : 'Accept this quote'}
         </Button>
         <ActionMessage state={acceptance} />
@@ -69,15 +66,12 @@ export function QuoteActions({
 
   if (depositStatus === 'awaiting-payment' && depositAmountCents > 0) {
     return (
-      <form
-        action={depositAction}
-        className="rounded-sm border border-rule bg-bg p-6 sm:p-8"
-      >
-        <h2 className="font-serif text-2xl text-ink">Secure your commission</h2>
-        <p className="mt-3 font-sans text-sm leading-6 text-ink-2">
+      <form action={depositAction} className="bg-plinth p-5 sm:p-7">
+        <h2 className="text-[1.5rem] leading-tight">Secure your commission</h2>
+        <p className="mt-2 text-sm leading-6 text-ink-2">
           Your accepted terms are locked. Stripe securely processes the exact deposit shown above.
         </p>
-        <Button type="submit" disabled={startingPayment} className="mt-6 min-h-11 w-full sm:w-auto">
+        <Button type="submit" disabled={startingPayment} className="mt-5 w-full sm:w-auto">
           {startingPayment ? 'Opening secure payment…' : 'Pay deposit securely'}
         </Button>
         <ActionMessage state={deposit} />
@@ -93,7 +87,7 @@ function ActionMessage({ state }: { state: QuoteActionState }) {
   if (!message) return null
   return (
     <p
-      className={`mt-4 font-sans text-sm ${state.error ? 'text-red-700' : 'text-emerald-800'}`}
+      className={`mt-4 text-sm ${state.error ? 'text-destructive' : 'text-success'}`}
       role={state.error ? 'alert' : 'status'}
       aria-live="polite"
     >

@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
-import { Eyebrow } from '@/components/ui/eyebrow'
+import { Button } from '@/components/ui/button'
 import {
   Accordion,
   AccordionContent,
@@ -137,87 +138,86 @@ export default function FAQPage() {
 
   return (
     <MarketingShell>
-        <FaqJsonLd items={allFaqs} />
-        <BreadcrumbJsonLd
-          items={[{ name: 'Home', url: '/' }, { name: 'Frequently asked questions', url: '/faq' }]}
-        />
-        <section className="border-b border-rule">
-          <Container className="py-10 sm:py-12 lg:py-14">
-            <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
-              <div className="max-w-2xl">
-                <Eyebrow>
-                  Buyer guide
-                </Eyebrow>
-                <h1 className="mt-5 text-balance font-serif text-4xl font-medium leading-none text-ink sm:text-5xl lg:text-6xl">
-                  Clear answers before you choose.
-                </h1>
-                <p className="mt-7 max-w-xl font-sans text-lg leading-8 text-ink-2">
-                  Product details, delivery, eligible returns, care, and custom work. If your question is specific to one opal, send us the product link.
-                </p>
-              </div>
-              <div className="relative aspect-[16/9] overflow-hidden bg-plinth lg:aspect-[3/2]">
-                <Image
-                  src="/images/products/20211012_174237.jpg"
-                  alt="Three polished white opals on a dark stone surface"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </div>
-          </Container>
-        </section>
-
-        <Container className="py-12 sm:py-14 lg:py-16">
-          <div className="mx-auto max-w-4xl">
-            {faqCategories.map((category, categoryIndex) => (
-              <section
-                key={category.title}
-                className={categoryIndex === 0 ? '' : 'mt-10 border-t border-rule pt-10'}
-              >
-                <div className="grid gap-6 sm:grid-cols-[10rem_1fr] sm:gap-10">
-                  <h2 className="font-serif text-2xl font-medium text-ink">
-                    {category.title}
-                  </h2>
-                  <Accordion type="single" collapsible>
-                    {category.faqs.map((faq, index) => (
-                      <AccordionItem
-                        key={faq.question}
-                        value={`${categoryIndex}-${index}`}
-                        className="border-rule"
-                      >
-                        <AccordionTrigger className="py-5 text-left font-sans text-base font-semibold leading-6 text-ink hover:text-accent hover:no-underline">
-                          {faq.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="max-w-2xl pb-6 font-sans text-sm leading-7 text-ink-2">
-                          {faq.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </div>
-              </section>
-            ))}
-
-            <section className="mt-16 border-t border-ink pt-10 sm:flex sm:items-end sm:justify-between sm:gap-10">
-              <div className="max-w-xl">
-                <h2 className="font-serif text-3xl font-medium text-ink">
-                  Still deciding?
-                </h2>
-                <p className="mt-4 font-sans text-sm leading-7 text-ink-2">
-                  Send the product link and tell us what you need to see or understand. We will answer from the details available for that piece.
-                </p>
-              </div>
-              <Link
-                href="/contact?subject=product-question"
-                className="mt-7 inline-flex min-h-12 shrink-0 items-center justify-center rounded-sm bg-ink px-6 font-sans text-sm font-semibold text-bg transition-colors hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 sm:mt-0"
-              >
-                Ask about a piece
-              </Link>
-            </section>
+      <FaqJsonLd items={allFaqs} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Frequently asked questions', url: '/faq' },
+        ]}
+      />
+      <Container className="pb-sec">
+        <header className="grid items-center gap-[18px] pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
+          <div>
+            <h1 className="max-w-[14ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
+              Clear answers <i>before you choose.</i>
+            </h1>
+            <p className="mt-3 max-w-[50ch] text-[15px] leading-[1.6] text-ink-2 md:mt-5 md:text-base">
+              Product details, delivery, eligible returns, care, and custom work. If your question
+              is specific to one opal, send us the product link.
+            </p>
           </div>
-        </Container>
+          <div className="relative aspect-[16/9] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(220px,22vw,340px)]">
+            <Image
+              src="/images/products/20211012_174237.jpg"
+              alt="Three polished white opals on a dark stone surface"
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+              priority
+            />
+          </div>
+        </header>
+
+        <div className="pt-12 md:pt-[clamp(40px,4.5vw,72px)]">
+          {faqCategories.map((category, categoryIndex) => (
+            <section
+              key={category.title}
+              aria-labelledby={`faq-${categoryIndex}`}
+              className="grid gap-3 border-t border-rule-2 pb-8 pt-5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-[clamp(20px,3vw,56px)]"
+            >
+              <h2
+                id={`faq-${categoryIndex}`}
+                className="text-[1.625rem] leading-[1.1] tracking-[-0.015em] md:text-[clamp(1.625rem,2.4vw,2.25rem)]"
+              >
+                {category.title}
+              </h2>
+              <Accordion type="single" collapsible>
+                {category.faqs.map((faq, index) => (
+                  <AccordionItem
+                    key={faq.question}
+                    value={`${categoryIndex}-${index}`}
+                    className="border-rule"
+                  >
+                    <AccordionTrigger className="py-4 text-left text-[15px] leading-6 text-ink hover:no-underline">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="max-w-[65ch] pb-5 text-sm leading-6 text-ink-2">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </section>
+          ))}
+        </div>
+
+        <section className="grid items-end gap-5 bg-plinth p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:gap-10">
+          <div>
+            <h2 className="text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]">
+              Still <i>deciding?</i>
+            </h2>
+            <p className="mt-3 max-w-[60ch] text-sm leading-6 text-ink-2">
+              Send the product link and tell us what you need to see or understand. We will answer
+              from the details available for that piece.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/contact?subject=product-question">
+              Ask about a piece <ArrowRight aria-hidden="true" />
+            </Link>
+          </Button>
+        </section>
+      </Container>
     </MarketingShell>
   )
 }

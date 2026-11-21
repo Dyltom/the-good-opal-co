@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, BookOpen, Gem, Hammer } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseInterestPanel } from '@/components/education'
@@ -10,7 +10,7 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { courseFormatLabels, courseLevelLabels } from '@/lib/courses'
 import type { Course, Media } from '@/types/payload-types'
-import { Eyebrow } from '@/components/ui/eyebrow'
+import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: 'Opal cutting courses | The Good Opal Co',
@@ -47,93 +47,81 @@ export default async function CoursesPage() {
           }))}
         />
       ) : null}
-      <section className="overflow-hidden border-b border-rule bg-bg">
-        <Container className="grid gap-8 py-10 sm:py-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-14">
-          <div className="relative z-10">
-            <Eyebrow>
-              Opal education
-            </Eyebrow>
-            <h1 className="mt-5 max-w-[10ch] text-balance font-serif text-[clamp(2.5rem,4.8vw,4.5rem)] font-medium leading-[1]">
+      <Container className="pb-sec">
+        <header className="grid items-center gap-[18px] pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
+          <div>
+            <h1 className="max-w-[12ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
               Learn what the stone can become.
             </h1>
-            <p className="mt-7 max-w-[62ch] font-sans text-base leading-7 text-ink-2 sm:text-lg sm:leading-8">
+            <p className="mt-3 max-w-[52ch] text-[15px] leading-[1.6] text-ink-2 md:mt-5 md:text-base">
               Steph&apos;s course starts with opal anatomy, then moves through low-cost hand
               cutting, rotary tools, cabbing machines, polishing, and valuation.
             </p>
           </div>
-          <div
-            className="grid grid-cols-[0.88fr_1.12fr] gap-3 sm:gap-5"
+          <ul
             aria-label="Australian opals prepared for cutting"
+            className="grid grid-cols-2 items-end gap-1.5 md:gap-2"
           >
-            <div className="relative mt-8 aspect-[4/5] overflow-hidden bg-ink">
+            <li className="relative aspect-[4/5] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(220px,22vw,340px)]">
               <Image
                 src="/images/customs/custom-1.jpg"
                 alt="Three pale Australian opals cut into heart shapes"
                 fill
                 priority
-                sizes="(max-width: 1024px) 44vw, 22vw"
+                sizes="(max-width: 768px) 48vw, 26vw"
                 className="object-cover"
               />
-            </div>
-            <div className="relative aspect-[4/5] overflow-hidden bg-ink">
+            </li>
+            <li className="relative aspect-[4/5] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(240px,25vw,380px)]">
               <Image
                 src="/images/customs/custom-3.jpg"
                 alt="Six bright Australian opals showing varied shapes and colour"
                 fill
-                priority
-                sizes="(max-width: 1024px) 56vw, 28vw"
+                sizes="(max-width: 768px) 48vw, 26vw"
                 className="object-cover"
               />
-            </div>
-          </div>
-        </Container>
-      </section>
+            </li>
+          </ul>
+        </header>
 
-      <Container className="py-12 sm:py-16">
-        <div className="grid gap-8 border-y border-rule py-8 sm:grid-cols-3">
+        <ul className="mt-10 grid border-t border-rule md:mt-14 md:grid-cols-3 md:border-b">
           {[
             {
-              icon: Gem,
               title: 'Understand the rough',
               body: 'Colour bars, potch, host rock, origin, and opal types.',
             },
             {
-              icon: Hammer,
               title: 'Choose a cutting method',
               body: 'Sandpaper, rotary tool, and cabbing-machine pathways.',
             },
             {
-              icon: BookOpen,
               title: 'Build valuation judgment',
               body: 'Brightness, pattern, weight, inclusions, and market factors.',
             },
-          ].map(({ icon: Icon, title, body }) => (
-            <div key={title} className="flex gap-4">
-              <Icon
-                className="mt-1 h-5 w-5 shrink-0 text-accent"
-                aria-hidden="true"
-              />
-              <div>
-                <h2 className="font-serif text-xl font-medium">{title}</h2>
-                <p className="mt-2 font-sans text-sm leading-6 text-ink-2">{body}</p>
-              </div>
-            </div>
+          ].map(({ title, body }) => (
+            <li
+              key={title}
+              className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l"
+            >
+              <h2 className="text-[1.375rem]">{title}</h2>
+              <p className="mt-2 text-sm leading-[1.6] text-ink-2">{body}</p>
+            </li>
           ))}
-        </div>
+        </ul>
 
         {courses.length > 0 ? (
-          <div className="mt-20 space-y-20">
+          <div className="mt-14 space-y-14 md:mt-[clamp(48px,5.5vw,84px)] md:space-y-[clamp(48px,5.5vw,84px)]">
             {courses.map((course, index) => {
               const image = populatedMedia(course.featuredImage)
               const imageUrl = resolveMediaUrl(image?.url)
               return (
                 <article
                   key={course.id}
-                  className="grid gap-9 lg:grid-cols-[1.12fr_0.88fr] lg:items-start lg:gap-14"
+                  className="grid gap-5 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:items-start md:gap-[clamp(20px,4vw,72px)]"
                 >
                   <Link
                     href={`/courses/${course.slug}`}
-                    className="group relative aspect-[16/11] overflow-hidden bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className="group relative aspect-[4/3] overflow-hidden bg-plinth"
                   >
                     <Image
                       src={
@@ -144,38 +132,35 @@ export default async function CoursesPage() {
                       }
                       alt={image?.alt || 'Australian opals selected for cutting practice'}
                       fill
-                      sizes="(max-width: 1024px) 100vw, 56vw"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                      sizes="(max-width: 768px) 100vw, 52vw"
+                      className="object-cover transition-transform duration-700 ease-gallery group-hover:scale-[1.02]"
                     />
                   </Link>
                   <div>
-                    <div className="flex flex-wrap gap-x-5 gap-y-2 font-sans text-xs uppercase tracking-[0.1em] text-ink-3">
+                    <p className="flex flex-wrap gap-x-2 text-[13px] text-ink-3">
                       <span>{courseFormatLabels[course.format]}</span>
+                      <span aria-hidden="true">&middot;</span>
                       <span>{courseLevelLabels[course.level]}</span>
-                      {course.duration ? <span>{course.duration}</span> : null}
-                    </div>
-                    <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
-                      <Link
-                        href={`/courses/${course.slug}`}
-                        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                      >
-                        {course.title}
-                      </Link>
+                      {course.duration ? (
+                        <>
+                          <span aria-hidden="true">&middot;</span>
+                          <span>{course.duration}</span>
+                        </>
+                      ) : null}
+                    </p>
+                    <h2 className="mt-3 text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]">
+                      <Link href={`/courses/${course.slug}`}>{course.title}</Link>
                     </h2>
-                    <p className="mt-5 max-w-xl font-sans text-base leading-7 text-ink-2">
+                    <p className="mt-4 max-w-[60ch] text-base leading-[1.65] text-ink-2">
                       {course.summary}
                     </p>
-                    <p className="mt-6 font-sans text-sm text-ink-2">
-                      Taught by {course.instructor.name}
-                    </p>
-                    <Link
-                      href={`/courses/${course.slug}`}
-                      className="mt-8 inline-flex min-h-11 items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
-                    >
-                      Explore the public outline{' '}
-                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                    </Link>
-                    <div className="mt-10 max-w-md">
+                    <p className="mt-3 text-sm text-ink-2">Taught by {course.instructor.name}</p>
+                    <Button asChild variant="ghost" className="mt-6">
+                      <Link href={`/courses/${course.slug}`}>
+                        Explore the public outline <ArrowRight aria-hidden="true" />
+                      </Link>
+                    </Button>
+                    <div className="mt-8 max-w-md">
                       <CourseInterestPanel course={course} />
                     </div>
                   </div>
@@ -184,18 +169,21 @@ export default async function CoursesPage() {
             })}
           </div>
         ) : (
-          <div className="mt-20 border-y border-rule py-14">
-            <h2 className="font-serif text-3xl font-medium">Course details are being reviewed.</h2>
-            <p className="mt-3 max-w-xl font-sans text-sm leading-6 text-ink-2">
-              The free opal guides remain available while the next course outline, format, and
-              timing are confirmed.
-            </p>
-            <Link
-              href="/blog"
-              className="mt-6 inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
-            >
-              Read free opal guides <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
+          <div className="mt-14 grid gap-4 md:mt-[clamp(48px,5.5vw,84px)] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] md:gap-[clamp(20px,4vw,72px)]">
+            <h2 className="text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]">
+              Course details are being reviewed.
+            </h2>
+            <div className="max-w-[60ch]">
+              <p className="text-base leading-[1.65] text-ink-2">
+                The free opal guides remain available while the next course outline, format, and
+                timing are confirmed.
+              </p>
+              <Button asChild variant="ghost" className="mt-5">
+                <Link href="/blog">
+                  Read free opal guides <ArrowRight aria-hidden="true" />
+                </Link>
+              </Button>
+            </div>
           </div>
         )}
       </Container>

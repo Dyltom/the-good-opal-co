@@ -14,7 +14,6 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { rewriteLegacyPostLinks } from '@/lib/rich-text'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
-import { Eyebrow } from '@/components/ui/eyebrow'
 
 export const dynamic = 'force-dynamic'
 
@@ -168,30 +167,37 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           { name: post.title, url: `/blog/${post.slug}` },
         ]}
       />
-      <Container className="py-8 sm:py-10 lg:py-12">
+      <Container className="pb-sec">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 border-b border-ink pb-1 font-sans text-sm font-semibold"
+          className="mt-[18px] inline-flex min-h-11 items-center gap-2 text-sm text-ink-2 transition-colors hover:text-ink md:mt-5"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to opal notes
         </Link>
-        <article className="mx-auto mt-8 max-w-4xl">
-          {categories.length > 0 ? (
-            <Eyebrow>
-              {categories.map((category) => category.name).join(' · ')}
-            </Eyebrow>
-          ) : null}
-          <h1 className="mt-4 text-balance font-serif text-4xl font-medium leading-none text-ink sm:text-5xl lg:text-6xl">
-            {post.title}
-          </h1>
-          {author || publishedDate ? (
-            <p className="mt-6 font-sans text-sm text-ink-2">
-              {author ? `By ${author.name}` : null}
-              {author && publishedDate ? ' · ' : null}
-              {publishedDate ? <time>{publishedDate}</time> : null}
-            </p>
-          ) : null}
-          {imageUrl && featuredImage?.width && featuredImage.height && featuredImage.width < HERO_WIDTH ? (
+        <article className="mx-auto mt-4 max-w-4xl">
+          <header className="max-w-[65ch]">
+            <h1 className="text-[2.375rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4.2vw,3.75rem)]">
+              {post.title}
+            </h1>
+            {categories.length > 0 || author || publishedDate ? (
+              <p className="mt-4 text-[13px] text-ink-3">
+                {[
+                  categories.map((category) => category.name).join(' \u00b7 '),
+                  author ? `By ${author.name}` : '',
+                ]
+                  .filter(Boolean)
+                  .join(' \u00b7 ')}
+                {(categories.length > 0 || author) && publishedDate ? ' \u00b7 ' : null}
+                {publishedDate ? (
+                  <time dateTime={post.publishedAt ?? undefined}>{publishedDate}</time>
+                ) : null}
+              </p>
+            ) : null}
+          </header>
+          {imageUrl &&
+          featuredImage?.width &&
+          featuredImage.height &&
+          featuredImage.width < HERO_WIDTH ? (
             <Image
               src={imageUrl}
               alt={featuredImage.alt || post.title}
@@ -199,10 +205,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               height={featuredImage.height}
               priority
               sizes={`${featuredImage.width}px`}
-              className="mx-auto mt-10 h-auto max-w-full"
+              className="mt-8 h-auto max-w-full"
             />
           ) : imageUrl ? (
-            <div className="relative mt-10 aspect-[16/9] overflow-hidden bg-plinth">
+            <div className="relative mt-8 aspect-[16/9] overflow-hidden bg-plinth">
               <Image
                 src={imageUrl}
                 alt={featuredImage?.alt || post.title}
@@ -214,25 +220,31 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           ) : null}
           {post.content ? (
-            <div className="prose prose-lg mt-12 max-w-none break-words prose-headings:font-serif prose-headings:font-medium prose-headings:text-ink prose-p:font-sans prose-p:leading-8 prose-p:text-ink prose-a:text-accent prose-blockquote:border-rule prose-blockquote:text-ink-2">
-              <RichText data={rewriteLegacyPostLinks(post.content as unknown as SerializedEditorState, APP_URL)} />
+            <div className="prose mt-8 max-w-[65ch] break-words text-base prose-headings:font-serif prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-ink prose-p:leading-[1.75] prose-p:text-ink prose-a:text-accent prose-a:underline-offset-4 prose-blockquote:border-rule-2 prose-blockquote:font-serif prose-blockquote:font-normal prose-blockquote:text-ink-2 prose-strong:font-medium prose-strong:text-ink prose-li:text-ink">
+              <RichText
+                data={rewriteLegacyPostLinks(
+                  post.content as unknown as SerializedEditorState,
+                  APP_URL
+                )}
+              />
             </div>
           ) : null}
           {tags.length > 0 ? (
-            <div className="mt-12 border-t border-rule pt-6" aria-label="Article topics">
-              <p className="font-sans text-xs font-semibold uppercase tracking-[0.12em] text-ink-3">
-                Topics
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
+            <div
+              className="mt-10 max-w-[65ch] border-t border-rule pt-5"
+              aria-label="Article topics"
+            >
+              <p className="text-[13px] text-ink-3">Topics</p>
+              <ul className="mt-2 flex flex-wrap gap-2">
                 {tags.map((tag) => (
-                  <span
+                  <li
                     key={tag.id}
-                    className="rounded-full border border-rule bg-bg px-3 py-1.5 font-sans text-xs text-ink-2"
+                    className="rounded-sm border border-rule px-2.5 py-1 text-xs text-ink-2"
                   >
                     {tag.name}
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           ) : null}
         </article>

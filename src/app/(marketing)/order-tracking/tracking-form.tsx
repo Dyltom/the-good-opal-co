@@ -54,8 +54,8 @@ export function OrderTrackingForm() {
 
   return (
     <>
-      <div className="rounded-sm border border-rule bg-bg p-8 shadow-sm">
-        <form action={formAction} className="space-y-6">
+      <div className="bg-plinth p-5 sm:p-7">
+        <form action={formAction} className="space-y-5">
           <div>
             <Label htmlFor="orderNumber" className="mb-2 flex items-center gap-2">
               <Package className="h-4 w-4 text-ink-3" />
@@ -89,7 +89,10 @@ export function OrderTrackingForm() {
             <p className="mt-1 text-xs text-ink-2">The email you used at checkout</p>
           </div>
           {state.error && (
-            <div className="rounded-sm border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <div
+              role="alert"
+              className="border-l-2 border-destructive bg-bg px-4 py-3 text-sm text-destructive"
+            >
               {state.error}
             </div>
           )}
@@ -106,8 +109,8 @@ export function OrderTrackingForm() {
         </form>
       </div>
       {state.order && (
-        <div className="mt-8 rounded-sm border border-rule bg-bg p-8 shadow-sm">
-          <p className="text-sm text-ink-2">Order number</p>
+        <div className="mt-6 border-t border-rule-2 pt-6">
+          <p className="text-[13px] text-ink-3">Order number</p>
           <h2 className="mb-6 mt-1 break-all font-mono text-base text-ink">
             {state.order.orderNumber}
           </h2>
@@ -115,7 +118,7 @@ export function OrderTrackingForm() {
             const display = statusDisplay[state.order.status] ?? statusDisplay.processing!
             const StatusIcon = display.icon
             return (
-              <div className="mb-8 flex items-start gap-3 rounded-sm bg-bg p-4">
+              <div className="mb-6 flex items-start gap-3 bg-plinth p-4">
                 <StatusIcon aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
                 <div>
                   <p className="font-medium text-ink">{display.label}</p>
@@ -125,9 +128,9 @@ export function OrderTrackingForm() {
             )
           })()}
 
-          <div className="mb-8 grid gap-6 md:grid-cols-2">
+          <div className="mb-6 grid grid-cols-2 gap-6">
             <div>
-              <p className="mb-1 text-sm text-ink-2">Ordered</p>
+              <p className="mb-1 text-[13px] text-ink-3">Ordered</p>
               <p className="font-medium text-ink">
                 {new Date(state.order.createdAt).toLocaleDateString('en-AU', {
                   year: 'numeric',
@@ -137,23 +140,21 @@ export function OrderTrackingForm() {
               </p>
             </div>
             <div>
-              <p className="mb-1 text-sm text-ink-2">Total</p>
-              <p className="font-medium text-ink">
-                {formatCurrency(state.order.total, 'AUD')}
-              </p>
+              <p className="mb-1 text-[13px] text-ink-3">Total</p>
+              <p className="font-medium text-ink">{formatCurrency(state.order.total, 'AUD')}</p>
             </div>
           </div>
           {state.order.trackingNumber && (
-            <div className="mb-8 rounded-sm bg-bg p-4">
-              <p className="mb-2 text-sm font-medium text-ink">Tracking</p>
+            <div className="mb-6 border-y border-rule py-4">
+              <p className="mb-1 text-[13px] text-ink-3">Tracking</p>
               <p className="text-sm text-ink-2">
                 Tracking number: <span className="font-mono">{state.order.trackingNumber}</span>
               </p>
             </div>
           )}
           <div>
-            <h3 className="mb-4 font-medium text-ink">Items</h3>
-            <div className="space-y-3">
+            <h3 className="mb-2 text-[1.25rem]">Items</h3>
+            <div>
               {state.order.items.map(
                 (item: { name: string; price: number; quantity: number }, index: number) => (
                   <div
@@ -172,8 +173,8 @@ export function OrderTrackingForm() {
               )}
             </div>
           </div>
-          <div className="mt-8 border-t border-rule pt-8">
-            <h3 className="mb-3 font-medium text-ink">Shipping destination</h3>
+          <div className="mt-6 border-t border-rule pt-6">
+            <h3 className="mb-2 text-[1.25rem]">Shipping destination</h3>
             <div className="text-sm text-ink-2">
               <p>
                 {state.order.shippingDestination.city}, {state.order.shippingDestination.state}

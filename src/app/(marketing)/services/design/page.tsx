@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { ShieldCheck, Sparkles, WandSparkles } from 'lucide-react'
 import { RingConfigurator, ringConfigFromRecord } from '@/components/custom-builder'
 import type { BuilderOpal } from '@/components/custom-builder/config'
 import { Container } from '@/components/layout'
@@ -272,36 +271,31 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
         unavailableOpalRequested={unavailableOpalRequested}
       />
 
-      <section className="border-t border-rule bg-bg py-10 sm:py-12">
-        <Container>
-          <div className="grid gap-6 md:grid-cols-3 md:gap-10">
-            <div>
-              <Sparkles aria-hidden="true" className="h-5 w-5 text-accent" />
-              <h2 className="mt-3 font-serif text-xl">A visual starting point</h2>
-              <p className="mt-2 text-sm leading-6 text-ink-2">
-                A guide to proportion and colour. Every natural opal is unique, so your consultation
-                confirms the real stone.
-              </p>
-            </div>
-            <div>
-              <WandSparkles aria-hidden="true" className="h-5 w-5 text-accent" />
-              <h2 className="mt-3 font-serif text-xl">Made around your opal</h2>
-              <p className="mt-2 text-sm leading-6 text-ink-2">
-                We match suitable available stones, confirm dimensions, and refine the setting
-                before making begins.
-              </p>
-            </div>
-            <div>
-              <ShieldCheck aria-hidden="true" className="h-5 w-5 text-accent" />
-              <h2 className="mt-3 font-serif text-xl">Quote before commitment</h2>
-              <p className="mt-2 text-sm leading-6 text-ink-2">
-                Your consultation confirms scope, timing, and exact AUD price. A builder estimate
-                never becomes an automatic charge.
-              </p>
-            </div>
+      <Container className="pb-sec pt-8 md:pt-10">
+        <div className="grid border-t border-rule md:grid-cols-3 md:border-b">
+          <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
+            <h2 className="text-[1.375rem] leading-[1.15]">A visual starting point</h2>
+            <p className="mt-2 max-w-[48ch] text-sm leading-6 text-ink-2">
+              A guide to proportion and colour. Every natural opal is unique, so your consultation
+              confirms the real stone.
+            </p>
           </div>
-        </Container>
-      </section>
+          <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
+            <h2 className="text-[1.375rem] leading-[1.15]">Made around your opal</h2>
+            <p className="mt-2 max-w-[48ch] text-sm leading-6 text-ink-2">
+              We match suitable available stones, confirm dimensions, and refine the setting before
+              making begins.
+            </p>
+          </div>
+          <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
+            <h2 className="text-[1.375rem] leading-[1.15]">Quote before commitment</h2>
+            <p className="mt-2 max-w-[48ch] text-sm leading-6 text-ink-2">
+              Your consultation confirms scope, timing, and exact AUD price. A builder estimate
+              never becomes an automatic charge.
+            </p>
+          </div>
+        </div>
+      </Container>
     </MarketingShell>
   )
 }

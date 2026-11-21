@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
 import { Container } from '@/components/layout'
-import { MarketingShell, PageHeader } from '@/components/marketing'
+import { MarketingShell } from '@/components/marketing'
+import { Button } from '@/components/ui/button'
 import { NewsletterConversion } from '@/components/newsletter/NewsletterConversion'
 
 export const metadata: Metadata = {
@@ -15,18 +16,20 @@ export default function NewsletterSuccessPage() {
   return (
     <MarketingShell>
       <NewsletterConversion />
-      <Container className="flex min-h-[34rem] items-center justify-center py-16">
-          <div className="max-w-xl text-center">
-            <CheckCircle className="mx-auto h-9 w-9 text-accent" aria-hidden="true" />
-            <PageHeader
-              title="You're on the gallery list."
-              description="We will send occasional notes about newly available pieces, opal care, and work from the studio. You can unsubscribe at any time."
-              align="center"
-              className="mt-6"
-              descriptionClassName="text-base"
-            />
-            <Link href="/store" className="mt-8 inline-flex min-h-12 items-center justify-center rounded-sm bg-ink px-7 font-sans text-sm font-semibold text-bg hover:bg-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">Browse available pieces</Link>
-          </div>
+      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+        <div className="max-w-[60ch]">
+          <CheckCircle className="h-6 w-6 text-success" aria-hidden="true" />
+          <h1 className="mt-4 text-[2.25rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4vw,3.5rem)]">
+            You&apos;re on the gallery list.
+          </h1>
+          <p className="mt-3 max-w-[60ch] text-[15px] leading-[1.6] text-ink-2">
+            We will send occasional notes about newly available pieces, opal care, and work from the
+            studio. You can unsubscribe at any time.
+          </p>
+          <Button asChild className="mt-6">
+            <Link href="/store">Browse available pieces</Link>
+          </Button>
+        </div>
       </Container>
     </MarketingShell>
   )
