@@ -313,11 +313,12 @@ export async function getInsightsReport(payload: Payload, days: InsightRange, no
         payload,
         filterRow,
         sql`
-          SELECT field.key AS filter, field.value, count(*) AS uses
+          SELECT field.key AS filter, choice.value, count(*) AS uses
           FROM insight_events
           CROSS JOIN LATERAL jsonb_each_text(
             CASE WHEN jsonb_typeof(detail) = 'object' THEN detail ELSE '{}'::jsonb END
           ) AS field
+          CROSS JOIN LATERAL unnest(string_to_array(field.value, ',')) AS choice(value)
           WHERE ${inRange} AND name = 'store_filter' AND field.key <> 'results'
           GROUP BY 1, 2
           ORDER BY uses DESC, filter, value

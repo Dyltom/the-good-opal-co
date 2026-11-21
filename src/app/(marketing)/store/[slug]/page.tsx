@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ringStyles } from '@/components/custom-builder/config'
-import { ArrowRight, Camera, MessageCircle, RotateCcw, Truck } from 'lucide-react'
+import { ArrowRight, Camera, ChevronDown, MessageCircle, RotateCcw, Truck } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { Product } from '@/types/payload-types'
 import { Container } from '@/components/layout'
@@ -118,6 +118,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     { label: 'Stone', value: product.stoneType && storeLabel(product.stoneType) },
     { label: 'Origin', value: product.stoneOrigin && storeLabel(product.stoneOrigin) },
     { label: 'Weight', value: product.weight && weightUnitLabel(product.weight, product.weightUnit ?? (product.category === 'raw-opals' ? 'carats' : undefined)) },
+    { label: 'Dimensions', value: dimensionsLabel(product.dimensions) },
     { label: 'Ring size', value: product.ringSize },
     { label: 'Metal', value: product.material && product.material !== 'none' ? storeLabel(product.material) : undefined },
     { label: 'Inclusions', value: about.inclusions && about.inclusions.charAt(0).toUpperCase() + about.inclusions.slice(1) },
@@ -223,7 +224,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
                     {about.paragraphs.length > 0 ? (
                       <section aria-labelledby="about-stone" data-insight-section="details" className="hidden max-w-prose lg:block">
-                        <AboutStone id="about-stone" paragraphs={about.paragraphs} />
+                        <h2 id="about-stone" className="font-serif text-2xl font-medium text-charcoal">
+                          About this stone
+                        </h2>
+                        <div className="mt-4 space-y-4 font-sans text-base leading-7 text-charcoal/80">
+                          {about.paragraphs.map((paragraph) => (
+                            <p key={paragraph}>{paragraph}</p>
+                          ))}
+                        </div>
                       </section>
                     ) : null}
                   </div>
@@ -352,22 +360,30 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
 
                 {about.paragraphs.length > 0 ? (
-                  <section aria-labelledby="about-stone-mobile" data-insight-section="details" className="mt-12 max-w-prose lg:hidden">
-                    <AboutStone id="about-stone-mobile" paragraphs={about.paragraphs} />
-                  </section>
+                  <details data-insight-section="details" className="group mt-8 max-w-prose border-y border-warm-grey/50 lg:hidden">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 font-serif text-xl font-medium text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible [&::-webkit-details-marker]:hidden">
+                      About this stone
+                      <ChevronDown className="h-5 w-5 shrink-0 text-charcoal/60 transition-transform group-open:rotate-180 motion-reduce:transition-none" aria-hidden="true" />
+                    </summary>
+                    <div className="space-y-4 pb-5 font-sans text-base leading-7 text-charcoal/80">
+                      {about.paragraphs.map((paragraph) => (
+                        <p key={paragraph}>{paragraph}</p>
+                      ))}
+                    </div>
+                  </details>
                 ) : null}
 
                 <ReviewsSection
                   productId={product.id}
                   eyebrow="Customer review"
                   title="From the person who bought it."
-                  className="mt-24 border-t border-warm-grey/40 pt-16"
+                  className="mt-12 border-t border-warm-grey/40 pt-10 lg:mt-24 lg:pt-16"
                 />
 
-                <div className="mt-24">
+                <div className="mt-12 lg:mt-24">
                   <RelatedProductsWithSuspense
                     product={product}
-                    className="border-t border-warm-grey/40 pt-16"
+                    className="border-t border-warm-grey/40 pt-10 lg:pt-16"
                   />
                 </div>
               </Container>
@@ -385,17 +401,9 @@ function weightUnitLabel(weight: number, unit: string | null | undefined) {
   return `${weight} ${unit === 'carats' ? 'ct' : unit}`
 }
 
-function AboutStone({ id, paragraphs }: { id: string; paragraphs: string[] }) {
-  return (
-    <>
-      <h2 id={id} className="font-serif text-2xl font-medium text-charcoal">
-        About this stone
-      </h2>
-      <div className="mt-4 space-y-4 font-sans text-base leading-7 text-charcoal/80">
-        {paragraphs.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
-    </>
+function dimensionsLabel(dimensions: Product['dimensions']) {
+  const sizes = [dimensions?.length, dimensions?.width, dimensions?.depth].filter(
+    (size): size is number => typeof size === 'number' && size > 0
   )
+  return sizes.length > 0 ? `${sizes.join(' × ')} mm` : undefined
 }

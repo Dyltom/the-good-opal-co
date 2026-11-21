@@ -1,18 +1,25 @@
 import Link from 'next/link'
-import { ArrowRight, Search, X } from 'lucide-react'
+import { ArrowRight, Check, Search, X } from 'lucide-react'
 import { ProductCard } from '@/components/product/ProductCard'
 import { cn } from '@/lib/utils'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { StoreFilterSheet, StoreSort } from './store-controls'
 import {
+  activeFilterCount,
+  EMPTY_STORE_QUERY,
+  facetOptionLabel,
   PRODUCTS_PER_PAGE,
-  STORE_CATEGORIES,
-  STORE_ORIGINS,
-  STORE_PRICE_RANGES,
-  STORE_STONES,
+  STORE_FACET_LABELS,
+  STORE_FACET_OPTIONS,
+  STORE_FACETS,
+  STORE_SORT_LABELS,
+  STORE_SORTS,
   storeQueryParams,
   storeUrl,
+  toggleFacetValue,
+  type StoreFacet,
+  type StoreFacetCounts,
   type StoreQuery,
-  type StoreSort,
 } from './store-query'
 
 export interface StoreProduct {
@@ -28,42 +35,19 @@ export interface StoreProduct {
   image?: string
   stoneOrigin?: string
   stoneType?: string
-  createdAt?: string
-}
-
-export interface StoreFacets {
-  category: Set<string>
-  stone: Set<string>
-  origin: Set<string>
-  price: Set<string>
-  collectedCount: number
+  carats?: number
 }
 
 interface StoreContentProps {
   products: StoreProduct[]
   query: StoreQuery
   totalDocs: number
-  totalPages: number
-  facets: StoreFacets
+  facetCounts: StoreFacetCounts
+  collectedCount: number
 }
 
-const categories = STORE_CATEGORIES
-const stones = STORE_STONES
-const origins = STORE_ORIGINS
-
-const priceRanges = [
-  ['under-250', 'Under $250'],
-  ['250-500', '$250 to $500'],
-  ['500-1000', '$500 to $1,000'],
-  ['1000-plus', '$1,000 and over'],
-] as const
-
-const sortOptions: readonly (readonly [StoreSort, string])[] = [
-  ['featured', 'Selected first'],
-  ['newest', 'Newest'],
-  ['price-low', 'Lowest price'],
-  ['price-high', 'Highest price'],
-]
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2'
 
 function HiddenQueryFields({ query, omit }: { query: StoreQuery; omit: string[] }) {
   return Array.from(storeQueryParams(query).entries())
@@ -71,128 +55,190 @@ function HiddenQueryFields({ query, omit }: { query: StoreQuery; omit: string[] 
     .map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)
 }
 
-type ChipOption = readonly [value: string, label: string]
-
 function chipClass(active: boolean) {
   return cn(
-    'inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 font-sans text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2',
+    'inline-flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-full border px-4 font-sans text-sm transition-colors',
+    focusRing,
     active
       ? 'border-charcoal bg-charcoal text-cream hover:bg-charcoal-dark'
       : 'border-warm-grey/80 bg-cream text-charcoal hover:border-charcoal'
   )
 }
 
-function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
-  return (
-    <Link href={href} scroll={false} prefetch={false} aria-current={active ? 'true' : undefined} className={chipClass(active)}>
-      {children}
-      {active ? <X className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-    </Link>
-  )
+function clearAllUrl(query: StoreQuery): string {
+  return storeUrl({ ...EMPTY_STORE_QUERY, sort: query.sort })
 }
 
-function ChipGroup({
-  label,
-  options,
-  active,
-  present,
-  hrefFor,
-}: {
-  label: string
-  options: readonly ChipOption[]
-  active?: string
-  present: Set<string>
-  hrefFor: (value: string | undefined) => string
-}) {
-  const visible = options.filter(([value]) => present.has(value) || value === active)
-  if (visible.length === 0) return null
+function hasAnyFilter(query: StoreQuery): boolean {
+  return Boolean(query.search) || activeFilterCount(query) > 0
+}
+
+function FacetGroup({ facet, query, counts }: { facet: StoreFacet; query: StoreQuery; counts: Record<string, number> }) {
+  const active = query[facet]
+  const options = STORE_FACET_OPTIONS[facet].filter(([value]) => (counts[value] ?? 0) > 0 || active.includes(value))
+  if (options.length === 0) return null
+  const label = STORE_FACET_LABELS[facet]
 
   return (
     <div role="group" aria-label={label}>
       <p className="mb-3 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-charcoal/55">{label}</p>
       <ul className="flex flex-wrap gap-2">
-        {visible.map(([value, optionLabel]) => (
-          <li key={value}>
-            <Chip href={hrefFor(value === active ? undefined : value)} active={value === active}>
-              {optionLabel}
-            </Chip>
-          </li>
-        ))}
+        {options.map(([value, optionLabel]) => {
+          const selected = active.includes(value)
+          const count = counts[value] ?? 0
+          return (
+            <li key={value}>
+              <Link
+                href={storeUrl(toggleFacetValue(query, facet, value), 1)}
+                scroll={false}
+                prefetch={false}
+                aria-current={selected ? 'true' : undefined}
+                className={chipClass(selected)}
+              >
+                {selected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                {optionLabel}
+                <span className={cn('text-xs tabular-nums', selected ? 'text-cream/70' : 'text-charcoal/50')}>
+                  <span className="sr-only">, </span>
+                  {count}
+                  <span className="sr-only"> {count === 1 ? 'piece' : 'pieces'}</span>
+                </span>
+              </Link>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )
 }
 
-function Pagination({ query, totalPages }: { query: StoreQuery; totalPages: number }) {
-  if (totalPages <= 1) return null
-
-  const pages = Array.from({ length: totalPages }, (_, index) => index + 1).filter(
-    (page) => page === 1 || page === totalPages || Math.abs(page - query.page) <= 1
-  )
-
+function FilterGroups({
+  query,
+  facetCounts,
+  collectedCount,
+}: {
+  query: StoreQuery
+  facetCounts: StoreFacetCounts
+  collectedCount: number
+}) {
   return (
-    <nav
-      aria-label="Product pages"
-      className="mt-14 flex flex-wrap items-center justify-center gap-2"
-    >
-      {query.page > 1 ? (
-        <Link
-          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-          href={storeUrl(query, query.page - 1)}
-        >
-          Previous
-        </Link>
+    <div className="space-y-7">
+      {STORE_FACETS.map((facet) => (
+        <FacetGroup key={facet} facet={facet} query={query} counts={facetCounts[facet]} />
+      ))}
+      {collectedCount > 0 ? (
+        <div role="group" aria-label="Availability" className="space-y-4 border-t border-warm-grey/60 pt-6">
+          <Link
+            href={storeUrl({ ...query, availability: query.availability === 'all' ? 'available' : 'all' }, 1)}
+            scroll={false}
+            prefetch={false}
+            aria-current={query.availability === 'all' ? 'true' : undefined}
+            className={chipClass(query.availability === 'all')}
+          >
+            {query.availability === 'all' ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+            Include collected pieces
+          </Link>
+          <Link
+            href="/store/collected"
+            className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
+          >
+            Recently collected
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
       ) : null}
-
-      {pages.map((page, index) => {
-        const previousPage = pages[index - 1]
-        return (
-          <span key={page} className="contents">
-            {previousPage && page - previousPage > 1 ? (
-              <span aria-hidden="true" className="px-1">
-                …
-              </span>
-            ) : null}
-            <Link
-              href={storeUrl(query, page)}
-              aria-current={page === query.page ? 'page' : undefined}
-              aria-label={`Page ${page}`}
-              className={
-                page === query.page
-                  ? 'flex min-h-11 min-w-11 items-center justify-center rounded-full bg-charcoal font-sans text-sm font-semibold text-cream'
-                  : 'flex min-h-11 min-w-11 items-center justify-center rounded-full font-sans text-sm font-semibold hover:bg-warm-grey/45'
-              }
-            >
-              {page}
-            </Link>
-          </span>
-        )
-      })}
-
-      {query.page < totalPages ? (
-        <Link
-          className="min-h-11 px-4 py-3 font-sans text-sm font-semibold underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
-          href={storeUrl(query, query.page + 1)}
-        >
-          Next
-        </Link>
-      ) : null}
-    </nav>
+    </div>
   )
 }
 
-export function StoreContent({ products, query, totalDocs, totalPages, facets }: StoreContentProps) {
-  const activeFilters = [query.category, query.stone, query.origin, query.price].filter(Boolean).length
-  const start = totalDocs === 0 ? 0 : (query.page - 1) * PRODUCTS_PER_PAGE + 1
-  const end = Math.min(query.page * PRODUCTS_PER_PAGE, totalDocs)
+function ActiveFilters({ query }: { query: StoreQuery }) {
+  const chips = [
+    ...(query.search
+      ? [{ key: 'search', label: `“${query.search}”`, href: storeUrl({ ...query, search: '', page: 1 }) }]
+      : []),
+    ...STORE_FACETS.flatMap((facet) =>
+      query[facet].map((value) => ({
+        key: `${facet}-${value}`,
+        label: facetOptionLabel(facet, value),
+        href: storeUrl(toggleFacetValue(query, facet, value), 1),
+      }))
+    ),
+    ...(query.availability === 'all'
+      ? [{ key: 'availability', label: 'Including collected', href: storeUrl({ ...query, availability: 'available', page: 1 }) }]
+      : []),
+  ]
+  if (chips.length === 0) return null
+
+  return (
+    <ul aria-label="Active filters" className="mb-4 flex flex-wrap items-center gap-2 sm:mb-6">
+      {chips.map((chip) => (
+        <li key={chip.key}>
+          <Link
+            href={chip.href}
+            scroll={false}
+            prefetch={false}
+            aria-label={`Remove ${chip.label}`}
+            className={cn(
+              'inline-flex min-h-9 items-center gap-1.5 rounded-full border border-charcoal/70 bg-cream px-3 font-sans text-sm text-charcoal hover:bg-charcoal hover:text-cream',
+              focusRing
+            )}
+          >
+            {chip.label}
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
+        </li>
+      ))}
+      <li>
+        <Link
+          href={clearAllUrl(query)}
+          scroll={false}
+          className={cn('inline-flex min-h-9 items-center px-2 font-sans text-sm font-semibold underline underline-offset-4', focusRing)}
+        >
+          Clear all
+        </Link>
+      </li>
+    </ul>
+  )
+}
+
+function ShowMore({ query, shown, total }: { query: StoreQuery; shown: number; total: number }) {
+  if (shown >= total) return null
+  const next = Math.min(PRODUCTS_PER_PAGE, total - shown)
+
+  return (
+    <div className="mt-10 flex flex-col items-center gap-3 sm:mt-14">
+      <p className="font-sans text-sm text-charcoal/65">
+        {shown} of {total} pieces shown
+      </p>
+      <Link
+        href={storeUrl(query, query.page + 1)}
+        scroll={false}
+        className={cn(
+          'inline-flex min-h-12 items-center rounded-sm border border-charcoal px-8 font-sans text-sm font-semibold text-charcoal transition-colors hover:bg-charcoal hover:text-cream',
+          focusRing
+        )}
+      >
+        Show {next} more
+      </Link>
+    </div>
+  )
+}
+
+export function StoreContent({ products, query, totalDocs, facetCounts, collectedCount }: StoreContentProps) {
+  const shown = products.length
+  const sortOptions = STORE_SORTS.map((sort) => ({
+    value: sort,
+    label: STORE_SORT_LABELS[sort],
+    href: storeUrl({ ...query, sort }, 1),
+  }))
+  const filters = <FilterGroups query={query} facetCounts={facetCounts} collectedCount={collectedCount} />
 
   return (
     <>
-      <header className="border-b border-warm-grey/60 bg-cream px-5 py-6 sm:px-8 sm:py-10">
+      <header className="border-b border-warm-grey/60 bg-cream px-5 py-4 sm:px-8 sm:py-10">
         <div className="mx-auto grid max-w-[92rem] gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
-            <Eyebrow className="mb-3 sm:mb-4">The collection</Eyebrow>
-            <h1 className="max-w-[18ch] font-serif text-[clamp(1.85rem,2.8vw,3rem)] leading-[1.02] text-charcoal">
+            <Eyebrow className="mb-2 sm:mb-4">The collection</Eyebrow>
+            <h1 className="max-w-[18ch] font-serif text-[clamp(1.6rem,2.8vw,3rem)] leading-[1.02] text-charcoal">
               Find the opal that stays with you.
             </h1>
           </div>
@@ -210,13 +256,13 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
         </div>
       </header>
 
-      <section className="bg-cream-dark px-5 py-5 sm:px-8 sm:py-8" aria-label="Opal collection">
+      <section className="bg-cream-dark px-5 py-4 sm:px-8 sm:py-8" aria-label="Opal collection">
         <div className="mx-auto max-w-[92rem]">
           <form
             action="/store"
             method="get"
             role="search"
-            className="grid grid-cols-[1fr_auto] gap-2 border-b border-warm-grey/70 pb-4 sm:gap-3 sm:pb-6"
+            className="grid grid-cols-[1fr_auto] gap-2 border-b border-warm-grey/70 pb-3 sm:gap-3 sm:pb-6"
           >
             <label className="sr-only" htmlFor="store-search">
               Search the collection
@@ -231,7 +277,10 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
             />
             <HiddenQueryFields query={query} omit={['search', 'page']} />
             <button
-              className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-sm bg-charcoal px-3 font-sans text-sm font-semibold text-cream hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2 sm:px-7"
+              className={cn(
+                'inline-flex min-h-12 min-w-12 items-center justify-center rounded-sm bg-charcoal px-3 font-sans text-sm font-semibold text-cream hover:bg-charcoal-dark sm:px-7',
+                focusRing
+              )}
               type="submit"
             >
               <Search className="h-5 w-5 sm:hidden" aria-hidden="true" />
@@ -239,67 +288,41 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
             </button>
           </form>
 
-          <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pt-4 sm:gap-8 sm:pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
-            <aside className="relative flex gap-2 lg:block">
-              <details className="group flex-1 lg:hidden">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-sm font-semibold">
-                  <span>
-                    Refine
-                    {activeFilters > 0 ? <span className="ml-1.5 text-charcoal/55">({activeFilters} on)</span> : null}
-                  </span>
-                  <span aria-hidden="true" className="text-lg group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <FilterChips
-                  query={query}
-                  facets={facets}
-                  className="absolute inset-x-0 top-full z-20 mt-2 border border-warm-grey/70 bg-cream p-5 shadow-lg"
-                />
-              </details>
-              <details className="group flex-1 sm:hidden">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-sm border border-warm-grey/70 bg-cream px-4 font-sans text-sm font-semibold">
-                  <span className="truncate">Sort: {sortOptions.find(([sort]) => sort === query.sort)?.[1]}</span>
-                  <span aria-hidden="true" className="text-lg group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <div className="absolute inset-x-0 top-full z-20 mt-2 border border-warm-grey/70 bg-cream px-5 py-2 shadow-lg">
-                  <SortLinks query={query} />
-                </div>
-              </details>
-              <div className="hidden lg:block">
-                <p className="border-b border-warm-grey/70 pb-4 font-serif text-2xl">Refine</p>
-                <FilterChips query={query} facets={facets} className="pt-6" />
-              </div>
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4 pt-3 sm:gap-8 sm:pt-8 lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:gap-12">
+            <aside className="hidden lg:block" aria-label="Filters">
+              <p className="border-b border-warm-grey/70 pb-4 font-serif text-2xl">Refine</p>
+              <div className="pt-6">{filters}</div>
             </aside>
 
             <div>
               <h2 className="sr-only">Current collection</h2>
-              <div className="mb-4 flex flex-col gap-4 border-b border-warm-grey/70 pb-3 sm:mb-7 sm:flex-row sm:items-end sm:justify-between sm:pb-5">
-                <p className="font-sans text-sm text-charcoal/65" aria-live="polite">
-                  {totalDocs === 0
-                    ? 'No pieces found'
-                    : `Showing ${start}–${end} of ${totalDocs} pieces`}
-                </p>
-                <div className="hidden sm:block">
-                  <SortLinks query={query} />
+              <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-3 sm:mb-5 lg:border-b lg:border-warm-grey/70 lg:pb-4">
+                <div className="flex w-full gap-2 lg:contents">
+                  <StoreFilterSheet
+                    activeCount={activeFilterCount(query)}
+                    resultCount={totalDocs}
+                    clearHref={hasAnyFilter(query) ? clearAllUrl(query) : undefined}
+                    className="flex-1 lg:hidden"
+                  >
+                    {filters}
+                  </StoreFilterSheet>
+                  <StoreSort options={sortOptions} value={query.sort} className="flex-1 lg:order-2 lg:ml-auto lg:flex-none" />
                 </div>
+                <p className="font-sans text-sm text-charcoal/65 lg:order-1" aria-live="polite">
+                  {totalDocs === 0 ? 'No pieces found' : `Showing 1–${shown} of ${totalDocs} pieces`}
+                </p>
               </div>
 
+              <ActiveFilters query={query} />
+
               {products.length > 0 ? (
-                <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-8 md:grid-cols-3 xl:grid-cols-4">
                   {products.map((product, index) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      index={index}
-                      priority
-                    />
+                    <ProductCard key={product.id} product={product} index={index} priority />
                   ))}
                 </div>
               ) : (
-                <div className="border-y border-warm-grey/70 py-20 text-center">
+                <div className="border-y border-warm-grey/70 py-16 text-center sm:py-20">
                   <p className="font-serif text-4xl">Nothing matches yet.</p>
                   <p className="mx-auto mt-4 max-w-md font-sans text-sm leading-6 text-charcoal/65">
                     Try fewer details, browse every available piece, or ask us to help source
@@ -308,13 +331,19 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
                   <div className="mt-7 flex flex-wrap justify-center gap-3">
                     <Link
                       href="/store"
-                      className="min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+                      className={cn(
+                        'min-h-11 rounded-sm bg-charcoal px-6 py-3 font-sans text-sm font-semibold text-cream transition-colors hover:bg-charcoal-dark',
+                        focusRing
+                      )}
                     >
                       Clear filters
                     </Link>
                     <Link
                       href="/contact?subject=opal-finder"
-                      className="min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold transition-colors hover:text-charcoal/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible focus-visible:ring-offset-2"
+                      className={cn(
+                        'min-h-11 border-b border-charcoal px-2 py-3 font-sans text-sm font-semibold transition-colors hover:text-charcoal/70',
+                        focusRing
+                      )}
                     >
                       Ask for help
                     </Link>
@@ -322,111 +351,11 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
                 </div>
               )}
 
-              <Pagination query={query} totalPages={totalPages} />
+              <ShowMore query={query} shown={shown} total={totalDocs} />
             </div>
           </div>
         </div>
       </section>
     </>
-  )
-}
-
-function FilterChips({ query, facets, className }: { query: StoreQuery; facets: StoreFacets; className?: string }) {
-  const refine = (patch: Partial<StoreQuery>) => storeUrl({ ...query, ...patch }, 1)
-
-  return (
-    <div className={cn('space-y-7', className)}>
-      <ChipGroup
-        label="Piece"
-        options={categories}
-        active={query.category}
-        present={facets.category}
-        hrefFor={(category) => refine({ category })}
-      />
-      <ChipGroup
-        label="Stone"
-        options={stones}
-        active={query.stone}
-        present={facets.stone}
-        hrefFor={(stone) => refine({ stone })}
-      />
-      <ChipGroup
-        label="Origin"
-        options={origins}
-        active={query.origin}
-        present={facets.origin}
-        hrefFor={(origin) => refine({ origin })}
-      />
-      <ChipGroup
-        label="Price"
-        options={priceRanges}
-        active={query.price}
-        present={facets.price}
-        hrefFor={(price) => refine({ price: STORE_PRICE_RANGES.find((range) => range === price) })}
-      />
-      {facets.collectedCount > 0 ? (
-        <div role="group" aria-label="Availability" className="space-y-4 border-t border-warm-grey/60 pt-6">
-          <Chip
-            href={refine({ availability: query.availability === 'all' ? 'available' : 'all' })}
-            active={query.availability === 'all'}
-          >
-            Include collected pieces
-          </Chip>
-          <Link
-            href="/store/collected"
-            className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
-          >
-            Recently collected
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </div>
-      ) : null}
-      {hasAnyFilter(query) ? (
-        <Link
-          href={query.search ? storeUrl({ search: query.search, availability: 'available', sort: query.sort, page: 1 }) : '/store'}
-          scroll={false}
-          className="inline-flex min-h-11 items-center font-sans text-sm font-semibold underline underline-offset-4"
-        >
-          Clear filters
-        </Link>
-      ) : null}
-    </div>
-  )
-}
-
-function SortLinks({ query }: { query: StoreQuery }) {
-  return (
-    <nav aria-label="Sort pieces" className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5">
-      <span className="hidden font-sans text-xs font-semibold uppercase tracking-[0.12em] text-charcoal/55 sm:inline">Sort</span>
-      {sortOptions.map(([sort, label]) => (
-        <Link
-          key={sort}
-          href={storeUrl({ ...query, sort }, 1)}
-          scroll={false}
-          prefetch={false}
-          aria-current={query.sort === sort ? 'true' : undefined}
-          className={cn(
-            'inline-flex min-h-11 shrink-0 items-center whitespace-nowrap font-sans text-sm underline-offset-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible',
-            query.sort === sort
-              ? 'font-semibold text-charcoal underline decoration-charcoal'
-              : 'text-charcoal/65 hover:text-charcoal'
-          )}
-        >
-          {label}
-        </Link>
-      ))}
-    </nav>
-  )
-}
-
-function hasAnyFilter(query: StoreQuery): boolean {
-  return Boolean(
-    query.search ||
-    query.category ||
-    query.stone ||
-    query.origin ||
-    query.material ||
-    query.price ||
-    query.availability === 'all'
   )
 }

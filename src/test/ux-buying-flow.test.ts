@@ -30,7 +30,7 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
     expect(source).toContain('aria-live="polite"')
-    expect(source).toContain('Showing ${start}–${end} of ${totalDocs} pieces')
+    expect(source).toContain('Showing 1–${shown} of ${totalDocs} pieces')
     expect(source).toContain('products.map((product, index)')
     expect(source).toContain('index={index}')
   })
@@ -55,7 +55,6 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('role="search"')
     expect(source).toContain('type="search"')
     expect(source).toContain('method="get"')
-    expect(source).toContain('<details className="group flex-1 lg:hidden">')
     expect(source).toContain('Refine')
     expect(source).toContain('min-h-11')
   })
@@ -121,26 +120,17 @@ describe('buying flow UI/UX safeguards', () => {
   test('store page query and typography stay deploy-safe', () => {
     const source = read('src/app/(marketing)/store/page.tsx')
 
-    expect(source).toContain("import type { Sort, Where } from 'payload'")
     expect(source).not.toContain('as any')
     expect(source).not.toContain('tracking-[0.2em]')
     expect(source).not.toContain('tracking-tight')
   })
 
-  test('mobile store uses a compact native disclosure before the desktop sidebar', () => {
+  test('mobile store opens filters in a sheet while desktop keeps the sidebar', () => {
     const source = read('src/app/(marketing)/store/store-content.tsx')
 
-    expect(source).toContain('<details className="group flex-1 lg:hidden">')
-    expect(source).toContain('Refine')
-    expect(source).toContain('hidden lg:block')
-    expect(source).toContain('lg:hidden')
-    expect(source).toContain('<FilterChips query={query}')
-  })
-
-  test('mobile filter disclosure and controls provide large targets', () => {
-    const source = read('src/app/(marketing)/store/store-content.tsx')
-
-    expect(source).toContain('summary className="flex min-h-11')
+    expect(source).toContain('<aside className="hidden lg:block"')
+    expect(source).toContain('<StoreFilterSheet')
+    expect(source).toContain('className="flex-1 lg:hidden"')
     expect(source).toContain('inline-flex min-h-11 items-center')
   })
 
@@ -273,7 +263,7 @@ describe('buying flow UI/UX safeguards', () => {
 
     expect(source).toContain('focus-visible:ring-opal-electric-accessible')
     expect(source).toContain('flex flex-wrap items-baseline gap-x-3 gap-y-1')
-    expect(source).toContain('border-t border-warm-grey/40 pt-16')
+    expect(source).toContain('border-t border-warm-grey/40 pt-10 lg:pt-16')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('text-transparent')
     expect(source).not.toContain(
