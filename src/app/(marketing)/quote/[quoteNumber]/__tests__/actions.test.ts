@@ -9,6 +9,7 @@ const {
   findByID,
   getConfiguredStripeSecretKey,
   getRequestIdentifier,
+  notifyOwnerOfQuoteEvent,
   retrieveStripeSession,
   rollbackTransaction,
   update,
@@ -21,6 +22,7 @@ const {
   findByID: vi.fn(),
   getConfiguredStripeSecretKey: vi.fn(),
   getRequestIdentifier: vi.fn(),
+  notifyOwnerOfQuoteEvent: vi.fn(),
   retrieveStripeSession: vi.fn(),
   rollbackTransaction: vi.fn(),
   update: vi.fn(),
@@ -45,6 +47,7 @@ vi.mock('@/lib/payload', () => ({
   }),
 }))
 vi.mock('@/lib/rate-limit', () => ({ checkRateLimit, getRequestIdentifier }))
+vi.mock('@/lib/custom-quotes/owner-notification', () => ({ notifyOwnerOfQuoteEvent }))
 vi.mock('@/lib/stripe-config', () => ({ getConfiguredStripeSecretKey }))
 vi.mock('stripe', () => ({
   default: class StripeMock {
@@ -153,6 +156,7 @@ describe('customer custom quote actions', () => {
       expect.objectContaining({ collection: 'enquiries', id: 8, data: { status: 'accepted' } })
     )
     expect(commitTransaction).toHaveBeenCalledWith('tx')
+    expect(notifyOwnerOfQuoteEvent).toHaveBeenCalledWith(sentQuote.id, 'accepted')
   })
 
   it('treats acceptance replay as success without another evidence event', async () => {
@@ -163,6 +167,7 @@ describe('customer custom quote actions', () => {
       acceptCustomQuote(accepted.quoteNumber, { success: false }, acceptanceForm())
     ).resolves.toEqual({ success: true, message: 'This quote is already accepted.' })
     expect(update).not.toHaveBeenCalled()
+    expect(notifyOwnerOfQuoteEvent).not.toHaveBeenCalled()
   })
 
   it('creates one exact, expiring, idempotent deposit session and stores it as pending', async () => {

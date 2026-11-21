@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, publishedVersionOrAdmin } from '../../lib/payload-access.ts'
 import { indexNowOnPublish } from '../../lib/indexnow.ts'
+import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 
 export const Posts: CollectionConfig = {
   slug: 'posts',
@@ -123,9 +124,8 @@ export const Posts: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
-      admin: {
-        description: 'Associated tenant ID for multi-tenancy',
-      },
+      defaultValue: () => SHOP_TENANT_ID,
+      admin: { hidden: true },
       index: true,
     },
   ],

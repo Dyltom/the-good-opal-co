@@ -24,6 +24,7 @@ import {
   verifyPaidQuoteDepositSession,
 } from '@/lib/custom-quote-deposits'
 import { sendQuoteDepositConfirmation } from '@/lib/custom-quotes/deposit-confirmation'
+import { notifyOwnerOfQuoteEvent } from '@/lib/custom-quotes/owner-notification'
 import {
   recordCheckoutInsight,
   recordServerError,
@@ -703,6 +704,7 @@ export async function POST(request: NextRequest) {
       }
       try {
         const result = await reconcileQuoteDeposit(session, event.created)
+        if (!result.duplicate) await notifyOwnerOfQuoteEvent(result.quoteId, 'deposit-paid')
         await sendQuoteDepositConfirmation(result.quoteId)
         return NextResponse.json({ received: true, quoteDeposit: true, ...result })
       } catch (error) {

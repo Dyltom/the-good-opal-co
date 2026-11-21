@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
+import { newEnquiryReference } from '../../lib/enquiry-reference.ts'
 import {
   hasCompleteAcceptanceEvidence,
   hasCompleteDepositEvidence,
@@ -114,6 +115,7 @@ export const Enquiries: CollectionConfig = {
       required: true,
       unique: true,
       index: true,
+      defaultValue: newEnquiryReference,
       admin: { readOnly: true },
     },
     {
@@ -160,9 +162,26 @@ export const Enquiries: CollectionConfig = {
     { name: 'timeline', type: 'text' },
     { name: 'message', type: 'textarea', required: true },
     {
-      name: 'designConfiguration',
-      type: 'json',
-      admin: { description: 'Validated custom builder configuration snapshot' },
+      name: 'designSummary',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/payload/DesignConfigurationSummary#DesignConfigurationSummary',
+        },
+        condition: (data) => Boolean(data?.designConfiguration),
+      },
+    },
+    {
+      type: 'collapsible',
+      label: 'Ring designer data',
+      admin: { initCollapsed: true, condition: (data) => Boolean(data?.designConfiguration) },
+      fields: [
+        {
+          name: 'designConfiguration',
+          type: 'json',
+          admin: { description: 'Exact settings saved from the ring designer' },
+        },
+      ],
     },
     {
       name: 'source',
@@ -180,6 +199,7 @@ export const Enquiries: CollectionConfig = {
       name: 'submittedAt',
       type: 'date',
       required: true,
+      defaultValue: () => new Date().toISOString(),
       admin: { readOnly: true, position: 'sidebar' },
     },
     { name: 'ownerEmailSentAt', type: 'date', admin: { readOnly: true, position: 'sidebar' } },

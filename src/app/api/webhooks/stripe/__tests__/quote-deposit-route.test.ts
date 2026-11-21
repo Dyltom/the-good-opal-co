@@ -8,6 +8,7 @@ const {
   find,
   findByID,
   listLineItems,
+  notifyOwnerOfQuoteEvent,
   rollbackTransaction,
   retrieveCharge,
   retrieveDispute,
@@ -20,6 +21,7 @@ const {
   find: vi.fn(),
   findByID: vi.fn(),
   listLineItems: vi.fn(),
+  notifyOwnerOfQuoteEvent: vi.fn(),
   rollbackTransaction: vi.fn(),
   retrieveCharge: vi.fn(),
   retrieveDispute: vi.fn(),
@@ -53,6 +55,7 @@ vi.mock('@/lib/payload', () => ({
   }),
 }))
 vi.mock('@/lib/custom-quotes/deposit-confirmation', () => ({ sendQuoteDepositConfirmation }))
+vi.mock('@/lib/custom-quotes/owner-notification', () => ({ notifyOwnerOfQuoteEvent }))
 
 import { customQuoteDepositMetadata } from '@/lib/custom-quote-deposits'
 import type { CustomQuote } from '@/types/payload-types'
@@ -141,6 +144,7 @@ describe('Stripe webhook custom quote deposit branch', () => {
     )
     expect(listLineItems).not.toHaveBeenCalled()
     expect(sendQuoteDepositConfirmation).toHaveBeenCalledWith(42)
+    expect(notifyOwnerOfQuoteEvent).toHaveBeenCalledWith(42, 'deposit-paid')
     expect(commitTransaction).toHaveBeenCalledWith('tx')
   })
 
