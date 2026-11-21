@@ -54,7 +54,7 @@ interface RelatedProductsProps {
 export async function RelatedProducts({
   product,
   className,
-  title = 'You may also like',
+  title,
   limit = 4
 }: RelatedProductsProps) {
   const relatedProducts = await findRelatedProducts(product, limit)
@@ -65,20 +65,24 @@ export async function RelatedProducts({
 
   return (
     <section className={cn('py-16', className)}>
-      <div className="mb-8 flex items-end justify-between gap-4">
-        <h2 className="font-serif text-3xl font-medium text-ink">
-          {title}
+      <div className="mb-[22px] flex items-baseline justify-between gap-4">
+        <h2 className="font-serif text-[clamp(26px,3vw,38px)] leading-[1.05] tracking-[-0.015em] text-ink">
+          {title ?? (
+            <>
+              More from the <i>collection</i>
+            </>
+          )}
         </h2>
         <Link
           href="/store"
-          className="inline-flex min-h-11 shrink-0 items-center gap-2 font-sans text-sm font-semibold text-ink underline decoration-ink-3 underline-offset-8 hover:decoration-ink"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-medium text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink md:min-h-0"
         >
-          View all pieces
+          All pieces
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-2.5 gap-y-7 md:grid-cols-3 md:gap-x-4 lg:grid-cols-5 [&>article:nth-of-type(5)]:hidden md:[&>article:nth-of-type(n+4)]:hidden lg:[&>article:nth-of-type(n+4)]:flex">
         {relatedProducts.map((relatedProduct, index) => {
           const firstImage = relatedProduct.images?.[0]?.image
           const imageUrl =
@@ -116,13 +120,13 @@ export async function RelatedProducts({
 export function RelatedProductsSkeleton() {
   return (
     <section className="py-16">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-[22px] flex items-center justify-between">
         <div className="h-8 w-48 animate-pulse rounded-sm bg-plinth" />
-        <div className="h-5 w-32 animate-pulse rounded-sm bg-plinth" />
+        <div className="h-5 w-20 animate-pulse rounded-sm bg-plinth" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-2 gap-x-2.5 gap-y-7 md:grid-cols-3 md:gap-x-4 lg:grid-cols-5">
+        {[...Array(5)].map((_, i) => (
           <div
             key={i}
             className="aspect-[4/5] animate-pulse rounded-sm bg-plinth"

@@ -2,9 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { Container } from '@/components/layout'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, ShoppingCart, Mail } from 'lucide-react'
 
 export default function CheckoutError({
   error,
@@ -18,55 +16,30 @@ export default function CheckoutError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-plinth py-12">
-      <Container>
-        <div className="max-w-md mx-auto">
-          <div className="bg-bg rounded-sm shadow-sm border border-rule p-8 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
-            </div>
-
-            <h1 className="text-2xl font-serif font-bold text-ink mb-2">
-              Checkout Error
-            </h1>
-
-            <p className="mb-6">
-              We encountered an issue processing your checkout. Don&apos;t worry - no payment has been taken.
-            </p>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-sm p-4 mb-6">
-              <p className="text-sm text-amber-800">
-                <strong>Important:</strong> Your cart items are safe and no charges have been made to your card.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <Button onClick={reset} className="w-full" size="lg">
-                Try Checkout Again
-              </Button>
-
-              <Button asChild variant="ghost" className="w-full" size="lg">
-                <Link href="/cart">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Return to Cart
-                </Link>
-              </Button>
-            </div>
-
-            <div className="mt-8 pt-8 border-t border-rule">
-              <p className="text-sm text-ink-2 mb-3">
-                Still having issues?
-              </p>
-              <Button asChild variant="quiet" size="sm">
-                <Link href="/contact">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact Support
-                </Link>
-              </Button>
-            </div>
-          </div>
+    <div className="px-gut pb-sec pt-8 md:pt-14">
+      <div className="mx-auto max-w-[640px]">
+        <h1 className="font-serif text-[clamp(32px,4vw,48px)] leading-[1.04] tracking-[-0.02em] text-ink">
+          Checkout error
+        </h1>
+        <p className="mt-3 text-[15px] leading-[1.6] text-ink-2">
+          We encountered an issue processing your checkout. Don&apos;t worry, no payment has been taken.
+        </p>
+        <p className="mt-4 border-y border-rule py-3 text-sm text-ink">
+          Your bag is safe and no charges have been made to your card.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button onClick={reset}>Try checkout again</Button>
+          <Button asChild variant="ghost">
+            <Link href="/cart">Return to your bag</Link>
+          </Button>
         </div>
-      </Container>
+        <p className="mt-6 text-sm text-ink-2">
+          Still having issues?{' '}
+          <Link href="/contact" className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink">
+            Contact us
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

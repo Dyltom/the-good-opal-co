@@ -151,7 +151,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('lg:hidden')
     expect(source).toContain('env(safe-area-inset-bottom)')
     expect(source).toContain("formatCurrency(product.price, 'AUD')")
-    expect(source).toContain('className="h-14 w-full text-base"')
+    expect(source).toContain('h-[50px] w-full text-[15px] md:h-12')
   })
 
   test('cart page exposes a mobile sticky checkout summary and stacks rows', () => {
@@ -162,7 +162,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('env(safe-area-inset-bottom)')
     expect(source).toContain('Estimated total')
     expect(source).toContain('pb-28 lg:pb-0')
-    expect(source).toContain('flex min-w-0 gap-4 py-6 sm:gap-6')
+    expect(source).toContain('flex min-w-0 gap-4 py-5 sm:gap-5')
   })
 
   test('mobile decorative hero content stays bounded within the viewport', () => {

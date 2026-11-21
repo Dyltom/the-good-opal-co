@@ -1,8 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, ViewTransition, type PointerEvent } from 'react'
+import { startTransition, useCallback, useEffect, useRef, useState, ViewTransition, type PointerEvent } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, Play, Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { trackGalleryFullscreen, trackGalleryZoom } from '@/lib/analytics'
@@ -32,13 +32,25 @@ interface ProductImageGalleryProps {
 
 const LOUPE_SCALE = 2.4
 
+const focusRing = 'focus-visible:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-accent'
+
+function pointerPosition(event: PointerEvent<HTMLElement>) {
+  const rect = event.currentTarget.getBoundingClientRect()
+  return {
+    x: ((event.clientX - rect.left) / rect.width) * 100,
+    y: ((event.clientY - rect.top) / rect.height) * 100,
+  }
+}
+
 export function ProductImageGallery({ productName, images, videos = [], transitionName }: ProductImageGalleryProps) {
-  const [index, setIndex] = useState(0)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [mainIndex, setMainIndex] = useState(0)
+  const [scrollIndex, setScrollIndex] = useState(0)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [loupe, setLoupe] = useState<{ x: number; y: number } | null>(null)
   const [lightboxZoom, setLightboxZoom] = useState<{ x: number; y: number } | null>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const lightboxOpen = lightboxIndex !== null
   const lightboxRef = useFocusTrap<HTMLDivElement>({ active: lightboxOpen })
   const [firstImage, ...otherImages] = images
   const slides: GallerySlide[] = [
@@ -52,13 +64,10 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
   ]
   const count = slides.length
 
-  const show = useCallback(
-    (next: number) => {
-      const wrapped = (next + count) % count
-      setIndex(wrapped)
+  const step = useCallback(
+    (delta: number) => {
       setLightboxZoom(null)
-      const track = trackRef.current
-      if (track) track.scrollTo({ left: wrapped * track.clientWidth, behavior: 'smooth' })
+      setLightboxIndex((current) => (current === null ? current : (current + delta + count) % count))
     },
     [count]
   )
@@ -70,151 +79,170 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
     closeButtonRef.current?.focus()
 
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setLightboxOpen(false)
-      if (event.key === 'ArrowRight') show(index + 1)
-      if (event.key === 'ArrowLeft') show(index - 1)
+      if (event.key === 'Escape') setLightboxIndex(null)
+      if (event.key === 'ArrowRight') step(1)
+      if (event.key === 'ArrowLeft') step(-1)
     }
     window.addEventListener('keydown', onKey)
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', onKey)
     }
-  }, [lightboxOpen, index, show])
+  }, [lightboxOpen, step])
 
   if (count === 0) {
-    return <div className="aspect-square w-full bg-plinth" aria-hidden="true" />
+    return <div className="aspect-[4/5] w-full bg-plinth" aria-hidden="true" />
   }
 
-  const current = slides[Math.min(index, count - 1)] ?? slides[0]!
-
-  const pointerPosition = (event: PointerEvent<HTMLElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
-    return {
-      x: ((event.clientX - rect.left) / rect.width) * 100,
-      y: ((event.clientY - rect.top) / rect.height) * 100,
-    }
+  const openLightbox = (slideIndex: number) => {
+    setLoupe(null)
+    setLightboxZoom(null)
+    setLightboxIndex(slideIndex)
+    trackGalleryFullscreen(productName)
   }
+
+  const order = [mainIndex, ...slides.map((_, slideIndex) => slideIndex).filter((slideIndex) => slideIndex !== mainIndex)]
+  const layout = count >= 3 ? 'stack' : count === 2 ? 'pair' : 'single'
+  const current = lightboxIndex === null ? undefined : slides[lightboxIndex]
 
   const onTrackScroll = () => {
     const track = trackRef.current
-    if (!track) return
-    const next = Math.round(track.scrollLeft / track.clientWidth)
-    if (next !== index) setIndex(next)
+    const first = track?.firstElementChild as HTMLElement | null
+    if (!track || !first) return
+    const next = Math.min(count - 1, Math.round(track.scrollLeft / (first.offsetWidth + 6)))
+    if (next !== scrollIndex) setScrollIndex(next)
+  }
+
+  const slideClass = (position: number) =>
+    cn(
+      'relative block flex-none snap-start overflow-hidden bg-plinth',
+      count > 1 ? 'w-[88%] md:w-auto' : 'w-full',
+      layout === 'single' && 'md:col-span-12',
+      layout === 'pair' && 'md:col-span-6',
+      layout === 'stack' && position === 0 && 'md:col-span-12 lg:col-span-8 lg:row-span-2',
+      layout === 'stack' && position > 0 && position < 3 && 'md:col-span-6 lg:col-span-4',
+      layout === 'stack' && position >= 3 && (count - 3) % 2 === 0 && 'md:col-span-6',
+      layout === 'stack' && position >= 3 && (count - 3) % 2 === 1 && 'md:col-span-6 lg:col-span-4'
+    )
+
+  const frameClass = (position: number) =>
+    cn('relative aspect-[4/5]', layout === 'stack' && position > 0 && position < 3 && 'lg:aspect-auto lg:h-full')
+
+  const renderSlide = (slideIndex: number, position: number) => {
+    const slide = slides[slideIndex]!
+    const isMain = position === 0
+
+    if (slide.video && isMain) {
+      return (
+        <div key={slide.video.url} className={slideClass(position)}>
+          <div className={frameClass(position)}>
+            <ProductVideo src={slide.video.url} mimeType={slide.video.mimeType} poster={slide.video.poster} label={slide.alt} />
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <button
+        key={slide.video?.url ?? slide.url}
+        type="button"
+        onClick={() => {
+          const desktop = window.matchMedia('(min-width: 768px)').matches
+          if (!isMain && desktop) {
+            setLoupe(null)
+            startTransition(() => setMainIndex(slideIndex))
+            return
+          }
+          openLightbox(slideIndex)
+        }}
+        onPointerMove={(event) => {
+          if (isMain && event.pointerType === 'mouse') setLoupe(pointerPosition(event))
+        }}
+        onPointerLeave={() => setLoupe(null)}
+        className={cn(slideClass(position), focusRing, 'cursor-zoom-in')}
+        aria-label={
+          isMain
+            ? `Open image ${slideIndex + 1} of ${count} of ${productName} full screen`
+            : slide.video
+              ? `Show video ${slideIndex + 1} of ${count}`
+              : `Show image ${slideIndex + 1} of ${count} larger`
+        }
+      >
+        <span className={cn('block', frameClass(position))}>
+          {slide.url ? (
+            <Image
+              src={slide.url}
+              alt={slide.alt}
+              fill
+              priority={slideIndex === 0}
+              fetchPriority={slideIndex === 0 ? 'high' : undefined}
+              sizes={
+                isMain
+                  ? '(max-width: 767px) 88vw, (max-width: 1023px) 55vw, 50vw'
+                  : '(max-width: 767px) 88vw, (max-width: 1023px) 28vw, 25vw'
+              }
+              quality={90}
+              className="object-cover transition-transform duration-200 ease-out motion-reduce:transition-none"
+              style={
+                isMain && loupe
+                  ? { transform: `scale(${LOUPE_SCALE})`, transformOrigin: `${loupe.x}% ${loupe.y}%` }
+                  : undefined
+              }
+            />
+          ) : null}
+          {slide.video ? (
+            <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-sm border border-rule bg-bg text-ink">
+              <Play className="h-4 w-4" aria-hidden="true" />
+            </span>
+          ) : null}
+        </span>
+      </button>
+    )
   }
 
   return (
-    <div className="space-y-3">
-      <ViewTransition name={transitionName} share="piece">
-      <div className="relative">
-        <div
-          ref={trackRef}
-          onScroll={onTrackScroll}
-          className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:overflow-hidden [&::-webkit-scrollbar]:hidden"
-        >
-          {slides.map((image, imageIndex) =>
-            image.video ? (
-              <div
-                key={image.video.url}
-                className="relative aspect-square w-full shrink-0 snap-center overflow-hidden border border-rule"
-              >
-                <ProductVideo
-                  src={image.video.url}
-                  mimeType={image.video.mimeType}
-                  poster={image.video.poster}
-                  label={image.alt}
-                />
-              </div>
-            ) : (
-            <button
-              key={image.url}
-              type="button"
-              onClick={() => {
-                setIndex(imageIndex)
-                setLightboxOpen(true)
-                trackGalleryFullscreen(productName)
-              }}
-              onPointerMove={(event) => {
-                if (event.pointerType === 'mouse') setLoupe(pointerPosition(event))
-              }}
-              onPointerLeave={() => setLoupe(null)}
-              className="group relative aspect-square w-full shrink-0 snap-center overflow-hidden bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent lg:cursor-zoom-in"
-              aria-label={`Open image ${imageIndex + 1} of ${count} of ${productName} full screen`}
-            >
-              <Image
-                src={image.url}
-                alt={image.alt}
-                fill
-                priority={imageIndex === 0}
-                fetchPriority={imageIndex === 0 ? 'high' : undefined}
-                sizes="(max-width: 1024px) 100vw, 55vw"
-                quality={90}
-                className="object-cover transition-transform duration-200 ease-out motion-reduce:transition-none"
-                style={
-                  loupe && imageIndex === index
-                    ? { transform: `scale(${LOUPE_SCALE})`, transformOrigin: `${loupe.x}% ${loupe.y}%` }
-                    : undefined
-                }
-              />
-            </button>
-            )
-          )}
-        </div>
-
-        <span
-          className={cn(
-            'pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-bg/95 px-3 py-2 font-sans text-xs font-semibold text-ink transition-opacity',
-            (loupe || current.video) && 'opacity-0'
-          )}
-        >
-          <Search className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="hidden lg:inline">Hover to inspect, click for full screen</span>
-          <span className="lg:hidden">Tap for full screen</span>
-        </span>
-
-        {count > 1 ? (
-          <span className="pointer-events-none absolute bottom-3 left-3 bg-ink px-2.5 py-1.5 font-sans text-xs font-semibold tabular-nums text-bg lg:hidden">
-            {index + 1} / {count}
-          </span>
-        ) : null}
+    <div className="relative">
+      <div
+        ref={trackRef}
+        onScroll={onTrackScroll}
+        aria-label={`Photos of ${productName}`}
+        role="group"
+        className={cn(
+          'flex snap-x snap-mandatory items-start gap-1.5 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+          'md:grid md:grid-cols-12 md:items-stretch md:gap-2 md:overflow-visible'
+        )}
+      >
+        {order.map((slideIndex, position) =>
+          position === 0 ? (
+            <ViewTransition key={`main-${slideIndex}`} name={transitionName} share="piece">
+              {renderSlide(slideIndex, position)}
+            </ViewTransition>
+          ) : (
+            renderSlide(slideIndex, position)
+          )
+        )}
       </div>
-      </ViewTransition>
 
       {count > 1 ? (
-        <div className="hidden gap-2 lg:flex" role="group" aria-label="Product images">
-          {slides.map((image, imageIndex) => (
-            <button
-              key={image.video?.url ?? image.url}
-              type="button"
-              onClick={() => show(imageIndex)}
-              aria-current={imageIndex === index ? 'true' : undefined}
-              aria-label={image.video ? `Show video ${imageIndex + 1} of ${count}` : `Show image ${imageIndex + 1} of ${count}`}
-              className={cn(
-                'relative h-20 w-20 shrink-0 overflow-hidden border bg-plinth transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                imageIndex === index ? 'border-ink' : 'border-rule hover:border-rule-2'
-              )}
-            >
-              {image.url ? <Image src={image.url} alt="" fill sizes="80px" className="object-cover" /> : null}
-              {image.video ? (
-                <span className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center bg-ink text-bg">
-                  <Play className="h-3.5 w-3.5" aria-hidden="true" />
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </div>
+        <p
+          aria-hidden="true"
+          className="absolute right-gut top-full pt-3 text-[12.5px] leading-5 text-ink-3 md:hidden"
+        >
+          <b className="font-medium text-ink">{scrollIndex + 1}</b> / {count}
+        </p>
       ) : null}
 
-      {lightboxOpen ? (
+      {current && lightboxIndex !== null ? (
         <div
           ref={lightboxRef}
           role="dialog"
           aria-modal="true"
-          aria-label={`${productName}, image ${index + 1} of ${count}`}
+          aria-label={`${productName}, image ${lightboxIndex + 1} of ${count}`}
           className="fixed inset-0 z-[70] flex flex-col bg-ink"
         >
           <div className="flex items-center justify-between px-4 py-3 text-bg sm:px-6">
             <p className="font-sans text-sm tabular-nums text-bg/75">
-              {index + 1} / {count}
+              {lightboxIndex + 1} / {count}
               <span className="ml-3 hidden sm:inline">
                 {current.video ? null : lightboxZoom ? 'Move to explore, click to zoom out' : 'Click the stone to zoom in'}
               </span>
@@ -222,7 +250,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
             <button
               ref={closeButtonRef}
               type="button"
-              onClick={() => setLightboxOpen(false)}
+              onClick={() => setLightboxIndex(null)}
               className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
               aria-label="Close full screen view"
             >
@@ -253,27 +281,27 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
                 controls
               />
             ) : (
-            <Image
-              key={current.url}
-              src={current.url}
-              alt={current.alt}
-              fill
-              sizes="100vw"
-              quality={95}
-              className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none"
-              style={
-                lightboxZoom
-                  ? { transform: 'scale(2.5)', transformOrigin: `${lightboxZoom.x}% ${lightboxZoom.y}%` }
-                  : undefined
-              }
-            />
+              <Image
+                key={current.url}
+                src={current.url}
+                alt={current.alt}
+                fill
+                sizes="100vw"
+                quality={95}
+                className="object-contain transition-transform duration-200 ease-out motion-reduce:transition-none"
+                style={
+                  lightboxZoom
+                    ? { transform: 'scale(2.5)', transformOrigin: `${lightboxZoom.x}% ${lightboxZoom.y}%` }
+                    : undefined
+                }
+              />
             )}
           </div>
           {count > 1 ? (
             <div className="flex justify-center gap-2 py-3">
               <button
                 type="button"
-                onClick={() => show(index - 1)}
+                onClick={() => step(-1)}
                 className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
                 aria-label="Previous image"
               >
@@ -281,7 +309,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
               </button>
               <button
                 type="button"
-                onClick={() => show(index + 1)}
+                onClick={() => step(1)}
                 className="flex min-h-11 min-w-11 items-center justify-center text-bg hover:bg-bg/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bg"
                 aria-label="Next image"
               >

@@ -3,9 +3,8 @@
 import { useCallback, useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Container } from '@/components/layout'
 import {
   CheckoutButton,
   ShippingRegionToggle,
@@ -26,7 +25,6 @@ import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import type { Cart, CartItem } from '@/lib/cart'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
-import { Eyebrow } from '@/components/ui/eyebrow'
 
 interface CartPageContentProps {
   initialCart: Cart
@@ -52,8 +50,8 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
 
   const showMutationError = (description?: string) => {
     toast({
-      title: 'Cart could not be updated',
-      description: description ?? 'Try again. Your existing cart has not changed.',
+      title: 'Your bag could not be updated',
+      description: description ?? 'Try again. Your bag has not changed.',
       variant: 'destructive',
     })
   }
@@ -70,7 +68,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
       if (removed) trackRemoveFromCart(removed)
       setCart(result.data)
       window.dispatchEvent(new CustomEvent('cart-updated'))
-      toast({ title: 'Removed from cart', description: name })
+      toast({ title: 'Removed from your bag', description: name })
       if (result.data.items.length === 0) router.refresh()
     })
   }
@@ -103,32 +101,26 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
   }
 
   return (
-    <Container className="py-10 lg:py-14">
-      <div className="pb-28 lg:pb-0" aria-busy={isPending}>
-        <header className="mb-8 border-b border-rule pb-6">
-          <Eyebrow>
-            Your order
-          </Eyebrow>
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="font-serif text-3xl font-semibold text-ink sm:text-4xl lg:text-5xl">
-                Shopping cart
-              </h1>
-              <p className="mt-2 text-sm text-ink-2" aria-live="polite">
-                {cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'}, all prices in AUD
-              </p>
-            </div>
-            <Button
-              variant="quiet"
-              size="sm"
-              onClick={() => setShowClearDialog(true)}
-              disabled={isPending}
-              className="text-ink-2 hover:text-destructive sm:h-11"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-              Clear cart
-            </Button>
+    <div className="px-gut pb-sec pt-5 md:pt-8">
+      <div className="mx-auto max-w-[1180px] pb-28 lg:pb-0" aria-busy={isPending}>
+        <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-rule pb-4">
+          <div>
+            <h1 className="font-serif text-[clamp(30px,3.4vw,44px)] leading-[1.04] tracking-[-0.02em] text-ink">
+              Your bag
+            </h1>
+            <p className="mt-1.5 text-[13px] text-ink-2" aria-live="polite">
+              {cart.itemCount} {cart.itemCount === 1 ? 'piece' : 'pieces'}, all prices in AUD
+            </p>
           </div>
+          <Button
+            variant="quiet"
+            size="sm"
+            onClick={() => setShowClearDialog(true)}
+            disabled={isPending}
+            className="-mr-2 px-2 text-ink-2 hover:text-destructive"
+          >
+            Clear bag
+          </Button>
         </header>
 
         {feedback === 'cancelled' ? (
@@ -136,15 +128,12 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
             source="cancelled"
             onClose={closeFeedback}
             onSent={markFeedbackSent}
-            className="mb-8 max-w-2xl"
+            className="mt-5 max-w-2xl"
           />
         ) : null}
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-          <section
-            aria-label="Items in your cart"
-            className="min-w-0 divide-y divide-rule border-y border-rule"
-          >
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-12">
+          <section aria-label="Items in your bag" className="min-w-0 divide-y divide-rule border-b border-rule">
             {cart.items.map((item) => (
               <CartItemRow
                 key={item.productId}
@@ -156,49 +145,39 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
             ))}
           </section>
 
-          <aside className="min-w-0 lg:sticky lg:top-24" aria-labelledby="cart-summary-heading">
-            <div className="border border-rule bg-bg p-5 sm:p-6">
-              <h2
-                id="cart-summary-heading"
-                className="font-serif text-2xl font-semibold text-ink"
-              >
-                Order summary
+          <aside className="min-w-0 lg:sticky lg:top-[80px] lg:mt-5" aria-labelledby="cart-summary-heading">
+            <div className="bg-plinth p-5">
+              <h2 id="cart-summary-heading" className="font-serif text-[22px] leading-tight text-ink">
+                Summary
               </h2>
 
-              <ShippingRegionToggle value={region} onChange={setRegion} className="mt-5" />
+              <ShippingRegionToggle value={region} onChange={setRegion} className="mt-4" />
 
-              <dl className="mt-5 space-y-3 text-sm text-ink">
-                <div className="flex justify-between gap-4">
-                  <dt>Subtotal</dt>
-                  <dd >{formatCurrency(pricing.subtotal, 'AUD')}</dd>
+              <dl className="mt-4 text-sm text-ink">
+                <div className="flex justify-between gap-4 border-b border-rule py-2">
+                  <dt className="text-ink-2">Subtotal</dt>
+                  <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
                 </div>
-                <div className="flex justify-between gap-4">
-                  <dt>Shipping</dt>
-                  <dd >
-                    {pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}
-                  </dd>
+                <div className="flex justify-between gap-4 border-b border-rule py-2">
+                  <dt className="text-ink-2">Shipping</dt>
+                  <dd>{pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}</dd>
                 </div>
-                <div className="flex justify-between gap-4 border-t border-rule pt-4 text-lg font-semibold">
-                  <dt>Estimated total</dt>
-                  <dd >{formatCurrency(pricing.total, 'AUD')}</dd>
+                <div className="flex items-baseline justify-between gap-4 pt-3">
+                  <dt className="font-medium">Estimated total</dt>
+                  <dd className="text-xl font-medium">{formatCurrency(pricing.total, 'AUD')}</dd>
                 </div>
               </dl>
 
-              <p className="mt-3 text-xs leading-5 text-ink-2">
-                Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout.
+              <FreeShippingProgress total={cart.total} className="mt-4" />
+
+              <CheckoutButton cart={cart} region={region} className="mt-4 h-12 w-full text-[15px]" />
+              <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">
+                Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays available to other
+                shoppers until payment is complete.
               </p>
-
-              <FreeShippingProgress total={cart.total} className="mt-5 rounded-none" />
-
-              <CheckoutButton cart={cart} region={region} className="mt-6" />
-              <Button asChild variant="link" className="mt-2 w-full">
+              <Button asChild variant="ghost" className="mt-3 w-full">
                 <Link href="/store">Continue shopping</Link>
               </Button>
-            </div>
-
-            <div className="mt-5 flex gap-3 text-sm leading-6 text-ink-2">
-              <ShoppingBag className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
-              <p>Each piece remains available to other shoppers until payment is complete.</p>
             </div>
 
             {feedback === 'cart' ? (
@@ -206,13 +185,13 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                 source="cart"
                 onClose={closeFeedback}
                 onSent={markFeedbackSent}
-                className="mt-5"
+                className="mt-4"
               />
             ) : !feedbackSent && feedback === null ? (
               <button
                 type="button"
                 onClick={() => setFeedback('cart')}
-                className="mt-2 inline-flex min-h-11 items-center text-sm text-ink-2 underline underline-offset-2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="mt-2 inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 Not ready yet? Tell us what would help
               </button>
@@ -221,18 +200,16 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
         </div>
       </div>
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-4 py-3 lg:hidden"
-        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
+        style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
       >
         <div className="mx-auto flex max-w-screen-sm items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-ink-2">Estimated total</p>
-            <p className="font-serif text-lg font-semibold text-ink">
-              {formatCurrency(pricing.total, 'AUD')}
-            </p>
+            <p className="text-[12.5px] text-ink-2">Estimated total</p>
+            <p className="text-lg font-medium leading-6 text-ink">{formatCurrency(pricing.total, 'AUD')}</p>
           </div>
           <div className="flex-1">
-            <CheckoutButton cart={cart} region={region} className="h-12" />
+            <CheckoutButton cart={cart} region={region} className="h-12 w-full text-[15px]" />
           </div>
         </div>
       </div>
@@ -243,7 +220,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
         onConfirm={handleConfirmClearCart}
         itemCount={cart.itemCount}
       />
-    </Container>
+    </div>
   )
 }
 
@@ -254,105 +231,76 @@ interface CartItemRowProps {
   isPending: boolean
 }
 
+const qtyButton =
+  'flex h-11 w-11 items-center justify-center rounded-sm border border-rule-2 text-ink transition-colors hover:border-ink disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
+
 function CartItemRow({ item, onRemove, onUpdateQuantity, isPending }: CartItemRowProps) {
   return (
-    <article className="flex min-w-0 gap-4 py-6 sm:gap-6">
+    <article className="flex min-w-0 gap-4 py-5 sm:gap-5">
       <Link
         href={`/store/${item.slug}`}
-        className="h-24 w-24 shrink-0 overflow-hidden bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:h-32 sm:w-32"
+        className="relative aspect-[4/5] w-[88px] shrink-0 overflow-hidden bg-plinth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:w-[112px]"
         aria-label={`View ${item.name}`}
       >
-        {item.image ? (
-          <Image
-            src={item.image}
-            alt=""
-            width={128}
-            height={128}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div
-            className="flex h-full w-full items-center justify-center text-ink-3"
-            aria-hidden="true"
-          >
-            <ShoppingBag className="h-7 w-7" />
-          </div>
-        )}
+        {item.image ? <Image src={item.image} alt="" fill sizes="112px" className="object-cover" /> : null}
       </Link>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:justify-between sm:gap-6">
-          <div className="min-w-0">
+        <div className="flex min-w-0 items-baseline justify-between gap-4">
+          <h2 className="min-w-0 break-words font-serif text-[17px] italic leading-[1.25] text-ink sm:text-[19px]">
             <Link
               href={`/store/${item.slug}`}
-              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="hover:underline hover:decoration-rule-2 hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <h2 className="break-words font-serif text-lg font-semibold leading-6 text-ink sm:text-xl">
-                {item.name}
-              </h2>
+              {item.name}
             </Link>
-            {item.quantity > 1 && (
-              <p className="mt-1 text-sm text-ink-2">
-                {formatCurrency(item.price, 'AUD')} each
-              </p>
-            )}
-          </div>
-          <p className="shrink-0 font-semibold text-ink">
+          </h2>
+          <p className="shrink-0 text-[15px] font-medium text-ink">
             {formatCurrency(item.price * item.quantity, 'AUD')}
           </p>
         </div>
+        <p className="mt-1 text-[12.5px] text-ink-2">
+          {(item.maxQuantity ?? Infinity) > 1
+            ? `${formatCurrency(item.price, 'AUD')} each`
+            : 'One of a kind'}
+        </p>
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-4">
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
           {(item.maxQuantity ?? Infinity) > 1 ? (
-            <div
-              className="flex items-center border border-rule bg-bg"
-              aria-label={`Quantity for ${item.name}`}
-            >
-              <Button
+            <div className="flex items-center gap-1" role="group" aria-label={`Quantity for ${item.name}`}>
+              <button
                 type="button"
-                size="icon"
-                variant="quiet"
                 onClick={() => onUpdateQuantity(item.quantity - 1)}
                 disabled={isPending}
                 aria-label={`Decrease quantity of ${item.name}`}
-                className="rounded-none"
+                className={qtyButton}
               >
                 <Minus className="h-4 w-4" aria-hidden="true" />
-              </Button>
-              <span
-                className="w-10 text-center text-sm font-semibold text-ink"
-                aria-live="polite"
-              >
+              </button>
+              <span className="w-8 text-center text-sm text-ink" aria-live="polite">
                 {item.quantity}
               </span>
-              <Button
+              <button
                 type="button"
-                size="icon"
-                variant="quiet"
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
                 disabled={isPending || item.quantity >= (item.maxQuantity ?? Infinity)}
                 aria-label={`Increase quantity of ${item.name}`}
-                className="rounded-none"
+                className={qtyButton}
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
-              </Button>
+              </button>
             </div>
-          ) : (
-            <p className="text-sm text-ink-2">One of a kind</p>
-          )}
+          ) : null}
 
-          <Button
+          <button
             type="button"
-            size="sm"
-            variant="quiet"
             onClick={onRemove}
             disabled={isPending}
-            aria-label={`Remove ${item.name} from cart`}
-            className="text-ink-2 hover:text-destructive sm:h-11"
+            aria-label={`Remove ${item.name} from bag`}
+            className="-ml-1 ml-auto inline-flex min-h-11 items-center px-1 text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 transition-colors hover:text-destructive disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
             Remove
-          </Button>
+          </button>
         </div>
       </div>
     </article>
