@@ -26,7 +26,7 @@ export function SearchInput({
   const router = useRouter()
   const searchParams = useSearchParams()
   const inputRef = useRef<HTMLInputElement>(null)
-  const [query, setQuery] = useState(initialQuery || searchParams.get('q') || '')
+  const [query, setQuery] = useState(initialQuery || searchParams.get('q') || searchParams.get('search') || '')
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
@@ -197,7 +197,7 @@ export function SearchInput({
             )}
             aria-label="Clear search"
           >
-            <X className="h-full w-full" />
+            <X className={variant === 'mobile' ? 'h-5 w-5' : 'h-4 w-4'} aria-hidden="true" />
           </button>
         )}
         {loading && (
