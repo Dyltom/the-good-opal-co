@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { isAdmin, publishedOrAdmin } from '../../lib/payload-access.ts'
+import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 
 export const Courses: CollectionConfig = {
   slug: 'courses',
@@ -133,9 +134,9 @@ export const Courses: CollectionConfig = {
       name: 'tenantId',
       type: 'text',
       required: true,
-      defaultValue: 'good-opal-co',
+      defaultValue: SHOP_TENANT_ID,
       index: true,
-      admin: { position: 'sidebar' },
+      admin: { hidden: true },
     },
   ],
   timestamps: true,

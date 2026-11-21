@@ -509,7 +509,7 @@ export const CustomQuotes: CollectionConfig = {
     useAsTitle: 'quoteNumber',
     defaultColumns: ['quoteNumber', 'customerEmail', 'status', 'amountCents', 'validUntil'],
     group: 'CRM',
-    description: 'Revisioned custom jewellery quotes; amounts are stored in currency cents',
+    description: 'Custom jewellery quotes. Amounts are in Australian dollars.',
     components: {
       edit: {
         beforeDocumentControls: [
@@ -557,18 +557,32 @@ export const CustomQuotes: CollectionConfig = {
     },
     {
       name: 'amountCents',
+      label: 'Quote total (AUD)',
       type: 'number',
       required: true,
       min: 1,
-      admin: { description: 'Full quoted price in cents' },
+      admin: {
+        description: 'Full quoted price in dollars, e.g. 1250 or 1250.50',
+        components: {
+          Field: '@/components/payload/DollarAmountField#DollarAmountField',
+          Cell: '@/components/payload/DollarAmountField#DollarAmountCell',
+        },
+      },
     },
     {
       name: 'depositAmountCents',
+      label: 'Deposit (AUD)',
       type: 'number',
       required: true,
       min: 0,
       defaultValue: 0,
-      admin: { description: 'Required deposit in cents; zero means no deposit' },
+      admin: {
+        description: 'Deposit the customer pays after accepting, in dollars; 0 means no deposit',
+        components: {
+          Field: '@/components/payload/DollarAmountField#DollarAmountField',
+          Cell: '@/components/payload/DollarAmountField#DollarAmountCell',
+        },
+      },
     },
     { name: 'currency', type: 'select', required: true, defaultValue: 'AUD', options: ['AUD'] },
     { name: 'validUntil', type: 'date', required: true },
@@ -594,14 +608,33 @@ export const CustomQuotes: CollectionConfig = {
       options: ['not-required', 'awaiting-payment', 'paid', 'refunded'],
       admin: { readOnly: true, position: 'sidebar' },
     },
-    { name: 'amountPaidCents', type: 'number', min: 0, admin: { readOnly: true } },
+    {
+      name: 'amountPaidCents',
+      label: 'Deposit paid (AUD)',
+      type: 'number',
+      min: 0,
+      admin: {
+        readOnly: true,
+        components: {
+          Field: '@/components/payload/DollarAmountField#DollarAmountField',
+          Cell: '@/components/payload/DollarAmountField#DollarAmountCell',
+        },
+      },
+    },
     { name: 'paidAt', type: 'date', admin: { readOnly: true } },
     {
       name: 'stripeRefundedAmountCents',
+      label: 'Refunded (AUD)',
       type: 'number',
       min: 0,
       defaultValue: 0,
-      admin: { readOnly: true },
+      admin: {
+        readOnly: true,
+        components: {
+          Field: '@/components/payload/DollarAmountField#DollarAmountField',
+          Cell: '@/components/payload/DollarAmountField#DollarAmountCell',
+        },
+      },
     },
     { name: 'refundedAt', type: 'date', admin: { readOnly: true } },
     {

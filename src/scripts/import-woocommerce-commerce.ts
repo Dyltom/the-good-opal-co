@@ -1,5 +1,6 @@
 import type { Customer, Order, Product } from '@/types/payload-types'
 import { getPayload } from '@/lib/payload'
+import { SHOP_TENANT_ID } from '@/lib/tenant'
 import type { Payload } from 'payload'
 import {
   fetchWooCommerceSnapshot,
@@ -19,8 +20,6 @@ import {
   parseWooImportRunConfiguration,
   type WooImportRunConfiguration,
 } from '@/lib/woocommerce/import-run'
-
-const TENANT_ID = 'good-opal-co'
 
 interface ImportCounts {
   created: number
@@ -136,7 +135,7 @@ function productCreateData(product: LegacyProductData) {
     description: richText(product.description),
     featured: false,
     certified: false,
-    tenantId: TENANT_ID,
+    tenantId: SHOP_TENANT_ID,
   }
 }
 

@@ -2,6 +2,7 @@ import type { Product } from '@/types/payload-types'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getPayload } from '@/lib/payload'
+import { SHOP_TENANT_ID } from '@/lib/tenant'
 import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import { inferBuilderStoneType } from '@/lib/custom-builder/opal-visual'
 import { BUILDER_MAPPING_WAKE_SUPPRESS_CONTEXT } from '@/lib/custom-builder/builder-mapping-trigger'
@@ -11,7 +12,6 @@ import {
   type WooCatalogProduct,
 } from '@/lib/woocommerce/catalog-sync'
 
-const TENANT_ID = 'good-opal-co'
 
 export interface SyncOptions {
   apply: boolean
@@ -140,7 +140,7 @@ function createData(product: WooCatalogProduct) {
     legacyWooId: product.wooId,
     ...(typeof product.manageStock === 'boolean' ? { wooManageStock: product.manageStock } : {}),
     certified: false,
-    tenantId: TENANT_ID,
+    tenantId: SHOP_TENANT_ID,
     ...inferredProductFacts(product),
   }
 }
