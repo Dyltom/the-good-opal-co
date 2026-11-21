@@ -54,26 +54,6 @@ const nextConfig: NextConfig = {
   },
 
   async redirects() {
-    const legacyPosts = [
-      ['2021/12/17', 'diy-jewellery-hack'],
-      ['2021/10/18', 'top-10-opal-jewellery-making-tips'],
-      ['2021/06/17', 'what-to-do-in-lightning-ridge'],
-      ['2021/06/12', 'queensland-boulder-opal'],
-      ['2021/06/11', 'andamooka-opal'],
-      ['2021/06/08', 'coober-pedy-opal'],
-      ['2021/06/05', 'mintabie-opal'],
-      ['2021/06/03', 'top-10-tips-for-buying-opal-jewellery-online'],
-      ['2021/06/01', 'learn-how-to-cut-opal-cabbing-101'],
-      ['2021/05/29', 'how-opal-is-mined'],
-      ['2021/05/27', 'lightning-ridge-opal'],
-      ['2021/05/25', 'is-investing-in-opal-worth-it'],
-      ['2021/05/22', 'how-to-value-opal'],
-      ['2021/05/20', 'learn-about-opal-fact-or-fiction'],
-      ['2021/05/17', 'dreamtime-origins-of-opal'],
-      ['2021/03/19', 'jewellery-hack-ring-sizing'],
-      ['2020/09/21', 'opal-cutting-a-beginners-guide'],
-      ['2020/09/13', 'diy-opal-cutting-machine'],
-    ] as const
     const legacyPages = [
       ['/refund_returns', '/returns'],
       ['/gift-card', '/store'],
@@ -89,17 +69,30 @@ const nextConfig: NextConfig = {
       ['/shop', '/store'],
       ['/terms-of-sale', '/legal/terms'],
       ['/privacy-policy', '/legal/privacy'],
+      ['/product-category/opals/black-opals', '/store?stone=black-opal'],
+      ['/product-category/opals/white-opals', '/store?stone=white-opal'],
+      ['/product-category/opals/crystal-opals', '/store?stone=crystal-opal'],
+      ['/product-category/opals/boulder-opal', '/store?stone=boulder-opal'],
+      ['/product-category/custom-parcel', '/store?category=custom-commissions'],
+      ['/product-tag/black-opal', '/store?stone=black-opal'],
+      ['/product-tag/crystal-opal', '/store?stone=crystal-opal'],
+      ['/product-tag/cooberpedy', '/store?origin=coober-pedy'],
+      ['/product-tag/mintabie', '/store?origin=mintabie'],
+      ['/product-tag/opal-ring', '/store?category=opal-rings'],
+      ['/product-tag/earrings', '/store?category=opal-earrings'],
+      ['/product-tag/opal-earrings', '/store?category=opal-earrings'],
+      ['/product-tag/opal-studs', '/store?category=opal-earrings'],
     ] as const
 
     return [
-      ...legacyPosts.map(([date, slug]) => ({
-        source: `/${date}/${slug}`,
-        destination: `/blog/${slug}`,
-        permanent: true,
-      })),
       ...legacyPages.map(([source, destination]) => ({ source, destination, permanent: true })),
+      { source: '/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug', destination: '/blog/:slug', permanent: true },
+      { source: '/:year(\\d{4})/:month(\\d{2})?', destination: '/blog', permanent: true },
       { source: '/product/:slug', destination: '/store/:slug', permanent: true },
       { source: '/product-category/:path*', destination: '/store', permanent: true },
+      { source: '/product-tag/:path*', destination: '/store', permanent: true },
+      { source: '/:taxonomy(category|tag|author)/:path*', destination: '/blog', permanent: true },
+      { source: '/feed', destination: '/feed.xml', permanent: true },
     ]
   },
 }
