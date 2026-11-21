@@ -38,10 +38,10 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
   return (
     <MarketingShell>
       <section className="border-b border-warm-grey/50">
-        <Container className="pb-12 pt-8 sm:pb-16 sm:pt-10 lg:pb-20">
+        <Container className="pb-8 pt-6 sm:pb-10 sm:pt-8 lg:pb-12">
           <Breadcrumb
             items={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
-            className="mb-10 sm:mb-14"
+            className="mb-6 sm:mb-8"
           />
           <div className="grid gap-6 lg:grid-cols-2 lg:items-end lg:gap-16">
             <div>
@@ -61,7 +61,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
         </Container>
       </section>
 
-      <Container className="py-12 sm:py-16 lg:py-20">
+      <Container className="py-10 sm:py-12 lg:py-14">
         <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <h2 className="font-serif text-3xl">

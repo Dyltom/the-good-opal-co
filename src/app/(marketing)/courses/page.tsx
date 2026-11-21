@@ -48,7 +48,7 @@ export default async function CoursesPage() {
         />
       ) : null}
       <section className="overflow-hidden border-b border-warm-grey/60 bg-cream">
-        <Container className="grid gap-10 py-14 sm:py-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-24">
+        <Container className="grid gap-8 py-10 sm:py-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:py-14">
           <div className="relative z-10">
             <Eyebrow>
               Opal education
@@ -65,7 +65,7 @@ export default async function CoursesPage() {
             className="grid grid-cols-[0.88fr_1.12fr] gap-3 sm:gap-5"
             aria-label="Australian opals prepared for cutting"
           >
-            <div className="relative mt-12 aspect-[4/5] overflow-hidden bg-charcoal">
+            <div className="relative mt-8 aspect-[4/5] overflow-hidden bg-charcoal">
               <Image
                 src="/images/customs/custom-1.jpg"
                 alt="Three pale Australian opals cut into heart shapes"
@@ -89,7 +89,7 @@ export default async function CoursesPage() {
         </Container>
       </section>
 
-      <Container className="py-16 sm:py-24">
+      <Container className="py-12 sm:py-16">
         <div className="grid gap-8 border-y border-warm-grey/70 py-8 sm:grid-cols-3">
           {[
             {

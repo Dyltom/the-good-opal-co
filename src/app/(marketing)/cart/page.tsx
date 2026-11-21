@@ -22,7 +22,7 @@ export default async function CartPage() {
     <PageTransition>
       <MarketingShell className="bg-white">
           {cart.items.length === 0 ? (
-            <Container className="py-20 text-center">
+            <Container className="py-12 text-center sm:py-16">
               <div
                 aria-hidden
                 className="mx-auto mb-6 h-px w-24 bg-gradient-to-r from-opal-electric via-fire-pink to-opal-emerald opacity-70"

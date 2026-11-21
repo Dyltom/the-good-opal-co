@@ -42,7 +42,7 @@ const storageRows = [
 export default function CookiePolicyPage() {
   return (
     <MarketingShell mainClassName="bg-white">
-      <Container className="py-12 sm:py-16">
+      <Container className="py-10 sm:py-12">
         <Breadcrumb
           items={[{ label: 'Home', href: '/' }, { label: 'Cookie Policy' }]}
           className="mb-8"
