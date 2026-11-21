@@ -380,8 +380,8 @@ describe('buying flow UI/UX safeguards', () => {
 
     expect(product).toContain('alternates: { canonical: `/store/${product.slug}` }')
     expect(product).toContain("card: 'summary_large_image'")
-    expect(product).toContain('sku: product.sku ?? String(product.id)')
-    expect(sitemap).toContain("path: '/services/design'")
-    expect(sitemap).toContain("path: '/legal/cookies'")
+    expect(product).toContain('<ProductJsonLd')
+    expect(sitemap).toContain("page('/services/design'")
+    expect(sitemap).toContain("page('/legal/cookies'")
   })
 })

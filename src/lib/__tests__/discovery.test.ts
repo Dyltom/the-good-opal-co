@@ -4,8 +4,9 @@ import { catalogProduct } from './catalog-fixture'
 
 const input = {
   products: [
-    catalogProduct({ stone: 'Black opal', origin: 'Lightning Ridge, NSW', weight: '2.1 ct' }),
-    catalogProduct({ name: 'Sold ring', slug: 'sold-ring', sku: 'WP-2', stock: 0, inStock: false }),
+    catalogProduct({ stone: 'Black opal', origin: 'Lightning Ridge, NSW', weight: { value: 2.1, unit: 'ct' } }),
+    catalogProduct({ name: 'Sold ring', slug: 'sold-ring', sku: 'WP-2', stock: 0, availability: 'sold' }),
+    catalogProduct({ name: 'Held pendant', slug: 'held-pendant', sku: 'WP-3', stock: 0, availability: 'reserved' }),
   ],
   courses: [{ title: 'Cut opal', slug: 'cut-opal', summary: 'A practical cutting outline.' }],
   articles: [
@@ -39,11 +40,17 @@ describe('discovery documents', () => {
     expect(feed).toContain('<language>en-AU</language>')
   })
 
-  test('indexes every published product with real facts, policies, and contact', () => {
+  test('indexes the pieces still in the shop with real facts, policies, and contact', () => {
     const index = buildLlmsIndex(input)
 
+    expect(index).toContain('## Pieces in the shop (2)')
     expect(index).toContain('/store/blue-opal): Raw opals; Black opal; Lightning Ridge, NSW; 2.1 ct; AUD $123.00; available.')
-    expect(index).toContain('/store/sold-ring): Raw opals; AUD $123.00; sold.')
+    expect(index).toContain('/store/held-pendant): Raw opals; AUD $123.00; reserved in a checkout.')
+    expect(index).not.toContain('/store/sold-ring)')
+    expect(index).toContain('1 sold piece is not listed here')
+    expect(index).toContain('Visa, Mastercard, Amex, Apple Pay, Klarna')
+    expect(index).toContain('Lightning Ridge and Coober Pedy')
+    expect(index).not.toContain('Sydney')
     expect(index).toContain('AUD $15.00 per order')
     expect(index).toContain('Free shipping on orders of AUD $500.00 or more')
     expect(index).toContain('within 30 days of delivery')
@@ -62,6 +69,7 @@ describe('discovery documents', () => {
     expect(full).toContain('- Origin: Lightning Ridge, NSW')
     expect(full).toContain('A bright blue opal.')
     expect(full).not.toContain('Sold ring')
+    expect(full).not.toContain('Held pendant')
     expect(full).not.toContain('\u2014')
   })
 })

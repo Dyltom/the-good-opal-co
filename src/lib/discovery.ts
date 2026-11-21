@@ -1,6 +1,7 @@
 import { APP_NAME, APP_URL } from './constants'
 import { RETURN_WINDOW_DAYS, SHIPPING_CONFIG, SHIPPING_COUNTRIES } from './constants/shipping'
-import type { CatalogProduct } from './catalog'
+import { METHODS_ENABLED_IN_STRIPE } from './constants/payment'
+import { weightLabel, type CatalogProduct } from './catalog'
 
 export interface DiscoveryArticle {
   title: string
@@ -79,9 +80,10 @@ function productFacts(product: CatalogProduct): string {
     product.categoryLabel,
     product.stone,
     product.origin,
-    product.weight,
+    product.weight && weightLabel(product.weight),
+    product.metal,
     aud(product.price),
-    product.inStock ? 'available' : 'sold',
+    product.availability === 'reserved' ? 'reserved in a checkout' : 'available',
   ]
     .filter(Boolean)
     .join('; ')
@@ -94,23 +96,49 @@ export interface DiscoveryInput {
   contactEmail: string
 }
 
-function storeFacts(contactEmail: string): string[] {
+function storeFacts(input: DiscoveryInput): string[] {
   const { RATES, FREE_SHIPPING_THRESHOLD } = SHIPPING_CONFIG
+  const categories = [
+    ...new Set(
+      input.products
+        .filter((product) => product.availability !== 'sold' && product.category !== 'custom-commissions')
+        .map((product) => product.categoryLabel)
+    ),
+  ]
 
   return [
-    '## Business',
+    '## About',
     '',
-    '- Founder: Stephanie Caruana.',
-    '- Location: Australia.',
-    '- Prices are in Australian dollars (AUD).',
-    `- Contact: ${contactEmail} or ${markdownLink('the contact form', '/contact')}. Ask for extra photographs or a virtual viewing before buying.`,
+    '- The Good Opal Co is a small Australian opal business. Prices are in Australian dollars (AUD).',
+    '- Founder: Stephanie Caruana (Steph), who leads The Good Opal Co and the personal guidance behind each enquiry.',
+    '- Steph has written about opal since 2020: cutting a first stone by hand, building a cutting machine on a budget, and how opal from each field behaves on the wheel.',
+    '- Sourcing, in Steph\'s words: "We are committed to sourcing all opal ethically and directly from Australian Miners. A majority of the material we source is from Lightning Ridge and Coober Pedy."',
+    `- More: ${markdownLink('About', '/about')}`,
+    '',
+    '## What is sold',
+    '',
+    '- Loose Australian opals and finished opal jewellery.',
+    ...(categories.length ? [`- Categories with pieces available now: ${categories.join(', ')}.`] : []),
+    '- Most pieces are one of a kind: a single stone, photographed individually. Studio shots change the background, never the colour.',
+    '- Each product page shows the details known for that piece, such as stone type, origin, weight, dimensions, metal, and ring size. A certificate is included only when the listing says so.',
     '',
     '## How to buy',
     '',
-    '- Each product page shows the current price and whether the piece is still available.',
-    '- Add the piece to the cart and pay through Stripe secure checkout.',
-    '- Most pieces are one of a kind. Sold pieces keep their page and are marked sold.',
-    `- Custom ring designs start in the ${markdownLink('ring designer', '/services/design')} and are quoted personally.`,
+    '- Each product page shows the current price and whether the piece is available, reserved, or sold.',
+    `- Payment is by Stripe secure checkout: ${METHODS_ENABLED_IN_STRIPE.join(', ')}. Pay in full or in instalments.`,
+    "- A reserved piece is in someone's checkout. If they don't complete payment, it returns to the shop within 30 minutes.",
+    `- Sold pieces keep their page and are marked sold. Recently sold pieces: ${markdownLink('Pieces that have found a home', '/store/collected')}.`,
+    '- Ask for extra photographs or a virtual viewing before buying.',
+    '',
+    '## Custom design',
+    '',
+    `- Custom ring designs start in the ${markdownLink('ring designer', '/services/design')}. More on custom work: ${markdownLink('Custom opal jewellery', '/services')}.`,
+    '- Custom work is quoted after the stone, design, material, and timing are understood. The design direction, quote, expected timing, and what is included are confirmed before work begins.',
+    '- Custom pieces are not eligible for change-of-mind returns.',
+    '',
+    '## Courses',
+    '',
+    `- Steph's course starts with opal anatomy, then moves through low-cost hand cutting, rotary tools, cabbing machines, polishing, and valuation. ${markdownLink('Opal courses', '/courses')}`,
     '',
     '## Shipping',
     '',
@@ -127,6 +155,10 @@ function storeFacts(contactEmail: string): string[] {
     '- Contact us before posting anything back. Rights under the Australian Consumer Law are not limited by this policy.',
     `- Full policy: ${markdownLink('Returns', '/returns')}`,
     '',
+    '## Contact',
+    '',
+    `- Email ${input.contactEmail} or use ${markdownLink('the contact form', '/contact')}.`,
+    '',
   ]
 }
 
@@ -141,7 +173,7 @@ function contentLists(input: DiscoveryInput): string[] {
   })
 
   return [
-    '## Courses',
+    '## Published courses',
     '',
     ...(courses.length ? courses : ['- No courses are currently published.']),
     '',
@@ -155,12 +187,14 @@ function contentLists(input: DiscoveryInput): string[] {
 const INTRO = [
   `# ${APP_NAME}`,
   '',
-  '> Australian opals, finished opal jewellery, custom ring design, and opal education from Sydney, Australia.',
+  '> Australian opals, finished opal jewellery, custom ring design, and opal education from a small Australian business founded by Stephanie Caruana.',
   '',
 ]
 
 export function buildLlmsIndex(input: DiscoveryInput): string {
-  const products = input.products.map(
+  const live = input.products.filter((product) => product.availability !== 'sold')
+  const soldCount = input.products.length - live.length
+  const products = live.map(
     (product) =>
       `- ${markdownLink(product.name, `/store/${encodeURIComponent(product.slug)}`)}: ${productFacts(product)}.`
   )
@@ -169,7 +203,7 @@ export function buildLlmsIndex(input: DiscoveryInput): string {
     ...INTRO,
     `Product pages are the source of truth for current price and availability. A fuller version with every available piece described is at ${APP_URL}/llms-full.txt.`,
     '',
-    ...storeFacts(input.contactEmail),
+    ...storeFacts(input),
     '## Key pages',
     '',
     `- ${markdownLink('Store', '/store')}`,
@@ -179,16 +213,19 @@ export function buildLlmsIndex(input: DiscoveryInput): string {
     `- ${markdownLink('Frequently asked questions', '/faq')}`,
     `- ${markdownLink('About', '/about')}`,
     '',
-    '## Products',
+    `## Pieces in the shop (${live.length})`,
     '',
-    ...(products.length ? products : ['- No products are currently published.']),
+    ...(products.length ? products : ['- No pieces are currently in the shop.']),
+    ...(soldCount > 0
+      ? ['', `${soldCount} sold ${soldCount === 1 ? 'piece is' : 'pieces are'} not listed here. Recently sold pieces are at ${APP_URL}/store/collected.`]
+      : []),
     '',
     ...contentLists(input),
   ].join('\n')
 }
 
 export function buildLlmsFull(input: DiscoveryInput): string {
-  const available = input.products.filter((product) => product.inStock)
+  const available = input.products.filter((product) => product.availability === 'in_stock')
   const products = available.flatMap((product) => [
     `### ${product.name.replace(/[[\]]/g, '')}`,
     '',
@@ -198,7 +235,7 @@ export function buildLlmsFull(input: DiscoveryInput): string {
     `- Category: ${product.categoryLabel}`,
     ...(product.stone ? [`- Stone: ${product.stone}`] : []),
     ...(product.origin ? [`- Origin: ${product.origin}`] : []),
-    ...(product.weight ? [`- Weight: ${product.weight}`] : []),
+    ...(product.weight ? [`- Weight: ${weightLabel(product.weight)}`] : []),
     ...(product.metal ? [`- Metal: ${product.metal}`] : []),
     ...(product.ringSize ? [`- Ring size: ${product.ringSize}`] : []),
     `- SKU: ${product.sku}`,
@@ -210,7 +247,7 @@ export function buildLlmsFull(input: DiscoveryInput): string {
     ...INTRO,
     'Every piece currently available, with the store facts that apply to it. Product pages are the source of truth for current price and availability.',
     '',
-    ...storeFacts(input.contactEmail),
+    ...storeFacts(input),
     `## Available pieces (${available.length})`,
     '',
     ...(products.length ? products : ['No pieces are currently available.', '']),

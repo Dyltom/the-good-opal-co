@@ -216,10 +216,10 @@ export default async function StorePage({ searchParams }: StorePageProps) {
         name="Australian opals"
         description="One-of-a-kind Australian opals, loose stones, and finished jewellery."
         url="/store"
+        total={matching.length}
         products={products.slice(0, 10).map((product) => ({
           name: product.name,
           slug: product.slug,
-          price: product.price,
           image: product.image,
         }))}
       />

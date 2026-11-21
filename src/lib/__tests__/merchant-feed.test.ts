@@ -7,16 +7,18 @@ function item(feed: string, sku: string): string {
 }
 
 describe('Google Merchant feed', () => {
-  test('lists prices in AUD with two decimals and maps stock to availability', () => {
+  test('lists prices in AUD with two decimals and only offers pieces that can be bought now', () => {
     const feed = buildGoogleMerchantFeed([
       catalogProduct({ sku: 'A', price: 350 }),
-      catalogProduct({ sku: 'B', price: 99.5, stock: 0, inStock: false }),
+      catalogProduct({ sku: 'B', price: 99.5, stock: 0, availability: 'sold' }),
+      catalogProduct({ sku: 'C', stock: 0, availability: 'reserved' }),
     ])
 
     expect(item(feed, 'A')).toContain('<g:price>350.00 AUD</g:price>')
     expect(item(feed, 'A')).toContain('<g:availability>in_stock</g:availability>')
     expect(item(feed, 'B')).toContain('<g:price>99.50 AUD</g:price>')
     expect(item(feed, 'B')).toContain('<g:availability>out_of_stock</g:availability>')
+    expect(item(feed, 'C')).toContain('<g:availability>out_of_stock</g:availability>')
   })
 
   test('escapes CMS text and drops characters that would break the XML', () => {

@@ -26,7 +26,7 @@ import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
-import { summarize } from '@/lib/catalog'
+import { summarize, toCatalogProduct } from '@/lib/catalog'
 import { reservedProductIds } from '@/lib/inventory-reservations'
 
 interface ProductPageProps {
@@ -103,7 +103,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       : undefined) ?? ownedProductImageUrl(product.slug)
 
   const about = parseProductDescription(product.description)
-  const descriptionText = about.paragraphs.join(' ')
 
   const categoryName = product.category ? storeLabel(product.category) : undefined
   const productShippingProgress = getFreeShippingProgress(product.price)
@@ -133,8 +132,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     }
   }
   const stock = product.stock ?? 0
-  const reserved = stock <= 0 && (await reservedProductIds()).has(String(product.id))
-  const sold = stock <= 0 && !reserved
+  const catalogProduct = toCatalogProduct(product, stock <= 0 ? await reservedProductIds() : undefined)
+  const reserved = catalogProduct.availability === 'reserved'
+  const sold = catalogProduct.availability === 'sold'
   const discount = savePercent(product.price, product.compareAtPrice)
   const similarHref = sold ? await similarPiecesHref(product) : undefined
   const isDeposit = product.category === 'custom-commissions'
@@ -201,23 +201,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   return (
     <>
       <ProductJsonLd
-        product={{
-          name: product.name,
-          slug: product.slug,
-          description: descriptionText,
-          price: product.price,
-          images: productImages.map((img) => img.url),
-          category: categoryName,
-          stock: product.stock ?? 0,
-          sku: product.sku ?? String(product.id),
-          properties: facts.map((fact) => ({ name: fact.label, value: fact.value })),
-        }}
+        product={catalogProduct}
+        properties={facts.map((fact) => ({ name: fact.label, value: fact.value }))}
       />
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: '/' },
           { name: 'Store', url: '/store' },
-          { name: product.name, url: `/store/${product.slug}` },
+          ...(product.category && categoryName
+            ? [{ name: categoryName, url: `/store?category=${product.category}` }]
+            : []),
+          { name: product.name, url: catalogProduct.url },
         ]}
       />
 
