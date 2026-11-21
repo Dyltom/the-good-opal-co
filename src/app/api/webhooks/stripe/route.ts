@@ -194,22 +194,56 @@ async function sendOrderConfirmation(order: Order): Promise<void> {
   })
 }
 
-async function sendInventoryReviewAlert(order: Order): Promise<void> {
-  if (order.status !== 'pending' || order.inventoryAlertSentAt) return
+function formatAud(amount: number): string {
+  return `$${amount.toFixed(2)}`
+}
+
+function ownerOrderEmailText(order: Order): string {
+  const adminUrl = `${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders/${order.id}`
+  const address = order.shippingAddress
+  return [
+    ...(order.status === 'pending'
+      ? [
+          'INVENTORY REVIEW REQUIRED: check stock before packing this order.',
+          '',
+        ]
+      : []),
+    `New paid order ${order.orderNumber}`,
+    `Total paid: ${formatAud(order.total)} ${order.currency ?? 'AUD'} (shipping ${formatAud(order.shipping ?? 0)})`,
+    '',
+    'Items:',
+    ...order.items.map(
+      (item) => `${item.quantity} × ${item.name}, ${formatAud(item.price)} (${item.productId})`
+    ),
+    '',
+    'Customer:',
+    order.customer.name,
+    order.customer.email,
+    ...(order.customer.phone ? [order.customer.phone] : []),
+    '',
+    'Ship to:',
+    address.line1,
+    ...(address.line2 ? [address.line2] : []),
+    [address.city, address.state, address.postalCode].filter(Boolean).join(' '),
+    address.country,
+    ...(order.notes ? ['', `Notes: ${order.notes}`] : []),
+    '',
+    `Open the order: ${adminUrl}`,
+  ].join('\n')
+}
+
+async function sendOwnerOrderNotification(order: Order): Promise<void> {
+  if (order.inventoryAlertSentAt) return
 
   const { error } = await resend.emails.send(
     {
       from: process.env['EMAIL_FROM'] ?? '',
       to: process.env['CONTACT_EMAIL'] ?? '',
-      subject: `Inventory review required - ${order.orderNumber}`,
-      text: [
-        `Paid order ${order.orderNumber} requires inventory review before fulfilment.`,
-        `Customer: ${order.customer.email}`,
-        ...order.items.map((item) => `${item.quantity} × ${item.name} (${item.productId})`),
-        `Open the Payload admin order record: ${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders/${order.id}`,
-      ].join('\n'),
+      replyTo: order.customer.email,
+      subject: `${order.status === 'pending' ? 'Inventory review required' : 'New order'} - ${order.orderNumber}`,
+      text: ownerOrderEmailText(order),
     },
-    { idempotencyKey: `inventory-review/${order.id}` }
+    { idempotencyKey: `owner-order/${order.id}` }
   )
 
   const payload = await getPayload()
@@ -219,7 +253,7 @@ async function sendInventoryReviewAlert(order: Order): Promise<void> {
       id: order.id,
       data: { inventoryAlertError: error.message.slice(0, 1000) },
     })
-    throw new Error(`Resend rejected inventory alert: ${error.message}`)
+    throw new Error(`Resend rejected owner order email: ${error.message}`)
   }
 
   await payload.update({
@@ -697,7 +731,7 @@ export async function POST(request: NextRequest) {
         const existing = existingOrder.docs[0]
         if (existing) {
           await sendOrderConfirmation(existing)
-          await sendInventoryReviewAlert(existing)
+          await sendOwnerOrderNotification(existing)
         }
         return NextResponse.json({ received: true, duplicate: true })
       }
@@ -941,7 +975,7 @@ export async function POST(request: NextRequest) {
           })),
         })
         await sendOrderConfirmation(order)
-        await sendInventoryReviewAlert(order)
+        await sendOwnerOrderNotification(order)
 
         return NextResponse.json({
           received: true,

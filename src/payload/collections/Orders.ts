@@ -397,6 +397,7 @@ export const Orders: CollectionConfig = {
     },
     {
       name: 'inventoryAlertSentAt',
+      label: 'Owner notified at',
       type: 'date',
       admin: {
         readOnly: true,
@@ -405,6 +406,7 @@ export const Orders: CollectionConfig = {
     },
     {
       name: 'inventoryAlertError',
+      label: 'Owner notification error',
       type: 'textarea',
       admin: {
         readOnly: true,
