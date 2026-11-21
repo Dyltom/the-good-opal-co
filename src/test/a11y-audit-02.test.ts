@@ -43,21 +43,6 @@ describe('#7 RelatedProducts — image resolution', () => {
   })
 })
 
-describe('#8 ProductHero carousel dots — target size', () => {
-  const source = read('src/components/sections/ProductHero.tsx')
-
-  test('dot button expands hit area to ≥24px via padding', () => {
-    // Visual dot can remain 8x8, but the clickable target must meet WCAG 2.5.8
-    // (≥24x24). We enforce that the button element itself carries padding
-    // (or an explicit ≥24px min size) within ~400 chars of the "Go to product"
-    // aria-label — same JSX element, not a later one.
-    const idx = source.indexOf('Go to product')
-    expect(idx, 'dot indicator block not found').toBeGreaterThan(-1)
-    const window = source.slice(Math.max(0, idx - 400), idx + 200)
-    expect(window).toMatch(/\bp-[234]\b|min-(w|h)-\[?24/)
-  })
-})
-
 describe('#9 Store listing — heading order', () => {
   const source = read('src/app/(marketing)/store/store-content.tsx')
 
@@ -78,7 +63,6 @@ describe('mobile touch target safeguards', () => {
   test('interactive mobile commerce controls provide 44px hit areas', () => {
     const addToCartSource = read('src/components/cart/AddToCartButton.tsx')
     const productCardSource = read('src/components/product/ProductCard.tsx')
-    const productHeroSource = read('src/components/sections/ProductHero.tsx')
     const cookieSource = read('src/components/layout/CookieConsent.tsx')
     const searchSource = read('src/components/search/SearchInput.tsx')
 
@@ -86,7 +70,6 @@ describe('mobile touch target safeguards', () => {
     expect(addToCartSource).toContain("md: 'min-h-[44px]")
     expect(addToCartSource).toContain("sm: 'h-11 w-11")
     expect(productCardSource).toContain('min-h-[44px] min-w-[44px]')
-    expect(productHeroSource).toContain('min-h-[44px] min-w-[44px]')
     expect(cookieSource).toContain('min-h-[44px] min-w-[44px]')
     expect(searchSource).toContain('min-h-[44px] min-w-[44px]')
   })

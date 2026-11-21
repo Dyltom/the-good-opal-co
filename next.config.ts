@@ -104,4 +104,17 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPayload(nextConfig)
+const payloadConfig = withPayload(nextConfig)
+const payloadHeaders = payloadConfig.headers
+
+export default {
+  ...payloadConfig,
+  async headers() {
+    const rules = payloadHeaders ? await payloadHeaders() : []
+    return rules.map((rule) =>
+      rule.headers.some((header) => header.key === 'Critical-CH')
+        ? { ...rule, source: '/admin/:path*' }
+        : rule
+    )
+  },
+} satisfies NextConfig
