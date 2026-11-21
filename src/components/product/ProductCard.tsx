@@ -74,6 +74,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                     alt={product.name}
                     fill
                     priority={priority && index < 4}
+                    fetchPriority={priority && index < 2 ? 'high' : undefined}
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className={
                       isAvailable

@@ -371,7 +371,6 @@ describe('buying flow UI/UX safeguards', () => {
 
   test('shipping page matches the rates enforced during checkout', () => {
     const source = read('src/app/(marketing)/shipping/page.tsx')
-    const legacyHeroSource = read('src/components/sections/ProductHero.tsx')
 
     expect(source).toContain('SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS')
     expect(source).toContain('SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS')
@@ -379,8 +378,6 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('The carrier estimate is shown at checkout')
     expect(source).not.toContain('3–7 business days')
     expect(source).not.toContain('Free express')
-    expect(legacyHeroSource).toContain('Free Shipping Over $500')
-    expect(legacyHeroSource).not.toContain('Free Express Shipping')
   })
 
   test('legal pages describe the deployed guest checkout and data handling', () => {

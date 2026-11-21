@@ -111,6 +111,7 @@ export async function HomeHero() {
               alt={primaryMedia?.alt ?? 'Collection of vivid Australian opals'}
               fill
               priority
+              fetchPriority="high"
               quality={92}
               sizes="(max-width: 1024px) 100vw, 56vw"
               className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.015] motion-reduce:transition-none"

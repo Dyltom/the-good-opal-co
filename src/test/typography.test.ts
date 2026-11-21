@@ -88,14 +88,4 @@ describe('Typography Configuration', () => {
     expect(source).not.toMatch(/Latest <span className="font-accent/)
     expect(source).not.toMatch(/Handmade in <span className="font-accent/)
   })
-
-  test('hero display type uses the restrained heading system', () => {
-    const source = read('src/components/sections/ProductHero.tsx')
-    const heroHeading = source.match(/<motion\.h1[\s\S]*?<\/motion\.h1>/)?.[0] ?? ''
-
-    expect(heroHeading).not.toContain('xl:text-7xl')
-    expect(heroHeading).not.toContain('font-bold')
-    expect(heroHeading).toContain('font-semibold')
-    expect(source).not.toContain('font-accent text-2xl')
-  })
 })

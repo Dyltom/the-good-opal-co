@@ -145,6 +145,7 @@ export function ProductImageGallery({ productName, images, videos = [], transiti
                 alt={image.alt}
                 fill
                 priority={imageIndex === 0}
+                fetchPriority={imageIndex === 0 ? 'high' : undefined}
                 sizes="(max-width: 1024px) 100vw, 55vw"
                 quality={90}
                 className="object-cover transition-transform duration-200 ease-out motion-reduce:transition-none"
