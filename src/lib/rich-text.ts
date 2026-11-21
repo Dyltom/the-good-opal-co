@@ -1,3 +1,5 @@
+import { summarize } from '@/lib/catalog'
+
 function collectText(node: unknown, output: string[]): void {
   if (!node || typeof node !== 'object') return
 
@@ -19,6 +21,24 @@ export function extractPlainText(value: unknown): string {
   const output: string[] = []
   collectText(value, output)
   return output.join(' ').replace(/\s+/g, ' ').trim()
+}
+
+function paragraphText(content: unknown): string {
+  if (!content || typeof content !== 'object' || !('root' in content)) return ''
+  const root = content.root
+  const blocks = root && typeof root === 'object' && 'children' in root && Array.isArray(root.children) ? root.children : []
+  return blocks
+    .filter((block: unknown) => block && typeof block === 'object' && 'type' in block && block.type === 'paragraph')
+    .map((block: unknown) => extractPlainText(block))
+    .join(' ')
+}
+
+const TRUNCATED_EXCERPT = /\s*(?:\[\s*(?:…|\.\.\.)\s*\]|…|\.\.\.)$/
+
+export function postSummary(excerpt: string | null | undefined, content: unknown, maxLength = 180): string {
+  const written = excerpt?.replace(/\s+/g, ' ').trim() ?? ''
+  if (written && !TRUNCATED_EXCERPT.test(written)) return summarize(written, maxLength)
+  return summarize(paragraphText(content) || written.replace(TRUNCATED_EXCERPT, ''), maxLength)
 }
 
 const LEGACY_POST_URL = /^https?:\/\/(?:www\.)?goodopalco\.com\/\d{4}\/\d{2}\/\d{2}\/([a-z0-9-]+)\/?$/

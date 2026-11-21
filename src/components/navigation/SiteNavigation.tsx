@@ -66,7 +66,7 @@ export function SiteNavigation() {
           <Wordmark />
         </Link>
 
-        <nav aria-label="Primary navigation" className="ml-auto hidden gap-[26px] text-[13.5px] tracking-[0.01em] md:flex">
+        <nav aria-label="Primary navigation" className="ml-auto hidden gap-4 whitespace-nowrap text-[13.5px] tracking-[0.01em] md:flex lg:gap-[26px]">
           {NAVIGATION_ITEMS.map((item) => (
             <Link
               key={item.href}

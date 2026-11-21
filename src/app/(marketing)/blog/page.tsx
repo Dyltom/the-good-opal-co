@@ -1,48 +1,58 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { BlogCard } from '@/components/blog/BlogCard'
+import { BlogCard, toBlogCardPost } from '@/components/blog/BlogCard'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
 import { Button } from '@/components/ui/button'
 import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
-import { resolveMediaUrl } from '@/lib/media-url'
+import { cn } from '@/lib/utils'
+
+const DESCRIPTION =
+  'Notes on Australian opal: the fields it comes from, how it is cut and set, and what to check before you buy.'
 
 export const metadata = {
-  title: 'Opal notes | The Good Opal Co',
-  description: 'Practical notes about Australian opals, jewellery, buying, and care.',
+  title: 'Journal | The Good Opal Co',
+  description: DESCRIPTION,
   alternates: { canonical: '/blog' },
 }
 
 export const dynamic = 'force-dynamic'
 
-export default async function BlogPage() {
+interface BlogPageProps {
+  searchParams: Promise<{ category?: string | string[] }>
+}
+
+const topicLink =
+  'inline-flex h-[34px] flex-none items-center whitespace-nowrap rounded-full border px-3 text-[13px] transition-colors'
+
+export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const { category: categoryParam } = await searchParams
   const payload = await getPayload()
   const { docs: posts } = await payload.find({
     collection: 'posts',
-    limit: 24,
+    limit: 100,
     sort: '-publishedAt',
     depth: 2,
     overrideAccess: false,
   })
 
-  const cards = posts.map((post) => {
-    const image =
-      post.featuredImage && typeof post.featuredImage === 'object' ? post.featuredImage : null
-    const author = post.author && typeof post.author === 'object' ? post.author : null
-    const category = post.categories?.find((value) => typeof value === 'object')
-    const imageUrl = resolveMediaUrl(image?.url)
-    return {
-      slug: post.slug,
-      title: post.title,
-      excerpt: typeof post.excerpt === 'string' ? post.excerpt : undefined,
-      featuredImage: imageUrl ? { url: imageUrl, alt: image?.alt || post.title } : undefined,
-      publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
-      author: author?.name,
-      category: category && typeof category === 'object' ? category.name : undefined,
-    }
-  })
+  const topics = [
+    ...new Map(
+      posts
+        .flatMap((post) => post.categories ?? [])
+        .filter((category) => typeof category === 'object')
+        .map((category) => [category.slug, category] as const)
+    ).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name))
+  const activeTopic = topics.find((topic) => topic.slug === categoryParam)
+  const shown = activeTopic
+    ? posts.filter((post) =>
+        post.categories?.some((category) => typeof category === 'object' && category.id === activeTopic.id)
+      )
+    : posts
+  const [lead, ...cards] = shown.map(toBlogCardPost)
 
   return (
     <MarketingShell>
@@ -51,14 +61,14 @@ export default async function BlogPage() {
           '@context': 'https://schema.org',
           '@type': 'CollectionPage',
           '@id': `${APP_URL}/blog#collection`,
-          name: 'Opal notes',
-          description: 'Practical notes about Australian opals, jewellery, buying, and care.',
+          name: 'Journal',
+          description: DESCRIPTION,
           url: `${APP_URL}/blog`,
           isPartOf: { '@type': 'WebSite', '@id': `${APP_URL}/#website` },
           mainEntity: {
             '@type': 'ItemList',
-            numberOfItems: cards.length,
-            itemListElement: cards.map((post, index) => ({
+            numberOfItems: shown.length,
+            itemListElement: shown.map((post, index) => ({
               '@type': 'ListItem',
               position: index + 1,
               url: `${APP_URL}/blog/${post.slug}`,
@@ -70,21 +80,46 @@ export default async function BlogPage() {
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: '/' },
-          { name: 'Opal notes', url: '/blog' },
+          { name: 'Journal', url: '/blog' },
         ]}
       />
       <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
-        <PageHeader
-          title="Learn about opal before you choose."
-          description="Straightforward guides on stone types, buying questions, jewellery care, and the details worth checking in a listing."
-        />
+        <PageHeader title="Journal" description={DESCRIPTION} />
 
-        {cards.length > 0 ? (
-          <div className="mt-8 grid gap-x-[clamp(20px,2.4vw,40px)] gap-y-10 md:grid-cols-2 lg:grid-cols-3">
-            {cards.map((post) => (
-              <BlogCard key={post.slug} post={post} />
-            ))}
-          </div>
+        {topics.length > 1 ? (
+          <nav aria-label="Journal topics" className="mt-6 flex gap-2 overflow-x-auto pb-1">
+            {[{ slug: undefined, name: 'All' }, ...topics].map((topic) => {
+              const active = topic.slug === activeTopic?.slug
+              return (
+                <Link
+                  key={topic.slug ?? 'all'}
+                  href={topic.slug ? `/blog?category=${encodeURIComponent(topic.slug)}` : '/blog'}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    topicLink,
+                    active ? 'border-ink text-ink' : 'border-rule-2 text-ink-2 hover:border-ink-2 hover:text-ink'
+                  )}
+                >
+                  {topic.name}
+                </Link>
+              )
+            })}
+          </nav>
+        ) : null}
+
+        {lead ? (
+          <>
+            <div className="mt-8 border-b border-rule pb-10 md:mt-10 md:pb-14">
+              <BlogCard post={lead} lead />
+            </div>
+            {cards.length > 0 ? (
+              <div className="mt-10 grid gap-x-[clamp(20px,2.4vw,40px)] gap-y-10 md:mt-14 md:grid-cols-2 lg:grid-cols-3">
+                {cards.map((post) => (
+                  <BlogCard key={post.slug} post={post} />
+                ))}
+              </div>
+            ) : null}
+          </>
         ) : (
           <div className="mt-8 border-t border-rule pt-6">
             <h2>No articles published yet.</h2>

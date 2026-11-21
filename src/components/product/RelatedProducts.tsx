@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, type ComponentProps } from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { ProductCard } from './ProductCard'
@@ -9,6 +9,30 @@ import type { Product } from '@/types/payload-types'
 import { cn } from '@/lib/utils'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { caratWeight } from '@/app/(marketing)/store/store-query'
+
+export function toProductCardProduct(product: Product): ComponentProps<typeof ProductCard>['product'] {
+  const firstImage = product.images?.[0]?.image
+  return {
+    id: String(product.id),
+    slug: product.slug,
+    name: product.name,
+    price: product.price,
+    compareAtPrice: product.compareAtPrice ?? undefined,
+    stock: product.stock ?? 0,
+    soldPerUnit: product.soldPerUnit ?? false,
+    featured: product.featured ?? undefined,
+    image:
+      typeof firstImage === 'string'
+        ? firstImage
+        : typeof firstImage === 'object' && firstImage !== null
+          ? resolveMediaUrl(firstImage.url)
+          : undefined,
+    category: product.category,
+    stoneOrigin: product.stoneOrigin ?? undefined,
+    stoneType: product.stoneType ?? undefined,
+    carats: caratWeight(product),
+  }
+}
 
 async function findRelatedProducts(product: Product, limit: number): Promise<Product[]> {
   const tags = (product.tags ?? []).flatMap((entry) => (entry.tag ? [entry.tag] : []))
@@ -83,36 +107,9 @@ export async function RelatedProducts({
       </div>
 
       <div className="grid grid-cols-2 gap-x-2.5 gap-y-7 md:grid-cols-3 md:gap-x-4 lg:grid-cols-5 [&>article:nth-of-type(5)]:hidden md:[&>article:nth-of-type(n+4)]:hidden lg:[&>article:nth-of-type(n+4)]:flex">
-        {relatedProducts.map((relatedProduct, index) => {
-          const firstImage = relatedProduct.images?.[0]?.image
-          const imageUrl =
-            typeof firstImage === 'string'
-              ? firstImage
-              : typeof firstImage === 'object' && firstImage !== null
-                ? resolveMediaUrl(firstImage.url)
-                : undefined
-          return (
-            <ProductCard
-              key={relatedProduct.id}
-              product={{
-                id: String(relatedProduct.id),
-                slug: relatedProduct.slug,
-                name: relatedProduct.name,
-                price: relatedProduct.price,
-                compareAtPrice: relatedProduct.compareAtPrice ?? undefined,
-                stock: relatedProduct.stock ?? 0,
-                soldPerUnit: relatedProduct.soldPerUnit ?? false,
-                featured: relatedProduct.featured ?? undefined,
-                image: imageUrl,
-                category: relatedProduct.category,
-                stoneOrigin: relatedProduct.stoneOrigin ?? undefined,
-                stoneType: relatedProduct.stoneType ?? undefined,
-                carats: caratWeight(relatedProduct),
-              }}
-              index={index}
-            />
-          )
-        })}
+        {relatedProducts.map((relatedProduct, index) => (
+          <ProductCard key={relatedProduct.id} product={toProductCardProduct(relatedProduct)} index={index} />
+        ))}
       </div>
     </section>
   )
