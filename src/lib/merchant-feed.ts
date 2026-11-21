@@ -9,7 +9,6 @@ const GOOGLE_PRODUCT_CATEGORY: Record<string, string> = {
   'opal-earrings': '194',
   'opal-bracelets': '191',
   'raw-opals': '198',
-  'custom-commissions': '188',
 }
 
 interface ShippingRate {
@@ -72,7 +71,9 @@ export function buildGoogleMerchantFeed(products: CatalogProduct[]): string {
     `<title>${escapeXml(APP_NAME)}</title>`,
     `<link>${escapeXml(APP_URL)}</link>`,
     '<description>Australian opals and opal jewellery.</description>',
-    ...products.filter((product) => product.images.length > 0).map(merchantItem),
+    ...products
+      .filter((product) => product.images.length > 0 && product.category !== 'custom-commissions')
+      .map(merchantItem),
     '</channel>',
     '</rss>',
   ].join('\n')

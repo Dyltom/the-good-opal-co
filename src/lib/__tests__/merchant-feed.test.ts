@@ -39,6 +39,16 @@ describe('Google Merchant feed', () => {
     expect(feed).not.toContain('<g:id>WITHOUT</g:id>')
   })
 
+  test('leaves out commission deposits, which Google rejects as services', () => {
+    const feed = buildGoogleMerchantFeed([
+      catalogProduct({ sku: 'RING', category: 'opal-rings' }),
+      catalogProduct({ sku: 'DEPOSIT', category: 'custom-commissions', price: 50 }),
+    ])
+
+    expect(feed).toContain('<g:id>RING</g:id>')
+    expect(feed).not.toContain('<g:id>DEPOSIT</g:id>')
+  })
+
   test('quotes the real per-country shipping charge, free from the threshold', () => {
     const feed = buildGoogleMerchantFeed([
       catalogProduct({ sku: 'LOW', price: 120 }),
