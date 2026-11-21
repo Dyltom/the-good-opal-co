@@ -6,6 +6,7 @@ import { Eyebrow } from '@/components/ui/eyebrow'
 import { MarketingShell } from '@/components/marketing'
 import { ProductCard } from '@/components/product/ProductCard'
 import { HomeHero } from '@/components/sections/HomeHero'
+import { JewellerQuotes } from '@/components/sections/JewellerQuotes'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
@@ -304,6 +305,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <JewellerQuotes />
 
         <section className="grid bg-charcoal text-cream lg:grid-cols-2">
           <div className="relative min-h-[28rem] lg:min-h-[42rem]">
