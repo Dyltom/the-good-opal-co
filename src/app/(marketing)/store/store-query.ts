@@ -46,12 +46,15 @@ export const STORE_MATERIALS = [
 
 type Range = readonly [value: string, label: string, min: number, max: number]
 
-export const STORE_PRICE_PRESETS: readonly { priceMin?: number; priceMax?: number }[] = [
-  { priceMax: 250 },
-  { priceMin: 250, priceMax: 500 },
-  { priceMin: 500, priceMax: 1000 },
-  { priceMin: 1000 },
-]
+const PRICE_STEPS = [100, 250, 500, 1000, 2500, 5000]
+
+export const STORE_PRICE_BANDS: readonly Pick<StoreQuery, 'priceMin' | 'priceMax'>[] = [undefined, ...PRICE_STEPS].map(
+  (from, index) => {
+    const to = PRICE_STEPS[index]
+    return { priceMin: from, priceMax: to === undefined ? undefined : to - 0.01 }
+  }
+)
+
 export const STORE_CARAT_RANGES = [
   ['under-1', 'Under 1 ct', 0, 1],
   ['1-3', '1 to 3 ct', 1, 3],
@@ -129,29 +132,37 @@ function listValue(value: string | string[] | undefined, options: readonly (read
 
 const MAX_PRICE = 10_000_000
 
-function wholeDollars(value: string | string[] | undefined): number | undefined {
+function priceBound(value: string | string[] | undefined): number | undefined {
   const text = firstValue(value).replace(/[\s$,]/g, '')
-  if (!/^\d+(\.\d+)?$/.test(text)) return undefined
-  const amount = Math.round(Number(text))
-  return amount <= MAX_PRICE ? amount : undefined
+  if (!/^\d*\.?\d+$/.test(text)) return undefined
+  const amount = Math.round(Number(text) * 100) / 100
+  return amount > 0 && amount <= MAX_PRICE ? amount : undefined
 }
 
 export function priceRange(
   min: string | string[] | undefined,
   max: string | string[] | undefined
 ): Pick<StoreQuery, 'priceMin' | 'priceMax'> {
-  const low = wholeDollars(min)
-  const high = wholeDollars(max)
+  const low = priceBound(min)
+  const high = priceBound(max)
   const [from, to] = low !== undefined && high !== undefined && low > high ? [high, low] : [low, high]
-  return { priceMin: from || undefined, priceMax: to }
+  return { priceMin: from, priceMax: to }
 }
 
 const aud = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0 })
+const audCents = new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', minimumFractionDigits: 2 })
+
+function money(amount: number): string {
+  return Number.isInteger(amount) ? aud.format(amount) : audCents.format(amount)
+}
 
 export function priceRangeLabel({ priceMin, priceMax }: Pick<StoreQuery, 'priceMin' | 'priceMax'>): string | undefined {
-  if (priceMin !== undefined && priceMax !== undefined) return `${aud.format(priceMin)}–${aud.format(priceMax)}`
-  if (priceMin !== undefined) return `${aud.format(priceMin)}+`
-  if (priceMax !== undefined) return `Up to ${aud.format(priceMax)}`
+  const cents = priceMax === undefined ? undefined : Math.round(priceMax * 100)
+  const below = cents !== undefined && cents % 100 === 99
+  const top = cents === undefined ? undefined : money((below ? cents + 1 : cents) / 100)
+  if (priceMin !== undefined && top) return `${money(priceMin)}–${top}`
+  if (priceMin !== undefined) return `${money(priceMin)}+`
+  if (top) return `${below ? 'Under' : 'Up to'} ${top}`
   return undefined
 }
 
@@ -304,6 +315,13 @@ export function countStoreFacets(items: StoreListing[], query: StoreQuery): Stor
     }
   }
   return counts
+}
+
+export function countPriceBands(items: StoreListing[], query: StoreQuery): number[] {
+  return STORE_PRICE_BANDS.map((band) => {
+    const banded = { ...query, ...band }
+    return items.filter((item) => inScope(item, banded) && matchesFacets(item, banded)).length
+  })
 }
 
 export function storeMetadata(query: StoreQuery): Metadata {

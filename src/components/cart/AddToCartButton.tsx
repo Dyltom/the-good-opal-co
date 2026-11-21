@@ -1,24 +1,12 @@
 'use client'
 
-/**
- * Unified Add to Cart Button
- *
- * Consolidates all AddToCart button variations into a single component.
- * Follows SOLID principles with configurable behavior through props.
- *
- * Features:
- * - Server Action integration with optimistic UI
- * - Multiple variants (default, icon, minimal)
- * - Optional animations
- * - Customizable sizes
- * - Success feedback states
- */
-
 import { useState, useTransition, useCallback } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag, Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { addToCart, addToCartWithQuantity } from '@/app/(marketing)/cart/actions'
+import { ToastAction } from '@/components/ui/toast'
+import { addToCart, addToCartWithQuantity, fetchCart } from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
 import { trackAddToCart } from '@/lib/analytics'
 import type { ReactNode } from 'react'
@@ -38,6 +26,13 @@ interface AddToCartButtonProps {
   variant?: 'default' | 'icon' | 'minimal'
   size?: 'sm' | 'md' | 'lg'
   animated?: boolean
+  onAdded?: () => void
+}
+
+async function isAlreadyInCart(productId: string): Promise<boolean> {
+  const { data } = await fetchCart()
+  const line = data?.items.find((item) => item.productId === productId)
+  return Boolean(line && line.maxQuantity !== undefined && line.quantity >= line.maxQuantity)
 }
 
 export function AddToCartButton({
@@ -49,6 +44,7 @@ export function AddToCartButton({
   variant = 'default',
   size = 'md',
   animated = true,
+  onAdded,
 }: AddToCartButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [isSuccess, setIsSuccess] = useState(false)
@@ -77,23 +73,25 @@ export function AddToCartButton({
 
       if (result.success) {
         setIsSuccess(true)
-
         trackAddToCart({
           id: product.id,
           name: product.name,
           price: product.price,
         }, quantity)
-
-        // Dispatch custom event to update other cart components
         window.dispatchEvent(new CustomEvent('cart-updated'))
-
-        toast({
-          title: 'Added to cart',
-          description: product.name,
-        })
-
-        // Reset success state after animation
+        onAdded?.()
+        window.dispatchEvent(new CustomEvent('cart-open'))
         setTimeout(() => setIsSuccess(false), 2000)
+      } else if (await isAlreadyInCart(product.id)) {
+        toast({
+          title: 'Already in your cart',
+          description: `${product.name} is one of a kind and is already in your cart.`,
+          action: (
+            <ToastAction altText="View cart" asChild className="min-h-11">
+              <Link href="/cart">View cart</Link>
+            </ToastAction>
+          ),
+        })
       } else {
         toast({
           title: "Couldn't add to cart",
@@ -102,7 +100,7 @@ export function AddToCartButton({
         })
       }
     })
-  }, [product, toast, quantity])
+  }, [product, toast, quantity, onAdded])
 
   const sizeClasses = {
     sm: 'min-h-[44px] h-11 px-4 text-sm sm:min-h-9 sm:h-9 sm:px-3',
@@ -122,7 +120,6 @@ export function AddToCartButton({
     lg: 20,
   }
 
-  // Icon variant
   if (variant === 'icon') {
     const button = (
       <button
@@ -176,7 +173,6 @@ export function AddToCartButton({
     ) : button
   }
 
-  // Minimal variant
   if (variant === 'minimal') {
     const button = (
       <button
@@ -232,7 +228,6 @@ export function AddToCartButton({
     ) : button
   }
 
-  // Default variant
   const button = (
     <button
       onClick={handleClick}
@@ -299,60 +294,3 @@ export function AddToCartButton({
     </motion.div>
   ) : button
 }
-
-/**
- * Hook for custom add to cart implementations
- * Provides the core logic without UI components
- */
-export function useAddToCart() {
-  const [isPending, startTransition] = useTransition()
-  const [isSuccess, setIsSuccess] = useState(false)
-  const { toast } = useToast()
-
-  const addToCartAction = useCallback(
-    (product: AddToCartButtonProps['product']) => {
-      startTransition(async () => {
-        const result = await addToCart({
-          productId: product.id,
-          slug: product.slug,
-          name: product.name,
-          price: product.price,
-          image: product.image,
-        })
-
-        if (result.success) {
-          setIsSuccess(true)
-
-          trackAddToCart({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-          }, 1)
-
-          setTimeout(() => setIsSuccess(false), 2000)
-          window.dispatchEvent(new CustomEvent('cart-updated'))
-          toast({
-            title: 'Added to cart',
-            description: product.name,
-          })
-        } else {
-          toast({
-            title: "Couldn't add to cart",
-            description: result.error ?? 'Please try again in a moment.',
-            variant: 'destructive',
-          })
-        }
-      })
-    },
-    [toast]
-  )
-
-  return {
-    addToCart: addToCartAction,
-    isPending,
-    isSuccess,
-  }
-}
-
-// For backwards compatibility with AnimatedAddToCartButton
-export { AddToCartButton as AnimatedAddToCartButton }

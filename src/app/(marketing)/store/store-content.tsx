@@ -12,7 +12,7 @@ import {
   STORE_FACET_LABELS,
   STORE_FACET_OPTIONS,
   STORE_FACETS,
-  STORE_PRICE_PRESETS,
+  STORE_PRICE_BANDS,
   STORE_SORT_LABELS,
   STORE_SORTS,
   storeQueryParams,
@@ -45,7 +45,8 @@ interface StoreContentProps {
   query: StoreQuery
   totalDocs: number
   facetCounts: StoreFacetCounts
-  collectedCount: number
+  priceCounts: number[]
+  soldCount: number
 }
 
 const focusRing =
@@ -75,6 +76,16 @@ function hasAnyFilter(query: StoreQuery): boolean {
   return Boolean(query.search) || activeFilterCount(query) > 0
 }
 
+function ChipCount({ count, selected }: { count: number; selected: boolean }) {
+  return (
+    <span className={cn('text-xs tabular-nums', selected ? 'text-cream/70' : 'text-charcoal/50')}>
+      <span className="sr-only">, </span>
+      {count}
+      <span className="sr-only"> {count === 1 ? 'piece' : 'pieces'}</span>
+    </span>
+  )
+}
+
 function FacetChip({
   facet,
   value,
@@ -99,11 +110,7 @@ function FacetChip({
     >
       {selected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
       {label}
-      <span className={cn('text-xs tabular-nums', selected ? 'text-cream/70' : 'text-charcoal/50')}>
-        <span className="sr-only">, </span>
-        {count}
-        <span className="sr-only"> {count === 1 ? 'piece' : 'pieces'}</span>
-      </span>
+      <ChipCount count={count} selected={selected} />
     </Link>
   )
 }
@@ -150,14 +157,16 @@ function FacetGroup({
   )
 }
 
-function PriceGroup({ query }: { query: StoreQuery }) {
+function PriceGroup({ query, counts }: { query: StoreQuery; counts: number[] }) {
   return (
     <div role="group" aria-label="Price">
       <p className={groupLabelClass}>Price (AUD)</p>
       <PriceForm query={query} />
       <ul className="mt-3 flex flex-wrap gap-2">
-        {STORE_PRICE_PRESETS.map((preset) => {
+        {STORE_PRICE_BANDS.map((preset, index) => {
           const selected = query.priceMin === preset.priceMin && query.priceMax === preset.priceMax
+          const count = counts[index] ?? 0
+          if (count === 0 && !selected) return null
           const label = priceRangeLabel(preset)
           return (
             <li key={label}>
@@ -175,6 +184,7 @@ function PriceGroup({ query }: { query: StoreQuery }) {
               >
                 {selected ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
                 {label}
+                <ChipCount count={count} selected={selected} />
               </Link>
             </li>
           )
@@ -210,22 +220,24 @@ function QuickChips({ query, facetCounts }: { query: StoreQuery; facetCounts: St
 function FilterGroups({
   query,
   facetCounts,
-  collectedCount,
+  priceCounts,
+  soldCount,
 }: {
   query: StoreQuery
   facetCounts: StoreFacetCounts
-  collectedCount: number
+  priceCounts: number[]
+  soldCount: number
 }) {
   return (
     <div className="space-y-7">
       {(['category', 'stone'] as const).map((facet) => (
         <FacetGroup key={facet} facet={facet} query={query} counts={facetCounts[facet]} />
       ))}
-      <PriceGroup query={query} />
+      <PriceGroup query={query} counts={priceCounts} />
       {(['origin', 'carat'] as const).map((facet) => (
         <FacetGroup key={facet} facet={facet} query={query} counts={facetCounts[facet]} />
       ))}
-      {collectedCount > 0 ? (
+      {soldCount > 0 ? (
         <div
           role="group"
           aria-label="Availability"
@@ -244,13 +256,13 @@ function FilterGroups({
             {query.availability === 'all' ? (
               <Check className="h-3.5 w-3.5" aria-hidden="true" />
             ) : null}
-            Include collected pieces
+            Include sold pieces
           </Link>
           <Link
             href="/store/collected"
             className="flex min-h-11 items-center gap-2 font-sans text-sm font-semibold text-charcoal underline decoration-warm-grey underline-offset-4 hover:decoration-charcoal"
           >
-            Recently collected
+            Recently sold
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
@@ -291,7 +303,7 @@ function ActiveFilters({ query }: { query: StoreQuery }) {
       ? [
           {
             key: 'availability',
-            label: 'Including collected',
+            label: 'Including sold',
             href: storeUrl({ ...query, availability: 'available', page: 1 }),
           },
         ]
@@ -362,7 +374,8 @@ export function StoreContent({
   query,
   totalDocs,
   facetCounts,
-  collectedCount,
+  priceCounts,
+  soldCount,
 }: StoreContentProps) {
   const shown = products.length
   const sortOptions = STORE_SORTS.map((sort) => ({
@@ -371,7 +384,12 @@ export function StoreContent({
     href: storeUrl({ ...query, sort }, 1),
   }))
   const filters = (
-    <FilterGroups query={query} facetCounts={facetCounts} collectedCount={collectedCount} />
+    <FilterGroups
+      query={query}
+      facetCounts={facetCounts}
+      priceCounts={priceCounts}
+      soldCount={soldCount}
+    />
   )
 
   return (
@@ -427,7 +445,7 @@ export function StoreContent({
             </button>
           </form>
 
-          <div className="relative col-span-2 -mx-5 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] sm:-mx-8 sm:px-8 lg:col-span-1 lg:col-start-3 lg:m-0 lg:overflow-visible lg:p-0">
+          <div className="relative col-span-2 -mx-5 flex gap-2 overflow-x-auto px-5 py-1 [mask-image:linear-gradient(to_right,#000_calc(100%-3rem),transparent)] [scrollbar-width:none] after:block after:w-6 after:flex-none after:content-[''] sm:-mx-8 sm:px-8 lg:col-span-1 lg:col-start-3 lg:m-0 lg:overflow-visible lg:p-0 lg:[mask-image:none] lg:after:hidden">
             <StoreFilterSheet
               activeCount={activeFilterCount(query)}
               resultCount={totalDocs}

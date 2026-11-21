@@ -76,9 +76,9 @@ function PriceInput({ name, label, value }: { name: string; label: string; value
         <input
           name={name}
           type="number"
-          inputMode="numeric"
+          inputMode="decimal"
           min={0}
-          step={1}
+          step="any"
           defaultValue={value ?? ''}
           className="min-h-11 w-full min-w-0 rounded-sm border border-warm-grey/70 bg-cream pl-6 pr-2 font-sans text-base text-charcoal outline-none focus:border-charcoal focus:ring-2 focus:ring-opal-electric-accessible/30"
         />
