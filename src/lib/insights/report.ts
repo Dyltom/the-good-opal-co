@@ -3,8 +3,23 @@ import { sql } from '@payloadcms/db-postgres'
 import type { Payload } from 'payload'
 import { z } from 'zod'
 import { getPayload } from '@/lib/payload'
-import { INSIGHTS_RETENTION_DAYS } from './events'
+import { INSIGHTS_RETENTION_DAYS, type WebVitalMetric } from './events'
 import { buildFunnel, ratio } from './funnel'
+
+const VITAL_LIMITS: Record<WebVitalMetric, [good: number, poor: number]> = {
+  LCP: [2500, 4000],
+  INP: [200, 500],
+  CLS: [0.1, 0.25],
+  TTFB: [800, 1800],
+}
+
+export type VitalRating = 'good' | 'needs-improvement' | 'poor'
+
+export function vitalRating(metric: WebVitalMetric, value: number): VitalRating {
+  const [good, poor] = VITAL_LIMITS[metric]
+  if (value <= good) return 'good'
+  return value > poor ? 'poor' : 'needs-improvement'
+}
 
 export const INSIGHT_RANGES = [7, 30, 90] as const
 export type InsightRange = (typeof INSIGHT_RANGES)[number]
@@ -16,7 +31,7 @@ export function parseInsightRange(value: unknown): InsightRange {
 
 const count = z.coerce.number().int().nonnegative()
 const amount = z.coerce.number().nonnegative()
-const SERVER_EVENTS = sql`('purchase', 'checkout_abandoned')`
+const SERVER_EVENTS = sql`('purchase', 'checkout_abandoned', 'server_error')`
 
 async function query<T extends z.ZodTypeAny>(
   payload: Payload,
@@ -76,8 +91,45 @@ const abandonedRow = z.object({
     })
     .nullable(),
 })
+const unCartedRow = z.object({
+  product_id: z.string(),
+  name: z.string().nullable(),
+  slug: z.string().nullable(),
+  views: count,
+})
+const reasonRow = z.object({ reason: z.string(), answers: count })
+const noteRow = z.object({ occurred_at: z.coerce.date(), reason: z.string(), note: z.string() })
+const zeroFilterRow = z.object({
+  filters: z.record(z.string(), z.unknown()),
+  uses: count,
+})
+const nullableNumber = z.coerce.number().nullable()
+const vitalsRow = z.object({
+  path: z.string(),
+  samples: count,
+  lcp: nullableNumber,
+  inp: nullableNumber,
+  cls: nullableNumber,
+  ttfb: nullableNumber,
+})
+const engagementRow = z.object({
+  path: z.string(),
+  views: count,
+  median_seconds: z.coerce.number(),
+  median_scroll: z.coerce.number(),
+  saw_price: nullableNumber,
+  saw_details: nullableNumber,
+})
+const rageRow = z.object({
+  path: z.string(),
+  target: z.string(),
+  occurrences: count,
+  visitors: count,
+  last_seen: z.coerce.date(),
+})
 const errorRow = z.object({
   kind: z.string(),
+  source: z.string().nullable(),
   message: z.string(),
   path: z.string(),
   occurrences: count,
@@ -88,8 +140,26 @@ export async function getInsightsReport(payload: Payload, days: InsightRange, no
   const since = new Date(now.getTime() - days * 86_400_000).toISOString()
   const inRange = sql`occurred_at >= ${since}::timestamptz`
 
-  const [summary, sources, campaigns, countries, devices, products, searches, filters, actions, abandoned, errors] =
-    await Promise.all([
+  const [
+    summary,
+    sources,
+    campaigns,
+    countries,
+    devices,
+    products,
+    searches,
+    filters,
+    actions,
+    abandoned,
+    errors,
+    unCarted,
+    reasons,
+    notes,
+    zeroResultFilters,
+    vitals,
+    engagement,
+    rageClicks,
+  ] = await Promise.all([
       query(
         payload,
         summaryRow,
@@ -166,13 +236,22 @@ export async function getInsightsReport(payload: Payload, days: InsightRange, no
       ),
       query(
         payload,
-        labelRow,
+        sourceRow,
         sql`
-          SELECT coalesce(device, 'Unknown') AS label, count(DISTINCT visitor) AS visitors
-          FROM insight_events
-          WHERE ${inRange} AND name NOT IN ${SERVER_EVENTS}
-          GROUP BY 1
-          ORDER BY visitors DESC, label
+          WITH firsts AS (
+            SELECT DISTINCT ON (visitor) visitor, coalesce(device, 'Unknown') AS label
+            FROM insight_events
+            WHERE ${inRange} AND visitor IS NOT NULL AND name NOT IN ${SERVER_EVENTS}
+            ORDER BY visitor, occurred_at
+          ),
+          buyers AS (
+            SELECT DISTINCT visitor FROM insight_events
+            WHERE ${inRange} AND name = 'purchase' AND visitor IS NOT NULL
+          )
+          SELECT firsts.label, count(*) AS visitors, count(buyers.visitor) AS buyers
+          FROM firsts LEFT JOIN buyers ON buyers.visitor = firsts.visitor
+          GROUP BY firsts.label
+          ORDER BY visitors DESC, firsts.label
         `
       ),
       query(
@@ -239,7 +318,7 @@ export async function getInsightsReport(payload: Payload, days: InsightRange, no
           CROSS JOIN LATERAL jsonb_each_text(
             CASE WHEN jsonb_typeof(detail) = 'object' THEN detail ELSE '{}'::jsonb END
           ) AS field
-          WHERE ${inRange} AND name = 'store_filter'
+          WHERE ${inRange} AND name = 'store_filter' AND field.key <> 'results'
           GROUP BY 1, 2
           ORDER BY uses DESC, filter, value
           LIMIT 15
@@ -272,15 +351,123 @@ export async function getInsightsReport(payload: Payload, days: InsightRange, no
         sql`
           SELECT
             name AS kind,
+            detail ->> 'kind' AS source,
             coalesce(detail ->> 'message', 'No message') AS message,
             path,
             count(*) AS occurrences,
             max(occurred_at) AS last_seen
           FROM insight_events
-          WHERE ${inRange} AND name IN ('js_error', 'checkout_error')
-          GROUP BY 1, 2, 3
+          WHERE ${inRange} AND name IN ('js_error', 'checkout_error', 'server_error')
+          GROUP BY 1, 2, 3, 4
           ORDER BY last_seen DESC
-          LIMIT 20
+          LIMIT 25
+        `
+      ),
+      query(
+        payload,
+        unCartedRow,
+        sql`
+          SELECT viewed.product_id, products.name, products.slug, count(DISTINCT viewed.visitor) AS views
+          FROM insight_events AS viewed
+          LEFT JOIN products ON products.id::text = viewed.product_id
+          WHERE ${inRange} AND viewed.name = 'product_view' AND viewed.product_id IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM insight_events AS carted
+              WHERE carted.name = 'add_to_cart'
+                AND carted.product_id = viewed.product_id
+                AND carted.occurred_at >= ${since}::timestamptz
+            )
+          GROUP BY 1, 2, 3
+          ORDER BY views DESC, viewed.product_id
+          LIMIT 10
+        `
+      ),
+      query(
+        payload,
+        reasonRow,
+        sql`
+          SELECT detail ->> 'reason' AS reason, count(*) AS answers
+          FROM insight_events
+          WHERE ${inRange} AND name = 'checkout_feedback' AND detail ->> 'reason' IS NOT NULL
+          GROUP BY 1
+          ORDER BY answers DESC, reason
+        `
+      ),
+      query(
+        payload,
+        noteRow,
+        sql`
+          SELECT occurred_at, detail ->> 'reason' AS reason, detail ->> 'note' AS note
+          FROM insight_events
+          WHERE ${inRange} AND name = 'checkout_feedback' AND coalesce(detail ->> 'note', '') <> ''
+          ORDER BY occurred_at DESC
+          LIMIT 15
+        `
+      ),
+      query(
+        payload,
+        zeroFilterRow,
+        sql`
+          SELECT detail - 'results' AS filters, count(*) AS uses
+          FROM insight_events
+          WHERE ${inRange} AND name = 'store_filter' AND jsonb_typeof(detail) = 'object'
+            AND detail ->> 'results' = '0'
+          GROUP BY 1
+          ORDER BY uses DESC
+          LIMIT 10
+        `
+      ),
+      query(
+        payload,
+        vitalsRow,
+        sql`
+          SELECT
+            path,
+            count(*) FILTER (WHERE detail ->> 'metric' = 'LCP') AS samples,
+            percentile_cont(0.75) WITHIN GROUP (ORDER BY value) FILTER (WHERE detail ->> 'metric' = 'LCP') AS lcp,
+            percentile_cont(0.75) WITHIN GROUP (ORDER BY value) FILTER (WHERE detail ->> 'metric' = 'INP') AS inp,
+            percentile_cont(0.75) WITHIN GROUP (ORDER BY value) FILTER (WHERE detail ->> 'metric' = 'CLS') AS cls,
+            percentile_cont(0.75) WITHIN GROUP (ORDER BY value) FILTER (WHERE detail ->> 'metric' = 'TTFB') AS ttfb
+          FROM insight_events
+          WHERE ${inRange} AND name = 'web_vital' AND value IS NOT NULL
+          GROUP BY path
+          ORDER BY lcp DESC NULLS LAST, inp DESC NULLS LAST, path
+          LIMIT 10
+        `
+      ),
+      query(
+        payload,
+        engagementRow,
+        sql`
+          SELECT
+            path,
+            count(*) AS views,
+            percentile_cont(0.5) WITHIN GROUP (ORDER BY (detail ->> 'seconds')::numeric) AS median_seconds,
+            percentile_cont(0.5) WITHIN GROUP (ORDER BY (detail ->> 'scroll')::numeric) AS median_scroll,
+            avg((detail ->> 'sawPrice')::boolean::int) AS saw_price,
+            avg((detail ->> 'sawDetails')::boolean::int) AS saw_details
+          FROM insight_events
+          WHERE ${inRange} AND name = 'engagement'
+          GROUP BY path
+          ORDER BY views DESC, path
+          LIMIT 15
+        `
+      ),
+      query(
+        payload,
+        rageRow,
+        sql`
+          SELECT
+            path,
+            coalesce(detail ->> 'target', 'Unknown') AS target,
+            count(*) AS occurrences,
+            count(DISTINCT visitor) AS visitors,
+            max(occurred_at) AS last_seen
+          FROM insight_events
+          WHERE ${inRange} AND name = 'rage_click'
+          GROUP BY 1, 2
+          ORDER BY occurrences DESC, last_seen DESC
+          LIMIT 15
         `
       ),
     ])
@@ -319,6 +506,12 @@ export async function getInsightsReport(payload: Payload, days: InsightRange, no
     actions: Object.fromEntries(actions.map((row) => [row.name, row])),
     abandoned,
     errors,
+    unCarted,
+    feedback: { reasons, notes },
+    zeroResultFilters,
+    vitals,
+    engagement,
+    rageClicks,
   }
 }
 

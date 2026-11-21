@@ -5,10 +5,13 @@ import type { AdminViewServerProps } from 'payload'
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import { Gutter } from '@payloadcms/ui'
 import { DEFAULT_TIMEZONE } from '@/lib/constants'
+import { CHECKOUT_FEEDBACK_REASONS, type WebVitalMetric } from '@/lib/insights/events'
+import { ratio } from '@/lib/insights/funnel'
 import {
   INSIGHT_RANGES,
   getInsightsReport,
   parseInsightRange,
+  vitalRating,
   type InsightsReport,
 } from '@/lib/insights/report'
 import styles from './InsightsView.module.css'
@@ -26,6 +29,64 @@ const ACTION_LABELS: [string, string][] = [
   ['checkout_error', 'Checkout errors shown'],
   ['checkout_abandoned', 'Checkouts left unpaid'],
 ]
+
+const ERROR_SOURCES: Record<string, string> = {
+  js_error: 'Browser',
+  checkout_error: 'Checkout message',
+  render: 'Server page',
+  route: 'Server API',
+  action: 'Server action',
+  proxy: 'Server proxy',
+  checkout: 'Checkout setup',
+  stripe_webhook: 'Stripe webhook',
+}
+
+const RATING_LABELS = {
+  good: 'good',
+  'needs-improvement': 'needs work',
+  poor: 'poor',
+} as const
+
+function formatReason(reason: string): string {
+  return reason in CHECKOUT_FEEDBACK_REASONS
+    ? CHECKOUT_FEEDBACK_REASONS[reason as keyof typeof CHECKOUT_FEEDBACK_REASONS]
+    : reason
+}
+
+function formatVital(metric: WebVitalMetric, value: number | null): string {
+  if (value === null) return '—'
+  const shown =
+    metric === 'CLS'
+      ? value.toFixed(2)
+      : metric === 'INP'
+        ? `${Math.round(value)} ms`
+        : `${(value / 1000).toFixed(1)} s`
+  return `${shown} (${RATING_LABELS[vitalRating(metric, value)]})`
+}
+
+function formatSeconds(seconds: number): string {
+  const rounded = Math.round(seconds)
+  if (rounded < 60) return `${rounded} s`
+  return `${Math.floor(rounded / 60)} min ${rounded % 60} s`
+}
+
+function formatShare(value: number | null): string {
+  return value === null ? '—' : percentFormat.format(value)
+}
+
+function formatDevice(label: string): string {
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+function PieceName({ row }: { row: { product_id: string; name: string | null; slug: string | null } }) {
+  return row.slug ? (
+    <Link href={`/store/${row.slug}`} target="_blank" rel="noreferrer">
+      {row.name ?? `Product ${row.product_id}`}
+    </Link>
+  ) : (
+    <>{row.name ?? `Product ${row.product_id} (removed)`}</>
+  )
+}
 
 function formatWhen(date: Date): string {
   return date.toLocaleString('en-AU', {
@@ -135,6 +196,166 @@ function Funnel({ report }: { report: InsightsReport }) {
   )
 }
 
+function WhyNotBuying({ report }: { report: InsightsReport }) {
+  const [, , carted, checkedOut, paid] = report.funnel
+  const answers = report.feedback.reasons.reduce((sum, row) => sum + row.answers, 0)
+  const stepLoss = (from: number | undefined, lost: number | undefined) =>
+    from && lost !== undefined ? percentFormat.format(lost) : '—'
+
+  return (
+    <>
+      <h2 className={styles.sectionTitle}>Why people aren&apos;t buying</h2>
+      <dl className={styles.stats}>
+        <Stat
+          label="Carts not taken to checkout"
+          value={stepLoss(carted?.visitors, checkedOut?.dropOff)}
+          hint="Visitors who added a piece but never started checkout"
+        />
+        <Stat
+          label="Checkouts not paid"
+          value={stepLoss(checkedOut?.visitors, paid?.dropOff)}
+          hint="Visitors who started checkout but did not pay"
+        />
+        <Stat
+          label="Stripe checkouts expired"
+          value={numberFormat.format(report.actions['checkout_abandoned']?.events ?? 0)}
+          hint="Listed under Follow up"
+        />
+        <Stat label="Feedback answers" value={numberFormat.format(answers)} hint="From the cart page" />
+      </dl>
+      <div className={styles.grid}>
+        <DataTable
+          title="What held them back"
+          note="Answers to the short question on the cart page, asked after a guest leaves Stripe checkout or taps “Not ready yet?”."
+          empty="No one has answered yet in this period."
+          rows={report.feedback.reasons}
+          columns={[
+            { label: 'Reason', cell: (row) => formatReason(row.reason) },
+            { label: 'Answers', numeric: true, cell: (row) => numberFormat.format(row.answers) },
+            { label: 'Share', numeric: true, cell: (row) => percentFormat.format(ratio(row.answers, answers)) },
+          ]}
+        />
+        <DataTable
+          title="In their words"
+          note="The optional note guests added, newest first."
+          empty="No notes in this period."
+          rows={report.feedback.notes}
+          columns={[
+            { label: 'When', cell: (row) => formatWhen(row.occurred_at) },
+            { label: 'Reason', cell: (row) => formatReason(row.reason) },
+            { label: 'Note', cell: (row) => <span className={styles.message}>{row.note}</span> },
+          ]}
+        />
+        <DataTable
+          title="Looked at, never carted"
+          note="Pieces viewed in this period that nobody added to their cart. Check the photos, price and description."
+          empty="Every viewed piece was carted at least once."
+          rows={report.unCarted}
+          columns={[
+            { label: 'Piece', cell: (row) => <PieceName row={row} /> },
+            { label: 'Visitors', numeric: true, cell: (row) => numberFormat.format(row.views) },
+          ]}
+        />
+        <DataTable
+          title="Conversion by device"
+          note="Device each visitor first used, and how many of them paid."
+          empty="No visits in this period yet."
+          rows={report.devices}
+          columns={[
+            { label: 'Device', cell: (row) => formatDevice(row.label) },
+            { label: 'Visitors', numeric: true, cell: (row) => numberFormat.format(row.visitors) },
+            { label: 'Paid', numeric: true, cell: (row) => numberFormat.format(row.buyers) },
+            {
+              label: 'Conversion',
+              numeric: true,
+              cell: (row) => percentFormat.format(ratio(row.buyers, row.visitors)),
+            },
+          ]}
+        />
+        <DataTable
+          title="Searches with no results"
+          note="What guests looked for and could not find. Useful for naming and stock."
+          empty="Every search in this period found something."
+          rows={report.zeroResultSearches}
+          columns={[
+            { label: 'Search', cell: (row) => row.term },
+            { label: 'Times empty', numeric: true, cell: (row) => numberFormat.format(row.zero_results) },
+          ]}
+        />
+        <DataTable
+          title="Filters with no results"
+          note="Store filter combinations that showed an empty page."
+          empty="Every filter used in this period found something."
+          rows={report.zeroResultFilters}
+          columns={[
+            {
+              label: 'Filters',
+              cell: (row) =>
+                Object.entries(row.filters)
+                  .map(([key, value]) => `${key}: ${String(value)}`)
+                  .join(', '),
+            },
+            { label: 'Times', numeric: true, cell: (row) => numberFormat.format(row.uses) },
+          ]}
+        />
+      </div>
+      <DataTable
+        title="Slowest pages"
+        note="Page speed measured in guests' browsers, at the 75th percentile, for the page they first opened. Google treats LCP under 2.5 s, INP under 200 ms and CLS under 0.1 as good."
+        empty="No page speed readings in this period yet."
+        rows={report.vitals}
+        columns={[
+          { label: 'Page', cell: (row) => row.path },
+          { label: 'Loads', numeric: true, cell: (row) => numberFormat.format(row.samples) },
+          { label: 'Largest paint (LCP)', numeric: true, cell: (row) => formatVital('LCP', row.lcp) },
+          { label: 'Response to taps (INP)', numeric: true, cell: (row) => formatVital('INP', row.inp) },
+          { label: 'Layout shift (CLS)', numeric: true, cell: (row) => formatVital('CLS', row.cls) },
+          { label: 'Server reply (TTFB)', numeric: true, cell: (row) => formatVital('TTFB', row.ttfb) },
+        ]}
+      />
+      <DataTable
+        title="Attention by page"
+        note="Median time guests actively spent on each page and how far down they scrolled. On piece pages, the share who reached the price and the details."
+        empty="No page visits measured in this period yet."
+        rows={report.engagement}
+        columns={[
+          { label: 'Page', cell: (row) => row.path },
+          { label: 'Views', numeric: true, cell: (row) => numberFormat.format(row.views) },
+          { label: 'Engaged time', numeric: true, cell: (row) => formatSeconds(row.median_seconds) },
+          { label: 'Scrolled', numeric: true, cell: (row) => `${Math.round(row.median_scroll)}%` },
+          { label: 'Saw price', numeric: true, cell: (row) => formatShare(row.saw_price) },
+          { label: 'Saw details', numeric: true, cell: (row) => formatShare(row.saw_details) },
+        ]}
+      />
+      <DataTable
+        title="Frustrated clicks"
+        note="Three or more quick clicks in the same spot, often on something that looks clickable but is not, or is slow to respond."
+        empty="No frustrated clicks in this period."
+        rows={report.rageClicks}
+        columns={[
+          { label: 'Page', cell: (row) => row.path },
+          { label: 'Clicked on', cell: (row) => <span className={styles.message}>{row.target}</span> },
+          { label: 'Times', numeric: true, cell: (row) => numberFormat.format(row.occurrences) },
+          { label: 'Visitors', numeric: true, cell: (row) => numberFormat.format(row.visitors) },
+        ]}
+      />
+      <DataTable
+        title="Errors"
+        note="Errors guests hit in their browser, at checkout or on the server, grouped by where they happened and the message."
+        empty="No errors were reported in this period."
+        rows={report.errors}
+        columns={[
+          { label: 'Last seen', cell: (row) => formatWhen(row.last_seen) },
+          { label: 'Kind', cell: (row) => ERROR_SOURCES[row.source ?? row.kind] ?? ERROR_SOURCES[row.kind] ?? row.kind },
+          { label: 'Page', cell: (row) => row.path },
+          { label: 'Message', cell: (row) => <span className={styles.message}>{row.message}</span> },
+          { label: 'Times', numeric: true, cell: (row) => numberFormat.format(row.occurrences) },
+        ]}
+      />
+    </>
+  )
+}
+
 function Report({ report }: { report: InsightsReport }) {
   const { totals } = report
   const actionRows = ACTION_LABELS.map(([name, label]) => ({
@@ -160,6 +381,8 @@ function Report({ report }: { report: InsightsReport }) {
 
       <Funnel report={report} />
 
+      <WhyNotBuying report={report} />
+
       <h2 className={styles.sectionTitle}>Where guests come from</h2>
       <div className={styles.grid}>
         <DataTable
@@ -171,6 +394,11 @@ function Report({ report }: { report: InsightsReport }) {
             { label: 'Source', cell: (row) => row.label },
             { label: 'Visitors', numeric: true, cell: (row) => numberFormat.format(row.visitors) },
             { label: 'Paid', numeric: true, cell: (row) => numberFormat.format(row.buyers) },
+            {
+              label: 'Conversion',
+              numeric: true,
+              cell: (row) => percentFormat.format(ratio(row.buyers, row.visitors)),
+            },
           ]}
         />
         <DataTable
@@ -195,15 +423,6 @@ function Report({ report }: { report: InsightsReport }) {
             { label: 'Visitors', numeric: true, cell: (row) => numberFormat.format(row.visitors) },
           ]}
         />
-        <DataTable
-          title="Devices"
-          empty="No visits in this period yet."
-          rows={report.devices}
-          columns={[
-            { label: 'Device', cell: (row) => row.label.charAt(0).toUpperCase() + row.label.slice(1) },
-            { label: 'Visitors', numeric: true, cell: (row) => numberFormat.format(row.visitors) },
-          ]}
-        />
       </div>
 
       <h2 className={styles.sectionTitle}>Pieces</h2>
@@ -215,14 +434,7 @@ function Report({ report }: { report: InsightsReport }) {
         columns={[
           {
             label: 'Piece',
-            cell: (row) =>
-              row.slug ? (
-                <Link href={`/store/${row.slug}`} target="_blank" rel="noreferrer">
-                  {row.name ?? `Product ${row.product_id}`}
-                </Link>
-              ) : (
-                (row.name ?? `Product ${row.product_id} (removed)`)
-              ),
+            cell: (row) => <PieceName row={row} />,
           },
           { label: 'Viewed', numeric: true, cell: (row) => numberFormat.format(row.views) },
           { label: 'Carted', numeric: true, cell: (row) => numberFormat.format(row.carts) },
@@ -232,16 +444,6 @@ function Report({ report }: { report: InsightsReport }) {
 
       <h2 className={styles.sectionTitle}>Searching and browsing</h2>
       <div className={styles.grid}>
-        <DataTable
-          title="Searches with no results"
-          note="What guests looked for and could not find. Useful for naming and stock."
-          empty="Every search in this period found something."
-          rows={report.zeroResultSearches}
-          columns={[
-            { label: 'Search', cell: (row) => row.term },
-            { label: 'Times empty', numeric: true, cell: (row) => numberFormat.format(row.zero_results) },
-          ]}
-        />
         <DataTable
           title="Top searches"
           empty="No searches in this period yet."
@@ -290,18 +492,6 @@ function Report({ report }: { report: InsightsReport }) {
           },
           { label: 'Value', numeric: true, cell: (row) => moneyFormat.format(row.value ?? 0) },
           { label: 'Email', cell: (row) => row.detail?.email ?? 'Not given' },
-        ]}
-      />
-      <DataTable
-        title="Recent errors"
-        note="Errors guests hit in their browser or at checkout, grouped by message and page."
-        empty="No errors were reported in this period."
-        rows={report.errors}
-        columns={[
-          { label: 'Last seen', cell: (row) => formatWhen(row.last_seen) },
-          { label: 'Where', cell: (row) => (row.kind === 'checkout_error' ? `Checkout on ${row.path}` : row.path) },
-          { label: 'Message', cell: (row) => <span className={styles.message}>{row.message}</span> },
-          { label: 'Times', numeric: true, cell: (row) => numberFormat.format(row.occurrences) },
         ]}
       />
     </>

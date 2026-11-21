@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = new Date('2026-11-20').toLocaleDateString('en-AU', {
+  const lastUpdated = new Date('2026-11-21').toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -142,7 +142,8 @@ export default function PrivacyPolicyPage() {
               <ul className="list-disc pl-6 mb-4 space-y-2">
                 <li>An essential HTTP-only cart cookie so the server can retain your basket</li>
                 <li>Local storage recording your necessary and analytics consent choice</li>
-                <li>Google Analytics after you choose to allow analytics</li>
+                <li>Session storage noting that we already asked why you left checkout, so we ask only once per visit</li>
+                <li>Google Analytics and Microsoft Clarity after you choose to allow analytics. Clarity records clicks, scrolling and mouse movement to replay visits and may set its own cookies</li>
               </ul>
               <p className="text-content mb-4">
                 We do not currently use advertising, remarketing, or social-media tracking pixels. You can change optional analytics through Cookie Settings. Blocking essential storage may prevent the cart and privacy controls from working.
@@ -151,13 +152,13 @@ export default function PrivacyPolicyPage() {
                 6.1 Cookieless site measurement
               </h3>
               <p className="text-content mb-4">
-                We also measure how the shop is used, on our own systems and without cookies or browser storage. When you view a page or a piece, open or zoom a photo, add or remove a piece from your cart, search, use the store filters, start checkout, send an enquiry, join the newsletter, or run into an error, your browser sends a short note of that action to our server.
+                We also measure how the shop is used, on our own systems and without cookies or browser storage. When you view a page or a piece, open or zoom a photo, add or remove a piece from your cart, search, use the store filters, start checkout, send an enquiry, join the newsletter, or run into an error, your browser sends a short note of that action to our server. When you leave a page it also sends how long you were active on it, how far you scrolled and, on a piece page, whether you reached the photos, price and details. It reports how quickly pages load and when the same spot is clicked several times in a row, with a short description of what was clicked but never what you typed.
               </p>
               <p className="text-content mb-4">
                 Each note records the page and action, the piece involved, the website or campaign link that brought you here, your country as supplied by our hosting network, your device type and your browser family. We do not store your IP address or your full browser details. They are combined with a random value that is replaced every day and turned into a one-way code, so we can count visits on a single day but cannot recognise you on a later day or work out who you are.
               </p>
               <p className="text-content mb-4">
-                When a Stripe checkout is paid or expires unpaid, we record its value and items against the same code. If a checkout expires unpaid and you had already typed your email address into Stripe, that address is kept with the record so we can follow up on the order. We use this measurement only to improve the shop and do not share it with advertisers.
+                When a Stripe checkout is paid or expires unpaid, we record its value and items against the same code. If a checkout expires unpaid and you had already typed your email address into Stripe, that address is kept with the record so we can follow up on the order. If you answer our short question about why you left checkout, we keep the reason you choose and any note you type. Errors on our server are recorded with the page and a shortened error message, with email addresses and keys removed. We use this measurement only to improve the shop and do not share it with advertisers.
               </p>
             </section>
 
@@ -184,7 +185,7 @@ export default function PrivacyPolicyPage() {
                 8. International Data Transfers
               </h2>
               <p className="text-content mb-4">
-                Stripe, OVHcloud, Google, Resend, and other service providers may process information outside Australia. Processing locations depend on each provider&apos;s infrastructure and may change. We assess the providers we use and handle overseas disclosures as required by applicable privacy law, but we do not claim that every overseas jurisdiction provides protections identical to Australia.
+                Stripe, OVHcloud, Google, Microsoft, Resend, and other service providers may process information outside Australia. Processing locations depend on each provider&apos;s infrastructure and may change. We assess the providers we use and handle overseas disclosures as required by applicable privacy law, but we do not claim that every overseas jurisdiction provides protections identical to Australia.
               </p>
             </section>
 
@@ -233,6 +234,7 @@ export default function PrivacyPolicyPage() {
                 <li><strong>Stripe:</strong> Hosted checkout and payment processing</li>
                 <li><strong>OVHcloud:</strong> Website hosting</li>
                 <li><strong>Google Analytics:</strong> Site analytics, only after you allow analytics</li>
+                <li><strong>Microsoft Clarity:</strong> Visit replays and heatmaps, only after you allow analytics</li>
                 <li><strong>Resend:</strong> Email communications</li>
               </ul>
             </section>

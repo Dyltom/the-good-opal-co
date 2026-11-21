@@ -33,7 +33,7 @@ export function buildFunnel(counts: FunnelCounts): FunnelStep[] {
       label,
       visitors: counts[key],
       shareOfStart: ratio(counts[key], counts.visitors),
-      dropOff: previousKey ? 1 - ratio(counts[key], previous) : 0,
+      dropOff: previousKey && previous > 0 ? 1 - ratio(counts[key], previous) : 0,
     }
   })
 }

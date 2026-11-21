@@ -99,7 +99,9 @@ export default function MarketingLayout({
         <Toaster />
         <AnalyticsConsentGate />
         <InsightsTracker />
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ? <CookieConsent /> : null}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ? (
+          <CookieConsent />
+        ) : null}
         <OpalLight />
       </body>
     </html>

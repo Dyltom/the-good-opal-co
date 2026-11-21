@@ -1,6 +1,13 @@
 import { createHash } from 'node:crypto'
 import { z } from 'zod'
-import { CLIENT_INSIGHT_EVENTS } from './events'
+import {
+  CHECKOUT_FEEDBACK_NOTE_MAX,
+  CHECKOUT_FEEDBACK_REASONS,
+  CLIENT_INSIGHT_EVENTS,
+  WEB_VITAL_METRICS,
+  type ClientInsightEvent,
+  type InsightDetail,
+} from './events'
 
 export const MAX_INSIGHT_BODY_BYTES = 2048
 
@@ -40,6 +47,42 @@ export const insightPayloadSchema = z
 
 export type InsightPayload = z.infer<typeof insightPayloadSchema>
 
+const percent = z.number().int().min(0).max(100)
+
+const eventDetailSchemas: Partial<Record<ClientInsightEvent, z.ZodType<InsightDetail>>> = {
+  engagement: z
+    .object({
+      seconds: z.number().int().min(0).max(1800),
+      scroll: percent,
+      sawPhotos: z.boolean().optional(),
+      sawPrice: z.boolean().optional(),
+      sawDetails: z.boolean().optional(),
+    })
+    .strict(),
+  web_vital: z
+    .object({
+      metric: z.enum(WEB_VITAL_METRICS),
+      rating: z.enum(['good', 'needs-improvement', 'poor']),
+    })
+    .strict(),
+  rage_click: z.object({ target: z.string().trim().min(1).max(80) }).strict(),
+  checkout_feedback: z
+    .object({
+      reason: z.enum(Object.keys(CHECKOUT_FEEDBACK_REASONS) as [keyof typeof CHECKOUT_FEEDBACK_REASONS]),
+      source: z.enum(['cancelled', 'cart']),
+      note: z
+        .string()
+        .trim()
+        .max(CHECKOUT_FEEDBACK_NOTE_MAX)
+        .transform((note) => note || undefined)
+        .optional(),
+    })
+    .strict()
+    .transform(({ note, ...rest }) => (note ? { ...rest, note } : rest)),
+}
+
+const requiresValue: ReadonlySet<ClientInsightEvent> = new Set(['web_vital'])
+
 export type ParsedInsight =
   | { ok: true; payload: InsightPayload }
   | { ok: false; status: 400 | 413 }
@@ -55,7 +98,13 @@ export function parseInsightBody(body: string): ParsedInsight {
     return { ok: false, status: 400 }
   }
   const result = insightPayloadSchema.safeParse(json)
-  return result.success ? { ok: true, payload: result.data } : { ok: false, status: 400 }
+  if (!result.success) return { ok: false, status: 400 }
+  const payload = result.data
+  if (requiresValue.has(payload.name) && payload.value === undefined) return { ok: false, status: 400 }
+  const detailSchema = eventDetailSchemas[payload.name]
+  if (!detailSchema) return { ok: true, payload }
+  const detail = detailSchema.safeParse(payload.detail)
+  return detail.success ? { ok: true, payload: { ...payload, detail: detail.data } } : { ok: false, status: 400 }
 }
 
 const BOT_PATTERN =

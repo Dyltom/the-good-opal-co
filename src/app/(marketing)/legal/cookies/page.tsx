@@ -31,6 +31,12 @@ const storageRows = [
     duration: 'Until cleared',
     purpose: 'Records when you saved your privacy choice.',
   },
+  {
+    name: 'checkout-feedback-asked',
+    location: 'Session storage',
+    duration: 'Until you close the tab',
+    purpose: 'Remembers that we already asked why you left checkout, so we ask only once.',
+  },
 ] as const
 
 export default function CookiePolicyPage() {
@@ -49,7 +55,7 @@ export default function CookiePolicyPage() {
           <h1 className="mt-2 font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
             Cookie Policy
           </h1>
-          <p className="mt-3 font-sans text-sm text-charcoal/60">Last updated 20 November 2026</p>
+          <p className="mt-3 font-sans text-sm text-charcoal/60">Last updated 21 November 2026</p>
 
           <div className="mt-12 space-y-12 font-sans text-base leading-7 text-charcoal/80">
             <section aria-labelledby="policy-overview">
@@ -121,10 +127,14 @@ export default function CookiePolicyPage() {
                 Optional analytics
               </h2>
               <p className="mt-4">
-                If you select “Accept analytics”, Google Analytics may collect limited,
-                aggregated information about visits and page use. This helps us understand which
-                pages are useful and where the shopping experience needs improvement. Analytics do
-                not load when you choose necessary storage only.
+                If you select “Accept analytics”, we may use Google Analytics and Microsoft
+                Clarity. Google Analytics collects limited, aggregated information about visits and
+                page use. Microsoft Clarity records how pages are used, such as clicks, scrolling
+                and mouse movement, so we can replay visits and see where the shop is confusing. It
+                may set its own cookies, such as _clck and _clsk, and Microsoft handles that data
+                under its own privacy statement. This helps us understand which pages are useful and
+                where the shopping experience needs improvement. Neither tool loads when you choose
+                necessary storage only.
               </p>
             </section>
 
@@ -137,8 +147,11 @@ export default function CookiePolicyPage() {
               </h2>
               <p className="mt-4">
                 Separately from optional analytics, the site sends a short note to our own server
-                when you view pages and pieces, use the cart, search, filter, start checkout or hit
-                an error. This stores nothing in your browser. Your IP address and browser details
+                when you view pages and pieces, use the cart, search, filter, start checkout, answer
+                our short question about checkout or hit an error. It also notes how long you
+                actively spend on a page, how far you scroll, how quickly the page loads and when
+                the same spot is clicked several times in a row, described by what was clicked and
+                never by what you typed. This stores nothing in your browser. Your IP address and browser details
                 are turned into a one-way code with a random value that changes every day, and are
                 never stored themselves, so we can count visits without recognising you from one
                 day to the next. Records are deleted after 400 days. Read more in section 6.1 of

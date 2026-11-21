@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useCallback, useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
@@ -11,6 +11,11 @@ import {
   ShippingRegionToggle,
   type ShippingRegion,
 } from '@/components/cart/CheckoutButton'
+import {
+  CheckoutFeedback,
+  useCancelledCheckoutPrompt,
+  type CheckoutFeedbackSource,
+} from '@/components/cart/CheckoutFeedback'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
@@ -33,6 +38,11 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
   const { toast } = useToast()
   const router = useRouter()
   const [region, setRegion] = useState<ShippingRegion>('AU')
+  const [feedback, setFeedback] = useState<CheckoutFeedbackSource | null>(null)
+  const [feedbackSent, setFeedbackSent] = useState(false)
+  useCancelledCheckoutPrompt(useCallback(() => setFeedback('cancelled'), []))
+  const closeFeedback = () => setFeedback(null)
+  const markFeedbackSent = () => setFeedbackSent(true)
   const pricing = calculateCheckoutPricing(
     cart.total,
     region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
@@ -119,6 +129,15 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
           </div>
         </header>
 
+        {feedback === 'cancelled' ? (
+          <CheckoutFeedback
+            source="cancelled"
+            onClose={closeFeedback}
+            onSent={markFeedbackSent}
+            className="mb-8 max-w-2xl"
+          />
+        ) : null}
+
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <section
             aria-label="Items in your cart"
@@ -179,6 +198,23 @@ export function CartPageContent({ initialCart }: CartPageContentProps) {
               <ShoppingBag className="mt-1 h-4 w-4 shrink-0" aria-hidden="true" />
               <p>Each piece remains available to other shoppers until payment is complete.</p>
             </div>
+
+            {feedback === 'cart' ? (
+              <CheckoutFeedback
+                source="cart"
+                onClose={closeFeedback}
+                onSent={markFeedbackSent}
+                className="mt-5"
+              />
+            ) : !feedbackSent && feedback === null ? (
+              <button
+                type="button"
+                onClick={() => setFeedback('cart')}
+                className="mt-4 text-sm text-charcoal/65 underline underline-offset-2 hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-opal-electric-accessible"
+              >
+                Not ready yet? Tell us what would help
+              </button>
+            ) : null}
           </aside>
         </div>
       </div>
