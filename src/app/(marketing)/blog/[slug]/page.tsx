@@ -178,7 +178,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {categories.map((category) => category.name).join(' · ')}
             </Eyebrow>
           ) : null}
-          <h1 className="mt-4 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl">
+          <h1 className="mt-4 text-balance font-serif text-4xl font-medium leading-none text-charcoal sm:text-5xl lg:text-6xl">
             {post.title}
           </h1>
           {author || publishedDate ? (

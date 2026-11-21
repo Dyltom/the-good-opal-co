@@ -8,7 +8,7 @@ export default function NotFound() {
       <section className="px-5 py-24 sm:px-8 lg:py-32">
         <div className="mx-auto max-w-2xl text-center">
           <span aria-hidden="true" className="opal-fire-line mx-auto block h-[3px] w-12 rounded-full" />
-          <h1 className="mt-8 font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+          <h1 className="mt-8 font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
             This page has wandered off.
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-charcoal/70">

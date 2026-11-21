@@ -98,7 +98,7 @@
     --sidebar-ring: oklch(0.6531 0.1347 242.6867);
 
     /* Typography - Semantic font naming for fairytale theme */
-    --font-sans: 'Merriweather', Georgia, serif; /* Warm body text */
+    --font-sans: 'Figtree', system-ui, sans-serif;
     --font-serif: 'EB Garamond', Georgia, serif; /* Elegant display headings */
     --font-accent: 'Dancing Script', cursive; /* Magical handwritten moments */
     --font-inter: 'EB Garamond', Georgia, serif; /* Legacy compatibility */

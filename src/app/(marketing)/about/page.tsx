@@ -101,7 +101,7 @@ export default async function AboutPage() {
                 <Eyebrow>
                   Our story
                 </Eyebrow>
-                <h1 className="mt-5 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl lg:text-7xl">
+                <h1 className="mt-5 text-balance font-serif text-4xl font-medium leading-none text-charcoal sm:text-5xl lg:text-6xl">
                   A closer look at Australian opal.
                 </h1>
                 <p className="mt-7 max-w-lg font-sans text-lg leading-8 text-charcoal/70">
@@ -135,7 +135,7 @@ export default async function AboutPage() {
               <Eyebrow>
                 What we do
               </Eyebrow>
-              <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
+              <h2 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal sm:text-4xl lg:text-5xl">
                 Opals selected one piece at a time.
               </h2>
             </div>
@@ -169,7 +169,7 @@ export default async function AboutPage() {
               <Eyebrow>
                 In Steph&apos;s words
               </Eyebrow>
-              <h2 id="steph-heading" className="mt-4 font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
+              <h2 id="steph-heading" className="mt-4 font-serif text-3xl font-medium leading-tight text-charcoal sm:text-4xl lg:text-5xl">
                 Stephanie Caruana, founder.
               </h2>
               <p className="mt-6 max-w-2xl font-sans text-base leading-8 text-charcoal/70">
@@ -240,7 +240,7 @@ export default async function AboutPage() {
               <Eyebrow>
                 Buy with context
               </Eyebrow>
-              <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
+              <h2 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal sm:text-4xl lg:text-5xl">
                 Opal changes with the light. Good information should not.
               </h2>
               <p className="mt-6 font-sans text-base leading-8 text-charcoal/70">

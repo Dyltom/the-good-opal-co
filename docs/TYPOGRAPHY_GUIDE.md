@@ -4,7 +4,7 @@
 
 ### Font Families
 - **Display/Headings**: EB Garamond (serif) - for elegance, softness, and luxury feel
-- **Body Text**: Merriweather (serif) - for warm editorial readability
+- **Body Text and UI**: Figtree (sans-serif) - crisp and compact, so the serif headings and the stones carry the warmth
 - **Accent**: Dancing Script (script) - reserved for emotional moments such as success pages, taglines, and celebrations
 
 ### Typography Scale (8px baseline)

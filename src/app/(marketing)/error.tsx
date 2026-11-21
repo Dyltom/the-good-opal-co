@@ -26,7 +26,7 @@ export default function Error({
     <Section padding="lg">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <h1 className="font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+          <h1 className="font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
             Something went wrong on our end.
           </h1>
           <p className="mx-auto mt-4 max-w-md text-lg leading-8 text-charcoal/70">

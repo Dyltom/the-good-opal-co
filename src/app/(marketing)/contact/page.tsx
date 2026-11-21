@@ -46,7 +46,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           <div className="grid gap-6 lg:grid-cols-2 lg:items-end lg:gap-16">
             <div>
               <Eyebrow>{inquiryLabels[initialInquiry]}</Eyebrow>
-              <h1 className="mt-4 text-balance font-serif text-[clamp(2.75rem,5vw,4.75rem)] font-medium leading-[1.02]">
+              <h1 className="mt-4 text-balance font-serif text-[clamp(2.25rem,4vw,4rem)] font-medium leading-[1.02]">
                 Let&apos;s talk opals.
               </h1>
             </div>

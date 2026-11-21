@@ -1,6 +1,6 @@
 import '../globals.css'
 import type { Metadata } from 'next'
-import { Merriweather, EB_Garamond, Dancing_Script } from 'next/font/google'
+import { Figtree, EB_Garamond, Dancing_Script } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { OpalLight } from '@/components/brand/OpalLight'
@@ -9,10 +9,8 @@ import { InsightsTracker } from '@/components/analytics/InsightsTracker'
 import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE } from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
 
-// Self-hosted via next/font — no external CDN request, optimal loading
-const merriweather = Merriweather({
+const figtree = Figtree({
   subsets: ['latin'],
-  weight: ['300', '400', '700', '900'],
   variable: '--font-sans',
   display: 'swap',
   preload: true,
@@ -31,7 +29,7 @@ const dancingScript = Dancing_Script({
   weight: ['400', '500', '600', '700'],
   variable: '--font-accent',
   display: 'swap',
-  preload: false, // Only preload critical fonts
+  preload: false,
 })
 
 export const metadata: Metadata = {
@@ -73,22 +71,6 @@ export const metadata: Metadata = {
   },
 }
 
-/**
- * Marketing Layout
- *
- * This layout wraps all marketing pages (homepage, blog, etc.)
- * It applies Tailwind CSS styles and provides the HTML structure.
- *
- * NOTE: The (payload) route group has its own layout that does NOT
- * import globals.css to avoid conflicts with Payload admin styles.
- *
- * Fonts are self-hosted via next/font/google (no CDN dependency).
- * CSS variables --font-sans, --font-serif, --font-inter are injected
- * onto <html> and consumed by the design tokens in globals.css.
- *
- * Cart management now uses cookie-based storage with Server Actions,
- * eliminating the need for a CartProvider context.
- */
 export default function MarketingLayout({
   children,
 }: {
@@ -98,7 +80,7 @@ export default function MarketingLayout({
     <html
       lang={DEFAULT_LOCALE}
       dir={getTextDirection(DEFAULT_LOCALE)}
-      className={`${merriweather.variable} ${ebGaramond.variable} ${dancingScript.variable}`}
+      className={`${figtree.variable} ${ebGaramond.variable} ${dancingScript.variable}`}
     >
       <head>
         <link

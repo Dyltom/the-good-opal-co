@@ -39,7 +39,7 @@ export default async function CustomerQuotePage({
             </p>
             <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <h1 className="font-serif text-4xl text-charcoal sm:text-5xl">Your commission</h1>
+                <h1 className="font-serif text-3xl text-charcoal sm:text-4xl lg:text-5xl">Your commission</h1>
                 <p className="mt-2 font-sans text-sm text-charcoal/60">
                   {quote.quoteNumber}
                   {quote.revision > 1 ? ` · Revision ${quote.revision}` : ''}

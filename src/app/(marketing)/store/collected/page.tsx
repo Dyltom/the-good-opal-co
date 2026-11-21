@@ -36,7 +36,7 @@ export default async function CollectedPage() {
           <p className="mb-4 font-sans text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-charcoal/55">
             Recently collected
           </p>
-          <h1 className="max-w-[18ch] font-serif text-[clamp(2.5rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
+          <h1 className="max-w-[18ch] font-serif text-[clamp(2.1rem,3.4vw,3.5rem)] leading-[1.02] text-charcoal">
             Pieces that have found a home.
           </h1>
           <p className="mt-6 max-w-xl font-sans text-base leading-7 text-charcoal/70 sm:text-lg sm:leading-8">

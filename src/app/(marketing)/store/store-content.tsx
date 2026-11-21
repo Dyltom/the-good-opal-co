@@ -188,16 +188,16 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
 
   return (
     <>
-      <header className="border-b border-warm-grey/60 bg-cream px-5 py-6 sm:px-8 sm:py-16">
+      <header className="border-b border-warm-grey/60 bg-cream px-5 py-6 sm:px-8 sm:py-10">
         <div className="mx-auto grid max-w-[92rem] gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(23rem,0.65fr)] lg:items-end">
           <div>
             <Eyebrow className="mb-3 sm:mb-4">The collection</Eyebrow>
-            <h1 className="max-w-[18ch] font-serif text-[clamp(2rem,4.5vw,4.5rem)] leading-[1.02] text-charcoal">
+            <h1 className="max-w-[18ch] font-serif text-[clamp(1.85rem,2.8vw,3rem)] leading-[1.02] text-charcoal">
               Find the opal that stays with you.
             </h1>
           </div>
           <div className="hidden max-w-xl sm:block lg:pb-2">
-            <p className="text-charcoal/68 font-sans text-base leading-7 sm:text-lg sm:leading-8">
+            <p className="text-charcoal/68 font-sans text-base leading-7">
               One-of-a-kind Australian stones and finished pieces, photographed individually. Use
               the details you know, or browse slowly.
             </p>
@@ -210,7 +210,7 @@ export function StoreContent({ products, query, totalDocs, totalPages, facets }:
         </div>
       </header>
 
-      <section className="bg-cream-dark px-5 py-5 sm:px-8 sm:py-10" aria-label="Opal collection">
+      <section className="bg-cream-dark px-5 py-5 sm:px-8 sm:py-8" aria-label="Opal collection">
         <div className="mx-auto max-w-[92rem]">
           <form
             action="/store"

@@ -148,7 +148,7 @@ export default function FAQPage() {
                 <Eyebrow>
                   Buyer guide
                 </Eyebrow>
-                <h1 className="mt-5 text-balance font-serif text-5xl font-medium leading-none text-charcoal sm:text-6xl">
+                <h1 className="mt-5 text-balance font-serif text-4xl font-medium leading-none text-charcoal sm:text-5xl lg:text-6xl">
                   Clear answers before you choose.
                 </h1>
                 <p className="mt-7 max-w-xl font-sans text-lg leading-8 text-charcoal/70">

@@ -162,7 +162,7 @@
 
 #### Sans-Serif - Body & UI
 ```css
---font-sans: 'Merriweather', 'Georgia', serif;
+--font-sans: 'Figtree', system-ui, sans-serif;
 ```
 **Usage:** Body text, editorial copy, navigation, buttons, forms
 

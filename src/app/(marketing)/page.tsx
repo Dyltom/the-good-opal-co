@@ -140,11 +140,11 @@ export default function HomePage() {
       <MarketingShell mainClassName="pt-0">
         <HomeHero />
 
-        <section className="bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+        <section className="bg-cream px-5 py-12 sm:px-8 lg:px-12 lg:py-20">
           <div className="mx-auto max-w-[90rem]">
             <div className="mb-10 max-w-3xl lg:mb-12">
               <Eyebrow>Find your way in</Eyebrow>
-              <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl lg:text-6xl">
+              <h2 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal sm:text-4xl lg:text-5xl">
                 Choose by what matters to you.
               </h2>
             </div>
@@ -154,28 +154,28 @@ export default function HomePage() {
                 <Link
                   key={path.eyebrow}
                   href={path.href}
-                  className="group flex flex-col bg-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-opal-electric-accessible"
+                  className="group grid grid-cols-[7.5rem_1fr] bg-cream md:flex md:flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-opal-electric-accessible"
                 >
-                  <div className="relative aspect-[4/3] overflow-hidden border-b border-warm-grey/55 bg-cream-dark">
+                  <div className="relative aspect-square overflow-hidden border-r border-warm-grey/55 bg-cream-dark md:aspect-[4/3] md:border-b md:border-r-0">
                     <Image
                       src={path.image}
                       alt={path.alt}
                       fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
+                      sizes="(max-width: 768px) 7.5rem, 33vw"
                       className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] motion-reduce:transition-none"
                     />
                   </div>
-                  <div className="flex flex-1 flex-col justify-between p-7 sm:p-9">
+                  <div className="flex flex-1 flex-col justify-between p-5 md:p-9">
                     <div>
                       <Eyebrow>{path.eyebrow}</Eyebrow>
-                      <h3 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal lg:text-4xl">
+                      <h3 className="mt-4 text-balance font-serif text-2xl font-medium leading-tight text-charcoal lg:text-3xl">
                         {path.title}
                       </h3>
-                      <p className="text-charcoal/68 mt-4 font-sans text-sm leading-7 sm:text-base">
+                      <p className="text-charcoal/68 mt-4 hidden font-sans text-sm leading-7 sm:text-base md:block">
                         {path.copy}
                       </p>
                     </div>
-                    <span className="mt-8 inline-flex items-center gap-3 font-sans text-sm font-semibold text-charcoal">
+                    <span className="mt-3 inline-flex items-center gap-3 font-sans text-sm font-semibold text-charcoal md:mt-8">
                       {path.cta}
                       <ArrowRight
                         className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
@@ -189,12 +189,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-white px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+        <section className="bg-white px-5 py-12 sm:px-8 lg:px-12 lg:py-20">
           <div className="mx-auto max-w-[90rem]">
             <div className="mb-10 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
               <div>
                 <Eyebrow>Featured pieces</Eyebrow>
-                <h2 className="mt-4 font-serif text-4xl font-medium text-charcoal sm:text-5xl">
+                <h2 className="mt-4 font-serif text-3xl font-medium text-charcoal sm:text-4xl lg:text-5xl">
                   One stone, one piece.
                 </h2>
               </div>
@@ -211,7 +211,7 @@ export default function HomePage() {
         </section>
 
         <section className="overflow-hidden bg-charcoal text-cream">
-          <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 lg:py-24">
+          <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-2 lg:gap-20 lg:px-12 lg:py-20">
             <figure className="mx-auto w-full max-w-lg lg:max-w-[34rem]">
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-charcoal-dark">
                 <Image
@@ -228,7 +228,7 @@ export default function HomePage() {
             </figure>
             <div className="max-w-xl">
               <Eyebrow className="text-opal-light">Nothing retouched</Eyebrow>
-              <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl">
+              <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
                 Every flash you see is in the stone.
               </h2>
               <p className="text-cream/72 mt-6 font-sans text-base leading-8 sm:text-lg">
@@ -257,10 +257,10 @@ export default function HomePage() {
         <ReviewsSection
           eyebrow="Customer reviews"
           title="In their words."
-          className="mx-auto max-w-[90rem] px-5 py-16 sm:px-8 lg:px-12 lg:py-24"
+          className="mx-auto max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-20"
         />
 
-        <section className="border-t border-warm-grey/55 bg-cream px-5 py-16 sm:px-8 lg:px-12 lg:py-24">
+        <section className="border-t border-warm-grey/55 bg-cream px-5 py-12 sm:px-8 lg:px-12 lg:py-20">
           <div className="mx-auto grid max-w-[90rem] items-center gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div className="relative mx-auto aspect-[4/5] w-full max-w-sm overflow-hidden bg-cream-dark">
               <Image
@@ -273,7 +273,7 @@ export default function HomePage() {
             </div>
             <div className="max-w-2xl">
               <Eyebrow>Meet Steph</Eyebrow>
-              <h2 className="mt-4 text-balance font-serif text-4xl font-medium leading-tight text-charcoal sm:text-5xl">
+              <h2 className="mt-4 text-balance font-serif text-3xl font-medium leading-tight text-charcoal sm:text-4xl lg:text-5xl">
                 The person behind the stones.
               </h2>
               <p className="text-charcoal/72 mt-6 font-sans text-base leading-8">
@@ -313,10 +313,10 @@ export default function HomePage() {
               className="object-cover"
             />
           </div>
-          <div className="flex items-center px-6 py-16 sm:px-10 lg:px-16 lg:py-24">
+          <div className="flex items-center px-6 py-12 sm:px-10 lg:px-16 lg:py-20">
             <div className="max-w-xl">
               <Eyebrow className="text-opal-light">Custom work</Eyebrow>
-              <h2 className="mt-5 text-balance font-serif text-4xl font-medium leading-tight sm:text-5xl lg:text-6xl">
+              <h2 className="mt-5 text-balance font-serif text-3xl font-medium leading-tight sm:text-4xl lg:text-5xl">
                 Begin with the stone, not a template.
               </h2>
               <p className="text-cream/72 mt-6 font-sans text-base leading-8 sm:text-lg">

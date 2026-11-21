@@ -40,13 +40,13 @@ typography:
     lineHeight: 1.3
     letterSpacing: "0"
   body:
-    fontFamily: "Merriweather, Georgia, serif"
+    fontFamily: "Figtree, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: "0"
   label:
-    fontFamily: "Merriweather, Georgia, serif"
+    fontFamily: "Figtree, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.375
@@ -176,11 +176,12 @@ orbs, or bokeh backgrounds as default atmosphere.
 ## 3. Typography
 
 **Display Font:** EB Garamond with Georgia fallback.
-**Body Font:** Merriweather with Georgia fallback.
+**Body Font:** Figtree with system-ui fallback.
 **Accent Font:** Dancing Script, reserved for emotional moments.
 
-**Character:** The pairing is literary, warm, and handmade. EB Garamond carries
-luxury and story; Merriweather keeps buying, education, and form copy readable.
+**Character:** EB Garamond carries luxury and story in headings; Instrument
+Sans keeps buying, education, navigation and form copy crisp and compact. A
+serif body face made every line read large and heavy next to the stones.
 Dancing Script is a rare accent, not a working UI font.
 
 ### Hierarchy

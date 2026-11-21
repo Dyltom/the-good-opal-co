@@ -46,7 +46,7 @@ export default function CookiePolicyPage() {
           <Eyebrow>
             Privacy choices
           </Eyebrow>
-          <h1 className="mt-2 font-serif text-4xl font-semibold text-charcoal sm:text-5xl">
+          <h1 className="mt-2 font-serif text-3xl font-semibold text-charcoal sm:text-4xl lg:text-5xl">
             Cookie Policy
           </h1>
           <p className="mt-3 font-sans text-sm text-charcoal/60">Last updated 20 November 2026</p>
