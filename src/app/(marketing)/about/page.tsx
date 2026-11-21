@@ -7,6 +7,7 @@ import { MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, JsonLd, OrganizationJsonLd } from '@/components/seo'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
+import { cn } from '@/lib/utils'
 
 export const metadata: Metadata = {
   title: 'Our Story | The Good Opal Co',
@@ -16,12 +17,10 @@ export const metadata: Metadata = {
 }
 export const dynamic = 'force-dynamic'
 
-const founderPortrait: { src: string; alt: string } | null = null
-
 const aboutHeroImages = [
-  { src: '/images/studio/halo-opal-ring.jpg', alt: 'An oval white opal in a silver halo ring' },
-  { src: '/images/studio/heart-opal.jpg', alt: 'A heart-shaped white Australian opal' },
-  { src: '/images/studio/black-opal.jpg', alt: 'A loose black opal with green and blue flashes' },
+  { src: '/images/products/20210819_102749.jpg', alt: 'A white opal in a beaded silver halo ring, worn on a finger' },
+  { src: '/images/products/20211129_164004-1-1.jpg', alt: 'A polished black opal with green and orange fire' },
+  { src: '/images/products/20211104_231959.jpg', alt: 'A polished white opal with green fire, held between two fingers' },
 ]
 
 const stephQuotes = [
@@ -109,17 +108,21 @@ export default async function AboutPage() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 items-center gap-3 bg-cream-dark px-5 py-10 sm:gap-5 sm:px-10 lg:px-12">
+            <div className="grid items-center gap-3 bg-cream-dark px-5 py-10 sm:grid-cols-3 sm:gap-5 sm:px-10 lg:px-12">
               {aboutHeroImages.map((image, index) => (
                 <div
                   key={image.src}
-                  className={`relative aspect-[4/5] overflow-hidden bg-cream ${index === 1 ? '' : 'lg:translate-y-8'}`}
+                  className={cn(
+                    'relative overflow-hidden bg-cream sm:aspect-[4/5]',
+                    index === 0 ? 'aspect-[4/3]' : 'hidden sm:block',
+                    index !== 1 && 'lg:translate-y-8'
+                  )}
                 >
                   <Image
                     src={image.src}
                     alt={image.alt}
                     fill
-                    sizes="(max-width: 1024px) 33vw, 18vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 18vw"
                     className="object-cover"
                     priority
                   />
@@ -152,19 +155,7 @@ export default async function AboutPage() {
             </div>
           </section>
 
-          <section
-            aria-labelledby="steph-heading"
-            className={
-              founderPortrait
-                ? 'mt-20 grid gap-10 lg:mt-28 lg:grid-cols-[0.8fr_1.2fr] lg:gap-24'
-                : 'mt-20 lg:mt-28'
-            }
-          >
-            {founderPortrait ? (
-              <div className="relative aspect-[4/5] overflow-hidden bg-cream-dark">
-                <Image src={founderPortrait.src} alt={founderPortrait.alt} fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" />
-              </div>
-            ) : null}
+          <section aria-labelledby="steph-heading" className="mt-20 lg:mt-28">
             <div>
               <Eyebrow>
                 In Steph&apos;s words
@@ -177,7 +168,7 @@ export default async function AboutPage() {
                 cutting machine on a budget, and how opal from each field behaves on the wheel. A few
                 lines from those guides.
               </p>
-              <ul className={founderPortrait ? 'mt-10 space-y-10' : 'mt-12 grid gap-10 md:grid-cols-3 md:gap-8'}>
+              <ul className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
                 {stephQuotes.map((quote) => (
                   <li key={quote.post} className="border-t border-warm-grey/60 pt-6">
                     <figure>
@@ -229,8 +220,8 @@ export default async function AboutPage() {
           <section className="mt-20 grid items-center gap-10 lg:mt-28 lg:grid-cols-2 lg:gap-20">
             <div className="relative aspect-[4/5] overflow-hidden bg-charcoal">
               <Image
-                src="/images/founders.jpg"
-                alt="A polished Australian opal viewed under direct light"
+                src="/images/products/20211129_165058-1-3-1.jpg"
+                alt="A triangular crystal opal and two smaller opals on a dark stone surface in strong light"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"

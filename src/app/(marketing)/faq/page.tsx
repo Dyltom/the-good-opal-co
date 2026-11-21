@@ -157,8 +157,8 @@ export default function FAQPage() {
               </div>
               <div className="relative aspect-[4/3] overflow-hidden bg-cream-dark">
                 <Image
-                  src="/images/studio/white-opal.jpg"
-                  alt="A polished white Australian opal with green flashes"
+                  src="/images/products/20211012_174237.jpg"
+                  alt="Three polished white opals on a dark stone surface"
                   fill
                   sizes="(max-width: 1024px) 100vw, 40vw"
                   className="object-cover"
