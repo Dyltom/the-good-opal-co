@@ -82,11 +82,41 @@ const nextConfig: NextConfig = {
       ['/product-tag/earrings', '/store?category=opal-earrings'],
       ['/product-tag/opal-earrings', '/store?category=opal-earrings'],
       ['/product-tag/opal-studs', '/store?category=opal-earrings'],
+      ['/blog/top-10-tips-for-buying-opal-jewellery', '/blog/top-10-tips-for-buying-opal-jewellery-online'],
+      [
+        '/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/top-10-tips-for-buying-opal-jewellery',
+        '/blog/top-10-tips-for-buying-opal-jewellery-online',
+      ],
     ] as const
+    const legacyPostSlugs = [
+      'andamooka-opal',
+      'coober-pedy-opal',
+      'diy-jewellery-hack',
+      'diy-opal-cutting-machine',
+      'dreamtime-origins-of-opal',
+      'how-opal-is-mined',
+      'how-to-value-opal',
+      'is-investing-in-opal-worth-it',
+      'jewellery-hack-ring-sizing',
+      'learn-about-opal-fact-or-fiction',
+      'learn-how-to-cut-opal-cabbing-101',
+      'lightning-ridge-opal',
+      'mintabie-opal',
+      'opal-cutting-a-beginners-guide',
+      'queensland-boulder-opal',
+      'top-10-opal-jewellery-making-tips',
+      'top-10-tips-for-buying-opal-jewellery-online',
+      'what-to-do-in-lightning-ridge',
+    ]
 
     return [
       ...legacyPages.map(([source, destination]) => ({ source, destination, permanent: true })),
-      { source: '/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug', destination: '/blog/:slug', permanent: true },
+      {
+        source: `/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug(${legacyPostSlugs.join('|')})`,
+        destination: '/blog/:slug',
+        permanent: true,
+      },
+      { source: '/:year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:slug', destination: '/blog', permanent: true },
       { source: '/:year(\\d{4})/:month(\\d{2})?', destination: '/blog', permanent: true },
       { source: '/product/:slug', destination: '/store/:slug', permanent: true },
       { source: '/product-category/:path*', destination: '/store', permanent: true },

@@ -8,4 +8,5 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   { href: '/services', label: 'Custom rings' },
   { href: '/courses', label: 'Courses' },
   { href: '/about', label: 'Our story' },
+  { href: '/blog', label: 'Journal' },
 ]
