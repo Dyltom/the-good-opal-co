@@ -4,6 +4,8 @@ This guide covers the everyday jobs on the new goodopalco.com, roughly in the or
 
 The guide uses the names you will see in the admin. The admin is the private back office where you add pieces, see orders and answer enquiries.
 
+The same guide is inside the admin: click **Owner guide** under **Help** at the top of the menu, or the link at the top of the dashboard. The Products, Orders, Custom Quotes and Enquiries lists also have "How to" links that jump to the right section.
+
 ## 1. Logging in
 
 1. Go to https://goodopalco.com/admin.
@@ -25,6 +27,7 @@ The menu down the left side groups everything:
 - **CRM**: Customers, Enquiries and Custom Quotes. Custom Quote Events is a history log you never need to edit.
 - **Education**: Courses.
 - **Insights**: Insight Events, the raw visit records behind Store insights.
+- **Help > Owner guide**: this guide.
 - **Reports**: Store insights, your shop dashboard (see section 11).
 
 ## 2. Where to edit your pieces
@@ -47,9 +50,9 @@ The new site has an automatic copy from the old shop, and it is switched off. If
    - A short line written as "Label: value", for example "Setting: Sterling silver", is shown in the piece's details table instead of as a paragraph. "Inclusions: ..." becomes its own row too.
    - The page stops showing the description at the first paragraph that starts with "Please note", "Priced in AUD", "All images and videos are taken", "If you have any queries" or "Message sent". Put anything you want buyers to read above those.
    - If you include the sentence about photos being taken under white light and not edited, the page shows: "Photographed under white light. Studio shots have the background replaced; the stone is never retouched." Only include it when it is true for that piece.
-5. **Price**: the full price in Australian dollars, exactly what the buyer pays for the piece. The site does not add GST or show GST separately. If you need GST shown on prices or receipts, ask Dylan before launch.
+5. **Price**: the full price in Australian dollars, including GST, exactly what the buyer pays for the piece. The site shows "incl. GST" next to prices and totals, and the order emails show the GST included in the total (one eleventh of it). Nothing is added at checkout: Stripe charges the price you enter, plus postage, which also includes GST.
 6. **Compare At Price** (the original price): only fill this in for a genuine reduction. The shop then shows the old price crossed out and "Save X%". Leave it empty otherwise.
-7. **Category**: choose one of Opal Rings, Opal Necklaces & Pendants, Opal Earrings, Opal Bracelets, Raw Opals or Custom Commissions.
+7. **Category**: choose one of Opal Rings, Opal Necklaces & Pendants, Opal Earrings, Opal Bracelets, Raw Opals or Custom Commissions. Custom Commissions pages tell buyers that custom work is not eligible for change-of-mind returns.
 8. **Stock**: how many you have. For a one-of-a-kind piece, enter **1**. The page then says "One of a kind" and "This exact stone is the one you receive." 0 means sold.
 9. Fill in the details that apply. Each one appears on the piece's page:
    - **Material** (for example Sterling Silver or 18K Gold, or "None (Raw Opal)").
@@ -138,14 +141,38 @@ Use **Notes** on an order for anything private. Buyers never see it.
 
 All money is handled in your **Stripe dashboard**, not in the admin.
 
+### What the returns page promises
+
+This is what goodopalco.com/returns tells buyers:
+
+- **Change of mind**: they contact you within 30 days of delivery, and the piece must be unused and in its original condition and packaging. They pay the return postage. You refund the price of the piece, not the original shipping.
+- **Custom work**: commissions, custom rings, stones or parcels cut to order, and the deposit for custom work cannot be returned for a change of mind.
+- **Faulty, damaged, not as described or the wrong item**: the Australian Consumer Law applies, custom work included. You repair, replace or refund depending on the problem. You cover the return postage, and a refund includes the original shipping.
+- Refunds go back to the original payment method. Stripe says they take 5 to 10 business days to appear.
+
 ### Refunds
 
-1. Find the payment in Stripe and refund it (in full or in part).
-2. Stripe tells the site, and the order updates itself:
-   - **Full refund**: the order changes to **Refunded**, and the piece's stock goes back up by one, so **it goes back on sale**. If the piece is not coming back to you, set its stock to 0 or archive it.
-   - **Partial refund**: the order keeps its status, a note records the refund, and stock is not changed.
+Step by step:
 
-The admin will not let you set an order to Refunded by hand. Refund in Stripe first.
+1. **The buyer contacts you first.** It usually arrives as an enquiry with the type "Return or exchange". Agree the return by email and tell them where to post it. For a faulty or incorrect item, arrange and pay for the return postage.
+2. **Check the piece when it arrives.**
+3. **Refund in Stripe.** In your Stripe dashboard, open **Payments**, find the payment (search by the buyer's email) and click **Refund**.
+4. **Choose the amount.**
+   - Change of mind: the price of the piece. If the buyer paid for shipping, this is less than the total, so Stripe treats it as a partial refund.
+   - Faulty, damaged or incorrect: the full amount, shipping included.
+   - Stripe sends the money back to the card or wallet they paid with. For Klarna payments Stripe refunds through Klarna, which adjusts the buyer's payment plan. Stripe does not give back its own processing fee on a refund.
+5. **The site updates itself.** Stripe tells the site within a minute or so:
+   - **Full refund** (the whole order total): the order changes to **Refunded**, and every piece in it has its stock put back up by the number bought, so **it goes back on sale**.
+   - **Partial refund**: the order keeps its status and stock is not changed.
+   - Either way, a line is added to the order's **Notes** with the amount refunded so far, and the buyer's **Total spent** in Customers goes down by the refund.
+6. **What you do by hand:**
+   - **Email the buyer** to say the refund is done. The site does not send a refund email. Stripe can send them a refund receipt if refund emails are turned on in your Stripe email settings.
+   - **Fix the stock.** After a partial refund for a piece that came back, set its stock back to 1 (or the right number) if you want to sell it again. After a full refund for a piece that is not coming back, or that you cannot sell again, set its stock to 0 or archive it.
+   - **Add a note** to the order saying why it was refunded.
+
+The admin will not let you set an order to Refunded by hand, so after a partial refund the order keeps its old status. Refund in Stripe first and let the order update itself.
+
+**Deposits for custom work** are refunded in Stripe the same way. A full refund marks the quote's deposit as refunded. Any deposit refund moves the enquiry back to **Accepted**, so set it to **Declined** or **Completed** afterwards. Custom work and its deposit are not covered by change-of-mind returns, but you can still choose to refund one.
 
 ### Disputes (chargebacks)
 
@@ -222,7 +249,7 @@ The customer receives "Your custom jewellery quote – QUOTE-..." with a private
 
 You are emailed at each step: "Quote accepted - QUOTE-..." when the customer accepts, and "Deposit paid - QUOTE-..." when the deposit arrives.
 
-Refund a deposit in Stripe, the same as an order.
+Custom work and its deposit are not covered by change-of-mind returns; the quote page and quote email tell the customer this before they accept. To refund a deposit, see Refunds in section 6.
 
 ## 10. Reviews, blog posts, courses and other pages
 
@@ -316,4 +343,4 @@ Your copies go to the shop's contact email address. To change that address, ask 
 
 ## 14. Who to ask
 
-Ask Dylan for anything not covered here, including new admin accounts, page wording, postage prices, GST on prices, newsletters, the ring designer and anything that looks wrong.
+Ask Dylan for anything not covered here, including new admin accounts, page wording, postage prices, newsletters, the ring designer and anything that looks wrong.

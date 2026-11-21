@@ -111,7 +111,8 @@ export function CustomQuoteEmail({
                   }}
                 >
                   We&apos;ve prepared the details for your one-of-a-kind piece. You can securely
-                  review the design, pricing, deposit and terms before deciding whether to accept.
+                  review the design, pricing, deposit and terms before deciding whether to accept. Custom
+                  work, including its deposit, is not eligible for change-of-mind returns.
                 </p>
 
                 <table

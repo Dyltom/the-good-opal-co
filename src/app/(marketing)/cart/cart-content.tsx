@@ -109,7 +109,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
               Your bag
             </h1>
             <p className="mt-1.5 text-[13px] text-ink-2" aria-live="polite">
-              {cart.itemCount} {cart.itemCount === 1 ? 'piece' : 'pieces'}, all prices in AUD
+              {cart.itemCount} {cart.itemCount === 1 ? 'piece' : 'pieces'}, all prices in AUD incl. GST
             </p>
           </div>
           <Button
@@ -163,7 +163,9 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                   <dd>{pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}</dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-4 pt-3">
-                  <dt className="font-medium">Estimated total</dt>
+                  <dt className="font-medium">
+                    Estimated total <span className="text-[12.5px] font-normal text-ink-2">incl. GST</span>
+                  </dt>
                   <dd className="text-xl font-medium">{formatCurrency(pricing.total, 'AUD')}</dd>
                 </div>
               </dl>
@@ -206,7 +208,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
       >
         <div className="mx-auto flex max-w-screen-sm items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-[12.5px] text-ink-2">Estimated total</p>
+            <p className="text-[12.5px] text-ink-2">Estimated total incl. GST</p>
             <p className="text-lg font-medium leading-6 text-ink">{formatCurrency(pricing.total, 'AUD')}</p>
           </div>
           <div className="flex-1">

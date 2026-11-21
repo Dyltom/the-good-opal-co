@@ -275,7 +275,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <span className="text-[22px] font-medium leading-tight text-ink md:text-2xl">
                     {formatCurrency(product.price, 'AUD')}
                   </span>
-                  <span className="text-[13px] text-ink-2">AUD</span>
+                  <span className="text-[13px] text-ink-2">AUD incl. GST</span>
                   {discount && product.compareAtPrice ? (
                     <span className="text-[13px] text-ink-2">
                       <span className="line-through">{formatCurrency(product.compareAtPrice, 'AUD')}</span>{' '}
@@ -370,7 +370,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
                         <span className="font-medium text-ink-3">Returns</span>
                         <span>
-                          30-day change-of-mind returns on eligible unused pieces.{' '}
+                          {isDeposit
+                            ? 'Custom work is not eligible for change-of-mind returns. Australian Consumer Law rights still apply.'
+                            : '30-day change-of-mind returns on eligible unused pieces.'}{' '}
                           <Link href="/returns" className="text-ink underline underline-offset-4">
                             Policy
                           </Link>

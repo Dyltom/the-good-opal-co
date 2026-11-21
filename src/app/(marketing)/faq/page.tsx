@@ -61,7 +61,12 @@ const faqCategories = [
       {
         question: 'Which items are excluded from change-of-mind returns?',
         answer:
-          'Custom, personalised, altered, worn, hygiene-sensitive, and final-sale pieces are not eligible for change-of-mind returns. These exclusions do not limit your automatic rights under the Australian Consumer Law when an item is faulty or materially different from its description.',
+          'Custom work is not eligible for change-of-mind returns. That covers commissions, custom rings, stones or parcels cut to order, and the deposit paid for custom work. Personalised, altered, worn, hygiene-sensitive, and final-sale pieces are excluded too. These exclusions do not limit your automatic rights under the Australian Consumer Law when an item is faulty or materially different from its description.',
+      },
+      {
+        question: 'How do refunds work?',
+        answer:
+          'Contact us first, then return the piece once we confirm the steps. We refund to your original payment method through Stripe, and Klarna purchases are refunded through Klarna. A change-of-mind refund covers the item price; for a faulty or incorrect item we also refund the original shipping. Stripe says refunds usually take 5 to 10 business days to appear. Full details are on the returns page.',
       },
     ],
   },
@@ -72,6 +77,11 @@ const faqCategories = [
         question: 'How is payment handled?',
         answer:
           'Available payment methods appear at checkout. Payment details are collected and processed by Stripe, and The Good Opal Co does not store your full card number.',
+      },
+      {
+        question: 'Do prices include GST?',
+        answer:
+          'Yes. All prices and shipping charges are in Australian dollars (AUD) and include GST. Your order confirmation email shows the GST included in the total. International orders pay the same price; import duties and local taxes in the destination country are the recipient’s responsibility.',
       },
       {
         question: 'What should I do if something is wrong with my order?',
@@ -117,6 +127,11 @@ const faqCategories = [
         question: 'How are custom price and timing decided?',
         answer:
           'Both depend on the chosen opal, metal, design complexity, specialist work, and current availability. We provide the agreed scope, expected timing, price, and payment stages for your project before work begins.',
+      },
+      {
+        question: 'Can I return custom work?',
+        answer:
+          'Not for a change of mind. Commissions, custom rings, stones or parcels cut to order, and the deposit paid to start them are made for you, so they are excluded from change-of-mind returns. If custom work is faulty or not as agreed, your rights under the Australian Consumer Law still apply.',
       },
       {
         question: 'Can you work with an opal I already own?',
