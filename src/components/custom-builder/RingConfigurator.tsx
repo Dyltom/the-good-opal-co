@@ -713,7 +713,7 @@ export function RingConfigurator({
                 <span className="sr-only">Your concept: </span>
                 {description}
               </p>
-              <p className="mt-1 text-base font-medium tabular-nums text-ink sm:text-lg">
+              <p className="mt-1 text-base font-medium text-ink sm:text-lg">
                 {estimateTotal ? (
                   <>
                     Subtotal {estimateTotal}{' '}
