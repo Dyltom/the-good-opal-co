@@ -255,7 +255,7 @@ function CartDrawerItem({
             onClick={onRemove}
             disabled={isPending || isRemoving}
             className="ml-auto flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center text-ink-3 transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label={`Remove ${item.name} from cart`}
+            aria-label={`Remove ${item.name} from bag`}
           >
             <Trash2 className="h-4 w-4" />
           </button>
