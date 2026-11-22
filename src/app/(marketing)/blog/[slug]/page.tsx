@@ -57,6 +57,28 @@ function sectionHeadings(content: unknown): { id: string; text: string }[] {
     .filter((heading) => heading.id)
 }
 
+function faqEntries(content: unknown): { question: string; answer: string }[] {
+  const nodes = ((content as { root?: ContentNode } | null)?.root?.children ?? []) as ContentNode[]
+  const start = nodes.findIndex(
+    (node) =>
+      node.type === 'heading' &&
+      node.tag === 'h2' &&
+      /^questions people ask/i.test(extractPlainText(node))
+  )
+  if (start === -1) return []
+  const entries: { question: string; answer: string }[] = []
+  for (const node of nodes.slice(start + 1)) {
+    if (node.type === 'heading' && node.tag === 'h2') break
+    if (node.type === 'heading' && node.tag === 'h3') {
+      entries.push({ question: extractPlainText(node), answer: '' })
+    } else {
+      const last = entries.at(-1)
+      if (last) last.answer = [last.answer, extractPlainText(node)].filter(Boolean).join(' ')
+    }
+  }
+  return entries.filter((entry) => entry.question && entry.answer)
+}
+
 const postConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
   heading: ({ node, nodesToJSX }) => {
@@ -188,6 +210,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const standfirst = excerpt && !/(…|\.\.\.|\[\s*…\s*\])$/.test(excerpt) ? excerpt : undefined
   const headings = sectionHeadings(post.content)
   const picks = await shopPicks(post)
+  const faqs = faqEntries(post.content)
   const metaParts: ReactNode[] = [
     ...categories.map((category) => (
       <Link
@@ -237,6 +260,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   return (
     <MarketingShell>
       <JsonLd data={blogPosting} />
+      {faqs.length >= 2 ? (
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: faqs.map((faq) => ({
+              '@type': 'Question',
+              name: faq.question,
+              acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+            })),
+          }}
+        />
+      ) : null}
       <BreadcrumbJsonLd
         items={[
           { name: 'Home', url: '/' },
