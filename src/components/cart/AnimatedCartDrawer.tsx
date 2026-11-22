@@ -21,7 +21,7 @@ import {
   useShippingRegion,
 } from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
-import { calculateShipping } from '@/lib/constants/shipping'
+import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
@@ -99,7 +99,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
   const items = cart?.items ?? []
   const itemCount = cart?.itemCount ?? 0
   const total = cart?.total ?? 0
-  const shipping = calculateShipping(total, region === 'INTL' ? 'INTERNATIONAL' : 'AUSTRALIA')
+  const pricing = calculateCheckoutPricing(items, region === 'INTL' ? 'INTERNATIONAL' : 'AUSTRALIA')
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -110,7 +110,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
             Your bag <span className="font-sans text-sm text-ink-3">({itemCount})</span>
           </SheetTitle>
           <SheetDescription className="sr-only">
-            Review your cart items, update quantities, track free shipping progress, and continue to
+            Review the pieces in your bag, update quantities, track free shipping progress, and continue to
             secure checkout.
           </SheetDescription>
         </SheetHeader>
@@ -152,10 +152,14 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
                   Shipping {region === 'INTL' ? 'overseas' : 'within Australia'}
                 </span>
                 <span className="text-ink">
-                  {shipping === 0 ? 'Free' : formatCurrency(shipping, 'AUD')}
+                  {pricing.shippedSubtotal === 0
+                    ? 'None'
+                    : pricing.shipping === 0
+                      ? 'Free'
+                      : formatCurrency(pricing.shipping, 'AUD')}
                 </span>
               </div>
-              <FreeShippingProgress total={total} />
+              {pricing.shippedSubtotal > 0 ? <FreeShippingProgress total={pricing.shippedSubtotal} /> : null}
               <div className="space-y-2">
                 {cart ? (
                   <>
@@ -251,7 +255,7 @@ function CartDrawerItem({
             onClick={onRemove}
             disabled={isPending || isRemoving}
             className="ml-auto flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center text-ink-3 transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label={`Remove ${item.name} from cart`}
+            aria-label={`Remove ${item.name} from bag`}
           >
             <Trash2 className="h-4 w-4" />
           </button>

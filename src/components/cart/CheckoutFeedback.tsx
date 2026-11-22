@@ -80,7 +80,7 @@ export function CheckoutFeedback({ source, onClose, onSent, className }: Checkou
           </h2>
           <p className="mt-1 text-sm leading-6 text-ink-2">
             {source === 'cancelled'
-              ? 'No rush, your pieces are still in your cart. If you have a moment, what held you back?'
+              ? 'No rush, your pieces are still in your bag. If you have a moment, what held you back?'
               : 'Tell us what is holding you back. It helps us make the shop better.'}
           </p>
           <fieldset className="mt-4">

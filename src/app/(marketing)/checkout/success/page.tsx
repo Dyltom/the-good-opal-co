@@ -34,7 +34,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   const stripeSecretKey = getConfiguredStripeSecretKey()
   if (!stripeSecretKey) {
     error =
-      'Payment verification is temporarily unavailable. Your cart has not been cleared. Please contact support if you were charged.'
+      'Payment verification is temporarily unavailable. Your bag has not been cleared. Please contact support if you were charged.'
   } else {
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2026-06-24.dahlia',

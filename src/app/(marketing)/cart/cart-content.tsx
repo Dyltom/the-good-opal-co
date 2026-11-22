@@ -44,7 +44,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
   const closeFeedback = () => setFeedback(null)
   const markFeedbackSent = () => setFeedbackSent(true)
   const pricing = calculateCheckoutPricing(
-    cart.total,
+    cart.items,
     region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
   )
 
@@ -160,7 +160,13 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                 </div>
                 <div className="flex justify-between gap-4 border-b border-rule py-2">
                   <dt className="text-ink-2">Shipping</dt>
-                  <dd>{pricing.shipping === 0 ? 'Free' : formatCurrency(pricing.shipping, 'AUD')}</dd>
+                  <dd>
+                    {pricing.shippedSubtotal === 0
+                      ? 'None'
+                      : pricing.shipping === 0
+                        ? 'Free'
+                        : formatCurrency(pricing.shipping, 'AUD')}
+                  </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-4 pt-3">
                   <dt className="font-medium">
@@ -170,7 +176,9 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                 </div>
               </dl>
 
-              <FreeShippingProgress total={cart.total} className="mt-4" />
+              {pricing.shippedSubtotal > 0 ? (
+                <FreeShippingProgress total={pricing.shippedSubtotal} className="mt-4" />
+              ) : null}
 
               <CheckoutButton cart={cart} region={region} className="mt-4 h-12 w-full text-[15px] max-lg:hidden" />
               <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">

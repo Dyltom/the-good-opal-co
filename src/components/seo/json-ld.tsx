@@ -183,10 +183,10 @@ export function productStructuredData(
         product.category === 'custom-commissions'
           ? customWorkReturnPolicy
           : merchantReturnPolicyStructuredData(),
-      shippingDetails: [
-        shippingDetails(product.price, 'AUSTRALIA'),
-        shippingDetails(product.price, 'INTERNATIONAL'),
-      ],
+      shippingDetails:
+        product.category === 'custom-commissions'
+          ? undefined
+          : [shippingDetails(product.price, 'AUSTRALIA'), shippingDetails(product.price, 'INTERNATIONAL')],
     },
   }
 }

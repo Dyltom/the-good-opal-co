@@ -37,7 +37,7 @@ export function CartClearConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Remove every item?</AlertDialogTitle>
           <AlertDialogDescription>
-            This removes {itemText} from your cart. This action cannot be undone.
+            This removes {itemText} from your bag. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

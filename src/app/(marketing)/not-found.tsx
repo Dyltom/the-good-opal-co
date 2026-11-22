@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: 'Page not found | The Good Opal Co',
+  robots: { index: false, follow: true },
 }
 
 export default function NotFound() {

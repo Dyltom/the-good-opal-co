@@ -89,17 +89,17 @@ export function AddToCartButton({
         setTimeout(() => setIsSuccess(false), 2000)
       } else if (await isAlreadyInCart(product.id)) {
         toast({
-          title: 'Already in your cart',
-          description: `${product.name} is one of a kind and is already in your cart.`,
+          title: 'Already in your bag',
+          description: `${product.name} is one of a kind and is already in your bag.`,
           action: (
-            <ToastAction altText="View cart" asChild className="min-h-11">
-              <Link href="/cart">View cart</Link>
+            <ToastAction altText="View bag" asChild className="min-h-11">
+              <Link href="/cart">View bag</Link>
             </ToastAction>
           ),
         })
       } else {
         toast({
-          title: "Couldn't add to cart",
+          title: "Couldn't add to bag",
           description: result.error ?? 'Please try again in a moment.',
           variant: 'destructive',
         })
@@ -147,7 +147,7 @@ export function AddToCartButton({
         type="submit"
         onClick={handleClick}
         disabled={disabled || isPending}
-        aria-label={`Add ${product.name} to cart`}
+        aria-label={`Add ${product.name} to bag`}
         className={cn(
           "relative flex items-center justify-center rounded-full border border-rule bg-bg text-ink shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
           iconSizeClasses[size],
@@ -233,7 +233,7 @@ export function AddToCartButton({
               className="flex items-center gap-2"
             >
               <ShoppingBag size={iconSize[size]} />
-              {children || 'Add to cart'}
+              {children || 'Add to bag'}
             </motion.span>
           )}
         </AnimatePresence>
@@ -295,7 +295,7 @@ export function AddToCartButton({
             ) : (
               <>
                 <ShoppingBag size={iconSize[size]} />
-                <span>{children || 'Add to cart'}</span>
+                <span>{children || 'Add to bag'}</span>
               </>
             )}
           </motion.div>

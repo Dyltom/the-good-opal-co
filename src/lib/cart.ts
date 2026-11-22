@@ -29,6 +29,7 @@ export interface CartItem {
   quantity: number
   maxQuantity?: number
   image?: string
+  deposit?: boolean
 }
 
 /**
@@ -149,6 +150,7 @@ export async function getCart(): Promise<Cart> {
             quantity: Math.min(item.quantity, availableStock),
             maxQuantity: availableStock,
             image,
+            deposit: product.category === 'custom-commissions',
           })
         }
         // Skip items that are no longer available or out of stock
@@ -237,7 +239,7 @@ export async function addItemToCartWithQuantity(
   const availableStock = await stockForBuyer(product)
   if (availableStock < requestedTotalQuantity) {
     throw new Error(
-      `Insufficient stock available. Only ${availableStock} items in stock, but ${requestedTotalQuantity} requested.`
+      `Only ${availableStock} available, and your bag would need ${requestedTotalQuantity}.`
     )
   }
 
@@ -258,7 +260,7 @@ export async function addItemToCartWithQuantity(
         : undefined) ?? ownedProductImageUrl(product.slug)
 
     if (cart.items.length >= MAX_CART_LINES) {
-      throw new Error(`Your cart can contain up to ${MAX_CART_LINES} different items`)
+      throw new Error(`Your bag can hold up to ${MAX_CART_LINES} different pieces`)
     }
 
     cart.items.push({
@@ -268,6 +270,7 @@ export async function addItemToCartWithQuantity(
       price: product.price,
       quantity,
       image,
+      deposit: product.category === 'custom-commissions',
     })
   }
 
@@ -326,7 +329,7 @@ export async function updateCartItemQuantity(productId: string, quantity: number
 
   const availableStock = await stockForBuyer(product)
   if (availableStock < quantity) {
-    throw new Error(`Insufficient stock available. Only ${availableStock} items in stock.`)
+    throw new Error(`Only ${availableStock} available.`)
   }
 
   const item = cart.items.find((i) => i.productId === productId)

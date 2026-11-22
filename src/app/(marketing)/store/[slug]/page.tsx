@@ -361,8 +361,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
                         <span className="font-medium text-ink-3">Shipping</span>
                         <span>
-                          {productShippingProgress.qualifies
-                            ? 'Free tracked shipping.'
+                          {isDeposit
+                            ? 'No shipping charge on the deposit, and it does not count towards free shipping.'
+                            : productShippingProgress.qualifies
+                              ? 'Free tracked shipping.'
                             : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD international. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
                           <Link href="/shipping" className="text-ink underline underline-offset-4">
                             Rates
@@ -391,7 +393,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       </span>
                     </li>
                   ) : null}
-                  {sold ? null : (
+                  {sold || isDeposit ? null : (
                     <li className="grid grid-cols-[104px_minmax(0,1fr)] gap-3">
                       <span className="font-medium text-ink-3">Viewing</span>
                       <Link href={viewingHref} className="justify-self-start text-ink underline underline-offset-4">

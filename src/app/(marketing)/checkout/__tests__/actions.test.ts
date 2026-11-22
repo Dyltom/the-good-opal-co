@@ -197,7 +197,7 @@ describe('checkout Server Action', () => {
 
     await expect(createCheckoutSession(checkoutForm())).resolves.toEqual({
       success: false,
-      error: 'One or more pieces were just reserved by another customer. Please review your cart.',
+      error: 'One or more pieces were just reserved by another customer. Please review your bag.',
     })
     expect(expireStripeSession).toHaveBeenCalledWith('cs_test_reserved')
     errorLog.mockRestore()
