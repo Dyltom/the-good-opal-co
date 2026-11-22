@@ -16,7 +16,8 @@ export interface BlogCardPost {
 }
 
 export function toBlogCardPost(post: Post): BlogCardPost {
-  const image = post.featuredImage && typeof post.featuredImage === 'object' ? post.featuredImage : null
+  const image =
+    post.featuredImage && typeof post.featuredImage === 'object' ? post.featuredImage : null
   const author = post.author && typeof post.author === 'object' ? post.author : null
   const category = post.categories?.find((value) => typeof value === 'object')
   const imageUrl = resolveMediaUrl(image?.url)
@@ -52,11 +53,17 @@ export function BlogCard({ post, lead = false, headingLevel: Heading = 'h2' }: B
         href={`/blog/${post.slug}`}
         className={cn(
           'block',
-          lead && 'md:grid md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] md:items-center md:gap-[clamp(24px,3.2vw,56px)]'
+          lead &&
+            'md:grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:items-center md:gap-[clamp(24px,3.2vw,56px)]'
         )}
       >
         {post.featuredImage ? (
-          <div className={cn('relative aspect-[4/3] overflow-hidden bg-plinth', lead ? 'mb-5 md:mb-0' : 'mb-4')}>
+          <div
+            className={cn(
+              'relative overflow-hidden bg-plinth',
+              lead ? 'mb-5 aspect-[4/3] md:mb-0 md:aspect-[16/10]' : 'mb-4 aspect-[3/2]'
+            )}
+          >
             <Image
               src={post.featuredImage.url}
               alt={post.featuredImage.alt}
@@ -64,8 +71,8 @@ export function BlogCard({ post, lead = false, headingLevel: Heading = 'h2' }: B
               priority={lead}
               sizes={
                 lead
-                  ? '(max-width: 768px) 100vw, 55vw'
-                  : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                  ? '(max-width: 768px) 100vw, 58vw'
+                  : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw'
               }
               className="object-cover transition-transform duration-700 ease-gallery group-hover:scale-[1.02]"
             />
@@ -74,13 +81,15 @@ export function BlogCard({ post, lead = false, headingLevel: Heading = 'h2' }: B
           <div className="mb-4 border-t border-rule-2" />
         )}
         <div>
-          {meta.length > 0 ? <p className="text-[13px] text-ink-3">{meta.join(' \u00b7 ')}</p> : null}
+          {meta.length > 0 ? (
+            <p className="text-[13px] text-ink-3">{meta.join(' \u00b7 ')}</p>
+          ) : null}
           <Heading
             className={cn(
               'mt-2 decoration-rule-2 underline-offset-4 group-hover:underline',
               lead
                 ? 'text-[clamp(1.875rem,3.4vw,3rem)] leading-[1.05] tracking-[-0.02em]'
-                : 'text-[1.5rem] leading-[1.15]'
+                : 'text-[1.375rem] leading-[1.15]'
             )}
           >
             {post.title}

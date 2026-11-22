@@ -1,4 +1,4 @@
-import { calculateShipping } from '@/lib/constants/shipping'
+import { calculateShipping, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 
 interface CheckoutLineItem {
   price: number
@@ -37,7 +37,7 @@ export function calculateCheckoutPricing(
 ): CheckoutPricing {
   const shipping = calculateShipping(subtotal, destination)
   const total = subtotal + shipping
-  const freeShippingRemaining = Math.max(0, 500 - subtotal)
+  const freeShippingRemaining = Math.max(0, SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD - subtotal)
 
   return {
     subtotal,

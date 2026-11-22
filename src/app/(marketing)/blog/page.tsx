@@ -49,7 +49,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const activeTopic = topics.find((topic) => topic.slug === categoryParam)
   const shown = activeTopic
     ? posts.filter((post) =>
-        post.categories?.some((category) => typeof category === 'object' && category.id === activeTopic.id)
+        post.categories?.some(
+          (category) => typeof category === 'object' && category.id === activeTopic.id
+        )
       )
     : posts
   const [lead, ...cards] = shown.map(toBlogCardPost)
@@ -84,36 +86,43 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         ]}
       />
       <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
-        <PageHeader title="Journal" description={DESCRIPTION} />
+        <div className="lg:flex lg:items-end lg:justify-between lg:gap-10">
+          <PageHeader title="Journal" description={DESCRIPTION} />
 
-        {topics.length > 1 ? (
-          <nav aria-label="Journal topics" className="mt-6 flex gap-2 overflow-x-auto pb-1">
-            {[{ slug: undefined, name: 'All' }, ...topics].map((topic) => {
-              const active = topic.slug === activeTopic?.slug
-              return (
-                <Link
-                  key={topic.slug ?? 'all'}
-                  href={topic.slug ? `/blog?category=${encodeURIComponent(topic.slug)}` : '/blog'}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    topicLink,
-                    active ? 'border-ink text-ink' : 'border-rule-2 text-ink-2 hover:border-ink-2 hover:text-ink'
-                  )}
-                >
-                  {topic.name}
-                </Link>
-              )
-            })}
-          </nav>
-        ) : null}
+          {topics.length > 1 ? (
+            <nav
+              aria-label="Journal topics"
+              className="mt-6 flex gap-2 overflow-x-auto pb-1 lg:mt-0 lg:max-w-[40rem] lg:flex-wrap lg:justify-end lg:overflow-visible"
+            >
+              {[{ slug: undefined, name: 'All' }, ...topics].map((topic) => {
+                const active = topic.slug === activeTopic?.slug
+                return (
+                  <Link
+                    key={topic.slug ?? 'all'}
+                    href={topic.slug ? `/blog?category=${encodeURIComponent(topic.slug)}` : '/blog'}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      topicLink,
+                      active
+                        ? 'border-ink text-ink'
+                        : 'border-rule-2 text-ink-2 hover:border-ink-2 hover:text-ink'
+                    )}
+                  >
+                    {topic.name}
+                  </Link>
+                )
+              })}
+            </nav>
+          ) : null}
+        </div>
 
         {lead ? (
           <>
-            <div className="mt-8 border-b border-rule pb-10 md:mt-10 md:pb-14">
+            <div className="mt-8 border-b border-rule pb-10 md:mt-10 md:pb-12">
               <BlogCard post={lead} lead />
             </div>
             {cards.length > 0 ? (
-              <div className="mt-10 grid gap-x-[clamp(20px,2.4vw,40px)] gap-y-10 md:mt-14 md:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-10 grid gap-x-[clamp(20px,2.4vw,40px)] gap-y-10 md:mt-12 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {cards.map((post) => (
                   <BlogCard key={post.slug} post={post} />
                 ))}
