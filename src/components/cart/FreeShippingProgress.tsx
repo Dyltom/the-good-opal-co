@@ -10,10 +10,7 @@ export function FreeShippingProgress({ total, className }: FreeShippingProgressP
   const progress = getFreeShippingProgress(total)
 
   return (
-    <div className={cn('space-y-2 rounded-sm border border-rule bg-bg p-4', className)}>
-      <p className="font-sans text-sm font-semibold text-ink">
-        Free shipping
-      </p>
+    <div className={cn('space-y-2', className)}>
       <div
         className="h-2 overflow-hidden rounded-full bg-plinth"
         role="progressbar"

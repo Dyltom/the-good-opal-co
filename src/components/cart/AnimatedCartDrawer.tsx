@@ -4,7 +4,15 @@ import { useEffect, useState, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import {
@@ -13,6 +21,7 @@ import {
   useShippingRegion,
 } from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
+import { calculateShipping } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
@@ -90,19 +99,19 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
   const items = cart?.items ?? []
   const itemCount = cart?.itemCount ?? 0
   const total = cart?.total ?? 0
+  const shipping = calculateShipping(total, region === 'INTL' ? 'INTERNATIONAL' : 'AUSTRALIA')
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        {children}
-      </SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="flex w-full flex-col gap-0 bg-bg p-0 sm:max-w-md">
         <SheetHeader className="border-b border-rule px-5 py-4 pr-14 text-left">
           <SheetTitle className="font-serif text-xl font-normal">
             Your bag <span className="font-sans text-sm text-ink-3">({itemCount})</span>
           </SheetTitle>
           <SheetDescription className="sr-only">
-            Review your cart items, update quantities, track free shipping progress, and continue to secure checkout.
+            Review your cart items, update quantities, track free shipping progress, and continue to
+            secure checkout.
           </SheetDescription>
         </SheetHeader>
 
@@ -138,6 +147,14 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
                 <span className="text-lg font-medium text-ink">{formatCurrency(total, 'AUD')}</span>
               </div>
 
+              <div className="flex items-baseline justify-between text-sm">
+                <span className="text-ink-2">
+                  Shipping {region === 'INTL' ? 'international' : 'within Australia'}
+                </span>
+                <span className="text-ink">
+                  {shipping === 0 ? 'Free' : formatCurrency(shipping, 'AUD')}
+                </span>
+              </div>
               <FreeShippingProgress total={total} />
               <div className="space-y-2">
                 {cart ? (
@@ -176,7 +193,13 @@ interface CartDrawerItemProps {
 const qtyButton =
   'flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border border-rule-2 text-ink transition-colors hover:border-ink disabled:cursor-not-allowed disabled:opacity-50'
 
-function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending, isRemoving }: CartDrawerItemProps) {
+function CartDrawerItem({
+  item,
+  onRemove,
+  onUpdateQuantity,
+  isPending,
+  isRemoving,
+}: CartDrawerItemProps) {
   return (
     <li
       className={`flex gap-4 border-b border-rule py-4 transition-opacity duration-300 last:border-0 ${isRemoving ? 'opacity-40' : ''}`}
@@ -191,10 +214,9 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending, isRemovin
           <h4 className="min-w-0 flex-1 truncate font-serif text-[15.5px] italic">{item.name}</h4>
           <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity, 'AUD')}</p>
         </div>
-        <p className="mb-1 text-[12.5px] text-ink-2">
-          {formatCurrency(item.price, 'AUD')}
-          {item.quantity > 1 ? ' each' : ''}
-        </p>
+        {item.quantity > 1 ? (
+          <p className="mb-1 text-[12.5px] text-ink-2">{formatCurrency(item.price, 'AUD')} each</p>
+        ) : null}
         <div className="flex items-center gap-2">
           {(item.maxQuantity ?? Infinity) > 1 ? (
             <>
@@ -211,7 +233,9 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending, isRemovin
               <button
                 type="button"
                 onClick={() => onUpdateQuantity(item.quantity + 1)}
-                disabled={isPending || isRemoving || item.quantity >= (item.maxQuantity ?? Infinity)}
+                disabled={
+                  isPending || isRemoving || item.quantity >= (item.maxQuantity ?? Infinity)
+                }
                 className={qtyButton}
                 aria-label={`Increase quantity of ${item.name}`}
               >
@@ -226,7 +250,7 @@ function CartDrawerItem({ item, onRemove, onUpdateQuantity, isPending, isRemovin
             type="button"
             onClick={onRemove}
             disabled={isPending || isRemoving}
-            className="ml-auto flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center text-ink-3 transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+            className="ml-auto flex h-11 min-h-[44px] w-11 min-w-[44px] items-center justify-center text-ink-3 transition-colors hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Remove ${item.name} from cart`}
           >
             <Trash2 className="h-4 w-4" />

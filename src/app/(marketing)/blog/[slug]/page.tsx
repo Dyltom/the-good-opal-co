@@ -3,7 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { cache, Fragment, type ReactNode } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { RichText, type JSXConvertersFunction } from '@payloadcms/richtext-lexical/react'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import type { Author, Category, Media, Post, Tag } from '@/types/payload-types'
@@ -12,7 +12,8 @@ import { MarketingShell } from '@/components/marketing'
 import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
-import { postSummary, rewriteLegacyPostLinks } from '@/lib/rich-text'
+import { extractPlainText, postSummary, rewriteLegacyPostLinks } from '@/lib/rich-text'
+import { slugify } from '@/lib/utils'
 import { FromTheShop } from '@/components/blog/FromTheShop'
 import { RelatedReading } from '@/components/blog/RelatedReading'
 import { BreadcrumbJsonLd, founderId, JsonLd } from '@/components/seo'
@@ -36,10 +37,37 @@ const getPublishedPost = cache(async (slug: string): Promise<Post | undefined> =
   return docs[0]
 })
 
-const HERO_WIDTH = 896
+interface ContentNode {
+  type?: string
+  tag?: string
+  children?: unknown[]
+}
+
+function sectionHeadings(content: unknown): { id: string; text: string }[] {
+  const root = (content as { root?: ContentNode } | null)?.root
+  return (root?.children ?? [])
+    .filter((node): node is ContentNode => {
+      const block = node as ContentNode
+      return block?.type === 'heading' && block.tag === 'h2'
+    })
+    .map((node) => {
+      const text = extractPlainText(node)
+      return { id: slugify(text), text }
+    })
+    .filter((heading) => heading.id)
+}
 
 const postConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
+  heading: ({ node, nodesToJSX }) => {
+    const Tag = node.tag
+    const children = nodesToJSX({ nodes: node.children })
+    return Tag === 'h2' ? (
+      <h2 id={slugify(extractPlainText(node)) || undefined}>{children}</h2>
+    ) : (
+      <Tag>{children}</Tag>
+    )
+  },
   upload: (args) => {
     const media = args.node.value as Media | number
     const src = typeof media === 'object' ? resolveMediaUrl(media.url) : undefined
@@ -59,7 +87,8 @@ const postConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
         alt={fields?.alt || media.alt || ''}
         width={media.width}
         height={media.height}
-        sizes="(max-width: 700px) 100vw, 640px"
+        sizes="(max-width: 700px) 100vw, 672px"
+        className="mx-auto h-auto max-h-[min(36rem,80vh)] w-auto"
       />
     )
   },
@@ -155,6 +184,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     post.seo?.description?.trim() ||
     postSummary(post.excerpt, post.content, 160) ||
     'Practical guidance about Australian opals, jewellery, buying, and care.'
+  const standfirst = post.excerpt?.trim()
+  const headings = sectionHeadings(post.content)
   const metaParts: ReactNode[] = [
     ...categories.map((category) => (
       <Link
@@ -189,7 +220,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       ? {
           '@type': 'Person',
           name: author.name,
-          ...(author.name === 'Stephanie Caruana' ? { '@id': founderId, url: `${APP_URL}/about` } : {}),
+          ...(author.name === 'Stephanie Caruana'
+            ? { '@id': founderId, url: `${APP_URL}/about` }
+            : {}),
         }
       : { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },
     publisher: { '@type': 'Organization', '@id': `${APP_URL}/#organization`, name: APP_NAME },
@@ -210,20 +243,25 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         ]}
       />
       <Container>
-        <article>
-          <div className="mx-auto max-w-[40rem]">
-            <Link
-              href="/blog"
-              className="mt-[18px] inline-flex min-h-11 items-center gap-2 text-sm text-ink-2 transition-colors hover:text-ink md:mt-5"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to the Journal
-            </Link>
-            <header className="mt-4">
+        <article className="mx-auto max-w-[72rem]">
+          <Link
+            href="/blog"
+            className="mt-[18px] inline-flex min-h-11 items-center gap-2 text-sm text-ink-2 transition-colors hover:text-ink md:mt-5"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to the Journal
+          </Link>
+          <header className="mt-4 lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-[clamp(40px,5vw,88px)]">
+            <div>
               <h1 className="text-[2.375rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4.2vw,3.75rem)]">
                 {post.title}
               </h1>
+              {standfirst ? (
+                <p className="mt-5 max-w-[34rem] text-[1.0625rem] leading-[1.7] text-ink-2">
+                  {standfirst}
+                </p>
+              ) : null}
               {metaParts.length > 0 ? (
-                <p className="mt-4 text-[13px] text-ink-3">
+                <p className="mt-5 text-[13px] text-ink-3">
                   {metaParts.map((part, index) => (
                     <Fragment key={index}>
                       {index > 0 ? ' \u00b7 ' : null}
@@ -232,35 +270,77 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   ))}
                 </p>
               ) : null}
-            </header>
-          </div>
-          {imageUrl && featuredImage?.width && featuredImage.height ? (
-            <Image
-              src={imageUrl}
-              alt={featuredImage.alt || post.title}
-              width={featuredImage.width}
-              height={featuredImage.height}
-              priority
-              sizes={`(max-width: 900px) 100vw, ${HERO_WIDTH}px`}
-              className="mx-auto mt-8 h-auto"
-              style={{
-                width: `min(100%, ${Math.min(featuredImage.width, HERO_WIDTH)}px, calc(min(75vh, ${HERO_WIDTH}px) * ${featuredImage.width / featuredImage.height}))`,
-              }}
-            />
-          ) : null}
-          {post.content ? (
-            <div className="prose mx-auto mt-10 max-w-[40rem] text-base [overflow-wrap:anywhere] prose-headings:font-serif prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-ink prose-h2:mb-4 prose-h2:mt-12 prose-h2:text-[1.875rem] prose-h2:leading-[1.15] prose-h3:mb-3 prose-h3:mt-10 prose-h3:text-[1.4rem] prose-h3:leading-[1.2] prose-h4:mt-8 prose-p:leading-[1.75] prose-p:text-ink prose-a:font-normal prose-a:text-accent prose-a:decoration-accent/40 prose-a:underline-offset-4 hover:prose-a:decoration-accent prose-blockquote:border-rule-2 prose-blockquote:font-serif prose-blockquote:font-normal prose-blockquote:text-ink-2 prose-strong:font-medium prose-strong:text-ink prose-ol:list-decimal prose-ul:list-disc prose-li:my-1.5 prose-li:text-ink prose-li:marker:normal-nums prose-li:marker:text-ink-2 prose-img:mx-auto [&_li>p]:my-0">
-              <RichText
-                converters={postConverters}
-                data={rewriteLegacyPostLinks(
-                  post.content as unknown as SerializedEditorState,
-                  APP_URL
-                )}
+            </div>
+            {imageUrl && featuredImage?.width && featuredImage.height ? (
+              <Image
+                src={imageUrl}
+                alt={featuredImage.alt || post.title}
+                width={featuredImage.width}
+                height={featuredImage.height}
+                priority
+                sizes="(max-width: 1024px) 100vw, 560px"
+                className="mx-auto mt-8 h-auto max-h-[75vh] w-auto lg:mr-0 lg:mt-0 lg:max-h-[min(36rem,72vh)]"
               />
+            ) : null}
+          </header>
+          {post.content ? (
+            <div className="mt-10 lg:mt-[clamp(56px,6vw,88px)] lg:grid lg:grid-cols-[minmax(0,1fr)_15rem] lg:gap-[clamp(40px,5vw,88px)]">
+              <div className="prose mx-auto max-w-[42rem] text-base [overflow-wrap:anywhere] prose-headings:font-serif prose-headings:font-normal prose-headings:tracking-[-0.01em] prose-headings:text-ink prose-h2:mb-4 prose-h2:mt-12 prose-h2:scroll-mt-24 prose-h2:text-[1.875rem] prose-h2:leading-[1.15] prose-h3:mb-3 prose-h3:mt-10 prose-h3:text-[1.4rem] prose-h3:leading-[1.2] prose-h4:mt-8 prose-p:leading-[1.75] prose-p:text-ink prose-a:font-normal prose-a:text-accent prose-a:decoration-accent/40 prose-a:underline-offset-4 hover:prose-a:decoration-accent prose-blockquote:border-rule-2 prose-blockquote:font-serif prose-blockquote:font-normal prose-blockquote:text-ink-2 prose-strong:font-medium prose-strong:text-ink prose-ol:list-decimal prose-ul:list-disc prose-li:my-1.5 prose-li:text-ink prose-li:marker:normal-nums prose-li:marker:text-ink-2 lg:mx-0 [&>:first-child]:mt-0 [&_li>p]:my-0">
+                <RichText
+                  converters={postConverters}
+                  data={rewriteLegacyPostLinks(
+                    post.content as unknown as SerializedEditorState,
+                    APP_URL
+                  )}
+                />
+              </div>
+              <aside className="hidden lg:block">
+                <div className="sticky top-[92px] space-y-8 border-t border-rule pt-5 text-sm">
+                  {headings.length >= 3 ? (
+                    <nav aria-label="In this article">
+                      <h2 className="text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
+                        In this article
+                      </h2>
+                      <ol className="mt-3 space-y-2.5">
+                        {headings.map((heading) => (
+                          <li key={heading.id}>
+                            <a
+                              href={`#${heading.id}`}
+                              className="leading-snug text-ink-2 transition-colors hover:text-ink"
+                            >
+                              {heading.text}
+                            </a>
+                          </li>
+                        ))}
+                      </ol>
+                    </nav>
+                  ) : null}
+                  {author ? (
+                    <div>
+                      <h2 className="text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
+                        Written by
+                      </h2>
+                      <p className="mt-2 font-serif text-lg text-ink">{author.name}</p>
+                      <Link
+                        href="/about"
+                        className="mt-1 inline-block text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink"
+                      >
+                        Our story
+                      </Link>
+                    </div>
+                  ) : null}
+                  <Link
+                    href="/store"
+                    className="inline-flex items-center gap-2 text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
+                  >
+                    Shop the opals <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </div>
+              </aside>
             </div>
           ) : null}
         </article>
-        <div className="mx-auto mt-[clamp(56px,7vw,96px)] grid max-w-5xl gap-[clamp(48px,6vw,80px)]">
+        <div className="mx-auto mt-[clamp(56px,7vw,96px)] grid max-w-[72rem] gap-[clamp(48px,6vw,80px)]">
           <RelatedReading post={post} />
           <FromTheShop post={post} />
         </div>
