@@ -61,7 +61,7 @@ export function ProductActions({ product, children }: ProductActionsProps) {
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <div ref={inlineActionsRef} data-testid="inline-product-actions" className="min-w-40 flex-[1_1_10rem]">
+        <div ref={inlineActionsRef} data-testid="inline-product-actions" className="min-w-40 flex-[999_1_10rem]">
           <AddToCartButton
             product={cartProduct}
             quantity={quantity}
