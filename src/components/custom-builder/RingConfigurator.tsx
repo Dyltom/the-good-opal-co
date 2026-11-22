@@ -487,12 +487,15 @@ export function RingConfigurator({
   const selectedStyle = ringStyles.find((style) => style.id === config.style) ?? ringStyles[0]!
   const ringPrice = estimateRingPrice(config, metalSpot)
   const opalPrice = selectedOpal && selectedOpal.price > 0 ? selectedOpal.price : undefined
-  const estimate =
+  const estimateTotal =
+    ringPrice === null ? null : formatWholeDollars(ringPrice + (opalPrice ?? 0))
+  const estimateDetail =
     ringPrice === null
-      ? 'Platinum is quoted individually'
+      ? 'Platinum is quoted at your consultation'
       : opalPrice
-        ? `Estimate ${formatWholeDollars(ringPrice + opalPrice)}: ring ${formatWholeDollars(ringPrice)} + opal ${formatWholeDollars(opalPrice)}`
-        : `Ring ${formatWholeDollars(ringPrice)}, plus the opal you choose`
+        ? `Ring ${formatWholeDollars(ringPrice)} + opal ${formatWholeDollars(opalPrice)}`
+        : 'Ring only, plus the opal you choose'
+  const estimate = estimateTotal ? `${estimateTotal} (${estimateDetail.toLowerCase()})` : estimateDetail
   const isStartingDesign = useMemo(
     () => JSON.stringify(config) === JSON.stringify(initialConfig),
     [config, initialConfig]
@@ -558,7 +561,7 @@ export function RingConfigurator({
   const contactParams = new URLSearchParams({
     subject: 'custom-design',
     product: `Custom ring concept: ${description}`,
-    message: `I created a custom ring concept and would like to discuss stone availability, final design, timing, and an exact quote.\n\nConcept: ${description}\n\nBuilder estimate: ${estimate} (AUD)`,
+    message: `I created a custom ring concept and would like to discuss stone availability, final design, timing, and an exact quote.\n\nConcept: ${description}\n\nBuilder estimate (AUD): ${estimate}`,
     design: JSON.stringify(config),
   })
   const viewerResetKey = JSON.stringify([
@@ -715,10 +718,18 @@ export function RingConfigurator({
                 <span className="sr-only">Your concept: </span>
                 {description}
               </p>
-              <p className="mt-0.5 text-sm font-medium tabular-nums text-ink">{estimate}</p>
+              <p className="mt-1 flex flex-wrap items-baseline gap-x-2 tabular-nums">
+                {estimateTotal ? (
+                  <span className="text-lg font-medium text-ink sm:text-xl">
+                    {estimateTotal} <span className="text-xs font-normal text-ink-2">AUD</span>
+                  </span>
+                ) : null}
+                <span className="text-sm text-ink-2">{estimateDetail}</span>
+              </p>
               <p className="hidden text-xs leading-5 text-ink-2 sm:block">
-                {metalSpot.live ? "Metal follows today's gold and silver price. " : ''}AUD; your
-                consultation confirms the final price and nothing is charged here.
+                Estimate only.{' '}
+                {metalSpot.live ? "Metal is priced at today's gold and silver rate. " : ''}Your
+                consultation confirms the final price, and nothing is charged here.
               </p>
               <div className="mt-2.5 flex gap-2">
                 <Link

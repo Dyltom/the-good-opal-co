@@ -1553,7 +1553,11 @@ function SolderBridges({
   )
 }
 
-const clawCounts: Partial<Record<RingConfig['setting'], number>> = { 'claw-4': 4, 'claw-6': 6 }
+const clawCounts: Partial<Record<RingConfig['setting'], number>> = {
+  'claw-4': 4,
+  'claw-6': 6,
+  'claw-8': 8,
+}
 
 function ClawProngs({
   bottomZ,
@@ -1573,7 +1577,7 @@ function ClawProngs({
   const [width, height] = dimensions
   const prongRadius = 0.022 + Math.min(width, height) * 0.02
   const geometries = useMemo(() => {
-    const phase = count === 4 ? Math.PI / 4 : Math.PI / 2
+    const phase = count === 6 ? Math.PI / 2 : Math.PI / count
     return evenlySpacedOutlinePoints(
       config.shape,
       width,

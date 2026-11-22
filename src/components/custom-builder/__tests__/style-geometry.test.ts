@@ -27,7 +27,7 @@ describe('sold ring style geometry', () => {
       { id: 'coral', setting: 'bezel', shape: 'cushion' },
       { id: 'sun-moon', setting: 'beaded', shape: 'oval' },
       { id: 'aurora', setting: 'beaded', shape: 'pear' },
-      { id: 'crown', setting: 'claw-6', shape: 'oval' },
+      { id: 'crown', setting: 'claw-8', shape: 'oval' },
       { id: 'dewdrop', setting: 'claw-4', shape: 'oval' },
       { id: 'horizon', setting: 'bezel', shape: 'oval' },
       { id: 'shell', setting: 'bezel', shape: 'heart' },
