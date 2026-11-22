@@ -60,7 +60,7 @@ function metalCostPerCm3(alloy: Alloy, spot: MetalSpot): number {
 }
 
 function pricedSetting(setting: RingConfig['setting']): PricedSetting {
-  return setting === 'beaded' ? 'bezel' : setting
+  return setting === 'beaded' || setting === 'claw-8' ? 'bezel' : setting
 }
 
 export function estimateRingPrice(

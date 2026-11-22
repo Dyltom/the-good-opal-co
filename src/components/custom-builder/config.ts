@@ -12,7 +12,7 @@ export const metalIds = [
 ] as const
 export const stoneIds = ['blue-green', 'sunset', 'lightning', 'crystal'] as const
 export const shapeIds = ['oval', 'round', 'elongated', 'cushion', 'pear', 'heart'] as const
-export const settingIds = ['bezel', 'beaded', 'claw-4', 'claw-6'] as const
+export const settingIds = ['bezel', 'beaded', 'claw-4', 'claw-6', 'claw-8'] as const
 export const bandIds = ['thin', 'chunky'] as const
 export const styleIds = [
   'gemini',
@@ -621,6 +621,7 @@ export const settings: readonly ConfigOption<RingConfig['setting']>[] = [
   { id: 'beaded', label: 'Bezel with grain halo', detail: 'Full bezel and handmade silver grains' },
   { id: 'claw-4', label: 'Crown 4-claw', detail: 'Four claws hold the stone open to the light' },
   { id: 'claw-6', label: 'Crown 6-claw', detail: 'Six claws in a raised crown' },
+  { id: 'claw-8', label: 'Crown 8-claw', detail: 'Four pairs of claws in a raised crown' },
 ]
 
 export const bands: readonly ConfigOption<RingConfig['band']>[] = [
@@ -738,10 +739,10 @@ export const ringStyles: readonly RingStyleOption[] = [
     label: 'Crown',
     detail: 'Large oval held high in a gold claw crown on a wide band',
     shape: 'oval',
-    setting: 'claw-6',
+    setting: 'claw-8',
     band: 'chunky',
     referenceName: 'Crystal Opal Crown Ring',
-    referenceImage: '/images/products/crown-6-claw-opal-ring.jpg',
+    referenceImage: '/images/products/crown-8-claw-opal-ring.jpg',
     referenceOpal: {
       renderStone: 'crystal',
       visual: {
