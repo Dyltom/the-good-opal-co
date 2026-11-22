@@ -19,7 +19,7 @@ describe('custom ring configuration', () => {
       style: 'coral',
       shape: 'cushion',
       setting: 'bezel',
-      band: 'classic',
+      band: 'thin',
       size: 8.5,
       opalId: '127',
       opalPositionX: 0.18,
@@ -78,6 +78,7 @@ describe('custom ring configuration', () => {
   test('uses the product material identifiers as the public URL contract', () => {
     expect(metalIds).toEqual([
       'sterling-silver',
+      '9ct-gold',
       '14k-gold',
       '18k-gold',
       'white-gold',

@@ -69,6 +69,7 @@ function silhouetteClass(shape: BuilderOpal['visual']['silhouette']): string {
 
 const metalColours: Record<RingConfig['metal'], string> = {
   'sterling-silver': '#d2d3cf',
+  '9ct-gold': '#cda84d',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',

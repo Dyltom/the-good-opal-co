@@ -163,6 +163,7 @@ class ApprovedAssetErrorBoundary extends Component<
 
 const metalColours: Record<RingConfig['metal'], string> = {
   'sterling-silver': '#f5f2eb',
+  '9ct-gold': '#cda84d',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -290,7 +291,7 @@ function PatinaMaterial({ metal }: { metal: RingConfig['metal'] }) {
   const shadowColour =
     metal === 'sterling-silver'
       ? '#20211d'
-      : metal === '14k-gold' || metal === '18k-gold'
+      : metal === '9ct-gold' || metal === '14k-gold' || metal === '18k-gold'
         ? '#6b4b22'
         : metal === 'rose-gold'
           ? '#704a42'
@@ -313,6 +314,7 @@ function SolderGrainMaterial({
 }) {
   const solderColour: Record<RingConfig['metal'], string> = {
     'sterling-silver': '#bfc0bb',
+    '9ct-gold': '#b99342',
     '14k-gold': '#b99342',
     '18k-gold': '#c49a3d',
     'white-gold': '#c7c4bb',
@@ -321,6 +323,7 @@ function SolderGrainMaterial({
   }
   const organicSolderColour: Record<RingConfig['metal'], string> = {
     'sterling-silver': '#b5b6b1',
+    '9ct-gold': '#ad873c',
     '14k-gold': '#ad873c',
     '18k-gold': '#b78d38',
     'white-gold': '#bdbbb5',
@@ -329,6 +332,7 @@ function SolderGrainMaterial({
   }
   const facetedSolderColour: Record<RingConfig['metal'], string> = {
     'sterling-silver': '#b6b7b2',
+    '9ct-gold': '#967634',
     '14k-gold': '#967634',
     '18k-gold': '#a17d31',
     'white-gold': '#a09f9a',
@@ -363,7 +367,7 @@ function SolderSupportMaterial({ metal }: { metal: RingConfig['metal'] }) {
   const colour =
     metal === 'sterling-silver'
       ? '#454640'
-      : metal === '14k-gold' || metal === '18k-gold'
+      : metal === '9ct-gold' || metal === '14k-gold' || metal === '18k-gold'
         ? '#765728'
         : metal === 'rose-gold'
           ? '#76524a'
@@ -376,7 +380,7 @@ function SolderBridgeMaterial({ metal }: { metal: RingConfig['metal'] }) {
   const colour =
     metal === 'sterling-silver'
       ? '#777873'
-      : metal === '14k-gold' || metal === '18k-gold'
+      : metal === '9ct-gold' || metal === '14k-gold' || metal === '18k-gold'
         ? '#967035'
         : metal === 'rose-gold'
           ? '#94655b'

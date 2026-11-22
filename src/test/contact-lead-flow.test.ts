@@ -38,7 +38,7 @@ describe('contact lead intent', () => {
         style: 'gemini',
         shape: 'oval',
         setting: 'bezel',
-        band: 'classic',
+        band: 'thin',
         size: 7,
       }),
       message: 'I would like to discuss a simple yellow-gold pendant.',
