@@ -34,10 +34,10 @@ interface AddToCartButtonProps {
   onAdded?: () => void
 }
 
-async function isAlreadyInCart(productId: string): Promise<boolean> {
+async function bagLimitReached(productId: string): Promise<number | null> {
   const { data } = await fetchCart()
   const line = data?.items.find((item) => item.productId === productId)
-  return Boolean(line && line.maxQuantity !== undefined && line.quantity >= line.maxQuantity)
+  return line?.maxQuantity !== undefined && line.quantity >= line.maxQuantity ? line.maxQuantity : null
 }
 
 export function AddToCartButton({
@@ -87,21 +87,27 @@ export function AddToCartButton({
         onAdded?.()
         window.dispatchEvent(new CustomEvent('cart-open'))
         setTimeout(() => setIsSuccess(false), 2000)
-      } else if (await isAlreadyInCart(product.id)) {
+      } else {
+        const limit = await bagLimitReached(product.id)
+        if (limit === null) {
+          toast({
+            title: "Couldn't add to bag",
+            description: result.error ?? 'Please try again in a moment.',
+            variant: 'destructive',
+          })
+          return
+        }
         toast({
           title: 'Already in your bag',
-          description: `${product.name} is one of a kind and is already in your bag.`,
+          description:
+            limit > 1
+              ? `All ${limit} available of ${product.name} are already in your bag.`
+              : `${product.name} is one of a kind and is already in your bag.`,
           action: (
             <ToastAction altText="View bag" asChild className="min-h-11">
               <Link href="/cart">View bag</Link>
             </ToastAction>
           ),
-        })
-      } else {
-        toast({
-          title: "Couldn't add to bag",
-          description: result.error ?? 'Please try again in a moment.',
-          variant: 'destructive',
         })
       }
     })

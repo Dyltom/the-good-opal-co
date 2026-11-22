@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { BlogCard, toBlogCardPost } from '@/components/blog/BlogCard'
@@ -12,10 +13,14 @@ import { cn } from '@/lib/utils'
 const DESCRIPTION =
   'Notes on Australian opal: the fields it comes from, how it is cut and set, and what to check before you buy.'
 
-export const metadata = {
-  title: 'Journal | The Good Opal Co',
-  description: DESCRIPTION,
-  alternates: { canonical: '/blog' },
+export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
+  const { category } = await searchParams
+  return {
+    title: 'Journal | The Good Opal Co',
+    description: DESCRIPTION,
+    alternates: { canonical: '/blog' },
+    ...(category ? { robots: { index: false, follow: true } } : {}),
+  }
 }
 
 export const dynamic = 'force-dynamic'

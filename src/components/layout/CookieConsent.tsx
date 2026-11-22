@@ -103,8 +103,10 @@ export function CookieSettingsLink({ className }: { className?: string }) {
   const [hasConsent, setHasConsent] = useState(false)
 
   useEffect(() => {
-    const consent = localStorage.getItem('cookie-consent')
-    setHasConsent(!!consent)
+    const sync = () => setHasConsent(!!localStorage.getItem('cookie-consent'))
+    sync()
+    window.addEventListener('cookie-consent-updated', sync)
+    return () => window.removeEventListener('cookie-consent-updated', sync)
   }, [])
 
   const openSettings = () => {
