@@ -150,7 +150,7 @@ export function productStructuredData(
     url: product.url,
     sku: product.sku,
     category: product.categoryLabel,
-    material: material.length > 0 ? material : undefined,
+    material: material.length > 0 ? material.join(', ') : undefined,
     weight: product.weight
       ? {
           '@type': 'QuantitativeValue',

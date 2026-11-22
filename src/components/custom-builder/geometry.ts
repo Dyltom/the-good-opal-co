@@ -390,6 +390,10 @@ const soldStyleOuterVariation: Record<RingConfig['style'], number> = {
   coral: 0.0097,
   'sun-moon': 0.003,
   aurora: 0.001,
+  crown: 0.002,
+  dewdrop: 0.002,
+  horizon: 0.002,
+  shell: 0.004,
 }
 
 export function getSoldStyleOuterVariation(style: RingConfig['style'], angle: number): number {

@@ -86,10 +86,23 @@ describe('sold ring reference proportions', () => {
         renderStone: 'crystal',
         textureCrop: { focalX: 0.5, focalY: 0.49, zoom: 7.5 },
       },
+      ...Object.fromEntries(
+        (['crown', 'dewdrop', 'horizon', 'shell'] as const).map((style) => [
+          style,
+          {
+            imageUrl: expect.stringMatching(
+              new RegExp(`^/images/products/${style}-.*opal-ring\\.jpg$`)
+            ),
+            photoFit: undefined,
+            renderStone: 'crystal',
+            textureCrop: undefined,
+          },
+        ])
+      ),
     })
   })
 
-  test.each(ringStyles.map(({ id }) => id))(
+  test.each(Object.keys(draftReferenceEnvelopes) as (keyof typeof draftReferenceEnvelopes)[])(
     'keeps %s inside its draft owned-photo face-on envelope',
     (style) => {
       const reference = draftReferenceEnvelopes[style]

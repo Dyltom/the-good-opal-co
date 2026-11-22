@@ -3,6 +3,7 @@ import type { BuilderStoneContourV1 } from '@/lib/custom-builder/stone-contour'
 
 export const metalIds = [
   'sterling-silver',
+  '9ct-gold',
   '14k-gold',
   '18k-gold',
   'white-gold',
@@ -11,9 +12,18 @@ export const metalIds = [
 ] as const
 export const stoneIds = ['blue-green', 'sunset', 'lightning', 'crystal'] as const
 export const shapeIds = ['oval', 'round', 'elongated', 'cushion', 'pear', 'heart'] as const
-export const settingIds = ['bezel', 'beaded'] as const
-export const bandIds = ['classic'] as const
-export const styleIds = ['gemini', 'coral', 'sun-moon', 'aurora'] as const
+export const settingIds = ['bezel', 'beaded', 'claw-4', 'claw-6'] as const
+export const bandIds = ['thin', 'chunky'] as const
+export const styleIds = [
+  'gemini',
+  'coral',
+  'sun-moon',
+  'aurora',
+  'crown',
+  'dewdrop',
+  'horizon',
+  'shell',
+] as const
 
 /**
  * Identity of the procedural geometry currently rendered by RingScene. Maker
@@ -24,6 +34,10 @@ export const proceduralRingModelVersions: Readonly<Record<(typeof styleIds)[numb
   coral: 'procedural-v4',
   'sun-moon': 'procedural-v3',
   aurora: 'procedural-v3',
+  crown: 'procedural-v1',
+  dewdrop: 'procedural-v1',
+  horizon: 'procedural-v1',
+  shell: 'procedural-v1',
 }
 
 export const ringConfigSchema = z.object({
@@ -264,6 +278,69 @@ const auroraBezelSeat = {
   patinaSeatReveal: 0.014,
 } satisfies BezelSeatGeometry
 
+const plainSettingGeometry = {
+  bezelLipProfile: [
+    { radialProgress: 0, heightOffset: 0, finish: 'patina' },
+    {
+      radialProgress: getPatinaSeatProgress(geminiBezelSeat),
+      heightOffset: 0.003,
+      finish: 'patina',
+      stoneReveal: geminiBezelSeat.patinaSeatReveal,
+    },
+    { radialProgress: 0.96, heightOffset: 0.002, finish: 'metal' },
+    { radialProgress: 1, heightOffset: -0.005, finish: 'metal' },
+  ],
+  ...geminiBezelSeat,
+  brightOuterRailThickness: 0,
+  haloOffset: 0,
+  beadRadius: 0,
+  beadCount: 0,
+  beadPitchMm: 0,
+  beadFlattening: 0.7,
+  beadAsymmetry: 0,
+  beadRoughness: 0.34,
+  beadMinimumOverlap: 0,
+  beadBridgeRadius: 0,
+  beadBridgeZ: 0,
+  beadTangentialStretchMax: 1,
+  beadShape: 'none',
+  beadPrimitive: 'none',
+  beadVariation: 0,
+  haloPhase: 0,
+  haloSupportCoverage: 0,
+  haloValleySupportCoverage: 0,
+  innerSeamOffset: 0.003,
+  innerSeamRadius: 0.018,
+  innerSeamVariation: 0.001,
+  cupDepth: 0.048,
+  cupTaper: 0.022,
+  domeHeightRatio: 0.13,
+  visibleSeatCap: 0.036,
+  shoulderUnderlap: 0.18,
+  shoulderJoinDrop: 0.028,
+  shoulderTransition: 0.04,
+  shoulderBlendLengthMm: 1.4,
+  shoulderLandingLengthMm: 1.2,
+  crossSectionPower: 0.76,
+  shankInnerFacePower: 0.4,
+  metalRoughness: 0.28,
+  shankRadius: 0.088,
+  shankDepth: 0.055,
+  shoulderRadius: 0.074,
+  shoulderDepth: 0.057,
+  shankForgedVariation: 0.006,
+  surfaceNormalVariation: 0.05,
+  surfaceSeed: 83,
+} satisfies RingStyleGeometryProfile
+
+const chunkyBandGeometry = {
+  shankRadius: 0.24,
+  shankDepth: 0.075,
+  shoulderRadius: 0.22,
+  shoulderDepth: 0.078,
+  crossSectionPower: 0.5,
+} satisfies Partial<RingStyleGeometryProfile>
+
 export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeometryProfile> = {
   gemini: {
     bezelLipProfile: [
@@ -496,6 +573,16 @@ export const ringStyleGeometryProfiles: Record<RingConfig['style'], RingStyleGeo
     surfaceNormalVariation: 0.1,
     surfaceSeed: 71,
   },
+  crown: { ...plainSettingGeometry, ...chunkyBandGeometry, domeHeightRatio: 0.17, surfaceSeed: 89 },
+  dewdrop: {
+    ...plainSettingGeometry,
+    shankRadius: 0.078,
+    shoulderRadius: 0.064,
+    domeHeightRatio: 0.16,
+    surfaceSeed: 97,
+  },
+  horizon: { ...plainSettingGeometry, ...chunkyBandGeometry, surfaceSeed: 101 },
+  shell: { ...plainSettingGeometry, ...coralBezelSeat, domeHeightRatio: 0.1, surfaceSeed: 107 },
 }
 
 export const metals: readonly ConfigOption<RingConfig['metal']>[] = [
@@ -505,10 +592,11 @@ export const metals: readonly ConfigOption<RingConfig['metal']>[] = [
     detail: 'Bright, cool finish',
     colour: '#d8d8d4',
   },
-  { id: '14k-gold', label: '14K gold', detail: 'Warm yellow gold', colour: '#d4a846' },
-  { id: '18k-gold', label: '18K gold', detail: 'Richer yellow gold', colour: '#d9ad42' },
-  { id: 'white-gold', label: 'White gold', detail: 'Cool polished finish', colour: '#ddd9cf' },
-  { id: 'rose-gold', label: 'Rose gold', detail: 'Soft blush tone', colour: '#c98f7a' },
+  { id: '9ct-gold', label: '9ct gold', detail: 'Warm yellow gold', colour: '#d6b15a' },
+  { id: '14k-gold', label: '14K gold', detail: 'Richer yellow gold', colour: '#d4a846' },
+  { id: '18k-gold', label: '18K gold', detail: 'Deepest yellow gold', colour: '#d9ad42' },
+  { id: 'white-gold', label: '9ct white gold', detail: 'Cool polished finish', colour: '#ddd9cf' },
+  { id: 'rose-gold', label: '9ct rose gold', detail: 'Soft blush tone', colour: '#c98f7a' },
   { id: 'platinum', label: 'Platinum', detail: 'Dense pale lustre', colour: '#e4e3df' },
 ]
 
@@ -531,10 +619,13 @@ export const shapes: readonly ConfigOption<RingConfig['shape']>[] = [
 export const settings: readonly ConfigOption<RingConfig['setting']>[] = [
   { id: 'bezel', label: 'Full bezel', detail: 'Continuous protective rim' },
   { id: 'beaded', label: 'Bezel with grain halo', detail: 'Full bezel and handmade silver grains' },
+  { id: 'claw-4', label: 'Crown 4-claw', detail: 'Four claws hold the stone open to the light' },
+  { id: 'claw-6', label: 'Crown 6-claw', detail: 'Six claws in a raised crown' },
 ]
 
 export const bands: readonly ConfigOption<RingConfig['band']>[] = [
-  { id: 'classic', label: 'Classic', detail: 'Thin single shank used across the collection' },
+  { id: 'thin', label: 'Thin band', detail: 'Slim single shank used across the collection' },
+  { id: 'chunky', label: 'Chunky band', detail: 'Wide, heavy band with the stone set into it' },
 ]
 
 export const ringStyles: readonly RingStyleOption[] = [
@@ -544,7 +635,7 @@ export const ringStyles: readonly RingStyleOption[] = [
     detail: 'Clean narrow bezel with a slim forged shank',
     shape: 'oval',
     setting: 'bezel',
-    band: 'classic',
+    band: 'thin',
     referenceName: 'White Opal Gemini Ring',
     referenceImage: '/images/products/20210819_101941.jpg',
     referenceOpal: {
@@ -570,7 +661,7 @@ export const ringStyles: readonly RingStyleOption[] = [
     detail: 'Square handmade bezel with a low dainty shank',
     shape: 'cushion',
     setting: 'bezel',
-    band: 'classic',
+    band: 'thin',
     referenceName: 'Crystal Black Opal Coral Ring',
     referenceImage: '/images/products/20210819_101746.jpg',
     referenceOpal: {
@@ -596,7 +687,7 @@ export const ringStyles: readonly RingStyleOption[] = [
     detail: 'Tight halo of small handmade silver grains',
     shape: 'oval',
     setting: 'beaded',
-    band: 'classic',
+    band: 'thin',
     referenceName: 'Crystal Opal Sun and Moon Ring',
     referenceImage: '/images/products/20210819_102749.jpg',
     referenceOpal: {
@@ -622,7 +713,7 @@ export const ringStyles: readonly RingStyleOption[] = [
     detail: 'Irregular fused silver granules around a low pear bezel',
     shape: 'pear',
     setting: 'beaded',
-    band: 'classic',
+    band: 'thin',
     referenceName: 'Aurora Opal Ring',
     referenceImage: '/images/products/20210819_102625-1.jpg',
     referenceOpal: {
@@ -639,6 +730,102 @@ export const ringStyles: readonly RingStyleOption[] = [
         recommendedStyle: 'aurora',
         textureCrop: { focalX: 0.5, focalY: 0.486, zoom: 8.45 },
         dimensionsMm: { width: 8, length: 10, depth: 3 },
+      },
+    },
+  },
+  {
+    id: 'crown',
+    label: 'Crown',
+    detail: 'Large oval held high in a gold claw crown on a wide band',
+    shape: 'oval',
+    setting: 'claw-6',
+    band: 'chunky',
+    referenceName: 'Crystal Opal Crown Ring',
+    referenceImage: '/images/products/crown-6-claw-opal-ring.jpg',
+    referenceOpal: {
+      renderStone: 'crystal',
+      visual: {
+        silhouette: 'oval',
+        aspectRatio: 1.33,
+        bodyColour: '#d5dcd2',
+        flashColours: ['#3cf26a', '#5c7dff', '#ffb2d0'],
+        transmission: 0.24,
+        patternSeed: 61,
+        evidence: 'catalogue',
+        recommendedStyle: 'gemini',
+        dimensionsMm: { width: 12, length: 16, depth: 4 },
+      },
+    },
+  },
+  {
+    id: 'dewdrop',
+    label: 'Dewdrop',
+    detail: 'Small oval in four claws on a slim everyday band',
+    shape: 'oval',
+    setting: 'claw-4',
+    band: 'thin',
+    referenceName: 'Crystal Opal Dewdrop Ring',
+    referenceImage: '/images/products/dewdrop-4-claw-opal-ring.jpg',
+    referenceOpal: {
+      renderStone: 'crystal',
+      visual: {
+        silhouette: 'oval',
+        aspectRatio: 1.4,
+        bodyColour: '#c8cdd6',
+        flashColours: ['#4fa8ff', '#ff6a5c', '#5cff9a'],
+        transmission: 0.3,
+        patternSeed: 67,
+        evidence: 'catalogue',
+        recommendedStyle: 'gemini',
+        dimensionsMm: { width: 5, length: 7, depth: 2.5 },
+      },
+    },
+  },
+  {
+    id: 'horizon',
+    label: 'Horizon',
+    detail: 'Oval bezel set flush into a wide, heavy band',
+    shape: 'oval',
+    setting: 'bezel',
+    band: 'chunky',
+    referenceName: 'Crystal Opal Horizon Ring',
+    referenceImage: '/images/products/horizon-chunky-band-opal-ring.jpg',
+    referenceOpal: {
+      renderStone: 'crystal',
+      visual: {
+        silhouette: 'oval',
+        aspectRatio: 1.29,
+        bodyColour: '#d9dde0',
+        flashColours: ['#7c8cff', '#45f08a', '#ffb070'],
+        transmission: 0.22,
+        patternSeed: 71,
+        evidence: 'catalogue',
+        recommendedStyle: 'gemini',
+        dimensionsMm: { width: 7, length: 9, depth: 3 },
+      },
+    },
+  },
+  {
+    id: 'shell',
+    label: 'Shell',
+    detail: 'Carved freeform opal hugged by a fine bezel',
+    shape: 'heart',
+    setting: 'bezel',
+    band: 'thin',
+    referenceName: 'Crystal Opal Shell Ring',
+    referenceImage: '/images/products/shell-freeform-bezel-opal-ring.jpg',
+    referenceOpal: {
+      renderStone: 'crystal',
+      visual: {
+        silhouette: 'heart',
+        aspectRatio: 1,
+        bodyColour: '#e1e5e2',
+        flashColours: ['#45f070', '#3ad6ff', '#c9ff4a'],
+        transmission: 0.2,
+        patternSeed: 73,
+        evidence: 'catalogue',
+        recommendedStyle: 'coral',
+        dimensionsMm: { width: 10, length: 10, depth: 3 },
       },
     },
   },
@@ -666,7 +853,7 @@ export const defaultRingConfig: RingConfig = {
   style: 'gemini',
   shape: 'oval',
   setting: 'bezel',
-  band: 'classic',
+  band: 'thin',
   size: 7,
   ...defaultOpalPlacement,
 }
@@ -696,6 +883,10 @@ export function getRingStyleFit(
     coral: ['cushion', 'heart', 'round'],
     'sun-moon': ['oval', 'round'],
     aurora: ['pear'],
+    crown: ['oval', 'elongated', 'round', 'cushion'],
+    dewdrop: ['oval', 'elongated', 'round', 'pear'],
+    horizon: ['oval', 'elongated', 'round', 'cushion'],
+    shell: ['heart', 'pear', 'round', 'oval'],
   }
   if (!compatibleSilhouettes[style.id].includes(silhouette)) {
     return {
@@ -724,6 +915,10 @@ export function getRingStyleFit(
     coral: [10, 10],
     gemini: [8, 10],
     'sun-moon': [8, 10],
+    crown: [12, 16],
+    dewdrop: [5, 7],
+    horizon: [7, 9],
+    shell: [10, 10],
   }
   const [referenceWidth, referenceLength] = referenceDimensions[style.id]
   const withinReferenceProportions =

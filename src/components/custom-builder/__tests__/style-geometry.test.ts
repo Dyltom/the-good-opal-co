@@ -27,6 +27,10 @@ describe('sold ring style geometry', () => {
       { id: 'coral', setting: 'bezel', shape: 'cushion' },
       { id: 'sun-moon', setting: 'beaded', shape: 'oval' },
       { id: 'aurora', setting: 'beaded', shape: 'pear' },
+      { id: 'crown', setting: 'claw-6', shape: 'oval' },
+      { id: 'dewdrop', setting: 'claw-4', shape: 'oval' },
+      { id: 'horizon', setting: 'bezel', shape: 'oval' },
+      { id: 'shell', setting: 'bezel', shape: 'heart' },
     ])
   })
 
@@ -91,6 +95,10 @@ describe('sold ring style geometry', () => {
       coral: 0.06,
       gemini: 0.074,
       'sun-moon': 0.069,
+      crown: 0.22,
+      dewdrop: 0.064,
+      horizon: 0.22,
+      shell: 0.074,
     })
 
     for (const profile of Object.values(ringStyleGeometryProfiles)) {
@@ -106,8 +114,7 @@ describe('sold ring style geometry', () => {
 
     for (const style of ['gemini', 'coral'] as const) {
       const profile = ringStyleGeometryProfiles[style]
-      const oxidizedSeatThickness =
-        profile.bezelWallThickness - profile.brightOuterRailThickness
+      const oxidizedSeatThickness = profile.bezelWallThickness - profile.brightOuterRailThickness
       expect(oxidizedSeatThickness * 10, style).toBeGreaterThanOrEqual(0.17)
       expect(oxidizedSeatThickness * 10, style).toBeLessThanOrEqual(0.27)
     }

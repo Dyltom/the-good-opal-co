@@ -69,6 +69,7 @@ function silhouetteClass(shape: BuilderOpal['visual']['silhouette']): string {
 
 const metalColours: Record<RingConfig['metal'], string> = {
   'sterling-silver': '#d2d3cf',
+  '9ct-gold': '#cda84d',
   '14k-gold': '#cda84d',
   '18k-gold': '#d9ad42',
   'white-gold': '#dfddd5',
@@ -84,6 +85,10 @@ const styleLabels: Record<RingConfig['style'], string> = {
   coral: 'Coral clean bezel',
   gemini: 'Gemini clean bezel',
   'sun-moon': 'Sun & Moon beaded trim',
+  crown: 'Crown claw setting',
+  dewdrop: 'Dewdrop claw setting',
+  horizon: 'Horizon wide-band bezel',
+  shell: 'Shell fine bezel',
 }
 
 function RangeControl({

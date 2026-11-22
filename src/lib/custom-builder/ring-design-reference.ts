@@ -13,6 +13,7 @@ export const ringDesignStoneShapes = [
 ] as const
 export const ringDesignMetals = [
   'sterling-silver',
+  '9ct-gold',
   '14k-gold',
   '18k-gold',
   'white-gold',

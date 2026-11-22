@@ -15,6 +15,7 @@ import {
 import { getPayload } from '@/lib/payload'
 import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/ring-design-manifest'
 import { resolveCanonicalFaceMapping } from '@/lib/custom-builder/canonical-face-mapping'
+import { getMetalSpot } from '@/lib/custom-builder/metal-spot'
 import type { Media } from '@/types/payload-types'
 import { resolveInitialBuilderState } from './initial-state'
 import {
@@ -243,7 +244,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
 }
 
 export default async function DesignPage({ searchParams }: DesignPageProps) {
-  const [query, opals, ringDesignManifests] = await Promise.all([
+  const [query, opals, ringDesignManifests, metalSpot] = await Promise.all([
     searchParams,
     getBuilderOpals().catch((error: unknown) => {
       console.error('Ring builder catalogue unavailable; rendering design-only fallback', error)
@@ -253,6 +254,7 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
       console.error('Approved ring assets unavailable; using concept renderer', error)
       return []
     }),
+    getMetalSpot(),
   ])
   const initialConfig = ringConfigFromRecord(
     Object.fromEntries(Object.entries(query).map(([key, value]) => [key, first(value)]))
@@ -267,6 +269,7 @@ export default async function DesignPage({ searchParams }: DesignPageProps) {
     <MarketingShell>
       <RingConfigurator
         initialConfig={hydratedConfig}
+        metalSpot={metalSpot}
         opals={opals}
         ringDesignManifests={ringDesignManifests}
         unavailableOpalRequested={unavailableOpalRequested}

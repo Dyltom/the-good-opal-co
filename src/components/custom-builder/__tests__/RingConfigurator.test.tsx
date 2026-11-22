@@ -45,6 +45,7 @@ vi.mock('next/link', () => ({
 }))
 
 import { RingConfigurator } from '../RingConfigurator'
+import { priceSheetSpot } from '@/lib/custom-builder/pricing'
 
 const opals: BuilderOpal[] = [
   {
@@ -109,6 +110,7 @@ describe('RingConfigurator store opal selection', () => {
   test('never labels a procedural preview as maker-approved', () => {
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: opals[0].id }}
         opals={opals}
       />
@@ -121,6 +123,7 @@ describe('RingConfigurator store opal selection', () => {
     const user = userEvent.setup()
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
         opals={opals}
       />
@@ -166,7 +169,13 @@ describe('RingConfigurator store opal selection', () => {
         recommendedStyle: 'coral',
       },
     }
-    render(<RingConfigurator initialConfig={defaultRingConfig} opals={[...opals, cushionOpal]} />)
+    render(
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={defaultRingConfig}
+        opals={[...opals, cushionOpal]}
+      />
+    )
 
     await user.click(screen.getByRole('button', { name: /Coober Pedy cushion opal/i }))
 
@@ -187,6 +196,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: estimated.id, stone: estimated.renderStone }}
         opals={[estimated]}
       />
@@ -199,6 +209,7 @@ describe('RingConfigurator store opal selection', () => {
   test('normalizes an incompatible legacy design to the stone recommendation', async () => {
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{
           ...defaultRingConfig,
           opalId: opals[0].id,
@@ -221,6 +232,7 @@ describe('RingConfigurator store opal selection', () => {
   test('requires explicit zoom before fine-positioning the reviewed crop', async () => {
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{
           ...defaultRingConfig,
           opalId: opals[0].id,
@@ -259,6 +271,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{
           ...defaultRingConfig,
           opalId: maximumDetail.id,
@@ -280,6 +293,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{
           ...defaultRingConfig,
           opalId: highBaseZoom.id,
@@ -300,7 +314,13 @@ describe('RingConfigurator store opal selection', () => {
   test('preserves unrelated query state and the hash while updating the design URL', async () => {
     const user = userEvent.setup()
     window.history.replaceState(null, '', '/services/design?utm_source=studio#builder')
-    render(<RingConfigurator initialConfig={defaultRingConfig} opals={opals} />)
+    render(
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={defaultRingConfig}
+        opals={opals}
+      />
+    )
 
     await user.click(screen.getByRole('button', { name: /Coral/i }))
 
@@ -316,6 +336,7 @@ describe('RingConfigurator store opal selection', () => {
     const user = userEvent.setup()
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
         opals={opals}
       />
@@ -347,7 +368,9 @@ describe('RingConfigurator store opal selection', () => {
 
   test('uses each collection reference shape until a store opal is selected', async () => {
     const user = userEvent.setup()
-    render(<RingConfigurator initialConfig={defaultRingConfig} opals={[]} />)
+    render(
+      <RingConfigurator metalSpot={priceSheetSpot} initialConfig={defaultRingConfig} opals={[]} />
+    )
 
     await user.click(screen.getByRole('button', { name: /Coral/i }))
 
@@ -368,7 +391,13 @@ describe('RingConfigurator store opal selection', () => {
 
   test('returns from a store opal to its recommended collection design', async () => {
     const user = userEvent.setup()
-    render(<RingConfigurator initialConfig={defaultRingConfig} opals={opals} />)
+    render(
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={defaultRingConfig}
+        opals={opals}
+      />
+    )
 
     await user.click(screen.getByRole('button', { name: /Aurora/i }))
     await user.click(screen.getByRole('button', { name: /Lightning Ridge black opal/i }))
@@ -397,7 +426,12 @@ describe('RingConfigurator store opal selection', () => {
 
   test('warns instead of silently substituting an unavailable linked opal', () => {
     render(
-      <RingConfigurator initialConfig={defaultRingConfig} opals={opals} unavailableOpalRequested />
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={defaultRingConfig}
+        opals={opals}
+        unavailableOpalRequested
+      />
     )
 
     expect(screen.getByRole('status').textContent).toContain('no longer available')
@@ -407,6 +441,7 @@ describe('RingConfigurator store opal selection', () => {
   test('persists approximate opal placement in the share URL and consultation payload', async () => {
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: opals[0].id, stone: opals[0].renderStone }}
         opals={opals}
       />
@@ -446,6 +481,7 @@ describe('RingConfigurator store opal selection', () => {
   test('supports direct keyboard positioning and simple rotation controls', async () => {
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{
           ...defaultRingConfig,
           opalId: opals[0].id,
@@ -477,6 +513,7 @@ describe('RingConfigurator store opal selection', () => {
   test('maps one aperture-centre drag to the full placement range with concise URLs', async () => {
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{
           ...defaultRingConfig,
           opalId: opals[0].id,
@@ -537,7 +574,13 @@ describe('RingConfigurator store opal selection', () => {
       },
     ]
 
-    render(<RingConfigurator initialConfig={defaultRingConfig} opals={catalogue} />)
+    render(
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={defaultRingConfig}
+        opals={catalogue}
+      />
+    )
 
     const picker = screen.getByRole('group', { name: 'Opal' })
     expect(picker.querySelectorAll('button[data-opal-id]').length).toBe(12)
@@ -580,6 +623,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: parcel.id }}
         opals={[...opals, parcel]}
       />
@@ -605,6 +649,7 @@ describe('RingConfigurator store opal selection', () => {
 
     render(
       <RingConfigurator
+        metalSpot={priceSheetSpot}
         initialConfig={{ ...defaultRingConfig, opalId: selectedId }}
         opals={catalogue}
       />
