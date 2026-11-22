@@ -149,7 +149,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
 
               <div className="flex items-baseline justify-between text-sm">
                 <span className="text-ink-2">
-                  Shipping {region === 'INTL' ? 'international' : 'within Australia'}
+                  Shipping {region === 'INTL' ? 'overseas' : 'within Australia'}
                 </span>
                 <span className="text-ink">
                   {shipping === 0 ? 'Free' : formatCurrency(shipping, 'AUD')}
