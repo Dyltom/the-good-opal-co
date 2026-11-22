@@ -318,7 +318,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         image: imageUrl ?? undefined,
                       }}
                     >
-                      <Button asChild variant="ghost" className="min-h-[50px] px-[18px] md:min-h-12">
+                      <Button asChild variant="ghost" className="min-h-[50px] flex-auto px-[18px] md:min-h-12">
                         <Link href={askHref}>Ask about this piece</Link>
                       </Button>
                     </ProductActions>

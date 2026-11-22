@@ -198,7 +198,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </section>
             ) : null}
           </div>
-          <div className="lg:sticky lg:top-[calc(theme(spacing.mast)+24px)]">
+          <div className="max-lg:order-first lg:sticky lg:top-[calc(theme(spacing.mast)+24px)]">
             <CourseInterestPanel course={course} />
           </div>
         </div>

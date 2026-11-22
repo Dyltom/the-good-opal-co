@@ -18,7 +18,7 @@ interface ProductActionsProps {
   children?: ReactNode
 }
 
-const addButtonClass = 'rounded-sm font-medium shadow-none hover:shadow-none'
+const addButtonClass = 'whitespace-nowrap rounded-sm font-medium shadow-none hover:shadow-none'
 
 export function ProductActions({ product, children }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1)
@@ -60,8 +60,8 @@ export function ProductActions({ product, children }: ProductActionsProps) {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-        <div ref={inlineActionsRef} data-testid="inline-product-actions">
+      <div className="flex flex-wrap gap-2">
+        <div ref={inlineActionsRef} data-testid="inline-product-actions" className="min-w-40 flex-[1_1_10rem]">
           <AddToCartButton
             product={cartProduct}
             quantity={quantity}
