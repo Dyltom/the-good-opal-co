@@ -184,7 +184,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     post.seo?.description?.trim() ||
     postSummary(post.excerpt, post.content, 160) ||
     'Practical guidance about Australian opals, jewellery, buying, and care.'
-  const standfirst = post.excerpt?.trim()
+  const excerpt = post.excerpt?.trim()
+  const standfirst = excerpt && !/(…|\.\.\.|\[\s*…\s*\])$/.test(excerpt) ? excerpt : undefined
   const headings = sectionHeadings(post.content)
   const metaParts: ReactNode[] = [
     ...categories.map((category) => (
