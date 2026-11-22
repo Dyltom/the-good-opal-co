@@ -638,6 +638,45 @@ describe('RingConfigurator store opal selection', () => {
     expect(screen.getByText(/multi-stone listing shows a representative stone/i)).not.toBeNull()
   })
 
+  test('quotes a parcel stone at consultation instead of adding the whole parcel price', () => {
+    const parcel: BuilderOpal = {
+      ...opals[0]!,
+      id: 'parcel-2',
+      name: 'Lightning Ridge black opal parcel',
+      selectionKind: 'parcel',
+      price: 400,
+    }
+
+    render(
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={{ ...defaultRingConfig, opalId: parcel.id }}
+        opals={[...opals, parcel]}
+      />
+    )
+
+    expect(screen.getByText(/Subtotal \$450/)).not.toBeNull()
+    const consultationHref = screen
+      .getByRole('link', { name: /Request my design consultation/i })
+      .getAttribute('href')
+    const message = new URL(consultationHref!, window.location.origin).searchParams.get('message')
+    expect(message).toContain(
+      'Builder estimate (AUD): $450. Ring only. Stone quoted at your consultation'
+    )
+  })
+
+  test('adds an individual opal price to the ring subtotal', () => {
+    render(
+      <RingConfigurator
+        metalSpot={priceSheetSpot}
+        initialConfig={{ ...defaultRingConfig, opalId: opals[0]!.id }}
+        opals={opals}
+      />
+    )
+
+    expect(screen.getByText(/Subtotal \$700/)).not.toBeNull()
+  })
+
   test('pins a linked deep-catalogue opal without rendering every preceding card', () => {
     const catalogue = Array.from({ length: 90 }, (_, index) => ({
       ...opals[0]!,
