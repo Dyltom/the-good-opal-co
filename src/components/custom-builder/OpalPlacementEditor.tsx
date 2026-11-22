@@ -85,6 +85,10 @@ const styleLabels: Record<RingConfig['style'], string> = {
   coral: 'Coral clean bezel',
   gemini: 'Gemini clean bezel',
   'sun-moon': 'Sun & Moon beaded trim',
+  crown: 'Crown claw setting',
+  dewdrop: 'Dewdrop claw setting',
+  horizon: 'Horizon wide-band bezel',
+  shell: 'Shell fine bezel',
 }
 
 function RangeControl({

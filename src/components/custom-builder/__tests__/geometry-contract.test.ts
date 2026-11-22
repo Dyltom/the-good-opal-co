@@ -720,26 +720,35 @@ describe('custom ring geometry contract', () => {
     )
 
     for (const [style, profile] of profiles) {
-      expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.075)
-      expect(profile.shankRadius, style).toBeLessThanOrEqual(0.11)
-      expect(profile.shankRadius * 20, style).toBeGreaterThanOrEqual(1.5)
-      expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(2.2)
-      expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
-      expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
-      expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.65)
-      expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.95)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(0.73)
-      expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(0.85)
-      expect(profile.shoulderBlendLengthMm, style).toBeGreaterThanOrEqual(1.3)
-      expect(profile.shoulderBlendLengthMm, style).toBeLessThanOrEqual(1.5)
-      expect(profile.shoulderLandingLengthMm, style).toBeGreaterThanOrEqual(1.1)
-      expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
-      expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
-      expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.19)
-      expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
-      expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.03)
-      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.024)
-      expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.03)
+      const band = ringStyles.find((option) => option.id === style)?.band
+      if (band === 'chunky') {
+        expect(profile.shankRadius * 20, style).toBeGreaterThanOrEqual(4)
+        expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(6)
+        expect(profile.shoulderRadius, style).toBeLessThan(profile.shankRadius)
+      } else {
+        expect(profile.shankRadius, style).toBeGreaterThanOrEqual(0.075)
+        expect(profile.shankRadius, style).toBeLessThanOrEqual(0.11)
+        expect(profile.shankRadius * 20, style).toBeGreaterThanOrEqual(1.5)
+        expect(profile.shankRadius * 20, style).toBeLessThanOrEqual(2.2)
+        expect(profile.shankDepth, style).toBeLessThan(profile.shankRadius)
+        expect(profile.shoulderDepth, style).toBeLessThan(profile.shoulderRadius)
+        expect(profile.crossSectionPower, style).toBeGreaterThanOrEqual(0.65)
+        expect(profile.crossSectionPower, style).toBeLessThanOrEqual(0.95)
+        expect(profile.shoulderRadius / profile.shankRadius, style).toBeGreaterThanOrEqual(0.73)
+        expect(profile.shoulderRadius / profile.shankRadius, style).toBeLessThanOrEqual(0.85)
+        expect(profile.shoulderBlendLengthMm, style).toBeGreaterThanOrEqual(1.3)
+        expect(profile.shoulderBlendLengthMm, style).toBeLessThanOrEqual(1.5)
+        expect(profile.shoulderLandingLengthMm, style).toBeGreaterThanOrEqual(1.1)
+        expect(profile.shoulderLandingLengthMm, style).toBeLessThanOrEqual(1.3)
+        expect(profile.shoulderUnderlap, style).toBeGreaterThanOrEqual(0.15)
+        expect(profile.shoulderUnderlap, style).toBeLessThanOrEqual(0.19)
+        expect(profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(0.02)
+        expect(profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.03)
+        expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeGreaterThanOrEqual(
+          0.024
+        )
+        expect(profile.shoulderDepth - profile.shoulderJoinDrop, style).toBeLessThanOrEqual(0.03)
+      }
 
       if (profile.beadCount > 0) {
         expect(profile.beadRadius, style).toBeGreaterThan(0)

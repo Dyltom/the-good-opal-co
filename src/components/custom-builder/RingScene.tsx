@@ -21,6 +21,7 @@ import {
   AdditiveBlending,
   BufferGeometry,
   CanvasTexture,
+  CatmullRomCurve3,
   ClampToEdgeWrapping,
   Color,
   Float32BufferAttribute,
@@ -33,6 +34,7 @@ import {
   RepeatWrapping,
   SRGBColorSpace,
   SphereGeometry,
+  TubeGeometry,
   type Texture,
   TextureLoader,
   type Group,
@@ -1551,6 +1553,73 @@ function SolderBridges({
   )
 }
 
+const clawCounts: Partial<Record<RingConfig['setting'], number>> = { 'claw-4': 4, 'claw-6': 6 }
+
+function ClawProngs({
+  bottomZ,
+  config,
+  contour,
+  count,
+  dimensions,
+  girdleZ,
+}: {
+  bottomZ: number
+  config: RingConfig
+  contour?: BuilderStoneContourV1
+  count: number
+  dimensions: StoneDimensions
+  girdleZ: number
+}) {
+  const [width, height] = dimensions
+  const prongRadius = 0.022 + Math.min(width, height) * 0.02
+  const geometries = useMemo(() => {
+    const phase = count === 4 ? Math.PI / 4 : Math.PI / 2
+    return evenlySpacedOutlinePoints(
+      config.shape,
+      width,
+      height,
+      0,
+      count,
+      phase,
+      undefined,
+      contour
+    ).map(({ key, x, y }) => {
+      const length = Math.hypot(x, y) || 1
+      const nx = x / length
+      const ny = y / length
+      const at = (offset: number, z: number) => new Vector3(x + nx * offset, y + ny * offset, z)
+      const curve = new CatmullRomCurve3([
+        at(prongRadius * 0.6, bottomZ),
+        at(prongRadius * 1.1, girdleZ - 0.02),
+        at(prongRadius * 0.9, girdleZ + 0.035),
+        at(-prongRadius * 0.9, girdleZ + 0.05),
+      ])
+      return {
+        key,
+        tube: new TubeGeometry(curve, 24, prongRadius, 10, false),
+        tip: curve.getPoint(1),
+      }
+    })
+  }, [bottomZ, config.shape, contour, count, girdleZ, height, prongRadius, width])
+  useEffect(() => () => geometries.forEach(({ tube }) => tube.dispose()), [geometries])
+
+  return (
+    <>
+      {geometries.map(({ key, tube, tip }) => (
+        <group key={key}>
+          <mesh castShadow geometry={tube} receiveShadow>
+            <MetalMaterial metal={config.metal} />
+          </mesh>
+          <mesh castShadow position={tip} receiveShadow scale={[1, 1, 0.7]}>
+            <sphereGeometry args={[prongRadius, 16, 12]} />
+            <MetalMaterial metal={config.metal} />
+          </mesh>
+        </group>
+      ))}
+    </>
+  )
+}
+
 function Setting({
   animateOpalPlacement,
   config,
@@ -1658,6 +1727,40 @@ function Setting({
       width,
     ]
   )
+
+  const clawCount = clawCounts[config.setting]
+
+  if (clawCount) {
+    return (
+      <group>
+        <SettingBase
+          config={config}
+          dimensions={dimensions}
+          bottomOffset={outerBezelOffset - profile.cupTaper}
+          bottomZ={bezelBottom - profile.cupDepth}
+          topOffset={outerBezelOffset}
+          topZ={depthProfile.baseZ + 0.003}
+          contour={contour}
+        />
+        <ClawProngs
+          bottomZ={bezelBottom - profile.cupDepth}
+          config={config}
+          contour={contour}
+          count={clawCount}
+          dimensions={dimensions}
+          girdleZ={depthProfile.girdleZ}
+        />
+        <SettlingOpalCabochon
+          animate={animateOpalPlacement}
+          config={config}
+          dimensions={dimensions}
+          selectedOpal={selectedOpal}
+          settleStartOffset={getOpalSettleStartOffset(depthProfile, bezelTop)}
+          transitionKey={transitionKey}
+        />
+      </group>
+    )
+  }
 
   return (
     <group>
