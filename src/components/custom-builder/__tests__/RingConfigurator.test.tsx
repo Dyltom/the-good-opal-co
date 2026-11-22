@@ -360,7 +360,7 @@ describe('RingConfigurator store opal selection', () => {
     await waitFor(() => {
       const params = new URLSearchParams(window.location.search)
       expect(params.get('p')).toBe('204')
-      expect(params.get('y')).toBe('gemini')
+      expect(params.get('y')).toBe('sun-moon')
       expect(params.get('s')).toBe('oval')
     })
     expect(screen.getByRole('button', { name: /Aurora/i }).textContent).toContain('Not suitable')

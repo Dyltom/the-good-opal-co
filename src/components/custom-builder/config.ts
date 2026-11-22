@@ -931,13 +931,30 @@ export function getRingStyleFit(
     : { kind: 'adapted', label: 'Adapted proportions' }
 }
 
+export function configWithOpal(
+  config: RingConfig,
+  opal: Pick<BuilderOpal, 'id' | 'renderStone' | 'visual'>
+): RingConfig {
+  const style =
+    getRingStyleFit(config.style, opal).kind === 'incompatible'
+      ? opal.visual.recommendedStyle
+      : config.style
+  return {
+    ...applyRingStyle(
+      { ...config, ...defaultOpalPlacement, opalId: opal.id, stone: opal.renderStone },
+      style
+    ),
+    shape: shapeForOpal(opal),
+  }
+}
+
 export function opalPhotoFitLabel(opal: BuilderOpal): string {
   return opal.visual.canonicalFace || opal.visual.contour
     ? 'Traced from this stone’s photo'
     : 'Colour from this stone’s photo'
 }
 
-export function shapeForOpal(opal: BuilderOpal): RingConfig['shape'] {
+export function shapeForOpal(opal: Pick<BuilderOpal, 'visual'>): RingConfig['shape'] {
   return opal.visual.silhouette === 'elongated' ? 'elongated' : opal.visual.silhouette
 }
 

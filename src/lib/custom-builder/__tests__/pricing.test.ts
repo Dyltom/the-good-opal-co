@@ -2,6 +2,21 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { getMetalSpot } from '../metal-spot'
 import { estimateRingPrice, priceSheetSpot } from '../pricing'
 
+const feed = vi.hoisted(() => vi.fn<(url: string) => unknown>())
+
+vi.mock('node:https', async () => {
+  const { PassThrough } = await import('node:stream')
+  const get = (url: string, _options: unknown, onResponse: (response: PassThrough) => void) => {
+    const response = Object.assign(new PassThrough(), { statusCode: 200 })
+    queueMicrotask(() => {
+      onResponse(response)
+      response.end(JSON.stringify(feed(url)))
+    })
+    return Object.assign(new PassThrough(), { on: () => undefined })
+  }
+  return { get, default: { get } }
+})
+
 const goldUp = { ...priceSheetSpot, goldAudPerOz: priceSheetSpot.goldAudPerOz * 1.2 }
 
 describe('custom ring pricing', () => {
@@ -30,24 +45,19 @@ describe('custom ring pricing', () => {
 })
 
 describe('live metal prices', () => {
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => vi.restoreAllMocks())
 
   test('falls back to the price sheet when the feed returns an implausible price', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => Response.json({ price: 1, updatedAt: '2026-11-22T00:00:00Z' }))
-    )
+    feed.mockImplementation(() => ({ price: 1, updatedAt: '2026-11-22T00:00:00Z' }))
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     expect(await getMetalSpot()).toEqual(priceSheetSpot)
   })
 
   test('uses the feed when it returns plausible prices', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (url: string) =>
-        Response.json({ price: url.includes('XAU') ? 5400 : 63, updatedAt: '2026-11-23T00:00:00Z' })
-      )
-    )
+    feed.mockImplementation((url: string) => ({
+      price: url.includes('XAU') ? 5400 : 63,
+      updatedAt: '2026-11-23T00:00:00Z',
+    }))
     expect(await getMetalSpot()).toMatchObject({
       goldAudPerOz: 5400,
       silverAudPerOz: 63,

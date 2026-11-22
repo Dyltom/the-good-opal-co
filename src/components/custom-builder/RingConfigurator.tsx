@@ -15,6 +15,7 @@ import { estimateRingPrice, formatWholeDollars } from '@/lib/custom-builder/pric
 import type { MetalSpot } from '@/lib/custom-builder/pricing'
 import {
   applyRingStyle,
+  configWithOpal,
   defaultOpalPlacement,
   describeRingConfig,
   getRingStyleFit,
@@ -515,16 +516,7 @@ export function RingConfigurator({
   }
 
   function selectOpal(opal: BuilderOpal) {
-    setConfig((current) => {
-      const next = {
-        ...current,
-        ...defaultOpalPlacement,
-        opalId: opal.id,
-        stone: opal.renderStone,
-      }
-      const styled = applyRingStyle(next, opal.visual.recommendedStyle)
-      return { ...styled, shape: shapeForOpal(opal) }
-    })
+    setConfig((current) => configWithOpal(current, opal))
   }
 
   function clearOpal() {
@@ -719,18 +711,17 @@ export function RingConfigurator({
                 <span className="sr-only">Your concept: </span>
                 {description}
               </p>
-              <p className="mt-1 flex flex-wrap items-baseline gap-x-2 tabular-nums">
+              <p className="mt-1 text-base font-medium tabular-nums text-ink sm:text-lg">
                 {estimateTotal ? (
-                  <span className="text-lg font-medium text-ink sm:text-xl">
-                    {estimateTotal} <span className="text-xs font-normal text-ink-2">AUD</span>
-                  </span>
-                ) : null}
-                <span className="text-sm text-ink-2">{estimateDetail}</span>
-              </p>
-              <p className="hidden text-xs leading-5 text-ink-2 sm:block">
-                Estimate only.{' '}
-                {metalSpot.live ? "Metal is priced at today's gold and silver rate. " : ''}Your
-                consultation confirms the final price, and nothing is charged here.
+                  <>
+                    Subtotal {estimateTotal}{' '}
+                    <span className="text-xs font-normal text-ink-2">
+                      AUD{opalPrice ? '' : ', ring only'}
+                    </span>
+                  </>
+                ) : (
+                  estimateDetail
+                )}
               </p>
               <div className="mt-2.5 flex gap-2">
                 <Link
