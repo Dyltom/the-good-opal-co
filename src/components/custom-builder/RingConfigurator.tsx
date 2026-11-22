@@ -487,15 +487,16 @@ export function RingConfigurator({
   const selectedStyle = ringStyles.find((style) => style.id === config.style) ?? ringStyles[0]!
   const ringPrice = estimateRingPrice(config, metalSpot)
   const opalPrice = selectedOpal && selectedOpal.price > 0 ? selectedOpal.price : undefined
-  const estimateTotal =
-    ringPrice === null ? null : formatWholeDollars(ringPrice + (opalPrice ?? 0))
+  const estimateTotal = ringPrice === null ? null : formatWholeDollars(ringPrice + (opalPrice ?? 0))
   const estimateDetail =
     ringPrice === null
       ? 'Platinum is quoted at your consultation'
       : opalPrice
         ? `Ring ${formatWholeDollars(ringPrice)} + opal ${formatWholeDollars(opalPrice)}`
-        : 'Ring only, plus the opal you choose'
-  const estimate = estimateTotal ? `${estimateTotal} (${estimateDetail.toLowerCase()})` : estimateDetail
+        : 'Ring only. Pick an opal to see the total'
+  const estimate = estimateTotal
+    ? `${estimateTotal} (${estimateDetail.toLowerCase()})`
+    : estimateDetail
   const isStartingDesign = useMemo(
     () => JSON.stringify(config) === JSON.stringify(initialConfig),
     [config, initialConfig]
