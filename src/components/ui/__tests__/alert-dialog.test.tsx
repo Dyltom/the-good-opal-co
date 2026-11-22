@@ -14,7 +14,7 @@ describe('CartClearConfirmDialog', () => {
     )
 
     expect(screen.getByText('Remove every item?')).toBeDefined()
-    expect(screen.getByText('This removes 3 items from your cart. This action cannot be undone.')).toBeDefined()
+    expect(screen.getByText('This removes 3 items from your bag. This action cannot be undone.')).toBeDefined()
   })
 
   it('should call onConfirm when Clear button is clicked', () => {
@@ -70,6 +70,6 @@ describe('CartClearConfirmDialog', () => {
       />
     )
 
-    expect(screen.getByText('This removes 1 item from your cart. This action cannot be undone.')).toBeDefined()
+    expect(screen.getByText('This removes 1 item from your bag. This action cannot be undone.')).toBeDefined()
   })
 })

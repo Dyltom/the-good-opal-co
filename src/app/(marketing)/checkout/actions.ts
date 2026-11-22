@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { checkoutHoldToken, getCart, setCheckoutHold } from '@/lib/cart'
 import {
   calculateCheckoutPricing,
-  calculateCheckoutSubtotal,
   dollarsToCents,
 } from '@/lib/checkout-pricing'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
@@ -113,13 +112,12 @@ export async function createCheckoutSession(input: {
     if (cart.items.length === 0) {
       return {
         success: false,
-        error: 'Your cart is empty. Please add items before checking out.',
+        error: 'Your bag is empty. Add a piece before checking out.',
       }
     }
 
-    const subtotal = calculateCheckoutSubtotal(cart.items)
     const destination = region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
-    const pricing = calculateCheckoutPricing(subtotal, destination)
+    const pricing = calculateCheckoutPricing(cart.items, destination)
     const expiresAt = checkoutReservationExpiresAt()
     const brandIcon = publicUrl('/logo.png')
 
@@ -164,8 +162,10 @@ export async function createCheckoutSession(input: {
                 currency: 'aud',
               },
               display_name:
-                pricing.shippingCents === 0
-                  ? 'Free tracked shipping'
+                pricing.shippedSubtotal === 0
+                  ? 'No shipping on deposits'
+                  : pricing.shippingCents === 0
+                    ? 'Free tracked shipping'
                   : destination === 'AUSTRALIA'
                     ? 'Australia tracked shipping'
                     : 'International tracked shipping',
@@ -220,7 +220,7 @@ export async function createCheckoutSession(input: {
       return {
         success: false,
         error:
-          'One or more pieces were just reserved by another customer. Please review your cart.',
+          'One or more pieces were just reserved by another customer. Please review your bag.',
       }
     }
 

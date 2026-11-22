@@ -28,7 +28,7 @@ export default function Error({
           Something went wrong on our end.
         </h1>
         <p className="mt-3 max-w-[60ch] text-[15px] leading-[1.6] text-ink-2">
-          Your cart and any order you completed are safe. Please try again, or contact us if it
+          Your bag and any order you completed are safe. Please try again, or contact us if it
           keeps happening.
         </p>
 

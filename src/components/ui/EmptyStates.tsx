@@ -81,14 +81,10 @@ export function CartEmptyState() {
   return (
     <EmptyState
       icon={<ShoppingBag className="w-12 h-12 text-ink-2" />}
-      title="Your cart is empty"
+      title="Your bag is empty"
       description="Looks like you haven't added any pieces yet. Explore our collection of unique Australian opals."
       action={{
-        label: "Start Shopping",
-        href: "/store"
-      }}
-      secondaryAction={{
-        label: "Browse Categories",
+        label: "Browse the collection",
         href: "/store"
       }}
     />
