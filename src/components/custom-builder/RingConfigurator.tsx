@@ -11,6 +11,8 @@ import { getPhotoPlacementScaleMax } from '@/lib/custom-builder/photo-crop'
 import { getBuilderOpalPhotoSource } from '@/lib/custom-builder/opal-photo-source'
 import type { RingDesignRenderManifest } from '@/lib/custom-builder/ring-design-manifest'
 import { selectRingRenderModel } from '@/lib/custom-builder/ring-render-model'
+import { estimateRingPrice, formatWholeDollars } from '@/lib/custom-builder/pricing'
+import type { MetalSpot } from '@/lib/custom-builder/pricing'
 import {
   applyRingStyle,
   defaultOpalPlacement,
@@ -36,6 +38,7 @@ const RingPreview = dynamic(() => import('./RingPreview').then((module) => modul
 
 interface RingConfiguratorProps {
   initialConfig: RingConfig
+  metalSpot: MetalSpot
   opals: readonly BuilderOpal[]
   ringDesignManifests?: readonly RingDesignRenderManifest[]
   unavailableOpalRequested?: boolean
@@ -67,10 +70,7 @@ function designUrlForConfig(config: RingConfig): URL {
 function StepLegend({ step, children }: { step: string; children: ReactNode }) {
   return (
     <legend className="flex items-baseline gap-2 font-serif text-lg font-medium text-ink">
-      <span
-        aria-hidden="true"
-        className="font-sans text-xs font-semibold text-accent"
-      >
+      <span aria-hidden="true" className="font-sans text-xs font-semibold text-accent">
         {step}
       </span>
       {children}
@@ -423,6 +423,7 @@ function RingStylePicker({
 
 export function RingConfigurator({
   initialConfig,
+  metalSpot,
   opals,
   ringDesignManifests = [],
   unavailableOpalRequested = false,
@@ -484,6 +485,14 @@ export function RingConfigurator({
     [config, ringDesignManifests, selectedOpal]
   )
   const selectedStyle = ringStyles.find((style) => style.id === config.style) ?? ringStyles[0]!
+  const ringPrice = estimateRingPrice(config, metalSpot)
+  const opalPrice = selectedOpal && selectedOpal.price > 0 ? selectedOpal.price : undefined
+  const estimate =
+    ringPrice === null
+      ? 'Platinum is quoted individually'
+      : opalPrice
+        ? `Estimate ${formatWholeDollars(ringPrice + opalPrice)}: ring ${formatWholeDollars(ringPrice)} + opal ${formatWholeDollars(opalPrice)}`
+        : `Ring ${formatWholeDollars(ringPrice)}, plus the opal you choose`
   const isStartingDesign = useMemo(
     () => JSON.stringify(config) === JSON.stringify(initialConfig),
     [config, initialConfig]
@@ -549,7 +558,7 @@ export function RingConfigurator({
   const contactParams = new URLSearchParams({
     subject: 'custom-design',
     product: `Custom ring concept: ${description}`,
-    message: `I created a custom ring concept and would like to discuss stone availability, final design, timing, and an exact quote.\n\nConcept: ${description}`,
+    message: `I created a custom ring concept and would like to discuss stone availability, final design, timing, and an exact quote.\n\nConcept: ${description}\n\nBuilder estimate: ${estimate} (AUD)`,
     design: JSON.stringify(config),
   })
   const viewerResetKey = JSON.stringify([
@@ -694,7 +703,10 @@ export function RingConfigurator({
             </button>
           </div>
 
-          <div data-bottom-bar className="sticky bottom-0 z-20 border-t border-rule bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/85 lg:static">
+          <div
+            data-bottom-bar
+            className="sticky bottom-0 z-20 border-t border-rule bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/85 lg:static"
+          >
             <div className="px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-8 lg:py-4">
               <p
                 aria-live="polite"
@@ -703,9 +715,10 @@ export function RingConfigurator({
                 <span className="sr-only">Your concept: </span>
                 {description}
               </p>
-              <p className="mt-0.5 hidden text-xs leading-5 text-ink-2 sm:block">
-                Pricing follows the stone, metal and final design. Quoted in AUD; nothing is charged
-                here.
+              <p className="mt-0.5 text-sm font-medium tabular-nums text-ink">{estimate}</p>
+              <p className="hidden text-xs leading-5 text-ink-2 sm:block">
+                {metalSpot.live ? "Metal follows today's gold and silver price. " : ''}AUD; your
+                consultation confirms the final price and nothing is charged here.
               </p>
               <div className="mt-2.5 flex gap-2">
                 <Link
