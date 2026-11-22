@@ -93,9 +93,13 @@ describe('sold ring reference proportions', () => {
             imageUrl: expect.stringMatching(
               new RegExp(`^/images/products/${style}-.*opal-ring\\.jpg$`)
             ),
-            photoFit: undefined,
+            photoFit: 'reviewed',
             renderStone: 'crystal',
-            textureCrop: undefined,
+            textureCrop: {
+              focalX: expect.any(Number),
+              focalY: expect.any(Number),
+              zoom: expect.any(Number),
+            },
           },
         ])
       ),

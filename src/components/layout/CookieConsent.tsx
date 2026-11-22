@@ -66,7 +66,7 @@ export function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 16, opacity: 0 }}
           transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
-          className="fixed bottom-3 left-3 right-3 z-50 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm max-lg:[body:has([data-bottom-bar])_&]:bottom-36 [body:has([role=dialog][data-state=open])_&]:hidden"
+          className="fixed bottom-3 left-3 right-3 z-50 sm:bottom-5 sm:left-auto sm:right-5 sm:max-w-sm max-lg:[body:has([data-bottom-bar])_&]:bottom-36 lg:[body:has([data-bottom-bar])_&]:left-5 lg:[body:has([data-bottom-bar])_&]:right-auto [body:has([role=dialog][data-state=open])_&]:hidden"
         >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-rule bg-bg px-4 py-3 text-xs leading-5 text-ink shadow-md">
             <p className="min-w-0 flex-1 basis-56">
@@ -76,10 +76,19 @@ export function CookieConsent() {
               </Link>
             </p>
             <div className="flex gap-2">
-              <Button onClick={acceptNecessary} size="sm" variant="quiet" className="min-h-[44px] min-w-[44px] px-3">
+              <Button
+                onClick={acceptNecessary}
+                size="sm"
+                variant="quiet"
+                className="min-h-[44px] min-w-[44px] px-3"
+              >
                 Necessary only
               </Button>
-              <Button onClick={acceptAll} size="sm" className="min-h-[44px] min-w-[44px] bg-ink px-3 text-bg hover:bg-ink">
+              <Button
+                onClick={acceptAll}
+                size="sm"
+                className="min-h-[44px] min-w-[44px] bg-ink px-3 text-bg hover:bg-ink"
+              >
                 Accept analytics
               </Button>
             </div>
@@ -105,10 +114,7 @@ export function CookieSettingsLink({ className }: { className?: string }) {
   }
 
   return hasConsent ? (
-    <button
-      onClick={openSettings}
-      className={cn('transition-colors', className)}
-    >
+    <button onClick={openSettings} className={cn('transition-colors', className)}>
       Cookie settings
     </button>
   ) : null

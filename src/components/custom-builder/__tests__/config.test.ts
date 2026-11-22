@@ -120,7 +120,7 @@ describe('custom ring configuration', () => {
 
   test('creates a concise consultation summary', () => {
     expect(describeRingConfig(defaultRingConfig)).toBe(
-      'Oval blue-green opal, Gemini design, sterling silver, size 7'
+      'Oval opal (not chosen yet), Gemini design, sterling silver, size 7'
     )
 
     expect(describeRingConfig(defaultRingConfig, 'Lightning Ridge black crystal opal')).toBe(
