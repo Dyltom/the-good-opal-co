@@ -70,7 +70,7 @@ describe('structured data', () => {
       '@type': 'Product',
       sku: 'OPAL-1',
       image: ['https://example.com/blue.jpg'],
-      material: ['Sterling silver', 'Black opal'],
+      material: 'Sterling silver, Black opal',
       weight: { '@type': 'QuantitativeValue', value: 2.1, unitCode: 'CTM' },
       size: 'Ring size N',
       additionalProperty: [{ name: 'Origin', value: 'Lightning Ridge, NSW' }],
