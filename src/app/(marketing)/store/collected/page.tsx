@@ -12,7 +12,8 @@ import { storeLabel } from '../store-query'
 
 export const metadata: Metadata = {
   title: 'Recently sold | The Good Opal Co',
-  description: 'One-of-a-kind Australian opals and pieces that have already found a home.',
+  description:
+    'One-of-a-kind Australian opals and pieces that have already found a home. Ask us to find a similar stone, or browse the opals still for sale.',
   alternates: { canonical: '/store/collected' },
 }
 export const dynamic = 'force-dynamic'
@@ -42,8 +43,8 @@ export default async function CollectedPage() {
               Pieces that have found a home
             </h1>
             <p className="mt-2 text-[15px] leading-6 text-ink-2">
-              Every opal here was one of a kind, so none of them will come back. If one speaks to you,
-              tell us about it and we will look for something with the same feeling.
+              Every opal here was one of a kind, so none of them will come back. If one speaks to
+              you, tell us about it and we will look for something with the same feeling.
             </p>
           </div>
           <div className="flex flex-none flex-wrap items-center gap-x-5 gap-y-2">
@@ -74,7 +75,10 @@ export default async function CollectedPage() {
 
             return (
               <li key={product.id}>
-                <Link href={`/store/${encodeURIComponent(product.slug)}`} className="group block no-underline">
+                <Link
+                  href={`/store/${encodeURIComponent(product.slug)}`}
+                  className="group block no-underline"
+                >
                   <div className="relative aspect-[4/5] overflow-hidden bg-plinth">
                     {image ? (
                       <Image
