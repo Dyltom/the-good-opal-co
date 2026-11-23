@@ -333,9 +333,31 @@ export default function TermsOfServicePage() {
               </p>
             </section>
 
+            <section id="gift-vouchers" className="mb-9 scroll-mt-24">
+              <h2 className="mb-3 mt-0 text-[1.5rem] leading-[1.15] md:text-[1.75rem]">
+                16. Gift Vouchers
+              </h2>
+              <p className="mb-4">
+                Gift vouchers are valid for three years from the date they are issued. The expiry
+                date is shown on the voucher email.
+              </p>
+              <p className="mb-4">
+                Vouchers are not redeemable for cash and cannot be used to buy another gift voucher.
+                One voucher can be used per order.
+              </p>
+              <p className="mb-4">
+                If an order costs less than the voucher, the remaining balance stays on the voucher
+                for a later order. If it costs more, the difference is paid by card at checkout.
+              </p>
+              <p className="mb-4">
+                If a voucher code is lost, contact us with the purchaser or recipient details and we
+                will reissue it.
+              </p>
+            </section>
+
             <section className="mb-9">
               <h2 className="mb-3 mt-0 text-[1.5rem] leading-[1.15] md:text-[1.75rem]">
-                16. Contact Information
+                17. Contact Information
               </h2>
               <p className="mb-4">Questions about the Terms of Service should be sent to us at:</p>
               <div className="bg-plinth px-5 py-4">

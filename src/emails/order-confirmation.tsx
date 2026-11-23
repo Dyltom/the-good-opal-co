@@ -14,6 +14,7 @@ interface OrderConfirmationEmailProps {
   items: OrderItem[]
   subtotal: number
   shipping: number
+  giftVoucher?: { code: string; amount: number } | undefined
   total: number
   shippingAddress: {
     line1: string
@@ -37,6 +38,7 @@ export function OrderConfirmationEmail({
   items,
   subtotal,
   shipping,
+  giftVoucher,
   total,
   shippingAddress,
   baseUrl,
@@ -104,6 +106,12 @@ export function OrderConfirmationEmail({
             <td style={totalRow}>Shipping</td>
             <td align="right" style={totalRow}>{shipping === 0 ? 'Free' : formatCurrency(shipping, 'AUD')}</td>
           </tr>
+          {giftVoucher ? (
+            <tr>
+              <td style={totalRow}>Gift voucher {giftVoucher.code}</td>
+              <td align="right" style={totalRow}>-{formatCurrency(giftVoucher.amount, 'AUD')}</td>
+            </tr>
+          ) : null}
           <tr>
             <td style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>Total</td>
             <td align="right" style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>

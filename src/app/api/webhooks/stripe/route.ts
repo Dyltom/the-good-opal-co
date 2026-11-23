@@ -8,7 +8,7 @@ import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 import type { Order } from '@/types/payload-types'
 import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
 import { calculateRefundAdjustment } from '@/lib/stripe-refunds'
-import { getRequiredCheckoutShippingDetails } from '@/lib/stripe-fulfillment'
+import { getRequiredCheckoutShippingDetails, isPaidCheckoutStatus } from '@/lib/stripe-fulfillment'
 import {
   requireOrderForPaymentEvent,
   statusToRestoreAfterWonDispute,
@@ -25,6 +25,16 @@ import {
 } from '@/lib/custom-quote-deposits'
 import { sendQuoteDepositConfirmation } from '@/lib/custom-quotes/deposit-confirmation'
 import { notifyOwnerOfQuoteEvent } from '@/lib/custom-quotes/owner-notification'
+import {
+  isGiftVoucherPurchaseSession,
+  issueGiftVoucherFromSession,
+} from '@/lib/gift-voucher-purchase'
+import { sendGiftVoucherPurchaseEmails } from '@/lib/gift-voucher-email'
+import {
+  captureGiftVoucherHold,
+  keepGiftVoucherHoldUntilPaid,
+  releaseGiftVoucherHold,
+} from '@/lib/gift-vouchers'
 import {
   recordCheckoutInsight,
   recordServerError,
@@ -157,6 +167,9 @@ async function sendOrderConfirmation(order: Order): Promise<void> {
         })),
         subtotal: order.subtotal,
         shipping: order.shipping ?? 0,
+        giftVoucher: order.giftVoucherCode
+          ? { code: order.giftVoucherCode, amount: order.giftVoucherAmount ?? 0 }
+          : undefined,
         total: order.total,
         shippingAddress: {
           line1: order.shippingAddress.line1,
@@ -210,6 +223,9 @@ function ownerOrderEmailText(order: Order): string {
       : []),
     `New paid order ${order.orderNumber}`,
     `Total paid: ${formatAud(order.total)} ${order.currency ?? 'AUD'} (shipping ${formatAud(order.shipping ?? 0)})`,
+    ...(order.giftVoucherCode
+      ? [`Gift voucher ${order.giftVoucherCode}: -${formatAud(order.giftVoucherAmount ?? 0)}`]
+      : []),
     '',
     'Items:',
     ...order.items.map(
@@ -489,6 +505,11 @@ async function reconcileQuoteDepositDispute(
   }
 }
 
+async function releaseVoucherHoldFor(session: Stripe.Checkout.Session): Promise<void> {
+  const token = reservationTokenFromSession(session)
+  if (token) await releaseGiftVoucherHold(token, session.id)
+}
+
 async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Order | null> {
   const payload = await getPayload()
   const result = await payload.find({
@@ -671,7 +692,11 @@ export async function POST(request: NextRequest) {
       await clearPendingQuoteDepositSession(event.data.object)
       return NextResponse.json({ received: true, quoteDepositReleased: true })
     }
+    if (isGiftVoucherPurchaseSession(event.data.object)) {
+      return NextResponse.json({ received: true })
+    }
     await releaseInventoryReservation(event.data.object, 'checkout-expired')
+    await releaseVoucherHoldFor(event.data.object)
     await recordCheckoutInsight({
       name: 'checkout_abandoned',
       session: event.data.object,
@@ -686,7 +711,11 @@ export async function POST(request: NextRequest) {
       await clearPendingQuoteDepositSession(event.data.object)
       return NextResponse.json({ received: true, quoteDepositReleased: true })
     }
+    if (isGiftVoucherPurchaseSession(event.data.object)) {
+      return NextResponse.json({ received: true })
+    }
     await releaseInventoryReservation(event.data.object, 'async-payment-failed')
+    await releaseVoucherHoldFor(event.data.object)
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
 
@@ -713,8 +742,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (session.payment_status !== 'paid') {
+    if (isGiftVoucherPurchaseSession(session)) {
+      if (!isPaidCheckoutStatus(session.payment_status)) {
+        return NextResponse.json({ received: true, awaitingPayment: true })
+      }
+      try {
+        const { voucher, created } = await issueGiftVoucherFromSession(session)
+        if (created) {
+          await recordCheckoutInsight({
+            name: 'purchase',
+            session,
+            occurredAt: new Date(event.created * 1000),
+            items: [{ name: 'Gift voucher', quantity: 1, amount: voucher.initialValue }],
+          })
+        }
+        await sendGiftVoucherPurchaseEmails(await getPayload(), voucher.id)
+        return NextResponse.json({ received: true, giftVoucherId: voucher.id, duplicate: !created })
+      } catch (error) {
+        console.error('Error issuing gift voucher:', error)
+        await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })
+        return NextResponse.json({ error: 'Failed to issue gift voucher' }, { status: 500 })
+      }
+    }
+
+    if (!isPaidCheckoutStatus(session.payment_status)) {
       await markReservationPaymentPending(session)
+      const token = reservationTokenFromSession(session)
+      if (token) await keepGiftVoucherHoldUntilPaid(token)
       return NextResponse.json({ received: true, awaitingPayment: true })
     }
 
@@ -863,6 +917,34 @@ export async function POST(request: NextRequest) {
         })
 
         console.log(`Order created: ${order.orderNumber}`)
+
+        const voucherCapture = reservationToken
+          ? await captureGiftVoucherHold({
+              payload,
+              req: transactionReq,
+              checkoutToken: reservationToken,
+              stripeSessionId: session.id,
+              orderId: order.id,
+            })
+          : null
+        if (voucherCapture) {
+          const voucherAmount = session.total_details?.amount_discount
+            ? session.total_details.amount_discount / 100
+            : voucherCapture.amount
+          const updated = await payload.update({
+            collection: 'orders',
+            id: order.id,
+            req: transactionReq,
+            data: {
+              giftVoucherCode: voucherCapture.code,
+              giftVoucherAmount: voucherAmount,
+              ...(voucherCapture.note
+                ? { notes: [order.notes, voucherCapture.note].filter(Boolean).join('\n') }
+                : {}),
+            },
+          })
+          Object.assign(order, updated)
+        }
 
         // Update or create customer record for CRM
         const customerEmail = sessionEmail.toLowerCase()

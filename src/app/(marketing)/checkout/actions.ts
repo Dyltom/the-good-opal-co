@@ -22,11 +22,49 @@ import {
   releaseInventoryReservation,
   reserveCheckoutInventory,
 } from '@/lib/inventory-reservations'
+import {
+  GIFT_VOUCHER_METADATA_KEY,
+  holdGiftVoucher,
+  lookupGiftVoucher,
+  releaseGiftVoucherHold,
+} from '@/lib/gift-vouchers'
+import { giftVoucherProblemMessage } from '@/lib/gift-voucher-rules'
 
 const checkoutSchema = z.object({
   region: z.enum(['AU', 'INTL']),
   checkoutAttemptId: z.string().uuid('Invalid checkout attempt'),
+  giftVoucherCode: z.string().trim().max(40).optional(),
 })
+
+const giftVoucherCodeSchema = z.string().trim().min(1, 'Enter a gift voucher code').max(40)
+
+export type GiftVoucherCheck =
+  | { ok: true; code: string; available: number; expiresAt: string }
+  | { ok: false; error: string }
+
+export async function checkGiftVoucher(input: string): Promise<GiftVoucherCheck> {
+  const parsed = giftVoucherCodeSchema.safeParse(input)
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? 'Enter a gift voucher code' }
+  }
+  const allowed = await checkRateLimit({
+    scope: 'gift-voucher',
+    identifier: await getRequestIdentifier(),
+    limit: 10,
+    windowSeconds: 15 * 60,
+  })
+  if (!allowed) {
+    return { ok: false, error: 'Too many gift voucher attempts. Please try again in a few minutes.' }
+  }
+  const result = await lookupGiftVoucher(parsed.data)
+  if (!result.ok) return { ok: false, error: giftVoucherProblemMessage(result.problem) }
+  return {
+    ok: true,
+    code: result.code,
+    available: result.availableCents / 100,
+    expiresAt: result.expiresAt,
+  }
+}
 
 export type ShippingRegion = z.infer<typeof checkoutSchema>['region']
 
@@ -45,6 +83,7 @@ async function releaseReplacedCheckout(stripe: Stripe, checkoutAttemptId: string
   if (session.status === 'complete') return
   const closed = session.status === 'open' ? await stripe.checkout.sessions.expire(session.id) : session
   await releaseInventoryReservation(closed, 'checkout-replaced')
+  await releaseGiftVoucherHold(token, closed.id)
 }
 
 interface CheckoutResult {
@@ -56,6 +95,7 @@ interface CheckoutResult {
 export async function createCheckoutSession(input: {
   region: ShippingRegion
   checkoutAttemptId: string
+  giftVoucherCode?: string
 }): Promise<CheckoutResult> {
   const validationResult = checkoutSchema.safeParse(input)
 
@@ -74,8 +114,9 @@ export async function createCheckoutSession(input: {
     }
   }
 
+  let heldVoucherFor: string | null = null
   try {
-    const { region, checkoutAttemptId } = validationResult.data
+    const { region, checkoutAttemptId, giftVoucherCode } = validationResult.data
     const identifier = await getRequestIdentifier()
     const insightsVisitor = await requestVisitorKey()
     const allowed = await checkRateLimit({
@@ -121,12 +162,38 @@ export async function createCheckoutSession(input: {
     const expiresAt = checkoutReservationExpiresAt()
     const brandIcon = publicUrl('/logo.png')
 
+    let voucher: { code: string; amountCents: number } | null = null
+    if (giftVoucherCode) {
+      const hold = await holdGiftVoucher({
+        code: giftVoucherCode,
+        checkoutToken: checkoutAttemptId,
+        orderTotalCents: pricing.totalCents,
+        holdExpiresAt: expiresAt,
+      })
+      if (!hold.ok) return { success: false, error: giftVoucherProblemMessage(hold.problem) }
+      heldVoucherFor = checkoutAttemptId
+      voucher = { code: hold.code, amountCents: hold.amountCents }
+    }
+    const coupon = voucher
+      ? await stripe.coupons.create(
+          {
+            amount_off: voucher.amountCents,
+            currency: 'aud',
+            duration: 'once',
+            max_redemptions: 1,
+            name: `Gift voucher ${voucher.code}`,
+          },
+          { idempotencyKey: `gift-voucher-coupon/${checkoutAttemptId}` }
+        )
+      : null
+
     const session = await stripe.checkout.sessions.create(
       {
         mode: 'payment',
         client_reference_id: checkoutAttemptId,
         expires_at: Math.floor(expiresAt.getTime() / 1000),
         phone_number_collection: { enabled: true },
+        ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
         custom_text: { submit: { message: 'Prices and shipping are in AUD.' } },
         branding_settings: {
           display_name: 'The Good Opal Co',
@@ -174,6 +241,7 @@ export async function createCheckoutSession(input: {
         ],
         metadata: {
           [INVENTORY_RESERVATION_METADATA_KEY]: checkoutAttemptId,
+          ...(voucher ? { [GIFT_VOUCHER_METADATA_KEY]: voucher.code } : {}),
           ...(insightsVisitor ? { [INSIGHTS_VISITOR_METADATA_KEY]: insightsVisitor } : {}),
         },
         success_url: `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -215,6 +283,11 @@ export async function createCheckoutSession(input: {
     }
   } catch (error) {
     console.error('Stripe checkout error:', error)
+    if (heldVoucherFor) {
+      await releaseGiftVoucherHold(heldVoucherFor).catch((releaseError: unknown) =>
+        console.error('Failed to release gift voucher hold:', releaseError)
+      )
+    }
 
     if (error instanceof InventoryUnavailableError) {
       return {

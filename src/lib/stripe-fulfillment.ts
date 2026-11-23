@@ -32,9 +32,13 @@ export function getRequiredCheckoutShippingDetails(
   return parsed.data
 }
 
+export function isPaidCheckoutStatus(paymentStatus: string | null): boolean {
+  return paymentStatus === 'paid' || paymentStatus === 'no_payment_required'
+}
+
 export function shouldFinalizeCheckout(
   paymentStatus: string | null,
   orderConfirmed: boolean
 ): boolean {
-  return paymentStatus === 'paid' && orderConfirmed
+  return isPaidCheckoutStatus(paymentStatus) && orderConfirmed
 }

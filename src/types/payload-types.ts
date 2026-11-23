@@ -76,6 +76,7 @@ export interface Config {
     'ring-reference-checks': RingReferenceCheck
     'insight-events': InsightEvent
     reviews: Review
+    'gift-vouchers': GiftVoucher
     'payload-kv': PayloadKv
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
@@ -103,6 +104,7 @@ export interface Config {
     'ring-reference-checks': RingReferenceChecksSelect<false> | RingReferenceChecksSelect<true>
     'insight-events': InsightEventsSelect<false> | InsightEventsSelect<true>
     reviews: ReviewsSelect<false> | ReviewsSelect<true>
+    'gift-vouchers': GiftVouchersSelect<false> | GiftVouchersSelect<true>
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
@@ -505,6 +507,8 @@ export interface Order {
   shipping?: number | null
   tax?: number | null
   total: number
+  giftVoucherCode?: string | null
+  giftVoucherAmount?: number | null
   currency?: string | null
   stripeSessionId: string
   inventoryReservation?: (number | null) | InventoryReservation
@@ -939,6 +943,39 @@ export interface Review {
   updatedAt: string
   createdAt: string
 }
+export interface GiftVoucher {
+  id: number
+  code: string
+  status: 'active' | 'used' | 'void'
+  source: 'purchase' | 'manual'
+  initialValue: number
+  balance: number
+  expiresAt: string
+  purchaserName?: string | null
+  purchaserEmail?: string | null
+  recipientName?: string | null
+  recipientEmail?: string | null
+  message?: string | null
+  stripeCheckoutSessionId?: string | null
+  voucherEmailSentAt?: string | null
+  purchaseEmailSentAt?: string | null
+  ownerEmailSentAt?: string | null
+  emailError?: string | null
+  redemptions?:
+    | {
+        checkoutToken: string
+        stripeSessionId?: string | null
+        paidOrder?: (number | null) | Order
+        amount: number
+        state: 'held' | 'captured' | 'released'
+        holdExpiresAt?: string | null
+        heldAt: string
+        id?: string | null
+      }[]
+    | null
+  updatedAt: string
+  createdAt: string
+}
 export interface PayloadKv {
   id: number
   key: string
@@ -1030,6 +1067,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews'
         value: number | Review
+      } | null)
+    | ({
+        relationTo: 'gift-vouchers'
+        value: number | GiftVoucher
       } | null)
   globalSlug?: string | null
   user: {
@@ -1346,6 +1387,8 @@ export interface OrdersSelect<T extends boolean = true> {
   shipping?: T
   tax?: T
   total?: T
+  giftVoucherCode?: T
+  giftVoucherAmount?: T
   currency?: T
   stripeSessionId?: T
   inventoryReservation?: T
@@ -1658,6 +1701,38 @@ export interface ReviewsSelect<T extends boolean = true> {
   sourceUrl?: T
   product?: T
   status?: T
+  updatedAt?: T
+  createdAt?: T
+}
+export interface GiftVouchersSelect<T extends boolean = true> {
+  code?: T
+  status?: T
+  source?: T
+  initialValue?: T
+  balance?: T
+  expiresAt?: T
+  purchaserName?: T
+  purchaserEmail?: T
+  recipientName?: T
+  recipientEmail?: T
+  message?: T
+  stripeCheckoutSessionId?: T
+  voucherEmailSentAt?: T
+  purchaseEmailSentAt?: T
+  ownerEmailSentAt?: T
+  emailError?: T
+  redemptions?:
+    | T
+    | {
+        checkoutToken?: T
+        stripeSessionId?: T
+        paidOrder?: T
+        amount?: T
+        state?: T
+        holdExpiresAt?: T
+        heldAt?: T
+        id?: T
+      }
   updatedAt?: T
   createdAt?: T
 }

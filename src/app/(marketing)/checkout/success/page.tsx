@@ -9,7 +9,8 @@ import { OrderFinalizationRefresh } from './order-finalization-refresh'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import { getPayload } from '@/lib/payload'
 import type { CartItem } from '@/lib/cart'
-import { shouldFinalizeCheckout } from '@/lib/stripe-fulfillment'
+import { isPaidCheckoutStatus, shouldFinalizeCheckout } from '@/lib/stripe-fulfillment'
+import { isGiftVoucherPurchaseSession } from '@/lib/gift-voucher-purchase'
 
 export const metadata = {
   title: 'Checkout Status | The Good Opal Co',
@@ -46,16 +47,23 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
         expand: ['line_items.data.price.product'],
       })
 
-      if (session.payment_status !== 'paid') {
+      if (!isPaidCheckoutStatus(session.payment_status)) {
         error = 'Payment was not completed. Please try again.'
       } else {
         try {
           const payload = await getPayload()
-          const orderResult = await payload.find({
-            collection: 'orders',
-            where: { stripeSessionId: { equals: session.id } },
-            limit: 1,
-          })
+          const orderResult = isGiftVoucherPurchaseSession(session)
+            ? await payload.find({
+                collection: 'gift-vouchers',
+                where: { stripeCheckoutSessionId: { equals: session.id } },
+                limit: 1,
+                overrideAccess: true,
+              })
+            : await payload.find({
+                collection: 'orders',
+                where: { stripeSessionId: { equals: session.id } },
+                limit: 1,
+              })
           orderConfirmed = orderResult.docs.length > 0
         } catch (err) {
           console.error('Failed to verify backend order:', err)
@@ -82,12 +90,28 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
             <>
               <OrderFinalizationRefresh pending={!orderConfirmed} />
               {shouldFinalizeCheckout(session.payment_status, orderConfirmed) && (
-                <ClearCartOnSuccess purchase={getPurchaseAnalytics(session)} />
+                <ClearCartOnSuccess
+                  purchase={getPurchaseAnalytics(session)}
+                  keepCart={isGiftVoucherPurchaseSession(session)}
+                />
               )}
-              <SuccessState
-                email={session?.customer_details?.email ?? session?.customer_email ?? undefined}
-                orderConfirmed={orderConfirmed}
-              />
+              {isGiftVoucherPurchaseSession(session) ? (
+                <GiftVoucherState
+                  sentTo={
+                    session.metadata?.['recipientEmail'] ||
+                    session.customer_details?.email ||
+                    session.customer_email ||
+                    ''
+                  }
+                  recipientName={session.metadata?.['recipientName'] ?? ''}
+                  confirmed={orderConfirmed}
+                />
+              ) : (
+                <SuccessState
+                  email={session?.customer_details?.email ?? session?.customer_email ?? undefined}
+                  orderConfirmed={orderConfirmed}
+                />
+              )}
               {session.customer_details?.email ? <JoinList sessionId={session.id} /> : null}
             </>
           )}
@@ -155,6 +179,38 @@ function SuccessState({ email, orderConfirmed }: { email?: string; orderConfirme
         ))}
       </ol>
 
+      <div className="mt-6 flex flex-wrap gap-2">
+        <Button asChild>
+          <Link href="/store">Continue shopping</Link>
+        </Button>
+        <Button variant="ghost" asChild>
+          <Link href="/">Return home</Link>
+        </Button>
+      </div>
+    </>
+  )
+}
+
+function GiftVoucherState({
+  sentTo,
+  recipientName,
+  confirmed,
+}: {
+  sentTo: string
+  recipientName: string
+  confirmed: boolean
+}) {
+  return (
+    <>
+      <h1 className={headingClass}>{confirmed ? 'Gift voucher sent' : 'Payment received'}</h1>
+      <p className="mt-3 font-serif text-xl italic text-ink-2">
+        {confirmed ? 'Thank you. It is on its way.' : 'We are issuing your gift voucher now.'}
+      </p>
+      <p className="mt-4 text-[15px] leading-[1.6] text-ink-2">
+        The voucher code is being emailed to{' '}
+        <span className="text-ink">{recipientName ? `${recipientName} at ${sentTo}` : sentTo}</span>.
+        It is valid for three years and can be used across more than one order.
+      </p>
       <div className="mt-6 flex flex-wrap gap-2">
         <Button asChild>
           <Link href="/store">Continue shopping</Link>

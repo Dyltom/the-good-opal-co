@@ -113,8 +113,8 @@ export default async function GiftsPage() {
           <div>
             <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">Not sure which one?</h2>
             <p className="mt-3 max-w-[60ch] text-sm leading-6 text-ink-2">
-              Tell us who it is for and your budget, and we will suggest a few pieces. Or design a
-              ring around one of our opals.
+              Tell us who it is for and your budget, and we will suggest a few pieces. Design a ring
+              around one of our opals, or give a gift voucher and let them choose.
             </p>
           </div>
           <div className="flex flex-wrap items-start gap-x-6 gap-y-2 md:justify-end md:pt-2">
@@ -124,6 +124,10 @@ export default async function GiftsPage() {
             </Link>
             <Link href="/services/design" className={linkClass}>
               Design a ring
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link href="/gift-vouchers" className={linkClass}>
+              Give a gift voucher
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>

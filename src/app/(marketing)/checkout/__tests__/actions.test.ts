@@ -15,6 +15,9 @@ const {
   reserveCheckoutInventory,
   InventoryUnavailableError,
   recordServerError,
+  holdGiftVoucher,
+  releaseGiftVoucherHold,
+  createCoupon,
 } = vi.hoisted(() => {
   class TestInventoryUnavailableError extends Error {}
   return {
@@ -32,6 +35,9 @@ const {
     reserveCheckoutInventory: vi.fn(),
     InventoryUnavailableError: TestInventoryUnavailableError,
     recordServerError: vi.fn(),
+    holdGiftVoucher: vi.fn(),
+    releaseGiftVoucherHold: vi.fn(),
+    createCoupon: vi.fn(),
   }
 })
 
@@ -48,8 +54,15 @@ vi.mock('@/lib/inventory-reservations', () => ({
   releaseInventoryReservation,
   reserveCheckoutInventory,
 }))
+vi.mock('@/lib/gift-vouchers', () => ({
+  GIFT_VOUCHER_METADATA_KEY: 'giftVoucherCode',
+  holdGiftVoucher,
+  lookupGiftVoucher: vi.fn(),
+  releaseGiftVoucherHold,
+}))
 vi.mock('stripe', () => ({
   default: class StripeMock {
+    coupons = { create: createCoupon }
     checkout = {
       sessions: {
         create: createStripeSession,
@@ -93,6 +106,41 @@ describe('checkout Server Action', () => {
     })
     reserveCheckoutInventory.mockResolvedValue({ id: 1 })
     expireStripeSession.mockResolvedValue({ id: 'cs_test_reserved', status: 'expired' })
+    releaseGiftVoucherHold.mockResolvedValue(true)
+    createCoupon.mockResolvedValue({ id: 'coupon_voucher' })
+  })
+
+  test('takes the held gift voucher amount off the Stripe session as a one-off coupon', async () => {
+    holdGiftVoucher.mockResolvedValue({ ok: true, code: 'GOOD-AB2C-DE3F', amountCents: 4000 })
+
+    await expect(
+      createCheckoutSession({ ...checkoutForm(), giftVoucherCode: 'good-ab2c-de3f' })
+    ).resolves.toMatchObject({ success: true })
+
+    expect(createCoupon).toHaveBeenCalledWith(
+      expect.objectContaining({ amount_off: 4000, currency: 'aud', duration: 'once', max_redemptions: 1 }),
+      { idempotencyKey: 'gift-voucher-coupon/d42cead1-0366-4f5f-a173-5f4c334c9513' }
+    )
+    expect(createStripeSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        discounts: [{ coupon: 'coupon_voucher' }],
+        metadata: expect.objectContaining({ giftVoucherCode: 'GOOD-AB2C-DE3F' }),
+      }),
+      expect.anything()
+    )
+  })
+
+  test('gives the gift voucher hold back when Stripe fails to start checkout', async () => {
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    holdGiftVoucher.mockResolvedValue({ ok: true, code: 'GOOD-AB2C-DE3F', amountCents: 4000 })
+    createStripeSession.mockRejectedValue(new Error('Stripe down'))
+
+    await expect(
+      createCheckoutSession({ ...checkoutForm(), giftVoucherCode: 'GOOD-AB2C-DE3F' })
+    ).resolves.toMatchObject({ success: false })
+
+    expect(releaseGiftVoucherHold).toHaveBeenCalledWith('d42cead1-0366-4f5f-a173-5f4c334c9513')
+    errorLog.mockRestore()
   })
 
   test('returns a typed configuration error without constructing Stripe', async () => {

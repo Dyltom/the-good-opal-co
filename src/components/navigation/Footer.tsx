@@ -16,6 +16,7 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { href: '/store?category=opal-earrings', label: 'Earrings' },
       { href: '/store?category=raw-opals', label: 'Loose opals' },
       { href: '/services/design', label: 'Design a ring' },
+      { href: '/gift-vouchers', label: 'Gift vouchers' },
     ],
   },
   {

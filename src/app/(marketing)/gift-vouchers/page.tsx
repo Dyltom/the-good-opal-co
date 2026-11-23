@@ -1,0 +1,49 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { Container } from '@/components/layout'
+import { MarketingShell, PageHeader } from '@/components/marketing'
+import { BreadcrumbJsonLd } from '@/components/seo'
+import { GiftVoucherForm } from './gift-voucher-form'
+
+export const metadata: Metadata = {
+  title: 'Gift Vouchers | The Good Opal Co',
+  description:
+    'Give a Good Opal Co gift voucher from $25 to $2000, emailed straight to the recipient and valid for three years on natural Australian opals and opal jewellery.',
+  alternates: { canonical: '/gift-vouchers' },
+}
+
+export default function GiftVouchersPage() {
+  return (
+    <MarketingShell>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: '/' },
+          { name: 'Gift vouchers', url: '/gift-vouchers' },
+        ]}
+      />
+      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+        <PageHeader
+          title="Gift vouchers."
+          description="Let them choose their own opal. The voucher is emailed with your message and can be spent across more than one order."
+        />
+        <div className="mt-10 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-[clamp(32px,5vw,80px)]">
+          <GiftVoucherForm />
+          <aside className="border-t border-rule pt-6 text-sm leading-6 text-ink-2 md:border-l md:border-t-0 md:pl-8 md:pt-0">
+            <h2 className="text-[1.5rem] leading-[1.15] text-ink">How it works</h2>
+            <ul className="mt-3 grid gap-2">
+              <li>The code is emailed as soon as payment goes through.</li>
+              <li>Valid for three years from purchase.</li>
+              <li>Any balance left after an order stays on the code for next time.</li>
+              <li>Not redeemable for cash.</li>
+            </ul>
+            <p className="mt-4">
+              <Link href="/legal/terms#gift-vouchers" className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink">
+                Gift voucher terms
+              </Link>
+            </p>
+          </aside>
+        </div>
+      </Container>
+    </MarketingShell>
+  )
+}
