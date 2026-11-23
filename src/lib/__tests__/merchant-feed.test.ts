@@ -104,4 +104,18 @@ describe('Google Merchant feed', () => {
     expect(transit('AU')).toEqual(['1', '7'])
     expect(transit('JP')).toEqual(['3', '10'])
   })
+
+  test('labels each piece with its price band so ads can bid less on cheap stones', () => {
+    const feed = buildGoogleMerchantFeed([
+      catalogProduct({ sku: 'CHEAP', price: 45 }),
+      catalogProduct({ sku: 'MID', price: 60 }),
+      catalogProduct({ sku: 'UPPER', price: 175 }),
+      catalogProduct({ sku: 'RING', price: 350 }),
+    ])
+
+    expect(item(feed, 'CHEAP')).toContain('<g:custom_label_0>under-60</g:custom_label_0>')
+    expect(item(feed, 'MID')).toContain('<g:custom_label_0>60-149</g:custom_label_0>')
+    expect(item(feed, 'UPPER')).toContain('<g:custom_label_0>150-249</g:custom_label_0>')
+    expect(item(feed, 'RING')).toContain('<g:custom_label_0>250-plus</g:custom_label_0>')
+  })
 })
