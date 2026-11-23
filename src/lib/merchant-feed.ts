@@ -1,5 +1,9 @@
 import { APP_NAME, APP_URL } from '@/lib/constants'
-import { calculateShipping, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import {
+  calculateShipping,
+  DELIVERY_BUSINESS_DAYS,
+  SHIPPING_COUNTRIES,
+} from '@/lib/constants/shipping'
 import { escapeXml } from '@/lib/discovery'
 import type { CatalogProduct } from '@/lib/catalog'
 
@@ -14,6 +18,7 @@ const GOOGLE_PRODUCT_CATEGORY: Record<string, string> = {
 interface ShippingRate {
   country: string
   price: number
+  destination: 'AUSTRALIA' | 'INTERNATIONAL'
 }
 
 function productShippingRates(price: number): ShippingRate[] {
@@ -21,10 +26,12 @@ function productShippingRates(price: number): ShippingRate[] {
     ...SHIPPING_COUNTRIES.AUSTRALIA.map((country) => ({
       country,
       price: calculateShipping(price, 'AUSTRALIA'),
+      destination: 'AUSTRALIA' as const,
     })),
     ...SHIPPING_COUNTRIES.INTERNATIONAL.map((country) => ({
       country,
       price: calculateShipping(price, 'INTERNATIONAL'),
+      destination: 'INTERNATIONAL' as const,
     })),
   ]
 }
@@ -55,9 +62,14 @@ function merchantItem(product: CatalogProduct): string {
     tag('identifier_exists', 'no'),
     tag('google_product_category', GOOGLE_PRODUCT_CATEGORY[product.category] ?? '188'),
     tag('product_type', product.categoryLabel),
+    product.stone
+      ? `<g:product_detail>${tag('section_name', 'Gemstone')}${tag('attribute_name', 'Variety')}${tag('attribute_value', product.stone)}</g:product_detail>`
+      : '',
+    tag('min_handling_time', String(DELIVERY_BUSINESS_DAYS.DISPATCH.min)),
+    tag('max_handling_time', String(DELIVERY_BUSINESS_DAYS.DISPATCH.max)),
     ...productShippingRates(product.price).map(
       (rate) =>
-        `<g:shipping>${tag('country', rate.country)}${tag('service', 'Tracked shipping')}${tag('price', aud(rate.price))}</g:shipping>`
+        `<g:shipping>${tag('country', rate.country)}${tag('service', 'Tracked shipping')}${tag('price', aud(rate.price))}${tag('min_transit_time', String(DELIVERY_BUSINESS_DAYS[rate.destination].min))}${tag('max_transit_time', String(DELIVERY_BUSINESS_DAYS[rate.destination].max))}</g:shipping>`
     ),
     '</item>',
   ].join('')
