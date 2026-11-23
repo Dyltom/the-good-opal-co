@@ -195,7 +195,8 @@ describe('buying flow UI/UX safeguards', () => {
 
   test('product gallery uses editorial framing instead of gradient glow chrome', () => {
     const source =
-      read('src/components/product/ProductImageGallery.tsx') + read('src/components/product/ProductImageViewer.tsx')
+      read('src/components/product/ProductImageGallery.tsx') +
+      read('src/components/product/ProductImageViewer.tsx')
 
     expect(source).toContain('aria-modal="true"')
     expect(source).not.toContain('bg-gradient')
@@ -355,7 +356,8 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS')
     expect(source).toContain('SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS')
     expect(source).toContain('SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD')
-    expect(source).toContain('The carrier estimate is shown at checkout')
+    expect(source).toContain('DELIVERY_ESTIMATE')
+    expect(source).not.toContain('estimate is shown at checkout')
     expect(source).not.toContain('3–7 business days')
     expect(source).not.toContain('Free express')
   })

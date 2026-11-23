@@ -69,6 +69,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
                 >
                   {CONTACT_INFO.email}
                 </a>
+                <p className="mt-2 text-[13px] text-ink-3">Based in {CONTACT_INFO.address}</p>
               </div>
             </div>
 

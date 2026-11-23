@@ -1,5 +1,10 @@
 import { APP_NAME, APP_URL } from './constants'
-import { RETURN_WINDOW_DAYS, SHIPPING_CONFIG, SHIPPING_COUNTRIES } from './constants/shipping'
+import {
+  DELIVERY_ESTIMATE,
+  RETURN_WINDOW_DAYS,
+  SHIPPING_CONFIG,
+  SHIPPING_COUNTRIES,
+} from './constants/shipping'
 import { METHODS_ENABLED_IN_STRIPE } from './constants/payment'
 import { weightLabel, type CatalogProduct } from './catalog'
 
@@ -101,7 +106,9 @@ function storeFacts(input: DiscoveryInput): string[] {
   const categories = [
     ...new Set(
       input.products
-        .filter((product) => product.availability !== 'sold' && product.category !== 'custom-commissions')
+        .filter(
+          (product) => product.availability !== 'sold' && product.category !== 'custom-commissions'
+        )
         .map((product) => product.categoryLabel)
     ),
   ]
@@ -118,7 +125,9 @@ function storeFacts(input: DiscoveryInput): string[] {
     '## What is sold',
     '',
     '- Loose Australian opals and finished opal jewellery.',
-    ...(categories.length ? [`- Categories with pieces available now: ${categories.join(', ')}.`] : []),
+    ...(categories.length
+      ? [`- Categories with pieces available now: ${categories.join(', ')}.`]
+      : []),
     '- Most pieces are one of a kind: a single stone, photographed individually. Studio shots change the background, never the colour.',
     '- Each product page shows the details known for that piece, such as stone type, origin, weight, dimensions, metal, and ring size. A certificate is included only when the listing says so.',
     '',
@@ -145,6 +154,7 @@ function storeFacts(input: DiscoveryInput): string[] {
     `- Australia: tracked shipping, ${aud(RATES.AUSTRALIA.EXPRESS)} per order.`,
     `- International (${countryNames(SHIPPING_COUNTRIES.INTERNATIONAL)}): tracked shipping, ${aud(RATES.INTERNATIONAL.EXPRESS)} per order. Import duties, taxes, and local charges are paid by the recipient.`,
     `- Free shipping on orders of ${aud(FREE_SHIPPING_THRESHOLD)} or more.`,
+    `- ${DELIVERY_ESTIMATE}`,
     '- Tracking details are sent when the carrier accepts the parcel.',
     `- Full policy: ${markdownLink('Shipping', '/shipping')}`,
     '',
@@ -218,7 +228,10 @@ export function buildLlmsIndex(input: DiscoveryInput): string {
     '',
     ...(products.length ? products : ['- No pieces are currently in the shop.']),
     ...(soldCount > 0
-      ? ['', `${soldCount} sold ${soldCount === 1 ? 'piece is' : 'pieces are'} not listed here. Recently sold pieces are at ${APP_URL}/store/collected.`]
+      ? [
+          '',
+          `${soldCount} sold ${soldCount === 1 ? 'piece is' : 'pieces are'} not listed here. Recently sold pieces are at ${APP_URL}/store/collected.`,
+        ]
       : []),
     '',
     ...contentLists(input),
