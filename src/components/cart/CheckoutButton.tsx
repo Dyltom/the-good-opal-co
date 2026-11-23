@@ -82,9 +82,16 @@ interface CheckoutButtonProps {
   region: ShippingRegion
   className?: string
   label?: string
+  giftVoucherCode?: string | undefined
 }
 
-export function CheckoutButton({ cart, region, className, label = 'Checkout' }: CheckoutButtonProps) {
+export function CheckoutButton({
+  cart,
+  region,
+  className,
+  label = 'Checkout',
+  giftVoucherCode,
+}: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>()
   const attemptId = useRef<string>(null)
@@ -95,7 +102,7 @@ export function CheckoutButton({ cart, region, className, label = 'Checkout' }: 
     const checkoutAttemptId = attemptId.current
     startTransition(async () => {
       trackBeginCheckout(cart.items, cart.total)
-      const result = await createCheckoutSession({ region, checkoutAttemptId })
+      const result = await createCheckoutSession({ region, checkoutAttemptId, giftVoucherCode })
       if (result.success && result.url) {
         window.location.assign(result.url)
         return

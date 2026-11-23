@@ -17,11 +17,13 @@ import {
   type CheckoutFeedbackSource,
 } from '@/components/cart/CheckoutFeedback'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
+import { GiftVoucherField, type AppliedGiftVoucher } from '@/components/cart/GiftVoucherField'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { trackRemoveFromCart } from '@/lib/analytics'
-import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
+import { calculateCheckoutPricing, centsToDollars } from '@/lib/checkout-pricing'
+import { giftVoucherAppliedCents } from '@/lib/gift-voucher-rules'
 import type { Cart, CartItem } from '@/lib/cart'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
@@ -47,6 +49,11 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
     cart.items,
     region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
   )
+  const [voucher, setVoucher] = useState<AppliedGiftVoucher | null>(null)
+  const voucherAmount = voucher
+    ? centsToDollars(giftVoucherAppliedCents(Math.round(voucher.available * 100), pricing.totalCents))
+    : 0
+  const totalDue = pricing.total - voucherAmount
 
   const showMutationError = (description?: string) => {
     toast({
@@ -168,9 +175,15 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                         : formatCurrency(pricing.shipping, 'AUD')}
                   </dd>
                 </div>
+                {voucher ? (
+                  <div className="flex justify-between gap-4 border-b border-rule py-2">
+                    <dt className="text-ink-2">Gift voucher</dt>
+                    <dd>-{formatCurrency(voucherAmount, 'AUD')}</dd>
+                  </div>
+                ) : null}
                 <div className="flex items-baseline justify-between gap-4 pt-3">
                   <dt className="font-medium">Estimated total</dt>
-                  <dd className="text-xl font-medium">{formatCurrency(pricing.total, 'AUD')}</dd>
+                  <dd className="text-xl font-medium">{formatCurrency(totalDue, 'AUD')}</dd>
                 </div>
               </dl>
 
@@ -178,7 +191,21 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                 <FreeShippingProgress total={pricing.shippedSubtotal} className="mt-4" />
               ) : null}
 
-              <CheckoutButton cart={cart} region={region} className="mt-4 h-12 w-full text-[15px] max-lg:hidden" />
+              <div className="mt-4">
+                <GiftVoucherField applied={voucher} onChange={setVoucher} />
+                {voucher ? null : (
+                  <Link href="/gift-vouchers" className="mt-2 inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink">
+                    Buying for someone else? Give a gift voucher
+                  </Link>
+                )}
+              </div>
+
+              <CheckoutButton
+                cart={cart}
+                region={region}
+                giftVoucherCode={voucher?.code}
+                className="mt-4 h-12 w-full text-[15px] max-lg:hidden"
+              />
               <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">
                 Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays available to other
                 shoppers until payment is complete.
@@ -215,10 +242,15 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
         <div className="mx-auto flex max-w-screen-sm items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[12.5px] text-ink-2">Estimated total</p>
-            <p className="text-lg font-medium leading-6 text-ink">{formatCurrency(pricing.total, 'AUD')}</p>
+            <p className="text-lg font-medium leading-6 text-ink">{formatCurrency(totalDue, 'AUD')}</p>
           </div>
           <div className="flex-1">
-            <CheckoutButton cart={cart} region={region} className="h-12 w-full text-[15px]" />
+            <CheckoutButton
+              cart={cart}
+              region={region}
+              giftVoucherCode={voucher?.code}
+              className="h-12 w-full text-[15px]"
+            />
           </div>
         </div>
       </div>

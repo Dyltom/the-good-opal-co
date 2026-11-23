@@ -13,7 +13,13 @@ interface PurchaseAnalytics {
   tax: number
 }
 
-export function ClearCartOnSuccess({ purchase }: { purchase: PurchaseAnalytics }) {
+export function ClearCartOnSuccess({
+  purchase,
+  keepCart = false,
+}: {
+  purchase: PurchaseAnalytics
+  keepCart?: boolean
+}) {
   useEffect(() => {
     trackPurchase(
       purchase.transactionId,
@@ -23,10 +29,11 @@ export function ClearCartOnSuccess({ purchase }: { purchase: PurchaseAnalytics }
       purchase.tax
     )
 
+    if (keepCart) return
     void clearCart().then((result) => {
       if (result.success) window.dispatchEvent(new CustomEvent('cart-updated'))
     })
-  }, [purchase])
+  }, [purchase, keepCart])
 
   return null
 }

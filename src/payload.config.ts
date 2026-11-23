@@ -31,6 +31,7 @@ import { InsightEvents } from './payload/collections/InsightEvents.ts'
 import { Reviews } from './payload/collections/Reviews.ts'
 import { duplicateSafe } from './payload/duplicate-safe.ts'
 import { recordAdminError } from './payload/record-admin-error.ts'
+import { GiftVouchers } from './payload/collections/GiftVouchers.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -166,6 +167,7 @@ export default buildConfig({
     RingReferenceChecks,
     InsightEvents,
     Reviews,
+    GiftVouchers,
   ].map(duplicateSafe),
   editor: lexicalEditor({}),
   email: resendAdapter({

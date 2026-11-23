@@ -3,6 +3,7 @@
 import Stripe from 'stripe'
 import { getNewsletterService } from '@/lib/newsletter/service'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
+import { isPaidCheckoutStatus } from '@/lib/stripe-fulfillment'
 
 export interface JoinListState {
   status: 'idle' | 'joined' | 'error'
@@ -23,7 +24,7 @@ export async function joinListFromCheckout(sessionId: string): Promise<JoinListS
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2026-06-24.dahlia' })
     const session = await stripe.checkout.sessions.retrieve(sessionId)
     const email = session.customer_details?.email ?? session.customer_email
-    if (session.payment_status !== 'paid' || !email) return failed
+    if (!isPaidCheckoutStatus(session.payment_status) || !email) return failed
 
     const result = await getNewsletterService().subscribe(email, {
       name: session.customer_details?.name ?? undefined,

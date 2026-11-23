@@ -54,6 +54,7 @@ import * as migration_20261120_100000_reviews_and_product_videos from './2026112
 import * as migration_20261121_090000_products_sold_per_unit from './20261121_090000_products_sold_per_unit'
 import * as migration_20261121_090100_flag_per_unit_and_triplet_products from './20261121_090100_flag_per_unit_and_triplet_products'
 import * as migration_20261122_090000_users_api_keys from './20261122_090000_users_api_keys'
+import * as migration_20261123_090000_gift_vouchers from './20261123_090000_gift_vouchers'
 
 export const migrations = [
   {
@@ -335,5 +336,10 @@ export const migrations = [
     up: migration_20261122_090000_users_api_keys.up,
     down: migration_20261122_090000_users_api_keys.down,
     name: '20261122_090000_users_api_keys',
+  },
+  {
+    up: migration_20261123_090000_gift_vouchers.up,
+    down: migration_20261123_090000_gift_vouchers.down,
+    name: '20261123_090000_gift_vouchers',
   },
 ]

@@ -266,6 +266,18 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: 'giftVoucherCode',
+      type: 'text',
+      index: true,
+      admin: { readOnly: true, description: 'Gift voucher used on this order' },
+    },
+    {
+      name: 'giftVoucherAmount',
+      type: 'number',
+      min: 0,
+      admin: { readOnly: true, description: 'Amount taken off by the gift voucher, in AUD' },
+    },
+    {
       name: 'currency',
       type: 'text',
       defaultValue: 'AUD',
