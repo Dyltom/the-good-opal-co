@@ -1,4 +1,3 @@
-import 'server-only'
 import Link from 'next/link'
 import { connection } from 'next/server'
 import { announcement, promotionsPending } from '@/lib/promotions'
