@@ -5,6 +5,7 @@ import { getPayload } from '@/lib/payload'
 import { getPublishedCatalog } from '@/lib/catalog-query'
 import { absoluteUrl } from '@/lib/catalog'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { facetOptionLabel, storeLandingPages } from '@/app/(marketing)/store/store-query'
 
 interface SitemapDoc {
   slug: string
@@ -68,9 +69,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority,
   })
 
+  const forSale = products.filter((product) => product.availability === 'in_stock')
+  const landings = storeLandingPages().flatMap(({ facet, value, url }) => {
+    const label = facetOptionLabel(facet, value)
+    const matches = forSale.filter((product) =>
+      facet === 'category' ? product.category === value : (facet === 'stone' ? product.stone : product.origin) === label
+    )
+    return matches.length > 0 ? [page(url, 'daily', 0.8, latest(matches))] : []
+  })
+
   return [
     page('', 'daily', 1, catalogUpdated),
     page('/store', 'daily', 0.9, catalogUpdated),
+    ...landings,
     ...(products.some((product) => product.stock <= 0) ? [page('/store/collected', 'weekly', 0.4)] : []),
     page('/services', 'monthly', 0.8),
     page('/services/design', 'weekly', 0.8),

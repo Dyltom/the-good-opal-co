@@ -19,6 +19,7 @@ import {
   parseStoreQuery,
   PRODUCTS_PER_PAGE,
   STORE_VIEW_COOKIES,
+  storeLanding,
   storeMetadata,
   storeUrl,
   type StoreListing,
@@ -167,6 +168,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     .filter((listing): listing is StoreListing => listing !== undefined)
     .map((listing) => ({ ...listing, reserved: listing.stock <= 0 && reservedIds.has(listing.id) }))
   const matching = findStoreListings(listings, query)
+  const landing = storeLanding(query)
   const catalogueScope = { ...EMPTY_STORE_QUERY, availability: query.availability }
   const lastPage = Math.max(1, Math.ceil(matching.length / PRODUCTS_PER_PAGE))
 
@@ -213,9 +215,9 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   return (
     <MarketingShell>
       <CollectionJsonLd
-        name="Australian opals"
-        description="One-of-a-kind Australian opals, loose stones, and finished jewellery."
-        url="/store"
+        name={landing?.heading ?? 'Australian opals'}
+        description={landing?.intro ?? 'One-of-a-kind Australian opals, loose stones, and finished jewellery.'}
+        url={landing ? storeUrl(query) : '/store'}
         total={matching.length}
         products={products.slice(0, 10).map((product) => ({
           name: product.name,

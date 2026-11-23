@@ -19,7 +19,7 @@ import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { parseProductDescription } from '@/lib/product-description'
-import { parseStoreQuery, storeLabel, storeUrl } from '@/app/(marketing)/store/store-query'
+import { parseStoreQuery, storeLabel, storeLandingUrl, storeUrl } from '@/app/(marketing)/store/store-query'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { productImageTransitionName } from '@/lib/view-transitions'
 import { mergeProductGallery } from '@/lib/product-gallery'
@@ -34,6 +34,19 @@ interface ProductPageProps {
 }
 
 export const dynamic = 'force-dynamic'
+
+function productMetaDescription(product: Product): string {
+  const item = toCatalogProduct(product)
+  if (item.summary.length >= 110) return item.summary
+  const stone = [item.stone, item.origin && `from ${item.origin}`].filter(Boolean).join(' ')
+  const weight = item.weight && `${item.weight.value} ${item.weight.unit}`
+  const facts = [stone, weight].filter(Boolean).join(', ')
+  return summarize(
+    [item.summary, facts && `${facts.charAt(0).toUpperCase()}${facts.slice(1)}.`, 'Priced in AUD with tracked delivery from Australia.']
+      .filter(Boolean)
+      .join(' ')
+  )
+}
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params
@@ -57,24 +70,23 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const imageUrl =
     (primaryImage && typeof primaryImage === 'object' ? resolveMediaUrl(primaryImage.url) : undefined) ??
     ownedProductImageUrl(product.slug)
-  const description =
-    product.meta?.description?.trim() ||
-    summarize(parseProductDescription(product.description).paragraphs.join(' '))
+  const description = product.meta?.description?.trim() || productMetaDescription(product)
+  const brandedTitle = `${product.name} | The Good Opal Co`
 
   return {
-    title: product.meta?.title?.trim() || `${product.name} | The Good Opal Co`,
-    description: description || 'Discover this unique Australian opal from The Good Opal Co.',
+    title: product.meta?.title?.trim() || (brandedTitle.length > 65 ? product.name : brandedTitle),
+    description,
     alternates: { canonical: `/store/${product.slug}` },
     openGraph: {
       title: product.name,
-      description: description || 'Australian opal selected by The Good Opal Co.',
+      description,
       url: `/store/${product.slug}`,
       images: imageUrl ? [{ url: imageUrl, alt: product.name }] : undefined,
     },
     twitter: {
       card: 'summary_large_image',
       title: product.name,
-      description: description || 'Australian opal selected by The Good Opal Co.',
+      description,
       images: imageUrl ? [imageUrl] : undefined,
     },
   }
@@ -109,15 +121,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const categoryName = product.category ? storeLabel(product.category) : undefined
   const productShippingProgress = getFreeShippingProgress(product.price)
   const facts = [
-    { label: 'Stone', value: product.stoneType && storeLabel(product.stoneType) },
-    { label: 'Origin', value: product.stoneOrigin && storeLabel(product.stoneOrigin) },
+    { label: 'Stone', value: product.stoneType && storeLabel(product.stoneType), href: storeLandingUrl('stone', product.stoneType) },
+    { label: 'Origin', value: product.stoneOrigin && storeLabel(product.stoneOrigin), href: storeLandingUrl('origin', product.stoneOrigin) },
     { label: 'Weight', value: product.weight && weightUnitLabel(product.weight, product.weightUnit ?? (product.category === 'raw-opals' ? 'carats' : undefined)) },
     { label: 'Dimensions', value: dimensionsLabel(product.dimensions) },
     { label: 'Ring size', value: product.ringSize },
     { label: 'Metal', value: product.material && product.material !== 'none' ? storeLabel(product.material) : undefined },
     { label: 'Inclusions', value: about.inclusions && about.inclusions.charAt(0).toUpperCase() + about.inclusions.slice(1) },
     { label: 'Certificate', value: product.certified ? (product.certificateNumber ?? 'Included') : undefined },
-  ].filter((fact): fact is { label: string; value: string } => Boolean(fact.value))
+  ].filter((fact): fact is { label: string; value: string; href?: string } => Boolean(fact.value))
   const notes: string[] = []
   for (const paragraph of about.paragraphs) {
     const labelled = paragraph.match(/^([A-Z][A-Za-z ]{1,18}):\s*(.{1,80})$/)
@@ -335,7 +347,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   {facts.map((fact) => (
                     <div key={fact.label} className="grid grid-cols-[104px_minmax(0,1fr)] gap-3 border-b border-rule py-[9px]">
                       <dt className="text-ink-3">{fact.label}</dt>
-                      <dd className="text-ink">{fact.value}</dd>
+                      <dd className="text-ink">
+                        {fact.href ? (
+                          <Link href={fact.href} className="underline decoration-rule-2 underline-offset-[3px] hover:decoration-ink">
+                            {fact.value}
+                          </Link>
+                        ) : (
+                          fact.value
+                        )}
+                      </dd>
                     </div>
                   ))}
                 </dl>
