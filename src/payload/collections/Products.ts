@@ -178,6 +178,7 @@ export const Products: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'draft',
+      hooks: { beforeDuplicate: [() => 'draft'] },
       options: [
         {
           label: 'Draft',
