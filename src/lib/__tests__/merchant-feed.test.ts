@@ -23,7 +23,11 @@ describe('Google Merchant feed', () => {
 
   test('escapes CMS text and drops characters that would break the XML', () => {
     const feed = buildGoogleMerchantFeed([
-      catalogProduct({ sku: 'X', name: 'Opal & <Fire> "ring"', description: 'Bright\u0007 & bold' }),
+      catalogProduct({
+        sku: 'X',
+        name: 'Opal & <Fire> "ring"',
+        description: 'Bright\u0007 & bold',
+      }),
     ])
 
     expect(feed).toContain('<g:title>Opal &amp; &lt;Fire&gt; &quot;ring&quot;</g:title>')
@@ -57,11 +61,29 @@ describe('Google Merchant feed', () => {
       catalogProduct({ sku: 'HIGH', price: 500 }),
     ])
     const shipping = (sku: string, country: string) =>
-      item(feed, sku).match(new RegExp(`<g:country>${country}</g:country>.*?<g:price>([^<]+)</g:price>`))?.[1]
+      item(feed, sku).match(
+        new RegExp(`<g:country>${country}</g:country>.*?<g:price>([^<]+)</g:price>`)
+      )?.[1]
 
     expect(shipping('LOW', 'AU')).toBe('15.00 AUD')
     expect(shipping('LOW', 'NZ')).toBe('25.00 AUD')
     expect(shipping('HIGH', 'AU')).toBe('0.00 AUD')
     expect(shipping('HIGH', 'US')).toBe('0.00 AUD')
+  })
+
+  test('states the same dispatch and transit times as the shipping page', () => {
+    const entry = item(buildGoogleMerchantFeed([catalogProduct({ sku: 'T' })]), 'T')
+    const transit = (country: string) =>
+      entry
+        .match(
+          new RegExp(
+            `<g:country>${country}</g:country>.*?<g:min_transit_time>(\\d+)</g:min_transit_time><g:max_transit_time>(\\d+)</g:max_transit_time>`
+          )
+        )
+        ?.slice(1)
+
+    expect(entry).toContain('<g:max_handling_time>2</g:max_handling_time>')
+    expect(transit('AU')).toEqual(['1', '7'])
+    expect(transit('JP')).toEqual(['3', '10'])
   })
 })
