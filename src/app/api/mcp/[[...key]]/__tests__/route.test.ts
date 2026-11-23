@@ -19,7 +19,8 @@ const admin = { id: 1, role: 'admin', email: 'owner@example.com', _strategy: 'ap
 function rpc(
   method: string,
   params: Record<string, unknown> = {},
-  key: string | null = 'shop-key'
+  key: string | null = 'shop-key',
+  urlKey?: string
 ) {
   const headers: Record<string, string> = {
     accept: 'application/json, text/event-stream',
@@ -27,11 +28,12 @@ function rpc(
   }
   if (key) headers['authorization'] = `Bearer ${key}`
   return POST(
-    new Request('https://example.com/api/mcp', {
+    new Request(`https://example.com/api/mcp${urlKey ? `/${urlKey}` : ''}`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-    })
+    }),
+    { params: Promise.resolve(urlKey ? { key: [urlKey] } : {}) }
   )
 }
 
@@ -70,6 +72,13 @@ describe('Claude shop MCP endpoint', () => {
 
     expect(response.status).toBe(401)
     expect(mocks.auth).not.toHaveBeenCalled()
+  })
+
+  test('accepts the API key at the end of the connector URL', async () => {
+    const response = await rpc('tools/list', {}, null, 'url-key')
+
+    expect(response.status).toBe(200)
+    expect(mocks.auth.mock.calls[0][0].headers.get('authorization')).toBe('users API-Key url-key')
   })
 
   test('refuses an unknown API key', async () => {
