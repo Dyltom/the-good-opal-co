@@ -347,7 +347,130 @@ export function countPriceBands(items: StoreListing[], query: StoreQuery): numbe
   })
 }
 
+export interface StoreLanding {
+  heading: string
+  title: string
+  intro: string
+}
+
+const DELIVERY = 'Priced in AUD with tracked delivery.'
+
+export const STORE_LANDINGS: Partial<Record<'category' | 'stone' | 'origin', Record<string, StoreLanding>>> = {
+  category: {
+    'opal-rings': {
+      heading: 'Opal rings',
+      title: 'Australian Opal Rings',
+      intro: 'Rings set with Australian opal. Each listing shows the stone type, origin, metal and ring size.',
+    },
+    'opal-earrings': {
+      heading: 'Opal earrings',
+      title: 'Australian Opal Earrings',
+      intro: 'Earrings set with Australian opal, with the stone type and origin listed for every pair.',
+    },
+    'raw-opals': {
+      heading: 'Loose opals',
+      title: 'Loose Australian Opals for Sale',
+      intro: 'Loose Australian opals for setting, jewellery making and collecting, with the carat weight and known origin on each listing.',
+    },
+  },
+  stone: {
+    'black-opal': {
+      heading: 'Black opal',
+      title: 'Black Opal for Sale',
+      intro: 'Black opal has a dark body tone that makes its play of colour stand out. It is the opal Lightning Ridge is best known for.',
+    },
+    'white-opal': {
+      heading: 'White opal',
+      title: 'White Opal for Sale',
+      intro: 'White opal has a light, milky body tone. It is the most common precious opal and is mined mainly in South Australia.',
+    },
+    'crystal-opal': {
+      heading: 'Crystal opal',
+      title: 'Crystal Opal for Sale',
+      intro: 'Crystal opal is transparent to translucent, so its play of colour shows from deep inside the stone.',
+    },
+    'boulder-opal': {
+      heading: 'Boulder opal',
+      title: 'Boulder Opal for Sale',
+      intro: 'Boulder opal forms in ironstone in western Queensland and is usually cut with the host rock left on the back.',
+    },
+    'matrix-opal': {
+      heading: 'Matrix opal',
+      title: 'Matrix Opal for Sale',
+      intro: 'Matrix opal has precious opal spread through its host rock rather than in a single seam.',
+    },
+    'opal-doublet': {
+      heading: 'Opal doublets',
+      title: 'Opal Doublets for Sale',
+      intro: 'A doublet is a thin slice of precious opal bonded to a dark backing, giving strong colour for less than solid opal.',
+    },
+    'opal-triplet': {
+      heading: 'Opal triplets',
+      title: 'Opal Triplets for Sale',
+      intro: 'A triplet is a thin slice of precious opal with a dark backing and a clear protective cap.',
+    },
+  },
+  origin: {
+    'lightning-ridge': {
+      heading: 'Lightning Ridge opal',
+      title: 'Lightning Ridge Opal for Sale',
+      intro: 'Opal from Lightning Ridge in New South Wales, the field best known for black opal.',
+    },
+    'coober-pedy': {
+      heading: 'Coober Pedy opal',
+      title: 'Coober Pedy Opal for Sale',
+      intro: 'Opal from Coober Pedy in South Australia, one of the world’s largest opal fields, known for white and crystal opal.',
+    },
+    mintabie: {
+      heading: 'Mintabie opal',
+      title: 'Mintabie Opal for Sale',
+      intro: 'Opal from Mintabie in South Australia, a field known for dark and crystal opal.',
+    },
+    queensland: {
+      heading: 'Queensland opal',
+      title: 'Queensland Boulder Opal for Sale',
+      intro: 'Opal from the Queensland fields, where boulder opal forms in ironstone.',
+    },
+    andamooka: {
+      heading: 'Andamooka opal',
+      title: 'Andamooka Opal for Sale',
+      intro: 'Opal from Andamooka in South Australia, a field known for its matrix opal.',
+    },
+  },
+}
+
+export function storeLanding(query: StoreQuery): StoreLanding | undefined {
+  for (const facet of ['category', 'stone', 'origin'] as const) {
+    const [value] = query[facet]
+    const landing = value === undefined ? undefined : STORE_LANDINGS[facet]?.[value]
+    if (landing && storeUrl(query) === storeUrl({ ...EMPTY_STORE_QUERY, [facet]: [value] })) return landing
+  }
+  return undefined
+}
+
+export function storeLandingUrl(facet: 'category' | 'stone' | 'origin', value: string | null | undefined): string | undefined {
+  return value && STORE_LANDINGS[facet]?.[value] ? storeUrl({ ...EMPTY_STORE_QUERY, [facet]: [value] }) : undefined
+}
+
+export function storeLandingPages(): { facet: 'category' | 'stone' | 'origin'; value: string; url: string }[] {
+  return (['category', 'stone', 'origin'] as const).flatMap((facet) =>
+    Object.keys(STORE_LANDINGS[facet] ?? {}).map((value) => ({
+      facet,
+      value,
+      url: storeUrl({ ...EMPTY_STORE_QUERY, [facet]: [value] }),
+    }))
+  )
+}
+
 export function storeMetadata(query: StoreQuery): Metadata {
+  const landing = storeLanding(query)
+  if (landing) {
+    return {
+      title: `${landing.title} | The Good Opal Co`,
+      description: `${landing.intro} ${DELIVERY}`,
+      alternates: { canonical: storeUrl(query) },
+    }
+  }
   const plain = storeUrl(query) === '/store'
 
   return {

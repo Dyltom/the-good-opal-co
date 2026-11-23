@@ -25,6 +25,7 @@ import {
   STORE_PRICE_BANDS,
   STORE_SORT_LABELS,
   STORE_SORTS,
+  storeLanding,
   storeQueryParams,
   storeUrl,
   toggleFacetValue,
@@ -446,6 +447,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
     href: storeUrl({ ...query, sort }, 1),
   }))
   const filterProps = { query, counts, totals, soldCount }
+  const landing = storeLanding(query)
 
   return (
     <section aria-label="Opal collection">
@@ -468,7 +470,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
           <div className="max-lg:contents lg:sticky lg:top-14 lg:z-20 lg:mb-3.5 lg:flex lg:min-h-[58px] lg:items-center lg:gap-5 lg:border-b lg:border-rule lg:bg-bg/[0.92] lg:py-2 lg:backdrop-blur-[14px]">
             <div className="flex flex-none items-baseline justify-between gap-3.5 px-gut pb-2.5 pt-3.5 lg:justify-start lg:p-0">
               <h1 className="min-w-0 break-words font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]">
-                {query.search ? `Results for “${query.search}”` : 'Australian opals'}
+                {query.search ? `Results for “${query.search}”` : (landing?.heading ?? 'Australian opals')}
               </h1>
               <p className="flex-none text-[13px] text-ink-2" aria-live="polite">
                 {totalDocs === 0 ? 'No pieces found' : pieces(totalDocs)}
@@ -529,6 +531,9 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
             <QuickChips query={query} counts={counts} totals={totals} />
           </div>
           <ActiveFilters query={query} className="px-gut pt-2.5 lg:hidden" />
+          {landing && (
+            <p className="max-w-[68ch] px-gut pt-3 text-[14px] leading-6 text-ink-2 lg:px-0 lg:pb-4 lg:pt-0">{landing.intro}</p>
+          )}
 
           <h2 className="sr-only">Current collection</h2>
           {products.length > 0 ? (
