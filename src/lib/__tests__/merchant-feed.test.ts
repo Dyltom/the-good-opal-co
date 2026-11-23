@@ -49,7 +49,10 @@ describe('Google Merchant feed', () => {
   })
 
   test('drops the sale price once the sale is over', () => {
-    const feed = buildGoogleMerchantFeed([catalogProduct({ sku: 'RING' })], new Date('2026-12-02T09:00:00+11:00'))
+    const feed = buildGoogleMerchantFeed(
+      [catalogProduct({ sku: 'RING' })],
+      new Date('2026-12-02T09:00:00+11:00')
+    )
     expect(item(feed, 'RING')).not.toContain('sale_price')
   })
 
@@ -103,5 +106,19 @@ describe('Google Merchant feed', () => {
     expect(entry).toContain('<g:max_handling_time>2</g:max_handling_time>')
     expect(transit('AU')).toEqual(['1', '7'])
     expect(transit('JP')).toEqual(['3', '10'])
+  })
+
+  test('labels each piece with its price band so ads can bid less on cheap stones', () => {
+    const feed = buildGoogleMerchantFeed([
+      catalogProduct({ sku: 'CHEAP', price: 45 }),
+      catalogProduct({ sku: 'MID', price: 60 }),
+      catalogProduct({ sku: 'UPPER', price: 175 }),
+      catalogProduct({ sku: 'RING', price: 350 }),
+    ])
+
+    expect(item(feed, 'CHEAP')).toContain('<g:custom_label_0>under-60</g:custom_label_0>')
+    expect(item(feed, 'MID')).toContain('<g:custom_label_0>60-149</g:custom_label_0>')
+    expect(item(feed, 'UPPER')).toContain('<g:custom_label_0>150-249</g:custom_label_0>')
+    expect(item(feed, 'RING')).toContain('<g:custom_label_0>250-plus</g:custom_label_0>')
   })
 })

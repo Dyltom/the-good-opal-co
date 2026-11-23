@@ -37,6 +37,17 @@ function productShippingRates(price: number): ShippingRate[] {
   ]
 }
 
+const PRICE_BANDS: [number, string][] = [
+  [250, '250-plus'],
+  [150, '150-249'],
+  [60, '60-149'],
+  [0, 'under-60'],
+]
+
+function priceBand(price: number): string {
+  return PRICE_BANDS.find(([floor]) => price >= floor)?.[1] ?? 'under-60'
+}
+
 function aud(amount: number): string {
   return `${amount.toFixed(2)} AUD`
 }
@@ -73,6 +84,7 @@ function merchantItem(product: CatalogProduct, now: Date): string {
     tag('identifier_exists', 'no'),
     tag('google_product_category', GOOGLE_PRODUCT_CATEGORY[product.category] ?? '188'),
     tag('product_type', product.categoryLabel),
+    tag('custom_label_0', priceBand(product.regularPrice)),
     product.stone
       ? `<g:product_detail>${tag('section_name', 'Gemstone')}${tag('attribute_name', 'Variety')}${tag('attribute_value', product.stone)}</g:product_detail>`
       : '',
