@@ -29,7 +29,9 @@ import { RingReferenceChecks } from './payload/collections/RingReferenceChecks.t
 import { RingAssets } from './payload/collections/RingAssets.ts'
 import { InsightEvents } from './payload/collections/InsightEvents.ts'
 import { Reviews } from './payload/collections/Reviews.ts'
+import { AuditEvents } from './payload/collections/AuditEvents.ts'
 import { duplicateSafe } from './payload/duplicate-safe.ts'
+import { audited } from './payload/audit-log.ts'
 import { recordAdminError } from './payload/record-admin-error.ts'
 import { GiftVouchers } from './payload/collections/GiftVouchers.ts'
 
@@ -168,7 +170,10 @@ export default buildConfig({
     InsightEvents,
     Reviews,
     GiftVouchers,
-  ].map(duplicateSafe),
+    AuditEvents,
+  ]
+    .map(duplicateSafe)
+    .map(audited),
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,

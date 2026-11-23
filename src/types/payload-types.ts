@@ -77,6 +77,7 @@ export interface Config {
     'insight-events': InsightEvent
     reviews: Review
     'gift-vouchers': GiftVoucher
+    'audit-events': AuditEvent
     'payload-kv': PayloadKv
     'payload-locked-documents': PayloadLockedDocument
     'payload-preferences': PayloadPreference
@@ -105,6 +106,7 @@ export interface Config {
     'insight-events': InsightEventsSelect<false> | InsightEventsSelect<true>
     reviews: ReviewsSelect<false> | ReviewsSelect<true>
     'gift-vouchers': GiftVouchersSelect<false> | GiftVouchersSelect<true>
+    'audit-events': AuditEventsSelect<false> | AuditEventsSelect<true>
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>
     'payload-locked-documents':
       | PayloadLockedDocumentsSelect<false>
@@ -463,6 +465,7 @@ export interface Product {
   }
   updatedAt: string
   createdAt: string
+  deletedAt?: string | null
 }
 export interface Order {
   id: number
@@ -976,6 +979,26 @@ export interface GiftVoucher {
   updatedAt: string
   createdAt: string
 }
+export interface AuditEvent {
+  id: number
+  occurredAt: string
+  user?: (number | null) | User
+  userEmail?: string | null
+  how: 'admin' | 'api-key' | 'system'
+  action: 'create' | 'update' | 'trash' | 'restore' | 'delete' | 'login'
+  collectionSlug: string
+  documentId?: string | null
+  title?: string | null
+  changes?:
+    | {
+        [k: string]: unknown
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null
+}
 export interface PayloadKv {
   id: number
   key: string
@@ -1336,6 +1359,7 @@ export interface ProductsSelect<T extends boolean = true> {
       }
   updatedAt?: T
   createdAt?: T
+  deletedAt?: T
 }
 export interface OrdersSelect<T extends boolean = true> {
   orderNumber?: T
@@ -1735,6 +1759,17 @@ export interface GiftVouchersSelect<T extends boolean = true> {
       }
   updatedAt?: T
   createdAt?: T
+}
+export interface AuditEventsSelect<T extends boolean = true> {
+  occurredAt?: T
+  user?: T
+  userEmail?: T
+  how?: T
+  action?: T
+  collectionSlug?: T
+  documentId?: T
+  title?: T
+  changes?: T
 }
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T

@@ -19,6 +19,7 @@ import { indexNowOnPublish } from '../../lib/indexnow.ts'
 
 export const Products: CollectionConfig = {
   slug: 'products',
+  trash: true,
   access: {
     read: publishedOrAdmin,
     create: isAdmin,
