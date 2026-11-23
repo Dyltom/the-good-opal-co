@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { ClearCartOnSuccess } from './clear-cart'
+import { JoinList } from './join-list'
 import { OrderFinalizationRefresh } from './order-finalization-refresh'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import { getPayload } from '@/lib/payload'
@@ -87,6 +88,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
                 email={session?.customer_details?.email ?? session?.customer_email ?? undefined}
                 orderConfirmed={orderConfirmed}
               />
+              {session.customer_details?.email ? <JoinList sessionId={session.id} /> : null}
             </>
           )}
         </div>

@@ -1,97 +1,49 @@
-import * as React from 'react'
+import { EmailFrame, emailColors, emailText } from './email-frame'
 
 interface NewsletterConfirmationEmailProps {
   confirmationUrl: string
   email: string
+  baseUrl: string
+  supportEmail: string
 }
 
-export const NewsletterConfirmationEmail: React.FC<NewsletterConfirmationEmailProps> = ({
+export function NewsletterConfirmationEmail({
   confirmationUrl,
   email,
-}) => {
+  baseUrl,
+  supportEmail,
+}: NewsletterConfirmationEmailProps) {
   return (
-    <html>
-      <head />
-      <body style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f5f5f5', margin: 0, padding: 0 }}>
-        <table width="100%" cellPadding="0" cellSpacing="0" style={{ backgroundColor: '#f5f5f5', padding: '20px 0' }}>
-          <tr>
-            <td align="center">
-              <table width="600" cellPadding="0" cellSpacing="0" style={{ backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden' }}>
-                {/* Header */}
-                <tr>
-                  <td style={{ backgroundColor: '#1a1a1a', padding: '30px', textAlign: 'center' }}>
-                    <h1 style={{ color: '#ffffff', margin: 0, fontSize: '28px', fontWeight: 'bold' }}>
-                      The Good Opal Co
-                    </h1>
-                  </td>
-                </tr>
-
-                {/* Content */}
-                <tr>
-                  <td style={{ padding: '40px 30px' }}>
-                    <h2 style={{ fontSize: '24px', margin: '0 0 20px 0', color: '#1a1a1a', textAlign: 'center' }}>
-                      Confirm Your Subscription
-                    </h2>
-
-                    <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666', margin: '0 0 30px 0' }}>
-                      Thanks for signing up for our newsletter! We&apos;re excited to share exclusive offers,
-                      new opal collections, and jewelry care tips with you.
-                    </p>
-
-                    <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#666666', margin: '0 0 30px 0' }}>
-                      Please confirm your email address ({email}) by clicking the button below:
-                    </p>
-
-                    <table width="100%" cellPadding="0" cellSpacing="0">
-                      <tr>
-                        <td align="center" style={{ padding: '20px 0' }}>
-                          <a
-                            href={confirmationUrl}
-                            style={{
-                              display: 'inline-block',
-                              padding: '16px 32px',
-                              backgroundColor: '#7c3aed',
-                              color: '#ffffff',
-                              textDecoration: 'none',
-                              borderRadius: '8px',
-                              fontSize: '16px',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            Confirm Subscription
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#999999', margin: '30px 0 0 0', textAlign: 'center' }}>
-                      If you didn&apos;t sign up for our newsletter, you can safely ignore this email.
-                    </p>
-
-                    <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#999999', margin: '10px 0 0 0', textAlign: 'center' }}>
-                      Or copy and paste this link into your browser:
-                      <br />
-                      <span style={{ fontSize: '12px', wordBreak: 'break-all' }}>{confirmationUrl}</span>
-                    </p>
-                  </td>
-                </tr>
-
-                {/* Footer */}
-                <tr>
-                  <td style={{ backgroundColor: '#f8f8f8', padding: '30px', textAlign: 'center' }}>
-                    <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#666666' }}>
-                      © {new Date().getFullYear()} The Good Opal Co. All rights reserved.
-                    </p>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#999999' }}>
-                      Australia
-                    </p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
+    <EmailFrame preview="One click to confirm your email." baseUrl={baseUrl} supportEmail={supportEmail}>
+      <p style={emailText.eyebrow}>Confirm your email</p>
+      <h1 style={emailText.heading}>One click and you are on the list.</h1>
+      <p style={emailText.body}>
+        Confirm that {email} should get our emails about new opals, new pieces and sales.
+      </p>
+      <p style={{ margin: '24px 0' }}>
+        <a
+          href={confirmationUrl}
+          style={{
+            backgroundColor: emailColors.ink,
+            color: emailColors.paper,
+            display: 'inline-block',
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            fontWeight: 700,
+            padding: '13px 22px',
+            textDecoration: 'none',
+          }}
+        >
+          Confirm my email
+        </a>
+      </p>
+      <p style={emailText.small}>
+        The link works for 24 hours. If you did not sign up, ignore this email and you will not hear
+        from us.
+      </p>
+      <p style={{ ...emailText.small, marginTop: '12px', overflowWrap: 'anywhere' }}>
+        If the button does not work, paste this into your browser: {confirmationUrl}
+      </p>
+    </EmailFrame>
   )
 }
