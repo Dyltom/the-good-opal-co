@@ -12,6 +12,7 @@ import {
   createCampaignUnsubscribeToken,
   readCampaignUnsubscribeToken,
 } from './campaign-unsubscribe-token'
+import { PUBLIC_CONTACT_EMAIL } from '@/lib/constants/social'
 import type {
   NewsletterService,
   NewsletterSubscriber,
@@ -49,6 +50,10 @@ function requireEmailConfig(): {
   }
 
   return { apiKey, fromEmail, baseUrl, tokenSecret }
+}
+
+function contactEmail(): string {
+  return process.env.CONTACT_EMAIL?.trim() || PUBLIC_CONTACT_EMAIL
 }
 
 function escapeHtml(value: string): string {
@@ -216,10 +221,12 @@ export class ResendNewsletterService implements NewsletterService {
       const { error } = await this.resend.emails.send({
         from: this.fromEmail,
         to: email,
-        subject: 'Please confirm your newsletter subscription',
-        react: await NewsletterConfirmationEmail({
+        subject: 'Confirm your email for The Good Opal Co',
+        react: NewsletterConfirmationEmail({
           confirmationUrl,
-          email
+          email,
+          baseUrl: this.baseUrl,
+          supportEmail: contactEmail(),
         })
       })
 
@@ -447,11 +454,13 @@ export class ResendNewsletterService implements NewsletterService {
     const { error } = await this.resend.emails.send({
       from: this.fromEmail,
       to: subscriber.email,
-      subject: 'Welcome to The Good Opal Co Newsletter! 🌟',
-      react: await NewsletterWelcomeEmail({
+      subject: 'Welcome to The Good Opal Co',
+      react: NewsletterWelcomeEmail({
         name: subscriber.name,
         unsubscribeUrl,
-        shopUrl
+        shopUrl,
+        baseUrl: this.baseUrl,
+        supportEmail: contactEmail(),
       })
     })
 
@@ -491,7 +500,7 @@ export class ResendNewsletterService implements NewsletterService {
         const campaignHtml = `${content}
           <hr style="margin:32px 0 20px;border:0;border-top:1px solid #ddd" />
           <p style="font-size:12px;line-height:1.5;color:#666">
-            Sent by The Good Opal Co. Contact ${escapeHtml(this.fromEmail)}.<br />
+            Sent by The Good Opal Co, Cowra NSW 2794, Australia. Contact ${escapeHtml(contactEmail())}.<br />
             <a href="${escapeHtml(unsubscribeUrl)}">Unsubscribe</a> from marketing emails.
           </p>`
 
