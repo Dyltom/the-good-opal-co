@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type Stripe from 'stripe'
 import { getPayload as bootPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -15,10 +16,10 @@ vi.mock('@/lib/payload', () => ({
 import {
   captureGiftVoucherHold,
   holdGiftVoucher,
-  issuePurchasedGiftVoucher,
   lookupGiftVoucher,
   releaseGiftVoucherHold,
 } from '../gift-vouchers'
+import { issueGiftVoucherFromSession } from '../gift-voucher-purchase'
 
 const HOLD_UNTIL = new Date(Date.now() + 31 * 60_000)
 
@@ -98,19 +99,36 @@ describe.skipIf(!databaseUrl)('gift vouchers against Postgres', () => {
     const voucher = await newVoucher(100)
     const attempts = await Promise.all(
       [randomUUID(), randomUUID(), randomUUID()].map((checkoutToken) =>
-        holdGiftVoucher({ code: voucher.code, checkoutToken, orderTotalCents: 6000, holdExpiresAt: HOLD_UNTIL })
+        holdGiftVoucher({
+          code: voucher.code,
+          checkoutToken,
+          orderTotalCents: 6000,
+          holdExpiresAt: HOLD_UNTIL,
+        })
       )
     )
     const heldCents = attempts.reduce((sum, hold) => sum + (hold.ok ? hold.amountCents : 0), 0)
     expect(heldCents).toBe(10000)
-    expect(attempts.filter((hold) => !hold.ok).map((hold) => !hold.ok && hold.problem)).toEqual(['empty'])
+    expect(attempts.filter((hold) => !hold.ok).map((hold) => !hold.ok && hold.problem)).toEqual([
+      'empty',
+    ])
   })
 
   it('returns the same hold when a checkout attempt is replayed', async () => {
     const voucher = await newVoucher(80)
     const checkoutToken = randomUUID()
-    const first = await holdGiftVoucher({ code: voucher.code, checkoutToken, orderTotalCents: 5000, holdExpiresAt: HOLD_UNTIL })
-    const replay = await holdGiftVoucher({ code: voucher.code, checkoutToken, orderTotalCents: 5000, holdExpiresAt: HOLD_UNTIL })
+    const first = await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 5000,
+      holdExpiresAt: HOLD_UNTIL,
+    })
+    const replay = await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 5000,
+      holdExpiresAt: HOLD_UNTIL,
+    })
     expect(replay).toEqual(first)
     expect((await balanceOf(voucher.id)).redemptions).toHaveLength(1)
   })
@@ -118,7 +136,12 @@ describe.skipIf(!databaseUrl)('gift vouchers against Postgres', () => {
   it('captures a paid hold once and keeps the rest of the balance', async () => {
     const voucher = await newVoucher(100)
     const checkoutToken = randomUUID()
-    await holdGiftVoucher({ code: voucher.code, checkoutToken, orderTotalCents: 6500, holdExpiresAt: HOLD_UNTIL })
+    await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 6500,
+      holdExpiresAt: HOLD_UNTIL,
+    })
 
     expect(await captureInTransaction(checkoutToken)).toMatchObject({ amount: 65 })
     expect(await captureInTransaction(checkoutToken)).toMatchObject({ amount: 65 })
@@ -131,7 +154,12 @@ describe.skipIf(!databaseUrl)('gift vouchers against Postgres', () => {
   it('marks a voucher used when its whole balance is captured', async () => {
     const voucher = await newVoucher(40)
     const checkoutToken = randomUUID()
-    await holdGiftVoucher({ code: voucher.code, checkoutToken, orderTotalCents: 9000, holdExpiresAt: HOLD_UNTIL })
+    await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 9000,
+      holdExpiresAt: HOLD_UNTIL,
+    })
     await captureInTransaction(checkoutToken)
     expect(await balanceOf(voucher.id)).toMatchObject({ balance: 0, status: 'used' })
     expect(await lookupGiftVoucher(voucher.code)).toEqual({ ok: false, problem: 'empty' })
@@ -140,7 +168,12 @@ describe.skipIf(!databaseUrl)('gift vouchers against Postgres', () => {
   it('gives a held amount back when the checkout expires, once', async () => {
     const voucher = await newVoucher(100)
     const checkoutToken = randomUUID()
-    await holdGiftVoucher({ code: voucher.code, checkoutToken, orderTotalCents: 10000, holdExpiresAt: HOLD_UNTIL })
+    await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 10000,
+      holdExpiresAt: HOLD_UNTIL,
+    })
     expect(await lookupGiftVoucher(voucher.code)).toEqual({ ok: false, problem: 'empty' })
 
     expect(await releaseGiftVoucherHold(checkoutToken)).toBe(true)
@@ -154,22 +187,60 @@ describe.skipIf(!databaseUrl)('gift vouchers against Postgres', () => {
     const later = new Date(new Date(voucher.expiresAt).getTime() + 1000)
     expect(await lookupGiftVoucher(voucher.code, later)).toEqual({ ok: false, problem: 'expired' })
     expect(
-      await holdGiftVoucher({ code: voucher.code, checkoutToken: randomUUID(), orderTotalCents: 100, holdExpiresAt: HOLD_UNTIL, now: later })
+      await holdGiftVoucher({
+        code: voucher.code,
+        checkoutToken: randomUUID(),
+        orderTotalCents: 100,
+        holdExpiresAt: HOLD_UNTIL,
+        now: later,
+      })
     ).toEqual({ ok: false, problem: 'expired' })
   })
 
-  it('issues one voucher per paid Stripe session however often the webhook arrives', async () => {
-    const purchase = {
-      stripeCheckoutSessionId: `cs_test_${randomUUID()}`,
-      amount: 150,
-      purchaserName: 'Sam',
-      purchaserEmail: 'sam@example.com',
-      recipientName: 'Alex',
-      recipientEmail: 'alex@example.com',
-      issuedAt: new Date('2026-11-23T00:00:00Z'),
-    }
-    const results = await Promise.all([issuePurchasedGiftVoucher(purchase), issuePurchasedGiftVoucher(purchase)])
-    const again = await issuePurchasedGiftVoucher(purchase)
+  it('captures only the live hold when a checkout attempt is retried after its hold was released', async () => {
+    const voucher = await newVoucher(100)
+    const checkoutToken = randomUUID()
+    await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 3000,
+      holdExpiresAt: HOLD_UNTIL,
+    })
+    await releaseGiftVoucherHold(checkoutToken)
+    await holdGiftVoucher({
+      code: voucher.code,
+      checkoutToken,
+      orderTotalCents: 4000,
+      holdExpiresAt: HOLD_UNTIL,
+    })
+
+    expect(await captureInTransaction(checkoutToken)).toMatchObject({ amount: 40 })
+    const after = await balanceOf(voucher.id)
+    expect(after.balance).toBe(60)
+    expect(after.redemptions?.map((r) => r.state)).toEqual(['released', 'captured'])
+  })
+
+  it('issues one voucher for a paid voucher checkout however often Stripe replays the event', async () => {
+    const session = {
+      id: `cs_test_${randomUUID()}`,
+      amount_total: 15000,
+      created: Date.UTC(2026, 10, 23) / 1000,
+      customer_email: null,
+      customer_details: { email: 'sam@example.com' },
+      metadata: {
+        giftVoucherPurchase: 'true',
+        amount: '150',
+        purchaserName: 'Sam',
+        recipientName: 'Alex',
+        recipientEmail: 'alex@example.com',
+        message: '',
+      },
+    } as unknown as Stripe.Checkout.Session
+    const results = await Promise.all([
+      issueGiftVoucherFromSession(session),
+      issueGiftVoucherFromSession(session),
+    ])
+    const again = await issueGiftVoucherFromSession(session)
     expect(new Set([...results, again].map((result) => result.voucher.id)).size).toBe(1)
     expect([...results, again].filter((result) => result.created)).toHaveLength(1)
     expect(again.voucher).toMatchObject({ balance: 150, expiresAt: '2029-11-23T00:00:00.000Z' })

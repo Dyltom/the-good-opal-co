@@ -119,7 +119,7 @@ describe('checkout Server Action', () => {
 
     expect(createCoupon).toHaveBeenCalledWith(
       expect.objectContaining({ amount_off: 4000, currency: 'aud', duration: 'once', max_redemptions: 1 }),
-      { idempotencyKey: 'gift-voucher-coupon/d42cead1-0366-4f5f-a173-5f4c334c9513' }
+      { idempotencyKey: 'gift-voucher-coupon/d42cead1-0366-4f5f-a173-5f4c334c9513/4000' }
     )
     expect(createStripeSession).toHaveBeenCalledWith(
       expect.objectContaining({

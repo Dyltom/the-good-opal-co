@@ -183,7 +183,7 @@ export async function createCheckoutSession(input: {
             max_redemptions: 1,
             name: `Gift voucher ${voucher.code}`,
           },
-          { idempotencyKey: `gift-voucher-coupon/${checkoutAttemptId}` }
+          { idempotencyKey: `gift-voucher-coupon/${checkoutAttemptId}/${voucher.amountCents}` }
         )
       : null
 

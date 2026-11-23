@@ -228,9 +228,11 @@ export async function captureGiftVoucherHold(input: {
   const { payload, req } = input
   const voucher = await findByCheckoutToken(payload, input.checkoutToken, req)
   const redemptions = voucher?.redemptions ?? []
-  const redemption = redemptions.find((r) => r.checkoutToken === input.checkoutToken)
+  const forToken = redemptions.filter((r) => r.checkoutToken === input.checkoutToken)
+  const captured = forToken.find((r) => r.state === 'captured')
+  if (voucher && captured) return { code: voucher.code, amount: captured.amount }
+  const redemption = forToken.find((r) => r.state === 'held') ?? forToken.at(-1)
   if (!voucher || !redemption) return null
-  if (redemption.state === 'captured') return { code: voucher.code, amount: redemption.amount }
 
   const heldCents = toCents(redemption.amount)
   const balanceCents = toCents(voucher.balance)
@@ -241,7 +243,7 @@ export async function captureGiftVoucherHold(input: {
     req,
     voucher,
     redemptions.map((r) =>
-      r.checkoutToken === input.checkoutToken
+      r === redemption
         ? {
             ...r,
             state: 'captured',
