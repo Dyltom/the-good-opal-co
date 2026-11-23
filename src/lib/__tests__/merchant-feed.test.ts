@@ -49,7 +49,10 @@ describe('Google Merchant feed', () => {
   })
 
   test('drops the sale price once the sale is over', () => {
-    const feed = buildGoogleMerchantFeed([catalogProduct({ sku: 'RING' })], new Date('2026-12-02T09:00:00+11:00'))
+    const feed = buildGoogleMerchantFeed(
+      [catalogProduct({ sku: 'RING' })],
+      new Date('2026-12-02T09:00:00+11:00')
+    )
     expect(item(feed, 'RING')).not.toContain('sale_price')
   })
 
