@@ -21,18 +21,6 @@ export const SHIPPING_CONFIG = {
       STANDARD: 15,
       FREE_THRESHOLD: 500
     }
-  },
-
-  // Delivery timeframes
-  DELIVERY_TIMES: {
-    AUSTRALIA: {
-      EXPRESS: '1-2 business days',
-      STANDARD: '3-5 business days'
-    },
-    INTERNATIONAL: {
-      EXPRESS: '3-7 business days',
-      STANDARD: '7-14 business days'
-    }
   }
 } as const
 
@@ -117,13 +105,11 @@ export function getFreeShippingProgress(cartTotal: number): FreeShippingProgress
   }
 }
 
-/**
- * Get delivery timeframe message
- */
-export function getDeliveryTime(
-  destination: 'AUSTRALIA' | 'INTERNATIONAL' = 'AUSTRALIA',
-  expressShipping: boolean = true
-): string {
-  const times = SHIPPING_CONFIG.DELIVERY_TIMES[destination]
-  return expressShipping ? times.EXPRESS : times.STANDARD
-}
+export const DELIVERY_BUSINESS_DAYS = {
+  DISPATCH: { min: 0, max: 2 },
+  AUSTRALIA: { min: 1, max: 7 },
+  INTERNATIONAL: { min: 3, max: 10 },
+} as const
+
+const { DISPATCH, AUSTRALIA, INTERNATIONAL } = DELIVERY_BUSINESS_DAYS
+export const DELIVERY_ESTIMATE = `We aim to dispatch in-stock pieces within ${DISPATCH.max} business days of payment. Delivery then usually takes ${AUSTRALIA.min} to ${AUSTRALIA.max} business days within Australia and ${INTERNATIONAL.min} to ${INTERNATIONAL.max} business days to international destinations.`

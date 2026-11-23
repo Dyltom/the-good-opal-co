@@ -3,12 +3,11 @@ import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
-import { SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import { DELIVERY_ESTIMATE, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
-  description:
-    'Clear Australian and international delivery information for The Good Opal Co orders.',
+  description: `Tracked delivery from Melbourne: $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD within Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD to supported countries, free over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD. Dispatch and delivery times for every order.`,
   alternates: { canonical: '/shipping' },
 }
 
@@ -43,9 +42,7 @@ export default function ShippingPage() {
           </div>
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
             <h2 className="text-[1.375rem] leading-[1.15]">Delivery estimate</h2>
-            <p className="mt-2 text-sm leading-6 text-ink-2">
-              The carrier estimate is shown at checkout and again with tracking after dispatch.
-            </p>
+            <p className="mt-2 text-sm leading-6 text-ink-2">{DELIVERY_ESTIMATE}</p>
           </div>
         </div>
 
@@ -72,8 +69,8 @@ export default function ShippingPage() {
             <p className="mt-4 max-w-[65ch] text-sm leading-6 text-ink-2">
               Supported destinations are charged ${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD
               below the free-shipping threshold. Prices and shipping are charged in AUD and include
-              Australian GST. Import duties, taxes, and local handling charges
-              are not included in our price and remain the recipient’s responsibility.
+              Australian GST. Import duties, taxes, and local handling charges are not included in
+              our price and remain the recipient’s responsibility.
             </p>
             <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
               Need a piece by a particular date, or cannot select your country?{' '}
@@ -88,8 +85,9 @@ export default function ShippingPage() {
         </div>
 
         <p className="mt-10 max-w-[80ch] border-t border-rule pt-5 text-[13px] leading-5 text-ink-3">
-          Carrier timeframes are estimates, not guarantees. Any different charge or timeframe shown
-          in secure checkout takes precedence for that order.
+          Delivery times are carrier estimates, not guarantees. Custom pieces ship when they are
+          finished, on the timing in your quote. Any different charge shown in secure checkout takes
+          precedence for that order.
         </p>
       </Container>
     </MarketingShell>

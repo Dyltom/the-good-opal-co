@@ -1,5 +1,10 @@
 import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
-import { calculateShipping, RETURN_WINDOW_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import {
+  calculateShipping,
+  DELIVERY_BUSINESS_DAYS,
+  RETURN_WINDOW_DAYS,
+  SHIPPING_COUNTRIES,
+} from '@/lib/constants/shipping'
 import { SOCIAL_PROFILES } from '@/lib/constants/social'
 import { absoluteUrl, type Availability, type CatalogProduct } from '@/lib/catalog'
 
@@ -79,6 +84,8 @@ export function organizationStructuredData(contact?: { email: string }): Record<
     },
     address: {
       '@type': 'PostalAddress',
+      addressLocality: 'Melbourne',
+      addressRegion: 'VIC',
       addressCountry: 'AU',
     },
     currenciesAccepted: 'AUD',
@@ -125,8 +132,18 @@ function shippingDetails(price: number, destination: keyof typeof SHIPPING_COUNT
       value: calculateShipping(price, destination),
       currency: 'AUD',
     },
-    shippingLabel: destination === 'AUSTRALIA' ? 'Australia tracked shipping' : 'International tracked shipping',
+    shippingLabel:
+      destination === 'AUSTRALIA' ? 'Australia tracked shipping' : 'International tracked shipping',
+    deliveryTime: {
+      '@type': 'ShippingDeliveryTime',
+      handlingTime: businessDays(DELIVERY_BUSINESS_DAYS.DISPATCH),
+      transitTime: businessDays(DELIVERY_BUSINESS_DAYS[destination]),
+    },
   }
+}
+
+function businessDays({ min, max }: { min: number; max: number }) {
+  return { '@type': 'QuantitativeValue', minValue: min, maxValue: max, unitCode: 'DAY' }
 }
 
 interface ProductProperty {
@@ -186,7 +203,10 @@ export function productStructuredData(
       shippingDetails:
         product.category === 'custom-commissions'
           ? undefined
-          : [shippingDetails(product.price, 'AUSTRALIA'), shippingDetails(product.price, 'INTERNATIONAL')],
+          : [
+              shippingDetails(product.price, 'AUSTRALIA'),
+              shippingDetails(product.price, 'INTERNATIONAL'),
+            ],
     },
   }
 }
