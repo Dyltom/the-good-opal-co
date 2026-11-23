@@ -127,7 +127,7 @@ export async function createCheckoutSession(input: {
         client_reference_id: checkoutAttemptId,
         expires_at: Math.floor(expiresAt.getTime() / 1000),
         phone_number_collection: { enabled: true },
-        custom_text: { submit: { message: 'Prices and shipping are in AUD and include GST.' } },
+        custom_text: { submit: { message: 'Prices and shipping are in AUD.' } },
         branding_settings: {
           display_name: 'The Good Opal Co',
           background_color: '#FAF9F6',

@@ -25,10 +25,6 @@ export function centsToDollars(amount: number): number {
   return amount / 100
 }
 
-export function gstIncluded(total: number): number {
-  return centsToDollars(Math.round(dollarsToCents(total) / 11))
-}
-
 function lineSubtotal(items: CheckoutLineItem[]): number {
   return items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 }

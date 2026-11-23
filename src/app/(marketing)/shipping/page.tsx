@@ -101,9 +101,9 @@ export default function ShippingPage() {
             <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">International orders</h2>
             <p className="mt-4 max-w-[65ch] text-sm leading-6 text-ink-2">
               Supported destinations are charged ${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD
-              below the free-shipping threshold. Prices and shipping are charged in AUD and include
-              Australian GST. Import duties, taxes, and local handling charges are not included in
-              our price and remain the recipient’s responsibility.
+              below the free-shipping threshold. Prices and shipping are charged in AUD. Import
+              duties, taxes, and local handling charges are not included in our price and remain the
+              recipient’s responsibility.
             </p>
             <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
               Need a piece by a particular date, or cannot select your country?{' '}

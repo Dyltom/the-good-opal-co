@@ -291,7 +291,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <span className="text-[22px] font-medium leading-tight text-ink md:text-2xl">
                     {formatCurrency(product.price, 'AUD')}
                   </span>
-                  <span className="text-[13px] text-ink-2">AUD incl. GST</span>
+                  <span className="text-[13px] text-ink-2">AUD</span>
                   {discount && product.compareAtPrice ? (
                     <span className="text-[13px] text-ink-2">
                       <span className="line-through">{formatCurrency(product.compareAtPrice, 'AUD')}</span>{' '}

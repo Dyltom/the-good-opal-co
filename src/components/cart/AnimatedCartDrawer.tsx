@@ -141,9 +141,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
             </ul>
             <div className="space-y-3 border-t border-rule bg-plinth px-5 py-4">
               <div className="flex items-baseline justify-between">
-                <span className="text-ink-2">
-                  Subtotal <span className="text-[12.5px]">incl. GST</span>
-                </span>
+                <span className="text-ink-2">Subtotal</span>
                 <span className="text-lg font-medium text-ink">{formatCurrency(total, 'AUD')}</span>
               </div>
 

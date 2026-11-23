@@ -1,4 +1,3 @@
-import { gstIncluded } from '@/lib/checkout-pricing'
 import { formatCurrency } from '@/lib/utils'
 import { EmailFrame, emailColors, emailText } from './email-frame'
 
@@ -109,11 +108,6 @@ export function OrderConfirmationEmail({
             <td style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>Total</td>
             <td align="right" style={{ borderTop: `1px solid ${emailColors.ink}`, fontSize: '18px', padding: '12px 0 0' }}>
               {formatCurrency(total, 'AUD')} AUD
-            </td>
-          </tr>
-          <tr>
-            <td colSpan={2} align="right" style={{ ...emailText.small, padding: '6px 0 0' }}>
-              Includes GST of {formatCurrency(gstIncluded(total), 'AUD')}
             </td>
           </tr>
         </tbody>

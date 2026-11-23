@@ -74,8 +74,8 @@ export default function TermsOfServicePage() {
 
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">3.2 Pricing</h3>
               <p className="mb-4">
-                All prices and shipping charges are listed in Australian Dollars (AUD) and include
-                GST. Your order confirmation shows the GST included in the total. We reserve the
+                All prices and shipping charges are listed in Australian Dollars (AUD). We are not
+                registered for GST, so no GST is included in or added to our prices. We reserve the
                 right to change prices at any time without notice.
               </p>
               <p className="mb-4">

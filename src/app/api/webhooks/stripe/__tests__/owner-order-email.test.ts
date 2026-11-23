@@ -97,7 +97,6 @@ describe('Stripe webhook owner order email', () => {
     for (const detail of [
       'OPAL-TEST-1',
       'Total paid: $465.00 AUD (shipping $15.00)',
-      'Includes GST of $42.27',
       '1 × Black Opal Ring, $450.00',
       'Jo Buyer',
       '+61400000000',

@@ -8,7 +8,6 @@ import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 import type { Order } from '@/types/payload-types'
 import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
 import { calculateRefundAdjustment } from '@/lib/stripe-refunds'
-import { gstIncluded } from '@/lib/checkout-pricing'
 import { getRequiredCheckoutShippingDetails } from '@/lib/stripe-fulfillment'
 import {
   requireOrderForPaymentEvent,
@@ -211,7 +210,6 @@ function ownerOrderEmailText(order: Order): string {
       : []),
     `New paid order ${order.orderNumber}`,
     `Total paid: ${formatAud(order.total)} ${order.currency ?? 'AUD'} (shipping ${formatAud(order.shipping ?? 0)})`,
-    `Includes GST of ${formatAud(gstIncluded(order.total))}`,
     '',
     'Items:',
     ...order.items.map(
