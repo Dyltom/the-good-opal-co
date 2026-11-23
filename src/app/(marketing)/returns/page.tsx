@@ -17,7 +17,7 @@ const REFUND_DETAILS = [
   {
     term: 'Who qualifies',
     detail: [
-      `Change of mind: an eligible piece, unused and in its original condition and packaging, when you contact us within ${RETURN_WINDOW_DAYS} days of delivery. Custom work does not qualify.`,
+      `Change of mind: an eligible piece, unused, undamaged and in its original condition and packaging, when you contact us within ${RETURN_WINDOW_DAYS} days of delivery. Custom work does not qualify.`,
       'Faulty, damaged or not as described: a repair, replacement or refund under the Australian Consumer Law, depending on the problem. This includes custom work.',
     ],
   },
@@ -78,7 +78,7 @@ export default function ReturnsPage() {
             <h2 className="text-[1.375rem] leading-[1.15]">Change of mind</h2>
             <p className="mt-2 max-w-[65ch] text-sm leading-6 text-ink-2">
               Contact us within {RETURN_WINDOW_DAYS} days of delivery. Standard, unused pieces may be returned when
-              they remain in their original condition and packaging. Return postage is paid by the
+              they are undamaged and in their original condition and packaging. Return postage is paid by the
               customer.
             </p>
             <p className="mt-2 max-w-[65ch] text-sm leading-6 text-ink-2">

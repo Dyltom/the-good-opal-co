@@ -56,7 +56,7 @@ const faqCategories = [
       {
         question: 'What is the change-of-mind return policy?',
         answer:
-          'Contact us within 30 days of delivery. Standard, unused pieces may be returned when they remain in their original condition and packaging. Return postage is paid by the customer. Contact us before sending an item back so we can confirm the correct steps.',
+          'Contact us within 30 days of delivery. Standard, unused pieces may be returned when they are undamaged and in their original condition and packaging. Return postage is paid by the customer. Contact us before sending an item back so we can confirm the correct steps.',
       },
       {
         question: 'Which items are excluded from change-of-mind returns?',

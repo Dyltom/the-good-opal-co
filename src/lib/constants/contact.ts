@@ -16,5 +16,5 @@ export const CONTACT_INFO = {
   ordersEmail: email,
   legalEmail: email,
   privacyEmail: email,
-  address: 'Melbourne, Victoria, Australia',
+  address: 'Cowra, New South Wales, Australia',
 } as const
