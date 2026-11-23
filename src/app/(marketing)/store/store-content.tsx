@@ -448,6 +448,7 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
   }))
   const filterProps = { query, counts, totals, soldCount }
   const landing = storeLanding(query)
+  const heading = query.search ? `Results for “${query.search}”` : landing?.heading
 
   return (
     <section aria-label="Opal collection">
@@ -468,9 +469,19 @@ export function StoreContent({ products, query, totalDocs, counts, totals, soldC
 
         <div className="min-w-0">
           <div className="max-lg:contents lg:sticky lg:top-14 lg:z-20 lg:mb-3.5 lg:flex lg:min-h-[58px] lg:items-center lg:gap-5 lg:border-b lg:border-rule lg:bg-bg/[0.92] lg:py-2 lg:backdrop-blur-[14px]">
-            <div className="flex flex-none items-baseline justify-between gap-3.5 px-gut pb-2.5 pt-3.5 lg:justify-start lg:p-0">
-              <h1 className="min-w-0 break-words font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]">
-                {query.search ? `Results for “${query.search}”` : (landing?.heading ?? 'Australian opals')}
+            <div
+              className={cn(
+                'flex flex-none items-baseline justify-between gap-3.5 px-gut pb-2.5 pt-3.5 lg:justify-start lg:p-0',
+                !heading && 'max-lg:sr-only'
+              )}
+            >
+              <h1
+                className={cn(
+                  'min-w-0 break-words font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-ink lg:text-[28px]',
+                  !heading && 'sr-only'
+                )}
+              >
+                {heading ?? 'Australian opals'}
               </h1>
               <p className="flex-none text-[13px] text-ink-2" aria-live="polite">
                 {totalDocs === 0 ? 'No pieces found' : pieces(totalDocs)}

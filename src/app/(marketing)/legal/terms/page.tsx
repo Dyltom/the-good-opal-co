@@ -145,8 +145,8 @@ export default function TermsOfServicePage() {
               </h2>
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">6.1 Return Policy</h3>
               <p className="mb-4">
-                We offer a 30-day change-of-mind return policy for standard, unused pieces in their
-                original condition and packaging. Custom work is excluded from change-of-mind
+                We offer a 30-day change-of-mind return policy for standard, unused and undamaged pieces in
+                their original condition and packaging. Custom work is excluded from change-of-mind
                 returns: commissions, custom rings, stones or parcels cut to order, and any deposit
                 paid for custom work. Personalised items are excluded too. These exclusions do not
                 limit rights that cannot be excluded under the Australian Consumer Law, including

@@ -84,8 +84,8 @@ export function organizationStructuredData(contact?: { email: string }): Record<
     },
     address: {
       '@type': 'PostalAddress',
-      addressLocality: 'Melbourne',
-      addressRegion: 'VIC',
+      addressLocality: 'Cowra',
+      addressRegion: 'NSW',
       addressCountry: 'AU',
     },
     currenciesAccepted: 'AUD',

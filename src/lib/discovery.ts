@@ -160,7 +160,7 @@ function storeFacts(input: DiscoveryInput): string[] {
     '',
     '## Returns',
     '',
-    `- Change of mind: contact us within ${RETURN_WINDOW_DAYS} days of delivery. Unused pieces in original condition and packaging can be returned; the customer pays return postage.`,
+    `- Change of mind: contact us within ${RETURN_WINDOW_DAYS} days of delivery. Unused, undamaged pieces in original condition and packaging can be returned; the customer pays return postage.`,
     '- Custom work (commissions, custom rings, stones or parcels cut to order, and the deposit for custom work) is not eligible for change-of-mind returns. Personalised, altered, worn, hygiene-sensitive, and final-sale pieces are excluded too.',
     '- Contact us before posting anything back. Rights under the Australian Consumer Law are not limited by this policy, including for custom work.',
     '- Refunds go to the original payment method through Stripe; Klarna purchases are refunded through Klarna. A change-of-mind refund covers the item price; faulty or incorrect items also get the original shipping refunded. Stripe says refunds take 5 to 10 business days to appear.',

@@ -7,7 +7,7 @@ import { DELIVERY_ESTIMATE, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
-  description: `Tracked delivery from Melbourne: $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD within Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD to supported countries, free over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD. Dispatch and delivery times for every order.`,
+  description: `Tracked delivery from Cowra NSW: $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD within Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD to supported countries, free over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD. Dispatch and delivery times for every order.`,
   alternates: { canonical: '/shipping' },
 }
 
