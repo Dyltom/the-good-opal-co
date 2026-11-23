@@ -11,6 +11,7 @@ import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
+import { withSalePrice } from '@/lib/promotions'
 import { RETURN_WINDOW_DAYS, SHIPPING_CONFIG } from '@/lib/constants/shipping'
 import { caratWeight, storeLabel } from '@/app/(marketing)/store/store-query'
 import type { Product } from '@/types/payload-types'
@@ -126,7 +127,8 @@ async function loadInStock(): Promise<Listing[]> {
       images: true,
     },
   })
-  return docs.flatMap((product) => {
+  return docs.flatMap((doc) => {
+    const product = withSalePrice(doc)
     const image = firstImage(product)
     return image ? [{ product, ...image }] : []
   })

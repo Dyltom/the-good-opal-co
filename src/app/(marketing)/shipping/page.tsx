@@ -1,14 +1,45 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import { DELIVERY_ESTIMATE, SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import { CHRISTMAS_DELIVERY, promotionsPending } from '@/lib/promotions'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
   description: `Tracked delivery from Cowra NSW: $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD within Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD to supported countries, free over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD. Dispatch and delivery times for every order.`,
   alternates: { canonical: '/shipping' },
+}
+
+async function ChristmasDelivery() {
+  if (!promotionsPending()) return null
+  await connection()
+  if (new Date() >= CHRISTMAS_DELIVERY.endsAt) return null
+
+  return (
+    <section id="christmas" className="mt-10 scroll-mt-24 border-l-2 border-accent pl-4 md:mt-12">
+      <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">Christmas delivery</h2>
+      <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
+        For delivery in Australia before Christmas, order by{' '}
+        <strong className="font-medium text-ink">{CHRISTMAS_DELIVERY.orderBy}</strong>, or by{' '}
+        <strong className="font-medium text-ink">{CHRISTMAS_DELIVERY.remoteOrderBy}</strong>{' '}
+        for WA, NT and Tasmania. These dates allow for our dispatch time and Australia Post&apos;s
+        Christmas lodgement dates.
+      </p>
+      <p className="mt-2 max-w-[65ch] text-sm leading-6 text-ink-2">
+        Ordering later, or sending overseas?{' '}
+        <Link
+          href="/contact?subject=shipping"
+          className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
+        >
+          Ask us first
+        </Link>{' '}
+        and we will tell you what is still possible.
+      </p>
+    </section>
+  )
 }
 
 export default function ShippingPage() {
@@ -45,6 +76,8 @@ export default function ShippingPage() {
             <p className="mt-2 text-sm leading-6 text-ink-2">{DELIVERY_ESTIMATE}</p>
           </div>
         </div>
+
+        <ChristmasDelivery />
 
         <div className="mt-10 grid gap-10 md:mt-[clamp(40px,4.5vw,64px)] md:grid-cols-2 md:gap-[clamp(24px,4vw,72px)]">
           <section>

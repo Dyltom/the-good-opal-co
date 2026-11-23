@@ -2,6 +2,7 @@ import type Stripe from 'stripe'
 import type { InventoryReservation } from '@/types/payload-types'
 import { dollarsToCents } from '@/lib/checkout-pricing'
 import { getPayload } from '@/lib/payload'
+import { withSalePrice } from '@/lib/promotions'
 
 // Stripe requires expires_at to be at least 30 minutes after it receives the
 // request. One minute of transport margin prevents a boundary rejection.
@@ -145,7 +146,7 @@ async function reserveCheckoutInventoryOnce(input: {
         overrideAccess: true,
       })
       const stock = product.stock ?? 0
-      const currentUnitAmount = dollarsToCents(product.price)
+      const currentUnitAmount = dollarsToCents(withSalePrice(product).price)
       if (
         product.status !== 'published' ||
         product.slug !== item.slug ||

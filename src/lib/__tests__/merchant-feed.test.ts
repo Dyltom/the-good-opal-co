@@ -35,6 +35,24 @@ describe('Google Merchant feed', () => {
     expect(feed).not.toContain('\u0007')
   })
 
+  test('announces the Black Friday price ahead of time with the dates it applies', () => {
+    const feed = buildGoogleMerchantFeed(
+      [catalogProduct({ sku: 'RING', category: 'opal-rings', price: 345 })],
+      new Date('2026-11-24T09:00:00+11:00')
+    )
+
+    expect(item(feed, 'RING')).toContain('<g:price>345.00 AUD</g:price>')
+    expect(item(feed, 'RING')).toContain('<g:sale_price>293.25 AUD</g:sale_price>')
+    expect(item(feed, 'RING')).toContain(
+      '<g:sale_price_effective_date>2026-11-26T13:00:00.000Z/2026-11-30T13:00:00.000Z</g:sale_price_effective_date>'
+    )
+  })
+
+  test('drops the sale price once the sale is over', () => {
+    const feed = buildGoogleMerchantFeed([catalogProduct({ sku: 'RING' })], new Date('2026-12-02T09:00:00+11:00'))
+    expect(item(feed, 'RING')).not.toContain('sale_price')
+  })
+
   test('skips products Google would reject for having no image', () => {
     const feed = buildGoogleMerchantFeed([
       catalogProduct({ sku: 'WITH' }),

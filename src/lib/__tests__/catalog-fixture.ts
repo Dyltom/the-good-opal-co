@@ -9,6 +9,7 @@ export function catalogProduct(overrides: Partial<CatalogProduct> = {}): Catalog
     description: 'A bright blue opal.',
     summary: 'A bright blue opal.',
     price: 123,
+    regularPrice: overrides.price ?? 123,
     stock: 1,
     availability: 'in_stock',
     images: ['https://example.com/blue.jpg'],

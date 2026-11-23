@@ -7,6 +7,7 @@ import { CollectionJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { productGalleryUrls } from '@/lib/product-gallery'
 import { reservedProductIds } from '@/lib/inventory-reservations'
+import { withSalePrice } from '@/lib/promotions'
 import { parseProductDescription } from '@/lib/product-description'
 import { StoreContent, type StoreProduct } from './store-content'
 import { StoreInsights } from './store-insights'
@@ -164,7 +165,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     },
   }), reservedProductIds()])
   const listings = catalogue.docs
-    .map(toStoreListing)
+    .map((doc) => toStoreListing(withSalePrice(doc)))
     .filter((listing): listing is StoreListing => listing !== undefined)
     .map((listing) => ({ ...listing, reserved: listing.stock <= 0 && reservedIds.has(listing.id) }))
   const matching = findStoreListings(listings, query)
@@ -203,7 +204,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
     : { docs: [] }
   const byId = new Map(
     shown.docs
-      .map(toStoreProduct)
+      .map((doc) => toStoreProduct(withSalePrice(doc)))
       .filter((product): product is StoreProduct => product !== undefined)
       .map((product) => [product.id, product])
   )

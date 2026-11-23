@@ -6,6 +6,7 @@ import { ProductCard } from '@/components/product/ProductCard'
 import { toProductCardProduct } from '@/components/product/RelatedProducts'
 import { facetOptionLabel, parseStoreQuery, storeUrl } from '@/app/(marketing)/store/store-query'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
+import { withSalePrice } from '@/lib/promotions'
 import { getPayload } from '@/lib/payload'
 import { cn, formatCurrency } from '@/lib/utils'
 import type { Post, Product } from '@/types/payload-types'
@@ -56,7 +57,7 @@ async function inStock(
     sort: '-createdAt',
     depth: 2,
   })
-  return docs
+  return docs.map((doc) => withSalePrice(doc))
 }
 
 export interface ShopPicks {

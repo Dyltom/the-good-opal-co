@@ -4,6 +4,7 @@ import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { mergeProductGallery } from '@/lib/product-gallery'
 import { parseProductDescription } from '@/lib/product-description'
+import { activeSale, saleApplies, saleLastDay, salePrice } from '@/lib/promotions'
 import {
   STORE_CATEGORIES,
   STORE_MATERIALS,
@@ -26,6 +27,8 @@ export interface CatalogProduct {
   description: string
   summary: string
   price: number
+  regularPrice: number
+  saleEndsAt?: string
   stock: number
   availability: Availability
   images: string[]
@@ -88,12 +91,14 @@ export function productImageUrls(product: Product): string[] {
 
 export function toCatalogProduct(
   product: Product,
-  reservedIds: ReadonlySet<string> = new Set()
+  reservedIds: ReadonlySet<string> = new Set(),
+  now = new Date()
 ): CatalogProduct {
   const about = parseProductDescription(product.description)
   const description = about.paragraphs.join(' ')
   const stock = product.stock ?? 0
   const id = String(product.id)
+  const sale = saleApplies(product.category) ? activeSale(now) : undefined
 
   return {
     id,
@@ -102,7 +107,9 @@ export function toCatalogProduct(
     url: `${APP_URL}/store/${encodeURIComponent(product.slug)}`,
     description,
     summary: summarize(description),
-    price: product.price,
+    price: sale ? salePrice(product.price, sale) : product.price,
+    regularPrice: product.price,
+    saleEndsAt: sale && saleLastDay(sale),
     stock,
     availability: stock > 0 ? 'in_stock' : reservedIds.has(id) ? 'reserved' : 'sold',
     images: productImageUrls(product),
