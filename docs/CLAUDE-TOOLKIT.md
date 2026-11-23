@@ -4,16 +4,16 @@ Lets Steph run everyday shop jobs from the Claude app (claude.ai or Claude Deskt
 
 Two parts:
 
-- **The Good Opal shop connector**: an MCP endpoint at `https://goodopalco.com/api/mcp` (`src/app/api/mcp/route.ts`).
+- **The Good Opal shop connector**: an MCP endpoint at `https://goodopalco.com/api/mcp/<key>` (`src/app/api/mcp/[[...key]]/route.ts`).
 - **Four skills** in `toolkit/skills/`: `good-opal-listing`, `good-opal-photos`, `good-opal-blog` and `good-opal-site-guide`.
 
 ## Design
 
 ### How Claude reaches the shop
 
-A claude.ai **custom connector** pointing at the site's MCP endpoint, authenticated with a request header. Custom connectors work on Free, Pro, Max, Team and Enterprise plans, in claude.ai and Claude Desktop, and sync between them. Claude calls the connector from Anthropic's cloud, so the endpoint has to be public, which goodopalco.com already is.
+A claude.ai **custom connector** pointing at the site's MCP endpoint, with the API key as the last part of the URL. claude.ai's request-header option is a beta that most accounts don't have; without it the connector sends no key, gets a 401 and tries an OAuth sign-in the shop doesn't offer ("Couldn't reach Good Opal shop"). A key in the URL works on every plan. Custom connectors work on Free, Pro, Max, Team and Enterprise plans, in claude.ai and Claude Desktop, and sync between them. Claude calls the connector from Anthropic's cloud, so the endpoint has to be public, which goodopalco.com already is.
 
-A `.mcpb` desktop extension was rejected: it needs Claude Desktop, a local process on Steph's computer and a reinstall for every change. The connector is one URL and one header, and it updates when the site deploys.
+A `.mcpb` desktop extension was rejected: it needs Claude Desktop, a local process on Steph's computer and a reinstall for every change. The connector is one URL, and it updates when the site deploys.
 
 ### Hand-written route, not `@payloadcms/plugin-mcp`
 
@@ -28,7 +28,7 @@ The upgrade to 3.94.1 was tried in a throwaway worktree: install worked, the loc
 
 ### Auth
 
-Payload's own `useAPIKey` on the Users collection. The route takes `Authorization: Bearer <key>`, looks the key up through Payload's API-key strategy, and refuses with 401 for a missing or unknown key (or a session cookie) and 403 for any non-Admin user. Every tool runs through the Payload local API as that user with `overrideAccess: false`, so the collections' own access rules still apply.
+Payload's own `useAPIKey` on the Users collection. The route takes the key from the URL (`/api/mcp/<key>`) or from `Authorization: Bearer <key>` (Claude Code and other header-capable clients), looks the key up through Payload's API-key strategy, and refuses with 401 for a missing or unknown key (or a session cookie) and 403 for any non-Admin user. Every tool runs through the Payload local API as that user with `overrideAccess: false`, so the collections' own access rules still apply.
 
 **Know this before issuing a key:** a Users API key is also accepted by Payload's REST API (`Authorization: users API-Key <key>`), where an Admin can do anything, including publishing and deleting. The connector's limits keep Claude to drafts; the key itself is as powerful as an admin password. That is why the key belongs to its own user, so it can be revoked without touching Steph's login, and why it is shared only between Dylan and Steph's Claude settings.
 
@@ -79,7 +79,7 @@ Product spec rows are written as "Label: value" description lines, which the pro
 ## Dylan: revoke or replace the key
 
 - **Revoke:** open the `Claude for Steph` user, untick **Enable API Key**, **Save**. The connector stops working on the next request.
-- **Replace:** Payload 3.86 does not show a "generate new key" button, and re-ticking Enable API Key brings back the same key. To issue a fresh key, create a new user as above, update the connector's header with the new key, then untick Enable API Key on the old user (or delete it).
+- **Replace:** Payload 3.86 does not show a "generate new key" button, and re-ticking Enable API Key brings back the same key. To issue a fresh key, create a new user as above, remove and re-add the connector with the new URL, then untick Enable API Key on the old user (or delete it).
 - The site logs every tool call with the tool name, so `docker logs` on the app container shows what Claude did and when.
 
 ## Steph: set up Claude
@@ -93,8 +93,10 @@ You need a Claude account (any plan) and about 10 minutes. Dylan gives you the k
 3. Click **+ Add**, then **Add custom connector**.
 4. Fill in:
    - Name: `Good Opal shop`
-   - URL: `https://goodopalco.com/api/mcp`
-   - Under authentication, choose **Request headers** and add one header: name `Authorization`, value `Bearer ` followed by the key Dylan gave you (the word Bearer, one space, then the key).
+   - URL: `https://goodopalco.com/api/mcp/` followed straight away by the key Dylan gave you, with no space. For example, if the key were `abc-123`, the URL would be `https://goodopalco.com/api/mcp/abc-123`.
+   - Leave the OAuth and request header fields empty.
+
+   The URL now works like a password: don't share or screenshot it.
 5. Click **Add**. The connector shows its tools when it connects.
 
 ### 2. Add the skills

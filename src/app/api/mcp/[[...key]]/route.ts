@@ -545,9 +545,18 @@ function shopServer(payload: Payload, user: User): McpServer {
 
 type Authentication = { user: User } | { status: 401 | 403; message: string }
 
-async function authenticate(payload: Payload, request: Request): Promise<Authentication> {
-  const key = request.headers.get('authorization')?.match(/^Bearer\s+(\S+)\s*$/i)?.[1]
-  if (!key) return { status: 401, message: 'Send the shop API key as Authorization: Bearer <key>.' }
+async function authenticate(
+  payload: Payload,
+  request: Request,
+  pathKey: string | undefined
+): Promise<Authentication> {
+  const key =
+    pathKey ?? request.headers.get('authorization')?.match(/^Bearer\s+(\S+)\s*$/i)?.[1]
+  if (!key)
+    return {
+      status: 401,
+      message: 'Add the shop API key to the end of the connector URL: /api/mcp/<key>.',
+    }
   const { user } = await payload.auth({
     headers: new Headers({ authorization: `users API-Key ${key}` }),
     canSetHeaders: false,
@@ -559,9 +568,14 @@ async function authenticate(payload: Payload, request: Request): Promise<Authent
   return { user }
 }
 
-export async function POST(request: Request): Promise<Response> {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ key?: string[] }> }
+): Promise<Response> {
+  const { key = [] } = await params
+  if (key.length > 1) return new Response(null, { status: 404 })
   const payload = await getPayload()
-  const authentication = await authenticate(payload, request)
+  const authentication = await authenticate(payload, request, key[0])
   if (!('user' in authentication)) {
     return Response.json(
       { jsonrpc: '2.0', error: { code: -32001, message: authentication.message }, id: null },
