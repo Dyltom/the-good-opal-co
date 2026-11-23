@@ -2,7 +2,6 @@ import { describe, expect, test } from 'vitest'
 import {
   calculateCheckoutPricing,
   dollarsToCents,
-  gstIncluded,
 } from '../checkout-pricing'
 
 describe('checkout pricing', () => {
@@ -55,12 +54,5 @@ describe('checkout pricing', () => {
   test('converts dollar amounts to Stripe cents', () => {
     expect(dollarsToCents(15)).toBe(1500)
     expect(dollarsToCents(12.345)).toBe(1235)
-  })
-
-  test('reports the GST included in a GST-inclusive total as one eleventh, rounded to the cent', () => {
-    expect(gstIncluded(110)).toBe(10)
-    expect(gstIncluded(514)).toBe(46.73)
-    expect(gstIncluded(125)).toBe(11.36)
-    expect(gstIncluded(0)).toBe(0)
   })
 })

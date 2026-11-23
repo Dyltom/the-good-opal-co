@@ -81,7 +81,7 @@ const faqCategories = [
       {
         question: 'Do prices include GST?',
         answer:
-          'Yes. All prices and shipping charges are in Australian dollars (AUD) and include GST. Your order confirmation email shows the GST included in the total. International orders pay the same price; import duties and local taxes in the destination country are the recipient’s responsibility.',
+          'No GST applies. The Good Opal Co is a small business that is not registered for GST, so the price you see is the price you pay. All prices and shipping charges are in Australian dollars (AUD). International orders pay the same price; import duties and local taxes in the destination country are the recipient’s responsibility.',
       },
       {
         question: 'What should I do if something is wrong with my order?',

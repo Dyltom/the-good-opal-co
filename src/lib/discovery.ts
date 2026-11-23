@@ -116,7 +116,7 @@ function storeFacts(input: DiscoveryInput): string[] {
   return [
     '## About',
     '',
-    '- The Good Opal Co is a small Australian opal business. Prices, including shipping, are in Australian dollars (AUD) and include GST.',
+    '- The Good Opal Co is a small Australian opal business. Prices, including shipping, are in Australian dollars (AUD). The business is not registered for GST, so no GST is charged.',
     '- Founder: Stephanie Caruana (Steph), who leads The Good Opal Co and the personal guidance behind each enquiry.',
     '- Steph has written about opal since 2020: cutting a first stone by hand, building a cutting machine on a budget, and how opal from each field behaves on the wheel.',
     '- Sourcing, in Steph\'s words: "We are committed to sourcing all opal ethically and directly from Australian Miners. A majority of the material we source is from Lightning Ridge and Coober Pedy."',
