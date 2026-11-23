@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { Container } from '@/components/layout'
-import { MarketingShell } from '@/components/marketing'
 
 export function QuoteAccessRedeemer() {
   const [error, setError] = useState<string | null>(null)
@@ -40,8 +39,7 @@ export function QuoteAccessRedeemer() {
   }, [])
 
   return (
-    <MarketingShell>
-      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+    <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
         <div className="max-w-[60ch]">
           <h1 className="text-[2.25rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4vw,3.5rem)]">
             Opening your secure quote
@@ -56,7 +54,6 @@ export function QuoteAccessRedeemer() {
             </p>
           )}
         </div>
-      </Container>
-    </MarketingShell>
+    </Container>
   )
 }

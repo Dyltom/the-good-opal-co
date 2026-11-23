@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { MarketingShell } from '@/components/marketing'
 import { QuoteAccessRedeemer } from './quote-access-redeemer'
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function QuoteAccessPage() {
-  return <QuoteAccessRedeemer />
+  return (
+    <MarketingShell>
+      <QuoteAccessRedeemer />
+    </MarketingShell>
+  )
 }
