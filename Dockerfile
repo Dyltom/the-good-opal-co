@@ -20,6 +20,8 @@ ARG UPLOAD_DIR
 ARG STRIPE_SECRET_KEY
 ARG NEXT_PUBLIC_GA_MEASUREMENT_ID
 ARG NEXT_PUBLIC_CLARITY_PROJECT_ID
+ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+RUN test -n "$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY" || { echo "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY must be set: without it every deploy changes server action IDs and open admin or shop tabs stop working" >&2; exit 1; }
 ENV NEXT_OUTPUT=standalone NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
