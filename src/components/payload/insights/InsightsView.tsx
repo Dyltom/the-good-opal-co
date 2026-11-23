@@ -39,6 +39,7 @@ const ERROR_SOURCES: Record<string, string> = {
   proxy: 'Server proxy',
   checkout: 'Checkout setup',
   stripe_webhook: 'Stripe webhook',
+  admin: 'Admin',
 }
 
 const RATING_LABELS = {

@@ -54,7 +54,14 @@ export async function recordCheckoutInsight({
   }
 }
 
-export type ServerErrorKind = 'render' | 'route' | 'action' | 'proxy' | 'checkout' | 'stripe_webhook'
+export type ServerErrorKind =
+  | 'render'
+  | 'route'
+  | 'action'
+  | 'proxy'
+  | 'checkout'
+  | 'stripe_webhook'
+  | 'admin'
 
 export function scrubErrorMessage(error: unknown): string {
   const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error'

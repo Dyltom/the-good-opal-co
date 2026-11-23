@@ -29,6 +29,8 @@ import { RingReferenceChecks } from './payload/collections/RingReferenceChecks.t
 import { RingAssets } from './payload/collections/RingAssets.ts'
 import { InsightEvents } from './payload/collections/InsightEvents.ts'
 import { Reviews } from './payload/collections/Reviews.ts'
+import { duplicateSafe } from './payload/duplicate-safe.ts'
+import { recordAdminError } from './payload/record-admin-error.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -111,6 +113,9 @@ function withUploadDir(collection: CollectionConfig): CollectionConfig {
 
 export default buildConfig({
   serverURL: getRequiredEnvironmentValue('NEXT_PUBLIC_APP_URL') || 'http://localhost:8412',
+  hooks: {
+    afterError: [recordAdminError],
+  },
   admin: {
     user: Users.slug,
     importMap: {
@@ -161,7 +166,7 @@ export default buildConfig({
     RingReferenceChecks,
     InsightEvents,
     Reviews,
-  ],
+  ].map(duplicateSafe),
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,
