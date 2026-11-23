@@ -5,6 +5,7 @@ import { ProductCard } from './ProductCard'
 import type { Where } from 'payload'
 import { getPayload } from '@/lib/payload'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
+import { withSalePrice } from '@/lib/promotions'
 import type { Product } from '@/types/payload-types'
 import { cn } from '@/lib/utils'
 import { resolveMediaUrl } from '@/lib/media-url'
@@ -60,7 +61,7 @@ async function findRelatedProducts(product: Product, limit: number): Promise<Pro
         sort: ['-featured', '-createdAt'],
         depth: 2,
       })
-      for (const doc of docs) if (found.size < limit && !found.has(String(doc.id))) found.set(String(doc.id), doc)
+      for (const doc of docs) if (found.size < limit && !found.has(String(doc.id))) found.set(String(doc.id), withSalePrice(doc))
     }
   } catch (error) {
     console.error('Failed to fetch related products:', error)

@@ -84,6 +84,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...landings,
     ...(products.some((product) => product.stock <= 0) ? [page('/store/collected', 'weekly', 0.4)] : []),
     page('/services', 'monthly', 0.8),
+    page('/gifts', 'weekly', 0.7),
     page('/services/design', 'weekly', 0.8),
     page('/courses', 'weekly', 0.8, latest(courses)),
     page('/blog', 'weekly', 0.7, latest(posts)),

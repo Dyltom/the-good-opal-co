@@ -28,6 +28,7 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
 import { summarize, toCatalogProduct } from '@/lib/catalog'
 import { reservedProductIds } from '@/lib/inventory-reservations'
+import { withSalePrice } from '@/lib/promotions'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -105,10 +106,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     depth: 2,
   })
 
-  const product = docs[0] as Product | undefined
-  if (!product) {
+  const listed = docs[0] as Product | undefined
+  if (!listed) {
     notFound()
   }
+  const product = withSalePrice(listed)
 
   const primaryImage = product.images?.[0]?.image
   const imageUrl =
@@ -146,7 +148,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     }
   }
   const stock = product.stock ?? 0
-  const catalogProduct = toCatalogProduct(product, stock <= 0 ? await reservedProductIds() : undefined)
+  const catalogProduct = toCatalogProduct(listed, stock <= 0 ? await reservedProductIds() : undefined)
   const reserved = catalogProduct.availability === 'reserved'
   const sold = catalogProduct.availability === 'sold'
   const discount = savePercent(product.price, product.compareAtPrice)

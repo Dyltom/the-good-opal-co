@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from '@/lib/payload'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
+import { withSalePrice } from '@/lib/promotions'
 import { extractPlainText } from '@/lib/rich-text'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
@@ -20,7 +21,8 @@ export async function GET() {
     })
 
     return NextResponse.json(
-      products.map((product) => {
+      products.map((listed) => {
+        const product = withSalePrice(listed)
         const primaryImage = product.images?.[0]?.image
         const imageUrl =
           typeof primaryImage === 'object' && primaryImage

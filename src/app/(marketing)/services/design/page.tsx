@@ -13,6 +13,7 @@ import {
   reviewedOpalImageUrl,
 } from '@/lib/custom-builder/opal-visual'
 import { getPayload } from '@/lib/payload'
+import { withSalePrice } from '@/lib/promotions'
 import { loadPublishedRingDesignRenderManifests } from '@/lib/custom-builder/ring-design-manifest'
 import { resolveCanonicalFaceMapping } from '@/lib/custom-builder/canonical-face-mapping'
 import { getMetalSpot } from '@/lib/custom-builder/metal-spot'
@@ -109,6 +110,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
       name: true,
       slug: true,
       price: true,
+      category: true,
       images: true,
       stoneType: true,
       stoneOrigin: true,
@@ -199,7 +201,7 @@ async function getBuilderOpals(): Promise<BuilderOpal[]> {
           slug: product.slug,
           imageUrl,
           imageAlt: builderCatalogueImageAlt(product.slug, product.name, image?.alt),
-          price: product.price,
+          price: withSalePrice(product).price,
           stoneType,
           stoneTypeLabel: stoneTypeLabels[stoneType] ?? 'Australian opal',
           originLabel: product.stoneOrigin ? originLabels[product.stoneOrigin] : undefined,

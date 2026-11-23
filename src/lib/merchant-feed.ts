@@ -5,6 +5,7 @@ import {
   SHIPPING_COUNTRIES,
 } from '@/lib/constants/shipping'
 import { escapeXml } from '@/lib/discovery'
+import { nextSale, saleApplies, salePrice } from '@/lib/promotions'
 import type { CatalogProduct } from '@/lib/catalog'
 
 const GOOGLE_PRODUCT_CATEGORY: Record<string, string> = {
@@ -44,7 +45,16 @@ function tag(name: string, value: string): string {
   return `<g:${name}>${escapeXml(value)}</g:${name}>`
 }
 
-function merchantItem(product: CatalogProduct): string {
+function saleTags(product: CatalogProduct, now: Date): string[] {
+  const sale = saleApplies(product.category) ? nextSale(now) : undefined
+  if (!sale) return []
+  return [
+    tag('sale_price', aud(salePrice(product.regularPrice, sale))),
+    tag('sale_price_effective_date', `${sale.startsAt.toISOString()}/${sale.endsAt.toISOString()}`),
+  ]
+}
+
+function merchantItem(product: CatalogProduct, now: Date): string {
   const [imageLink, ...additionalImages] = product.images
 
   return [
@@ -56,7 +66,8 @@ function merchantItem(product: CatalogProduct): string {
     imageLink ? tag('image_link', imageLink) : '',
     ...additionalImages.slice(0, 10).map((image) => tag('additional_image_link', image)),
     tag('availability', product.availability === 'in_stock' ? 'in_stock' : 'out_of_stock'),
-    tag('price', aud(product.price)),
+    tag('price', aud(product.regularPrice)),
+    ...saleTags(product, now),
     tag('brand', APP_NAME),
     tag('condition', 'new'),
     tag('identifier_exists', 'no'),
@@ -75,7 +86,7 @@ function merchantItem(product: CatalogProduct): string {
   ].join('')
 }
 
-export function buildGoogleMerchantFeed(products: CatalogProduct[]): string {
+export function buildGoogleMerchantFeed(products: CatalogProduct[], now = new Date()): string {
   return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">',
@@ -85,7 +96,7 @@ export function buildGoogleMerchantFeed(products: CatalogProduct[]): string {
     '<description>Australian opals and opal jewellery.</description>',
     ...products
       .filter((product) => product.images.length > 0 && product.category !== 'custom-commissions')
-      .map(merchantItem),
+      .map((product) => merchantItem(product, now)),
     '</channel>',
     '</rss>',
   ].join('\n')

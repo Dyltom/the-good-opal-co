@@ -2,6 +2,7 @@
 
 import { getPayload } from '@/lib/payload'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
+import { withSalePrice } from '@/lib/promotions'
 import { productGalleryUrls } from '@/lib/product-gallery'
 import { rankProductSuggestions, type SearchSuggestion } from './suggestions'
 
@@ -46,7 +47,7 @@ export async function getSearchSuggestions(query: string): Promise<SearchSuggest
       results.docs.map((product) => ({
         name: product.name,
         slug: product.slug,
-        price: product.price,
+        price: withSalePrice(product).price,
         stock: product.stock ?? 0,
         category: product.category,
         image: productGalleryUrls(product.slug, product.name, product.images)[0],

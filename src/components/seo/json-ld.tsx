@@ -193,6 +193,7 @@ export function productStructuredData(
       url: product.url,
       priceCurrency: 'AUD',
       price: product.price,
+      priceValidUntil: product.saleEndsAt,
       itemCondition: 'https://schema.org/NewCondition',
       availability: SCHEMA_AVAILABILITY[product.availability],
       seller: { '@type': 'OnlineStore', '@id': organizationId, name: APP_NAME },

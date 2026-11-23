@@ -17,6 +17,7 @@ import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { cartAddQuantitySchema, cartUpdateQuantitySchema } from '@/lib/cart-validation'
 import { findReservationByToken } from '@/lib/inventory-reservations'
+import { withSalePrice } from '@/lib/promotions'
 
 /**
  * Represents an item in the shopping cart
@@ -145,7 +146,7 @@ export async function getCart(): Promise<Cart> {
           validatedItems.push({
             productId: String(product.id),
             slug: product.slug,
-            price: product.price,
+            price: withSalePrice(product).price,
             name: product.name,
             quantity: Math.min(item.quantity, availableStock),
             maxQuantity: availableStock,
