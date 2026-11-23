@@ -26,7 +26,7 @@ The menu down the left side groups everything:
 - **E-commerce**: Orders, and Inventory Reservations (pieces held while someone is paying). Commerce Import Runs is a technical record of the move from the old shop.
 - **CRM**: Customers, Enquiries and Custom Quotes. Custom Quote Events is a history log you never need to edit.
 - **Education**: Courses.
-- **Insights**: Insight Events, the raw visit records behind Store insights.
+- **Insights**: Insight Events, the raw visit records behind Store insights, and the Activity log: who created, changed, deleted or restored what, when, and whether it was done in the admin, by the Claude connector (API key) or by the system. Open an entry to see which fields changed.
 - **Help > Owner guide**: this guide.
 - **Reports**: Store insights, your shop dashboard (see section 11).
 
@@ -337,7 +337,7 @@ Your copies go to the shop's contact email address. To change that address, ask 
 - **Don't change the slug of a live piece** without asking Dylan. It breaks links people have shared and saved, and some older pieces' photos are matched by slug.
 - **Don't publish anything that isn't true.** Every review must be real and word for word. Every certificate, origin, weight, discount and "one of a kind" claim must be accurate.
 - **Don't set Refunded by hand.** Refund in Stripe and let the order update itself.
-- **Don't delete pieces or orders.** Archive a piece instead. Orders are your records.
+- **Don't delete pieces or orders.** Archive a piece instead. Orders are your records. A deleted piece goes to the trash first: open Products, click **Trash** above the list, open the piece and choose **Restore**.
 - **Don't change the raw opal designer settings.**
 - **Don't share quote links.** Each one belongs to one customer.
 

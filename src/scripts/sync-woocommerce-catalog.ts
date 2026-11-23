@@ -113,6 +113,7 @@ async function findAllProducts(): Promise<Product[]> {
       limit: 100,
       page,
       overrideAccess: true,
+      trash: true,
     })
     products.push(...result.docs)
     hasNextPage = result.hasNextPage
@@ -267,6 +268,7 @@ export async function syncWooCatalog(options: SyncOptions) {
       throw new Error(`WooCommerce product ${sourceProduct.wooId} has conflicting identities`)
     }
     const existing = byWooId ?? bySku
+    if (existing?.deletedAt) continue
     const authenticatedInitialStock = sourceStockByWooId[sourceProduct.wooId]
     if (existing) {
       stockReconciliation.managedProducts += 1
@@ -354,7 +356,7 @@ export async function syncWooCatalog(options: SyncOptions) {
 
   if (options.archiveMissing) {
     const missing = [...existingByWooId.entries()]
-      .filter(([wooId]) => !sourceWooIds.has(wooId))
+      .filter(([wooId, product]) => !sourceWooIds.has(wooId) && !product.deletedAt)
       .map(([, product]) => product)
     archived = missing.length
     if (options.apply) {

@@ -182,6 +182,7 @@ async function uniqueSlug(
       collection,
       where: { slug: { equals: slug } },
       overrideAccess: true,
+      trash: true,
     })
     if (totalDocs === 0) return slug
   }
