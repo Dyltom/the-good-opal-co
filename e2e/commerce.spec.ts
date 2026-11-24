@@ -114,7 +114,7 @@ test('cart sends buyers straight to secure payment with a shipping region', asyn
   await page.goto('/checkout')
 
   await expect(page).toHaveURL(/\/cart$/)
-  await expect(page.getByRole('radio', { name: 'Overseas' }).first()).toBeAttached()
+  await expect(page.getByRole('combobox', { name: 'Shipping to' }).first()).toBeAttached()
   await expect(page.getByRole('button', { name: 'Checkout', exact: true }).filter({ visible: true })).toHaveCount(1)
   assertNoErrors()
 })
