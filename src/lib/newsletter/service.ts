@@ -115,6 +115,18 @@ export class ResendNewsletterService implements NewsletterService {
             message: 'You are already subscribed to our newsletter'
           }
         }
+        if (
+          !options?.skipConfirmation &&
+          existingDoc.subscribedToNewsletter &&
+          existingDoc.confirmationExpiresAt &&
+          new Date(existingDoc.confirmationExpiresAt).getTime() > Date.now()
+        ) {
+          return {
+            success: true,
+            message: 'Please check your email to confirm your subscription',
+            requiresConfirmation: true
+          }
+        }
       }
 
       const confirmationToken = generateToken()
