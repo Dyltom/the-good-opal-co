@@ -24,7 +24,11 @@ import { trackRemoveFromCart } from '@/lib/analytics'
 import { calculateCheckoutPricing, centsToDollars } from '@/lib/checkout-pricing'
 import { giftVoucherAppliedCents } from '@/lib/gift-voucher-rules'
 import type { Cart, CartItem } from '@/lib/cart'
-import type { ShippingCountry } from '@/lib/constants/shipping'
+import {
+  extraCoverCents,
+  SIGNATURE_REQUIRED_OVER,
+  type ShippingCountry,
+} from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
 
@@ -46,6 +50,7 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
   const closeFeedback = () => setFeedback(null)
   const markFeedbackSent = () => setFeedbackSent(true)
   const pricing = calculateCheckoutPricing(cart.items, country)
+  const coverCents = extraCoverCents(country, pricing.shippedSubtotal)
   const [voucher, setVoucher] = useState<AppliedGiftVoucher | null>(null)
   const voucherAmount = voucher
     ? centsToDollars(giftVoucherAppliedCents(Math.round(voucher.available * 100), pricing.totalCents))
@@ -183,6 +188,14 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
                   <dd className="text-xl font-medium">{formatCurrency(totalDue, 'AUD')}</dd>
                 </div>
               </dl>
+
+              {coverCents > 0 ? (
+                <p className="mt-2 text-[13px] leading-5 text-ink-2">
+                  Optional Australia Post Extra Cover
+                  {pricing.shippedSubtotal > SIGNATURE_REQUIRED_OVER ? ' with signature' : ''} for
+                  this order: +{formatCurrency(coverCents / 100, 'AUD')}, chosen in checkout.
+                </p>
+              ) : null}
 
               {pricing.shippedSubtotal > 0 ? (
                 <FreeShippingProgress total={pricing.shippedSubtotal} className="mt-4" />

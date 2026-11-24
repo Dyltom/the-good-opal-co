@@ -86,7 +86,7 @@ describe('Google Merchant feed', () => {
         new RegExp(`<g:country>${country}</g:country>.*?<g:price>([^<]+)</g:price>`)
       )?.[1]
 
-    expect(shipping('LOW', 'AU')).toBe('10.55 AUD')
+    expect(shipping('LOW', 'AU')).toBe('10.20 AUD')
     expect(shipping('LOW', 'NZ')).toBe('17.90 AUD')
     expect(shipping('LOW', 'GB')).toBe('28.40 AUD')
     expect(shipping('HIGH', 'AU')).toBe('0.00 AUD')

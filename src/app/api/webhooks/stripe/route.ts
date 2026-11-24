@@ -114,6 +114,18 @@ async function getCheckoutItems(sessionId: string): Promise<CartItem[]> {
   })
 }
 
+async function chosenShippingService(session: Stripe.Checkout.Session): Promise<string | undefined> {
+  const rate = session.shipping_cost?.shipping_rate
+  if (!rate) return undefined
+  if (typeof rate !== 'string') return rate.display_name ?? undefined
+  try {
+    return (await stripe.shippingRates.retrieve(rate)).display_name ?? undefined
+  } catch (error) {
+    console.error('Could not read the chosen shipping service:', error)
+    return undefined
+  }
+}
+
 async function abandonedCheckoutItems(sessionId: string): Promise<CheckoutInsightItem[]> {
   try {
     const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
@@ -799,6 +811,7 @@ export async function POST(request: NextRequest) {
       const sessionEmail = session.customer_details?.email ?? session.customer_email ?? ''
 
       const shippingDetails = getRequiredCheckoutShippingDetails(session)
+      const shippingService = await chosenShippingService(session)
 
       // Calculate subtotal from items
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -908,11 +921,17 @@ export async function POST(request: NextRequest) {
             inventoryDecrementedAt: reservedInventoryAvailable
               ? new Date().toISOString()
               : undefined,
-            notes: inventoryAvailable
-              ? undefined
-              : reservationToken
-                ? 'Paid order reservation is missing, released, consumed, or does not match Stripe line items. Manual inventory review required.'
-                : 'Paid legacy checkout requires inventory review before fulfilment.',
+            notes:
+              [
+                inventoryAvailable
+                  ? undefined
+                  : reservationToken
+                    ? 'Paid order reservation is missing, released, consumed, or does not match Stripe line items. Manual inventory review required.'
+                    : 'Paid legacy checkout requires inventory review before fulfilment.',
+                shippingService ? `Ship by ${shippingService}` : undefined,
+              ]
+                .filter(Boolean)
+                .join('\n') || undefined,
           },
         })
 

@@ -51,8 +51,8 @@ const NORTH_AMERICA = international(2305, 4005)
 
 const AUSTRALIA_POST: Record<ShippingCountry, [standard: ShippingOption, express: ShippingOption]> = {
   AU: [
-    { label: 'Parcel Post', cents: 1055, days: PARCEL_POST_DAYS },
-    { label: 'Express Post', cents: 1355, days: EXPRESS_POST_DAYS },
+    { label: 'Parcel Post', cents: 1020, days: PARCEL_POST_DAYS },
+    { label: 'Express Post', cents: 1320, days: EXPRESS_POST_DAYS },
   ],
   NZ: international(1790, 3490),
   SG: ASIA_PACIFIC,
@@ -67,13 +67,39 @@ export function publishedShippingOptions(country: ShippingCountry): ShippingOpti
   return [...AUSTRALIA_POST[country]]
 }
 
+export const EXTRA_COVER_INCLUDED = 100
+export const EXTRA_COVER_MAX = 5000
+const EXTRA_COVER_CENTS_PER_100 = 250
+export const SIGNATURE_REQUIRED_OVER = 500
+const SIGNATURE_ON_DELIVERY_CENTS = 295
+
+export function extraCoverCents(country: ShippingCountry, value: number): number {
+  const coveredCents = Math.min(Math.round(value * 100), EXTRA_COVER_MAX * 100)
+  if (country !== 'AU' || coveredCents <= EXTRA_COVER_INCLUDED * 100) return 0
+  const cover = Math.ceil((coveredCents - EXTRA_COVER_INCLUDED * 100) / 10000) * EXTRA_COVER_CENTS_PER_100
+  return value > SIGNATURE_REQUIRED_OVER ? cover + SIGNATURE_ON_DELIVERY_CENTS : cover
+}
+
+function extraCoverLabel(value: number): string {
+  const covered = Math.ceil(Math.min(value, EXTRA_COVER_MAX)).toLocaleString('en-AU')
+  return `Extra Cover for $${covered}${value > SIGNATURE_REQUIRED_OVER ? ' and signature' : ''}`
+}
+
 export function shippingOptions(country: ShippingCountry, subtotal: number): ShippingOption[] {
   const [standard, express] = AUSTRALIA_POST[country]
-  if (subtotal >= FREE_SHIPPING_THRESHOLD) {
-    const free = country === 'AU' ? express : standard
-    return [{ ...free, label: `Free ${free.label}`, cents: 0 }]
-  }
-  return [standard, express]
+  const free = subtotal >= FREE_SHIPPING_THRESHOLD
+  const services = free ? [country === 'AU' ? express : standard] : [standard, express]
+  const coverCents = extraCoverCents(country, subtotal)
+  return services.flatMap((service) => {
+    const postage = free ? { ...service, label: `Free ${service.label}`, cents: 0 } : service
+    if (coverCents === 0) return [postage]
+    const covered = {
+      label: `${service.label} + ${extraCoverLabel(subtotal)}`,
+      cents: postage.cents + coverCents,
+      days: service.days,
+    }
+    return [postage, covered]
+  })
 }
 
 export function cheapestShippingOption(country: ShippingCountry, subtotal: number): ShippingOption {

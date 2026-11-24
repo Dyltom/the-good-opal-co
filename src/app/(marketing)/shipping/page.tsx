@@ -6,10 +6,14 @@ import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import {
   DELIVERY_ESTIMATE,
+  EXTRA_COVER_INCLUDED,
+  EXTRA_COVER_MAX,
+  extraCoverCents,
   FREE_SHIPPING_THRESHOLD,
   publishedShippingOptions,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
+  SIGNATURE_REQUIRED_OVER,
 } from '@/lib/constants/shipping'
 
 const AUSTRALIA = publishedShippingOptions('AU')
@@ -95,8 +99,8 @@ export default function ShippingPage() {
             Prices per order
           </h2>
           <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
-            Australia Post&apos;s published price for the smallest parcel, in AUD. You choose the
-            service in secure checkout.
+            Australia Post&apos;s MyPost Business price for the smallest parcel, the same to every
+            address in Australia, in AUD. You choose the service in secure checkout.
           </p>
           <table className="mt-4 w-full max-w-2xl text-left text-sm">
             <thead className="border-b border-rule text-ink-3">
@@ -123,6 +127,28 @@ export default function ShippingPage() {
               })}
             </tbody>
           </table>
+        </section>
+
+        <section className="mt-10 md:mt-12" aria-labelledby="extra-cover">
+          <h2 id="extra-cover" className="text-[1.75rem] leading-[1.1] md:text-[2rem]">
+            Extra Cover
+          </h2>
+          <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
+            Within Australia you can add Australia Post Extra Cover in checkout. It insures the
+            parcel for your order&apos;s value, up to {audPrice(EXTRA_COVER_MAX * 100)}, against loss
+            or damage in transit. The first {audPrice(EXTRA_COVER_INCLUDED * 100)} is free, then it
+            is {audPrice(extraCoverCents('AU', EXTRA_COVER_INCLUDED + 100))} for each further $100.
+            Above {audPrice(SIGNATURE_REQUIRED_OVER * 100)}, Australia Post also requires a
+            signature on delivery, which is included in the cover price shown. For an overseas
+            order you want insured,{' '}
+            <Link
+              href="/contact?subject=shipping"
+              className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
+            >
+              ask us before ordering
+            </Link>
+            .
+          </p>
         </section>
 
         <ChristmasDelivery />
