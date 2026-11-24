@@ -18,7 +18,8 @@ import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
 import { ProductViewTracker } from '@/components/analytics/ProductViewTracker'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { ownedProductImageUrl } from '@/lib/owned-product-image'
-import { parseProductDescription } from '@/lib/product-description'
+import { TrueSizeScale } from '@/components/product/TrueSizeScale'
+import { hasSameNumbers, parseProductDescription } from '@/lib/product-description'
 import { parseStoreQuery, storeLabel, storeLandingUrl, storeUrl } from '@/app/(marketing)/store/store-query'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { productImageTransitionName } from '@/lib/view-transitions'
@@ -140,7 +141,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       const value = labelled[2]!.replace(/\.$/, '')
       const known = facts.some(
         (fact) =>
-          fact.label === label || fact.value.toLowerCase() === value.toLowerCase()
+          fact.label === label ||
+          fact.value.toLowerCase() === value.toLowerCase() ||
+          hasSameNumbers(fact.value, value)
       )
       if (!known) facts.push({ label, value })
     } else {
@@ -361,6 +364,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     </div>
                   ))}
                 </dl>
+              ) : null}
+
+              {product.category === 'raw-opals' && product.dimensions?.length && product.dimensions.width ? (
+                <TrueSizeScale length={product.dimensions.length} width={product.dimensions.width} />
               ) : null}
 
               {notes.length > 0 ? (

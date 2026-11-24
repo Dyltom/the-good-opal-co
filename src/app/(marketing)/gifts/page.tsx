@@ -41,6 +41,18 @@ async function loadGiftProducts(): Promise<Product[]> {
   return docs.map((doc) => withSalePrice(doc))
 }
 
+function rankGiftPicks(products: Product[]): Product[] {
+  return products
+    .map((product, index) => ({ product, index }))
+    .sort(
+      (a, b) =>
+        Number(Boolean(b.product.videos?.length)) - Number(Boolean(a.product.videos?.length)) ||
+        (b.product.images?.length ?? 0) - (a.product.images?.length ?? 0) ||
+        a.index - b.index
+    )
+    .map(({ product }) => product)
+}
+
 const GIFT_MESSAGE = 'I am looking for an opal gift.\nIt is for:\nMy budget:\nNeeded by:'
 
 const linkClass =
@@ -101,7 +113,7 @@ export default async function GiftsPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-x-2.5 gap-y-7 md:grid-cols-4 md:gap-x-4">
-                {inBand.slice(0, 4).map((product, index) => (
+                {rankGiftPicks(inBand).slice(0, 4).map((product, index) => (
                   <ProductCard key={product.id} product={toProductCardProduct(product)} index={index} />
                 ))}
               </div>

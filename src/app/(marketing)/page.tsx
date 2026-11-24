@@ -228,8 +228,8 @@ export default async function HomePage() {
           <div className="grid gap-5 border-t border-rule pt-[clamp(14px,1.4vw,20px)] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:items-center md:gap-[clamp(20px,4vw,72px)]">
             <div className="relative aspect-[16/10] overflow-hidden bg-plinth md:aspect-[4/3]">
               <Image
-                src="/images/customs/custom-3.jpg"
-                alt="Six polished opals with blue, pink and green colour on a grey stone surface"
+                src="/images/products/shell-freeform-bezel-opal-ring.jpg"
+                alt="Opal ring in a freeform silver bezel, worn on a finger"
                 fill
                 sizes="(max-width: 767px) 100vw, 40vw"
                 className="object-cover"

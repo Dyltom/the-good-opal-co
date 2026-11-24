@@ -68,26 +68,27 @@ export function CookieConsent() {
           transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
           className="fixed bottom-3 left-3 right-3 z-50 sm:bottom-5 sm:left-auto sm:right-5 sm:max-w-sm max-lg:[body:has([data-bottom-bar])_&]:bottom-36 lg:[body:has([data-bottom-bar])_&]:left-5 lg:[body:has([data-bottom-bar])_&]:right-auto [body:has([role=dialog][data-state=open])_&]:hidden"
         >
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border border-rule bg-bg px-4 py-3 text-xs leading-5 text-ink shadow-md">
-            <p className="min-w-0 flex-1 basis-56">
-              May we use optional analytics to improve the store?{' '}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border border-rule bg-bg px-3 py-2 text-xs sm:gap-y-2 sm:px-4 sm:py-3 leading-5 text-ink shadow-md">
+            <p className="min-w-0 flex-1 basis-full sm:basis-56">
+              <span className="sm:hidden">Optional analytics to improve the store?</span>
+              <span className="hidden sm:inline">May we use optional analytics to improve the store?</span>{' '}
               <Link href="/legal/cookies" className="underline underline-offset-2 hover:text-ink">
                 Cookie policy
               </Link>
             </p>
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2 sm:w-auto">
               <Button
                 onClick={acceptNecessary}
                 size="sm"
                 variant="quiet"
-                className="min-h-[44px] min-w-[44px] px-3"
+                className="min-h-[44px] min-w-[44px] flex-1 px-3 sm:flex-none"
               >
                 Necessary only
               </Button>
               <Button
                 onClick={acceptAll}
                 size="sm"
-                className="min-h-[44px] min-w-[44px] bg-ink px-3 text-bg hover:bg-ink"
+                className="min-h-[44px] min-w-[44px] flex-1 bg-ink px-3 text-bg hover:bg-ink sm:flex-none"
               >
                 Accept analytics
               </Button>
