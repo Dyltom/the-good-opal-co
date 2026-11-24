@@ -97,7 +97,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page presents purchase confidence without overtracked labels', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD')
+    expect(source).toContain('FREE_SHIPPING_THRESHOLD')
     expect(source).toContain('30-day change-of-mind returns on eligible unused pieces.')
     expect(source).not.toContain('tracking-[0.2em]')
   })
@@ -353,9 +353,8 @@ describe('buying flow UI/UX safeguards', () => {
   test('shipping page matches the rates enforced during checkout', () => {
     const source = read('src/app/(marketing)/shipping/page.tsx')
 
-    expect(source).toContain('SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS')
-    expect(source).toContain('SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS')
-    expect(source).toContain('SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD')
+    expect(source).toContain('publishedShippingOptions')
+    expect(source).toContain('FREE_SHIPPING_THRESHOLD')
     expect(source).toContain('DELIVERY_ESTIMATE')
     expect(source).not.toContain('estimate is shown at checkout')
     expect(source).not.toContain('3–7 business days')

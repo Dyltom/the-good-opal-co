@@ -76,7 +76,7 @@ vi.mock('stripe', () => ({
 import { createCheckoutSession } from '../actions'
 
 function checkoutForm() {
-  return { region: 'AU' as const, checkoutAttemptId: 'd42cead1-0366-4f5f-a173-5f4c334c9513' }
+  return { country: 'AU' as const, checkoutAttemptId: 'd42cead1-0366-4f5f-a173-5f4c334c9513' }
 }
 
 describe('checkout Server Action', () => {
@@ -186,9 +186,6 @@ describe('checkout Server Action', () => {
       }),
       { idempotencyKey: 'checkout/d42cead1-0366-4f5f-a173-5f4c334c9513' }
     )
-    expect(createStripeSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'shipping_options.0.shipping_rate_data.delivery_estimate'
-    )
     expect(reserveCheckoutInventory).toHaveBeenCalledWith(
       expect.objectContaining({
         stripeSessionId: 'cs_test_reserved',
@@ -231,12 +228,43 @@ describe('checkout Server Action', () => {
     })
   })
 
-  test('lets overseas buyers enter any supported non-Australian address', async () => {
-    await createCheckoutSession({ ...checkoutForm(), region: 'INTL' })
+  test('ships only to the chosen country and lets the buyer pick its Australia Post services', async () => {
+    await createCheckoutSession({ ...checkoutForm(), country: 'NZ' })
 
     const params = createStripeSession.mock.calls[0]?.[0]
-    expect(params.shipping_address_collection.allowed_countries).not.toContain('AU')
-    expect(params.shipping_address_collection.allowed_countries).toContain('NZ')
+    expect(params.shipping_address_collection.allowed_countries).toEqual(['NZ'])
+    expect(
+      params.shipping_options.map(
+        (option: { shipping_rate_data: { display_name: string; fixed_amount: { amount: number } } }) => [
+          option.shipping_rate_data.display_name,
+          option.shipping_rate_data.fixed_amount.amount,
+        ]
+      )
+    ).toEqual([
+      ['International Standard', 1790],
+      ['International Express', 3490],
+    ])
+  })
+
+  test('offers one free option once the order reaches the free-shipping threshold', async () => {
+    getCart.mockResolvedValue({
+      items: [{ productId: '1', slug: 'opal-ring', name: 'Opal ring', price: 500, quantity: 1 }],
+      total: 500,
+      itemCount: 1,
+    })
+
+    await createCheckoutSession(checkoutForm())
+
+    const params = createStripeSession.mock.calls[0]?.[0]
+    expect(params.shipping_address_collection.allowed_countries).toEqual(['AU'])
+    expect(params.shipping_options).toEqual([
+      expect.objectContaining({
+        shipping_rate_data: expect.objectContaining({
+          display_name: 'Free Express Post',
+          fixed_amount: { amount: 0, currency: 'aud' },
+        }),
+      }),
+    ])
   })
 
   test('expires an unreachable Stripe session when stock cannot be reserved', async () => {

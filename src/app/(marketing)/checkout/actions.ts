@@ -9,7 +9,7 @@ import {
 } from '@/lib/checkout-pricing'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
-import { SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import { DISPATCH_BUSINESS_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
 import { recordServerError } from '@/lib/insights/record'
 import { requestVisitorKey } from '@/lib/insights/visitor'
@@ -31,7 +31,7 @@ import {
 import { giftVoucherProblemMessage } from '@/lib/gift-voucher-rules'
 
 const checkoutSchema = z.object({
-  region: z.enum(['AU', 'INTL']),
+  country: z.enum(SHIPPING_COUNTRIES),
   checkoutAttemptId: z.string().uuid('Invalid checkout attempt'),
   giftVoucherCode: z.string().trim().max(40).optional(),
 })
@@ -66,8 +66,6 @@ export async function checkGiftVoucher(input: string): Promise<GiftVoucherCheck>
   }
 }
 
-export type ShippingRegion = z.infer<typeof checkoutSchema>['region']
-
 function publicUrl(path: string | undefined): string | undefined {
   if (!path) return undefined
   const url = new URL(path, APP_URL)
@@ -93,7 +91,7 @@ interface CheckoutResult {
 }
 
 export async function createCheckoutSession(input: {
-  region: ShippingRegion
+  country: z.infer<typeof checkoutSchema>['country']
   checkoutAttemptId: string
   giftVoucherCode?: string
 }): Promise<CheckoutResult> {
@@ -116,7 +114,7 @@ export async function createCheckoutSession(input: {
 
   let heldVoucherFor: string | null = null
   try {
-    const { region, checkoutAttemptId, giftVoucherCode } = validationResult.data
+    const { country, checkoutAttemptId, giftVoucherCode } = validationResult.data
     const identifier = await getRequestIdentifier()
     const insightsVisitor = await requestVisitorKey()
     const allowed = await checkRateLimit({
@@ -157,8 +155,7 @@ export async function createCheckoutSession(input: {
       }
     }
 
-    const destination = region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
-    const pricing = calculateCheckoutPricing(cart.items, destination)
+    const pricing = calculateCheckoutPricing(cart.items, country)
     const expiresAt = checkoutReservationExpiresAt()
     const brandIcon = publicUrl('/logo.png')
 
@@ -218,27 +215,26 @@ export async function createCheckoutSession(input: {
           quantity: item.quantity,
         })),
         shipping_address_collection: {
-          allowed_countries: [...SHIPPING_COUNTRIES[destination]],
+          allowed_countries: [country],
         },
-        shipping_options: [
-          {
-            shipping_rate_data: {
-              type: 'fixed_amount',
-              fixed_amount: {
-                amount: pricing.shippingCents,
-                currency: 'aud',
-              },
-              display_name:
-                pricing.shippedSubtotal === 0
-                  ? 'No shipping on deposits'
-                  : pricing.shippingCents === 0
-                    ? 'Free tracked shipping'
-                  : destination === 'AUSTRALIA'
-                    ? 'Australia tracked shipping'
-                    : 'International tracked shipping',
-            },
+        shipping_options: pricing.shippingOptions.map((option) => ({
+          shipping_rate_data: {
+            type: 'fixed_amount' as const,
+            fixed_amount: { amount: option.cents, currency: 'aud' },
+            display_name: option.label,
+            ...(option.days.max > 0
+              ? {
+                  delivery_estimate: {
+                    minimum: { unit: 'business_day' as const, value: option.days.min },
+                    maximum: {
+                      unit: 'business_day' as const,
+                      value: option.days.max + DISPATCH_BUSINESS_DAYS.max,
+                    },
+                  },
+                }
+              : {}),
           },
-        ],
+        })),
         metadata: {
           [INVENTORY_RESERVATION_METADATA_KEY]: checkoutAttemptId,
           ...(voucher ? { [GIFT_VOUCHER_METADATA_KEY]: voucher.code } : {}),

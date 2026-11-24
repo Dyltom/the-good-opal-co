@@ -1,4 +1,10 @@
-import { calculateShipping, SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import {
+  cheapestShippingOption,
+  FREE_SHIPPING_THRESHOLD,
+  shippingOptions,
+  type ShippingCountry,
+  type ShippingOption,
+} from '@/lib/constants/shipping'
 
 interface CheckoutLineItem {
   price: number
@@ -9,6 +15,7 @@ interface CheckoutLineItem {
 export interface CheckoutPricing {
   subtotal: number
   shippedSubtotal: number
+  shippingOptions: ShippingOption[]
   shipping: number
   total: number
   subtotalCents: number
@@ -29,25 +36,28 @@ function lineSubtotal(items: CheckoutLineItem[]): number {
   return items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 }
 
+const NO_SHIPPING: ShippingOption = { label: 'No shipping on deposits', cents: 0, days: { min: 0, max: 0 } }
+
 export function calculateCheckoutPricing(
   items: CheckoutLineItem[],
-  destination: 'AUSTRALIA' | 'INTERNATIONAL' = 'AUSTRALIA'
+  country: ShippingCountry = 'AU'
 ): CheckoutPricing {
   const subtotal = lineSubtotal(items)
   const shippedSubtotal = lineSubtotal(items.filter((item) => !item.deposit))
-  const shipping = shippedSubtotal > 0 ? calculateShipping(shippedSubtotal, destination) : 0
-  const total = subtotal + shipping
-  const freeShippingRemaining =
-    shippedSubtotal > 0 ? Math.max(0, SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD - shippedSubtotal) : 0
+  const ships = shippedSubtotal > 0
+  const shippingCents = ships ? cheapestShippingOption(country, shippedSubtotal).cents : 0
+  const subtotalCents = dollarsToCents(subtotal)
+  const totalCents = subtotalCents + shippingCents
 
   return {
     subtotal,
     shippedSubtotal,
-    shipping,
-    total,
-    subtotalCents: dollarsToCents(subtotal),
-    shippingCents: dollarsToCents(shipping),
-    totalCents: dollarsToCents(total),
-    freeShippingRemaining,
+    shippingOptions: ships ? shippingOptions(country, shippedSubtotal) : [NO_SHIPPING],
+    shipping: centsToDollars(shippingCents),
+    total: centsToDollars(totalCents),
+    subtotalCents,
+    shippingCents,
+    totalCents,
+    freeShippingRemaining: ships ? Math.max(0, FREE_SHIPPING_THRESHOLD - shippedSubtotal) : 0,
   }
 }

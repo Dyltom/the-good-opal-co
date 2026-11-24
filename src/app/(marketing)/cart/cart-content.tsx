@@ -7,9 +7,8 @@ import { Minus, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   CheckoutButton,
-  ShippingRegionToggle,
-  useShippingRegion,
-  type ShippingRegion,
+  ShippingCountrySelect,
+  useShippingCountry,
 } from '@/components/cart/CheckoutButton'
 import {
   CheckoutFeedback,
@@ -25,30 +24,28 @@ import { trackRemoveFromCart } from '@/lib/analytics'
 import { calculateCheckoutPricing, centsToDollars } from '@/lib/checkout-pricing'
 import { giftVoucherAppliedCents } from '@/lib/gift-voucher-rules'
 import type { Cart, CartItem } from '@/lib/cart'
+import type { ShippingCountry } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
 
 interface CartPageContentProps {
   initialCart: Cart
-  initialRegion: ShippingRegion
+  initialCountry: ShippingCountry
 }
 
-export function CartPageContent({ initialCart, initialRegion }: CartPageContentProps) {
+export function CartPageContent({ initialCart, initialCountry }: CartPageContentProps) {
   const [cart, setCart] = useState(initialCart)
   const [isPending, startTransition] = useTransition()
   const [showClearDialog, setShowClearDialog] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
-  const [region, setRegion] = useShippingRegion(initialRegion)
+  const [country, setCountry] = useShippingCountry(initialCountry)
   const [feedback, setFeedback] = useState<CheckoutFeedbackSource | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
   useCancelledCheckoutPrompt(useCallback(() => setFeedback('cancelled'), []))
   const closeFeedback = () => setFeedback(null)
   const markFeedbackSent = () => setFeedbackSent(true)
-  const pricing = calculateCheckoutPricing(
-    cart.items,
-    region === 'AU' ? 'AUSTRALIA' : 'INTERNATIONAL'
-  )
+  const pricing = calculateCheckoutPricing(cart.items, country)
   const [voucher, setVoucher] = useState<AppliedGiftVoucher | null>(null)
   const voucherAmount = voucher
     ? centsToDollars(giftVoucherAppliedCents(Math.round(voucher.available * 100), pricing.totalCents))
@@ -158,7 +155,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                 Summary
               </h2>
 
-              <ShippingRegionToggle value={region} onChange={setRegion} className="mt-4" />
+              <ShippingCountrySelect value={country} onChange={setCountry} className="mt-4" />
 
               <dl className="mt-4 text-sm text-ink">
                 <div className="flex justify-between gap-4 border-b border-rule py-2">
@@ -172,7 +169,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
                       ? 'None'
                       : pricing.shipping === 0
                         ? 'Free'
-                        : formatCurrency(pricing.shipping, 'AUD')}
+                        : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
                   </dd>
                 </div>
                 {voucher ? (
@@ -202,7 +199,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
 
               <CheckoutButton
                 cart={cart}
-                region={region}
+                country={country}
                 giftVoucherCode={voucher?.code}
                 className="mt-4 h-12 w-full text-[15px] max-lg:hidden"
               />
@@ -247,7 +244,7 @@ export function CartPageContent({ initialCart, initialRegion }: CartPageContentP
           <div className="flex-1">
             <CheckoutButton
               cart={cart}
-              region={region}
+              country={country}
               giftVoucherCode={voucher?.code}
               className="h-12 w-full text-[15px]"
             />

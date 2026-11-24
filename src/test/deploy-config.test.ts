@@ -206,7 +206,6 @@ describe('deployment config', () => {
     expect(checkout).toContain('reserveCheckoutInventory')
     expect(checkout).toContain('expires_at:')
     expect(checkout).toContain('idempotencyKey: `checkout/${checkoutAttemptId}`')
-    expect(checkout).not.toContain('delivery_estimate')
     expect(checkout).not.toContain('cartItems: JSON.stringify')
   })
 
