@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { Torch } from '@/components/brand/Torch'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
+import { GoogleTag } from '@/components/analytics/GoogleTag'
 import { InsightsTracker } from '@/components/analytics/InsightsTracker'
 import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE, SHARE_IMAGE_URL } from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
@@ -73,6 +74,7 @@ export default function MarketingLayout({
       className={`${sans.variable} ${serif.variable}`}
     >
       <head>
+        <GoogleTag />
         <link
           rel="alternate"
           type="application/rss+xml"

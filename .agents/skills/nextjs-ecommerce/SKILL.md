@@ -30,7 +30,8 @@ Stripe, and cookie-cart patterns.
 - Price units vary in older code paths. Confirm whether the touched path expects
   dollars or cents before arithmetic, formatting, discounts, or Stripe
   `unit_amount`.
-- Keep free shipping over AUD 500 and flat-rate shipping behavior centralized.
+- Keep Australia Post pricing, Extra Cover and signature rules centralized in
+  `src/lib/constants/shipping.ts`. Customers pay all shipping.
 - Stripe checkout creates sessions only. Stock changes happen from webhook
   processing after payment completion.
 - Dispatch `cart-updated` after client-visible cart changes.

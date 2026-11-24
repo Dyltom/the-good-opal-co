@@ -6,14 +6,14 @@ import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import {
   DELIVERY_ESTIMATE,
+  EXTRA_COVER_CENTS_PER_100,
   EXTRA_COVER_INCLUDED,
   EXTRA_COVER_MAX,
   extraCoverCents,
-  FREE_SHIPPING_THRESHOLD,
   publishedShippingOptions,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
-  SIGNATURE_REQUIRED_OVER,
+  SIGNATURE_ON_DELIVERY_CENTS,
 } from '@/lib/constants/shipping'
 
 const AUSTRALIA = publishedShippingOptions('AU')
@@ -25,7 +25,7 @@ import { CHRISTMAS_DELIVERY, promotionsPending } from '@/lib/promotions'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
-  description: `Tracked Australia Post delivery from Cowra NSW at Australia Post's published price, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia. Free on orders of ${FREE_SHIPPING_THRESHOLD} AUD or more. Dispatch and delivery times for every order.`,
+  description: `Tracked Australia Post delivery from Cowra NSW at Australia Post's published price, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia, insured and signed for on orders over ${EXTRA_COVER_INCLUDED} AUD. Dispatch and delivery times for every order.`,
   alternates: { canonical: '/shipping' },
 }
 
@@ -82,10 +82,10 @@ export default function ShippingPage() {
             </p>
           </div>
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
-            <h2 className="text-[1.375rem] leading-[1.15]">Free delivery</h2>
+            <h2 className="text-[1.375rem] leading-[1.15]">Insured delivery</h2>
             <p className="mt-2 text-sm leading-6 text-ink-2">
-              Orders of ${FREE_SHIPPING_THRESHOLD} AUD or more ship free: Express Post within
-              Australia, International Standard overseas.
+              Within Australia, every order over ${EXTRA_COVER_INCLUDED} is insured for its value and
+              signed for on delivery. The cost is part of the shipping price in checkout.
             </p>
           </div>
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
@@ -134,13 +134,14 @@ export default function ShippingPage() {
             Extra Cover
           </h2>
           <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
-            Within Australia you can add Australia Post Extra Cover in checkout. It insures the
-            parcel for your order&apos;s value, up to ${EXTRA_COVER_MAX.toLocaleString('en-AU')}, against loss
-            or damage in transit. The first ${EXTRA_COVER_INCLUDED} is free, then it
-            is {audPrice(extraCoverCents('AU', EXTRA_COVER_INCLUDED + 100))} for each further $100.
-            Above ${SIGNATURE_REQUIRED_OVER}, Australia Post also requires a
-            signature on delivery, which is included in the cover price shown. For an overseas
-            order you want insured,{' '}
+            Every order over ${EXTRA_COVER_INCLUDED}{' '}
+            within Australia ships with Australia Post Extra Cover, which insures the parcel for your order&apos;s value, up to $
+            {EXTRA_COVER_MAX.toLocaleString('en-AU')}, against loss or damage in transit. Someone
+            must sign for it on delivery. Australia Post charges nothing for the first $
+            {EXTRA_COVER_INCLUDED} of cover, then {audPrice(EXTRA_COVER_CENTS_PER_100)} for each
+            further $100 or part of it, plus {audPrice(SIGNATURE_ON_DELIVERY_CENTS)} for the
+            signature, and we add it to the postage at that price. A $650 order, for example, adds{' '}
+            {audPrice(extraCoverCents('AU', 650))}. For an overseas order you want insured,{' '}
             <Link
               href="/contact?subject=shipping"
               className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
@@ -175,8 +176,7 @@ export default function ShippingPage() {
             <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">International orders</h2>
             <p className="mt-4 max-w-[65ch] text-sm leading-6 text-ink-2">
               Supported destinations are charged Australia Post&apos;s published International
-              Standard or International Express price below the free-shipping threshold. Prices and
-              shipping are charged in AUD. Import
+              Standard or International Express price. Prices and shipping are charged in AUD. Import
               duties, taxes, and local handling charges are not included in our price and remain the
               recipient’s responsibility.
             </p>

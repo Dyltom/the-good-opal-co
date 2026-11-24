@@ -1,18 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { getShippingMessage } from '@/lib/constants/shipping'
 
 const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
 
 describe('buying flow UI/UX safeguards', () => {
-  test('shipping feedback is calm and exposes progress data', () => {
-    const source = read('src/lib/constants/shipping.ts')
-
-    expect(getShippingMessage(500)).toBe('Your order qualifies for free shipping!')
-    expect(source).toContain('export function getFreeShippingProgress')
-  })
-
   test('product cards expose purchase actions on touch and keyboard focus', () => {
     const source = read('src/components/product/ProductCard.tsx')
 
@@ -83,10 +75,9 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).not.toContain('scale:')
   })
 
-  test('cart drawer uses plain checkout language and free-shipping progress', () => {
+  test('cart drawer uses plain checkout language', () => {
     const source = read('src/components/cart/AnimatedCartDrawer.tsx')
 
-    expect(source).toContain('FreeShippingProgress')
     expect(source).toContain('SheetDescription')
     expect(source).toContain('<CheckoutButton')
     expect(source).not.toContain('Treasure Chest')
@@ -97,7 +88,7 @@ describe('buying flow UI/UX safeguards', () => {
   test('product detail page presents purchase confidence without overtracked labels', () => {
     const source = read('src/app/(marketing)/store/[slug]/page.tsx')
 
-    expect(source).toContain('FREE_SHIPPING_THRESHOLD')
+    expect(source).toContain('extraCoverCents')
     expect(source).toContain('30-day change-of-mind returns on eligible unused pieces.')
     expect(source).not.toContain('tracking-[0.2em]')
   })
@@ -343,10 +334,9 @@ describe('buying flow UI/UX safeguards', () => {
     expect(policySource).toContain('Google Analytics')
     expect(policySource).toContain('Microsoft Clarity')
     expect(policySource).toContain('checkout-feedback-asked')
-    expect(policySource).toContain('We do not currently use')
-    expect(policySource).toContain('advertising, remarketing, or social-media tracking pixels')
+    expect(policySource).toContain('We do not use')
+    expect(policySource).toContain('remarketing, personalised advertising, or social-media tracking pixels')
     expect(policySource).not.toContain('Facebook Pixel')
-    expect(policySource).not.toContain('Google Ads')
     expect(policySource).not.toContain('Wishlist')
   })
 
@@ -354,7 +344,7 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/shipping/page.tsx')
 
     expect(source).toContain('publishedShippingOptions')
-    expect(source).toContain('FREE_SHIPPING_THRESHOLD')
+    expect(source).toContain('EXTRA_COVER_INCLUDED')
     expect(source).toContain('DELIVERY_ESTIMATE')
     expect(source).not.toContain('estimate is shown at checkout')
     expect(source).not.toContain('3–7 business days')
@@ -369,8 +359,8 @@ describe('buying flow UI/UX safeguards', () => {
     expect(terms).toContain('Australian Consumer Law')
     expect(terms).not.toContain('When you create an account with us')
     expect(terms).not.toContain('binding arbitration')
-    expect(privacy).toContain('Optional website usage analytics only after you consent')
-    expect(privacy).toContain('We do not currently use advertising')
+    expect(privacy).toContain('without cookies unless you accept analytics')
+    expect(privacy).toContain('We do not use remarketing')
     expect(privacy).toContain('Microsoft Clarity')
     expect(privacy).not.toContain('Regular security assessments')
     expect(privacy).not.toContain('We ensure appropriate safeguards are in place')

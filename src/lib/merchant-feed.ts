@@ -67,6 +67,7 @@ function merchantItem(product: CatalogProduct, now: Date): string {
     ...saleTags(product, now),
     tag('brand', APP_NAME),
     tag('condition', 'new'),
+    product.category === 'raw-opals' ? '' : tag('age_group', 'adult'),
     tag('identifier_exists', 'no'),
     tag('google_product_category', GOOGLE_PRODUCT_CATEGORY[product.category] ?? '188'),
     tag('product_type', product.categoryLabel),

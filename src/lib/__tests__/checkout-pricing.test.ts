@@ -13,21 +13,22 @@ describe('Australia Post shipping options', () => {
     ])
   })
 
-  test('offers each Australian service with Extra Cover at $2.50 per $100 above the free $100', () => {
-    expect(prices('AU', 499.99)).toEqual([
-      ['Parcel Post', 1020],
-      ['Parcel Post + Extra Cover for $500', 2020],
-      ['Express Post', 1320],
-      ['Express Post + Extra Cover for $500', 2320],
+  test('insures every Australian order over $100 with Extra Cover and signature on delivery', () => {
+    expect(prices('AU', 150)).toEqual([
+      ['Parcel Post with Extra Cover for $150 and signature', 1020 + 250 + 295],
+      ['Express Post with Extra Cover for $150 and signature', 1320 + 250 + 295],
+    ])
+    expect(prices('AU', 650)).toEqual([
+      ['Parcel Post with Extra Cover for $650 and signature', 1020 + 6 * 250 + 295],
+      ['Express Post with Extra Cover for $650 and signature', 1320 + 6 * 250 + 295],
     ])
   })
 
-  test('adds Signature on Delivery to Extra Cover above $500 and caps cover at $5,000', () => {
-    expect(prices('AU', 650)).toEqual([
-      ['Free Express Post', 0],
-      ['Express Post + Extra Cover for $650 and signature', 1795],
+  test('caps Extra Cover at $5,000', () => {
+    expect(prices('AU', 6000)).toContainEqual([
+      'Parcel Post with Extra Cover for $5,000 and signature',
+      1020 + 49 * 250 + 295,
     ])
-    expect(prices('AU', 6000)).toContainEqual(['Express Post + Extra Cover for $5,000 and signature', 12545])
   })
 
   test('charges each overseas zone its published standard and express price', () => {
@@ -39,32 +40,18 @@ describe('Australia Post shipping options', () => {
     expect(prices('GB', 100)).toEqual([['International Standard', 2840], ['International Express', 4540]])
   })
 
-  test('ships free from AUD 500: Express Post at home, International Standard overseas', () => {
-    expect(prices('AU', 500)).toEqual([
-      ['Free Express Post', 0],
-      ['Express Post + Extra Cover for $500', 1000],
-    ])
-    expect(prices('GB', 500)).toEqual([['Free International Standard', 0]])
+  test('charges postage on large orders too', () => {
+    expect(prices('GB', 5000)).toEqual([['International Standard', 2840], ['International Express', 4540]])
   })
 })
 
 describe('checkout pricing', () => {
-  test('estimates the total with the cheapest option below the threshold', () => {
-    const pricing = calculateCheckoutPricing([{ price: 499, quantity: 1 }])
-
-    expect(pricing.shippingCents).toBe(1020)
-    expect(pricing.totalCents).toBe(50920)
-    expect(pricing.total).toBe(509.2)
-    expect(pricing.shippingOptions).toHaveLength(4)
-    expect(pricing.freeShippingRemaining).toBe(1)
-  })
-
-  test('makes shipping free at AUD 500', () => {
+  test('estimates the total with the cheapest insured option', () => {
     const pricing = calculateCheckoutPricing([{ price: 250, quantity: 2 }])
 
-    expect(pricing.shippingCents).toBe(0)
-    expect(pricing.total).toBe(500)
-    expect(pricing.freeShippingRemaining).toBe(0)
+    expect(pricing.shippingCents).toBe(1020 + 4 * 250 + 295)
+    expect(pricing.totalCents).toBe(50000 + 2315)
+    expect(pricing.shippingOptions).toHaveLength(2)
   })
 
   test('prices shipping for the chosen country', () => {
@@ -79,18 +66,16 @@ describe('checkout pricing', () => {
 
     expect(pricing.shippingOptions).toEqual([expect.objectContaining({ cents: 0 })])
     expect(pricing.total).toBe(100)
-    expect(pricing.freeShippingRemaining).toBe(0)
   })
 
-  test('leaves deposits out of the free-shipping threshold', () => {
+  test('insures only the shipped pieces, not deposits', () => {
     const pricing = calculateCheckoutPricing([
-      { price: 450, quantity: 1 },
-      { price: 100, quantity: 1, deposit: true },
+      { price: 100, quantity: 1 },
+      { price: 450, quantity: 1, deposit: true },
     ])
 
     expect(pricing.subtotal).toBe(550)
     expect(pricing.shippingCents).toBe(1020)
-    expect(pricing.freeShippingRemaining).toBe(50)
   })
 
   test('converts dollar amounts to Stripe cents', () => {

@@ -1,5 +1,3 @@
-export const FREE_SHIPPING_THRESHOLD = 500
-
 export const RETURN_WINDOW_DAYS = 30
 
 export const SHIPPING_COUNTRIES = ['AU', 'NZ', 'SG', 'HK', 'JP', 'US', 'CA', 'GB'] as const
@@ -69,70 +67,32 @@ export function publishedShippingOptions(country: ShippingCountry): ShippingOpti
 
 export const EXTRA_COVER_INCLUDED = 100
 export const EXTRA_COVER_MAX = 5000
-const EXTRA_COVER_CENTS_PER_100 = 250
-export const SIGNATURE_REQUIRED_OVER = 500
-const SIGNATURE_ON_DELIVERY_CENTS = 295
+export const EXTRA_COVER_CENTS_PER_100 = 250
+export const SIGNATURE_ON_DELIVERY_CENTS = 295
 
 export function extraCoverCents(country: ShippingCountry, value: number): number {
   const coveredCents = Math.min(Math.round(value * 100), EXTRA_COVER_MAX * 100)
   if (country !== 'AU' || coveredCents <= EXTRA_COVER_INCLUDED * 100) return 0
   const cover = Math.ceil((coveredCents - EXTRA_COVER_INCLUDED * 100) / 10000) * EXTRA_COVER_CENTS_PER_100
-  return value > SIGNATURE_REQUIRED_OVER ? cover + SIGNATURE_ON_DELIVERY_CENTS : cover
-}
-
-function extraCoverLabel(value: number): string {
-  const covered = Math.ceil(Math.min(value, EXTRA_COVER_MAX)).toLocaleString('en-AU')
-  return `Extra Cover for $${covered}${value > SIGNATURE_REQUIRED_OVER ? ' and signature' : ''}`
+  return cover + SIGNATURE_ON_DELIVERY_CENTS
 }
 
 export function shippingOptions(country: ShippingCountry, subtotal: number): ShippingOption[] {
-  const [standard, express] = AUSTRALIA_POST[country]
-  const free = subtotal >= FREE_SHIPPING_THRESHOLD
-  const services = free ? [country === 'AU' ? express : standard] : [standard, express]
+  const services = AUSTRALIA_POST[country]
   const coverCents = extraCoverCents(country, subtotal)
-  return services.flatMap((service) => {
-    const postage = free ? { ...service, label: `Free ${service.label}`, cents: 0 } : service
-    if (coverCents === 0) return [postage]
-    const covered = {
-      label: `${service.label} + ${extraCoverLabel(subtotal)}`,
-      cents: postage.cents + coverCents,
-      days: service.days,
-    }
-    return [postage, covered]
-  })
+  if (coverCents === 0) return [...services]
+  const covered = Math.ceil(Math.min(subtotal, EXTRA_COVER_MAX)).toLocaleString('en-AU')
+  return services.map((service) => ({
+    label: `${service.label} with Extra Cover for $${covered} and signature`,
+    cents: service.cents + coverCents,
+    days: service.days,
+  }))
 }
 
 export function cheapestShippingOption(country: ShippingCountry, subtotal: number): ShippingOption {
   const [cheapest] = shippingOptions(country, subtotal)
   if (!cheapest) throw new Error(`No shipping options for ${country}`)
   return cheapest
-}
-
-export interface FreeShippingProgress {
-  threshold: number
-  remaining: number
-  percent: number
-  qualifies: boolean
-  message: string
-}
-
-export function getShippingMessage(cartTotal: number): string {
-  if (cartTotal >= FREE_SHIPPING_THRESHOLD) return 'Your order qualifies for free shipping!'
-  return `Add $${(FREE_SHIPPING_THRESHOLD - cartTotal).toFixed(2)} more for free shipping`
-}
-
-export function getFreeShippingProgress(cartTotal: number): FreeShippingProgress {
-  const subtotal = Math.max(0, cartTotal)
-  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
-  const percent = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100))
-
-  return {
-    threshold: FREE_SHIPPING_THRESHOLD,
-    remaining,
-    percent,
-    qualifies: remaining === 0,
-    message: getShippingMessage(subtotal),
-  }
 }
 
 export const DELIVERY_ESTIMATE = `We aim to dispatch in-stock pieces within ${DISPATCH_BUSINESS_DAYS.max} business days of payment. Australia Post then usually delivers in ${PARCEL_POST_DAYS.min} to ${PARCEL_POST_DAYS.max} business days by Parcel Post or ${EXPRESS_POST_DAYS.min} to ${EXPRESS_POST_DAYS.max} by Express Post within Australia, and ${INTERNATIONAL_STANDARD_DAYS.min} to ${INTERNATIONAL_STANDARD_DAYS.max} business days by International Standard or ${INTERNATIONAL_EXPRESS_DAYS.min} to ${INTERNATIONAL_EXPRESS_DAYS.max} by International Express overseas.`

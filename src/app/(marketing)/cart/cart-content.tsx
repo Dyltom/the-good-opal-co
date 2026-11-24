@@ -15,7 +15,6 @@ import {
   useCancelledCheckoutPrompt,
   type CheckoutFeedbackSource,
 } from '@/components/cart/CheckoutFeedback'
-import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { GiftVoucherField, type AppliedGiftVoucher } from '@/components/cart/GiftVoucherField'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
@@ -24,11 +23,7 @@ import { trackRemoveFromCart } from '@/lib/analytics'
 import { calculateCheckoutPricing, centsToDollars } from '@/lib/checkout-pricing'
 import { giftVoucherAppliedCents } from '@/lib/gift-voucher-rules'
 import type { Cart, CartItem } from '@/lib/cart'
-import {
-  extraCoverCents,
-  SIGNATURE_REQUIRED_OVER,
-  type ShippingCountry,
-} from '@/lib/constants/shipping'
+import { extraCoverCents, type ShippingCountry } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
 
@@ -172,9 +167,7 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
                   <dd>
                     {pricing.shippedSubtotal === 0
                       ? 'None'
-                      : pricing.shipping === 0
-                        ? 'Free'
-                        : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
+                      : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
                   </dd>
                 </div>
                 {voucher ? (
@@ -191,14 +184,9 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
 
               {coverCents > 0 ? (
                 <p className="mt-2 text-[13px] leading-5 text-ink-2">
-                  Optional Australia Post Extra Cover
-                  {pricing.shippedSubtotal > SIGNATURE_REQUIRED_OVER ? ' with signature' : ''} for
-                  this order: +{formatCurrency(coverCents / 100, 'AUD')}, chosen in checkout.
+                  Shipping includes Australia Post Extra Cover for the order&apos;s value and a
+                  signature on delivery: {formatCurrency(coverCents / 100, 'AUD')} of the price.
                 </p>
-              ) : null}
-
-              {pricing.shippedSubtotal > 0 ? (
-                <FreeShippingProgress total={pricing.shippedSubtotal} className="mt-4" />
               ) : null}
 
               <div className="mt-4">

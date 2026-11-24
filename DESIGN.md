@@ -213,8 +213,7 @@ last item. Container `xl` is 90rem with `px-gut`.
 ### Cart drawer
 
 Right sheet titled "Your bag (n)". Lines show a plinth thumbnail, italic name,
-tabular price. The footer is a plinth panel with subtotal, free shipping
-progress, region, checkout, "View bag" and "Continue shopping".
+tabular price. The footer is a plinth panel with subtotal, shipping, region, checkout, "View bag" and "Continue shopping".
 
 ## 6. Motion
 

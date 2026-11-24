@@ -281,11 +281,3 @@ export function trackShare(
 
   analytics.trackEvent(event)
 }
-
-/**
- * Track page view
- */
-export function trackPageView(path: string) {
-  const analytics = getAnalyticsService()
-  analytics.pageView(path)
-}

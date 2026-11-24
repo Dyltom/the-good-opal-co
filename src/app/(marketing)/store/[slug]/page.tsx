@@ -11,11 +11,7 @@ import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { cn, formatCurrency, savePercent } from '@/lib/utils'
-import {
-  cheapestShippingOption,
-  FREE_SHIPPING_THRESHOLD,
-  getFreeShippingProgress,
-} from '@/lib/constants/shipping'
+import { cheapestShippingOption, extraCoverCents } from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import { PaymentMethods } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
@@ -126,7 +122,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const about = parseProductDescription(product.description)
 
   const categoryName = product.category ? storeLabel(product.category) : undefined
-  const productShippingProgress = getFreeShippingProgress(product.price)
   const facts = [
     { label: 'Stone', value: product.stoneType && storeLabel(product.stoneType), href: storeLandingUrl('stone', product.stoneType) },
     { label: 'Origin', value: product.stoneOrigin && storeLabel(product.stoneOrigin), href: storeLandingUrl('origin', product.stoneOrigin) },
@@ -395,10 +390,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         <span className="font-medium text-ink-3">Shipping</span>
                         <span>
                           {isDeposit
-                            ? 'No shipping charge on the deposit, and it does not count towards free shipping.'
-                            : productShippingProgress.qualifies
-                              ? 'Free tracked shipping: Express Post in Australia, International Standard overseas.'
-                            : `Tracked Australia Post shipping at its published price, from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} AUD in Australia and from $${(cheapestShippingOption('NZ', 0).cents / 100).toFixed(2)} AUD overseas. Free on orders of $${FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
+                            ? 'No shipping charge on the deposit.'
+                            : `Tracked Australia Post shipping at its published price: from $${(cheapestShippingOption('AU', product.price).cents / 100).toFixed(2)} AUD in Australia${extraCoverCents('AU', product.price) > 0 ? ', insured for its value and signed for on delivery,' : ''} and from $${(cheapestShippingOption('NZ', product.price).cents / 100).toFixed(2)} AUD overseas.`}{' '}
                           <Link href="/shipping" className="text-ink underline underline-offset-4">
                             Rates
                           </Link>
