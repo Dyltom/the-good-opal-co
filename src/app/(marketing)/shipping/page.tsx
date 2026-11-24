@@ -135,10 +135,10 @@ export default function ShippingPage() {
           </h2>
           <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
             Within Australia you can add Australia Post Extra Cover in checkout. It insures the
-            parcel for your order&apos;s value, up to {audPrice(EXTRA_COVER_MAX * 100)}, against loss
-            or damage in transit. The first {audPrice(EXTRA_COVER_INCLUDED * 100)} is free, then it
+            parcel for your order&apos;s value, up to ${EXTRA_COVER_MAX.toLocaleString('en-AU')}, against loss
+            or damage in transit. The first ${EXTRA_COVER_INCLUDED} is free, then it
             is {audPrice(extraCoverCents('AU', EXTRA_COVER_INCLUDED + 100))} for each further $100.
-            Above {audPrice(SIGNATURE_REQUIRED_OVER * 100)}, Australia Post also requires a
+            Above ${SIGNATURE_REQUIRED_OVER}, Australia Post also requires a
             signature on delivery, which is included in the cover price shown. For an overseas
             order you want insured,{' '}
             <Link
