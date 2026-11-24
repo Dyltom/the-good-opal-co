@@ -20,7 +20,6 @@ import {
   ShippingCountrySelect,
   useShippingCountry,
 } from '@/components/cart/CheckoutButton'
-import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import { SHIPPING_COUNTRY_NAMES } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
@@ -111,7 +110,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
             Your bag <span className="font-sans text-sm text-ink-3">({itemCount})</span>
           </SheetTitle>
           <SheetDescription className="sr-only">
-            Review the pieces in your bag, update quantities, track free shipping progress, and continue to
+            Review the pieces in your bag, update quantities, see shipping, and continue to
             secure checkout.
           </SheetDescription>
         </SheetHeader>
@@ -153,12 +152,9 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
                 <span className="text-ink">
                   {pricing.shippedSubtotal === 0
                     ? 'None'
-                    : pricing.shipping === 0
-                      ? 'Free'
-                      : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
+                    : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
                 </span>
               </div>
-              {pricing.shippedSubtotal > 0 ? <FreeShippingProgress total={pricing.shippedSubtotal} /> : null}
               <div className="space-y-2">
                 {cart ? (
                   <>

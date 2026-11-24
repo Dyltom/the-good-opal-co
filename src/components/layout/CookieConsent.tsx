@@ -46,8 +46,11 @@ export function CookieConsent() {
     window.dispatchEvent(new Event('cookie-consent-updated'))
 
     if (typeof window !== 'undefined' && window.gtag) {
+      const state = prefs.analytics ? 'granted' : 'denied'
       window.gtag('consent', 'update', {
-        analytics_storage: prefs.analytics ? 'granted' : 'denied',
+        analytics_storage: state,
+        ad_storage: state,
+        ad_user_data: state,
       })
     }
 
@@ -70,8 +73,10 @@ export function CookieConsent() {
         >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border border-rule bg-bg px-3 py-2 text-xs sm:gap-y-2 sm:px-4 sm:py-3 leading-5 text-ink shadow-md">
             <p className="min-w-0 flex-1 basis-full sm:basis-56">
-              <span className="sm:hidden">Optional analytics to improve the store?</span>
-              <span className="hidden sm:inline">May we use optional analytics to improve the store?</span>{' '}
+              <span className="sm:hidden">Optional analytics and ad measurement?</span>
+              <span className="hidden sm:inline">
+                May we use optional analytics, including which of our Google ads lead to a sale?
+              </span>{' '}
               <Link href="/legal/cookies" className="underline underline-offset-2 hover:text-ink">
                 Cookie policy
               </Link>

@@ -14,7 +14,7 @@ import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { withSalePrice } from '@/lib/promotions'
 import {
   cheapestShippingOption,
-  FREE_SHIPPING_THRESHOLD,
+  EXTRA_COVER_INCLUDED,
   RETURN_WINDOW_DAYS,
 } from '@/lib/constants/shipping'
 import { caratWeight, storeLabel } from '@/app/(marketing)/store/store-query'
@@ -143,7 +143,7 @@ const FACTS = [
   ['Shown as it is', 'Studio shots change the background, never the colour.'],
   [
     'Shipping',
-    `Australia Post from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} in Australia. Free from $${FREE_SHIPPING_THRESHOLD}.`,
+    `Australia Post from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} in Australia, insured and signed for over $${EXTRA_COVER_INCLUDED}.`,
   ],
   ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
   ['Secure checkout', 'Stripe: card, Apple Pay and Klarna.'],

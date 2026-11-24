@@ -136,5 +136,4 @@ export type GtmEvent =
 
 export interface AnalyticsService {
   trackEvent(event: GtmEvent): void
-  pageView(path: string): void
 }

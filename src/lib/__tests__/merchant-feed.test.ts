@@ -76,9 +76,9 @@ describe('Google Merchant feed', () => {
     expect(feed).not.toContain('<g:id>DEPOSIT</g:id>')
   })
 
-  test('quotes the real per-country shipping charge, free from the threshold', () => {
+  test('quotes the real per-country shipping charge, with Extra Cover and signature in Australia over $100', () => {
     const feed = buildGoogleMerchantFeed([
-      catalogProduct({ sku: 'LOW', price: 120 }),
+      catalogProduct({ sku: 'LOW', price: 90 }),
       catalogProduct({ sku: 'HIGH', price: 500 }),
     ])
     const shipping = (sku: string, country: string) =>
@@ -89,8 +89,18 @@ describe('Google Merchant feed', () => {
     expect(shipping('LOW', 'AU')).toBe('10.20 AUD')
     expect(shipping('LOW', 'NZ')).toBe('17.90 AUD')
     expect(shipping('LOW', 'GB')).toBe('28.40 AUD')
-    expect(shipping('HIGH', 'AU')).toBe('0.00 AUD')
-    expect(shipping('HIGH', 'US')).toBe('0.00 AUD')
+    expect(shipping('HIGH', 'AU')).toBe('23.15 AUD')
+    expect(shipping('HIGH', 'US')).toBe('23.05 AUD')
+  })
+
+  test('marks jewellery for adults, as Google requires for apparel and accessories', () => {
+    const feed = buildGoogleMerchantFeed([
+      catalogProduct({ sku: 'RING', category: 'opal-rings' }),
+      catalogProduct({ sku: 'ROUGH', category: 'raw-opals' }),
+    ])
+
+    expect(item(feed, 'RING')).toContain('<g:age_group>adult</g:age_group>')
+    expect(item(feed, 'ROUGH')).not.toContain('age_group')
   })
 
   test('states the same dispatch and transit times as the shipping page', () => {

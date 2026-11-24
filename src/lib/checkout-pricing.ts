@@ -1,6 +1,5 @@
 import {
   cheapestShippingOption,
-  FREE_SHIPPING_THRESHOLD,
   shippingOptions,
   type ShippingCountry,
   type ShippingOption,
@@ -21,7 +20,6 @@ export interface CheckoutPricing {
   subtotalCents: number
   shippingCents: number
   totalCents: number
-  freeShippingRemaining: number
 }
 
 export function dollarsToCents(amount: number): number {
@@ -58,6 +56,5 @@ export function calculateCheckoutPricing(
     subtotalCents,
     shippingCents,
     totalCents,
-    freeShippingRemaining: ships ? Math.max(0, FREE_SHIPPING_THRESHOLD - shippedSubtotal) : 0,
   }
 }

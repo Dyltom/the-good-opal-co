@@ -83,6 +83,7 @@ describe('deployment config', () => {
   test('private quote bearer links are excluded from logs, caching, indexing, and analytics', () => {
     const config = read('next.config.ts')
     const analytics = read('src/components/analytics/AnalyticsConsentGate.tsx')
+    const googleTag = read('src/components/analytics/GoogleTag.tsx')
     const accessPage = read('src/app/(marketing)/quote/access/quote-access-redeemer.tsx')
     const quotePage = read('src/app/(marketing)/quote/[quoteNumber]/page.tsx')
 
@@ -91,6 +92,7 @@ describe('deployment config', () => {
     expect(config).toContain("{ key: 'Referrer-Policy', value: 'no-referrer' }")
     expect(config).toContain("{ key: 'Cache-Control', value: 'private, no-store, max-age=0' }")
     expect(analytics).toContain("pathname.startsWith('/quote')")
+    expect(googleTag).toContain("location.pathname.indexOf('/quote')===0")
     expect(accessPage).toContain('window.location.hash.slice(1)')
     expect(accessPage).toContain("replaceState(null, '', '/quote/access')")
     expect(quotePage).toContain("export const dynamic = 'force-dynamic'")

@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
           <h1 className="text-[2.375rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4.2vw,3.75rem)]">
             Privacy Policy
           </h1>
-          <p className="mt-3 text-[13px] text-ink-3">Last updated: 21 November 2026</p>
+          <p className="mt-3 text-[13px] text-ink-3">Last updated: 25 November 2026</p>
 
           <div className="prose mt-8 max-w-none border-t border-rule pt-8 text-[15px] leading-7 prose-headings:font-normal prose-headings:text-ink prose-p:text-ink prose-a:text-accent prose-a:underline-offset-4 prose-strong:font-medium prose-strong:text-ink prose-li:text-ink">
             <section className="mb-9">
@@ -65,7 +65,10 @@ export default function PrivacyPolicyPage() {
                   Request logs that may include IP address, browser information, requested page, and
                   timestamps
                 </li>
-                <li>Optional website usage analytics only after you consent to analytics</li>
+                <li>
+                  Google Analytics measurement of visits and of which of our Google ads lead to
+                  purchases, without cookies unless you accept analytics
+                </li>
                 <li>
                   Cookieless, anonymous measurement of how the site is used, described in section 6
                 </li>
@@ -148,14 +151,17 @@ export default function PrivacyPolicyPage() {
                   once per visit
                 </li>
                 <li>
-                  Google Analytics and Microsoft Clarity after you choose to allow analytics.
+                  Google Analytics cookies and Microsoft Clarity after you choose to allow analytics.
                   Clarity records clicks, scrolling and mouse movement to replay visits and may set
                   its own cookies
                 </li>
               </ul>
               <p className="mb-4">
-                We do not currently use advertising, remarketing, or social-media tracking pixels.
-                You can change optional analytics through Cookie settings. Blocking essential
+                Google Analytics loads on every page. Until you allow analytics it sets no cookies
+                and sends Google only cookieless signals, such as that a page was viewed or an order
+                was placed, which Google uses to estimate visits and ad results. We use it to learn
+                which of our Google ads lead to purchases. We do not use remarketing, personalised
+                advertising, or social-media tracking pixels. You can change optional analytics through Cookie settings. Blocking essential
                 storage may prevent the cart and privacy controls from working.
               </p>
               <h3 className="mb-2 mt-5 text-[1.25rem] leading-tight">
@@ -277,7 +283,8 @@ export default function PrivacyPolicyPage() {
                   <strong>OVHcloud:</strong> Website hosting
                 </li>
                 <li>
-                  <strong>Google Analytics:</strong> Site analytics, only after you allow analytics
+                  <strong>Google Analytics:</strong> Site analytics and measuring which of our Google
+                  ads lead to purchases, with cookies only after you allow analytics
                 </li>
                 <li>
                   <strong>Microsoft Clarity:</strong> Visit replays and heatmaps, only after you

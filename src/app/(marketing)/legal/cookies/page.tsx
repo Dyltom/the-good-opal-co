@@ -31,6 +31,13 @@ const storageRows = [
     purpose: 'Records when you saved your privacy choice.',
   },
   {
+    name: '_ga, _ga_*',
+    location: 'Cookie',
+    duration: '2 years',
+    purpose:
+      'Set by Google Analytics only after you accept analytics, to recognise your browser across visits.',
+  },
+  {
     name: 'checkout-feedback-asked',
     location: 'Session storage',
     duration: 'Until you close the tab',
@@ -46,7 +53,7 @@ export default function CookiePolicyPage() {
           <h1 className="text-[2.375rem] leading-[1.02] tracking-[-0.025em] md:text-[clamp(2.5rem,4.2vw,3.75rem)]">
             Cookie Policy
           </h1>
-          <p className="mt-3 text-[13px] text-ink-3">Last updated 21 November 2026</p>
+          <p className="mt-3 text-[13px] text-ink-3">Last updated 25 November 2026</p>
 
           <div className="mt-8 space-y-9 border-t border-rule pt-8 text-[15px] leading-7 text-ink">
             <section aria-labelledby="policy-overview">
@@ -55,9 +62,10 @@ export default function CookiePolicyPage() {
               </h2>
               <p className="mt-3">
                 We use a small amount of browser storage to keep the shop working and remember your
-                privacy choice. Optional analytics run only after you agree. We do not currently use
-                advertising, remarketing, or social-media tracking pixels on this site. We also
-                count visits on our own server without any cookies, as described below.
+                privacy choice. Analytics cookies are set only after you agree. We do not use
+                remarketing, personalised advertising, or social-media tracking pixels on this site.
+                We do measure which of our Google ads lead to purchases, as described below, and we
+                count visits on our own server without any cookies.
               </p>
             </section>
 
@@ -115,14 +123,17 @@ export default function CookiePolicyPage() {
                 Optional analytics
               </h2>
               <p className="mt-3">
-                If you select “Accept analytics”, we may use Google Analytics and Microsoft Clarity.
-                Google Analytics collects limited, aggregated information about visits and page use.
-                Microsoft Clarity records how pages are used, such as clicks, scrolling and mouse
+                Google Analytics loads on every page. Until you select “Accept analytics” it sets no
+                cookies and sends Google only cookieless signals, such as that a page was viewed or
+                an order was placed, which Google uses to estimate visits and how many of our Google
+                ads lead to a purchase. If you accept, it also sets the _ga cookies listed above so
+                visits from the same browser can be connected. We use it to see which pages are
+                useful and which of our Google ads lead to purchases, never for remarketing or
+                personalised ads. Microsoft Clarity loads only after you accept. It records how pages are used, such as clicks, scrolling and mouse
                 movement, so we can replay visits and see where the shop is confusing. It may set
                 its own cookies, such as _clck and _clsk, and Microsoft handles that data under its
                 own privacy statement. This helps us understand which pages are useful and where the
-                shopping experience needs improvement. Neither tool loads when you choose necessary
-                storage only.
+                shopping experience needs improvement.
               </p>
             </section>
 

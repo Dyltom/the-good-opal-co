@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default function TermsOfServicePage() {
-  const lastUpdated = new Date('2026-07-11').toLocaleDateString('en-AU', {
+  const lastUpdated = new Date('2026-11-25').toLocaleDateString('en-AU', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -120,8 +120,11 @@ export default function TermsOfServicePage() {
                 orders include tracking where the selected service supports it.
               </p>
               <ul className="mb-4 list-disc space-y-1.5 pl-6">
-                <li>Orders of $500 AUD or more qualify for free shipping</li>
-                <li>Orders below that threshold incur the charge shown at checkout</li>
+                <li>Every order pays the shipping charge shown at checkout</li>
+                <li>
+                  Orders within Australia over $100 AUD ship with Australia Post Extra Cover for the
+                  order&apos;s value and signature on delivery, included in that charge
+                </li>
                 <li>Available international destinations are shown at checkout</li>
               </ul>
 

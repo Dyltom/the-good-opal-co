@@ -4,7 +4,6 @@
  */
 
 import type { AnalyticsService, GtmEvent } from './types'
-import { parseCookiePreferences } from '@/lib/cookie-consent'
 
 declare global {
   interface Window {
@@ -44,34 +43,8 @@ export class GoogleAnalyticsService implements AnalyticsService {
     }
   }
 
-  /**
-   * Track page views
-   */
-  pageView(path: string): void {
-    if (!this.isEnabled()) {
-      this.logDebug('Analytics disabled or not initialized for page view', path)
-      return
-    }
-
-    try {
-      window.gtag?.('config', this.measurementId, {
-        page_path: path,
-      })
-      this.logDebug('Page view tracked', path)
-    } catch (error) {
-      console.error('Failed to track page view:', error)
-    }
-  }
-
   private isEnabled(): boolean {
-    if (typeof window === 'undefined' || !window.gtag || !this.measurementId) return false
-    try {
-      return (
-        parseCookiePreferences(window.localStorage.getItem('cookie-consent'))?.analytics === true
-      )
-    } catch {
-      return false
-    }
+    return typeof window !== 'undefined' && !!window.gtag && !!this.measurementId
   }
 
   private logDebug(message: string, data?: unknown): void {
@@ -87,34 +60,22 @@ export class GoogleAnalyticsService implements AnalyticsService {
  */
 export class MockAnalyticsService implements AnalyticsService {
   private events: GtmEvent[] = []
-  private pageViews: string[] = []
 
   trackEvent(event: GtmEvent): void {
     this.events.push(event)
-  }
-
-  pageView(path: string): void {
-    this.pageViews.push(path)
   }
 
   getEvents(): GtmEvent[] {
     return [...this.events]
   }
 
-  getPageViews(): string[] {
-    return [...this.pageViews]
-  }
-
   clear(): void {
     this.events = []
-    this.pageViews = []
   }
 }
 
 export class NoopAnalyticsService implements AnalyticsService {
   trackEvent(_event: GtmEvent): void {}
-
-  pageView(_path: string): void {}
 }
 
 /**
