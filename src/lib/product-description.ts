@@ -58,3 +58,12 @@ export function parseProductDescription(value: unknown): ProductDescription {
 
   return { paragraphs, inclusions, photographedUnderWhiteLight: WHITE_LIGHT.test(raw) }
 }
+
+function numberSet(text: string): string {
+  return [...new Set(text.match(/\d+(?:\.\d+)?/g)?.map(Number) ?? [])].sort((a, b) => a - b).join(',')
+}
+
+export function hasSameNumbers(a: string, b: string): boolean {
+  const numbers = numberSet(a)
+  return numbers !== '' && numbers === numberSet(b)
+}

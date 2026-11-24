@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parseProductDescription } from '@/lib/product-description'
+import { hasSameNumbers, parseProductDescription } from '@/lib/product-description'
 
 const wooListing = `This Lightning Ridge Semi Black Opal weighs 5.50 cts and would make a beautiful ring stone. Inclusions are: natural webbing and a sand spot.
 
@@ -47,5 +47,13 @@ describe('product description from imported listings', () => {
 
     expect(description.paragraphs).toEqual(['First paragraph.', 'Second paragraph.'])
     expect(description.photographedUnderWhiteLight).toBe(false)
+  })
+})
+
+describe('hasSameNumbers', () => {
+  test('treats a described measurement as the same fact as the structured dimensions in any order', () => {
+    expect(hasSameNumbers('9.5 × 5.3 × 2.5 mm', '5.3 x 9.5 x 2.5 mm')).toBe(true)
+    expect(hasSameNumbers('9.5 × 5.3 × 2.5 mm', '9.5 x 5.3 x 3 mm')).toBe(false)
+    expect(hasSameNumbers('Lightning Ridge', 'Coober Pedy')).toBe(false)
   })
 })
