@@ -115,7 +115,7 @@ export async function POST(req: Request) {
 
 1. **Prices in cents** - Store as integers, use `formatPrice()` for display
 2. **AUD currency** - All Stripe operations use 'aud'
-3. **Free shipping over $500** - Otherwise $15 flat rate
+3. **Shipping** - Australia Post price per destination, insured and signed for in Australia over $100 (`src/lib/constants/shipping.ts`)
 4. **Stock via webhook** - Never decrement stock in checkout action
 5. **Zod validation** - All server action inputs validated
 
