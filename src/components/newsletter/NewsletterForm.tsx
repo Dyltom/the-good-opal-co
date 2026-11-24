@@ -14,6 +14,12 @@ export function NewsletterForm({ className }: { className?: string }) {
   return (
     <form action={formAction} className={cn('w-full space-y-3', className)}>
       <input type="hidden" name="source" value="footer" />
+      <div aria-hidden="true" className="sr-only">
+        <label>
+          Leave this empty
+          <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+        </label>
+      </div>
       <div className="flex gap-2">
         <div className="relative flex-1">
           <label htmlFor={emailId} className="sr-only">

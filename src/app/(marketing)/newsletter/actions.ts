@@ -12,6 +12,8 @@ import { getNewsletterService } from '@/lib/newsletter/service'
 import { redirect } from 'next/navigation'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
+const CHECK_EMAIL = 'Please check your email to confirm your subscription'
+
 /**
  * Validation schema for newsletter subscription
  */
@@ -35,13 +37,30 @@ export async function subscribeToNewsletter(
       source: formData.get('source') || 'footer'
     })
 
-    const identifier = await getRequestIdentifier(data.email)
-    const allowed = await checkRateLimit({
-      scope: 'newsletter',
-      identifier,
-      limit: 5,
-      windowSeconds: 60 * 60,
-    })
+    if (formData.get('website')) {
+      return { success: true, message: CHECK_EMAIL, requiresConfirmation: true }
+    }
+
+    const hour = 60 * 60
+    const allowed =
+      (await checkRateLimit({
+        scope: 'newsletter',
+        identifier: await getRequestIdentifier(data.email),
+        limit: 5,
+        windowSeconds: hour,
+      })) &&
+      (await checkRateLimit({
+        scope: 'newsletter-address',
+        identifier: await getRequestIdentifier(),
+        limit: 3,
+        windowSeconds: hour,
+      })) &&
+      (await checkRateLimit({
+        scope: 'newsletter-sitewide',
+        identifier: 'all',
+        limit: 10,
+        windowSeconds: hour,
+      }))
     if (!allowed) {
       return { success: false, message: 'Too many attempts. Please try again later.' }
     }

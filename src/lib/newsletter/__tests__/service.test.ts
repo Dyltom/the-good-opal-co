@@ -54,6 +54,28 @@ describe('ResendNewsletterService campaigns', () => {
     })
   })
 
+  it('does not email the same address again while its confirmation link is still live', async () => {
+    const find = vi.fn().mockResolvedValue({
+      docs: [
+        {
+          id: 4,
+          email: 'pending@example.com',
+          subscribedToNewsletter: true,
+          emailVerified: false,
+          confirmationExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        },
+      ],
+    })
+    const update = vi.fn()
+    mocks.getPayload.mockResolvedValue({ find, update })
+
+    const result = await new ResendNewsletterService().subscribe('pending@example.com')
+
+    expect(result).toMatchObject({ success: true, requiresConfirmation: true })
+    expect(mocks.emailSend).not.toHaveBeenCalled()
+    expect(update).not.toHaveBeenCalled()
+  })
+
   it('paginates verified subscribers, applies segments, adds unsubscribe, and counts API errors', async () => {
     const find = vi
       .fn()
