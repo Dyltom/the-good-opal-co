@@ -6,11 +6,28 @@ const prices = (country: Parameters<typeof shippingOptions>[0], subtotal: number
   shippingOptions(country, subtotal).map(({ label, cents }) => [label, cents])
 
 describe('Australia Post shipping options', () => {
-  test('offers Parcel Post and Express Post at the published national price within Australia', () => {
-    expect(prices('AU', 499.99)).toEqual([
-      ['Parcel Post', 1055],
-      ['Express Post', 1355],
+  test('offers Parcel Post and Express Post at the MyPost Business price within Australia', () => {
+    expect(prices('AU', 100)).toEqual([
+      ['Parcel Post', 1020],
+      ['Express Post', 1320],
     ])
+  })
+
+  test('offers each Australian service with Extra Cover at $2.50 per $100 above the free $100', () => {
+    expect(prices('AU', 499.99)).toEqual([
+      ['Parcel Post', 1020],
+      ['Parcel Post + Extra Cover for $500', 2020],
+      ['Express Post', 1320],
+      ['Express Post + Extra Cover for $500', 2320],
+    ])
+  })
+
+  test('adds Signature on Delivery to Extra Cover above $500 and caps cover at $5,000', () => {
+    expect(prices('AU', 650)).toEqual([
+      ['Free Express Post', 0],
+      ['Express Post + Extra Cover for $650 and signature', 1795],
+    ])
+    expect(prices('AU', 6000)).toContainEqual(['Express Post + Extra Cover for $5,000 and signature', 12545])
   })
 
   test('charges each overseas zone its published standard and express price', () => {
@@ -22,8 +39,11 @@ describe('Australia Post shipping options', () => {
     expect(prices('GB', 100)).toEqual([['International Standard', 2840], ['International Express', 4540]])
   })
 
-  test('switches to one free option at AUD 500: Express Post at home, International Standard overseas', () => {
-    expect(prices('AU', 500)).toEqual([['Free Express Post', 0]])
+  test('ships free from AUD 500: Express Post at home, International Standard overseas', () => {
+    expect(prices('AU', 500)).toEqual([
+      ['Free Express Post', 0],
+      ['Express Post + Extra Cover for $500', 1000],
+    ])
     expect(prices('GB', 500)).toEqual([['Free International Standard', 0]])
   })
 })
@@ -32,10 +52,10 @@ describe('checkout pricing', () => {
   test('estimates the total with the cheapest option below the threshold', () => {
     const pricing = calculateCheckoutPricing([{ price: 499, quantity: 1 }])
 
-    expect(pricing.shippingCents).toBe(1055)
-    expect(pricing.totalCents).toBe(50955)
-    expect(pricing.total).toBe(509.55)
-    expect(pricing.shippingOptions).toHaveLength(2)
+    expect(pricing.shippingCents).toBe(1020)
+    expect(pricing.totalCents).toBe(50920)
+    expect(pricing.total).toBe(509.2)
+    expect(pricing.shippingOptions).toHaveLength(4)
     expect(pricing.freeShippingRemaining).toBe(1)
   })
 
@@ -69,7 +89,7 @@ describe('checkout pricing', () => {
     ])
 
     expect(pricing.subtotal).toBe(550)
-    expect(pricing.shippingCents).toBe(1055)
+    expect(pricing.shippingCents).toBe(1020)
     expect(pricing.freeShippingRemaining).toBe(50)
   })
 

@@ -1,11 +1,15 @@
 import { APP_NAME, APP_URL } from './constants'
 import {
   DELIVERY_ESTIMATE,
+  EXTRA_COVER_INCLUDED,
+  EXTRA_COVER_MAX,
+  extraCoverCents,
   FREE_SHIPPING_THRESHOLD,
   publishedShippingOptions,
   RETURN_WINDOW_DAYS,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
+  SIGNATURE_REQUIRED_OVER,
 } from './constants/shipping'
 import { METHODS_ENABLED_IN_STRIPE } from './constants/payment'
 import { weightLabel, type CatalogProduct } from './catalog'
@@ -156,6 +160,7 @@ function storeFacts(input: DiscoveryInput): string[] {
     ),
     '- Import duties, taxes, and local charges on international orders are paid by the recipient.',
     `- Free shipping on orders of ${aud(FREE_SHIPPING_THRESHOLD)} or more: Express Post within Australia, International Standard overseas.`,
+    `- Optional Australia Post Extra Cover within Australia, chosen in checkout: the first ${aud(EXTRA_COVER_INCLUDED)} is free, then ${aud(extraCoverCents('AU', EXTRA_COVER_INCLUDED + 100) / 100)} per $100 up to ${aud(EXTRA_COVER_MAX)}, with signature on delivery above ${aud(SIGNATURE_REQUIRED_OVER)}.`,
     `- ${DELIVERY_ESTIMATE}`,
     '- Tracking details are sent when the carrier accepts the parcel.',
     `- Full policy: ${markdownLink('Shipping', '/shipping')}`,

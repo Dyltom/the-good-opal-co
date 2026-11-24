@@ -80,7 +80,7 @@ describe('structured data', () => {
         shippingDetails: expect.arrayContaining([
           expect.objectContaining({
             shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: 'AU' }],
-            shippingRate: { '@type': 'MonetaryAmount', value: 10.55, currency: 'AUD' },
+            shippingRate: { '@type': 'MonetaryAmount', value: 10.2, currency: 'AUD' },
           }),
           expect.objectContaining({
             shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: 'GB' }],

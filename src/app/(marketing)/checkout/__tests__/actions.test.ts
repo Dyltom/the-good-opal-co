@@ -246,7 +246,7 @@ describe('checkout Server Action', () => {
     ])
   })
 
-  test('offers one free option once the order reaches the free-shipping threshold', async () => {
+  test('offers free Express Post and paid Extra Cover once the order reaches the free-shipping threshold', async () => {
     getCart.mockResolvedValue({
       items: [{ productId: '1', slug: 'opal-ring', name: 'Opal ring', price: 500, quantity: 1 }],
       total: 500,
@@ -262,6 +262,12 @@ describe('checkout Server Action', () => {
         shipping_rate_data: expect.objectContaining({
           display_name: 'Free Express Post',
           fixed_amount: { amount: 0, currency: 'aud' },
+        }),
+      }),
+      expect.objectContaining({
+        shipping_rate_data: expect.objectContaining({
+          display_name: 'Express Post + Extra Cover for $500',
+          fixed_amount: { amount: 1000, currency: 'aud' },
         }),
       }),
     ])
