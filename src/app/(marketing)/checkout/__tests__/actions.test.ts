@@ -186,9 +186,6 @@ describe('checkout Server Action', () => {
       }),
       { idempotencyKey: 'checkout/d42cead1-0366-4f5f-a173-5f4c334c9513' }
     )
-    expect(createStripeSession.mock.calls[0]?.[0]).not.toHaveProperty(
-      'shipping_options.0.shipping_rate_data.delivery_estimate'
-    )
     expect(reserveCheckoutInventory).toHaveBeenCalledWith(
       expect.objectContaining({
         stripeSessionId: 'cs_test_reserved',

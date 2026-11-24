@@ -9,7 +9,7 @@ import {
 } from '@/lib/checkout-pricing'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
-import { SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import { DISPATCH_BUSINESS_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
 import { recordServerError } from '@/lib/insights/record'
 import { requestVisitorKey } from '@/lib/insights/visitor'
@@ -222,6 +222,17 @@ export async function createCheckoutSession(input: {
             type: 'fixed_amount' as const,
             fixed_amount: { amount: option.cents, currency: 'aud' },
             display_name: option.label,
+            ...(option.days.max > 0
+              ? {
+                  delivery_estimate: {
+                    minimum: { unit: 'business_day' as const, value: option.days.min },
+                    maximum: {
+                      unit: 'business_day' as const,
+                      value: option.days.max + DISPATCH_BUSINESS_DAYS.max,
+                    },
+                  },
+                }
+              : {}),
           },
         })),
         metadata: {

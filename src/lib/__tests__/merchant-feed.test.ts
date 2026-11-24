@@ -105,8 +105,8 @@ describe('Google Merchant feed', () => {
         ?.slice(1)
 
     expect(entry).toContain('<g:max_handling_time>2</g:max_handling_time>')
-    expect(transit('AU')).toEqual(['1', '7'])
-    expect(transit('JP')).toEqual(['3', '10'])
+    expect(transit('AU')).toEqual(['2', '6'])
+    expect(transit('JP')).toEqual(['5', '10'])
   })
 
   test('labels each piece with its price band so ads can bid less on cheap stones', () => {

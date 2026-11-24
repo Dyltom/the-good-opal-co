@@ -34,10 +34,10 @@ export interface ShippingOption {
   days: BusinessDays
 }
 
-const PARCEL_POST_DAYS = { min: 1, max: 7 }
+const PARCEL_POST_DAYS = { min: 2, max: 6 }
 const EXPRESS_POST_DAYS = { min: 1, max: 3 }
-const INTERNATIONAL_STANDARD_DAYS = { min: 3, max: 10 }
-const INTERNATIONAL_EXPRESS_DAYS = { min: 2, max: 5 }
+const INTERNATIONAL_STANDARD_DAYS = { min: 5, max: 10 }
+const INTERNATIONAL_EXPRESS_DAYS = { min: 3, max: 6 }
 
 function international(standardCents: number, expressCents: number): [ShippingOption, ShippingOption] {
   return [
