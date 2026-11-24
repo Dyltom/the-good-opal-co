@@ -4,12 +4,24 @@ import { connection } from 'next/server'
 import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
-import { DELIVERY_ESTIMATE, SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import {
+  DELIVERY_ESTIMATE,
+  FREE_SHIPPING_THRESHOLD,
+  publishedShippingOptions,
+  SHIPPING_COUNTRIES,
+  SHIPPING_COUNTRY_NAMES,
+} from '@/lib/constants/shipping'
+
+const AUSTRALIA = publishedShippingOptions('AU')
+
+function audPrice(cents: number): string {
+  return `${(cents / 100).toFixed(2)}`
+}
 import { CHRISTMAS_DELIVERY, promotionsPending } from '@/lib/promotions'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
-  description: `Tracked delivery from Cowra NSW: $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD within Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD to supported countries, free over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD. Dispatch and delivery times for every order.`,
+  description: `Tracked Australia Post delivery from Cowra NSW at Australia Post's published price, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia. Free on orders of ${FREE_SHIPPING_THRESHOLD} AUD or more. Dispatch and delivery times for every order.`,
   alternates: { canonical: '/shipping' },
 }
 
@@ -61,14 +73,15 @@ export default function ShippingPage() {
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
             <h2 className="text-[1.375rem] leading-[1.15]">Tracked delivery</h2>
             <p className="mt-2 text-sm leading-6 text-ink-2">
-              ${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD for orders below the free-shipping
-              threshold.
+              We charge Australia Post&apos;s published price for your destination, with
+              tracking on every parcel.
             </p>
           </div>
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
             <h2 className="text-[1.375rem] leading-[1.15]">Free delivery</h2>
             <p className="mt-2 text-sm leading-6 text-ink-2">
-              Orders of ${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more ship free.
+              Orders of ${FREE_SHIPPING_THRESHOLD} AUD or more ship free: Express Post within
+              Australia, International Standard overseas.
             </p>
           </div>
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
@@ -76,6 +89,41 @@ export default function ShippingPage() {
             <p className="mt-2 text-sm leading-6 text-ink-2">{DELIVERY_ESTIMATE}</p>
           </div>
         </div>
+
+        <section className="mt-10 md:mt-12" aria-labelledby="shipping-prices">
+          <h2 id="shipping-prices" className="text-[1.75rem] leading-[1.1] md:text-[2rem]">
+            Prices per order
+          </h2>
+          <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
+            Australia Post&apos;s published price for the smallest parcel, in AUD. You choose the
+            service in secure checkout.
+          </p>
+          <table className="mt-4 w-full max-w-2xl text-left text-sm">
+            <thead className="border-b border-rule text-ink-3">
+              <tr>
+                <th scope="col" className="py-2 pr-4 font-medium">Destination</th>
+                <th scope="col" className="py-2 pr-4 font-medium">Standard</th>
+                <th scope="col" className="py-2 font-medium">Express</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rule text-ink-2">
+              {SHIPPING_COUNTRIES.map((country) => {
+                const [standard, express] = publishedShippingOptions(country)
+                return (
+                  <tr key={country}>
+                    <th scope="row" className="py-2 pr-4 font-normal text-ink">
+                      {SHIPPING_COUNTRY_NAMES[country]}
+                    </th>
+                    <td className="py-2 pr-4">
+                      {standard ? `${standard.label} ${audPrice(standard.cents)}` : null}
+                    </td>
+                    <td className="py-2">{express ? `${express.label} ${audPrice(express.cents)}` : null}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </section>
 
         <ChristmasDelivery />
 
@@ -100,8 +148,9 @@ export default function ShippingPage() {
           <section>
             <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">International orders</h2>
             <p className="mt-4 max-w-[65ch] text-sm leading-6 text-ink-2">
-              Supported destinations are charged ${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD
-              below the free-shipping threshold. Prices and shipping are charged in AUD. Import
+              Supported destinations are charged Australia Post&apos;s published International
+              Standard or International Express price below the free-shipping threshold. Prices and
+              shipping are charged in AUD. Import
               duties, taxes, and local handling charges are not included in our price and remain the
               recipient’s responsibility.
             </p>

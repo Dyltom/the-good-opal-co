@@ -1,56 +1,86 @@
-/**
- * Shipping Configuration and Promises
- *
- * Centralized shipping promises, rates, and messages to ensure consistency
- * across the entire site and prevent conflicting information.
- */
-
-export const SHIPPING_CONFIG = {
-  // Free shipping threshold
-  FREE_SHIPPING_THRESHOLD: 500, // AUD
-
-  // Standard shipping rates
-  RATES: {
-    AUSTRALIA: {
-      EXPRESS: 15,
-      STANDARD: 8,
-      FREE_THRESHOLD: 500
-    },
-    INTERNATIONAL: {
-      EXPRESS: 25,
-      STANDARD: 15,
-      FREE_THRESHOLD: 500
-    }
-  }
-} as const
-
-export const SHIPPING_COUNTRIES = {
-  AUSTRALIA: ['AU'],
-  INTERNATIONAL: ['NZ', 'US', 'GB', 'CA', 'SG', 'HK', 'JP'],
-} as const
+export const FREE_SHIPPING_THRESHOLD = 500
 
 export const RETURN_WINDOW_DAYS = 30
 
-export const SHIPPING_MESSAGES = {
-  // Free shipping banner message
-  FREE_SHIPPING_BANNER: `Free shipping on orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}`,
+export const SHIPPING_COUNTRIES = ['AU', 'NZ', 'SG', 'HK', 'JP', 'US', 'CA', 'GB'] as const
 
-  // Cart page messages
-  FREE_SHIPPING_ACHIEVED: 'Your order qualifies for free shipping!',
-  FREE_SHIPPING_PROGRESS: (remaining: number) =>
-    `Add $${remaining.toFixed(2)} more for free shipping`,
+export type ShippingCountry = (typeof SHIPPING_COUNTRIES)[number]
 
-  // Product page messages
-  FREE_SHIPPING_ELIGIBLE: `Free shipping (orders over $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD})`,
-  EXPRESS_SHIPPING_INFO: 'Tracked delivery to available destinations',
+export function isShippingCountry(value: unknown): value is ShippingCountry {
+  return SHIPPING_COUNTRIES.some((country) => country === value)
+}
 
-  // Checkout messages
-  SHIPPING_INSURANCE: 'Tracking provided after dispatch',
-  GIFT_PACKAGING: 'Packed carefully for delivery',
+export const SHIPPING_COUNTRY_NAMES: Record<ShippingCountry, string> = {
+  AU: 'Australia',
+  NZ: 'New Zealand',
+  SG: 'Singapore',
+  HK: 'Hong Kong',
+  JP: 'Japan',
+  US: 'United States',
+  CA: 'Canada',
+  GB: 'United Kingdom',
+}
 
-  // Feature descriptions (for consistency)
-  FEATURE_DESCRIPTION: 'Tracked delivery to available destinations with careful packaging'
-} as const
+export interface BusinessDays {
+  min: number
+  max: number
+}
+
+export const DISPATCH_BUSINESS_DAYS: BusinessDays = { min: 0, max: 2 }
+
+export interface ShippingOption {
+  label: string
+  cents: number
+  days: BusinessDays
+}
+
+const PARCEL_POST_DAYS = { min: 1, max: 7 }
+const EXPRESS_POST_DAYS = { min: 1, max: 3 }
+const INTERNATIONAL_STANDARD_DAYS = { min: 3, max: 10 }
+const INTERNATIONAL_EXPRESS_DAYS = { min: 2, max: 5 }
+
+function international(standardCents: number, expressCents: number): [ShippingOption, ShippingOption] {
+  return [
+    { label: 'International Standard', cents: standardCents, days: INTERNATIONAL_STANDARD_DAYS },
+    { label: 'International Express', cents: expressCents, days: INTERNATIONAL_EXPRESS_DAYS },
+  ]
+}
+
+const ASIA_PACIFIC = international(2060, 3760)
+const NORTH_AMERICA = international(2305, 4005)
+
+const AUSTRALIA_POST: Record<ShippingCountry, [standard: ShippingOption, express: ShippingOption]> = {
+  AU: [
+    { label: 'Parcel Post', cents: 1055, days: PARCEL_POST_DAYS },
+    { label: 'Express Post', cents: 1355, days: EXPRESS_POST_DAYS },
+  ],
+  NZ: international(1790, 3490),
+  SG: ASIA_PACIFIC,
+  HK: ASIA_PACIFIC,
+  JP: ASIA_PACIFIC,
+  US: NORTH_AMERICA,
+  CA: NORTH_AMERICA,
+  GB: international(2840, 4540),
+}
+
+export function publishedShippingOptions(country: ShippingCountry): ShippingOption[] {
+  return [...AUSTRALIA_POST[country]]
+}
+
+export function shippingOptions(country: ShippingCountry, subtotal: number): ShippingOption[] {
+  const [standard, express] = AUSTRALIA_POST[country]
+  if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+    const free = country === 'AU' ? express : standard
+    return [{ ...free, label: `Free ${free.label}`, cents: 0 }]
+  }
+  return [standard, express]
+}
+
+export function cheapestShippingOption(country: ShippingCountry, subtotal: number): ShippingOption {
+  const [cheapest] = shippingOptions(country, subtotal)
+  if (!cheapest) throw new Error(`No shipping options for ${country}`)
+  return cheapest
+}
 
 export interface FreeShippingProgress {
   threshold: number
@@ -60,44 +90,18 @@ export interface FreeShippingProgress {
   message: string
 }
 
-/**
- * Calculate shipping cost based on cart total and destination
- */
-export function calculateShipping(
-  cartTotal: number,
-  destination: 'AUSTRALIA' | 'INTERNATIONAL' = 'AUSTRALIA',
-  expressShipping: boolean = true
-): number {
-  // Free shipping if above threshold
-  if (cartTotal >= SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD) {
-    return 0
-  }
-
-  // Return shipping cost based on destination and speed
-  const rates = SHIPPING_CONFIG.RATES[destination]
-  return expressShipping ? rates.EXPRESS : rates.STANDARD
-}
-
-/**
- * Get shipping message based on cart total
- */
 export function getShippingMessage(cartTotal: number): string {
-  if (cartTotal >= SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD) {
-    return SHIPPING_MESSAGES.FREE_SHIPPING_ACHIEVED
-  }
-
-  const remaining = SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD - cartTotal
-  return SHIPPING_MESSAGES.FREE_SHIPPING_PROGRESS(remaining)
+  if (cartTotal >= FREE_SHIPPING_THRESHOLD) return 'Your order qualifies for free shipping!'
+  return `Add $${(FREE_SHIPPING_THRESHOLD - cartTotal).toFixed(2)} more for free shipping`
 }
 
 export function getFreeShippingProgress(cartTotal: number): FreeShippingProgress {
-  const threshold = SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD
   const subtotal = Math.max(0, cartTotal)
-  const remaining = Math.max(0, threshold - subtotal)
-  const percent = Math.min(100, Math.round((subtotal / threshold) * 100))
+  const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
+  const percent = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100))
 
   return {
-    threshold,
+    threshold: FREE_SHIPPING_THRESHOLD,
     remaining,
     percent,
     qualifies: remaining === 0,
@@ -105,11 +109,4 @@ export function getFreeShippingProgress(cartTotal: number): FreeShippingProgress
   }
 }
 
-export const DELIVERY_BUSINESS_DAYS = {
-  DISPATCH: { min: 0, max: 2 },
-  AUSTRALIA: { min: 1, max: 7 },
-  INTERNATIONAL: { min: 3, max: 10 },
-} as const
-
-const { DISPATCH, AUSTRALIA, INTERNATIONAL } = DELIVERY_BUSINESS_DAYS
-export const DELIVERY_ESTIMATE = `We aim to dispatch in-stock pieces within ${DISPATCH.max} business days of payment. Delivery then usually takes ${AUSTRALIA.min} to ${AUSTRALIA.max} business days within Australia and ${INTERNATIONAL.min} to ${INTERNATIONAL.max} business days to international destinations.`
+export const DELIVERY_ESTIMATE = `We aim to dispatch in-stock pieces within ${DISPATCH_BUSINESS_DAYS.max} business days of payment. Australia Post then usually delivers in ${PARCEL_POST_DAYS.min} to ${PARCEL_POST_DAYS.max} business days by Parcel Post or ${EXPRESS_POST_DAYS.min} to ${EXPRESS_POST_DAYS.max} by Express Post within Australia, and ${INTERNATIONAL_STANDARD_DAYS.min} to ${INTERNATIONAL_STANDARD_DAYS.max} business days by International Standard or ${INTERNATIONAL_EXPRESS_DAYS.min} to ${INTERNATIONAL_EXPRESS_DAYS.max} by International Express overseas.`

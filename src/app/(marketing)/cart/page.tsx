@@ -5,6 +5,7 @@ import { PageTransition } from '@/components/layout/PageTransition'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
+import { isShippingCountry } from '@/lib/constants/shipping'
 
 export const metadata = {
   title: 'Your bag | The Good Opal Co',
@@ -14,7 +15,8 @@ export const metadata = {
 
 export default async function CartPage() {
   const cart = await getCart()
-  const initialRegion = (await cookies()).get('shipping-region')?.value === 'INTL' ? 'INTL' : 'AU'
+  const savedCountry = (await cookies()).get('shipping-country')?.value
+  const initialCountry = isShippingCountry(savedCountry) ? savedCountry : 'AU'
 
   return (
     <PageTransition>
@@ -42,7 +44,7 @@ export default async function CartPage() {
             </div>
           </div>
         ) : (
-          <CartPageContent initialCart={cart} initialRegion={initialRegion} />
+          <CartPageContent initialCart={cart} initialCountry={initialCountry} />
         )}
       </MarketingShell>
     </PageTransition>

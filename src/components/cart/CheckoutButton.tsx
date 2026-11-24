@@ -1,85 +1,79 @@
 'use client'
 
-import { useCallback, useRef, useState, useSyncExternalStore, useTransition } from 'react'
+import { useCallback, useId, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { Lock } from 'lucide-react'
-import { createCheckoutSession, type ShippingRegion } from '@/app/(marketing)/checkout/actions'
+import { createCheckoutSession } from '@/app/(marketing)/checkout/actions'
 import { Button } from '@/components/ui/button'
 import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics'
 import type { Cart } from '@/lib/cart'
+import {
+  isShippingCountry,
+  SHIPPING_COUNTRIES,
+  SHIPPING_COUNTRY_NAMES,
+  type ShippingCountry,
+} from '@/lib/constants/shipping'
 import { cn } from '@/lib/utils'
 
-export type { ShippingRegion }
+const COUNTRY_COOKIE = 'shipping-country'
 
-interface ShippingRegionToggleProps {
-  value: ShippingRegion
-  onChange: (region: ShippingRegion) => void
+function readCountry(): ShippingCountry | undefined {
+  const value = document.cookie.match(/(?:^|; )shipping-country=([A-Z]{2})(?:;|$)/)?.[1]
+  return isShippingCountry(value) ? value : undefined
+}
+
+function subscribeToCountry(onChange: () => void) {
+  window.addEventListener(COUNTRY_COOKIE, onChange)
+  return () => window.removeEventListener(COUNTRY_COOKIE, onChange)
+}
+
+export function useShippingCountry(initialCountry: ShippingCountry = 'AU') {
+  const country = useSyncExternalStore(
+    subscribeToCountry,
+    () => readCountry() ?? initialCountry,
+    () => initialCountry
+  )
+  const setCountry = useCallback((next: ShippingCountry) => {
+    document.cookie = `${COUNTRY_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`
+    window.dispatchEvent(new Event(COUNTRY_COOKIE))
+  }, [])
+  return [country, setCountry] as const
+}
+
+interface ShippingCountrySelectProps {
+  value: ShippingCountry
+  onChange: (country: ShippingCountry) => void
   className?: string
 }
 
-const REGIONS: { value: ShippingRegion; label: string }[] = [
-  { value: 'AU', label: 'Australia' },
-  { value: 'INTL', label: 'Overseas' },
-]
-
-const REGION_COOKIE = 'shipping-region'
-
-function readRegion(): ShippingRegion | undefined {
-  const match = document.cookie.match(/(?:^|; )shipping-region=(AU|INTL)(?:;|$)/)
-  return match ? (match[1] as ShippingRegion) : undefined
-}
-
-function subscribeToRegion(onChange: () => void) {
-  window.addEventListener(REGION_COOKIE, onChange)
-  return () => window.removeEventListener(REGION_COOKIE, onChange)
-}
-
-export function useShippingRegion(initialRegion: ShippingRegion = 'AU') {
-  const region = useSyncExternalStore(
-    subscribeToRegion,
-    () => readRegion() ?? initialRegion,
-    () => initialRegion
-  )
-  const setRegion = useCallback((next: ShippingRegion) => {
-    document.cookie = `${REGION_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`
-    window.dispatchEvent(new Event(REGION_COOKIE))
-  }, [])
-  return [region, setRegion] as const
-}
-
-export function ShippingRegionToggle({ value, onChange, className }: ShippingRegionToggleProps) {
+export function ShippingCountrySelect({ value, onChange, className }: ShippingCountrySelectProps) {
+  const id = useId()
   return (
-    <fieldset className={cn('min-w-0', className)}>
-      <legend className="mb-2 text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
+    <div className={cn('min-w-0', className)}>
+      <label htmlFor={id} className="mb-2 block text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
         Shipping to
-      </legend>
-      <div className="grid grid-cols-2 border border-rule bg-bg p-0.5">
-        {REGIONS.map((region) => (
-          <label
-            key={region.value}
-            className={cn(
-              'flex min-h-11 cursor-pointer items-center justify-center px-3 text-center text-sm font-medium transition-colors focus-within:ring-2 focus-within:ring-accent',
-              value === region.value ? 'bg-ink text-bg' : 'text-ink-2 hover:text-ink'
-            )}
-          >
-            <input
-              type="radio"
-              name="shipping-region"
-              value={region.value}
-              checked={value === region.value}
-              onChange={() => onChange(region.value)}
-              className="sr-only"
-            />
-            {region.label}
-          </label>
+      </label>
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => {
+          const next = event.target.value
+          if (isShippingCountry(next)) onChange(next)
+        }}
+        className="flex h-11 w-full rounded-sm border border-rule-2 bg-bg px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+      >
+        {SHIPPING_COUNTRIES.map((country) => (
+          <option key={country} value={country}>
+            {SHIPPING_COUNTRY_NAMES[country]}
+          </option>
         ))}
-      </div>
-    </fieldset>
+      </select>
+    </div>
   )
 }
 
 interface CheckoutButtonProps {
   cart: Cart
-  region: ShippingRegion
+  country: ShippingCountry
   className?: string
   label?: string
   giftVoucherCode?: string | undefined
@@ -87,7 +81,7 @@ interface CheckoutButtonProps {
 
 export function CheckoutButton({
   cart,
-  region,
+  country,
   className,
   label = 'Checkout',
   giftVoucherCode,
@@ -102,7 +96,7 @@ export function CheckoutButton({
     const checkoutAttemptId = attemptId.current
     startTransition(async () => {
       trackBeginCheckout(cart.items, cart.total)
-      const result = await createCheckoutSession({ region, checkoutAttemptId, giftVoucherCode })
+      const result = await createCheckoutSession({ country, checkoutAttemptId, giftVoucherCode })
       if (result.success && result.url) {
         window.location.assign(result.url)
         return

@@ -17,11 +17,12 @@ import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import {
   CheckoutButton,
-  ShippingRegionToggle,
-  useShippingRegion,
+  ShippingCountrySelect,
+  useShippingCountry,
 } from '@/components/cart/CheckoutButton'
 import { FreeShippingProgress } from '@/components/cart/FreeShippingProgress'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
+import { SHIPPING_COUNTRY_NAMES } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
@@ -32,7 +33,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
   const [cart, setCart] = useState<Cart | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
-  const [region, setRegion] = useShippingRegion()
+  const [country, setCountry] = useShippingCountry()
   const [isPending, startTransition] = useTransition()
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
 
@@ -99,7 +100,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
   const items = cart?.items ?? []
   const itemCount = cart?.itemCount ?? 0
   const total = cart?.total ?? 0
-  const pricing = calculateCheckoutPricing(items, region === 'INTL' ? 'INTERNATIONAL' : 'AUSTRALIA')
+  const pricing = calculateCheckoutPricing(items, country)
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -147,22 +148,22 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
 
               <div className="flex items-baseline justify-between text-sm">
                 <span className="text-ink-2">
-                  Shipping {region === 'INTL' ? 'overseas' : 'within Australia'}
+                  Shipping to {SHIPPING_COUNTRY_NAMES[country]}
                 </span>
                 <span className="text-ink">
                   {pricing.shippedSubtotal === 0
                     ? 'None'
                     : pricing.shipping === 0
                       ? 'Free'
-                      : formatCurrency(pricing.shipping, 'AUD')}
+                      : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
                 </span>
               </div>
               {pricing.shippedSubtotal > 0 ? <FreeShippingProgress total={pricing.shippedSubtotal} /> : null}
               <div className="space-y-2">
                 {cart ? (
                   <>
-                    <ShippingRegionToggle value={region} onChange={setRegion} />
-                    <CheckoutButton cart={cart} region={region} className="h-12 w-full text-base" />
+                    <ShippingCountrySelect value={country} onChange={setCountry} />
+                    <CheckoutButton cart={cart} country={country} className="h-12 w-full text-base" />
                   </>
                 ) : null}
 

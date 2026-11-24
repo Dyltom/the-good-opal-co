@@ -51,7 +51,7 @@ describe('discovery documents', () => {
     expect(index).toContain('Visa, Mastercard, Amex, Apple Pay, Klarna')
     expect(index).toContain('Lightning Ridge and Coober Pedy')
     expect(index).not.toContain('Sydney')
-    expect(index).toContain('AUD $15.00 per order')
+    expect(index).toContain('Australia: Parcel Post AUD $10.55, Express Post AUD $13.55 per order.')
     expect(index).toContain('Free shipping on orders of AUD $500.00 or more')
     expect(index).toContain('within 30 days of delivery')
     expect(index).toContain('shop@example.com')

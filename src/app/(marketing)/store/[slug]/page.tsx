@@ -11,7 +11,11 @@ import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { cn, formatCurrency, savePercent } from '@/lib/utils'
-import { getFreeShippingProgress, SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import {
+  cheapestShippingOption,
+  FREE_SHIPPING_THRESHOLD,
+  getFreeShippingProgress,
+} from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import { PaymentMethods } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
@@ -386,8 +390,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                           {isDeposit
                             ? 'No shipping charge on the deposit, and it does not count towards free shipping.'
                             : productShippingProgress.qualifies
-                              ? 'Free tracked shipping.'
-                            : `Tracked shipping, $${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} AUD in Australia, $${SHIPPING_CONFIG.RATES.INTERNATIONAL.EXPRESS} AUD international. Free on orders of $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
+                              ? 'Free tracked shipping: Express Post in Australia, International Standard overseas.'
+                            : `Tracked Australia Post shipping at its published price, from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} AUD in Australia and from $${(cheapestShippingOption('NZ', 0).cents / 100).toFixed(2)} AUD overseas. Free on orders of $${FREE_SHIPPING_THRESHOLD} AUD or more.`}{' '}
                           <Link href="/shipping" className="text-ink underline underline-offset-4">
                             Rates
                           </Link>

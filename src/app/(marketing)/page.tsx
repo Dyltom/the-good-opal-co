@@ -12,7 +12,11 @@ import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { withSalePrice } from '@/lib/promotions'
-import { RETURN_WINDOW_DAYS, SHIPPING_CONFIG } from '@/lib/constants/shipping'
+import {
+  cheapestShippingOption,
+  FREE_SHIPPING_THRESHOLD,
+  RETURN_WINDOW_DAYS,
+} from '@/lib/constants/shipping'
 import { caratWeight, storeLabel } from '@/app/(marketing)/store/store-query'
 import type { Product } from '@/types/payload-types'
 
@@ -139,7 +143,7 @@ const FACTS = [
   ['Shown as it is', 'Studio shots change the background, never the colour.'],
   [
     'Shipping',
-    `$${SHIPPING_CONFIG.RATES.AUSTRALIA.EXPRESS} tracked in Australia. Free from $${SHIPPING_CONFIG.FREE_SHIPPING_THRESHOLD}.`,
+    `Australia Post from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} in Australia. Free from $${FREE_SHIPPING_THRESHOLD}.`,
   ],
   ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
   ['Secure checkout', 'Stripe: card, Apple Pay and Klarna.'],

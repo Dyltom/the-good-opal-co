@@ -43,14 +43,10 @@ describe('structured data', () => {
   test('publishes free Australian delivery when one product meets the threshold', () => {
     const data = productStructuredData(catalogProduct({ price: 500 }))
 
-    expect(data).toMatchObject({
-      offers: {
-        shippingDetails: [
-          { shippingRate: { value: 0, currency: 'AUD' } },
-          { shippingRate: { value: 0, currency: 'AUD' } },
-        ],
-      },
-    })
+    const details = (data['offers'] as { shippingDetails: { shippingRate: { value: number } }[] })
+      .shippingDetails
+    expect(details).toHaveLength(8)
+    expect(details.every((detail) => detail.shippingRate.value === 0)).toBe(true)
   })
 
   test('describes a purchasable product with accurate AUD offer policies and stone facts', () => {
@@ -81,16 +77,16 @@ describe('structured data', () => {
         availability: 'https://schema.org/InStock',
         itemCondition: 'https://schema.org/NewCondition',
         hasMerchantReturnPolicy: { merchantReturnDays: 30 },
-        shippingDetails: [
-          {
-            shippingDestination: [{ addressCountry: 'AU' }],
-            shippingRate: { value: 15, currency: 'AUD' },
-          },
-          {
-            shippingDestination: expect.arrayContaining([{ '@type': 'DefinedRegion', addressCountry: 'NZ' }]),
-            shippingRate: { value: 25, currency: 'AUD' },
-          },
-        ],
+        shippingDetails: expect.arrayContaining([
+          expect.objectContaining({
+            shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: 'AU' }],
+            shippingRate: { '@type': 'MonetaryAmount', value: 10.55, currency: 'AUD' },
+          }),
+          expect.objectContaining({
+            shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: 'GB' }],
+            shippingRate: { '@type': 'MonetaryAmount', value: 28.4, currency: 'AUD' },
+          }),
+        ]),
       },
     })
   })

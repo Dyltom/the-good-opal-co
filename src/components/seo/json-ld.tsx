@@ -1,9 +1,10 @@
 import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
 import {
-  calculateShipping,
-  DELIVERY_BUSINESS_DAYS,
+  cheapestShippingOption,
+  DISPATCH_BUSINESS_DAYS,
   RETURN_WINDOW_DAYS,
   SHIPPING_COUNTRIES,
+  type ShippingCountry,
 } from '@/lib/constants/shipping'
 import { SOCIAL_PROFILES } from '@/lib/constants/social'
 import { absoluteUrl, type Availability, type CatalogProduct } from '@/lib/catalog'
@@ -34,13 +35,12 @@ const organizationId = `${APP_URL}/#organization`
 const websiteId = `${APP_URL}/#website`
 const returnPolicyId = `${APP_URL}/returns#policy`
 export const founderId = `${APP_URL}/about#stephanie-caruana`
-const shippingCountries = [...SHIPPING_COUNTRIES.AUSTRALIA, ...SHIPPING_COUNTRIES.INTERNATIONAL]
 
 export function merchantReturnPolicyStructuredData(): Record<string, unknown> {
   return {
     '@type': 'MerchantReturnPolicy',
     '@id': returnPolicyId,
-    applicableCountry: shippingCountries,
+    applicableCountry: [...SHIPPING_COUNTRIES],
     returnPolicyCountry: 'AU',
     returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
     merchantReturnDays: RETURN_WINDOW_DAYS,
@@ -52,7 +52,7 @@ export function merchantReturnPolicyStructuredData(): Record<string, unknown> {
 
 const customWorkReturnPolicy = {
   '@type': 'MerchantReturnPolicy',
-  applicableCountry: shippingCountries,
+  applicableCountry: [...SHIPPING_COUNTRIES],
   returnPolicyCountry: 'AU',
   returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
   merchantReturnLink: `${APP_URL}/returns`,
@@ -94,7 +94,7 @@ export function organizationStructuredData(contact?: { email: string }): Record<
       contactType: 'customer service',
       url: `${APP_URL}/contact`,
       email: contact?.email,
-      areaServed: shippingCountries,
+      areaServed: [...SHIPPING_COUNTRIES],
       availableLanguage: ['English'],
     },
     sameAs: SOCIAL_PROFILES.length > 0 ? SOCIAL_PROFILES.map((profile) => profile.url) : undefined,
@@ -120,24 +120,21 @@ const SCHEMA_AVAILABILITY: Record<Availability, string> = {
   sold: 'https://schema.org/SoldOut',
 }
 
-function shippingDetails(price: number, destination: keyof typeof SHIPPING_COUNTRIES) {
+function shippingDetails(price: number, country: ShippingCountry) {
+  const option = cheapestShippingOption(country, price)
   return {
     '@type': 'OfferShippingDetails',
-    shippingDestination: SHIPPING_COUNTRIES[destination].map((country) => ({
-      '@type': 'DefinedRegion',
-      addressCountry: country,
-    })),
+    shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: country }],
     shippingRate: {
       '@type': 'MonetaryAmount',
-      value: calculateShipping(price, destination),
+      value: option.cents / 100,
       currency: 'AUD',
     },
-    shippingLabel:
-      destination === 'AUSTRALIA' ? 'Australia tracked shipping' : 'International tracked shipping',
+    shippingLabel: `Australia Post ${option.label}`,
     deliveryTime: {
       '@type': 'ShippingDeliveryTime',
-      handlingTime: businessDays(DELIVERY_BUSINESS_DAYS.DISPATCH),
-      transitTime: businessDays(DELIVERY_BUSINESS_DAYS[destination]),
+      handlingTime: businessDays(DISPATCH_BUSINESS_DAYS),
+      transitTime: businessDays(option.days),
     },
   }
 }
@@ -204,10 +201,7 @@ export function productStructuredData(
       shippingDetails:
         product.category === 'custom-commissions'
           ? undefined
-          : [
-              shippingDetails(product.price, 'AUSTRALIA'),
-              shippingDetails(product.price, 'INTERNATIONAL'),
-            ],
+          : SHIPPING_COUNTRIES.map((country) => shippingDetails(product.price, country)),
     },
   }
 }

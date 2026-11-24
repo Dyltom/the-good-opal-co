@@ -1,9 +1,11 @@
 import { APP_NAME, APP_URL } from './constants'
 import {
   DELIVERY_ESTIMATE,
+  FREE_SHIPPING_THRESHOLD,
+  publishedShippingOptions,
   RETURN_WINDOW_DAYS,
-  SHIPPING_CONFIG,
   SHIPPING_COUNTRIES,
+  SHIPPING_COUNTRY_NAMES,
 } from './constants/shipping'
 import { METHODS_ENABLED_IN_STRIPE } from './constants/payment'
 import { weightLabel, type CatalogProduct } from './catalog'
@@ -75,11 +77,6 @@ function aud(amount: number): string {
   return `AUD $${amount.toFixed(2)}`
 }
 
-function countryNames(codes: readonly string[]): string {
-  const names = new Intl.DisplayNames(['en-AU'], { type: 'region' })
-  return codes.map((code) => names.of(code) ?? code).join(', ')
-}
-
 function productFacts(product: CatalogProduct): string {
   return [
     product.categoryLabel,
@@ -102,7 +99,6 @@ export interface DiscoveryInput {
 }
 
 function storeFacts(input: DiscoveryInput): string[] {
-  const { RATES, FREE_SHIPPING_THRESHOLD } = SHIPPING_CONFIG
   const categories = [
     ...new Set(
       input.products
@@ -151,9 +147,15 @@ function storeFacts(input: DiscoveryInput): string[] {
     '',
     '## Shipping',
     '',
-    `- Australia: tracked shipping, ${aud(RATES.AUSTRALIA.EXPRESS)} per order.`,
-    `- International (${countryNames(SHIPPING_COUNTRIES.INTERNATIONAL)}): tracked shipping, ${aud(RATES.INTERNATIONAL.EXPRESS)} per order. Import duties, taxes, and local charges are paid by the recipient.`,
-    `- Free shipping on orders of ${aud(FREE_SHIPPING_THRESHOLD)} or more.`,
+    '- Tracked Australia Post shipping, charged at Australia Post\'s published price for the destination:',
+    ...SHIPPING_COUNTRIES.map(
+      (country) =>
+        `  - ${SHIPPING_COUNTRY_NAMES[country]}: ${publishedShippingOptions(country)
+          .map((option) => `${option.label} ${aud(option.cents / 100)}`)
+          .join(', ')} per order.`
+    ),
+    '- Import duties, taxes, and local charges on international orders are paid by the recipient.',
+    `- Free shipping on orders of ${aud(FREE_SHIPPING_THRESHOLD)} or more: Express Post within Australia, International Standard overseas.`,
     `- ${DELIVERY_ESTIMATE}`,
     '- Tracking details are sent when the carrier accepts the parcel.',
     `- Full policy: ${markdownLink('Shipping', '/shipping')}`,
