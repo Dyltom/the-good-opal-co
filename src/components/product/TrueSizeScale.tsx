@@ -33,6 +33,16 @@ export function TrueSizeScale({ length, width }: { length: number; width: number
           className="fill-plinth stroke-ink-3"
           strokeWidth={stroke}
         />
+        <text
+          x={long + GAP_MM + COIN_MM / 2}
+          y={height / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          fontSize={5}
+          className="fill-ink-3"
+        >
+          5c
+        </text>
       </svg>
       <figcaption className="mt-2 text-ink-2">
         Shown to scale beside a 5c coin: stone {long} × {short} mm, coin {COIN_MM} mm across.
