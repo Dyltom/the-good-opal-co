@@ -94,7 +94,8 @@ pnpm seed                # Seed local data
 - Price units vary in older code paths. Confirm whether a path expects dollars
   or cents before arithmetic, formatting, discounts, or Stripe `unit_amount`.
   `formatPrice` expects cents; `formatCurrency` expects dollars.
-- Free shipping applies over AUD 500. Keep shipping and stock rules centralized,
+- Customers pay all shipping; Australian orders over AUD 100 include Extra Cover and
+  signature. Keep shipping and stock rules in `src/lib/constants/shipping.ts`,
   and preserve the unit convention already used by the touched path.
 - Stripe stock updates are webhook-driven. Do not decrement stock in checkout
   session creation.
