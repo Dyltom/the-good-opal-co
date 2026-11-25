@@ -14,14 +14,17 @@ interface Entry {
 
 let entry: Entry | undefined
 
+const GOOGLE_AD_CLICK_IDS = ['gclid', 'gbraid', 'wbraid']
+
 function captureEntry(): Entry {
   if (entry) return entry
   const params = new URLSearchParams(window.location.search)
+  const googleAd = !params.has('utm_source') && GOOGLE_AD_CLICK_IDS.some((id) => params.has(id))
   entry = {
     landing: window.location.pathname,
     referrer: document.referrer || undefined,
-    utmSource: params.get('utm_source') ?? undefined,
-    utmMedium: params.get('utm_medium') ?? undefined,
+    utmSource: params.get('utm_source') ?? (googleAd ? 'google' : undefined),
+    utmMedium: params.get('utm_medium') ?? (googleAd ? 'cpc' : undefined),
     utmCampaign: params.get('utm_campaign') ?? undefined,
   }
   return entry

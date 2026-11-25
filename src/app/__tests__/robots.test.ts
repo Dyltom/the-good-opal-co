@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest'
+import { storeLandingPages } from '../(marketing)/store/store-query'
 import robots from '../robots'
 
 describe('robots policy', () => {
@@ -16,5 +17,17 @@ describe('robots policy', () => {
       expect(rule.disallow).toEqual(expect.arrayContaining(privatePaths))
     }
     expect(policy.sitemap).toMatch(/\/sitemap\.xml$/)
+  })
+
+  test('keeps crawlers out of endless filtered store URLs while leaving each store landing page crawlable', () => {
+    const policy = robots()
+    const rules = Array.isArray(policy.rules) ? policy.rules : [policy.rules]
+    const landings = storeLandingPages().map(({ url }) => `${url}$`)
+
+    expect(landings).toContain('/store?category=opal-rings$')
+    for (const rule of rules) {
+      expect(rule.disallow).toContain('/store?')
+      expect(rule.allow).toEqual(expect.arrayContaining(landings))
+    }
   })
 })
