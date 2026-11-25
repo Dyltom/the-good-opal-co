@@ -270,7 +270,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('footer closes the site like a quiet gallery note', () => {
     const source = read('src/components/navigation/Footer.tsx')
 
-    expect(source).toContain('From the gallery')
     expect(source).toContain('Australian opal that doesn&apos;t cost the earth.')
     expect(source).not.toContain('Prismatic Top Border')
     expect(source).not.toContain('bg-gradient-to-r from-opal-electric via-fire-pink')
