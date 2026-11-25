@@ -124,7 +124,7 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: 
       <h2 style={emailText.subheading}>When you are ready</h2>
       <ul style={{ ...emailText.body, margin: '0 0 14px', paddingLeft: '20px' }}>
         <li style={{ marginBottom: '6px' }}>
-          Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout.
+          Pay by card, Apple Pay, Google Pay or Klarna on Stripe&apos;s secure checkout.
         </li>
         <li style={{ marginBottom: '6px' }}>
           Tracked Australia Post delivery. Australian orders over $100 are insured and need a

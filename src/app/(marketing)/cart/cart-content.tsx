@@ -211,8 +211,8 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
                 className="mt-4 h-12 w-full text-[15px] max-lg:hidden"
               />
               <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">
-                Pay by card, Apple Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays available to other
-                shoppers until payment is complete.
+                Pay by card, Apple Pay, Google Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays
+                available to other shoppers until payment is complete.
               </p>
               <Button asChild variant="ghost" className="mt-3 w-full">
                 <Link href="/store">Continue shopping</Link>
@@ -232,7 +232,7 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
               <button
                 type="button"
                 onClick={() => setFeedback('cart')}
-                className="mt-2 inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 Not ready yet? Tell us what would help
               </button>
