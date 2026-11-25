@@ -9,7 +9,11 @@ import {
 } from '@/lib/checkout-pricing'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
-import { DISPATCH_BUSINESS_DAYS, SHIPPING_COUNTRIES } from '@/lib/constants/shipping'
+import {
+  DISPATCH_BUSINESS_DAYS,
+  SHIPPING_COUNTRIES,
+  shippingRestriction,
+} from '@/lib/constants/shipping'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
 import { recordServerError } from '@/lib/insights/record'
 import { requestVisitorKey } from '@/lib/insights/visitor'
@@ -154,6 +158,8 @@ export async function createCheckoutSession(input: {
         error: 'Your bag is empty. Add a piece before checking out.',
       }
     }
+    const restriction = shippingRestriction(country, cart.items)
+    if (restriction) return { success: false, error: restriction }
 
     const pricing = calculateCheckoutPricing(cart.items, country)
     const expiresAt = checkoutReservationExpiresAt()

@@ -1,6 +1,6 @@
 export const RETURN_WINDOW_DAYS = 30
 
-export const SHIPPING_COUNTRIES = ['AU', 'NZ', 'SG', 'HK', 'JP', 'US', 'CA', 'GB'] as const
+export const SHIPPING_COUNTRIES = ['AU', 'NZ', 'SG', 'US'] as const
 
 export type ShippingCountry = (typeof SHIPPING_COUNTRIES)[number]
 
@@ -12,11 +12,30 @@ export const SHIPPING_COUNTRY_NAMES: Record<ShippingCountry, string> = {
   AU: 'Australia',
   NZ: 'New Zealand',
   SG: 'Singapore',
-  HK: 'Hong Kong',
-  JP: 'Japan',
   US: 'United States',
-  CA: 'Canada',
-  GB: 'United Kingdom',
+}
+
+export function shippingCountryList(): string {
+  const names = SHIPPING_COUNTRIES.map((country) => SHIPPING_COUNTRY_NAMES[country])
+  return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
+}
+
+export const LOOSE_STONE_CATEGORY = 'raw-opals'
+
+export const LOOSE_STONE_SINGAPORE_MESSAGE =
+  'Singapore needs an import permit for loose opals, so we can only send jewellery there. Remove the loose opals from your bag or choose another country.'
+
+export function shippingRestriction(
+  country: ShippingCountry,
+  items: ReadonlyArray<{ looseStone?: boolean | undefined }>
+): string | null {
+  if (country === 'SG' && items.some((item) => item.looseStone)) return LOOSE_STONE_SINGAPORE_MESSAGE
+  return null
+}
+
+export function shippingCountriesFor(category: string | null | undefined): ShippingCountry[] {
+  const looseStone = category === LOOSE_STONE_CATEGORY
+  return SHIPPING_COUNTRIES.filter((country) => !shippingRestriction(country, [{ looseStone }]))
 }
 
 export interface BusinessDays {
@@ -44,21 +63,14 @@ function international(standardCents: number, expressCents: number): [ShippingOp
   ]
 }
 
-const ASIA_PACIFIC = international(2060, 3760)
-const NORTH_AMERICA = international(2305, 4005)
-
 const AUSTRALIA_POST: Record<ShippingCountry, [standard: ShippingOption, express: ShippingOption]> = {
   AU: [
     { label: 'Parcel Post', cents: 1020, days: PARCEL_POST_DAYS },
     { label: 'Express Post', cents: 1320, days: EXPRESS_POST_DAYS },
   ],
   NZ: international(1790, 3490),
-  SG: ASIA_PACIFIC,
-  HK: ASIA_PACIFIC,
-  JP: ASIA_PACIFIC,
-  US: NORTH_AMERICA,
-  CA: NORTH_AMERICA,
-  GB: international(2840, 4540),
+  SG: international(2060, 3760),
+  US: international(2305, 4005),
 }
 
 export function publishedShippingOptions(country: ShippingCountry): ShippingOption[] {

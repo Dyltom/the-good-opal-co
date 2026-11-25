@@ -143,6 +143,19 @@ describe('checkout Server Action', () => {
     errorLog.mockRestore()
   })
 
+  test('refuses to send a loose opal to Singapore before opening Stripe', async () => {
+    getCart.mockResolvedValue({
+      items: [{ productId: '2', slug: 'rough', name: 'Rough opal', price: 80, quantity: 1, looseStone: true }],
+      total: 80,
+      itemCount: 1,
+    })
+
+    const result = await createCheckoutSession({ ...checkoutForm(), country: 'SG' })
+
+    expect(result).toMatchObject({ success: false, error: expect.stringContaining('Singapore') })
+    expect(createStripeSession).not.toHaveBeenCalled()
+  })
+
   test('returns a typed configuration error without constructing Stripe', async () => {
     getConfiguredStripeSecretKey.mockReturnValue(undefined)
 

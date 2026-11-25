@@ -34,14 +34,11 @@ describe('Australia Post shipping options', () => {
   test('charges each overseas zone its published standard and express price', () => {
     expect(prices('NZ', 100)).toEqual([['International Standard', 1790], ['International Express', 3490]])
     expect(prices('SG', 100)).toEqual([['International Standard', 2060], ['International Express', 3760]])
-    expect(prices('HK', 100)).toEqual(prices('JP', 100))
     expect(prices('US', 100)).toEqual([['International Standard', 2305], ['International Express', 4005]])
-    expect(prices('CA', 100)).toEqual(prices('US', 100))
-    expect(prices('GB', 100)).toEqual([['International Standard', 2840], ['International Express', 4540]])
   })
 
   test('charges postage on large orders too', () => {
-    expect(prices('GB', 5000)).toEqual([['International Standard', 2840], ['International Express', 4540]])
+    expect(prices('US', 5000)).toEqual([['International Standard', 2305], ['International Express', 4005]])
   })
 })
 

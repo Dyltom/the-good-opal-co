@@ -10,6 +10,7 @@ import {
   isShippingCountry,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
+  shippingRestriction,
   type ShippingCountry,
 } from '@/lib/constants/shipping'
 import { cn } from '@/lib/utils'
@@ -89,6 +90,7 @@ export function CheckoutButton({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>()
   const attemptId = useRef<string>(null)
+  const restriction = shippingRestriction(country, cart.items)
 
   const startCheckout = () => {
     setError(undefined)
@@ -114,16 +116,16 @@ export function CheckoutButton({
         type="button"
         size="lg"
         onClick={startCheckout}
-        disabled={isPending || cart.items.length === 0}
+        disabled={isPending || cart.items.length === 0 || restriction !== null}
         aria-busy={isPending}
         className={cn('w-full', className)}
       >
         <Lock className="h-4 w-4" aria-hidden="true" />
         {isPending ? 'Opening secure checkout' : label}
       </Button>
-      {error ? (
+      {restriction || error ? (
         <p role="alert" className="mt-2 text-sm text-destructive">
-          {error}
+          {restriction ?? error}
         </p>
       ) : null}
     </div>

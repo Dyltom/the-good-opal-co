@@ -105,9 +105,8 @@ Raw opal listings have extra sections for the custom ring designer ("Ring builde
 Here is what happens, in order:
 
 1. The buyer adds the piece to their cart and checks out. They choose Australia or overseas first, so the right postage is charged:
-   - Australia: $15.
-   - Overseas (New Zealand, United States, United Kingdom, Canada, Singapore, Hong Kong and Japan): $25.
-   - Postage is free on orders of $500 or more.
+   - Australia: Australia Post's MyPost Business price, with Extra Cover and signature added on orders over $100.
+   - Overseas: New Zealand, Singapore and the United States only, at Australia Post's International Standard or Express price. Australia Post does not carry jewellery or precious stones to Japan, the United Kingdom, Canada or Hong Kong, and Singapore needs an import permit for loose stones, so a bag with a loose opal cannot check out to Singapore.
 2. The site sends them to **Stripe** to pay. Stripe collects their card, phone number and delivery address.
 3. As soon as they reach Stripe, the piece is **held** for them. Its stock drops, and the page shows **Reserved**: "Someone is checking out with this piece. If they don't complete payment, it returns to the shop within 30 minutes." You can see holds under **Inventory Reservations**. You cannot change them; they look after themselves.
 4. If they do not pay, the hold ends after about half an hour and the piece goes back on sale by itself.

@@ -88,7 +88,7 @@ describe('Google Merchant feed', () => {
 
     expect(shipping('LOW', 'AU')).toBe('10.20 AUD')
     expect(shipping('LOW', 'NZ')).toBe('17.90 AUD')
-    expect(shipping('LOW', 'GB')).toBe('28.40 AUD')
+    expect(shipping('LOW', 'US')).toBe('23.05 AUD')
     expect(shipping('HIGH', 'AU')).toBe('23.15 AUD')
     expect(shipping('HIGH', 'US')).toBe('23.05 AUD')
   })
@@ -101,6 +101,17 @@ describe('Google Merchant feed', () => {
 
     expect(item(feed, 'RING')).toContain('<g:age_group>adult</g:age_group>')
     expect(item(feed, 'ROUGH')).not.toContain('age_group')
+  })
+
+  test('offers loose opals to every destination but Singapore, which needs an import permit', () => {
+    const feed = buildGoogleMerchantFeed([
+      catalogProduct({ sku: 'RING', category: 'opal-rings' }),
+      catalogProduct({ sku: 'ROUGH', category: 'raw-opals' }),
+    ])
+
+    expect(item(feed, 'RING')).toContain('<g:country>SG</g:country>')
+    expect(item(feed, 'ROUGH')).not.toContain('<g:country>SG</g:country>')
+    expect(item(feed, 'ROUGH')).toContain('<g:country>US</g:country>')
   })
 
   test('states the same dispatch and transit times as the shipping page', () => {
@@ -116,7 +127,7 @@ describe('Google Merchant feed', () => {
 
     expect(entry).toContain('<g:max_handling_time>2</g:max_handling_time>')
     expect(transit('AU')).toEqual(['2', '6'])
-    expect(transit('JP')).toEqual(['5', '10'])
+    expect(transit('NZ')).toEqual(['5', '10'])
   })
 
   test('labels each piece with its price band so ads can bid less on cheap stones', () => {

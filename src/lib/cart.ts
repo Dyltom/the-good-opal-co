@@ -18,6 +18,7 @@ import { ownedProductImageUrl } from '@/lib/owned-product-image'
 import { cartAddQuantitySchema, cartUpdateQuantitySchema } from '@/lib/cart-validation'
 import { findReservationByToken } from '@/lib/inventory-reservations'
 import { withSalePrice } from '@/lib/promotions'
+import { LOOSE_STONE_CATEGORY } from '@/lib/constants/shipping'
 
 /**
  * Represents an item in the shopping cart
@@ -31,6 +32,7 @@ export interface CartItem {
   maxQuantity?: number
   image?: string
   deposit?: boolean
+  looseStone?: boolean
 }
 
 /**
@@ -152,6 +154,7 @@ export async function getCart(): Promise<Cart> {
             maxQuantity: availableStock,
             image,
             deposit: product.category === 'custom-commissions',
+            looseStone: product.category === LOOSE_STONE_CATEGORY,
           })
         }
         // Skip items that are no longer available or out of stock
@@ -272,6 +275,7 @@ export async function addItemToCartWithQuantity(
       quantity,
       image,
       deposit: product.category === 'custom-commissions',
+      looseStone: product.category === LOOSE_STONE_CATEGORY,
     })
   }
 
