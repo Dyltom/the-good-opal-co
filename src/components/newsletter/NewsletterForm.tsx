@@ -64,7 +64,7 @@ export function NewsletterForm({ className }: { className?: string }) {
       ) : null}
 
       <p className="text-xs leading-5 text-ink-3">
-        One code per email address. Unsubscribe anytime.
+        One code per email address. Welcome codes can&apos;t be used during storewide sales. Unsubscribe anytime.
       </p>
     </form>
   )
