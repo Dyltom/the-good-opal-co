@@ -16,6 +16,7 @@ import {
   type CheckoutFeedbackSource,
 } from '@/components/cart/CheckoutFeedback'
 import { GiftVoucherField, type AppliedGiftVoucher } from '@/components/cart/GiftVoucherField'
+import { EmailBagForm } from '@/components/cart/EmailBagForm'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
@@ -212,6 +213,8 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
                 <Link href="/store">Continue shopping</Link>
               </Button>
             </div>
+
+            <EmailBagForm className="mt-3" />
 
             {feedback === 'cart' ? (
               <CheckoutFeedback

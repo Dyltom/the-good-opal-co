@@ -21,6 +21,7 @@ function signup(email: string, extra: Record<string, string> = {}) {
   const form = new FormData()
   form.set('email', email)
   form.set('source', 'footer')
+  form.set('js', '1')
   for (const [key, value] of Object.entries(extra)) form.set(key, value)
   return subscribeToNewsletter(null, form)
 }
@@ -37,6 +38,15 @@ describe('newsletter signup', () => {
     mocks.forwardedFor = '203.0.113.1'
 
     const result = await signup('victim@example.com', { website: 'http://spam.example' })
+
+    expect(result).toMatchObject({ success: true, requiresConfirmation: true })
+    expect(mocks.subscribe).not.toHaveBeenCalled()
+  })
+
+  it('answers a script that posts the form without loading the page but emails nobody', async () => {
+    mocks.forwardedFor = '203.0.113.3'
+
+    const result = await signup('victim@example.com', { js: '' })
 
     expect(result).toMatchObject({ success: true, requiresConfirmation: true })
     expect(mocks.subscribe).not.toHaveBeenCalled()
