@@ -64,7 +64,7 @@ export function NewsletterForm({ className }: { className?: string }) {
       ) : null}
 
       <p className="text-xs leading-5 text-ink-3">
-        Occasional emails about new pieces. Unsubscribe anytime.
+        One code per email address. Unsubscribe anytime.
       </p>
     </form>
   )

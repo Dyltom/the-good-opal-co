@@ -23,8 +23,8 @@ export default function NewsletterSuccessPage() {
             You&apos;re on the gallery list.
           </h1>
           <p className="mt-3 max-w-[60ch] text-[15px] leading-[1.6] text-ink-2">
-            We will send occasional notes about newly available pieces, opal care, and work from the
-            studio. You can unsubscribe at any time.
+            Your 10% welcome code is on its way to your inbox. After that we send occasional notes about
+            newly available pieces, opal care, and work from the studio. You can unsubscribe at any time.
           </p>
           <Button asChild className="mt-6">
             <Link href="/store">Browse available pieces</Link>

@@ -12,7 +12,7 @@ import { getNewsletterService } from '@/lib/newsletter/service'
 import { redirect } from 'next/navigation'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
-const CHECK_EMAIL = 'Please check your email to confirm your subscription'
+const CHECK_EMAIL = 'Check your email and tap the link to confirm. Your 10% code arrives as soon as you do.'
 
 /**
  * Validation schema for newsletter subscription

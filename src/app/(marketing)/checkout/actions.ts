@@ -37,6 +37,7 @@ import {
   releaseGiftVoucherHold,
 } from '@/lib/gift-vouchers'
 import { giftVoucherProblemMessage } from '@/lib/gift-voucher-rules'
+import { activeSale } from '@/lib/promotions'
 
 const checkoutSchema = z.object({
   country: z.enum(SHIPPING_COUNTRIES),
@@ -209,7 +210,9 @@ export async function createCheckoutSession(input: {
         expires_at: Math.floor(expiresAt.getTime() / 1000),
         phone_number_collection: { enabled: true },
         ...(email ? { customer_email: email } : {}),
-        ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
+        ...(coupon
+          ? { discounts: [{ coupon: coupon.id }] }
+          : { allow_promotion_codes: !activeSale() && !cart.items.some((item) => item.deposit) }),
         custom_text: { submit: { message: 'Prices and shipping are in AUD.' } },
         branding_settings: {
           display_name: 'The Good Opal Co',

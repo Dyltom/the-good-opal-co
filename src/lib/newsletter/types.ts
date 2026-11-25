@@ -1,7 +1,4 @@
-/**
- * Newsletter Types
- * Following Interface Segregation Principle
- */
+import type { WelcomeCode } from '@/lib/welcome-offer'
 
 export interface NewsletterSubscriber {
   email: string
@@ -12,6 +9,7 @@ export interface NewsletterSubscriber {
   unsubscribeToken?: string
   source?: 'footer' | 'popup' | 'checkout' | 'account'
   tags?: string[]
+  welcomeCode?: WelcomeCode | undefined
 }
 
 export interface SubscriptionResult {

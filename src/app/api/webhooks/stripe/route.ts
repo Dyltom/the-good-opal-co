@@ -185,6 +185,10 @@ async function sendOrderConfirmation(order: Order): Promise<void> {
         giftVoucher: order.giftVoucherCode
           ? { code: order.giftVoucherCode, amount: order.giftVoucherAmount ?? 0 }
           : undefined,
+        discount: order.giftVoucherCode
+          ? undefined
+          : Math.max(0, Math.round((order.subtotal + (order.shipping ?? 0) - order.total) * 100) / 100) ||
+            undefined,
         total: order.total,
         shippingAddress: {
           line1: order.shippingAddress.line1,
@@ -938,6 +942,10 @@ export async function POST(request: NextRequest) {
                     ? 'Paid order reservation is missing, released, consumed, or does not match Stripe line items. Manual inventory review required.'
                     : 'Paid legacy checkout requires inventory review before fulfilment.',
                 shippingService ? `Ship by ${shippingService}` : undefined,
+                session.discounts?.some((discount) => discount.promotion_code) &&
+                session.total_details?.amount_discount
+                  ? `Welcome code used: -$${(session.total_details.amount_discount / 100).toFixed(2)}`
+                  : undefined,
               ]
                 .filter(Boolean)
                 .join('\n') || undefined,
