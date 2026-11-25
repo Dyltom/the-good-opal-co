@@ -37,7 +37,7 @@ export async function subscribeToNewsletter(
       source: formData.get('source') || 'footer'
     })
 
-    if (formData.get('website')) {
+    if (formData.get('website') || formData.get('js') !== '1') {
       return { success: true, message: CHECK_EMAIL, requiresConfirmation: true }
     }
 

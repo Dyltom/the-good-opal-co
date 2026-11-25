@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useId } from 'react'
+import { useActionState, useEffect, useId, useState } from 'react'
 import { subscribeToNewsletter } from '@/app/(marketing)/newsletter/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,10 +10,13 @@ import { cn } from '@/lib/utils'
 export function NewsletterForm({ className }: { className?: string }) {
   const [state, formAction, isPending] = useActionState(subscribeToNewsletter, null)
   const emailId = useId()
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => setHydrated(true), [])
 
   return (
     <form action={formAction} className={cn('w-full space-y-3', className)}>
       <input type="hidden" name="source" value="footer" />
+      <input type="hidden" name="js" value={hydrated ? '1' : ''} />
       <div aria-hidden="true" className="sr-only">
         <label>
           Leave this empty
