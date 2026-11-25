@@ -13,6 +13,7 @@ interface SavedBagEmailProps {
   lines: SavedBagLine[]
   baseUrl: string
   supportEmail: string
+  unsubscribeUrl?: string
 }
 
 function absolute(baseUrl: string, path: string | undefined): string | undefined {
@@ -20,7 +21,7 @@ function absolute(baseUrl: string, path: string | undefined): string | undefined
   return path.startsWith('/') ? `${baseUrl}${path}` : path
 }
 
-export function SavedBagEmail({ lines, baseUrl, supportEmail }: SavedBagEmailProps) {
+export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: SavedBagEmailProps) {
   const button = {
     backgroundColor: emailColors.ink,
     color: emailColors.paper,
@@ -34,15 +35,24 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail }: SavedBagEmailPro
 
   return (
     <EmailFrame
-      preview="The pieces you saved at The Good Opal Co."
+      preview={
+        unsubscribeUrl
+          ? 'The pieces you left in your bag at The Good Opal Co.'
+          : 'The pieces you saved at The Good Opal Co.'
+      }
       baseUrl={baseUrl}
       supportEmail={supportEmail}
     >
       <p style={emailText.eyebrow}>Your bag</p>
-      <h1 style={emailText.heading}>The pieces you saved</h1>
+      <h1 style={emailText.heading}>
+        {unsubscribeUrl ? 'Still thinking it over?' : 'The pieces you saved'}
+      </h1>
       <p style={emailText.body}>
-        Here is your bag, ready for when you are. Pieces are not held until you pay, and most of our
-        opals are one of a kind, so they go to whoever checks out first.
+        {unsubscribeUrl
+          ? 'You left these pieces in your bag, and they were still available when we sent this. '
+          : 'Here is your bag, ready for when you are. '}
+        Pieces are not held until you pay, and most of our opals are one of a kind, so they go to
+        whoever checks out first.
       </p>
 
       <table
@@ -130,10 +140,21 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail }: SavedBagEmailPro
       </ul>
       <p style={emailText.body}>Questions about a stone? Reply to this email and we will help.</p>
 
-      <p style={{ ...emailText.small, marginTop: '26px' }}>
-        You asked us to email this bag from goodopalco.com. We have not added you to any mailing
-        list.
-      </p>
+      {unsubscribeUrl ? (
+        <p style={{ ...emailText.small, marginTop: '26px' }}>
+          You ticked the box at checkout on goodopalco.com asking for a reminder about your bag and
+          for new pieces and offers. Sent by The Good Opal Co, Cowra NSW 2794, Australia.{' '}
+          <a href={unsubscribeUrl} style={{ color: emailColors.link }}>
+            Unsubscribe
+          </a>{' '}
+          and we will not email you again.
+        </p>
+      ) : (
+        <p style={{ ...emailText.small, marginTop: '26px' }}>
+          You asked us to email this bag from goodopalco.com. We have not added you to any mailing
+          list.
+        </p>
+      )}
     </EmailFrame>
   )
 }

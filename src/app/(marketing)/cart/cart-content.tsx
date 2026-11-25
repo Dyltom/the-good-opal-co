@@ -17,6 +17,7 @@ import {
 } from '@/components/cart/CheckoutFeedback'
 import { GiftVoucherField, type AppliedGiftVoucher } from '@/components/cart/GiftVoucherField'
 import { EmailBagForm } from '@/components/cart/EmailBagForm'
+import { CheckoutEmailFields, type CheckoutEmail } from '@/components/cart/CheckoutEmailFields'
 import { Button } from '@/components/ui/button'
 import { CartClearConfirmDialog } from '@/components/ui/cart-clear-confirm-dialog'
 import { useToast } from '@/hooks/use-toast'
@@ -48,6 +49,7 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
   const pricing = calculateCheckoutPricing(cart.items, country)
   const coverCents = extraCoverCents(country, pricing.shippedSubtotal)
   const [voucher, setVoucher] = useState<AppliedGiftVoucher | null>(null)
+  const [contact, setContact] = useState<CheckoutEmail>({ email: '', marketingConsent: false })
   const voucherAmount = voucher
     ? centsToDollars(giftVoucherAppliedCents(Math.round(voucher.available * 100), pricing.totalCents))
     : 0
@@ -199,10 +201,13 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
                 )}
               </div>
 
+              <CheckoutEmailFields value={contact} onChange={setContact} className="mt-4" />
+
               <CheckoutButton
                 cart={cart}
                 country={country}
                 giftVoucherCode={voucher?.code}
+                contact={contact}
                 className="mt-4 h-12 w-full text-[15px] max-lg:hidden"
               />
               <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">
@@ -250,6 +255,7 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
               cart={cart}
               country={country}
               giftVoucherCode={voucher?.code}
+              contact={contact}
               className="h-12 w-full text-[15px]"
             />
           </div>

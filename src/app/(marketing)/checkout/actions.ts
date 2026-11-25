@@ -15,6 +15,10 @@ import {
   shippingRestriction,
 } from '@/lib/constants/shipping'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
+import {
+  MARKETING_CONSENT_AT_METADATA_KEY,
+  MARKETING_CONSENT_METADATA_KEY,
+} from '@/lib/marketing-consent'
 import { recordServerError } from '@/lib/insights/record'
 import { requestVisitorKey } from '@/lib/insights/visitor'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
@@ -38,6 +42,9 @@ const checkoutSchema = z.object({
   country: z.enum(SHIPPING_COUNTRIES),
   checkoutAttemptId: z.string().uuid('Invalid checkout attempt'),
   giftVoucherCode: z.string().trim().max(40).optional(),
+  email: z.string().trim().toLowerCase().email('Enter a valid email address').max(254).optional(),
+  marketingConsent: z.boolean().optional(),
+  js: z.string().optional(),
 })
 
 const giftVoucherCodeSchema = z.string().trim().min(1, 'Enter a gift voucher code').max(40)
@@ -97,7 +104,10 @@ interface CheckoutResult {
 export async function createCheckoutSession(input: {
   country: z.infer<typeof checkoutSchema>['country']
   checkoutAttemptId: string
-  giftVoucherCode?: string
+  giftVoucherCode?: string | undefined
+  email?: string | undefined
+  marketingConsent?: boolean | undefined
+  js?: string | undefined
 }): Promise<CheckoutResult> {
   const validationResult = checkoutSchema.safeParse(input)
 
@@ -118,7 +128,9 @@ export async function createCheckoutSession(input: {
 
   let heldVoucherFor: string | null = null
   try {
-    const { country, checkoutAttemptId, giftVoucherCode } = validationResult.data
+    const { country, checkoutAttemptId, giftVoucherCode, email, marketingConsent, js } =
+      validationResult.data
+    const consented = Boolean(email) && marketingConsent === true && js === '1'
     const identifier = await getRequestIdentifier()
     const insightsVisitor = await requestVisitorKey()
     const allowed = await checkRateLimit({
@@ -196,6 +208,7 @@ export async function createCheckoutSession(input: {
         client_reference_id: checkoutAttemptId,
         expires_at: Math.floor(expiresAt.getTime() / 1000),
         phone_number_collection: { enabled: true },
+        ...(email ? { customer_email: email } : {}),
         ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),
         custom_text: { submit: { message: 'Prices and shipping are in AUD.' } },
         branding_settings: {
@@ -245,6 +258,12 @@ export async function createCheckoutSession(input: {
           [INVENTORY_RESERVATION_METADATA_KEY]: checkoutAttemptId,
           ...(voucher ? { [GIFT_VOUCHER_METADATA_KEY]: voucher.code } : {}),
           ...(insightsVisitor ? { [INSIGHTS_VISITOR_METADATA_KEY]: insightsVisitor } : {}),
+          ...(consented
+            ? {
+                [MARKETING_CONSENT_METADATA_KEY]: 'yes',
+                [MARKETING_CONSENT_AT_METADATA_KEY]: new Date().toISOString(),
+              }
+            : {}),
         },
         success_url: `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${APP_URL}/cart?checkout=cancelled`,

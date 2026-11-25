@@ -5,6 +5,9 @@ import { randomBytes } from 'node:crypto'
 import { getPayload } from '@/lib/payload'
 import { Resend } from 'resend'
 import { OrderConfirmationEmail } from '@/emails/order-confirmation'
+import { joinListFromCheckout } from '@/app/(marketing)/checkout/success/actions'
+import { sendCartReminder } from '@/lib/cart-reminder'
+import { hasMarketingConsent } from '@/lib/marketing-consent'
 import type { Order } from '@/types/payload-types'
 import { getConfiguredStripeSecretKey, getConfiguredStripeWebhookSecret } from '@/lib/stripe-config'
 import { calculateRefundAdjustment } from '@/lib/stripe-refunds'
@@ -715,6 +718,12 @@ export async function POST(request: NextRequest) {
       occurredAt: new Date(event.created * 1000),
       items: await abandonedCheckoutItems(event.data.object.id),
     })
+    if (hasMarketingConsent(event.data.object.metadata)) {
+      const expired = event.data.object
+      await getCheckoutItems(expired.id)
+        .then((items) => sendCartReminder(expired, items))
+        .catch((error: unknown) => console.error('Cart reminder failed:', error))
+    }
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
 
@@ -1078,6 +1087,7 @@ export async function POST(request: NextRequest) {
         })
         await sendOrderConfirmation(order)
         await sendOwnerOrderNotification(order)
+        if (hasMarketingConsent(session.metadata)) await joinListFromCheckout(session.id)
 
         return NextResponse.json({
           received: true,

@@ -143,6 +143,31 @@ describe('checkout Server Action', () => {
     errorLog.mockRestore()
   })
 
+  test('prefills the email but records no marketing consent when the box is unticked', async () => {
+    await createCheckoutSession({ ...checkoutForm(), email: 'Shopper@Example.com', marketingConsent: false, js: '1' })
+
+    const [params] = createStripeSession.mock.calls[0] ?? []
+    expect(params.customer_email).toBe('shopper@example.com')
+    expect(params.metadata).not.toHaveProperty('marketing_consent')
+  })
+
+  test('records marketing consent and when it was given when the box is ticked', async () => {
+    await createCheckoutSession({ ...checkoutForm(), email: 'shopper@example.com', marketingConsent: true, js: '1' })
+
+    const [params] = createStripeSession.mock.calls[0] ?? []
+    expect(params.metadata).toMatchObject({
+      marketing_consent: 'yes',
+      marketing_consent_at: expect.any(String),
+    })
+  })
+
+  test('ignores consent from a scripted post that never hydrated the page', async () => {
+    await createCheckoutSession({ ...checkoutForm(), email: 'shopper@example.com', marketingConsent: true })
+
+    const [params] = createStripeSession.mock.calls[0] ?? []
+    expect(params.metadata).not.toHaveProperty('marketing_consent')
+  })
+
   test('refuses to send a loose opal to Singapore before opening Stripe', async () => {
     getCart.mockResolvedValue({
       items: [{ productId: '2', slug: 'rough', name: 'Rough opal', price: 80, quantity: 1, looseStone: true }],

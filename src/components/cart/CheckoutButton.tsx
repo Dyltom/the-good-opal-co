@@ -14,6 +14,7 @@ import {
   type ShippingCountry,
 } from '@/lib/constants/shipping'
 import { cn } from '@/lib/utils'
+import type { CheckoutEmail } from './CheckoutEmailFields'
 
 const COUNTRY_COOKIE = 'shipping-country'
 
@@ -78,6 +79,7 @@ interface CheckoutButtonProps {
   className?: string
   label?: string
   giftVoucherCode?: string | undefined
+  contact?: CheckoutEmail | undefined
 }
 
 export function CheckoutButton({
@@ -86,6 +88,7 @@ export function CheckoutButton({
   className,
   label = 'Checkout',
   giftVoucherCode,
+  contact,
 }: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>()
@@ -98,7 +101,14 @@ export function CheckoutButton({
     const checkoutAttemptId = attemptId.current
     startTransition(async () => {
       trackBeginCheckout(cart.items, cart.total)
-      const result = await createCheckoutSession({ country, checkoutAttemptId, giftVoucherCode })
+      const result = await createCheckoutSession({
+        country,
+        checkoutAttemptId,
+        giftVoucherCode,
+        email: contact?.email.trim() || undefined,
+        marketingConsent: contact?.marketingConsent === true,
+        js: '1',
+      })
       if (result.success && result.url) {
         window.location.assign(result.url)
         return
