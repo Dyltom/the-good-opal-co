@@ -10,9 +10,11 @@ import {
   isShippingCountry,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
+  shippingRestriction,
   type ShippingCountry,
 } from '@/lib/constants/shipping'
 import { cn } from '@/lib/utils'
+import type { CheckoutEmail } from './CheckoutEmailFields'
 
 const COUNTRY_COOKIE = 'shipping-country'
 
@@ -77,6 +79,7 @@ interface CheckoutButtonProps {
   className?: string
   label?: string
   giftVoucherCode?: string | undefined
+  contact?: CheckoutEmail | undefined
 }
 
 export function CheckoutButton({
@@ -85,10 +88,12 @@ export function CheckoutButton({
   className,
   label = 'Checkout',
   giftVoucherCode,
+  contact,
 }: CheckoutButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>()
   const attemptId = useRef<string>(null)
+  const restriction = shippingRestriction(country, cart.items)
 
   const startCheckout = () => {
     setError(undefined)
@@ -96,7 +101,14 @@ export function CheckoutButton({
     const checkoutAttemptId = attemptId.current
     startTransition(async () => {
       trackBeginCheckout(cart.items, cart.total)
-      const result = await createCheckoutSession({ country, checkoutAttemptId, giftVoucherCode })
+      const result = await createCheckoutSession({
+        country,
+        checkoutAttemptId,
+        giftVoucherCode,
+        email: contact?.email.trim() || undefined,
+        marketingConsent: contact?.marketingConsent === true,
+        js: '1',
+      })
       if (result.success && result.url) {
         window.location.assign(result.url)
         return
@@ -114,16 +126,16 @@ export function CheckoutButton({
         type="button"
         size="lg"
         onClick={startCheckout}
-        disabled={isPending || cart.items.length === 0}
+        disabled={isPending || cart.items.length === 0 || restriction !== null}
         aria-busy={isPending}
         className={cn('w-full', className)}
       >
         <Lock className="h-4 w-4" aria-hidden="true" />
         {isPending ? 'Opening secure checkout' : label}
       </Button>
-      {error ? (
+      {restriction || error ? (
         <p role="alert" className="mt-2 text-sm text-destructive">
-          {error}
+          {restriction ?? error}
         </p>
       ) : null}
     </div>

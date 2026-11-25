@@ -8,6 +8,7 @@ import {
   RETURN_WINDOW_DAYS,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
+  shippingCountryList,
 } from './constants/shipping'
 import { METHODS_ENABLED_IN_STRIPE } from './constants/payment'
 import { weightLabel, type CatalogProduct } from './catalog'
@@ -156,6 +157,7 @@ function storeFacts(input: DiscoveryInput): string[] {
           .map((option) => `${option.label} ${aud(option.cents / 100)}`)
           .join(', ')} per order.`
     ),
+    `- We ship only to ${shippingCountryList()}. Australia Post does not carry jewellery or precious stones to Japan, the United Kingdom, Canada or Hong Kong. Singapore needs an import permit for loose stones, so loose opals cannot be sent there; jewellery can.`,
     '- Import duties, taxes, and local charges on international orders are paid by the recipient.',
     `- Every order within Australia over ${aud(EXTRA_COVER_INCLUDED)} ships with Australia Post Extra Cover for its value, up to ${aud(EXTRA_COVER_MAX)}, and signature on delivery, added to the postage at Australia Post's price: an order of ${aud(650)} adds ${aud(extraCoverCents('AU', 650) / 100)}.`,
     `- ${DELIVERY_ESTIMATE}`,

@@ -14,6 +14,7 @@ import {
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
   SIGNATURE_ON_DELIVERY_CENTS,
+  shippingCountryList,
 } from '@/lib/constants/shipping'
 
 const AUSTRALIA = publishedShippingOptions('AU')
@@ -175,13 +176,19 @@ export default function ShippingPage() {
           <section>
             <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">International orders</h2>
             <p className="mt-4 max-w-[65ch] text-sm leading-6 text-ink-2">
-              Supported destinations are charged Australia Post&apos;s published International
+              We ship to {shippingCountryList()}. Australia Post does not carry jewellery or
+              precious stones to Japan, the United Kingdom, Canada or Hong Kong, so we cannot send
+              there. Singapore needs an import permit for loose stones, so we send only jewellery
+              to Singapore, not loose opals.
+            </p>
+            <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
+              Overseas orders are charged Australia Post&apos;s published International
               Standard or International Express price. Prices and shipping are charged in AUD. Import
               duties, taxes, and local handling charges are not included in our price and remain the
               recipient’s responsibility.
             </p>
             <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
-              Need a piece by a particular date, or cannot select your country?{' '}
+              Need a piece by a particular date?{' '}
               <Link
                 href="/contact?subject=shipping"
                 className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"

@@ -146,7 +146,7 @@ const FACTS = [
     `Australia Post from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} in Australia, insured and signed for over $${EXTRA_COVER_INCLUDED}.`,
   ],
   ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
-  ['Secure checkout', 'Stripe: card, Apple Pay and Klarna.'],
+  ['Secure checkout', 'Stripe: card, Apple Pay, Google Pay and Klarna.'],
 ] as const
 
 const CUSTOM_STEPS = [

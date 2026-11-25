@@ -4,6 +4,7 @@ import {
   DISPATCH_BUSINESS_DAYS,
   RETURN_WINDOW_DAYS,
   SHIPPING_COUNTRIES,
+  shippingCountriesFor,
   type ShippingCountry,
 } from '@/lib/constants/shipping'
 import { SOCIAL_PROFILES } from '@/lib/constants/social'
@@ -201,7 +202,7 @@ export function productStructuredData(
       shippingDetails:
         product.category === 'custom-commissions'
           ? undefined
-          : SHIPPING_COUNTRIES.map((country) => shippingDetails(product.price, country)),
+          : shippingCountriesFor(product.category).map((country) => shippingDetails(product.price, country)),
     },
   }
 }

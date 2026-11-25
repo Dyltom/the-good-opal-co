@@ -126,7 +126,7 @@ Subscribe to:
 - `charge.dispute.created`
 - `charge.dispute.closed`
 
-Copy the endpoint-specific signing secret to `STRIPE_WEBHOOK_SECRET`. Checkout supports Australia, New Zealand, United States, United Kingdom, Canada, Singapore, Hong Kong, and Japan; destination is selected before Stripe so the correct Australian or international rate is charged.
+Copy the endpoint-specific signing secret to `STRIPE_WEBHOOK_SECRET`. Checkout supports Australia, New Zealand, Singapore (jewellery only, no loose opals) and the United States; destination is selected before Stripe so the correct Australian or international rate is charged.
 
 Order creation, customer totals, and inventory decrement share a serializable database transaction. Confirmation-email failures return an error and retry on webhook replay without duplicating the order. Refund events restock only inventory previously decremented. Disputes mark the order for manual review.
 

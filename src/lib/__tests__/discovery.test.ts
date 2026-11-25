@@ -48,7 +48,7 @@ describe('discovery documents', () => {
     expect(index).toContain('/store/held-pendant): Raw opals; AUD $123.00; reserved in a checkout.')
     expect(index).not.toContain('/store/sold-ring)')
     expect(index).toContain('1 sold piece is not listed here')
-    expect(index).toContain('Visa, Mastercard, Amex, Apple Pay, Klarna')
+    expect(index).toContain('Visa, Mastercard, Amex, Apple Pay, Google Pay, Klarna')
     expect(index).toContain('Lightning Ridge and Coober Pedy')
     expect(index).not.toContain('Sydney')
     expect(index).toContain('Australia: Parcel Post AUD $10.20, Express Post AUD $13.20 per order.')

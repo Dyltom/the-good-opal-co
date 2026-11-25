@@ -65,6 +65,22 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#039;')
 }
 
+export const UNSUBSCRIBED_TAG = 'unsubscribed'
+
+function withoutUnsubscribedTag(
+  tags: Array<{ tag?: string | null }> | null | undefined
+): Array<{ tag?: string | null }> {
+  return (tags ?? []).filter(({ tag }) => tag !== UNSUBSCRIBED_TAG)
+}
+
+function withUnsubscribedTag(
+  tags: Array<{ tag?: string | null }> | null | undefined
+): Array<{ tag: string }> {
+  return [...withoutUnsubscribedTag(tags), { tag: UNSUBSCRIBED_TAG }].filter(
+    (entry): entry is { tag: string } => Boolean(entry.tag)
+  )
+}
+
 function hasRequestedSegment(
   tags: Array<{ tag?: string | null }> | null | undefined,
   segments: readonly string[]
@@ -141,7 +157,7 @@ export class ResendNewsletterService implements NewsletterService {
       if (existingDoc) {
         const tags = Array.from(
           new Set([
-            ...(existingDoc.tags ?? []).map(({ tag }) => tag),
+            ...withoutUnsubscribedTag(existingDoc.tags).map(({ tag }) => tag),
             ...optionTags,
           ].filter((tag): tag is string => Boolean(tag)))
         ).map((tag) => ({ tag }))
@@ -387,19 +403,13 @@ export class ResendNewsletterService implements NewsletterService {
           id: signedCustomerId,
         })
 
-        if (!customer.subscribedToNewsletter) {
-          return {
-            success: true,
-            message: 'You have been unsubscribed from our newsletter'
-          }
-        }
-
         await payload.update({
           collection: 'customers',
           id: customer.id,
           data: {
             subscribedToNewsletter: false,
             unsubscribeTokenHash: null,
+            tags: withUnsubscribedTag(customer.tags),
           }
         })
 
@@ -439,6 +449,7 @@ export class ResendNewsletterService implements NewsletterService {
         data: {
           subscribedToNewsletter: false,
           unsubscribeTokenHash: null,
+          tags: withUnsubscribedTag(unsubDoc.tags),
         }
       })
 

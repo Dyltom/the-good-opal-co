@@ -134,6 +134,7 @@ describe('ResendNewsletterService campaigns', () => {
       data: {
         subscribedToNewsletter: false,
         unsubscribeTokenHash: null,
+        tags: [{ tag: 'unsubscribed' }],
       },
     })
   })
