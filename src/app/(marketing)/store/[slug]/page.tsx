@@ -29,7 +29,7 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
 import { summarize, toCatalogProduct } from '@/lib/catalog'
 import { reservedProductIds } from '@/lib/inventory-reservations'
-import { withSalePrice } from '@/lib/promotions'
+import { activeSale, withSalePrice } from '@/lib/promotions'
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>
@@ -342,6 +342,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <p className="mt-2 text-[13px] text-ink-2">{availabilityNote}</p>
                     ) : null}
                     <PaymentMethods className="mt-3" />
+                    {isDeposit || activeSale() ? null : (
+                      <p className="mt-2 text-[13px] text-ink-2">
+                        <a href="#join" className="text-ink underline underline-offset-4">
+                          Join the list
+                        </a>{' '}
+                        for a one-time 10% welcome code.
+                      </p>
+                    )}
                   </>
                 )}
               </div>

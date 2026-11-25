@@ -84,7 +84,7 @@ export function Footer() {
       </div>
 
       <div className="mt-9 grid gap-6 border-t border-rule pt-7 md:grid-cols-[1.4fr_3fr] md:gap-7">
-        <div className="max-w-md">
+        <div id="join" className="max-w-md scroll-mt-20">
           <h2 className="mb-1 font-serif text-xl text-ink">10% off when you join</h2>
           <p className="mb-3">Get a one-time 10% code, then new pieces and care notes, sent occasionally.</p>
           <NewsletterForm />
