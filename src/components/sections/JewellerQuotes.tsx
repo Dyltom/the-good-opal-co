@@ -1,11 +1,11 @@
 const JEWELLER_QUOTES = [
   {
     handle: 'charlottejstudio',
-    text: 'Steph is an awesome opal cutter and gal based in melbourne. Check her out for custom parcels!',
+    text: 'new goodies from @thegoodopalco. steph is an awesome opal cutter and gal based in melbourne. check her out for custom parcels!',
   },
   {
     handle: 'charlottejstudio',
-    text: 'Still in awe of how beautiful this white opal is! @thegoodopalco custom cut it for me',
+    text: 'still in awe of how beautiful this white opal is! @thegoodopalco custom cut it for me',
   },
 ] as const
 

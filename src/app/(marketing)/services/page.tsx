@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
+import { JewellerQuotes } from '@/components/sections/JewellerQuotes'
 
 export const metadata: Metadata = {
   title: 'Custom Opal Jewellery | The Good Opal Co',
@@ -154,6 +155,10 @@ export default function ServicesPage() {
             </p>
           </div>
         </section>
+
+        <div className="pt-14 md:pt-[clamp(48px,5.5vw,84px)]">
+          <JewellerQuotes />
+        </div>
 
         <section
           aria-labelledby="start-heading"
