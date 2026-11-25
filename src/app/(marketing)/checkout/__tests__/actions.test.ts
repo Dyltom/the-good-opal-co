@@ -387,4 +387,28 @@ describe('checkout Server Action', () => {
     expect(expireStripeSession).not.toHaveBeenCalled()
     expect(releaseInventoryReservation).not.toHaveBeenCalled()
   })
+
+  test('lets shoppers enter a welcome code only outside a sale and never on a deposit', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      vi.setSystemTime(new Date('2026-12-05T00:00:00.000Z'))
+      await createCheckoutSession(checkoutForm())
+      expect(createStripeSession.mock.calls.at(-1)?.[0]).toMatchObject({ allow_promotion_codes: true })
+
+      vi.setSystemTime(new Date('2026-11-28T00:00:00.000Z'))
+      await createCheckoutSession(checkoutForm())
+      expect(createStripeSession.mock.calls.at(-1)?.[0]).toMatchObject({ allow_promotion_codes: false })
+
+      vi.setSystemTime(new Date('2026-12-05T00:00:00.000Z'))
+      getCart.mockResolvedValue({
+        items: [{ productId: '9', slug: 'deposit', name: 'Custom deposit', price: 50, quantity: 1, deposit: true }],
+        total: 50,
+        itemCount: 1,
+      })
+      await createCheckoutSession(checkoutForm())
+      expect(createStripeSession.mock.calls.at(-1)?.[0]).toMatchObject({ allow_promotion_codes: false })
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

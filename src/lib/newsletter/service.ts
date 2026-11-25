@@ -13,6 +13,7 @@ import {
   readCampaignUnsubscribeToken,
 } from './campaign-unsubscribe-token'
 import { PUBLIC_CONTACT_EMAIL } from '@/lib/constants/social'
+import { issueWelcomeCode } from '@/lib/welcome-offer'
 import type {
   NewsletterService,
   NewsletterSubscriber,
@@ -139,7 +140,7 @@ export class ResendNewsletterService implements NewsletterService {
         ) {
           return {
             success: true,
-            message: 'Please check your email to confirm your subscription',
+            message: 'Check your email and tap the link to confirm. Your 10% code arrives as soon as you do.',
             requiresConfirmation: true
           }
         }
@@ -276,7 +277,7 @@ export class ResendNewsletterService implements NewsletterService {
 
       return {
         success: true,
-        message: 'Please check your email to confirm your subscription',
+        message: 'Check your email and tap the link to confirm. Your 10% code arrives as soon as you do.',
         requiresConfirmation: true
       }
     } catch (error) {
@@ -352,12 +353,17 @@ export class ResendNewsletterService implements NewsletterService {
       })
 
       try {
+        const welcomeCode = await issueWelcomeCode(customer.email).catch((error: unknown) => {
+          console.error('Welcome code could not be issued:', error)
+          return undefined
+        })
         await this.sendWelcomeEmail({
           email: customer.email,
           name: customer.name || undefined,
           subscribedAt: new Date(),
           confirmed: true,
           unsubscribeToken,
+          welcomeCode,
         })
         await payload.update({
           collection: 'customers',
@@ -477,9 +483,12 @@ export class ResendNewsletterService implements NewsletterService {
     const { error } = await this.resend.emails.send({
       from: this.fromEmail,
       to: subscriber.email,
-      subject: 'Welcome to The Good Opal Co',
+      subject: subscriber.welcomeCode
+        ? 'Your 10% welcome code from The Good Opal Co'
+        : 'Welcome to The Good Opal Co',
       react: NewsletterWelcomeEmail({
         name: subscriber.name,
+        welcomeCode: subscriber.welcomeCode,
         unsubscribeUrl,
         shopUrl,
         baseUrl: this.baseUrl,
