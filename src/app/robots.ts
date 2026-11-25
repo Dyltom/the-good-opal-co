@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { storeLandingPages } from '@/app/(marketing)/store/store-query'
 import { APP_URL } from '@/lib/constants'
 
 const AI_CRAWLERS = [
@@ -14,7 +15,7 @@ const AI_CRAWLERS = [
   'Applebot-Extended',
 ]
 
-const PUBLIC_PATHS = ['/', '/api/media/file/']
+const PUBLIC_PATHS = ['/', '/api/media/file/', ...storeLandingPages().map(({ url }) => `${url}$`)]
 
 const PRIVATE_PATHS = [
   '/admin',
@@ -31,6 +32,7 @@ const PRIVATE_PATHS = [
   '/newsletter',
   '/newsletter/*',
   '/visual-tests/*',
+  '/store?',
 ]
 
 export default function robots(): MetadataRoute.Robots {
