@@ -22,7 +22,6 @@ import {
 } from '@/lib/cart'
 import {
   cartAddQuantitySchema,
-  cartItemInputSchema,
   cartProductIdSchema,
   cartUpdateQuantitySchema,
 } from '@/lib/cart-validation'
@@ -36,51 +35,18 @@ interface ActionResult<T = void> {
   error?: string
 }
 
-/**
- * Add an item to the cart
- * Can be called from Server Components via form action or from Client Components
- *
- * @param item - Product details to add (quantity defaults to 1)
- * @returns ActionResult with updated cart
- */
-export async function addToCart(item: unknown): Promise<ActionResult<Cart>> {
-  const parsed = cartItemInputSchema.safeParse(item)
-  if (!parsed.success) return { success: false, error: 'Invalid cart item' }
-
-  try {
-    const cart = await addItemToCart(parsed.data)
-    revalidatePath('/', 'layout')
-    return { success: true, data: cart }
-  } catch (error) {
-    console.error('Failed to add item to cart:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to add item to cart',
-    }
-  }
-}
-
-/**
- * Add an item to the cart with a specific quantity
- * Can be called from Client Components
- *
- * @param item - Product details to add
- * @param quantity - Number of items to add
- * @returns ActionResult with updated cart
- */
-export async function addToCartWithQuantity(
-  item: unknown,
+export async function addToCart(
+  productId: unknown,
   quantity: unknown
 ): Promise<ActionResult<Cart>> {
-  const parsedItem = cartItemInputSchema.safeParse(item)
+  const parsedId = cartProductIdSchema.safeParse(productId)
   const parsedQuantity = cartAddQuantitySchema.safeParse(quantity)
-  if (!parsedItem.success || !parsedQuantity.success) {
-    return { success: false, error: 'Invalid cart item or quantity' }
+  if (!parsedId.success || !parsedQuantity.success) {
+    return { success: false, error: 'Invalid product or quantity' }
   }
 
   try {
-    const { addItemToCartWithQuantity } = await import('@/lib/cart')
-    const cart = await addItemToCartWithQuantity(parsedItem.data, parsedQuantity.data)
+    const cart = await addItemToCart(parsedId.data, parsedQuantity.data)
     revalidatePath('/', 'layout')
     return { success: true, data: cart }
   } catch (error) {
@@ -184,15 +150,6 @@ export async function fetchCart(): Promise<ActionResult<Cart>> {
 }
 
 export async function addToCartFormAction(formData: FormData): Promise<void> {
-  await addToCartWithQuantity(
-    {
-      productId: formData.get('productId'),
-      slug: formData.get('slug'),
-      name: formData.get('name'),
-      price: Number(formData.get('price')),
-      image: formData.get('image') ?? undefined,
-    },
-    Number(formData.get('quantity'))
-  )
+  await addToCart(formData.get('productId'), Number(formData.get('quantity')))
   redirect('/cart')
 }
