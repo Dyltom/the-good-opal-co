@@ -5,11 +5,11 @@ import type { Order } from '@/types/payload-types'
 export const SEND_FROM = {
   name: 'The Good Opal Co',
   businessName: 'The Good Opal Co',
-  addressLine1: '',
+  addressLine1: process.env.MYPOST_SENDER_ADDRESS?.trim() ?? '',
   suburb: 'Cowra',
   state: 'NSW',
   postcode: '2794',
-  phone: '',
+  phone: process.env.MYPOST_SENDER_PHONE?.trim() ?? '',
   email: PUBLIC_CONTACT_EMAIL,
 } as const
 
