@@ -2,7 +2,14 @@ import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getPayload } from '@/lib/payload'
-import { isPayPalReference } from '@/lib/paypal'
+import {
+  captureStatus,
+  getOrder,
+  isPayPalReference,
+  PAYPAL_REFERENCE_PREFIX,
+  paypalConfigured,
+} from '@/lib/paypal'
+import { completePayPalReturn } from '@/lib/paypal-checkout'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
   markReservationPaymentPending,
@@ -18,6 +25,33 @@ function authorized(request: NextRequest): boolean {
   const expected = Buffer.from(`Bearer ${secret}`)
   const actual = Buffer.from(supplied)
   return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
+
+const SETTLED_CAPTURES = new Set(['COMPLETED', 'DECLINED', 'FAILED'])
+
+async function settleHeldPayPalPayments(): Promise<number> {
+  if (!paypalConfigured()) return 0
+  const payload = await getPayload()
+  const held = await payload.find({
+    collection: 'inventory-reservations',
+    where: { status: { equals: 'pending-payment' } },
+    limit: 50,
+    overrideAccess: true,
+  })
+  let settled = 0
+  for (const reservation of held.docs) {
+    if (!isPayPalReference(reservation.stripeSessionId)) continue
+    const orderId = reservation.stripeSessionId.slice(PAYPAL_REFERENCE_PREFIX.length)
+    try {
+      const status = captureStatus(await getOrder(orderId))
+      if (!status || !SETTLED_CAPTURES.has(status)) continue
+      await completePayPalReturn(orderId)
+      settled += 1
+    } catch (error) {
+      console.error(`Held PayPal payment ${orderId} could not be re-checked:`, error)
+    }
+  }
+  return settled
 }
 
 export async function GET(request: NextRequest) {
@@ -73,8 +107,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  const paypalSettled = await settleHeldPayPalPayments()
+
   return NextResponse.json({
     checked: expired.totalDocs,
+    paypalSettled,
     released,
     pendingPayment,
     needsFulfilment,
