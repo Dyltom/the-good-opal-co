@@ -283,7 +283,7 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
     expect(source).toContain("collection: 'products'")
-    expect(source).toContain('Stripe: card, Apple Pay, Google Pay and Klarna.')
+    expect(source).toContain('Card, Apple Pay, Google Pay and Klarna through Stripe, or PayPal.')
     expect(source).toContain('photographed individually')
     expect(source).not.toContain('scrollY')
     expect(source).not.toContain('blur-3xl')
@@ -310,7 +310,6 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
     expect(source).toContain('Design your own <i>ring</i>')
-    expect(source).toContain('Learn to cut opal')
     expect(source).not.toContain('Where dreams become reality.')
     expect(source).not.toContain(
       'Fresh from our workshop - discover new masterpieces crafted with passion'

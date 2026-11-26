@@ -11,6 +11,13 @@ const carrierLabels: Record<NonNullable<Order['shippingCarrier']>, string> = {
   other: 'Shipping carrier',
 }
 
+export function carrierTrackingUrl(carrier: Order['shippingCarrier'], trackingNumber: string, baseUrl: string): string {
+  if (carrier === 'australia-post') {
+    return `https://auspost.com.au/mypost/track/details/${encodeURIComponent(trackingNumber)}`
+  }
+  return `${baseUrl}/order-tracking`
+}
+
 interface ResendSender {
   emails: {
     send(
@@ -42,6 +49,7 @@ export async function sendShipmentNotification(
   if (!trackingNumber) throw new Error('Tracking number is required before dispatch email')
 
   const supportEmail = process.env['CONTACT_EMAIL'] ?? ''
+  const baseUrl = (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')
   const carrier = order.shippingCarrier ? carrierLabels[order.shippingCarrier] : 'Shipping carrier'
   const { error } = await sender.emails.send(
     {
@@ -49,12 +57,13 @@ export async function sendShipmentNotification(
       to: order.customer.email,
       subject: `Your order ${order.orderNumber} has shipped`,
       react: ShippingNotificationEmail({
-        baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
+        baseUrl,
         carrier,
         customerName: order.customer.name,
         orderNumber: order.orderNumber,
         supportEmail,
         trackingNumber,
+        trackingUrl: carrierTrackingUrl(order.shippingCarrier, trackingNumber, baseUrl),
       }) as ReactElement,
     },
     { idempotencyKey: `shipment-notification/${order.id}` }

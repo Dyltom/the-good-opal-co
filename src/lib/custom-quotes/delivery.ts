@@ -43,6 +43,7 @@ export async function deliverCustomQuote(
       to: quote.customerEmail,
       subject: `Your custom jewellery quote – ${quote.quoteNumber}`,
       react: CustomQuoteEmail({
+        baseUrl: APP_URL,
         customerName: enquiry.name,
         depositAmountCents: quote.depositAmountCents,
         quoteNumber: quote.quoteNumber,
