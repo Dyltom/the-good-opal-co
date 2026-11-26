@@ -7,6 +7,7 @@ import { Minus, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   CheckoutButton,
+  PayPalCheckoutButton,
   ShippingCountrySelect,
   useShippingCountry,
 } from '@/components/cart/CheckoutButton'
@@ -32,9 +33,16 @@ import { clearCart, removeFromCart, updateQuantity } from './actions'
 interface CartPageContentProps {
   initialCart: Cart
   initialCountry: ShippingCountry
+  paypalEnabled: boolean
+  notice: string | null
 }
 
-export function CartPageContent({ initialCart, initialCountry }: CartPageContentProps) {
+export function CartPageContent({
+  initialCart,
+  initialCountry,
+  paypalEnabled,
+  notice,
+}: CartPageContentProps) {
   const [cart, setCart] = useState(initialCart)
   const [isPending, startTransition] = useTransition()
   const [showClearDialog, setShowClearDialog] = useState(false)
@@ -130,6 +138,12 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
           </Button>
         </header>
 
+        {notice ? (
+          <p role="status" className="mt-5 max-w-2xl bg-plinth px-4 py-3 text-sm leading-6 text-ink">
+            {notice}
+          </p>
+        ) : null}
+
         {feedback === 'cancelled' ? (
           <CheckoutFeedback
             source="cancelled"
@@ -214,6 +228,9 @@ export function CartPageContent({ initialCart, initialCountry }: CartPageContent
                 Pay by card, Apple Pay, Google Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays
                 available to other shoppers until payment is complete.
               </p>
+              {paypalEnabled && !voucher ? (
+                <PayPalCheckoutButton cart={cart} country={country} contact={contact} className="mt-4" />
+              ) : null}
               <Button asChild variant="ghost" className="mt-3 w-full">
                 <Link href="/store">Continue shopping</Link>
               </Button>

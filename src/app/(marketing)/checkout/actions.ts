@@ -23,6 +23,17 @@ import { recordServerError } from '@/lib/insights/record'
 import { requestVisitorKey } from '@/lib/insights/visitor'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
+  approveUrl,
+  createOrder,
+  getOrder,
+  isPayPalReference,
+  paypalConfigured,
+  paypalReference,
+  PAYPAL_REFERENCE_PREFIX,
+} from '@/lib/paypal'
+import { buildPayPalOrderBody } from '@/lib/paypal-order'
+import type { CartItem } from '@/lib/cart'
+import {
   checkoutReservationExpiresAt,
   findReservationByToken,
   INVENTORY_RESERVATION_METADATA_KEY,
@@ -47,6 +58,12 @@ const checkoutSchema = z.object({
   marketingConsent: z.boolean().optional(),
   js: z.string().optional(),
 })
+
+const paypalCheckoutSchema = checkoutSchema.omit({ giftVoucherCode: true })
+
+const CHECKOUT_FAILED = 'Payment could not be started. Please try again or contact support.'
+const PIECES_TAKEN =
+  'One or more pieces were just reserved by another customer. Please review your bag.'
 
 const giftVoucherCodeSchema = z.string().trim().min(1, 'Enter a gift voucher code').max(40)
 
@@ -84,15 +101,33 @@ function publicUrl(path: string | undefined): string | undefined {
   return url.protocol === 'https:' ? url.href : undefined
 }
 
-async function releaseReplacedCheckout(stripe: Stripe, checkoutAttemptId: string): Promise<void> {
+function reservationItems(items: readonly CartItem[]) {
+  return items.map((item) => ({
+    productId: item.productId,
+    slug: item.slug,
+    name: item.name,
+    unitAmountCents: dollarsToCents(item.price),
+    quantity: item.quantity,
+  }))
+}
+
+async function releaseReplacedCheckout(
+  stripe: Stripe | null,
+  checkoutAttemptId: string
+): Promise<void> {
   const token = await checkoutHoldToken()
   if (!token || token === checkoutAttemptId) return
   const reservation = await findReservationByToken(token)
   if (reservation?.status !== 'active') return
+  if (isPayPalReference(reservation.stripeSessionId)) {
+    await releaseInventoryReservation(token, 'checkout-replaced')
+    return
+  }
+  if (!stripe) return
   const session = await stripe.checkout.sessions.retrieve(reservation.stripeSessionId)
   if (session.status === 'complete') return
   const closed = session.status === 'open' ? await stripe.checkout.sessions.expire(session.id) : session
-  await releaseInventoryReservation(closed, 'checkout-replaced')
+  await releaseInventoryReservation(token, 'checkout-replaced')
   await releaseGiftVoucherHold(token, closed.id)
 }
 
@@ -150,7 +185,8 @@ export async function createCheckoutSession(input: {
     const existingReservation = await findReservationByToken(checkoutAttemptId)
     if (
       existingReservation &&
-      (existingReservation.status === 'active' || existingReservation.status === 'pending-payment')
+      (existingReservation.status === 'active' || existingReservation.status === 'pending-payment') &&
+      !isPayPalReference(existingReservation.stripeSessionId)
     ) {
       const existingSession = await stripe.checkout.sessions.retrieve(
         existingReservation.stripeSessionId
@@ -283,13 +319,7 @@ export async function createCheckoutSession(input: {
         token: checkoutAttemptId,
         stripeSessionId: session.id,
         expiresAt,
-        items: cart.items.map((item) => ({
-          productId: item.productId,
-          slug: item.slug,
-          name: item.name,
-          unitAmountCents: dollarsToCents(item.price),
-          quantity: item.quantity,
-        })),
+        items: reservationItems(cart.items),
       })
     } catch (error) {
       try {
@@ -313,19 +343,111 @@ export async function createCheckoutSession(input: {
       )
     }
 
-    if (error instanceof InventoryUnavailableError) {
-      return {
-        success: false,
-        error:
-          'One or more pieces were just reserved by another customer. Please review your bag.',
-      }
-    }
+    if (error instanceof InventoryUnavailableError) return { success: false, error: PIECES_TAKEN }
 
     await recordServerError({ kind: 'checkout', path: '/checkout', error })
+    return { success: false, error: CHECKOUT_FAILED }
+  }
+}
+
+export async function paypalCheckoutAvailable(): Promise<boolean> {
+  return paypalConfigured()
+}
+
+export async function createPayPalCheckout(input: {
+  country: z.infer<typeof checkoutSchema>['country']
+  checkoutAttemptId: string
+  email?: string | undefined
+  marketingConsent?: boolean | undefined
+  js?: string | undefined
+}): Promise<CheckoutResult> {
+  const validationResult = paypalCheckoutSchema.safeParse(input)
+  if (!validationResult.success) {
     return {
       success: false,
-      error: 'Payment could not be started. Please try again or contact support.',
+      error: validationResult.error.issues[0]?.message ?? 'Invalid form data',
     }
+  }
+  if (!paypalConfigured()) {
+    return { success: false, error: 'PayPal is not available right now. Please pay by card.' }
+  }
+
+  try {
+    const { country, checkoutAttemptId, email, marketingConsent, js } = validationResult.data
+    const consented = Boolean(email) && marketingConsent === true && js === '1'
+    const identifier = await getRequestIdentifier()
+    const insightsVisitor = await requestVisitorKey()
+    const allowed = await checkRateLimit({
+      scope: 'checkout',
+      identifier,
+      limit: 10,
+      windowSeconds: 15 * 60,
+    })
+    if (!allowed) {
+      return { success: false, error: 'Too many checkout attempts. Please try again later.' }
+    }
+
+    const existingReservation = await findReservationByToken(checkoutAttemptId)
+    if (
+      existingReservation &&
+      (existingReservation.status === 'active' || existingReservation.status === 'pending-payment')
+    ) {
+      if (!isPayPalReference(existingReservation.stripeSessionId)) {
+        return { success: false, error: CHECKOUT_FAILED }
+      }
+      const existingOrder = await getOrder(
+        existingReservation.stripeSessionId.slice(PAYPAL_REFERENCE_PREFIX.length)
+      )
+      const existingUrl = approveUrl(existingOrder)
+      if (existingUrl) return { success: true, url: existingUrl }
+    }
+
+    const stripeSecretKey = getConfiguredStripeSecretKey()
+    await releaseReplacedCheckout(
+      stripeSecretKey ? new Stripe(stripeSecretKey, { apiVersion: '2026-06-24.dahlia' }) : null,
+      checkoutAttemptId
+    )
+    const cart = await getCart()
+    if (cart.items.length === 0) {
+      return { success: false, error: 'Your bag is empty. Add a piece before checking out.' }
+    }
+    const restriction = shippingRestriction(country, cart.items)
+    if (restriction) return { success: false, error: restriction }
+
+    const pricing = calculateCheckoutPricing(cart.items, country)
+    const expiresAt = checkoutReservationExpiresAt()
+    const order = await createOrder(
+      buildPayPalOrderBody({
+        checkoutAttemptId,
+        items: cart.items,
+        pricing,
+        context: {
+          country,
+          shippingLabel:
+            pricing.shippedSubtotal > 0 ? pricing.shippingOptions[0]?.label : undefined,
+          email,
+          consentAt: consented ? new Date().toISOString() : undefined,
+          visitor: insightsVisitor ?? undefined,
+        },
+      }),
+      checkoutAttemptId
+    )
+    const url = approveUrl(order)
+    if (!url) throw new Error('PayPal order has no approval link')
+
+    await reserveCheckoutInventory({
+      token: checkoutAttemptId,
+      stripeSessionId: paypalReference(order.id),
+      expiresAt,
+      items: reservationItems(cart.items),
+    })
+    await setCheckoutHold(checkoutAttemptId, expiresAt)
+    return { success: true, url }
+  } catch (error) {
+    console.error('PayPal checkout error:', error)
+    if (error instanceof InventoryUnavailableError) return { success: false, error: PIECES_TAKEN }
+    await recordServerError({ kind: 'checkout', path: '/checkout', error })
+    return { success: false, error: CHECKOUT_FAILED }
   }
 }
 

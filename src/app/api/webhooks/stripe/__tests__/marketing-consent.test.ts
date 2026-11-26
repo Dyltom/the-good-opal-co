@@ -10,7 +10,7 @@ const m = vi.hoisted(() => ({
   send: vi.fn(),
   releaseInventoryReservation: vi.fn(),
   sendCartReminder: vi.fn(),
-  joinListFromCheckout: vi.fn(),
+  subscribeCheckoutBuyer: vi.fn(),
 }))
 
 vi.mock('stripe', () => ({
@@ -57,8 +57,8 @@ vi.mock('@/lib/insights/record', () => ({
   recordServerError: vi.fn(),
 }))
 vi.mock('@/lib/cart-reminder', () => ({ sendCartReminder: m.sendCartReminder }))
-vi.mock('@/app/(marketing)/checkout/success/actions', () => ({
-  joinListFromCheckout: m.joinListFromCheckout,
+vi.mock('@/lib/newsletter/checkout-buyer', () => ({
+  subscribeCheckoutBuyer: m.subscribeCheckoutBuyer,
 }))
 
 import { POST } from '../route'
@@ -105,7 +105,7 @@ describe('Stripe webhook marketing consent', () => {
 
     expect((await webhook('checkout.session.expired', session)).status).toBe(200)
 
-    expect(m.releaseInventoryReservation).toHaveBeenCalledWith(session, 'checkout-expired')
+    expect(m.releaseInventoryReservation).toHaveBeenCalledWith('token', 'checkout-expired')
     expect(m.sendCartReminder).toHaveBeenCalledWith(session, [
       expect.objectContaining({ productId: '11', slug: 'ring', name: 'Opal ring', price: 450 }),
     ])
@@ -163,7 +163,7 @@ describe('Stripe webhook marketing consent', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(m.joinListFromCheckout).toHaveBeenCalledWith('cs_paid')
+    expect(m.subscribeCheckoutBuyer).toHaveBeenCalledWith('buyer@example.com', 'Jo Buyer')
     logs.mockRestore()
   })
 
@@ -190,7 +190,7 @@ describe('Stripe webhook marketing consent', () => {
       metadata: { inventoryReservationToken: 'token' },
     })
 
-    expect(m.joinListFromCheckout).not.toHaveBeenCalled()
+    expect(m.subscribeCheckoutBuyer).not.toHaveBeenCalled()
     logs.mockRestore()
   })
 })

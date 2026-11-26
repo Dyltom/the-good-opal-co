@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import type { ReactElement } from 'react'
-import { randomBytes } from 'node:crypto'
 import { getPayload } from '@/lib/payload'
-import { Resend } from 'resend'
-import { OrderConfirmationEmail } from '@/emails/order-confirmation'
-import { joinListFromCheckout } from '@/app/(marketing)/checkout/success/actions'
 import { sendCartReminder } from '@/lib/cart-reminder'
 import { hasMarketingConsent } from '@/lib/marketing-consent'
 import type { Order } from '@/types/payload-types'
@@ -19,7 +14,6 @@ import {
 import {
   markReservationPaymentPending,
   releaseInventoryReservation,
-  reservationMatchesCheckoutItems,
   reservationTokenFromSession,
 } from '@/lib/inventory-reservations'
 import {
@@ -33,16 +27,15 @@ import {
   issueGiftVoucherFromSession,
 } from '@/lib/gift-voucher-purchase'
 import { sendGiftVoucherPurchaseEmails } from '@/lib/gift-voucher-email'
-import {
-  captureGiftVoucherHold,
-  keepGiftVoucherHoldUntilPaid,
-  releaseGiftVoucherHold,
-} from '@/lib/gift-vouchers'
+import { keepGiftVoucherHoldUntilPaid, releaseGiftVoucherHold } from '@/lib/gift-vouchers'
 import {
   recordCheckoutInsight,
   recordServerError,
   type CheckoutInsightItem,
+  type CheckoutInsightSource,
 } from '@/lib/insights/record'
+import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
+import { completeExistingOrder, fulfilPaidCheckout } from '@/lib/orders/fulfil-paid-checkout'
 
 /**
  * Stripe Webhook Handler
@@ -61,8 +54,6 @@ import {
 const stripe = new Stripe(getConfiguredStripeSecretKey() ?? 'sk_test_unconfigured_webhook', {
   apiVersion: '2026-06-24.dahlia',
 })
-
-const resend = new Resend(process.env['RESEND_API_KEY'] ?? '')
 
 const webhookSecret = getConfiguredStripeWebhookSecret()
 
@@ -152,153 +143,6 @@ async function abandonedCheckoutItems(sessionId: string): Promise<CheckoutInsigh
     console.error(`Line items unavailable for abandoned checkout ${sessionId}:`, error)
     return []
   }
-}
-
-/**
- * Generate unique order number
- */
-function generateOrderNumber(): string {
-  const timestamp = Date.now().toString(36).toUpperCase()
-  const random = randomBytes(8).toString('hex').toUpperCase()
-  return `OPAL-${timestamp}-${random}`
-}
-
-async function sendOrderConfirmation(order: Order): Promise<void> {
-  if (order.confirmationEmailSentAt) return
-
-  const { error } = await resend.emails.send(
-    {
-      from: process.env['EMAIL_FROM'] ?? '',
-      to: order.customer.email,
-      subject: `Order confirmation - ${order.orderNumber}`,
-      react: OrderConfirmationEmail({
-        orderNumber: order.orderNumber,
-        customerName: order.customer.name,
-        items: order.items.map((item) => ({
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image ?? undefined,
-        })),
-        subtotal: order.subtotal,
-        shipping: order.shipping ?? 0,
-        giftVoucher: order.giftVoucherCode
-          ? { code: order.giftVoucherCode, amount: order.giftVoucherAmount ?? 0 }
-          : undefined,
-        discount: order.giftVoucherCode
-          ? undefined
-          : Math.max(0, Math.round((order.subtotal + (order.shipping ?? 0) - order.total) * 100) / 100) ||
-            undefined,
-        total: order.total,
-        shippingAddress: {
-          line1: order.shippingAddress.line1,
-          line2: order.shippingAddress.line2 ?? undefined,
-          city: order.shippingAddress.city,
-          state: order.shippingAddress.state ?? undefined,
-          postalCode: order.shippingAddress.postalCode ?? undefined,
-          country: order.shippingAddress.country,
-        },
-        baseUrl: (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, ''),
-        supportEmail: process.env['CONTACT_EMAIL'] ?? '',
-        requiresInventoryReview: order.status === 'pending',
-      }) as ReactElement,
-    },
-    { idempotencyKey: `order-confirmation/${order.id}` }
-  )
-
-  const payload = await getPayload()
-  if (error) {
-    await payload.update({
-      collection: 'orders',
-      id: order.id,
-      data: { confirmationEmailError: error.message.slice(0, 1000) },
-    })
-    throw new Error(`Resend rejected order confirmation: ${error.message}`)
-  }
-
-  await payload.update({
-    collection: 'orders',
-    id: order.id,
-    data: {
-      confirmationEmailSentAt: new Date().toISOString(),
-      confirmationEmailError: null,
-    },
-  })
-}
-
-function formatAud(amount: number): string {
-  return `$${amount.toFixed(2)}`
-}
-
-function ownerOrderEmailText(order: Order): string {
-  const adminUrl = `${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders/${order.id}`
-  const address = order.shippingAddress
-  return [
-    ...(order.status === 'pending'
-      ? [
-          'INVENTORY REVIEW REQUIRED: check stock before packing this order.',
-          '',
-        ]
-      : []),
-    `New paid order ${order.orderNumber}`,
-    `Total paid: ${formatAud(order.total)} ${order.currency ?? 'AUD'} (shipping ${formatAud(order.shipping ?? 0)})`,
-    ...(order.giftVoucherCode
-      ? [`Gift voucher ${order.giftVoucherCode}: -${formatAud(order.giftVoucherAmount ?? 0)}`]
-      : []),
-    '',
-    'Items:',
-    ...order.items.map(
-      (item) => `${item.quantity} × ${item.name}, ${formatAud(item.price)} (${item.productId})`
-    ),
-    '',
-    'Customer:',
-    order.customer.name,
-    order.customer.email,
-    ...(order.customer.phone ? [order.customer.phone] : []),
-    '',
-    'Ship to:',
-    address.line1,
-    ...(address.line2 ? [address.line2] : []),
-    [address.city, address.state, address.postalCode].filter(Boolean).join(' '),
-    address.country,
-    ...(order.notes ? ['', `Notes: ${order.notes}`] : []),
-    '',
-    `Open the order: ${adminUrl}`,
-  ].join('\n')
-}
-
-async function sendOwnerOrderNotification(order: Order): Promise<void> {
-  if (order.inventoryAlertSentAt) return
-
-  const { error } = await resend.emails.send(
-    {
-      from: process.env['EMAIL_FROM'] ?? '',
-      to: process.env['CONTACT_EMAIL'] ?? '',
-      replyTo: order.customer.email,
-      subject: `${order.status === 'pending' ? 'Inventory review required' : 'New order'} - ${order.orderNumber}`,
-      text: ownerOrderEmailText(order),
-    },
-    { idempotencyKey: `owner-order/${order.id}` }
-  )
-
-  const payload = await getPayload()
-  if (error) {
-    await payload.update({
-      collection: 'orders',
-      id: order.id,
-      data: { inventoryAlertError: error.message.slice(0, 1000) },
-    })
-    throw new Error(`Resend rejected owner order email: ${error.message}`)
-  }
-
-  await payload.update({
-    collection: 'orders',
-    id: order.id,
-    data: {
-      inventoryAlertSentAt: new Date().toISOString(),
-      inventoryAlertError: null,
-    },
-  })
 }
 
 function paymentIntentIdFromCharge(charge: Stripe.Charge): string | null {
@@ -524,9 +368,23 @@ async function reconcileQuoteDepositDispute(
   }
 }
 
-async function releaseVoucherHoldFor(session: Stripe.Checkout.Session): Promise<void> {
+function checkoutInsightSource(session: Stripe.Checkout.Session): CheckoutInsightSource {
+  return {
+    reference: session.id,
+    visitor: session.metadata?.[INSIGHTS_VISITOR_METADATA_KEY],
+    value: (session.amount_total ?? 0) / 100,
+    email: session.customer_details?.email ?? session.customer_email ?? undefined,
+  }
+}
+
+async function releaseCheckoutHolds(
+  session: Stripe.Checkout.Session,
+  reason: 'checkout-expired' | 'async-payment-failed'
+): Promise<void> {
   const token = reservationTokenFromSession(session)
-  if (token) await releaseGiftVoucherHold(token, session.id)
+  if (!token) return
+  await releaseInventoryReservation(token, reason)
+  await releaseGiftVoucherHold(token, session.id)
 }
 
 async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Order | null> {
@@ -714,11 +572,10 @@ export async function POST(request: NextRequest) {
     if (isGiftVoucherPurchaseSession(event.data.object)) {
       return NextResponse.json({ received: true })
     }
-    await releaseInventoryReservation(event.data.object, 'checkout-expired')
-    await releaseVoucherHoldFor(event.data.object)
+    await releaseCheckoutHolds(event.data.object, 'checkout-expired')
     await recordCheckoutInsight({
       name: 'checkout_abandoned',
-      session: event.data.object,
+      checkout: checkoutInsightSource(event.data.object),
       occurredAt: new Date(event.created * 1000),
       items: await abandonedCheckoutItems(event.data.object.id),
     })
@@ -739,8 +596,7 @@ export async function POST(request: NextRequest) {
     if (isGiftVoucherPurchaseSession(event.data.object)) {
       return NextResponse.json({ received: true })
     }
-    await releaseInventoryReservation(event.data.object, 'async-payment-failed')
-    await releaseVoucherHoldFor(event.data.object)
+    await releaseCheckoutHolds(event.data.object, 'async-payment-failed')
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
 
@@ -776,7 +632,7 @@ export async function POST(request: NextRequest) {
         if (created) {
           await recordCheckoutInsight({
             name: 'purchase',
-            session,
+            checkout: checkoutInsightSource(session),
             occurredAt: new Date(event.created * 1000),
             items: [{ name: 'Gift voucher', quantity: 1, amount: voucher.initialValue }],
           })
@@ -791,321 +647,80 @@ export async function POST(request: NextRequest) {
     }
 
     if (!isPaidCheckoutStatus(session.payment_status)) {
-      await markReservationPaymentPending(session)
       const token = reservationTokenFromSession(session)
-      if (token) await keepGiftVoucherHoldUntilPaid(token)
+      if (token) {
+        await markReservationPaymentPending(token)
+        await keepGiftVoucherHoldUntilPaid(token)
+      }
       return NextResponse.json({ received: true, awaitingPayment: true })
     }
 
     try {
-      const payload = await getPayload()
-
-      // Idempotency check - ensure we don't create duplicate orders
-      const existingOrder = await payload.find({
-        collection: 'orders',
-        where: { stripeSessionId: { equals: session.id } },
-        limit: 1,
-      })
-
-      if (existingOrder.docs.length > 0) {
-        const existing = existingOrder.docs[0]
-        if (existing) {
-          await sendOrderConfirmation(existing)
-          await sendOwnerOrderNotification(existing)
-        }
+      if (await completeExistingOrder(session.id)) {
         return NextResponse.json({ received: true, duplicate: true })
       }
 
-      // Stripe line items are the paid, server-authored source of truth.
-      // Avoids metadata size limits and never trusts browser cart values.
       const items = await getCheckoutItems(session.id)
       const customerName =
         session.metadata?.customerName || session.customer_details?.name || ''
       const sessionEmail = session.customer_details?.email ?? session.customer_email ?? ''
-
       const shippingDetails = getRequiredCheckoutShippingDetails(session)
       const shippingService = await chosenShippingService(session)
-
-      // Calculate subtotal from items
       const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-      const orderPlacedAt = new Date(session.created * 1000).toISOString()
-      const paidAt = new Date(event.created * 1000).toISOString()
+      const insight = checkoutInsightSource(session)
 
-      const transactionID = await payload.db.beginTransaction()
-      if (transactionID === null) {
-        throw new Error('Database transactions are required for order fulfilment')
-      }
-      const transactionReq = { transactionID }
-
-      let transactionCommitted = false
-      try {
-        const reservationToken = reservationTokenFromSession(session)
-        const reservationResult = reservationToken
-          ? await payload.find({
-              collection: 'inventory-reservations',
-              where: { token: { equals: reservationToken } },
-              limit: 1,
-              req: transactionReq,
-              overrideAccess: true,
-            })
-          : null
-        const reservation = reservationResult?.docs[0]
-        const reservedInventoryAvailable = Boolean(
-          reservation &&
-          (reservation.status === 'active' || reservation.status === 'pending-payment') &&
-          reservationMatchesCheckoutItems(
-            reservation.items,
-            items.map((item) => ({
-              productId: item.productId,
-              slug: item.slug,
-              name: item.name,
-              unitAmountCents: Math.round(item.price * 100),
-              quantity: item.quantity,
-            }))
-          )
-        )
-
-        const inventory = reservationToken
-          ? []
-          : await Promise.all(
-              items.map(async (item) => {
-                const product = await payload.findByID({
-                  collection: 'products',
-                  id: item.productId,
-                  req: transactionReq,
-                })
-
-                return {
-                  item,
-                  product,
-                  available:
-                    product.status === 'published' &&
-                    typeof product.stock === 'number' &&
-                    product.stock >= item.quantity,
-                }
-              })
-            )
-        const legacyInventoryAvailable =
-          !reservationToken && inventory.every((entry) => entry.available)
-        const inventoryAvailable = reservedInventoryAvailable || legacyInventoryAvailable
-
-        // Order, customer totals, and stock changes share one serializable transaction.
-        const order = await payload.create({
-          collection: 'orders',
-          req: transactionReq,
-          data: {
-            orderNumber: generateOrderNumber(),
-            source: 'stripe',
-            orderPlacedAt,
-            paidAt,
-            status: inventoryAvailable ? 'processing' : 'pending',
-            customer: {
-              email: sessionEmail,
-              name: customerName || shippingDetails.name,
-              phone: session.customer_details?.phone ?? undefined,
-            },
-            shippingAddress: {
-              line1: shippingDetails.address.line1,
-              line2: shippingDetails.address.line2 ?? undefined,
-              city: shippingDetails.address.city,
-              state: shippingDetails.address.state ?? undefined,
-              postalCode: shippingDetails.address.postal_code ?? undefined,
-              country: shippingDetails.address.country,
-            },
-            items: items.map((item) => ({
-              productId: item.productId,
-              slug: item.slug,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image,
-            })),
-            subtotal,
-            shipping: session.shipping_cost?.amount_total
-              ? session.shipping_cost.amount_total / 100
-              : 0,
-            tax: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
-            total: session.amount_total ? session.amount_total / 100 : subtotal,
-            currency: session.currency?.toUpperCase() ?? 'AUD',
-            stripeSessionId: session.id,
-            stripePaymentIntentId:
-              typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
-            inventoryReservation: reservation?.id,
-            inventoryDecrementedAt: reservedInventoryAvailable
-              ? new Date().toISOString()
-              : undefined,
-            notes:
-              [
-                inventoryAvailable
-                  ? undefined
-                  : reservationToken
-                    ? 'Paid order reservation is missing, released, consumed, or does not match Stripe line items. Manual inventory review required.'
-                    : 'Paid legacy checkout requires inventory review before fulfilment.',
-                shippingService ? `Ship by ${shippingService}` : undefined,
-                session.discounts?.some((discount) => discount.promotion_code) &&
-                session.total_details?.amount_discount
-                  ? `Welcome code used: -$${(session.total_details.amount_discount / 100).toFixed(2)}`
-                  : undefined,
-              ]
-                .filter(Boolean)
-                .join('\n') || undefined,
-          },
-        })
-
-        console.log(`Order created: ${order.orderNumber}`)
-
-        const voucherCapture = reservationToken
-          ? await captureGiftVoucherHold({
-              payload,
-              req: transactionReq,
-              checkoutToken: reservationToken,
-              stripeSessionId: session.id,
-              orderId: order.id,
-            })
-          : null
-        if (voucherCapture) {
-          const voucherAmount = session.total_details?.amount_discount
-            ? session.total_details.amount_discount / 100
-            : voucherCapture.amount
-          const updated = await payload.update({
-            collection: 'orders',
-            id: order.id,
-            req: transactionReq,
-            data: {
-              giftVoucherCode: voucherCapture.code,
-              giftVoucherAmount: voucherAmount,
-              ...(voucherCapture.note
-                ? { notes: [order.notes, voucherCapture.note].filter(Boolean).join('\n') }
-                : {}),
-            },
-          })
-          Object.assign(order, updated)
-        }
-
-        // Update or create customer record for CRM
-        const customerEmail = sessionEmail.toLowerCase()
-        if (customerEmail) {
-          const orderTotal = session.amount_total ? session.amount_total / 100 : subtotal
-
-          // Check if customer already exists
-          const existingCustomer = await payload.find({
-            collection: 'customers',
-            where: { email: { equals: customerEmail } },
-            limit: 1,
-            req: transactionReq,
-          })
-
-          if (existingCustomer.docs.length > 0) {
-            // Update existing customer
-            const customer = existingCustomer.docs[0]
-            if (customer) {
-              const currentTotalOrders =
-                typeof customer['totalOrders'] === 'number' ? customer['totalOrders'] : 0
-              const currentTotalSpent =
-                typeof customer['totalSpent'] === 'number' ? customer['totalSpent'] : 0
-
-              await payload.update({
-                collection: 'customers',
-                id: customer['id'],
-                req: transactionReq,
-                data: {
-                  name: customerName || shippingDetails.name || customer['name'],
-                  phone: session.customer_details?.phone ?? customer['phone'],
-                  totalOrders: currentTotalOrders + 1,
-                  totalSpent: currentTotalSpent + orderTotal,
-                  lastOrderDate: paidAt,
-                  defaultAddress: {
-                    line1: shippingDetails.address.line1,
-                    line2: shippingDetails.address.line2 ?? '',
-                    city: shippingDetails.address.city,
-                    state: shippingDetails.address.state ?? '',
-                    postalCode: shippingDetails.address.postal_code ?? '',
-                    country: shippingDetails.address.country,
-                  },
-                },
-              })
-            }
-          } else {
-            // Create new customer
-            await payload.create({
-              collection: 'customers',
-              req: transactionReq,
-              data: {
-                email: customerEmail,
-                name: customerName || shippingDetails.name,
-                phone: session.customer_details?.phone ?? undefined,
-                source: 'checkout',
-                totalOrders: 1,
-                totalSpent: orderTotal,
-                lastOrderDate: paidAt,
-                defaultAddress: {
-                  line1: shippingDetails.address.line1,
-                  line2: shippingDetails.address.line2 ?? '',
-                  city: shippingDetails.address.city,
-                  state: shippingDetails.address.state ?? '',
-                  postalCode: shippingDetails.address.postal_code ?? '',
-                  country: shippingDetails.address.country,
-                },
-              },
-            })
-          }
-        }
-
-        if (reservedInventoryAvailable && reservation) {
-          await payload.update({
-            collection: 'inventory-reservations',
-            id: reservation.id,
-            req: transactionReq,
-            overrideAccess: true,
-            data: {
-              status: 'consumed',
-              consumedAt: new Date().toISOString(),
-            },
-          })
-        } else if (legacyInventoryAvailable) {
-          for (const { item, product } of inventory) {
-            await payload.update({
-              collection: 'products',
-              id: item.productId,
-              req: transactionReq,
-              data: { stock: (product.stock ?? 0) - item.quantity },
-            })
-          }
-          await payload.update({
-            collection: 'orders',
-            id: order.id,
-            req: transactionReq,
-            data: { inventoryDecrementedAt: new Date().toISOString() },
-          })
-        }
-
-        await payload.db.commitTransaction(transactionID)
-        transactionCommitted = true
-
-        await recordCheckoutInsight({
-          name: 'purchase',
-          session,
+      const order = await fulfilPaidCheckout({
+        reference: session.id,
+        source: 'stripe',
+        reservationToken: reservationTokenFromSession(session),
+        items,
+        customer: {
+          email: sessionEmail,
+          name: customerName || shippingDetails.name,
+          phone: session.customer_details?.phone,
+        },
+        shippingAddress: {
+          line1: shippingDetails.address.line1,
+          line2: shippingDetails.address.line2,
+          city: shippingDetails.address.city,
+          state: shippingDetails.address.state,
+          postalCode: shippingDetails.address.postal_code,
+          country: shippingDetails.address.country,
+        },
+        shipping: session.shipping_cost?.amount_total ? session.shipping_cost.amount_total / 100 : 0,
+        tax: session.total_details?.amount_tax ? session.total_details.amount_tax / 100 : 0,
+        total: session.amount_total ? session.amount_total / 100 : subtotal,
+        currency: session.currency?.toUpperCase() ?? 'AUD',
+        placedAt: new Date(session.created * 1000).toISOString(),
+        paidAt: new Date(event.created * 1000).toISOString(),
+        stripePaymentIntentId:
+          typeof session.payment_intent === 'string' ? session.payment_intent : undefined,
+        voucherDiscount: session.total_details?.amount_discount
+          ? session.total_details.amount_discount / 100
+          : undefined,
+        notes: [
+          shippingService ? `Ship by ${shippingService}` : undefined,
+          session.discounts?.some((discount) => discount.promotion_code) &&
+          session.total_details?.amount_discount
+            ? `Welcome code used: -$${(session.total_details.amount_discount / 100).toFixed(2)}`
+            : undefined,
+        ],
+        insight: {
           occurredAt: new Date(event.created * 1000),
-          items: items.map((item) => ({
-            productId: item.productId,
-            name: item.name,
-            quantity: item.quantity,
-            amount: item.price * item.quantity,
-          })),
-        })
-        await sendOrderConfirmation(order)
-        await sendOwnerOrderNotification(order)
-        if (hasMarketingConsent(session.metadata)) await joinListFromCheckout(session.id)
+          visitor: insight.visitor,
+          value: insight.value,
+        },
+        joinList:
+          hasMarketingConsent(session.metadata) && sessionEmail
+            ? { email: sessionEmail, name: session.customer_details?.name ?? undefined }
+            : null,
+      })
 
-        return NextResponse.json({
-          received: true,
-          orderId: order.id,
-          orderNumber: order.orderNumber,
-        })
-      } catch (transactionError) {
-        if (!transactionCommitted) await payload.db.rollbackTransaction(transactionID)
-        throw transactionError
-      }
+      return NextResponse.json({
+        received: true,
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+      })
     } catch (error) {
       console.error('Error processing checkout.session.completed:', error)
       await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })

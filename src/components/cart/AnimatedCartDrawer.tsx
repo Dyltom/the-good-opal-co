@@ -17,6 +17,7 @@ import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import {
   CheckoutButton,
+  PayPalCheckoutButton,
   ShippingCountrySelect,
   useShippingCountry,
 } from '@/components/cart/CheckoutButton'
@@ -25,6 +26,7 @@ import { SHIPPING_COUNTRY_NAMES } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
+import { paypalCheckoutAvailable } from '@/app/(marketing)/checkout/actions'
 import { Trash2, Plus, Minus } from 'lucide-react'
 import type { Cart, CartItem } from '@/lib/cart'
 
@@ -35,12 +37,14 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
   const [country, setCountry] = useShippingCountry()
   const [isPending, startTransition] = useTransition()
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
+  const [paypalEnabled, setPaypalEnabled] = useState(false)
 
   const loadCart = useCallback(async () => {
-    const result = await fetchCart()
+    const [result, paypal] = await Promise.all([fetchCart(), paypalCheckoutAvailable()])
     if (result.success && result.data) {
       setCart(result.data)
     }
+    setPaypalEnabled(paypal)
     setIsLoading(false)
   }, [])
 
@@ -160,6 +164,7 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
                   <>
                     <ShippingCountrySelect value={country} onChange={setCountry} />
                     <CheckoutButton cart={cart} country={country} className="h-12 w-full text-base" />
+                    {paypalEnabled ? <PayPalCheckoutButton cart={cart} country={country} /> : null}
                   </>
                 ) : null}
 

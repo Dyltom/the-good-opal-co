@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getPayload } from '@/lib/payload'
+import { isPayPalReference } from '@/lib/paypal'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
   markReservationPaymentPending,
@@ -23,11 +24,9 @@ export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const stripeSecretKey = getConfiguredStripeSecretKey()
-  if (!stripeSecretKey) {
-    return NextResponse.json({ error: 'Stripe is not configured' }, { status: 503 })
-  }
-
-  const stripe = new Stripe(stripeSecretKey, { apiVersion: '2026-06-24.dahlia' })
+  const stripe = stripeSecretKey
+    ? new Stripe(stripeSecretKey, { apiVersion: '2026-06-24.dahlia' })
+    : null
   const payload = await getPayload()
   const expired = await payload.find({
     collection: 'inventory-reservations',
@@ -45,21 +44,31 @@ export async function GET(request: NextRequest) {
   let released = 0
   let pendingPayment = 0
   let needsFulfilment = 0
+  let skipped = 0
 
   for (const reservation of expired.docs) {
+    if (isPayPalReference(reservation.stripeSessionId)) {
+      await releaseInventoryReservation(reservation.token, 'checkout-expired')
+      released += 1
+      continue
+    }
+    if (!stripe) {
+      skipped += 1
+      continue
+    }
     const session = await stripe.checkout.sessions.retrieve(reservation.stripeSessionId)
     if (session.status === 'open') {
-      const expiredSession = await stripe.checkout.sessions.expire(session.id)
-      await releaseInventoryReservation(expiredSession, 'checkout-expired')
+      await stripe.checkout.sessions.expire(session.id)
+      await releaseInventoryReservation(reservation.token, 'checkout-expired')
       released += 1
     } else if (session.status === 'expired') {
-      await releaseInventoryReservation(session, 'checkout-expired')
+      await releaseInventoryReservation(reservation.token, 'checkout-expired')
       released += 1
     } else if (session.payment_status === 'paid') {
       needsFulfilment += 1
       console.error(`Paid Stripe session ${session.id} still has an active inventory reservation`)
     } else {
-      await markReservationPaymentPending(session)
+      await markReservationPaymentPending(reservation.token)
       pendingPayment += 1
     }
   }
@@ -69,5 +78,6 @@ export async function GET(request: NextRequest) {
     released,
     pendingPayment,
     needsFulfilment,
+    ...(skipped ? { skipped, error: 'Stripe is not configured' } : {}),
   })
 }
