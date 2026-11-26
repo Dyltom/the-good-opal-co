@@ -3,10 +3,8 @@
 import { useEffect, useState, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -22,7 +20,6 @@ import {
   useShippingCountry,
 } from '@/components/cart/CheckoutButton'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
-import { SHIPPING_COUNTRY_NAMES } from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
@@ -149,35 +146,27 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
                 <span className="text-lg font-medium text-ink">{formatCurrency(total, 'AUD')}</span>
               </div>
 
-              <div className="flex items-baseline justify-between text-sm">
-                <span className="text-ink-2">
-                  Shipping to {SHIPPING_COUNTRY_NAMES[country]}
-                </span>
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <ShippingCountrySelect value={country} onChange={setCountry} />
                 <span className="text-ink">
                   {pricing.shippedSubtotal === 0
                     ? 'None'
                     : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
                 </span>
               </div>
-              <div className="space-y-2">
-                {cart ? (
-                  <>
-                    <ShippingCountrySelect value={country} onChange={setCountry} />
-                    <CheckoutButton cart={cart} country={country} className="h-12 w-full text-base" />
-                    {paypalEnabled ? <PayPalCheckoutButton cart={cart} country={country} /> : null}
-                  </>
-                ) : null}
-
-                <Button variant="ghost" className="w-full" asChild onClick={() => setIsOpen(false)}>
-                  <Link href="/cart">View bag</Link>
-                </Button>
-
-                <SheetClose asChild>
-                  <Button variant="link" className="w-full text-ink-2 hover:text-ink">
-                    Continue shopping
-                  </Button>
-                </SheetClose>
-              </div>
+              {cart ? (
+                <div className="space-y-2">
+                  <CheckoutButton cart={cart} country={country} className="h-12 w-full text-base" />
+                  {paypalEnabled ? <PayPalCheckoutButton cart={cart} country={country} /> : null}
+                </div>
+              ) : null}
+              <Link
+                href="/cart"
+                onClick={() => setIsOpen(false)}
+                className="flex min-h-11 items-center justify-center text-sm text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                View bag, add a gift voucher
+              </Link>
             </div>
           </>
         )}
@@ -215,7 +204,7 @@ function CartDrawerItem({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-3">
-          <h4 className="min-w-0 flex-1 truncate font-serif text-[15.5px] italic">{item.name}</h4>
+          <h4 className="line-clamp-2 min-w-0 flex-1 font-serif text-[15.5px] italic">{item.name}</h4>
           <p className="text-sm font-medium">{formatCurrency(item.price * item.quantity, 'AUD')}</p>
         </div>
         {item.quantity > 1 ? (

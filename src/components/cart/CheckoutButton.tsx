@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useId, useRef, useState, useSyncExternalStore, useTransition } from 'react'
-import { Lock } from 'lucide-react'
+import { ChevronDown, Lock } from 'lucide-react'
 import { createCheckoutSession, createPayPalCheckout } from '@/app/(marketing)/checkout/actions'
 import { Button } from '@/components/ui/button'
 import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics'
@@ -9,6 +9,7 @@ import type { Cart } from '@/lib/cart'
 import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import {
   isShippingCountry,
+  publishedShippingOptions,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
   shippingRestriction,
@@ -45,31 +46,36 @@ export function useShippingCountry(initialCountry: ShippingCountry = 'AU') {
 interface ShippingCountrySelectProps {
   value: ShippingCountry
   onChange: (country: ShippingCountry) => void
-  className?: string
 }
 
-export function ShippingCountrySelect({ value, onChange, className }: ShippingCountrySelectProps) {
+export function ShippingCountrySelect({ value, onChange }: ShippingCountrySelectProps) {
   const id = useId()
   return (
-    <div className={cn('min-w-0', className)}>
-      <label htmlFor={id} className="mb-2 block text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
+    <div className="flex min-w-0 items-center gap-1.5">
+      <label htmlFor={id} className="text-ink-2">
         Shipping to
       </label>
-      <select
-        id={id}
-        value={value}
-        onChange={(event) => {
-          const next = event.target.value
-          if (isShippingCountry(next)) onChange(next)
-        }}
-        className="flex h-11 w-full rounded-sm border border-rule-2 bg-bg px-3 text-sm text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent"
-      >
-        {SHIPPING_COUNTRIES.map((country) => (
-          <option key={country} value={country}>
-            {SHIPPING_COUNTRY_NAMES[country]}
-          </option>
-        ))}
-      </select>
+      <span className="relative inline-flex items-center">
+        <select
+          id={id}
+          value={value}
+          onChange={(event) => {
+            const next = event.target.value
+            if (isShippingCountry(next)) onChange(next)
+          }}
+          className="min-h-11 cursor-pointer appearance-none bg-transparent pr-5 [field-sizing:content] text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          {SHIPPING_COUNTRIES.map((country) => (
+            <option key={country} value={country}>
+              {SHIPPING_COUNTRY_NAMES[country]}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-0 h-3.5 w-3.5 text-ink-2"
+          aria-hidden="true"
+        />
+      </span>
     </div>
   )
 }
@@ -165,16 +171,17 @@ interface PayPalCheckoutButtonProps {
   cart: Cart
   country: ShippingCountry
   contact?: CheckoutEmail | undefined
-  className?: string
 }
 
-export function PayPalCheckoutButton({ cart, country, contact, className }: PayPalCheckoutButtonProps) {
+export function PayPalCheckoutButton({ cart, country, contact }: PayPalCheckoutButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>()
   const attemptId = useRef<string>(null)
   const restriction = shippingRestriction(country, cart.items)
-  const pricing = calculateCheckoutPricing(cart.items, country)
-  const shipsBy = pricing.shippedSubtotal > 0 ? pricing.shippingOptions[0]?.label : undefined
+  const shipsBy =
+    calculateCheckoutPricing(cart.items, country).shippedSubtotal > 0
+      ? publishedShippingOptions(country)[0]?.label
+      : undefined
 
   const startCheckout = () => {
     setError(undefined)
@@ -201,7 +208,7 @@ export function PayPalCheckoutButton({ cart, country, contact, className }: PayP
   }
 
   return (
-    <div className={cn('min-w-0', className)}>
+    <div className="min-w-0">
       <button
         type="button"
         onClick={startCheckout}
@@ -217,8 +224,9 @@ export function PayPalCheckoutButton({ cart, country, contact, className }: PayP
         )}
       </button>
       <p className="mt-2 text-[12.5px] leading-5 text-ink-2">
-        {shipsBy ? `PayPal orders ship by ${shipsBy}; codes` : 'Codes'} and gift vouchers apply at
-        card checkout.
+        {shipsBy
+          ? `PayPal ships by ${shipsBy}. Use Checkout for express delivery, a code or a voucher.`
+          : 'Use Checkout for a code or a voucher.'}
       </p>
       {error ? (
         <p role="alert" className="mt-2 text-sm text-destructive">
