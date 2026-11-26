@@ -27,6 +27,7 @@ export function GiftVoucherForm() {
   const [recipientEmail, setRecipientEmail] = useState('')
   const [senderName, setSenderName] = useState('')
   const [message, setMessage] = useState('')
+  const [website, setWebsite] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
 
@@ -34,7 +35,7 @@ export function GiftVoucherForm() {
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
-    const order = { amount, sendToSelf, recipientName, recipientEmail, senderName, message }
+    const order = { amount, sendToSelf, recipientName, recipientEmail, senderName, message, website }
     const parsed = giftVoucherOrderSchema.safeParse(order)
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Check the voucher details')
@@ -49,7 +50,18 @@ export function GiftVoucherForm() {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="grid gap-6">
+    <form method="post" onSubmit={submit} noValidate className="grid gap-6">
+      <div className="absolute -left-[9999px]" aria-hidden="true">
+        <Label htmlFor="voucher-website">Website</Label>
+        <Input
+          id="voucher-website"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(event) => setWebsite(event.target.value)}
+        />
+      </div>
       <fieldset className="grid gap-3">
         <legend className="mb-1 text-sm font-medium text-ink">Amount</legend>
         <div className="flex flex-wrap gap-2">
@@ -78,6 +90,8 @@ export function GiftVoucherForm() {
             <Label htmlFor="voucher-amount">Amount in AUD</Label>
             <Input
               id="voucher-amount"
+              name="amount"
+              required
               inputMode="numeric"
               type="number"
               min={GIFT_VOUCHER_MIN_AMOUNT}
@@ -96,6 +110,7 @@ export function GiftVoucherForm() {
         <label className="flex min-h-11 items-center gap-3 text-sm text-ink">
           <input
             type="checkbox"
+            name="sendToSelf"
             checked={sendToSelf}
             onChange={(event) => setSendToSelf(event.target.checked)}
             className="h-4 w-4 accent-ink"
@@ -106,22 +121,23 @@ export function GiftVoucherForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-1.5">
               <Label htmlFor="recipient-name">Recipient name</Label>
-              <Input id="recipient-name" autoComplete="off" value={recipientName} onChange={(event) => setRecipientName(event.target.value)} />
+              <Input id="recipient-name" name="recipientName" required autoComplete="off" value={recipientName} onChange={(event) => setRecipientName(event.target.value)} />
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="recipient-email">Recipient email</Label>
-              <Input id="recipient-email" type="email" autoComplete="off" value={recipientEmail} onChange={(event) => setRecipientEmail(event.target.value)} />
+              <Input id="recipient-email" name="recipientEmail" type="email" required autoComplete="off" value={recipientEmail} onChange={(event) => setRecipientEmail(event.target.value)} />
             </div>
           </div>
         )}
         <div className="grid gap-1.5">
           <Label htmlFor="sender-name">Your name</Label>
-          <Input id="sender-name" autoComplete="name" value={senderName} onChange={(event) => setSenderName(event.target.value)} />
+          <Input id="sender-name" name="senderName" required autoComplete="name" value={senderName} onChange={(event) => setSenderName(event.target.value)} />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor="voucher-message">Message (optional)</Label>
           <Textarea
             id="voucher-message"
+            name="message"
             rows={4}
             maxLength={GIFT_VOUCHER_MESSAGE_MAX}
             value={message}

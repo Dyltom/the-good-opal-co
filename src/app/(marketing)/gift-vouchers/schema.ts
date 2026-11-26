@@ -20,6 +20,7 @@ export const giftVoucherOrderSchema = z
       .string()
       .trim()
       .max(GIFT_VOUCHER_MESSAGE_MAX, `Keep the message under ${GIFT_VOUCHER_MESSAGE_MAX} characters`),
+    website: z.string().max(0).optional(),
   })
   .superRefine((value, ctx) => {
     if (value.sendToSelf) return
