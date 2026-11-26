@@ -162,6 +162,12 @@ glows or tinted bands anywhere in the UI.
 
 **No eyebrows.** Do not put a small label above a heading. The heading says it.
 
+**The Closing Band.** Each marketing page (home, about, services, FAQ, gifts)
+ends on one `TorchBand` just above the footer: an `ink` band with a short
+heading, one line, one button and one large opal photo. It is the only dark
+section and the only tall band in the page body. It replaces the closing text CTA,
+so the eye has one place to land at the bottom of the page.
+
 **Balanced headings.** Headings use `text-wrap: balance` and -0.01em tracking.
 
 ## 4. Layout and elevation
@@ -210,6 +216,16 @@ photo. Quick add / quick view appear on hover or focus on solid surfaces.
 Breadcrumb is 13px `ink-3` with "/" separators and `aria-current` on the
 last item. Container `xl` is 90rem with `px-gut`.
 
+### TorchBand (`src/components/sections/TorchBand.tsx`)
+
+Two columns on md and up (copy 0.8fr, photo 1.2fr, photo up to 760px tall);
+under md the photo stacks above the copy. Heading in `bg`, the line in `bg` at
+75%, one inverted button (`bg` fill, `ink` text). Focus rings and selection
+invert inside the band. Optional `links` sit under the button as one or two
+quiet text links. Photos must be at least 1250px wide. The band is a server
+component; only the photo (`TorchBeam`) runs on the client. A band that ends
+the page sits flush on the footer.
+
 ### Cart drawer
 
 Right sheet titled "Your bag (n)". Lines show a plinth thumbnail, italic name,
@@ -223,6 +239,12 @@ tabular price. The footer is a plinth panel with subtotal, shipping, region, che
   background, including every photo's plinth, covers it. It follows a fine
   pointer with a light lerp, dims when the pointer leaves, and remembers its
   place across pages. Coarse pointers and reduced motion get it static.
+- **Torchlight** (`TorchBand` + `.torch-beam` in `globals.css`): on fine
+  pointers the band's photo is lit by a 360px beam that follows the cursor
+  (registered `--beam-x` / `--beam-y`, 0.7s `ease-gallery`). Outside the beam
+  the photo fades towards the band's ink through a mask; pixels inside the beam
+  are untouched, and no filter or tint is ever applied. Touch, coarse pointers,
+  reduced motion and browsers without masks show the whole photo.
 - **Piece morph:** `<ViewTransition name={productImageTransitionName(slug)}
   share="piece">` wraps the card photo and the product gallery, so the photo
   carries from the grid to the product page (Next `experimental.viewTransition`).
@@ -249,7 +271,8 @@ Do:
 Don't:
 
 - Put filters, tints, gradients or overlays on stone photos.
-- Add tall hero bands, eyebrows, decorative dividers or gradient lines.
+- Add tall hero bands, eyebrows, decorative dividers or gradient lines. The
+  one closing `TorchBand` per page is the exception.
 - Nest cards, or add shadows to flat page sections.
 - Use React Context as the cart source of truth, or decrement stock at checkout
   session creation.

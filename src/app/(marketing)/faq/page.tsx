@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import Link from 'next/link'
-import { ArrowRight, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
+import { TorchBand } from '@/components/sections/TorchBand'
 import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
-import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions | The Good Opal Co',
@@ -154,7 +153,7 @@ export default function FAQPage() {
           { name: 'Frequently asked questions', url: '/faq' },
         ]}
       />
-      <Container className="pb-sec">
+      <Container>
         <header className="grid items-center gap-[18px] pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
           <div>
             <h1 className="max-w-[14ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
@@ -207,24 +206,23 @@ export default function FAQPage() {
             </section>
           ))}
         </div>
-
-        <section className="grid items-end gap-5 bg-plinth p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:gap-10">
-          <div>
-            <h2 className="text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]">
-              Still <i>deciding?</i>
-            </h2>
-            <p className="mt-3 max-w-[60ch] text-sm leading-6 text-ink-2">
-              Send the product link and tell us what you need to see or understand. We will answer
-              from the details available for that piece.
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/contact?subject=product-question">
-              Ask about a piece <ArrowRight aria-hidden="true" />
-            </Link>
-          </Button>
-        </section>
       </Container>
+
+      <TorchBand
+        id="deciding-heading"
+        heading={
+          <>
+            Still <i>deciding?</i>
+          </>
+        }
+        line="Send the product link and tell us what you need to see or understand."
+        image={{
+          src: '/images/studio/opal-to-the-torch.jpg',
+          alt: 'A hand holding a rough opal up to a small torch in a dark room',
+          position: '50% 55%',
+        }}
+        action={{ href: '/contact?subject=product-question', label: 'Ask about a piece' }}
+      />
     </MarketingShell>
   )
 }

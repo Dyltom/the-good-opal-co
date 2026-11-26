@@ -5,6 +5,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { ProductCard } from '@/components/product'
 import { toProductCardProduct } from '@/components/product/RelatedProducts'
+import { TorchBand } from '@/components/sections/TorchBand'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { getPayload } from '@/lib/payload'
@@ -70,7 +71,7 @@ export default async function GiftsPage() {
           { name: 'Gifts', url: '/gifts' },
         ]}
       />
-      <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
+      <Container className="pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
         <PageHeader
           title="Opal gifts, by budget."
           description="Natural Australian opals and opal jewellery, grouped by budget. Every order ships tracked from Cowra NSW."
@@ -121,30 +122,26 @@ export default async function GiftsPage() {
           )
         })}
 
-        <section className="mt-12 grid gap-6 border-t border-rule pt-8 md:mt-[clamp(48px,5vw,72px)] md:grid-cols-2 md:gap-[clamp(24px,4vw,72px)]">
-          <div>
-            <h2 className="text-[1.75rem] leading-[1.1] md:text-[2rem]">Not sure which one?</h2>
-            <p className="mt-3 max-w-[60ch] text-sm leading-6 text-ink-2">
-              Tell us who it is for and your budget, and we will suggest a few pieces. Design a ring
-              around one of our opals, or give a gift voucher and let them choose.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-start gap-x-6 gap-y-2 md:justify-end md:pt-2">
-            <Link href={`/contact?message=${encodeURIComponent(GIFT_MESSAGE)}`} className={linkClass}>
-              Ask for suggestions
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link href="/services/design" className={linkClass}>
-              Design a ring
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link href="/gift-vouchers" className={linkClass}>
-              Give a gift voucher
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </div>
-        </section>
       </Container>
+
+      <TorchBand
+        id="unsure-heading"
+        heading={
+          <>
+            Not sure <i>which one?</i>
+          </>
+        }
+        line="Tell us who it is for and your budget, and we will suggest a few pieces."
+        image={{
+          src: '/images/customs/custom-3.jpg',
+          alt: 'Six polished Australian opals with blue, green and pink colour play',
+        }}
+        action={{ href: `/contact?message=${encodeURIComponent(GIFT_MESSAGE)}`, label: 'Ask for suggestions' }}
+        links={[
+          { href: '/gift-vouchers', label: 'Give a gift voucher' },
+          { href: '/services/design', label: 'Design a ring' },
+        ]}
+      />
     </MarketingShell>
   )
 }
