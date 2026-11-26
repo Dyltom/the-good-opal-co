@@ -28,6 +28,7 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { AdoptBuilderCandidateButton as AdoptBuilderCandidateButton_63e639818790ace19eb4d1ea2496f0a0 } from '@/components/payload/AdoptBuilderCandidateButton'
 import { HelpLinks as HelpLinks_766071d33a087fb2f9f338ae9b2cbd0c } from '@/components/payload/help/HelpLinks'
+import { MyPostLabelsButton as MyPostLabelsButton_21bd1661f390388642c29c0b4c95003d } from '@/components/payload/MyPostLabelsButton'
 import { DesignConfigurationSummary as DesignConfigurationSummary_131dce4395534b26fa68a11e4f32e8ac } from '@/components/payload/DesignConfigurationSummary'
 import { DollarAmountCell as DollarAmountCell_f5bdac0c0a82afef58b4366699f8f58f } from '@/components/payload/DollarAmountField'
 import { DollarAmountField as DollarAmountField_f5bdac0c0a82afef58b4366699f8f58f } from '@/components/payload/DollarAmountField'
@@ -73,6 +74,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@/components/payload/AdoptBuilderCandidateButton#AdoptBuilderCandidateButton": AdoptBuilderCandidateButton_63e639818790ace19eb4d1ea2496f0a0,
   "@/components/payload/help/HelpLinks#HelpLinks": HelpLinks_766071d33a087fb2f9f338ae9b2cbd0c,
+  "@/components/payload/MyPostLabelsButton#MyPostLabelsButton": MyPostLabelsButton_21bd1661f390388642c29c0b4c95003d,
   "@/components/payload/DesignConfigurationSummary#DesignConfigurationSummary": DesignConfigurationSummary_131dce4395534b26fa68a11e4f32e8ac,
   "@/components/payload/DollarAmountField#DollarAmountCell": DollarAmountCell_f5bdac0c0a82afef58b4366699f8f58f,
   "@/components/payload/DollarAmountField#DollarAmountField": DollarAmountField_f5bdac0c0a82afef58b4366699f8f58f,
