@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { isShippingCountry } from '@/lib/constants/shipping'
+import { paypalConfigured } from '@/lib/paypal'
+import { isPayPalNotice, PAYPAL_NOTICES } from '@/lib/paypal-order'
 
 export const metadata = {
   title: 'Your bag | The Good Opal Co',
@@ -13,7 +15,13 @@ export const metadata = {
   robots: { index: false, follow: false },
 }
 
-export default async function CartPage() {
+export default async function CartPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ paypal?: string }>
+}) {
+  const { paypal } = await searchParams
+  const notice = isPayPalNotice(paypal) ? PAYPAL_NOTICES[paypal] : null
   const cart = await getCart()
   const savedCountry = (await cookies()).get('shipping-country')?.value
   const initialCountry = isShippingCountry(savedCountry) ? savedCountry : 'AU'
@@ -27,6 +35,11 @@ export default async function CartPage() {
               <h1 className="border-b border-rule pb-4 font-serif text-[clamp(30px,3.4vw,44px)] leading-[1.04] tracking-[-0.02em] text-ink">
                 Your bag is empty
               </h1>
+              {notice ? (
+                <p role="status" className="mt-5 max-w-2xl bg-plinth px-4 py-3 text-sm leading-6 text-ink">
+                  {notice}
+                </p>
+              ) : null}
               <p className="mt-5 max-w-md text-[14.5px] leading-[1.6] text-ink-2">
                 Browse available opals and jewellery, then add a piece when you are ready.
               </p>
@@ -44,7 +57,12 @@ export default async function CartPage() {
             </div>
           </div>
         ) : (
-          <CartPageContent initialCart={cart} initialCountry={initialCountry} />
+          <CartPageContent
+            initialCart={cart}
+            initialCountry={initialCountry}
+            paypalEnabled={paypalConfigured()}
+            notice={notice}
+          />
         )}
       </MarketingShell>
     </PageTransition>

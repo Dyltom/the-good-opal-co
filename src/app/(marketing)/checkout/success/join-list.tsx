@@ -2,11 +2,12 @@
 
 import { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
-import { joinListFromCheckout, type JoinListState } from './actions'
+import type { JoinListState } from '@/lib/newsletter/checkout-buyer'
+import { joinListFromCheckout } from './actions'
 
-export function JoinList({ sessionId }: { sessionId: string }) {
+export function JoinList({ reference }: { reference: string }) {
   const [state, join, pending] = useActionState<JoinListState>(
-    () => joinListFromCheckout(sessionId),
+    () => joinListFromCheckout(reference),
     { status: 'idle', message: '' }
   )
 

@@ -14,6 +14,7 @@ const config: Config = {
         accent: '#7a5c24',
         destructive: '#a8321f',
         success: '#3d6b35',
+        paypal: { DEFAULT: '#ffc439', hover: '#f2ba36', blue: '#003087', sky: '#009cde' },
       },
       borderColor: {
         DEFAULT: 'rgb(28 24 19 / 0.12)',

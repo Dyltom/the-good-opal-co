@@ -48,7 +48,7 @@ export default function PrivacyPolicyPage() {
               <ul className="mb-4 list-disc space-y-1.5 pl-6">
                 <li>Name and contact information (email address, phone number)</li>
                 <li>Billing and shipping addresses</li>
-                <li>Payment information (processed securely through Stripe)</li>
+                <li>Payment information (processed securely through Stripe or PayPal)</li>
                 <li>Order history and messages you send us</li>
               </ul>
 
@@ -102,7 +102,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="mb-4 list-disc space-y-1.5 pl-6">
                 <li>
-                  <strong>Service Providers:</strong> Including Stripe for payment processing,
+                  <strong>Service Providers:</strong> Including Stripe and PayPal for payment processing,
                   shipping companies for order delivery, and email service providers
                 </li>
                 <li>
@@ -128,7 +128,7 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="mb-4 list-disc space-y-1.5 pl-6">
                 <li>HTTPS/TLS for data transmitted between your browser and the site</li>
-                <li>Secure payment processing through Stripe</li>
+                <li>Secure payment processing through Stripe and PayPal</li>
                 <li>Restricted administrative access to order and customer records</li>
                 <li>Managed hosting, database, storage, and email providers</li>
               </ul>
@@ -198,7 +198,7 @@ export default function PrivacyPolicyPage() {
                 recognise you on a later day or work out who you are.
               </p>
               <p className="mb-4">
-                When a Stripe checkout is paid or expires unpaid, we record its value and items
+                When a Stripe or PayPal checkout is paid or expires unpaid, we record its value and items
                 against the same code. If a checkout expires unpaid and you had already typed your
                 email address into Stripe, that address is kept with the record so we can follow up
                 on the order. If you answer our short question about why you left checkout, we keep
@@ -231,7 +231,7 @@ export default function PrivacyPolicyPage() {
                 8. International Data Transfers
               </h2>
               <p className="mb-4">
-                Stripe, OVHcloud, Google, Microsoft, Resend, and other service providers may process
+                Stripe, PayPal, OVHcloud, Google, Microsoft, Resend, and other service providers may process
                 information outside Australia. Processing locations depend on each provider&apos;s
                 infrastructure and may change. We assess the providers we use and handle overseas
                 disclosures as required by applicable privacy law, but we do not claim that every
@@ -289,6 +289,9 @@ export default function PrivacyPolicyPage() {
               <ul className="mb-4 list-disc space-y-1.5 pl-6">
                 <li>
                   <strong>Stripe:</strong> Hosted checkout and payment processing
+                </li>
+                <li>
+                  <strong>PayPal:</strong> PayPal checkout and payment processing
                 </li>
                 <li>
                   <strong>OVHcloud:</strong> Website hosting

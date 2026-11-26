@@ -1,7 +1,6 @@
-import type Stripe from 'stripe'
 import { getPayload } from '@/lib/payload'
 import type { InsightEvent } from '@/types/payload-types'
-import { INSIGHTS_VISITOR_METADATA_KEY, type ServerInsightEvent } from './events'
+import type { ServerInsightEvent } from './events'
 import { normalisePath } from './ingest'
 
 export type InsightEventData = Omit<InsightEvent, 'id'>
@@ -24,33 +23,37 @@ export interface CheckoutInsightItem {
   amount: number
 }
 
+export interface CheckoutInsightSource {
+  reference: string
+  visitor?: string | undefined
+  value: number
+  email?: string | undefined
+}
+
 export async function recordCheckoutInsight({
   name,
-  session,
+  checkout,
   occurredAt,
   items,
 }: {
   name: Exclude<ServerInsightEvent, 'server_error'>
-  session: Stripe.Checkout.Session
+  checkout: CheckoutInsightSource
   occurredAt: Date
   items: CheckoutInsightItem[]
 }): Promise<void> {
-  const email =
-    name === 'checkout_abandoned'
-      ? (session.customer_details?.email ?? session.customer_email ?? undefined)
-      : undefined
+  const email = name === 'checkout_abandoned' ? checkout.email : undefined
   try {
     await saveInsight({
       name,
       path: '/checkout',
       occurredAt: occurredAt.toISOString(),
-      visitor: session.metadata?.[INSIGHTS_VISITOR_METADATA_KEY] || undefined,
-      value: (session.amount_total ?? 0) / 100,
+      visitor: checkout.visitor || undefined,
+      value: checkout.value,
       detail: email ? { items, email } : { items },
-      dedupeKey: `${name}:${session.id}`,
+      dedupeKey: `${name}:${checkout.reference}`,
     })
   } catch (error) {
-    console.error(`Insight event ${name} not recorded for ${session.id}:`, error)
+    console.error(`Insight event ${name} not recorded for ${checkout.reference}:`, error)
   }
 }
 

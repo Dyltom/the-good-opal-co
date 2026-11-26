@@ -12,7 +12,10 @@ import { getPayload } from '@/lib/payload'
 import type { CartItem } from '@/lib/cart'
 import { isPaidCheckoutStatus, shouldFinalizeCheckout } from '@/lib/stripe-fulfillment'
 import { isGiftVoucherPurchaseSession } from '@/lib/gift-voucher-purchase'
-import { surveyOptInFor } from '@/lib/customer-reviews'
+import { surveyOptInFor, surveyOptInForOrder } from '@/lib/customer-reviews'
+import { getOrder, isPayPalOrderId, paypalReference } from '@/lib/paypal'
+import { paypalRetryPath } from '@/lib/paypal-order'
+import type { Order } from '@/types/payload-types'
 
 export const metadata = {
   title: 'Checkout Status | The Good Opal Co',
@@ -21,11 +24,23 @@ export const metadata = {
 }
 
 interface Props {
-  searchParams: Promise<{ session_id?: string }>
+  searchParams: Promise<{ session_id?: string; paypal?: string }>
 }
 
 export default async function CheckoutSuccessPage({ searchParams }: Props) {
-  const { session_id } = await searchParams
+  const { session_id, paypal } = await searchParams
+
+  if (paypal !== undefined) {
+    return (
+      <MarketingShell>
+        <div className="px-gut pb-sec pt-8 md:pt-14">
+          <div className="mx-auto max-w-[640px]">
+            <PayPalResult orderId={paypal} />
+          </div>
+        </div>
+      </MarketingShell>
+    )
+  }
 
   if (!session_id) {
     redirect('/store')
@@ -114,7 +129,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
                   orderConfirmed={orderConfirmed}
                 />
               )}
-              {session.customer_details?.email ? <JoinList sessionId={session.id} /> : null}
+              {session.customer_details?.email ? <JoinList reference={session.id} /> : null}
               {orderConfirmed && !isGiftVoucherPurchaseSession(session) ? (
                 <SurveyOptIn session={session} />
               ) : null}
@@ -124,6 +139,89 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
       </div>
     </MarketingShell>
   )
+}
+
+async function findPayPalOrder(reference: string): Promise<Order | null> {
+  try {
+    const payload = await getPayload()
+    const result = await payload.find({
+      collection: 'orders',
+      where: { stripeSessionId: { equals: reference } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    return result.docs[0] ?? null
+  } catch (err) {
+    console.error('Failed to verify backend order:', err)
+    return null
+  }
+}
+
+async function payPalStatus(orderId: string): Promise<string | undefined> {
+  try {
+    return (await getOrder(orderId)).status
+  } catch (err) {
+    console.error('Failed to verify PayPal order:', err)
+    return undefined
+  }
+}
+
+async function PayPalResult({ orderId }: { orderId: string }) {
+  if (!isPayPalOrderId(orderId)) {
+    return (
+      <ErrorState error="We could not find that PayPal payment. Please contact support if you were charged." />
+    )
+  }
+  const reference = paypalReference(orderId)
+  const order = await findPayPalOrder(reference)
+  if (order) {
+    const optIn = surveyOptInForOrder(order)
+    return (
+      <>
+        <ClearCartOnSuccess
+          purchase={{
+            transactionId: reference,
+            items: order.items.map((item) => ({
+              productId: item.productId,
+              slug: item.slug,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+            total: order.total,
+            shipping: order.shipping ?? 0,
+            tax: order.tax ?? 0,
+          }}
+        />
+        <SuccessState email={order.customer.email} orderConfirmed />
+        <JoinList reference={reference} />
+        {optIn ? <CustomerReviewsOptIn optIn={optIn} /> : null}
+      </>
+    )
+  }
+
+  const status = await payPalStatus(orderId)
+  if (status === 'COMPLETED') {
+    return (
+      <>
+        <OrderFinalizationRefresh pending />
+        <SuccessState orderConfirmed={false} />
+        <p className="mt-6 border-y border-rule py-3 text-sm text-ink-2">
+          PayPal has your payment. We will email you to confirm the order, so there is no need to pay
+          again.
+        </p>
+      </>
+    )
+  }
+  if (status === 'APPROVED') {
+    return (
+      <ErrorState
+        error="PayPal approved the payment but we have not taken it yet. Finish the payment below, or return to your bag. You will not be charged twice."
+        retryHref={paypalRetryPath(orderId)}
+      />
+    )
+  }
+  return <ErrorState error="This PayPal payment was not completed. Nothing was charged." />
 }
 
 function SurveyOptIn({ session }: { session: Stripe.Checkout.Session }) {
@@ -233,7 +331,7 @@ function GiftVoucherState({
   )
 }
 
-function ErrorState({ error }: { error: string }) {
+function ErrorState({ error, retryHref }: { error: string; retryHref?: string }) {
   const supportEmail = process.env.CONTACT_EMAIL ?? ''
   return (
     <>
@@ -246,7 +344,12 @@ function ErrorState({ error }: { error: string }) {
         </a>
       </p>
       <div className="mt-6 flex flex-wrap gap-2">
-        <Button asChild>
+        {retryHref ? (
+          <Button asChild>
+            <a href={retryHref}>Finish paying with PayPal</a>
+          </Button>
+        ) : null}
+        <Button variant={retryHref ? 'ghost' : 'default'} asChild>
           <Link href="/cart">Return to your bag</Link>
         </Button>
         <Button variant="ghost" asChild>

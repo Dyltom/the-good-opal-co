@@ -204,14 +204,28 @@ type ReleaseReason =
   | 'async-payment-failed'
   | 'checkout-create-failed'
   | 'checkout-replaced'
+  | 'checkout-cancelled'
+  | 'payment-declined'
+  | 'payment-mismatch'
+  | 'shipping-country-mismatch'
+
+export async function findReservationByReference(
+  reference: string
+): Promise<InventoryReservation | null> {
+  const payload = await getPayload()
+  const result = await payload.find({
+    collection: 'inventory-reservations',
+    where: { stripeSessionId: { equals: reference } },
+    limit: 1,
+    overrideAccess: true,
+  })
+  return result.docs[0] ?? null
+}
 
 async function releaseInventoryReservationOnce(
-  session: Stripe.Checkout.Session,
+  token: string,
   reason: ReleaseReason
 ): Promise<InventoryReservation | null> {
-  const token = reservationTokenFromSession(session)
-  if (!token) return null
-
   const payload = await getPayload()
   const transactionID = await payload.db.beginTransaction()
   if (transactionID === null) throw new Error('Database transactions are required for checkout')
@@ -267,15 +281,16 @@ async function releaseInventoryReservationOnce(
 }
 
 export async function releaseInventoryReservation(
-  session: Stripe.Checkout.Session,
+  token: string,
   reason: ReleaseReason
 ): Promise<InventoryReservation | null> {
-  return withSerializationRetry(() => releaseInventoryReservationOnce(session, reason))
+  return withSerializationRetry(() => releaseInventoryReservationOnce(token, reason))
 }
 
-async function markReservationPaymentPendingOnce(session: Stripe.Checkout.Session): Promise<void> {
-  const token = reservationTokenFromSession(session)
-  if (!token) return
+async function markReservationPaymentPendingOnce(
+  token: string,
+  unexpiredAt: Date | null
+): Promise<boolean> {
   const payload = await getPayload()
   const transactionID = await payload.db.beginTransaction()
   if (transactionID === null) throw new Error('Database transactions are required for checkout')
@@ -290,7 +305,10 @@ async function markReservationPaymentPendingOnce(session: Stripe.Checkout.Sessio
       overrideAccess: true,
     })
     const reservation = result.docs[0]
-    if (reservation?.status === 'active') {
+    const claimable =
+      reservation?.status === 'active' &&
+      (!unexpiredAt || new Date(reservation.expiresAt).getTime() > unexpiredAt.getTime())
+    if (claimable) {
       await payload.update({
         collection: 'inventory-reservations',
         id: reservation.id,
@@ -300,14 +318,17 @@ async function markReservationPaymentPendingOnce(session: Stripe.Checkout.Sessio
       })
     }
     await payload.db.commitTransaction(transactionID)
+    return claimable || reservation?.status === 'pending-payment'
   } catch (error) {
     await payload.db.rollbackTransaction(transactionID)
     throw error
   }
 }
 
-export async function markReservationPaymentPending(
-  session: Stripe.Checkout.Session
-): Promise<void> {
-  return withSerializationRetry(() => markReservationPaymentPendingOnce(session))
+export async function markReservationPaymentPending(token: string): Promise<void> {
+  await withSerializationRetry(() => markReservationPaymentPendingOnce(token, null))
+}
+
+export async function holdReservationForCapture(token: string, now = new Date()): Promise<boolean> {
+  return withSerializationRetry(() => markReservationPaymentPendingOnce(token, now))
 }

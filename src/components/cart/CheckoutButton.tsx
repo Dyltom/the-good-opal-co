@@ -2,10 +2,11 @@
 
 import { useCallback, useId, useRef, useState, useSyncExternalStore, useTransition } from 'react'
 import { Lock } from 'lucide-react'
-import { createCheckoutSession } from '@/app/(marketing)/checkout/actions'
+import { createCheckoutSession, createPayPalCheckout } from '@/app/(marketing)/checkout/actions'
 import { Button } from '@/components/ui/button'
 import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics'
 import type { Cart } from '@/lib/cart'
+import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import {
   isShippingCountry,
   SHIPPING_COUNTRIES,
@@ -136,6 +137,92 @@ export function CheckoutButton({
       {restriction || error ? (
         <p role="alert" className="mt-2 text-sm text-destructive">
           {restriction ?? error}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function PayPalWordmark() {
+  return (
+    <svg viewBox="0 0 92 28" className="h-6 w-auto" aria-hidden="true" focusable="false">
+      <text
+        x="0"
+        y="22"
+        fontFamily="Verdana, Arial, sans-serif"
+        fontSize="23"
+        fontStyle="italic"
+        fontWeight="700"
+      >
+        <tspan className="fill-paypal-blue">Pay</tspan>
+        <tspan className="fill-paypal-sky">Pal</tspan>
+      </text>
+    </svg>
+  )
+}
+
+interface PayPalCheckoutButtonProps {
+  cart: Cart
+  country: ShippingCountry
+  contact?: CheckoutEmail | undefined
+  className?: string
+}
+
+export function PayPalCheckoutButton({ cart, country, contact, className }: PayPalCheckoutButtonProps) {
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string>()
+  const attemptId = useRef<string>(null)
+  const restriction = shippingRestriction(country, cart.items)
+  const pricing = calculateCheckoutPricing(cart.items, country)
+  const shipsBy = pricing.shippedSubtotal > 0 ? pricing.shippingOptions[0]?.label : undefined
+
+  const startCheckout = () => {
+    setError(undefined)
+    attemptId.current ??= crypto.randomUUID()
+    const checkoutAttemptId = attemptId.current
+    startTransition(async () => {
+      trackBeginCheckout(cart.items, cart.total)
+      const result = await createPayPalCheckout({
+        country,
+        checkoutAttemptId,
+        email: contact?.email.trim() || undefined,
+        marketingConsent: contact?.marketingConsent === true,
+        js: '1',
+      })
+      if (result.success && result.url) {
+        window.location.assign(result.url)
+        return
+      }
+      attemptId.current = null
+      const message = result.error ?? 'PayPal could not be started. Please try again.'
+      trackCheckoutError(message)
+      setError(message)
+    })
+  }
+
+  return (
+    <div className={cn('min-w-0', className)}>
+      <button
+        type="button"
+        onClick={startCheckout}
+        disabled={isPending || cart.items.length === 0 || restriction !== null}
+        aria-busy={isPending}
+        aria-label="Pay with PayPal"
+        className="flex h-12 w-full items-center justify-center rounded-sm bg-paypal transition-colors hover:bg-paypal-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {isPending ? (
+          <span className="text-sm font-medium text-paypal-blue">Opening PayPal</span>
+        ) : (
+          <PayPalWordmark />
+        )}
+      </button>
+      <p className="mt-2 text-[12.5px] leading-5 text-ink-2">
+        {shipsBy ? `PayPal orders ship by ${shipsBy}; codes` : 'Codes'} and gift vouchers apply at
+        card checkout.
+      </p>
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-destructive">
+          {error}
         </p>
       ) : null}
     </div>

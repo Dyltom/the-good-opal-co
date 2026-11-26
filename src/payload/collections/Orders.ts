@@ -484,6 +484,7 @@ export const Orders: CollectionConfig = {
           operation === 'update' &&
           data?.status === 'refunded' &&
           originalDoc?.status !== 'refunded' &&
+          originalDoc?.source !== 'paypal' &&
           !context['stripeRefundReconciliation']
         ) {
           throw new Error(

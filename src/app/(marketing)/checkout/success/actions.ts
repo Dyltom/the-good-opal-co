@@ -1,42 +1,50 @@
 'use server'
 
 import Stripe from 'stripe'
-import { getNewsletterService } from '@/lib/newsletter/service'
+import {
+  JOIN_LIST_FAILED,
+  subscribeCheckoutBuyer,
+  type JoinListState,
+} from '@/lib/newsletter/checkout-buyer'
+import { getPayload } from '@/lib/payload'
+import { isPayPalOrderId, PAYPAL_REFERENCE_PREFIX } from '@/lib/paypal'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import { isPaidCheckoutStatus } from '@/lib/stripe-fulfillment'
 
-export interface JoinListState {
-  status: 'idle' | 'joined' | 'error'
-  message: string
-}
-
 const CHECKOUT_SESSION_ID = /^cs_(test|live)_[A-Za-z0-9]+$/
 
-export async function joinListFromCheckout(sessionId: string): Promise<JoinListState> {
-  const failed: JoinListState = {
-    status: 'error',
-    message: 'We could not add you just now. Use the sign-up form at the bottom of the page instead.',
+async function joinListFromPayPalOrder(reference: string): Promise<JoinListState> {
+  if (!isPayPalOrderId(reference.slice(PAYPAL_REFERENCE_PREFIX.length))) return JOIN_LIST_FAILED
+  try {
+    const payload = await getPayload()
+    const result = await payload.find({
+      collection: 'orders',
+      where: { stripeSessionId: { equals: reference } },
+      limit: 1,
+      overrideAccess: true,
+    })
+    const order = result.docs[0]
+    if (!order) return JOIN_LIST_FAILED
+    return subscribeCheckoutBuyer(order.customer.email, order.customer.name || undefined)
+  } catch (error) {
+    console.error('Checkout newsletter opt-in failed:', error)
+    return JOIN_LIST_FAILED
   }
+}
+
+export async function joinListFromCheckout(reference: string): Promise<JoinListState> {
+  if (reference.startsWith(PAYPAL_REFERENCE_PREFIX)) return joinListFromPayPalOrder(reference)
   const stripeSecretKey = getConfiguredStripeSecretKey()
-  if (!CHECKOUT_SESSION_ID.test(sessionId) || !stripeSecretKey) return failed
+  if (!CHECKOUT_SESSION_ID.test(reference) || !stripeSecretKey) return JOIN_LIST_FAILED
 
   try {
     const stripe = new Stripe(stripeSecretKey, { apiVersion: '2026-06-24.dahlia' })
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    const session = await stripe.checkout.sessions.retrieve(reference)
     const email = session.customer_details?.email ?? session.customer_email
-    if (!isPaidCheckoutStatus(session.payment_status) || !email) return failed
-
-    const result = await getNewsletterService().subscribe(email, {
-      name: session.customer_details?.name ?? undefined,
-      source: 'checkout',
-      skipConfirmation: true,
-      tags: ['buyer'],
-    })
-    if (result.success) return { status: 'joined', message: 'You are on the list. A welcome email is on its way.' }
-    if (/already subscribed/i.test(result.message)) return { status: 'joined', message: 'You are already on the list.' }
-    return failed
+    if (!isPaidCheckoutStatus(session.payment_status) || !email) return JOIN_LIST_FAILED
+    return subscribeCheckoutBuyer(email, session.customer_details?.name ?? undefined)
   } catch (error) {
     console.error('Checkout newsletter opt-in failed:', error)
-    return failed
+    return JOIN_LIST_FAILED
   }
 }

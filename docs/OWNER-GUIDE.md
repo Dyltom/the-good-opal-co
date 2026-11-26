@@ -116,7 +116,8 @@ Here is what happens, in order:
    - You get an email at the shop's contact address: "New order - OPAL-...". It lists the items, the buyer and the delivery address, and has a link to the order in the admin. Replying to it goes straight to the buyer.
    - The buyer is added to, or updated in, **Customers**.
    - The piece now shows as **Sold**.
-6. Rarely, an order arrives with status **Pending** and your email says "Inventory review required". This means the stock did not line up as expected (for example, two people paid for the same piece). Check the order's notes and stock before posting anything, and ask Dylan if it is unclear.
+6. If they choose **PayPal** instead, the site sends them to PayPal, which collects their payment and PayPal delivery address. The piece is held the same way. When they come back from PayPal the site takes the payment and the order appears just like a card order, with **Source** set to paypal. PayPal orders use the first postage option, and discount codes and gift vouchers only work at card checkout.
+7. Rarely, an order arrives with status **Pending** and your email says "Inventory review required". This means the stock did not line up as expected (for example, two people paid for the same piece). Check the order's notes and stock before posting anything, and ask Dylan if it is unclear.
 
 A piece with an open checkout hold cannot be deleted.
 
@@ -170,6 +171,8 @@ Step by step:
    - **Add a note** to the order saying why it was refunded.
 
 The admin will not let you set an order to Refunded by hand, so after a partial refund the order keeps its old status. Refund in Stripe first and let the order update itself.
+
+**PayPal orders** are refunded in your PayPal business account, not Stripe. Open the payment in PayPal (the capture ID is in the order's **Notes**), click **Refund**, then set the order to **Refunded** in the admin yourself, put stock back if the piece is for sale again, and add a note saying why. PayPal orders are the only ones you can set to Refunded by hand.
 
 **Deposits for custom work** are refunded in Stripe the same way. A full refund marks the quote's deposit as refunded. Any deposit refund moves the enquiry back to **Accepted**, so set it to **Declined** or **Completed** afterwards. Custom work and its deposit are not covered by change-of-mind returns, but you can still choose to refund one.
 
@@ -335,7 +338,7 @@ Your copies go to the shop's contact email address. To change that address, ask 
 - **Don't colour-edit stone photos or videos.** No filters, tints, saturation or "enhance". The stone must look as it does in white light.
 - **Don't change the slug of a live piece** without asking Dylan. It breaks links people have shared and saved, and some older pieces' photos are matched by slug.
 - **Don't publish anything that isn't true.** Every review must be real and word for word. Every certificate, origin, weight, discount and "one of a kind" claim must be accurate.
-- **Don't set Refunded by hand.** Refund in Stripe and let the order update itself.
+- **Don't set Refunded by hand** on a card order. Refund in Stripe and let the order update itself. PayPal orders are the exception: refund in PayPal, then set Refunded.
 - **Don't delete pieces or orders.** Archive a piece instead. Orders are your records. A deleted piece goes to the trash first: open Products, click **Trash** above the list, open the piece and choose **Restore**.
 - **Don't change the raw opal designer settings.**
 - **Don't share quote links.** Each one belongs to one customer.

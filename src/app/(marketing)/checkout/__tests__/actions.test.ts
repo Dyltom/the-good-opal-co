@@ -364,10 +364,7 @@ describe('checkout Server Action', () => {
       url: 'https://checkout.stripe.test/session',
     })
     expect(expireStripeSession).toHaveBeenCalledWith('cs_test_earlier')
-    expect(releaseInventoryReservation).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'cs_test_earlier' }),
-      'checkout-replaced'
-    )
+    expect(releaseInventoryReservation).toHaveBeenCalledWith('earlier-attempt', 'checkout-replaced')
     expect(order).toEqual(['release', 'reserve'])
     expect(setCheckoutHold).toHaveBeenCalledWith(
       'd42cead1-0366-4f5f-a173-5f4c334c9513',
