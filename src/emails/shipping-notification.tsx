@@ -1,4 +1,4 @@
-import { EmailFrame, emailColors, emailText } from './email-frame'
+import { EmailButton, EmailFrame, emailColors, emailText } from './email-frame'
 
 interface ShippingNotificationEmailProps {
   baseUrl: string
@@ -7,6 +7,7 @@ interface ShippingNotificationEmailProps {
   orderNumber: string
   supportEmail: string
   trackingNumber: string
+  trackingUrl: string
 }
 
 const label = { ...emailText.eyebrow, margin: '0 0 4px' }
@@ -19,6 +20,7 @@ export function ShippingNotificationEmail({
   orderNumber,
   supportEmail,
   trackingNumber,
+  trackingUrl,
 }: ShippingNotificationEmailProps) {
   const firstName = customerName.trim().split(/\s+/)[0] || 'there'
 
@@ -28,23 +30,25 @@ export function ShippingNotificationEmail({
       <h1 style={emailText.heading}>Your opal is on its way, {firstName}.</h1>
       <p style={emailText.body}>Your order has left us. Here are the details to follow it.</p>
 
-      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ backgroundColor: emailColors.well, margin: '24px 0' }}>
+      <table width="100%" cellPadding="0" cellSpacing="0" role="presentation" style={{ backgroundColor: emailColors.well, margin: '24px 0 0' }}>
         <tbody>
           <tr>
             <td style={{ padding: '20px 22px 4px' }}>
               <p style={label}>Order number</p>
-              <p style={{ ...value, fontFamily: 'Arial, sans-serif', overflowWrap: 'anywhere' }}>{orderNumber}</p>
+              <p style={{ ...value, overflowWrap: 'anywhere' }}>{orderNumber}</p>
               <p style={label}>Carrier</p>
               <p style={value}>{carrier}</p>
               <p style={label}>Tracking number</p>
-              <p style={{ ...value, fontFamily: 'Arial, sans-serif', fontWeight: 700, overflowWrap: 'anywhere' }}>{trackingNumber}</p>
+              <p style={{ ...value, fontWeight: 700, overflowWrap: 'anywhere' }}>{trackingNumber}</p>
             </td>
           </tr>
         </tbody>
       </table>
 
+      <EmailButton href={trackingUrl}>Track your parcel</EmailButton>
+
       <p style={emailText.body}>
-        Enter the tracking number on the {carrier} website. Tracking can take a few hours to show
+        Tracking can take a few hours to show
         the first scan after dispatch.
       </p>
       {baseUrl ? (

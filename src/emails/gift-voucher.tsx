@@ -57,7 +57,7 @@ export function GiftVoucherEmail({
           <tr>
             <td style={{ padding: '18px 20px' }}>
               <p style={{ ...emailText.eyebrow, margin: '0 0 4px' }}>Voucher code</p>
-              <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '22px', fontWeight: 700, letterSpacing: '0.08em', margin: '0 0 12px' }}>{code}</p>
+              <p style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '0.08em', margin: '0 0 12px' }}>{code}</p>
               <p style={{ ...emailText.small, margin: 0 }}>
                 Value {formatCurrency(amount, 'AUD')} AUD. Valid until {formatVoucherDate(expiresAt)}.
               </p>

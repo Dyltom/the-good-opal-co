@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { CustomQuoteDepositConfirmationEmail } from '@/emails/custom-quote-deposit-confirmation'
+import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 
 export async function sendQuoteDepositConfirmation(quoteId: number): Promise<void> {
@@ -26,6 +27,7 @@ export async function sendQuoteDepositConfirmation(quoteId: number): Promise<voi
       to: quote.customerEmail,
       subject: `Deposit confirmed – ${quote.quoteNumber}`,
       react: CustomQuoteDepositConfirmationEmail({
+        baseUrl: APP_URL,
         depositAmountCents: quote.depositAmountCents,
         quoteNumber: quote.quoteNumber,
         supportEmail: process.env['CONTACT_EMAIL'] ?? '',

@@ -1,5 +1,6 @@
 import { formatCurrency } from '@/lib/utils'
-import { EmailFrame, emailColors, emailText } from './email-frame'
+import { ACCEPTED_PAYMENT_METHODS } from '@/lib/constants/payment'
+import { EmailButton, EmailFrame, emailColors, emailText } from './email-frame'
 
 export interface SavedBagLine {
   name: string
@@ -21,18 +22,9 @@ function absolute(baseUrl: string, path: string | undefined): string | undefined
   return path.startsWith('/') ? `${baseUrl}${path}` : path
 }
 
-export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: SavedBagEmailProps) {
-  const button = {
-    backgroundColor: emailColors.ink,
-    color: emailColors.paper,
-    display: 'inline-block',
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '15px',
-    fontWeight: 700,
-    padding: '14px 26px',
-    textDecoration: 'none',
-  }
+const paymentMethods = `${ACCEPTED_PAYMENT_METHODS.slice(0, -1).join(', ')} or ${ACCEPTED_PAYMENT_METHODS.at(-1)}`
 
+export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: SavedBagEmailProps) {
   return (
     <EmailFrame
       preview={
@@ -51,8 +43,7 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: 
         {unsubscribeUrl
           ? 'You left these pieces in your bag, and they were still available when we sent this. '
           : 'Here is your bag, ready for when you are. '}
-        Pieces are not held until you pay, and most of our opals are one of a kind, so they go to
-        whoever checks out first.
+        Pieces are not held until you pay, and most are one of a kind.
       </p>
 
       <table
@@ -111,11 +102,7 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: 
         </tbody>
       </table>
 
-      <p style={{ margin: '0 0 12px' }}>
-        <a href={`${baseUrl}/cart`} style={button}>
-          Return to your bag
-        </a>
-      </p>
+      <EmailButton href={`${baseUrl}/cart`}>Return to your bag</EmailButton>
       <p style={{ ...emailText.small, margin: '0 0 26px' }}>
         Your bag stays in the browser you saved it from for a week. On another device, tap a piece
         above to add it again.
@@ -123,16 +110,13 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: 
 
       <h2 style={emailText.subheading}>When you are ready</h2>
       <ul style={{ ...emailText.body, margin: '0 0 14px', paddingLeft: '20px' }}>
+        <li style={{ marginBottom: '6px' }}>Pay with {paymentMethods}.</li>
         <li style={{ marginBottom: '6px' }}>
-          Pay by card, Apple Pay, Google Pay or Klarna on Stripe&apos;s secure checkout.
-        </li>
-        <li style={{ marginBottom: '6px' }}>
-          Tracked Australia Post delivery. Australian orders over $100 are insured and need a
-          signature.
+          Tracked Australia Post delivery. AU orders over $100 are insured and signed for.
         </li>
         <li>
           Read our{' '}
-          <a href={`${baseUrl}/returns`} style={{ color: emailColors.link }}>
+          <a href={`${baseUrl}/returns`} style={{ color: emailColors.ink }}>
             returns policy
           </a>{' '}
           before you buy.
@@ -144,7 +128,7 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: 
         <p style={{ ...emailText.small, marginTop: '26px' }}>
           You ticked the box at checkout on goodopalco.com asking for a reminder about your bag and
           for new pieces and offers. Sent by The Good Opal Co, Cowra NSW 2794, Australia.{' '}
-          <a href={unsubscribeUrl} style={{ color: emailColors.link }}>
+          <a href={unsubscribeUrl} style={{ color: emailColors.ink }}>
             Unsubscribe
           </a>{' '}
           and we will not email you again.
