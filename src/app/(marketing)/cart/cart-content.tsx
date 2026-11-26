@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Minus, Plus } from 'lucide-react'
@@ -62,6 +62,28 @@ export function CartPageContent({
     ? centsToDollars(giftVoucherAppliedCents(Math.round(voucher.available * 100), pricing.totalCents))
     : 0
   const totalDue = pricing.total - voucherAmount
+  const voucherField = <GiftVoucherField applied={voucher} onChange={setVoucher} />
+  const checkoutButton = (
+    <CheckoutButton
+      cart={cart}
+      country={country}
+      giftVoucherCode={voucher?.code}
+      contact={contact}
+      className="h-12 w-full text-[15px]"
+    />
+  )
+  const paymentRef = useRef<HTMLDivElement>(null)
+  const [paymentInView, setPaymentInView] = useState(false)
+
+  useEffect(() => {
+    const payment = paymentRef.current
+    if (!payment) return
+    const observer = new IntersectionObserver(([entry]) =>
+      setPaymentInView(entry?.isIntersecting ?? false)
+    )
+    observer.observe(payment)
+    return () => observer.disconnect()
+  }, [])
 
   const showMutationError = (description?: string) => {
     toast({
@@ -167,28 +189,28 @@ export function CartPageContent({
           </section>
 
           <aside className="min-w-0 lg:sticky lg:top-[80px] lg:mt-5" aria-labelledby="cart-summary-heading">
-            <div className="bg-plinth p-5">
-              <h2 id="cart-summary-heading" className="font-serif text-[22px] leading-tight text-ink">
-                Summary
+            <div className="bg-plinth px-5 pb-5 pt-3">
+              <h2 id="cart-summary-heading" className="sr-only">
+                Order summary
               </h2>
 
-              <ShippingCountrySelect value={country} onChange={setCountry} className="mt-4" />
-
-              <dl className="mt-4 text-sm text-ink">
-                <div className="flex justify-between gap-4 border-b border-rule py-2">
-                  <dt className="text-ink-2">Subtotal</dt>
-                  <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
-                </div>
-                <div className="flex justify-between gap-4 border-b border-rule py-2">
-                  <dt className="text-ink-2">Shipping</dt>
+              <dl className="text-sm text-ink">
+                <div className="flex items-center justify-between gap-4 border-b border-rule py-1">
+                  <dt>
+                    <ShippingCountrySelect value={country} onChange={setCountry} />
+                  </dt>
                   <dd>
                     {pricing.shippedSubtotal === 0
                       ? 'None'
                       : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
                   </dd>
                 </div>
+                <div className="flex justify-between gap-4 border-b border-rule py-2.5">
+                  <dt className="text-ink-2">Subtotal</dt>
+                  <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
+                </div>
                 {voucher ? (
-                  <div className="flex justify-between gap-4 border-b border-rule py-2">
+                  <div className="flex justify-between gap-4 border-b border-rule py-2.5">
                     <dt className="text-ink-2">Gift voucher</dt>
                     <dd>-{formatCurrency(voucherAmount, 'AUD')}</dd>
                   </div>
@@ -198,86 +220,78 @@ export function CartPageContent({
                   <dd className="text-xl font-medium">{formatCurrency(totalDue, 'AUD')}</dd>
                 </div>
               </dl>
-
               {coverCents > 0 ? (
-                <p className="mt-2 text-[13px] leading-5 text-ink-2">
-                  Shipping includes Australia Post Extra Cover for the order&apos;s value and a
-                  signature on delivery: {formatCurrency(coverCents / 100, 'AUD')} of the price.
+                <p className="mt-1 text-[12.5px] leading-5 text-ink-2">
+                  Shipping includes Extra Cover and a signature on delivery.
                 </p>
               ) : null}
 
-              <div className="mt-4">
-                <GiftVoucherField applied={voucher} onChange={setVoucher} />
-                {voucher ? null : (
-                  <Link href="/gift-vouchers" className="mt-2 inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink">
-                    Buying for someone else? Give a gift voucher
-                  </Link>
+              <div className="mt-4 border-t border-rule">
+                {voucher ? (
+                  voucherField
+                ) : (
+                  <SummaryDisclosure label="Add a gift voucher">
+                    {voucherField}
+                    <Link
+                      href="/gift-vouchers"
+                      className="mt-1 inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink"
+                    >
+                      Buying for someone else? Give a gift voucher
+                    </Link>
+                  </SummaryDisclosure>
                 )}
+                <SummaryDisclosure label="Add your email (optional)">
+                  <CheckoutEmailFields value={contact} onChange={setContact} />
+                </SummaryDisclosure>
               </div>
 
-              <CheckoutEmailFields value={contact} onChange={setContact} className="mt-4" />
-
-              <CheckoutButton
-                cart={cart}
-                country={country}
-                giftVoucherCode={voucher?.code}
-                contact={contact}
-                className="mt-4 h-12 w-full text-[15px] max-lg:hidden"
-              />
-              <p className="mt-2.5 text-[12.5px] leading-5 text-ink-2">
-                Pay by card, Apple Pay, Google Pay or Klarna on Stripe&apos;s secure checkout. Each piece stays
-                available to other shoppers until payment is complete.
-              </p>
-              {paypalEnabled && !voucher ? (
-                <PayPalCheckoutButton cart={cart} country={country} contact={contact} className="mt-4" />
-              ) : null}
-              <Button asChild variant="ghost" className="mt-3 w-full">
-                <Link href="/store">Continue shopping</Link>
-              </Button>
+              <div ref={paymentRef} className="mt-5 space-y-2.5">
+                {checkoutButton}
+                {paypalEnabled && !voucher ? (
+                  <PayPalCheckoutButton cart={cart} country={country} contact={contact} />
+                ) : null}
+              </div>
             </div>
 
-            <EmailBagForm className="mt-3" />
-
-            {feedback === 'cart' ? (
-              <CheckoutFeedback
-                source="cart"
-                onClose={closeFeedback}
-                onSent={markFeedbackSent}
-                className="mt-4"
-              />
-            ) : !feedbackSent && feedback === null ? (
-              <button
-                type="button"
-                onClick={() => setFeedback('cart')}
-                className="flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                Not ready yet? Tell us what would help
-              </button>
-            ) : null}
+            <div className="mt-2 flex flex-wrap items-start gap-x-6">
+              <EmailBagForm />
+              {feedback === 'cart' ? (
+                <CheckoutFeedback
+                  source="cart"
+                  onClose={closeFeedback}
+                  onSent={markFeedbackSent}
+                  className="mt-2 w-full"
+                />
+              ) : !feedbackSent && feedback === null ? (
+                <button
+                  type="button"
+                  onClick={() => setFeedback('cart')}
+                  className="flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  Not ready yet? Tell us what would help
+                </button>
+              ) : null}
+            </div>
           </aside>
         </div>
       </div>
-      <div
-        data-bottom-bar
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
-        style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
-      >
-        <div className="mx-auto flex max-w-screen-sm items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-[12.5px] text-ink-2">Estimated total</p>
-            <p className="text-lg font-medium leading-6 text-ink">{formatCurrency(totalDue, 'AUD')}</p>
-          </div>
-          <div className="flex-1">
-            <CheckoutButton
-              cart={cart}
-              country={country}
-              giftVoucherCode={voucher?.code}
-              contact={contact}
-              className="h-12 w-full text-[15px]"
-            />
+      {paymentInView ? null : (
+        <div
+          data-bottom-bar
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg px-gut py-2.5 lg:hidden"
+          style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}
+        >
+          <div className="mx-auto flex max-w-screen-sm items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[12.5px] text-ink-2">Estimated total</p>
+              <p className="text-lg font-medium leading-6 text-ink">
+                {formatCurrency(totalDue, 'AUD')}
+              </p>
+            </div>
+            <div className="flex-1">{checkoutButton}</div>
           </div>
         </div>
-      </div>
+      )}
 
       <CartClearConfirmDialog
         open={showClearDialog}
@@ -286,6 +300,21 @@ export function CartPageContent({
         itemCount={cart.itemCount}
       />
     </div>
+  )
+}
+
+function SummaryDisclosure({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <details className="group border-b border-rule">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm text-ink hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent [&::-webkit-details-marker]:hidden">
+        {label}
+        <Plus
+          className="h-4 w-4 shrink-0 transition-transform group-open:rotate-45"
+          aria-hidden="true"
+        />
+      </summary>
+      <div className="pb-3">{children}</div>
+    </details>
   )
 }
 

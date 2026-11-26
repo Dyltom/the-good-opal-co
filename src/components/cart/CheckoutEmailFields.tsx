@@ -12,20 +12,16 @@ export interface CheckoutEmail {
 interface CheckoutEmailFieldsProps {
   value: CheckoutEmail
   onChange: (value: CheckoutEmail) => void
-  className?: string
 }
 
-export function CheckoutEmailFields({ value, onChange, className }: CheckoutEmailFieldsProps) {
+export function CheckoutEmailFields({ value, onChange }: CheckoutEmailFieldsProps) {
   const emailId = useId()
   const hasEmail = value.email.trim().length > 0
 
   return (
-    <div className={cn('min-w-0', className)}>
-      <label
-        htmlFor={emailId}
-        className="mb-2 block text-xs font-medium uppercase tracking-[0.06em] text-ink-3"
-      >
-        Email <span className="normal-case tracking-normal">(optional)</span>
+    <div className="min-w-0">
+      <label htmlFor={emailId} className="sr-only">
+        Email
       </label>
       <Input
         id={emailId}

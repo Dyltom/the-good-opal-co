@@ -51,11 +51,11 @@ export function GiftVoucherField({ applied, onChange }: GiftVoucherFieldProps) {
   }
 
   return (
-    <form onSubmit={apply} className="border-b border-rule py-2">
-      <Label htmlFor="gift-voucher-code" className="text-sm text-ink-2">
+    <form onSubmit={apply}>
+      <Label htmlFor="gift-voucher-code" className="sr-only">
         Gift voucher code
       </Label>
-      <div className="mt-1.5 flex gap-2">
+      <div className="flex gap-2">
         <Input
           id="gift-voucher-code"
           value={code}

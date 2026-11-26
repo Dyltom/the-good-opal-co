@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
-export function EmailBagForm({ className }: { className?: string }) {
+export function EmailBagForm() {
   const [state, formAction, isPending] = useActionState(emailMyBag, null)
   const [open, setOpen] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -18,10 +18,7 @@ export function EmailBagForm({ className }: { className?: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn(
-          'inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-          className
-        )}
+        className="inline-flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         Email me this bag
       </button>
@@ -29,7 +26,7 @@ export function EmailBagForm({ className }: { className?: string }) {
   }
 
   return (
-    <form action={formAction} className={cn('space-y-2', className)}>
+    <form action={formAction} className="space-y-2">
       <input type="hidden" name="js" value={hydrated ? '1' : ''} />
       <div aria-hidden="true" className="sr-only">
         <label>
