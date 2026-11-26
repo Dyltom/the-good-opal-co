@@ -26,7 +26,13 @@ import { trackRemoveFromCart } from '@/lib/analytics'
 import { calculateCheckoutPricing, centsToDollars } from '@/lib/checkout-pricing'
 import { giftVoucherAppliedCents } from '@/lib/gift-voucher-rules'
 import type { Cart, CartItem } from '@/lib/cart'
-import { extraCoverCents, type ShippingCountry } from '@/lib/constants/shipping'
+import {
+  extraCoverCents,
+  POSTAGE,
+  publishedShippingOptions,
+  type Postage,
+  type ShippingCountry,
+} from '@/lib/constants/shipping'
 import { formatCurrency } from '@/lib/utils'
 import { clearCart, removeFromCart, updateQuantity } from './actions'
 
@@ -34,6 +40,7 @@ interface CartPageContentProps {
   initialCart: Cart
   initialCountry: ShippingCountry
   paypalEnabled: boolean
+  promoCodes: boolean
   notice: string | null
 }
 
@@ -41,6 +48,7 @@ export function CartPageContent({
   initialCart,
   initialCountry,
   paypalEnabled,
+  promoCodes,
   notice,
 }: CartPageContentProps) {
   const [cart, setCart] = useState(initialCart)
@@ -54,7 +62,9 @@ export function CartPageContent({
   useCancelledCheckoutPrompt(useCallback(() => setFeedback('cancelled'), []))
   const closeFeedback = () => setFeedback(null)
   const markFeedbackSent = () => setFeedbackSent(true)
-  const pricing = calculateCheckoutPricing(cart.items, country)
+  const [postage, setPostage] = useState<Postage>('standard')
+  const pricing = calculateCheckoutPricing(cart.items, country, postage)
+  const services = publishedShippingOptions(country)
   const coverCents = extraCoverCents(country, pricing.shippedSubtotal)
   const [voucher, setVoucher] = useState<AppliedGiftVoucher | null>(null)
   const [contact, setContact] = useState<CheckoutEmail>({ email: '', marketingConsent: false })
@@ -67,6 +77,7 @@ export function CartPageContent({
     <CheckoutButton
       cart={cart}
       country={country}
+      postage={postage}
       giftVoucherCode={voucher?.code}
       contact={contact}
       className="h-12 w-full text-[15px]"
@@ -138,7 +149,7 @@ export function CartPageContent({
   }
 
   return (
-    <div className="px-gut pb-sec pt-5 md:pt-8">
+    <div className="px-gut pb-10 pt-5 md:pt-8">
       <div className="mx-auto max-w-[90rem] pb-14 lg:pb-0" aria-busy={isPending}>
         <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-rule pb-4">
           <div>
@@ -194,17 +205,45 @@ export function CartPageContent({
                 Order summary
               </h2>
 
+              <div className="border-b border-rule py-1 text-sm">
+                <ShippingCountrySelect value={country} onChange={setCountry} />
+              </div>
+              {pricing.shippedSubtotal > 0 ? (
+                <fieldset className="border-b border-rule py-1 text-sm text-ink">
+                  <legend className="sr-only">Postage</legend>
+                  {POSTAGE.map((option, index) => {
+                    const service = services[index]
+                    if (!service) return null
+                    const cost = calculateCheckoutPricing(cart.items, country, option).shipping
+                    return (
+                      <label key={option} className="flex min-h-11 cursor-pointer items-center gap-3">
+                        <input
+                          type="radio"
+                          name="postage"
+                          value={option}
+                          checked={postage === option}
+                          onChange={() => setPostage(option)}
+                          className="h-4 w-4 shrink-0 accent-ink"
+                        />
+                        <span className="min-w-0 flex-1">
+                          {service.label}{' '}
+                          <span className="text-ink-2">
+                            · {service.days.min}–{service.days.max} business days
+                          </span>
+                        </span>
+                        <span>{formatCurrency(cost, 'AUD')}</span>
+                      </label>
+                    )
+                  })}
+                  {coverCents > 0 ? (
+                    <p className="pb-2 text-[12.5px] leading-5 text-ink-2">
+                      Includes Extra Cover and a signature on delivery.
+                    </p>
+                  ) : null}
+                </fieldset>
+              ) : null}
+
               <dl className="text-sm text-ink">
-                <div className="flex items-center justify-between gap-4 border-b border-rule py-1">
-                  <dt>
-                    <ShippingCountrySelect value={country} onChange={setCountry} />
-                  </dt>
-                  <dd>
-                    {pricing.shippedSubtotal === 0
-                      ? 'None'
-                      : `from ${formatCurrency(pricing.shipping, 'AUD')}`}
-                  </dd>
-                </div>
                 <div className="flex justify-between gap-4 border-b border-rule py-2.5">
                   <dt className="text-ink-2">Subtotal</dt>
                   <dd>{formatCurrency(pricing.subtotal, 'AUD')}</dd>
@@ -216,15 +255,10 @@ export function CartPageContent({
                   </div>
                 ) : null}
                 <div className="flex items-baseline justify-between gap-4 pt-3">
-                  <dt className="font-medium">Estimated total</dt>
+                  <dt className="font-medium">Total</dt>
                   <dd className="text-xl font-medium">{formatCurrency(totalDue, 'AUD')}</dd>
                 </div>
               </dl>
-              {coverCents > 0 ? (
-                <p className="mt-1 text-[12.5px] leading-5 text-ink-2">
-                  Shipping includes Extra Cover and a signature on delivery.
-                </p>
-              ) : null}
 
               <div className="mt-4 border-t border-rule">
                 {voucher ? (
@@ -248,7 +282,15 @@ export function CartPageContent({
               <div ref={paymentRef} className="mt-5 space-y-2.5">
                 {checkoutButton}
                 {paypalEnabled && !voucher ? (
-                  <PayPalCheckoutButton cart={cart} country={country} contact={contact} />
+                  <PayPalCheckoutButton
+                    cart={cart}
+                    country={country}
+                    postage={postage}
+                    contact={contact}
+                  />
+                ) : null}
+                {paypalEnabled && !voucher && promoCodes ? (
+                  <p className="text-[12.5px] leading-5 text-ink-2">Have a code? Use Checkout.</p>
                 ) : null}
               </div>
             </div>
@@ -268,7 +310,7 @@ export function CartPageContent({
                   onClick={() => setFeedback('cart')}
                   className="flex min-h-11 items-center text-[13px] text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
-                  Not ready yet? Tell us what would help
+                  Not ready? Tell us why
                 </button>
               ) : null}
             </div>
@@ -283,7 +325,7 @@ export function CartPageContent({
         >
           <div className="mx-auto flex max-w-screen-sm items-center gap-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[12.5px] text-ink-2">Estimated total</p>
+              <p className="text-[12.5px] text-ink-2">Total</p>
               <p className="text-lg font-medium leading-6 text-ink">
                 {formatCurrency(totalDue, 'AUD')}
               </p>

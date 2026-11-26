@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { isShippingCountry } from '@/lib/constants/shipping'
 import { paypalConfigured } from '@/lib/paypal'
+import { activeSale } from '@/lib/promotions'
 import { isPayPalNotice, PAYPAL_NOTICES } from '@/lib/paypal-order'
 
 export const metadata = {
@@ -61,6 +62,7 @@ export default async function CartPage({
             initialCart={cart}
             initialCountry={initialCountry}
             paypalEnabled={paypalConfigured()}
+            promoCodes={!activeSale()}
             notice={notice}
           />
         )}

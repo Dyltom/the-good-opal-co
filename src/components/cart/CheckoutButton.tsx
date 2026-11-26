@@ -6,13 +6,12 @@ import { createCheckoutSession, createPayPalCheckout } from '@/app/(marketing)/c
 import { Button } from '@/components/ui/button'
 import { trackBeginCheckout, trackCheckoutError } from '@/lib/analytics'
 import type { Cart } from '@/lib/cart'
-import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import {
   isShippingCountry,
-  publishedShippingOptions,
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
   shippingRestriction,
+  type Postage,
   type ShippingCountry,
 } from '@/lib/constants/shipping'
 import { cn } from '@/lib/utils'
@@ -83,6 +82,7 @@ export function ShippingCountrySelect({ value, onChange }: ShippingCountrySelect
 interface CheckoutButtonProps {
   cart: Cart
   country: ShippingCountry
+  postage?: Postage | undefined
   className?: string
   label?: string
   giftVoucherCode?: string | undefined
@@ -92,6 +92,7 @@ interface CheckoutButtonProps {
 export function CheckoutButton({
   cart,
   country,
+  postage,
   className,
   label = 'Checkout',
   giftVoucherCode,
@@ -110,6 +111,7 @@ export function CheckoutButton({
       trackBeginCheckout(cart.items, cart.total)
       const result = await createCheckoutSession({
         country,
+        postage,
         checkoutAttemptId,
         giftVoucherCode,
         email: contact?.email.trim() || undefined,
@@ -170,18 +172,15 @@ function PayPalWordmark() {
 interface PayPalCheckoutButtonProps {
   cart: Cart
   country: ShippingCountry
+  postage: Postage
   contact?: CheckoutEmail | undefined
 }
 
-export function PayPalCheckoutButton({ cart, country, contact }: PayPalCheckoutButtonProps) {
+export function PayPalCheckoutButton({ cart, country, postage, contact }: PayPalCheckoutButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string>()
   const attemptId = useRef<string>(null)
   const restriction = shippingRestriction(country, cart.items)
-  const shipsBy =
-    calculateCheckoutPricing(cart.items, country).shippedSubtotal > 0
-      ? publishedShippingOptions(country)[0]?.label
-      : undefined
 
   const startCheckout = () => {
     setError(undefined)
@@ -191,6 +190,7 @@ export function PayPalCheckoutButton({ cart, country, contact }: PayPalCheckoutB
       trackBeginCheckout(cart.items, cart.total)
       const result = await createPayPalCheckout({
         country,
+        postage,
         checkoutAttemptId,
         email: contact?.email.trim() || undefined,
         marketingConsent: contact?.marketingConsent === true,
@@ -223,11 +223,6 @@ export function PayPalCheckoutButton({ cart, country, contact }: PayPalCheckoutB
           <PayPalWordmark />
         )}
       </button>
-      <p className="mt-2 text-[12.5px] leading-5 text-ink-2">
-        {shipsBy
-          ? `PayPal ships by ${shipsBy}. Use Checkout for express delivery, a code or a voucher.`
-          : 'Use Checkout for a code or a voucher.'}
-      </p>
       {error ? (
         <p role="alert" className="mt-2 text-sm text-destructive">
           {error}

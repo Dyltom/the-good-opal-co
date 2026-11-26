@@ -73,6 +73,10 @@ const AUSTRALIA_POST: Record<ShippingCountry, [standard: ShippingOption, express
   US: international(2305, 4005),
 }
 
+export const POSTAGE = ['standard', 'express'] as const
+
+export type Postage = (typeof POSTAGE)[number]
+
 export function publishedShippingOptions(country: ShippingCountry): ShippingOption[] {
   return [...AUSTRALIA_POST[country]]
 }

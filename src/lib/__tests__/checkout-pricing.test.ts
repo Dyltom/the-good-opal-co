@@ -51,6 +51,17 @@ describe('checkout pricing', () => {
     expect(pricing.shippingOptions).toHaveLength(2)
   })
 
+  test('charges the chosen express postage and offers it first at checkout', () => {
+    const pricing = calculateCheckoutPricing([{ price: 80, quantity: 1 }], 'AU', 'express')
+
+    expect(pricing.shippingCents).toBe(1320)
+    expect(pricing.totalCents).toBe(8000 + 1320)
+    expect(pricing.shippingOptions.map((option) => option.label)).toEqual([
+      'Express Post',
+      'Parcel Post',
+    ])
+  })
+
   test('prices shipping for the chosen country', () => {
     const pricing = calculateCheckoutPricing([{ price: 100, quantity: 1 }], 'US')
 
