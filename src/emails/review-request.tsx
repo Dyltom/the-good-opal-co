@@ -61,8 +61,7 @@ export function ReviewRequestEmail({
       <EmailButton href={reviewReplyHref(supportEmail, orderNumber)}>Reply to Steph</EmailButton>
       <p style={emailText.body}>
         If you are happy for me to share your words on the site, I will only use your first name and
-        last initial. If something is not right with your piece, reply and tell me, and I will sort
-        it out.
+        last initial. If something is not right with your piece, just reply and let me know.
       </p>
       <p style={emailText.body}>Steph</p>
 
