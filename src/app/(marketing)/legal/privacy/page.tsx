@@ -155,7 +155,18 @@ export default function PrivacyPolicyPage() {
                   Clarity records clicks, scrolling and mouse movement to replay visits and may set
                   its own cookies
                 </li>
+                <li>
+                  On the order confirmation page, Google Customer Reviews may place and read its own
+                  cookies or similar technologies to offer you a review survey
+                </li>
               </ul>
+              <p className="mb-4">
+                After you place an order, we pass Google your order reference, email address,
+                delivery country and estimated delivery date so Google can ask whether you would
+                like to review your purchase. Google emails you a survey only if you choose to take
+                part, and handles your answers under its own privacy policy. You can manage or delete
+                cookies in your browser settings.
+              </p>
               <p className="mb-4">
                 Google Analytics loads on every page. Until you allow analytics it sets no cookies
                 and sends Google only cookieless signals, such as that a page was viewed or an order
@@ -289,6 +300,10 @@ export default function PrivacyPolicyPage() {
                 <li>
                   <strong>Microsoft Clarity:</strong> Visit replays and heatmaps, only after you
                   allow analytics
+                </li>
+                <li>
+                  <strong>Google Customer Reviews:</strong> An optional survey about your order,
+                  offered after checkout
                 </li>
                 <li>
                   <strong>Resend:</strong> Email communications

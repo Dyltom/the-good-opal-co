@@ -31,8 +31,24 @@ describe('Google Merchant feed', () => {
     ])
 
     expect(feed).toContain('<g:title>Opal &amp; &lt;Fire&gt; &quot;ring&quot;</g:title>')
-    expect(feed).toContain('<g:description>Bright &amp; bold</g:description>')
+    expect(feed).toContain('<g:description>Bright &amp; bold')
     expect(feed).not.toContain('\u0007')
+  })
+
+  test('spells out the variety, origin and weight Google looks for in a loose opal description', () => {
+    const feed = buildGoogleMerchantFeed([
+      catalogProduct({
+        sku: 'HEART',
+        description: 'A carved heart parcel.',
+        stone: 'White Opal',
+        origin: 'Coober Pedy, SA',
+        weight: { value: 1.25, unit: 'ct' },
+      }),
+    ])
+
+    expect(item(feed, 'HEART')).toContain(
+      '<g:description>A carved heart parcel. Variety: White Opal. Origin: Coober Pedy, SA. Weight: 1.25 ct.</g:description>'
+    )
   })
 
   test('announces the Black Friday price ahead of time with the dates it applies', () => {

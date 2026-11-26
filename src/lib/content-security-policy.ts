@@ -15,12 +15,12 @@ export function createContentSecurityPolicy(
     "font-src 'self' data:",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "frame-src 'self' https://checkout.stripe.com",
+    "frame-src 'self' https://checkout.stripe.com https://www.google.com https://apis.google.com",
     "img-src 'self' blob: data: https:",
     "object-src 'none'",
     `script-src 'self' 'unsafe-inline'${
       nodeEnv === 'production' ? '' : " 'unsafe-eval'"
-    }${googleAnalyticsScriptSource}${clarityScriptSource}`,
+    } https://apis.google.com https://www.gstatic.com${googleAnalyticsScriptSource}${clarityScriptSource}`,
     "style-src 'self' 'unsafe-inline'",
     "worker-src 'self' blob:",
     'upgrade-insecure-requests',

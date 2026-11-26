@@ -6,7 +6,7 @@ import {
 } from '@/lib/constants/shipping'
 import { escapeXml } from '@/lib/discovery'
 import { nextSale, saleApplies, salePrice } from '@/lib/promotions'
-import type { CatalogProduct } from '@/lib/catalog'
+import { weightLabel, type CatalogProduct } from '@/lib/catalog'
 
 const GOOGLE_PRODUCT_CATEGORY: Record<string, string> = {
   'opal-rings': '200',
@@ -51,6 +51,15 @@ function saleTags(product: CatalogProduct, now: Date): string[] {
   ]
 }
 
+function feedDescription(product: CatalogProduct): string {
+  const details = [
+    product.stone && `Variety: ${product.stone}.`,
+    product.origin && `Origin: ${product.origin}.`,
+    product.weight && `Weight: ${weightLabel(product.weight)}.`,
+  ].filter(Boolean)
+  return [product.description || product.name, ...details].join(' ').slice(0, 5000)
+}
+
 function merchantItem(product: CatalogProduct, now: Date): string {
   const [imageLink, ...additionalImages] = product.images
 
@@ -58,7 +67,7 @@ function merchantItem(product: CatalogProduct, now: Date): string {
     '<item>',
     tag('id', product.sku),
     tag('title', product.name.slice(0, 150)),
-    tag('description', (product.description || product.name).slice(0, 5000)),
+    tag('description', feedDescription(product)),
     tag('link', product.url),
     imageLink ? tag('image_link', imageLink) : '',
     ...additionalImages.slice(0, 10).map((image) => tag('additional_image_link', image)),
