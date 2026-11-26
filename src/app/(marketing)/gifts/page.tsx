@@ -5,7 +5,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell, PageHeader } from '@/components/marketing'
 import { ProductCard } from '@/components/product'
 import { toProductCardProduct } from '@/components/product/RelatedProducts'
-import { TorchBand } from '@/components/sections/TorchBand'
+import { ClosingBand } from '@/components/sections/ClosingBand'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { getPayload } from '@/lib/payload'
@@ -124,7 +124,7 @@ export default async function GiftsPage() {
 
       </Container>
 
-      <TorchBand
+      <ClosingBand
         id="unsure-heading"
         heading={
           <>

@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { linkArrow, MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, founderId, JsonLd, OrganizationJsonLd } from '@/components/seo'
-import { TorchBand } from '@/components/sections/TorchBand'
+import { ClosingBand } from '@/components/sections/ClosingBand'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
 
@@ -122,7 +122,7 @@ export default async function AboutPage() {
         </div>
       </Container>
 
-      <TorchBand
+      <ClosingBand
         id="founder-heading"
         heading={
           <>

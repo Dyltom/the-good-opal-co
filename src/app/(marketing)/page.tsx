@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { linkArrow, MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { LivingWall, type WallPiece } from '@/components/sections/LivingWall'
-import { TorchBand } from '@/components/sections/TorchBand'
+import { ClosingBand } from '@/components/sections/ClosingBand'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
@@ -250,7 +250,7 @@ export default async function HomePage() {
 
         <ReviewsSection title="In their words." className="px-gut pt-sec" />
 
-        <TorchBand
+        <ClosingBand
           id="sourced-heading"
           heading={
             <>
