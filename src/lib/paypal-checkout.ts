@@ -182,7 +182,7 @@ async function settleCapture(order: PayPalOrder): Promise<string> {
     '',
     'The shopper was told PayPal is still processing it and that we will email their order confirmation. Their piece stays off sale.',
     '',
-    `Once PayPal shows the payment as Completed or Denied, open ${siteUrl()}${paypalRetryPath(order.id)} . A completed payment becomes an order and emails the shopper their confirmation. A denied one puts the piece back on sale.`,
+    `The site re-checks PayPal every 15 minutes and finishes this on its own: a completed payment becomes an order and emails the shopper their confirmation, and a denied one puts the piece back on sale. To finish it sooner once PayPal shows Completed or Denied, open ${siteUrl()}${paypalRetryPath(order.id)} .`,
   ])
   return paypalSuccessPath(order.id)
 }

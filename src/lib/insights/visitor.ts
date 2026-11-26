@@ -5,9 +5,12 @@ import { hashVisitor, requestIp } from './ingest'
 
 const SALT_TTL_SECONDS = 60 * 60 * 48
 
-let current: { day: string; salt: string } | null = null
+type DailySalt = { day: string; salt: string }
+
+const saltStore = globalThis as typeof globalThis & { __goodOpalInsightsSalt?: DailySalt }
 
 async function dailySalt(day: string): Promise<string> {
+  const current = saltStore.__goodOpalInsightsSalt
   if (current?.day === day) return current.salt
 
   let salt = `s${randomBytes(16).toString('hex')}`
@@ -23,7 +26,7 @@ async function dailySalt(day: string): Promise<string> {
     }
   }
 
-  current = { day, salt }
+  saltStore.__goodOpalInsightsSalt = { day, salt }
   return salt
 }
 

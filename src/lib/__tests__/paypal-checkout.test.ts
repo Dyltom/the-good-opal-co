@@ -353,21 +353,50 @@ describe('PayPal return', () => {
   })
 })
 
-describe('expired reservation cron', () => {
+describe('reservation cron', () => {
+  const runCron = async () =>
+    (
+      await releaseExpiredReservations(
+        new NextRequest('https://goodopalco.com/api/cron/inventory-reservations', {
+          headers: { authorization: 'Bearer cron-secret' },
+        })
+      )
+    ).json()
+
   test('releases an expired PayPal hold without calling Stripe', async () => {
     seed({ expiresAt: '2000-01-01T00:00:00.000Z' })
+    vi.stubEnv('PAYPAL_CLIENT_ID', '')
 
-    const response = await releaseExpiredReservations(
-      new NextRequest('https://goodopalco.com/api/cron/inventory-reservations', {
-        headers: { authorization: 'Bearer cron-secret' },
-      })
-    )
-
-    expect(await response.json()).toMatchObject({ released: 1 })
+    expect(await runCron()).toMatchObject({ released: 1 })
     expect(reservation()).toMatchObject({ status: 'released', releaseReason: 'checkout-expired' })
     expect(stock()).toBe(1)
     expect(db.stripeCalls).toEqual([])
     expect(fetch).not.toHaveBeenCalled()
+  })
+
+  test('records the order once PayPal completes a held payment, without the shopper returning', async () => {
+    paypal.capture = () => json(captured('PENDING'))
+    await completePayPalReturn(ORDER_ID, NOW)
+
+    expect(await runCron()).toMatchObject({ paypalSettled: 0 })
+    expect(orders()).toHaveLength(0)
+
+    approved = captured('COMPLETED')
+    expect(await runCron()).toMatchObject({ paypalSettled: 1 })
+    expect(orders()).toHaveLength(1)
+    expect(reservation()['status']).toBe('consumed')
+    expect(paypal.captureCalls).toBe(1)
+  })
+
+  test('puts the piece back once PayPal denies a held payment', async () => {
+    paypal.capture = () => json(captured('PENDING'))
+    await completePayPalReturn(ORDER_ID, NOW)
+    approved = captured('DECLINED')
+
+    expect(await runCron()).toMatchObject({ paypalSettled: 1 })
+    expect(reservation()).toMatchObject({ status: 'released', releaseReason: 'payment-declined' })
+    expect(stock()).toBe(1)
+    expect(orders()).toHaveLength(0)
   })
 })
 
