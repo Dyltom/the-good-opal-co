@@ -10,6 +10,7 @@ import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { opalFire } from '@/lib/opal-fire'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { withSalePrice } from '@/lib/promotions'
 import {
@@ -31,25 +32,32 @@ export const dynamic = 'force-dynamic'
 
 const FINISHED = new Set(['opal-rings', 'opal-earrings'])
 const PRICED_PER_STONE = /calibrated|priced individually/i
-const FINISHED_SLOTS = [0, 1, 4, 6, 10, 14]
+const FINISHED_SLOTS = [0, 1, 6, 8, 12, 14]
 const WALL_SIZE = 15
 
 type ListedProduct = Pick<
   Product,
-  'name' | 'slug' | 'price' | 'category' | 'stoneType' | 'stoneOrigin' | 'weight' | 'weightUnit' | 'images'
+  'name' | 'slug' | 'price' | 'featured' | 'category' | 'stoneType' | 'stoneOrigin' | 'weight' | 'weightUnit' | 'images'
 >
 
 type Listing = {
   product: ListedProduct
   image: string
   studio: boolean
+  fire: number
 }
 
-function firstImage(product: ListedProduct): Omit<Listing, 'product'> | undefined {
+async function firstImage(product: ListedProduct): Promise<Omit<Listing, 'product'> | undefined> {
   const media = product.images?.[0]?.image
   if (typeof media !== 'object' || media === null) return undefined
   const image = resolveMediaUrl(media.url)
-  return image ? { image, studio: Boolean(media.filename?.startsWith('studio-')) } : undefined
+  if (!image) return undefined
+  const swatch = media.sizes?.thumbnail?.filename ?? media.filename
+  return {
+    image,
+    studio: Boolean(media.filename?.startsWith('studio-')),
+    fire: swatch ? await opalFire(swatch) : 0,
+  }
 }
 
 function toWallPiece({ product, image }: Listing): WallPiece {
@@ -68,9 +76,21 @@ function toWallPiece({ product, image }: Listing): WallPiece {
 function hangWall(listings: Listing[]): WallPiece[] {
   const single = listings
     .filter((listing) => !PRICED_PER_STONE.test(listing.product.name))
-    .sort((a, b) => Number(b.studio) - Number(a.studio))
-  const finished = single.filter((listing) => FINISHED.has(listing.product.category ?? ''))
-  const loose = single.filter((listing) => !FINISHED.has(listing.product.category ?? ''))
+    .sort(
+      (a, b) =>
+        Number(b.studio) - Number(a.studio) ||
+        Number(Boolean(b.product.featured)) - Number(Boolean(a.product.featured)) ||
+        b.fire - a.fire
+    )
+  const byFire = (a: Listing, b: Listing) => b.fire - a.fire
+  const finished = single
+    .filter((listing) => FINISHED.has(listing.product.category ?? ''))
+    .slice(0, FINISHED_SLOTS.length)
+    .sort(byFire)
+  const loose = single
+    .filter((listing) => !FINISHED.has(listing.product.category ?? ''))
+    .slice(0, WALL_SIZE - finished.length)
+    .sort(byFire)
   const wall: Listing[] = []
   for (let slot = 0; slot < WALL_SIZE; slot++) {
     const next = FINISHED_SLOTS.includes(slot) ? finished.shift() ?? loose.shift() : loose.shift() ?? finished.shift()
@@ -120,6 +140,7 @@ async function loadInStock(): Promise<Listing[]> {
       name: true,
       slug: true,
       price: true,
+      featured: true,
       category: true,
       stoneType: true,
       stoneOrigin: true,
@@ -128,11 +149,14 @@ async function loadInStock(): Promise<Listing[]> {
       images: true,
     },
   })
-  return docs.flatMap((doc) => {
-    const product = withSalePrice(doc)
-    const image = firstImage(product)
-    return image ? [{ product, ...image }] : []
-  })
+  const listings = await Promise.all(
+    docs.map(async (doc) => {
+      const product = withSalePrice(doc)
+      const image = await firstImage(product)
+      return image ? [{ product, ...image }] : []
+    })
+  )
+  return listings.flat()
 }
 
 const FACTS = [

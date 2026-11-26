@@ -23,16 +23,16 @@ const TILES = [
   { desktop: '1/5/7/11', mobile: '1/1/5/5' },
   { desktop: '1/11/4/14', mobile: '1/5/3/7' },
   { desktop: '1/14/4/17', mobile: '3/5/5/7' },
-  { desktop: '4/11/6/13', mobile: '6/1/8/3' },
-  { desktop: '4/13/6/15', mobile: '6/3/8/5' },
-  { desktop: '4/15/6/17', mobile: '6/5/8/7' },
-  { desktop: '6/11/9/14', mobile: '8/1/10/3' },
-  { desktop: '6/14/9/17', mobile: '8/3/10/5' },
-  { desktop: '7/5/9/7', mobile: '8/5/10/7' },
-  { desktop: '7/7/9/9', mobile: '10/1/12/3' },
-  { desktop: '7/9/9/11', mobile: '10/3/12/5' },
-  { desktop: '5/1/7/3', mobile: '10/5/12/7' },
-  { desktop: '5/3/7/5', mobile: '12/1/14/3' },
+  { desktop: '5/1/7/3', mobile: '6/1/8/3' },
+  { desktop: '5/3/7/5', mobile: '6/3/8/5' },
+  { desktop: '4/11/6/13', mobile: '6/5/8/7' },
+  { desktop: '4/13/6/15', mobile: '8/1/10/3' },
+  { desktop: '4/15/6/17', mobile: '8/3/10/5' },
+  { desktop: '6/11/9/14', mobile: '8/5/10/7' },
+  { desktop: '6/14/9/17', mobile: '10/1/12/3' },
+  { desktop: '7/5/9/7', mobile: '10/3/12/5' },
+  { desktop: '7/7/9/9', mobile: '10/5/12/7' },
+  { desktop: '7/9/9/11', mobile: '12/1/14/3' },
   { desktop: '7/1/9/3', mobile: '12/3/14/5' },
   { desktop: '7/3/9/5', mobile: '12/5/14/7' },
 ] as const
@@ -95,7 +95,7 @@ export function LivingWall({ pieces }: { pieces: WallPiece[] }) {
     <section
       aria-label="Pieces on the wall"
       onPointerLeave={hide}
-      className="grid grid-cols-6 gap-1.5 px-gut pt-1.5 [--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*1.2)] [grid-auto-rows:var(--row)] [grid-template-rows:repeat(4,var(--row))_auto] min-[761px]:[--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*0.9)] min-[1101px]:h-[calc(100svh-56px)] min-[1101px]:max-h-[1000px] min-[1101px]:min-h-[600px] min-[1101px]:gap-2 min-[1101px]:pt-2 min-[1101px]:[grid-template-columns:repeat(16,minmax(0,1fr))] min-[1101px]:[grid-template-rows:repeat(8,minmax(0,1fr))]"
+      className="grid grid-cols-6 gap-1.5 px-gut pt-1.5 [--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*1.2)] [grid-auto-rows:var(--row)] [grid-template-rows:repeat(4,var(--row))_auto] min-[761px]:[--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*0.9)] min-[1101px]:h-[calc(100svh-56px)] min-[1101px]:[body:has([data-promo-bar])_&]:h-[calc(100svh-90px)] min-[1101px]:max-h-[1000px] min-[1101px]:min-h-[600px] min-[1101px]:gap-2 min-[1101px]:pt-2 min-[1101px]:[grid-template-columns:repeat(16,minmax(0,1fr))] min-[1101px]:[grid-template-rows:repeat(8,minmax(0,1fr))]"
     >
       <div className="my-1.5 grid border border-rule px-4 py-[18px] [grid-area:5/1/6/-1] min-[1101px]:my-0 min-[1101px]:p-[clamp(16px,1.6vw,26px)] min-[1101px]:[grid-area:1/1/5/5]">
         <div

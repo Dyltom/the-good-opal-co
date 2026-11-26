@@ -11,6 +11,7 @@ export async function PromoBar() {
   return (
     <Link
       href={promo.href}
+      data-promo-bar
       className="group block bg-ink px-gut py-2 text-center text-[12.5px] leading-[1.4] tracking-[0.01em] text-bg no-underline"
     >
       <span className="sm:hidden">{promo.short}</span>
