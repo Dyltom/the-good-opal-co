@@ -54,7 +54,7 @@ Use [DEPLOYMENT.md](./DEPLOYMENT.md) for exact provisioning steps.
 - [ ] Keyboard navigation, focus, labels, headings, contrast, and reduced-motion behavior checked.
 - [ ] No unexpected browser console or container runtime errors.
 - [ ] `/api/health` fails when the database is unavailable and succeeds when connected.
-- [ ] `/api/readiness` returns 200 only when core, payments, email, storage, rate limiting, and database checks pass.
+- [ ] `/api/health` says `healthy`, not `degraded` (every launch dependency is configured).
 - [ ] Sitemap and robots use the canonical production origin.
 - [ ] Container logs/alerts, Neon backups, Stripe webhook failure alerts, and Resend bounce handling have named owners.
 - [ ] Rollback procedure tested against the previous image and a compatible database migration state.

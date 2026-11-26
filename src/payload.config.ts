@@ -33,6 +33,7 @@ import { AuditEvents } from './payload/collections/AuditEvents.ts'
 import { duplicateSafe } from './payload/duplicate-safe.ts'
 import { audited } from './payload/audit-log.ts'
 import { recordAdminError } from './payload/record-admin-error.ts'
+import { signedInAccessEndpoint } from './payload/access-endpoint.ts'
 import { GiftVouchers } from './payload/collections/GiftVouchers.ts'
 
 const filename = fileURLToPath(import.meta.url)
@@ -119,6 +120,7 @@ export default buildConfig({
   hooks: {
     afterError: [recordAdminError],
   },
+  endpoints: [signedInAccessEndpoint],
   admin: {
     user: Users.slug,
     importMap: {
@@ -126,6 +128,8 @@ export default buildConfig({
     },
     meta: {
       titleSuffix: ' - The Good Opal Co',
+      defaultOGImageType: 'off',
+      openGraph: { images: [{ url: '/images/share-card.jpg' }] },
       icons: [{ rel: 'icon', type: 'image/png', url: '/favicon-32x32.png' }],
     },
     components: {

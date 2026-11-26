@@ -6,12 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag, Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
-import {
-  addToCart,
-  addToCartFormAction,
-  addToCartWithQuantity,
-  fetchCart,
-} from '@/app/(marketing)/cart/actions'
+import { addToCart, addToCartFormAction, fetchCart } from '@/app/(marketing)/cart/actions'
 import { cn } from '@/lib/utils'
 import { trackAddToCart } from '@/lib/analytics'
 import type { ReactNode } from 'react'
@@ -60,21 +55,7 @@ export function AddToCartButton({
     e.stopPropagation()
 
     startTransition(async () => {
-      const result = quantity > 1
-        ? await addToCartWithQuantity({
-            productId: product.id,
-            slug: product.slug,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-          }, quantity)
-        : await addToCart({
-            productId: product.id,
-            slug: product.slug,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-          })
+      const result = await addToCart(product.id, quantity)
 
       if (result.success) {
         setIsSuccess(true)
@@ -135,10 +116,6 @@ export function AddToCartButton({
     const form = (
       <form action={addToCartFormAction} className="contents">
         <input type="hidden" name="productId" value={product.id} />
-        <input type="hidden" name="slug" value={product.slug} />
-        <input type="hidden" name="name" value={product.name} />
-        <input type="hidden" name="price" value={product.price} />
-        {product.image ? <input type="hidden" name="image" value={product.image} /> : null}
         <input type="hidden" name="quantity" value={quantity} />
         {button}
       </form>
