@@ -146,12 +146,11 @@ pnpm test:e2e
 
 Then verify on a staging deployment:
 
-- `/api/health` reports liveness with HTTP 200 while the database is connected;
-  `liveness` is `healthy` and `status` may be `degraded` when launch dependencies
-  are missing. `/api/readiness` returns HTTP 200 only when every required launch
-  dependency is ready, otherwise HTTP 503. Do not launch payments until
-  `revenueReady` is `true`, and do not call the release complete until `ready` is
-  `true`. Issue codes are sanitized and never contain environment values.
+- `/api/health` returns HTTP 200 with `{"status":"healthy"}` once the database is
+  connected and every required launch dependency (core, payments, email, rate
+  limiting) is configured, `{"status":"degraded"}` while one is missing, and HTTP
+  503 when the database is down. It gives no detail, so check the environment
+  against this guide when it says `degraded`.
 - First-admin creation and product/post/media CRUD work.
 - An uploaded image is still served after a redeploy (the uploads volume persists).
 - Desktop and mobile home, store, product, cart, checkout, contact, newsletter, order tracking, legal, and error routes work without console errors.

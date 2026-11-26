@@ -51,12 +51,7 @@ test('health, robots, sitemap, redirects, and not-found behavior are coherent', 
   const health = await page.request.get('/api/health')
   expect(health.status()).toBe(200)
   const healthBody = await health.json()
-  expect(healthBody).toMatchObject({ liveness: 'healthy', database: 'connected' })
-
-  const readiness = await page.request.get('/api/readiness')
-  const readinessBody = await readiness.json()
-  expect(readiness.status()).toBe(readinessBody.ready ? 200 : 503)
-  expect(readinessBody).toMatchObject({ database: 'connected' })
+  expect(healthBody).toEqual({ status: expect.stringMatching(/^(healthy|degraded)$/) })
 
   const home = await page.request.get('/')
   expect(home.headers()['x-content-type-options']).toBe('nosniff')

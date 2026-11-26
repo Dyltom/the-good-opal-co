@@ -194,40 +194,18 @@ export async function setCart(items: CartItem[]): Promise<void> {
   })
 }
 
-/**
- * Add an item to the cart or increment quantity if already exists
- *
- * @param item - Cart item to add (without quantity, defaults to 1)
- * @returns Promise<Cart> - Updated cart state
- */
-export async function addItemToCart(item: Omit<CartItem, 'quantity'>): Promise<Cart> {
-  return addItemToCartWithQuantity(item, 1)
-}
-
-/**
- * Add an item to the cart with a specific quantity
- *
- * @param item - Cart item to add (without quantity)
- * @param quantity - Number of items to add
- * @returns Promise<Cart> - Updated cart state
- * @throws Error if insufficient stock available
- */
-export async function addItemToCartWithQuantity(
-  item: Omit<CartItem, 'quantity'>,
-  quantity: number
-): Promise<Cart> {
+export async function addItemToCart(productId: string, quantity: number): Promise<Cart> {
   const parsedQuantity = cartAddQuantitySchema.safeParse(quantity)
   if (!parsedQuantity.success) throw new Error('Invalid cart quantity')
   quantity = parsedQuantity.data
 
-  // Validate stock before adding to cart
   const payload = await getPayload()
   const {
     docs: [product],
   } = await payload.find({
     collection: 'products',
     where: {
-      and: [{ id: { equals: item.productId } }, { status: { equals: 'published' } }],
+      and: [{ id: { equals: productId } }, { status: { equals: 'published' } }],
     },
   })
 
@@ -236,7 +214,7 @@ export async function addItemToCartWithQuantity(
   }
 
   const cart = await getCart()
-  const existingItem = cart.items.find((i) => i.productId === item.productId)
+  const existingItem = cart.items.find((i) => i.productId === productId)
   const currentCartQuantity = existingItem?.quantity || 0
   const requestedTotalQuantity = currentCartQuantity + quantity
 
@@ -247,16 +225,14 @@ export async function addItemToCartWithQuantity(
     )
   }
 
-  const existingIndex = cart.items.findIndex((i) => i.productId === item.productId)
+  const existingIndex = cart.items.findIndex((i) => i.productId === productId)
 
   if (existingIndex >= 0) {
-    // Increment quantity of existing item
     const existingItem = cart.items[existingIndex]
     if (existingItem) {
       existingItem.quantity += quantity
     }
   } else {
-    // Add new item with specified quantity
     const primaryImage = product.images?.[0]?.image
     const image =
       (primaryImage && typeof primaryImage === 'object'

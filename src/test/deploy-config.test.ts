@@ -152,6 +152,9 @@ describe('deployment config', () => {
     expect(config).toContain("key: 'Content-Security-Policy'")
     expect(config).toContain('createContentSecurityPolicy()')
     expect(config).toContain("key: 'X-Content-Type-Options'")
+    expect(config).toContain("{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }")
+    expect(config).toContain("{ key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' }")
+    expect(config).not.toContain('Cross-Origin-Embedder-Policy')
 
     const policy = read('src/lib/content-security-policy.ts')
     expect(policy).toContain("object-src 'none'")
