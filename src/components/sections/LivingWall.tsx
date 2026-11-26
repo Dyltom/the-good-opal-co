@@ -95,7 +95,7 @@ export function LivingWall({ pieces }: { pieces: WallPiece[] }) {
     <section
       aria-label="Pieces on the wall"
       onPointerLeave={hide}
-      className="grid grid-cols-6 gap-1.5 px-gut pt-1.5 [--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*1.2)] [grid-auto-rows:var(--row)] [grid-template-rows:repeat(4,var(--row))_auto] min-[761px]:[--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*0.9)] min-[1101px]:h-[calc(100svh-56px)] min-[1101px]:max-h-[1000px] min-[1101px]:min-h-[600px] min-[1101px]:gap-2 min-[1101px]:pt-2 min-[1101px]:[grid-template-columns:repeat(16,minmax(0,1fr))] min-[1101px]:[grid-template-rows:repeat(8,minmax(0,1fr))]"
+      className="grid grid-cols-6 gap-1.5 px-gut pt-1.5 [--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*1.2)] [grid-auto-rows:var(--row)] [grid-template-rows:repeat(4,var(--row))_auto] min-[761px]:[--row:calc((100vw_-_2*clamp(12px,2vw,28px)_-_30px)/6*0.9)] min-[1101px]:h-[calc(100svh-56px)] min-[1101px]:[body:has([data-promo-bar])_&]:h-[calc(100svh-90px)] min-[1101px]:max-h-[1000px] min-[1101px]:min-h-[600px] min-[1101px]:gap-2 min-[1101px]:pt-2 min-[1101px]:[grid-template-columns:repeat(16,minmax(0,1fr))] min-[1101px]:[grid-template-rows:repeat(8,minmax(0,1fr))]"
     >
       <div className="my-1.5 grid border border-rule px-4 py-[18px] [grid-area:5/1/6/-1] min-[1101px]:my-0 min-[1101px]:p-[clamp(16px,1.6vw,26px)] min-[1101px]:[grid-area:1/1/5/5]">
         <div
