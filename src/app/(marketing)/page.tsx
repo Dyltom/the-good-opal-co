@@ -146,14 +146,7 @@ const FACTS = [
     `Australia Post from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} in Australia, insured and signed for over $${EXTRA_COVER_INCLUDED}.`,
   ],
   ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
-  ['Secure checkout', 'Stripe: card, Apple Pay, Google Pay and Klarna.'],
-] as const
-
-const CUSTOM_STEPS = [
-  ['Bring an idea or an opal', 'Your own stone, one from the shop, or just a colour you love.'],
-  ['Sketch it in 3D', 'Try settings, metals and stones in the designer. Nothing is charged.'],
-  ['Talk it through with Steph', 'A design consultation to confirm the stone, fit and details.'],
-  ['Quote and deposit', 'Your quote sets out the price, timing and any deposit before work begins.'],
+  ['Secure checkout', 'Card, Apple Pay, Google Pay and Klarna through Stripe, or PayPal.'],
 ] as const
 
 const linkArrow =
@@ -244,20 +237,10 @@ export default async function HomePage() {
                 Design your own <i>ring</i>
               </h2>
               <p className="mt-2 max-w-[48ch] text-[15px] text-ink-2">
-                Start with an idea, an occasion, or an opal of your own. Steph makes it with you, one
-                step at a time.
+                Start with an idea, an occasion, or an opal of your own. Sketch it in the 3D designer,
+                then Steph quotes it before any work begins.
               </p>
-              <ol className="mt-4 border-t border-rule">
-                {CUSTOM_STEPS.map(([title, detail], index) => (
-                  <li key={title} className="grid grid-cols-[2rem_minmax(0,1fr)] border-b border-rule py-2.5">
-                    <span className="pt-0.5 text-[13px] tabular-nums text-ink-3">{index + 1}</span>
-                    <p className="text-sm text-ink-2">
-                      <b className="font-medium text-ink">{title}.</b> {detail}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <Button asChild>
                   <Link href="/services/design">
                     Open the 3D designer
@@ -293,14 +276,6 @@ export default async function HomePage() {
         </section>
 
         <ReviewsSection title="In their words." className="px-gut pt-sec" />
-
-        <p className="mx-gut mt-[clamp(40px,5vw,72px)] flex flex-wrap items-baseline gap-x-4 gap-y-2 border-t border-rule pt-4 text-sm text-ink-2">
-          <span>Learn to cut opal: Steph&rsquo;s course runs from hand cutting to polishing and valuation.</span>
-          <Link href="/courses" className={linkArrow}>
-            Register interest
-            <ArrowRight className="h-[15px] w-[15px]" aria-hidden="true" />
-          </Link>
-        </p>
       </MarketingShell>
     </>
   )

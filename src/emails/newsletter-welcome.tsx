@@ -1,4 +1,4 @@
-import { EmailFrame, emailColors, emailText } from './email-frame'
+import { EmailButton, EmailFrame, emailColors, emailText } from './email-frame'
 import { WELCOME_OFFER, type WelcomeCode } from '@/lib/welcome-offer'
 
 interface NewsletterWelcomeEmailProps {
@@ -60,23 +60,7 @@ export function NewsletterWelcomeEmail({
           </p>
         </div>
       ) : null}
-      <p style={{ margin: '24px 0' }}>
-        <a
-          href={shopUrl}
-          style={{
-            backgroundColor: emailColors.ink,
-            color: emailColors.paper,
-            display: 'inline-block',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '14px',
-            fontWeight: 700,
-            padding: '13px 22px',
-            textDecoration: 'none',
-          }}
-        >
-          See what is in the shop
-        </a>
-      </p>
+      <EmailButton href={shopUrl}>See what is in the shop</EmailButton>
       <p style={{ ...emailText.small, margin: 0 }}>
         Changed your mind?{' '}
         <a href={unsubscribeUrl} style={{ color: emailColors.muted, textDecoration: 'underline' }}>
