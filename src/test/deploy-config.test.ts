@@ -118,7 +118,7 @@ describe('deployment config', () => {
     expect(newsletterAction).not.toContain('trackNewsletterSignup')
     expect(newsletterConversion).toContain("'use client'")
     expect(newsletterConversion).toContain("trackNewsletterSignup('email-confirmation')")
-    expect(checkoutSuccess).toContain("expand: ['line_items.data.price.product']")
+    expect(checkoutSuccess).toContain("expand: ['line_items.data.price.product'")
     expect(purchaseConversion).toContain('trackPurchase(')
   })
 

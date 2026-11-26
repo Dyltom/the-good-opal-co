@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { ClearCartOnSuccess } from './clear-cart'
+import { CustomerReviewsOptIn } from './customer-reviews-opt-in'
 import { JoinList } from './join-list'
 import { OrderFinalizationRefresh } from './order-finalization-refresh'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
@@ -11,6 +12,7 @@ import { getPayload } from '@/lib/payload'
 import type { CartItem } from '@/lib/cart'
 import { isPaidCheckoutStatus, shouldFinalizeCheckout } from '@/lib/stripe-fulfillment'
 import { isGiftVoucherPurchaseSession } from '@/lib/gift-voucher-purchase'
+import { surveyOptInFor } from '@/lib/customer-reviews'
 
 export const metadata = {
   title: 'Checkout Status | The Good Opal Co',
@@ -44,7 +46,7 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
 
     try {
       session = await stripe.checkout.sessions.retrieve(session_id, {
-        expand: ['line_items.data.price.product'],
+        expand: ['line_items.data.price.product', 'shipping_cost.shipping_rate'],
       })
 
       if (!isPaidCheckoutStatus(session.payment_status)) {
@@ -113,12 +115,20 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
                 />
               )}
               {session.customer_details?.email ? <JoinList sessionId={session.id} /> : null}
+              {orderConfirmed && !isGiftVoucherPurchaseSession(session) ? (
+                <SurveyOptIn session={session} />
+              ) : null}
             </>
           )}
         </div>
       </div>
     </MarketingShell>
   )
+}
+
+function SurveyOptIn({ session }: { session: Stripe.Checkout.Session }) {
+  const optIn = surveyOptInFor(session)
+  return optIn ? <CustomerReviewsOptIn optIn={optIn} /> : null
 }
 
 function getPurchaseAnalytics(session: Stripe.Checkout.Session) {
