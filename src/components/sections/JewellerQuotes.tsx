@@ -12,10 +12,7 @@ const JEWELLER_QUOTES = [
 export function JewellerQuotes() {
   return (
     <div>
-      <h3 className="font-sans text-xs font-medium uppercase tracking-[0.06em] text-ink-3">
-        From jewellers who buy Steph&rsquo;s stones
-      </h3>
-      <ul className="mt-3 grid gap-5 sm:grid-cols-2 sm:gap-[clamp(16px,2vw,32px)]">
+      <ul className="grid gap-5 sm:grid-cols-2 sm:gap-[clamp(16px,2vw,32px)]">
         {JEWELLER_QUOTES.map((quote) => (
           <li key={quote.text}>
             <figure>

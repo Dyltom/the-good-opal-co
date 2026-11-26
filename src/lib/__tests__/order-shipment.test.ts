@@ -31,8 +31,9 @@ function order(overrides: Partial<Order> = {}): Order {
 }
 
 describe('shipment notifications', () => {
-  test('sends only when a shipped order has tracking and no prior delivery record', () => {
+  test('sends only when a shipped Stripe or PayPal order has tracking and no prior delivery record', () => {
     expect(shouldSendShipmentNotification(order())).toBe(true)
+    expect(shouldSendShipmentNotification(order({ source: 'paypal' }))).toBe(true)
     expect(shouldSendShipmentNotification(order({ status: 'processing' }))).toBe(false)
     expect(shouldSendShipmentNotification(order({ source: 'woocommerce' }))).toBe(false)
     expect(shouldSendShipmentNotification(order({ trackingNumber: '  ' }))).toBe(false)
