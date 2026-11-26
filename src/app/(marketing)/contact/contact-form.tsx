@@ -118,7 +118,7 @@ export function ContactForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+    <form method="post" onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
       <div className="absolute -left-[9999px]" aria-hidden="true">
         <Label htmlFor="website">Website</Label>
         <Input id="website" {...register('website')} tabIndex={-1} autoComplete="off" />

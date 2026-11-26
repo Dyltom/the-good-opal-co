@@ -49,4 +49,33 @@ describe('gift voucher purchase', () => {
     expect(params.allow_promotion_codes).toBeUndefined()
     expect(params.metadata).toMatchObject({ giftVoucherPurchase: 'true', amount: '150' })
   })
+
+  test('rejects a bot that fills the hidden website field without starting a payment', async () => {
+    const result = await createGiftVoucherCheckout({
+      amount: 150,
+      sendToSelf: true,
+      recipientName: '',
+      recipientEmail: '',
+      senderName: 'Sam',
+      message: '',
+      website: 'http://spam.example',
+    })
+
+    expect(result.success).toBe(false)
+    expect(createStripeSession).not.toHaveBeenCalled()
+  })
+
+  test('refuses an amount outside the allowed range without starting a payment', async () => {
+    const result = await createGiftVoucherCheckout({
+      amount: 1,
+      sendToSelf: true,
+      recipientName: '',
+      recipientEmail: '',
+      senderName: 'Sam',
+      message: '',
+    })
+
+    expect(result.success).toBe(false)
+    expect(createStripeSession).not.toHaveBeenCalled()
+  })
 })
