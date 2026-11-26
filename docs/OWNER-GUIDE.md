@@ -287,6 +287,8 @@ Course outlines live under **Courses**. Set each one to Accepting interest enqui
 
 People who sign up are emailed a confirmation link, and they count as subscribers once they click it. You can see them in **Customers**. The admin has no way to write or send a newsletter. Ask Dylan if you want to start sending one.
 
+People looking at a sold piece can leave their email to hear about similar pieces. They confirm by email like any other sign-up, and their customer record gets a tag such as `alert:opal-rings`. When you list a new piece in that category, or put one back in stock, they get one email the next morning (about 9:30 am) showing up to four new pieces.
+
 ### Pages that need Dylan
 
 These pages are written into the site itself and cannot be edited in the admin:
@@ -338,8 +340,11 @@ Your Stripe dashboard is the record of money: payments, refunds, disputes and pa
 | Deposit paid | The customer | Deposit confirmed – QUOTE-... |
 | Deposit paid | You | Deposit paid - QUOTE-... |
 | Newsletter sign-up | The subscriber | A newsletter confirmation, with a link to confirm |
+| 10 days after you mark an order Shipped with tracking | The buyer | How did your opal arrive? |
 
 Your copies go to the shop's contact email address. To change that address, ask Dylan.
+
+Ten days after you mark an order Shipped with tracking, the buyer gets a short email asking how their piece arrived. Their replies land in your inbox. If someone sends kind words, you can add them as a Review in admin (**Reviews**, see section 10), but only once the customer has said that's OK.
 
 ## 13. Please don't
 

@@ -34,7 +34,7 @@ interface ResendSender {
 
 export function shouldSendShipmentNotification(order: Order): boolean {
   return Boolean(
-    order.source === 'stripe' &&
+    (order.source === 'stripe' || order.source === 'paypal') &&
     order.status === 'shipped' &&
     order.trackingNumber?.trim() &&
     !order.shipmentEmailSentAt

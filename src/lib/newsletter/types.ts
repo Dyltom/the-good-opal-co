@@ -35,6 +35,8 @@ export interface NewsletterService {
   ): Promise<{ sent: number; failed: number }>
 }
 
+export const ALERT_TAG_PREFIX = 'alert:'
+
 export interface SubscribeOptions {
   name?: string
   source?: NewsletterSubscriber['source']
