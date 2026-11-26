@@ -338,8 +338,11 @@ Your Stripe dashboard is the record of money: payments, refunds, disputes and pa
 | Deposit paid | The customer | Deposit confirmed – QUOTE-... |
 | Deposit paid | You | Deposit paid - QUOTE-... |
 | Newsletter sign-up | The subscriber | A newsletter confirmation, with a link to confirm |
+| 10 days after you mark an order Shipped with tracking | The buyer | How did your opal arrive? |
 
 Your copies go to the shop's contact email address. To change that address, ask Dylan.
+
+Ten days after you mark an order Shipped with tracking, the buyer gets a short email asking how their piece arrived. Their replies land in your inbox. If someone sends kind words, you can add them as a Review in admin (**Reviews**, see section 10), but only once the customer has said that's OK.
 
 ## 13. Please don't
 
