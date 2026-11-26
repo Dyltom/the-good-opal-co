@@ -27,6 +27,7 @@ import { mergeProductGallery } from '@/lib/product-gallery'
 import { isBuilderEligibleOpal } from '@/lib/custom-builder/opal-visual'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { Button } from '@/components/ui/button'
+import { NewsletterForm } from '@/components/newsletter/NewsletterForm'
 import { summarize, toCatalogProduct } from '@/lib/catalog'
 import { reservedProductIds } from '@/lib/inventory-reservations'
 import { activeSale, withSalePrice } from '@/lib/promotions'
@@ -317,6 +318,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     <Button asChild variant="ghost" className="min-h-[50px] md:min-h-12">
                       <Link href="/contact?subject=opal-finder">Ask us to find one like it</Link>
                     </Button>
+                    {isDeposit || !product.category ? null : (
+                      <div className="mt-4">
+                        <h2 className="text-sm font-medium text-ink">Tell me when a piece like this comes in</h2>
+                        <NewsletterForm className="mt-2" alert={product.category} />
+                      </div>
+                    )}
                   </div>
                 ) : reserved ? (
                   <Button asChild variant="ghost" className="min-h-[50px] w-full md:min-h-12">

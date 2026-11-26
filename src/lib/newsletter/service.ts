@@ -127,6 +127,17 @@ export class ResendNewsletterService implements NewsletterService {
       const existingDoc = existingCustomer.docs[0]
       if (existingDoc) {
         if (existingDoc.subscribedToNewsletter && existingDoc.emailVerified) {
+          const newTags = (options?.tags ?? []).filter(
+            (tag) => !existingDoc.tags?.some((entry) => entry.tag === tag)
+          )
+          if (newTags.length > 0) {
+            await payload.update({
+              collection: 'customers',
+              id: existingDoc.id,
+              data: { tags: [...(existingDoc.tags ?? []), ...newTags.map((tag) => ({ tag }))] },
+            })
+            return { success: true, message: "You're already on the list, so you're all set." }
+          }
           return {
             success: false,
             message: 'You are already subscribed to our newsletter'

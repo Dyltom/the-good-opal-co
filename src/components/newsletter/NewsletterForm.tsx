@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { CheckCircle, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export function NewsletterForm({ className }: { className?: string }) {
+export function NewsletterForm({ className, alert }: { className?: string; alert?: string }) {
   const [state, formAction, isPending] = useActionState(subscribeToNewsletter, null)
   const emailId = useId()
   const [hydrated, setHydrated] = useState(false)
@@ -17,6 +17,7 @@ export function NewsletterForm({ className }: { className?: string }) {
     <form action={formAction} className={cn('w-full space-y-3', className)}>
       <input type="hidden" name="source" value="footer" />
       <input type="hidden" name="js" value={hydrated ? '1' : ''} />
+      {alert ? <input type="hidden" name="alert" value={alert} /> : null}
       <div aria-hidden="true" className="sr-only">
         <label>
           Leave this empty
@@ -44,7 +45,7 @@ export function NewsletterForm({ className }: { className?: string }) {
           disabled={isPending}
           className="h-12 px-5"
         >
-          {isPending ? 'Subscribing…' : 'Subscribe'}
+          {isPending ? 'Sending…' : alert ? 'Tell me' : 'Subscribe'}
         </Button>
       </div>
 
@@ -64,7 +65,9 @@ export function NewsletterForm({ className }: { className?: string }) {
       ) : null}
 
       <p className="text-xs leading-5 text-ink-3">
-        One code per email address. Welcome codes can&apos;t be used during storewide sales. Unsubscribe anytime.
+        {alert
+          ? "We'll email you when a similar piece is listed. You'll also get new pieces and offers from Steph's list. Unsubscribe any time."
+          : "One code per email address. Welcome codes can't be used during storewide sales. Unsubscribe anytime."}
       </p>
     </form>
   )
