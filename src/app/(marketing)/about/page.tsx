@@ -68,24 +68,6 @@ async function publishedPostSlugs(slugs: readonly string[]): Promise<Set<string>
   )
 }
 
-const principles = [
-  {
-    title: 'The stone comes first',
-    description:
-      'Photography and product details should help you see the character of each opal before you decide.',
-  },
-  {
-    title: 'Details over claims',
-    description:
-      'We share the origin, material, measurements, and treatment information available for each piece.',
-  },
-  {
-    title: 'Questions are welcome',
-    description:
-      'If colour, scale, or a fine detail matters, ask for another image or a virtual viewing before purchase.',
-  },
-]
-
 const sectionHeading = 'text-[clamp(1.875rem,3.2vw,3.125rem)] leading-[1.04] tracking-[-0.02em]'
 
 export default async function AboutPage() {
@@ -208,26 +190,6 @@ export default async function AboutPage() {
               </li>
             ))}
           </ul>
-        </section>
-
-        <section
-          aria-labelledby="how-heading"
-          className="grid gap-4 pt-14 md:grid-cols-[minmax(0,0.9fr)_minmax(0,2.2fr)] md:gap-[clamp(20px,4vw,72px)] md:pt-[clamp(48px,5.5vw,84px)]"
-        >
-          <h2 id="how-heading" className={sectionHeading}>
-            How we <i>work</i>
-          </h2>
-          <div className="grid border-t border-rule md:grid-cols-3 md:border-b">
-            {principles.map((principle) => (
-              <article
-                key={principle.title}
-                className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l"
-              >
-                <h3 className="text-[1.375rem]">{principle.title}</h3>
-                <p className="mt-2 text-sm leading-[1.6] text-ink-2">{principle.description}</p>
-              </article>
-            ))}
-          </div>
         </section>
 
         <section

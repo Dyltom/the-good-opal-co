@@ -133,7 +133,7 @@ function storeFacts(input: DiscoveryInput): string[] {
     '## How to buy',
     '',
     '- Each product page shows the current price and whether the piece is available, reserved, or sold.',
-    `- Payment is by Stripe secure checkout: ${METHODS_ENABLED_IN_STRIPE.join(', ')}. Pay in full or in instalments.`,
+    `- Payment is by Stripe secure checkout (${METHODS_ENABLED_IN_STRIPE.join(', ')}) or PayPal. Pay in full or in instalments.`,
     "- A reserved piece is in someone's checkout. If they don't complete payment, it returns to the shop within 30 minutes.",
     `- Sold pieces keep their page and are marked sold. Recently sold pieces: ${markdownLink('Pieces that have found a home', '/store/collected')}.`,
     '- Ask for extra photographs or a virtual viewing before buying.',
