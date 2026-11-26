@@ -287,6 +287,8 @@ Course outlines live under **Courses**. Set each one to Accepting interest enqui
 
 People who sign up are emailed a confirmation link, and they count as subscribers once they click it. You can see them in **Customers**. The admin has no way to write or send a newsletter. Ask Dylan if you want to start sending one.
 
+People looking at a sold piece can leave their email to hear about similar pieces. They confirm by email like any other sign-up, and their customer record gets a tag such as `alert:opal-rings`. When you list a new piece in that category, or put one back in stock, they get one email the next morning (about 9:30 am) showing up to four new pieces.
+
 ### Pages that need Dylan
 
 These pages are written into the site itself and cannot be edited in the admin:

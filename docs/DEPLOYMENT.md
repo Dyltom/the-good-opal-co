@@ -30,6 +30,7 @@ Coolify scheduled tasks call these routes with `Authorization: Bearer $CRON_SECR
 | `/api/cron/builder-mappings` | `7,22,37,52 * * * *` |
 | `/api/cron/ring-reference-audit` | `23 15 * * *` |
 | `/api/cron/insights-retention` | `41 16 * * *` |
+| `/api/cron/piece-alerts` | `30 22 * * *` |
 
 ## Environment variables
 
