@@ -6,7 +6,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { JewellerQuotes } from '@/components/sections/JewellerQuotes'
-import { TorchBand } from '@/components/sections/TorchBand'
+import { ClosingBand } from '@/components/sections/ClosingBand'
 
 export const metadata: Metadata = {
   title: 'Custom Opal Jewellery | The Good Opal Co',
@@ -104,7 +104,7 @@ export default function ServicesPage() {
         </div>
       </Container>
 
-      <TorchBand
+      <ClosingBand
         id="start-heading"
         heading={
           <>

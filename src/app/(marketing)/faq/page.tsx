@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
-import { TorchBand } from '@/components/sections/TorchBand'
+import { ClosingBand } from '@/components/sections/ClosingBand'
 import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
 
 export const metadata: Metadata = {
@@ -208,7 +208,7 @@ export default function FAQPage() {
         </div>
       </Container>
 
-      <TorchBand
+      <ClosingBand
         id="deciding-heading"
         heading={
           <>
