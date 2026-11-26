@@ -31,6 +31,7 @@ export const Orders: CollectionConfig = {
     components: {
       beforeListTable: [
         { path: '@/components/payload/help/HelpLinks#HelpLinks', clientProps: { topic: 'orders' } },
+        '@/components/payload/MyPostLabelsButton#MyPostLabelsButton',
       ],
     },
   },
