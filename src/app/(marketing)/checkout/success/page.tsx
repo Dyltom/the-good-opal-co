@@ -13,7 +13,7 @@ import type { CartItem } from '@/lib/cart'
 import { isPaidCheckoutStatus, shouldFinalizeCheckout } from '@/lib/stripe-fulfillment'
 import { isGiftVoucherPurchaseSession } from '@/lib/gift-voucher-purchase'
 import { surveyOptInFor, surveyOptInForOrder } from '@/lib/customer-reviews'
-import { getOrder, isPayPalOrderId, paypalReference } from '@/lib/paypal'
+import { captureStatus, getOrder, isPayPalOrderId, paypalReference } from '@/lib/paypal'
 import { paypalRetryPath } from '@/lib/paypal-order'
 import type { Order } from '@/types/payload-types'
 
@@ -159,7 +159,8 @@ async function findPayPalOrder(reference: string): Promise<Order | null> {
 
 async function payPalStatus(orderId: string): Promise<string | undefined> {
   try {
-    return (await getOrder(orderId)).status
+    const order = await getOrder(orderId)
+    return order.status === 'COMPLETED' ? captureStatus(order) : order.status
   } catch (err) {
     console.error('Failed to verify PayPal order:', err)
     return undefined
@@ -210,6 +211,25 @@ async function PayPalResult({ orderId }: { orderId: string }) {
           PayPal has your payment. We will email you to confirm the order, so there is no need to pay
           again.
         </p>
+      </>
+    )
+  }
+  if (status === 'PENDING') {
+    return (
+      <>
+        <h1 className={headingClass}>Payment processing</h1>
+        <p className="mt-3 font-serif text-xl italic text-ink-2">
+          PayPal is still processing your payment.
+        </p>
+        <p className="mt-4 text-[15px] leading-[1.6] text-ink-2">
+          Your piece is held for you. We will email your order confirmation once PayPal completes
+          the payment, so there is no need to pay again.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button asChild>
+            <Link href="/store">Continue shopping</Link>
+          </Button>
+        </div>
       </>
     )
   }

@@ -63,6 +63,10 @@ export interface PayPalOrder {
   purchase_units?: PayPalPurchaseUnit[]
 }
 
+export function captureStatus(order: PayPalOrder): string | undefined {
+  return order.purchase_units?.[0]?.payments?.captures?.[0]?.status
+}
+
 export class PayPalError extends Error {
   readonly status: number
   readonly issue: string | undefined

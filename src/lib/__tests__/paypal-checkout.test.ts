@@ -8,6 +8,7 @@ const db = vi.hoisted(() => ({
   collections: new Map<string, Record<string, unknown>[]>(),
   nextId: 1,
   stripeCalls: [] as string[],
+  emails: [] as string[],
 }))
 
 function matches(doc: Record<string, unknown>, where: Where | undefined): boolean {
@@ -57,7 +58,12 @@ vi.mock('@/lib/payload', () => ({
 }))
 vi.mock('resend', () => ({
   Resend: class ResendMock {
-    emails = { send: async () => ({ data: { id: 'email' }, error: null }) }
+    emails = {
+      send: async (message: { subject?: string }) => {
+        db.emails.push(message.subject ?? '')
+        return { data: { id: 'email' }, error: null }
+      },
+    }
   },
 }))
 vi.mock('@/lib/insights/record', () => ({
@@ -177,6 +183,7 @@ beforeEach(() => {
   paypal.captureCalls = 0
   paypal.capture = () => json(captured())
   db.stripeCalls = []
+  db.emails = []
   seed()
   vi.stubGlobal(
     'fetch',
@@ -304,6 +311,45 @@ describe('PayPal return', () => {
 
     expect(reservation()['status']).toBe('released')
     expect(stock()).toBe(1)
+  })
+
+  test('a payment PayPal is still holding is not recorded as paid and keeps the piece held', async () => {
+    paypal.capture = () => json(captured('PENDING'))
+
+    await expect(completePayPalReturn(ORDER_ID, NOW)).resolves.toBe(
+      `/checkout/success?paypal=${ORDER_ID}`
+    )
+
+    expect(orders()).toHaveLength(0)
+    expect(reservation()['status']).toBe('pending-payment')
+    expect(stock()).toBe(0)
+    expect(db.emails).toEqual([`PayPal payment needs checking - ${ORDER_ID}`])
+  })
+
+  test('the return link records the order once PayPal completes a held payment', async () => {
+    paypal.capture = () => json(captured('PENDING'))
+    await completePayPalReturn(ORDER_ID, NOW)
+    approved = captured('COMPLETED')
+
+    await expect(completePayPalReturn(ORDER_ID, NOW)).resolves.toBe(
+      `/checkout/success?paypal=${ORDER_ID}`
+    )
+
+    expect(paypal.captureCalls).toBe(1)
+    expect(orders()).toHaveLength(1)
+    expect(reservation()['status']).toBe('consumed')
+  })
+
+  test('the return link puts the piece back when PayPal denies a held payment', async () => {
+    paypal.capture = () => json(captured('PENDING'))
+    await completePayPalReturn(ORDER_ID, NOW)
+    approved = captured('DECLINED')
+
+    await expect(completePayPalReturn(ORDER_ID, NOW)).resolves.toBe('/cart?paypal=declined')
+
+    expect(reservation()).toMatchObject({ status: 'released', releaseReason: 'payment-declined' })
+    expect(stock()).toBe(1)
+    expect(orders()).toHaveLength(0)
   })
 })
 
