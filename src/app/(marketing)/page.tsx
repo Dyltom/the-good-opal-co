@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { MarketingShell } from '@/components/marketing'
+import { linkArrow, MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { LivingWall, type WallPiece } from '@/components/sections/LivingWall'
-import { JewellerQuotes } from '@/components/sections/JewellerQuotes'
+import { TorchBand } from '@/components/sections/TorchBand'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
@@ -82,19 +82,16 @@ function hangWall(listings: Listing[]): WallPiece[] {
 const KINDS = [
   {
     title: 'Rings and earrings',
-    copy: 'Finished pieces, ready to wear or give.',
     href: '/store?category=opal-rings,opal-earrings',
     matches: (product: ListedProduct) => FINISHED.has(product.category ?? ''),
   },
   {
     title: 'Loose opals',
-    copy: 'Opals not yet set in jewellery. Keep one, or have it made into a ring.',
     href: '/store?category=raw-opals',
     matches: (product: ListedProduct) => product.category === 'raw-opals',
   },
   {
     title: 'For jewellers',
-    copy: 'Calibrated stones: small opals cut to exact sizes for standard settings.',
     href: '/store?search=calibrated',
     matches: (product: ListedProduct) => /calibrated/i.test(product.name),
   },
@@ -139,18 +136,15 @@ async function loadInStock(): Promise<Listing[]> {
 }
 
 const FACTS = [
-  ['One of a kind', 'Most pieces are a single stone, photographed individually.'],
-  ['Shown as it is', 'Studio shots change the background, never the colour.'],
+  ['One of a kind', 'Each stone photographed on its own.'],
+  ['Shown as it is', 'Never recoloured.'],
   [
     'Shipping',
-    `Australia Post from $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)} in Australia, insured and signed for over $${EXTRA_COVER_INCLUDED}.`,
+    `From $${(cheapestShippingOption('AU', 0).cents / 100).toFixed(2)}, insured over $${EXTRA_COVER_INCLUDED}.`,
   ],
-  ['Returns', `Change of mind within ${RETURN_WINDOW_DAYS} days of delivery, on eligible pieces.`],
-  ['Secure checkout', 'Card, Apple Pay, Google Pay and Klarna through Stripe, or PayPal.'],
+  ['Returns', `${RETURN_WINDOW_DAYS} days, change of mind.`],
+  ['Checkout', 'Stripe or PayPal.'],
 ] as const
-
-const linkArrow =
-  'inline-flex items-center gap-2 border-b border-rule-2 pb-[3px] text-sm text-ink no-underline transition-colors hover:border-ink'
 
 function pieceCount(count: number) {
   return `${count} ${count === 1 ? 'piece' : 'pieces'}`
@@ -212,8 +206,8 @@ export default async function HomePage() {
                       aria-hidden="true"
                     />
                   </h3>
-                  <p className="mt-1 max-w-[40ch] text-[13px] text-ink-2 md:text-sm">
-                    {kind.copy} <span className="tabular-nums text-ink-3">{pieceCount(kind.count)}</span>
+                  <p className="mt-1 text-[13px] tabular-nums text-ink-3 md:text-sm">
+                    {pieceCount(kind.count)}
                   </p>
                 </Link>
               ))}
@@ -237,8 +231,7 @@ export default async function HomePage() {
                 Design your own <i>ring</i>
               </h2>
               <p className="mt-2 max-w-[48ch] text-[15px] text-ink-2">
-                Start with an idea, an occasion, or an opal of your own. Sketch it in the 3D designer,
-                then Steph quotes it before any work begins.
+                Sketch it in 3D. Steph quotes it before any work begins.
               </p>
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <Button asChild>
@@ -255,27 +248,23 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="behind-heading" className="px-gut pt-sec">
-          <div className="grid gap-7 border-t border-rule pt-[clamp(14px,1.4vw,20px)] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,4vw,72px)]">
-            <div>
-              <h2 id="behind-heading" className="text-[26px] leading-[1.1] md:text-[clamp(26px,2.4vw,34px)]">
-                Who&rsquo;s behind it
-              </h2>
-              <p className="mt-2 max-w-[46ch] text-[15px] text-ink-2">
-                Stephanie Caruana, founder and opal cutter. She sources opal directly from Australian
-                miners, mostly from Lightning Ridge and Coober Pedy, and has written about cutting it
-                since 2020.
-              </p>
-              <Link href="/about" className={`${linkArrow} mt-4`}>
-                Our story
-                <ArrowRight className="h-[15px] w-[15px]" aria-hidden="true" />
-              </Link>
-            </div>
-            <JewellerQuotes />
-          </div>
-        </section>
-
         <ReviewsSection title="In their words." className="px-gut pt-sec" />
+
+        <TorchBand
+          id="sourced-heading"
+          heading={
+            <>
+              Chosen by hand, <i>one stone at a time.</i>
+            </>
+          }
+          line="Stephanie Caruana buys opal direct from Australian miners, mostly from Lightning Ridge and Coober Pedy."
+          image={{
+            src: '/images/studio/steph-palm-opals.jpg',
+            alt: 'An open palm holding about thirty cut Australian opals, black, white and crystal',
+            position: '45% 55%',
+          }}
+          action={{ href: '/about', label: 'Our story' }}
+        />
       </MarketingShell>
     </>
   )

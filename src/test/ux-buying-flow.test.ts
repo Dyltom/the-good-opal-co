@@ -283,8 +283,6 @@ describe('buying flow UI/UX safeguards', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
     expect(source).toContain("collection: 'products'")
-    expect(source).toContain('Card, Apple Pay, Google Pay and Klarna through Stripe, or PayPal.')
-    expect(source).toContain('photographed individually')
     expect(source).not.toContain('scrollY')
     expect(source).not.toContain('blur-3xl')
     expect(source).not.toContain('Quick Stats')
