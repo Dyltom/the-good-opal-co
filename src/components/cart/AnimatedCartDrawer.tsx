@@ -15,7 +15,6 @@ import { CartItemSkeleton } from '@/components/ui/LoadingStates'
 import { CartEmptyState } from '@/components/ui/EmptyStates'
 import {
   CheckoutButton,
-  PayPalCheckoutButton,
   ShippingCountrySelect,
   useShippingCountry,
 } from '@/components/cart/CheckoutButton'
@@ -23,7 +22,6 @@ import { calculateCheckoutPricing } from '@/lib/checkout-pricing'
 import { formatCurrency } from '@/lib/utils'
 import { trackRemoveFromCart } from '@/lib/analytics'
 import { fetchCart, removeFromCart, updateQuantity } from '@/app/(marketing)/cart/actions'
-import { paypalCheckoutAvailable } from '@/app/(marketing)/checkout/actions'
 import { Trash2, Plus, Minus } from 'lucide-react'
 import type { Cart, CartItem } from '@/lib/cart'
 
@@ -34,14 +32,12 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
   const [country, setCountry] = useShippingCountry()
   const [isPending, startTransition] = useTransition()
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
-  const [paypalEnabled, setPaypalEnabled] = useState(false)
 
   const loadCart = useCallback(async () => {
-    const [result, paypal] = await Promise.all([fetchCart(), paypalCheckoutAvailable()])
+    const result = await fetchCart()
     if (result.success && result.data) {
       setCart(result.data)
     }
-    setPaypalEnabled(paypal)
     setIsLoading(false)
   }, [])
 
@@ -155,17 +151,14 @@ export function AnimatedCartDrawer({ children }: { children: React.ReactNode }) 
                 </span>
               </div>
               {cart ? (
-                <div className="space-y-2">
-                  <CheckoutButton cart={cart} country={country} className="h-12 w-full text-base" />
-                  {paypalEnabled ? <PayPalCheckoutButton cart={cart} country={country} /> : null}
-                </div>
+                <CheckoutButton cart={cart} country={country} className="h-12 w-full text-base" />
               ) : null}
               <Link
                 href="/cart"
                 onClick={() => setIsOpen(false)}
                 className="flex min-h-11 items-center justify-center text-sm text-ink-2 underline decoration-rule-2 underline-offset-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                View bag, add a gift voucher
+                View bag for PayPal, express post or a voucher
               </Link>
             </div>
           </>

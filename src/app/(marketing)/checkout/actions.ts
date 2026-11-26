@@ -11,8 +11,10 @@ import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { APP_URL } from '@/lib/constants'
 import {
   DISPATCH_BUSINESS_DAYS,
+  POSTAGE,
   SHIPPING_COUNTRIES,
   shippingRestriction,
+  type Postage,
 } from '@/lib/constants/shipping'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
 import {
@@ -52,6 +54,7 @@ import { activeSale } from '@/lib/promotions'
 
 const checkoutSchema = z.object({
   country: z.enum(SHIPPING_COUNTRIES),
+  postage: z.enum(POSTAGE).optional(),
   checkoutAttemptId: z.string().uuid('Invalid checkout attempt'),
   giftVoucherCode: z.string().trim().max(40).optional(),
   email: z.string().trim().toLowerCase().email('Enter a valid email address').max(254).optional(),
@@ -139,6 +142,7 @@ interface CheckoutResult {
 
 export async function createCheckoutSession(input: {
   country: z.infer<typeof checkoutSchema>['country']
+  postage?: Postage | undefined
   checkoutAttemptId: string
   giftVoucherCode?: string | undefined
   email?: string | undefined
@@ -164,7 +168,7 @@ export async function createCheckoutSession(input: {
 
   let heldVoucherFor: string | null = null
   try {
-    const { country, checkoutAttemptId, giftVoucherCode, email, marketingConsent, js } =
+    const { country, postage, checkoutAttemptId, giftVoucherCode, email, marketingConsent, js } =
       validationResult.data
     const consented = Boolean(email) && marketingConsent === true && js === '1'
     const identifier = await getRequestIdentifier()
@@ -210,7 +214,7 @@ export async function createCheckoutSession(input: {
     const restriction = shippingRestriction(country, cart.items)
     if (restriction) return { success: false, error: restriction }
 
-    const pricing = calculateCheckoutPricing(cart.items, country)
+    const pricing = calculateCheckoutPricing(cart.items, country, postage)
     const expiresAt = checkoutReservationExpiresAt()
     const brandIcon = publicUrl('/logo.png')
 
@@ -219,7 +223,7 @@ export async function createCheckoutSession(input: {
       const hold = await holdGiftVoucher({
         code: giftVoucherCode,
         checkoutToken: checkoutAttemptId,
-        orderTotalCents: pricing.totalCents,
+        orderTotalCents: calculateCheckoutPricing(cart.items, country).totalCents,
         holdExpiresAt: expiresAt,
       })
       if (!hold.ok) return { success: false, error: giftVoucherProblemMessage(hold.problem) }
@@ -350,12 +354,9 @@ export async function createCheckoutSession(input: {
   }
 }
 
-export async function paypalCheckoutAvailable(): Promise<boolean> {
-  return paypalConfigured()
-}
-
 export async function createPayPalCheckout(input: {
   country: z.infer<typeof checkoutSchema>['country']
+  postage?: Postage | undefined
   checkoutAttemptId: string
   email?: string | undefined
   marketingConsent?: boolean | undefined
@@ -373,7 +374,7 @@ export async function createPayPalCheckout(input: {
   }
 
   try {
-    const { country, checkoutAttemptId, email, marketingConsent, js } = validationResult.data
+    const { country, postage, checkoutAttemptId, email, marketingConsent, js } = validationResult.data
     const consented = Boolean(email) && marketingConsent === true && js === '1'
     const identifier = await getRequestIdentifier()
     const insightsVisitor = await requestVisitorKey()
@@ -414,7 +415,7 @@ export async function createPayPalCheckout(input: {
     const restriction = shippingRestriction(country, cart.items)
     if (restriction) return { success: false, error: restriction }
 
-    const pricing = calculateCheckoutPricing(cart.items, country)
+    const pricing = calculateCheckoutPricing(cart.items, country, postage)
     const expiresAt = checkoutReservationExpiresAt()
     const order = await createOrder(
       buildPayPalOrderBody({

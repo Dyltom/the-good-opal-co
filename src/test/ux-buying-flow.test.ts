@@ -151,7 +151,7 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('fixed inset-x-0 bottom-0')
     expect(source).toContain('lg:hidden')
     expect(source).toContain('env(safe-area-inset-bottom)')
-    expect(source).toContain('Estimated total')
+    expect(source).toContain('>Total<')
     expect(source).toContain('pb-14 lg:pb-0')
     expect(source).toContain('flex min-w-0 gap-4 py-5 sm:gap-5')
   })

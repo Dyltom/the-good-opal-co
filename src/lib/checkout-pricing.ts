@@ -1,6 +1,7 @@
 import {
-  cheapestShippingOption,
+  POSTAGE,
   shippingOptions,
+  type Postage,
   type ShippingCountry,
   type ShippingOption,
 } from '@/lib/constants/shipping'
@@ -38,19 +39,22 @@ const NO_SHIPPING: ShippingOption = { label: 'No shipping on deposits', cents: 0
 
 export function calculateCheckoutPricing(
   items: CheckoutLineItem[],
-  country: ShippingCountry = 'AU'
+  country: ShippingCountry = 'AU',
+  postage: Postage = 'standard'
 ): CheckoutPricing {
   const subtotal = lineSubtotal(items)
   const shippedSubtotal = lineSubtotal(items.filter((item) => !item.deposit))
   const ships = shippedSubtotal > 0
-  const shippingCents = ships ? cheapestShippingOption(country, shippedSubtotal).cents : 0
+  const options = ships ? shippingOptions(country, shippedSubtotal) : [NO_SHIPPING]
+  const chosen = options[POSTAGE.indexOf(postage)] ?? NO_SHIPPING
+  const shippingCents = chosen.cents
   const subtotalCents = dollarsToCents(subtotal)
   const totalCents = subtotalCents + shippingCents
 
   return {
     subtotal,
     shippedSubtotal,
-    shippingOptions: ships ? shippingOptions(country, shippedSubtotal) : [NO_SHIPPING],
+    shippingOptions: [chosen, ...options.filter((option) => option !== chosen)],
     shipping: centsToDollars(shippingCents),
     total: centsToDollars(totalCents),
     subtotalCents,
