@@ -52,13 +52,21 @@ function errorMessage(error: unknown): string {
 export async function sendContactEmail(data: unknown): Promise<ContactActionResult> {
   try {
     const validated = contactSchema.parse(data)
-    const identifier = await getRequestIdentifier(validated.email)
-    const allowed = await checkRateLimit({
-      scope: 'contact',
-      identifier,
-      limit: 5,
-      windowSeconds: 60 * 60,
-    })
+    const [senderAllowed, addressAllowed] = await Promise.all([
+      checkRateLimit({
+        scope: 'contact',
+        identifier: await getRequestIdentifier(validated.email),
+        limit: 5,
+        windowSeconds: 60 * 60,
+      }),
+      checkRateLimit({
+        scope: 'contact-ip',
+        identifier: await getRequestIdentifier(),
+        limit: 10,
+        windowSeconds: 60 * 60,
+      }),
+    ])
+    const allowed = senderAllowed && addressAllowed
     if (!allowed) {
       return { success: false, error: 'Too many messages. Please try again later.' }
     }
