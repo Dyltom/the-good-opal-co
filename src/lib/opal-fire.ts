@@ -26,7 +26,8 @@ async function measure(filename: string): Promise<number> {
   }
   if (chroma.length === 0) return 0
   const brightest = chroma.sort((a, b) => b - a).slice(0, Math.ceil(chroma.length * BRIGHTEST_SHARE))
-  return brightest.reduce((sum, value) => sum + value, 0) / brightest.length
+  const fire = brightest.reduce((sum, value) => sum + value, 0) / brightest.length
+  return fire * Math.sqrt(chroma.length / (data.length / 3))
 }
 
 export function opalFire(filename: string): Promise<number> {
