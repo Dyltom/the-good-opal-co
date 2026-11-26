@@ -5,10 +5,9 @@ import type Stripe from 'stripe'
 import { SavedBagEmail, type SavedBagLine } from '@/emails/saved-bag'
 import { hasMarketingConsent } from '@/lib/marketing-consent'
 import { createCampaignUnsubscribeToken } from '@/lib/newsletter/campaign-unsubscribe-token'
-import { UNSUBSCRIBED_TAG } from '@/lib/newsletter/service'
+import { optedOut } from '@/lib/newsletter/opted-out'
 import { getPayload } from '@/lib/payload'
 import { checkRateLimit } from '@/lib/rate-limit'
-import type { Customer } from '@/types/payload-types'
 
 export interface ReminderLine extends SavedBagLine {
   productId: string
@@ -25,12 +24,6 @@ export type CartReminderOutcome =
 
 const DAY = 24 * 60 * 60
 const PAID_ORDER_STATUSES = ['processing', 'shipped', 'delivered']
-
-function optedOut(customer: Customer | undefined): boolean {
-  if (!customer) return false
-  if (customer.tags?.some(({ tag }) => tag === UNSUBSCRIBED_TAG)) return true
-  return !customer.subscribedToNewsletter && Boolean(customer.subscribedAt)
-}
 
 export async function sendCartReminder(
   session: Stripe.Checkout.Session,
