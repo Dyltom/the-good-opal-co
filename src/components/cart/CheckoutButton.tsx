@@ -215,7 +215,7 @@ export function PayPalCheckoutButton({ cart, country, postage, contact }: PayPal
         disabled={isPending || cart.items.length === 0 || restriction !== null}
         aria-busy={isPending}
         aria-label="Pay with PayPal"
-        className="flex h-12 w-full items-center justify-center rounded-sm bg-paypal transition-colors hover:bg-paypal-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex min-h-[52px] w-full items-center justify-center rounded-sm bg-paypal transition-colors hover:bg-paypal-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending ? (
           <span className="text-sm font-medium text-paypal-blue">Opening PayPal</span>

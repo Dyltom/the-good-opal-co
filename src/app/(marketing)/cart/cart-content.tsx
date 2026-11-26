@@ -72,6 +72,7 @@ export function CartPageContent({
     ? centsToDollars(giftVoucherAppliedCents(Math.round(voucher.available * 100), pricing.totalCents))
     : 0
   const totalDue = pricing.total - voucherAmount
+  const showPayPal = paypalEnabled && !voucher
   const voucherField = <GiftVoucherField applied={voucher} onChange={setVoucher} />
   const checkoutButton = (
     <CheckoutButton
@@ -80,7 +81,7 @@ export function CartPageContent({
       postage={postage}
       giftVoucherCode={voucher?.code}
       contact={contact}
-      className="h-12 w-full text-[15px]"
+      className="text-[15px]"
     />
   )
   const paymentRef = useRef<HTMLDivElement>(null)
@@ -279,18 +280,20 @@ export function CartPageContent({
                 </SummaryDisclosure>
               </div>
 
-              <div ref={paymentRef} className="mt-5 space-y-2.5">
-                {checkoutButton}
-                {paypalEnabled && !voucher ? (
-                  <PayPalCheckoutButton
-                    cart={cart}
-                    country={country}
-                    postage={postage}
-                    contact={contact}
-                  />
-                ) : null}
-                {paypalEnabled && !voucher && promoCodes ? (
-                  <p className="text-[12.5px] leading-5 text-ink-2">Have a code? Use Checkout.</p>
+              <div ref={paymentRef} className="mt-5">
+                <div className={showPayPal ? 'grid grid-cols-2 items-start gap-2' : undefined}>
+                  {checkoutButton}
+                  {showPayPal ? (
+                    <PayPalCheckoutButton
+                      cart={cart}
+                      country={country}
+                      postage={postage}
+                      contact={contact}
+                    />
+                  ) : null}
+                </div>
+                {showPayPal && promoCodes ? (
+                  <p className="mt-2 text-[12.5px] leading-5 text-ink-2">Have a code? Use Checkout.</p>
                 ) : null}
               </div>
             </div>
