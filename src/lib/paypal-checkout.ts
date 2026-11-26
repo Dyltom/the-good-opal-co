@@ -8,6 +8,7 @@ import {
 import { completeExistingOrder, fulfilPaidCheckout } from '@/lib/orders/fulfil-paid-checkout'
 import {
   captureOrder,
+  captureStatus,
   getOrder,
   isPayPalOrderId,
   moneyToCents,
@@ -19,6 +20,7 @@ import {
 import {
   cartNotice,
   decodeCheckoutContext,
+  paypalRetryPath,
   paypalSuccessPath,
   RETURN_PATH,
   type PayPalCheckoutContext,
@@ -57,23 +59,24 @@ function reservationExpired(reservation: InventoryReservation, now: Date): boole
   )
 }
 
-async function alertOwner(orderId: string, problem: string): Promise<void> {
-  const adminUrl = `${(process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')}/admin/collections/orders`
+function siteUrl(): string {
+  return (process.env['NEXT_PUBLIC_APP_URL'] ?? '').replace(/\/$/, '')
+}
+
+async function alertOwner(
+  orderId: string,
+  kind: 'unfulfilled' | 'pending',
+  lines: string[]
+): Promise<void> {
   try {
     const { error } = await new Resend(process.env['RESEND_API_KEY']).emails.send(
       {
         from: process.env['EMAIL_FROM'] ?? '',
         to: process.env['CONTACT_EMAIL'] ?? '',
         subject: `PayPal payment needs checking - ${orderId}`,
-        text: [
-          `PayPal order ${orderId}: ${problem}`,
-          '',
-          'The shopper was told their payment was received and that we will email them. Check the payment in the PayPal business account, then create or fix the order in admin.',
-          '',
-          `Orders: ${adminUrl}`,
-        ].join('\n'),
+        text: [...lines, '', `Orders: ${siteUrl()}/admin/collections/orders`].join('\n'),
       },
-      { idempotencyKey: `paypal-unfulfilled/${orderId}` }
+      { idempotencyKey: `paypal-${kind}/${orderId}` }
     )
     if (error) console.error(`PayPal owner alert rejected for ${orderId}:`, error.message)
   } catch (error) {
@@ -88,7 +91,11 @@ async function paymentNeedsChecking(
 ): Promise<string> {
   console.error(`PayPal order ${orderId} ${problem}:`, error)
   await recordServerError({ kind: 'checkout', path: RETURN_PATH, error })
-  await alertOwner(orderId, problem)
+  await alertOwner(orderId, 'unfulfilled', [
+    `PayPal order ${orderId}: ${problem}`,
+    '',
+    'The shopper was told their payment was received and that we will email them. Check the payment in the PayPal business account, then create or fix the order in admin.',
+  ])
   return paypalSuccessPath(orderId)
 }
 
@@ -151,9 +158,6 @@ async function fulfilCaptured(order: PayPalOrder): Promise<string> {
           ? `Ship by ${context.shippingLabel}`
           : undefined,
         capture ? `Paid by PayPal, capture ${capture.id}` : 'Paid by PayPal',
-        capture?.status === 'PENDING'
-          ? 'PayPal is still holding this payment. Check it shows as completed in PayPal before posting.'
-          : undefined,
       ],
       insight: { occurredAt: new Date(paidAt), visitor: context?.visitor, value: totalCents / 100 },
       joinList: context?.consentAt && context.email ? { email: context.email, name } : null,
@@ -163,6 +167,24 @@ async function fulfilCaptured(order: PayPalOrder): Promise<string> {
     if (await completeExistingOrder(reference).catch(() => null)) return paypalSuccessPath(order.id)
     return paymentNeedsChecking(order.id, 'was paid but the order could not be recorded', error)
   }
+}
+
+async function settleCapture(order: PayPalOrder): Promise<string> {
+  const status = captureStatus(order)
+  if (status === 'COMPLETED') return fulfilCaptured(order)
+  if (status === 'DECLINED' || status === 'FAILED') {
+    const reservation = await findReservationByReference(paypalReference(order.id))
+    if (reservation) await releaseInventoryReservation(reservation.token, 'payment-declined')
+    return cartNotice('declined')
+  }
+  await alertOwner(order.id, 'pending', [
+    `PayPal order ${order.id}: PayPal is holding this payment (${status ?? 'no capture'}), so it is not paid yet. Do not post anything.`,
+    '',
+    'The shopper was told PayPal is still processing it and that we will email their order confirmation. Their piece stays off sale.',
+    '',
+    `Once PayPal shows the payment as Completed or Denied, open ${siteUrl()}${paypalRetryPath(order.id)} . A completed payment becomes an order and emails the shopper their confirmation. A denied one puts the piece back on sale.`,
+  ])
+  return paypalSuccessPath(order.id)
 }
 
 async function capture(orderId: string, token: string): Promise<PayPalOrder | string> {
@@ -202,7 +224,7 @@ export async function completePayPalReturn(orderId: string, now = new Date()): P
     await recordServerError({ kind: 'checkout', path: RETURN_PATH, error })
     return cartNotice('failed')
   }
-  if (order.status === 'COMPLETED') return fulfilCaptured(order)
+  if (order.status === 'COMPLETED') return settleCapture(order)
   if (order.status !== 'APPROVED') return CANCELLED_PATH
 
   const reservation = await findReservationByReference(reference)
@@ -236,12 +258,7 @@ export async function completePayPalReturn(orderId: string, now = new Date()): P
 
   const captured = await capture(orderId, reservation.token)
   if (typeof captured === 'string') return captured
-  const status = captured.purchase_units?.[0]?.payments?.captures?.[0]?.status
-  if (status === 'DECLINED' || status === 'FAILED') {
-    await releaseInventoryReservation(reservation.token, 'payment-declined')
-    return cartNotice('declined')
-  }
-  return fulfilCaptured(captured)
+  return settleCapture(captured)
 }
 
 export async function cancelPayPalCheckout(orderId: string): Promise<string> {
