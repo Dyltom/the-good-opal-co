@@ -1,5 +1,5 @@
 import { formatCurrency } from '@/lib/utils'
-import { EmailFrame, emailColors, emailText } from './email-frame'
+import { EmailButton, EmailFrame, emailColors, emailText } from './email-frame'
 
 interface OrderItem {
   name: string
@@ -49,12 +49,9 @@ export function OrderConfirmationEmail({
 }: OrderConfirmationEmailProps) {
   const firstName = customerName.trim().split(/\s+/)[0] || 'there'
   const cityLine = [shippingAddress.city, shippingAddress.state, shippingAddress.postalCode].filter(Boolean).join(' ')
-  const nextSteps = [
-    requiresInventoryReview
-      ? 'We check that your piece is still available, then pack it for dispatch. If anything needs attention, we will email you before it goes.'
-      : 'We pack your piece for dispatch.',
-    'When it ships, you will get an email with the carrier and tracking number.',
-  ]
+  const countryName = /^[A-Za-z]{2}$/.test(shippingAddress.country)
+    ? (new Intl.DisplayNames(['en-AU'], { type: 'region' }).of(shippingAddress.country.toUpperCase()) ?? shippingAddress.country)
+    : shippingAddress.country
 
   return (
     <EmailFrame preview={`Order ${orderNumber} is confirmed.`} baseUrl={baseUrl} supportEmail={supportEmail}>
@@ -71,7 +68,7 @@ export function OrderConfirmationEmail({
           <tr>
             <td style={{ padding: '16px 20px' }}>
               <p style={{ ...emailText.eyebrow, margin: '0 0 4px' }}>Order number</p>
-              <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '17px', fontWeight: 700, margin: 0, overflowWrap: 'anywhere' }}>{orderNumber}</p>
+              <p style={{ fontSize: '17px', fontWeight: 700, margin: 0, overflowWrap: 'anywhere' }}>{orderNumber}</p>
             </td>
           </tr>
         </tbody>
@@ -143,22 +140,17 @@ export function OrderConfirmationEmail({
         <br />
         {cityLine}
         <br />
-        {shippingAddress.country}
+        {countryName}
       </p>
 
       <h2 style={emailText.subheading}>What happens next</h2>
-      <ol style={{ ...emailText.body, margin: '0 0 8px', paddingLeft: '20px' }}>
-        {nextSteps.map((step) => (
-          <li key={step} style={{ marginBottom: '8px' }}>{step}</li>
-        ))}
-        {baseUrl ? (
-          <li>
-            You can check on your order at any time on our{' '}
-            <a href={`${baseUrl}/order-tracking`} style={{ color: emailColors.link }}>order tracking page</a>{' '}
-            with your order number and this email address.
-          </li>
-        ) : null}
-      </ol>
+      <p style={emailText.body}>
+        {requiresInventoryReview
+          ? 'We check that your piece is still available, then pack it. If anything needs attention, we will email you before it goes. '
+          : 'We pack your piece for dispatch. '}
+        When it ships, you will get an email with the tracking number.
+      </p>
+      {baseUrl ? <EmailButton href={`${baseUrl}/order-tracking`}>Track your order</EmailButton> : null}
     </EmailFrame>
   )
 }

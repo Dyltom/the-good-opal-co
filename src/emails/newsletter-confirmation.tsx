@@ -1,4 +1,4 @@
-import { EmailFrame, emailColors, emailText } from './email-frame'
+import { EmailButton, EmailFrame, emailText } from './email-frame'
 
 interface NewsletterConfirmationEmailProps {
   confirmationUrl: string
@@ -20,23 +20,7 @@ export function NewsletterConfirmationEmail({
       <p style={emailText.body}>
         Confirm that {email} should get our emails about new opals, new pieces and sales.
       </p>
-      <p style={{ margin: '24px 0' }}>
-        <a
-          href={confirmationUrl}
-          style={{
-            backgroundColor: emailColors.ink,
-            color: emailColors.paper,
-            display: 'inline-block',
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '14px',
-            fontWeight: 700,
-            padding: '13px 22px',
-            textDecoration: 'none',
-          }}
-        >
-          Confirm my email
-        </a>
-      </p>
+      <EmailButton href={confirmationUrl}>Confirm my email</EmailButton>
       <p style={emailText.small}>
         The link works for 24 hours. If you did not sign up, ignore this email and you will not hear
         from us.
