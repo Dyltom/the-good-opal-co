@@ -87,7 +87,7 @@ describe('review request emails', () => {
     const [message, options] = m.send.mock.calls[0] ?? []
     expect(options).toEqual({ idempotencyKey: 'review-request/1' })
     expect(message.replyTo).toBe('steph@example.com')
-    expect(message.headers['List-Unsubscribe']).toMatch(/^<https:\/\/goodopalco.com\/newsletter\/unsubscribe\?token=/)
+    expect(message.headers['List-Unsubscribe']).toMatch(/^<https:\/\/goodopalco.com\/api\/newsletter\/unsubscribe\?token=/)
     const html = renderToStaticMarkup(message.react as ReactElement)
     expect(html).toContain('Hi Sam')
     expect(html).toContain('https://goodopalco.com/store/black-opal-ring')

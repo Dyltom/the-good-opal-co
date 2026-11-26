@@ -4,7 +4,10 @@ import { PieceAlertEmail, type PieceAlertLine } from '@/emails/piece-alert'
 import { toCatalogProduct } from '@/lib/catalog'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { DEFAULT_TIMEZONE } from '@/lib/constants'
-import { createCampaignUnsubscribeToken } from '@/lib/newsletter/campaign-unsubscribe-token'
+import {
+  createCampaignUnsubscribeToken,
+  unsubscribeLinks,
+} from '@/lib/newsletter/campaign-unsubscribe-token'
 import { UNSUBSCRIBED_TAG } from '@/lib/newsletter/service'
 import { ALERT_TAG_PREFIX } from '@/lib/newsletter/types'
 import { getPayload } from '@/lib/payload'
@@ -121,7 +124,7 @@ export async function sendPieceAlerts(now = new Date()): Promise<PieceAlertSumma
     }))
     const subject = subjectFor(matches[0]!.categoryLabel, matches.length)
     const token = createCampaignUnsubscribeToken(customer.id, secret)
-    const unsubscribeUrl = `${baseUrl}/newsletter/unsubscribe?token=${encodeURIComponent(token)}`
+    const { unsubscribeUrl, headers: unsubscribeHeaders } = unsubscribeLinks(baseUrl, token)
     try {
       const result = await resend.emails.send(
         {
@@ -129,7 +132,7 @@ export async function sendPieceAlerts(now = new Date()): Promise<PieceAlertSumma
           to: customer.email,
           replyTo: process.env['CONTACT_EMAIL'] || undefined,
           subject,
-          headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
+          headers: unsubscribeHeaders,
           react: PieceAlertEmail({
             heading: subject,
             pieces: lines,

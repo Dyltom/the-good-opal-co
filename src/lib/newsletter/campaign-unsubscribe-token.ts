@@ -51,3 +51,14 @@ export function readCampaignUnsubscribeToken(token: string, secret: string): str
     return null
   }
 }
+
+export function unsubscribeLinks(baseUrl: string, token: string) {
+  const query = `token=${encodeURIComponent(token)}`
+  return {
+    unsubscribeUrl: `${baseUrl}/newsletter/unsubscribe?${query}`,
+    headers: {
+      'List-Unsubscribe': `<${baseUrl}/api/newsletter/unsubscribe?${query}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    },
+  }
+}

@@ -11,6 +11,7 @@ import { NewsletterWelcomeEmail } from '@/emails/newsletter-welcome'
 import {
   createCampaignUnsubscribeToken,
   readCampaignUnsubscribeToken,
+  unsubscribeLinks,
 } from './campaign-unsubscribe-token'
 import { PUBLIC_CONTACT_EMAIL } from '@/lib/constants/social'
 import { issueWelcomeCode } from '@/lib/welcome-offer'
@@ -488,7 +489,7 @@ export class ResendNewsletterService implements NewsletterService {
       throw new Error('An unsubscribe token is required for newsletter email delivery')
     }
 
-    const unsubscribeUrl = `${this.baseUrl}/newsletter/unsubscribe?token=${subscriber.unsubscribeToken}`
+    const { unsubscribeUrl, headers } = unsubscribeLinks(this.baseUrl, subscriber.unsubscribeToken)
     const shopUrl = `${this.baseUrl}/store`
 
     const { error } = await this.resend.emails.send({
@@ -497,6 +498,7 @@ export class ResendNewsletterService implements NewsletterService {
       subject: subscriber.welcomeCode
         ? 'Your 10% welcome code from The Good Opal Co'
         : 'Welcome to The Good Opal Co',
+      headers,
       react: NewsletterWelcomeEmail({
         name: subscriber.name,
         welcomeCode: subscriber.welcomeCode,
@@ -538,8 +540,10 @@ export class ResendNewsletterService implements NewsletterService {
       for (const customer of subscribers.docs) {
         if (!hasRequestedSegment(customer.tags, segment)) continue
 
-        const unsubscribeToken = createCampaignUnsubscribeToken(customer.id, this.tokenSecret)
-        const unsubscribeUrl = `${this.baseUrl}/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`
+        const { unsubscribeUrl, headers } = unsubscribeLinks(
+          this.baseUrl,
+          createCampaignUnsubscribeToken(customer.id, this.tokenSecret)
+        )
         const campaignHtml = `${content}
           <hr style="margin:32px 0 20px;border:0;border-top:1px solid #ddd" />
           <p style="font-size:12px;line-height:1.5;color:#666">
@@ -553,6 +557,7 @@ export class ResendNewsletterService implements NewsletterService {
             to: customer.email,
             subject,
             html: campaignHtml,
+            headers,
             tags: [{ name: 'campaign', value: 'newsletter' }]
           })
 
