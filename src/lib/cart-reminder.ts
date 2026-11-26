@@ -4,7 +4,10 @@ import { Resend } from 'resend'
 import type Stripe from 'stripe'
 import { SavedBagEmail, type SavedBagLine } from '@/emails/saved-bag'
 import { hasMarketingConsent } from '@/lib/marketing-consent'
-import { createCampaignUnsubscribeToken } from '@/lib/newsletter/campaign-unsubscribe-token'
+import {
+  createCampaignUnsubscribeToken,
+  unsubscribeLinks,
+} from '@/lib/newsletter/campaign-unsubscribe-token'
 import { optedOut } from '@/lib/newsletter/opted-out'
 import { getPayload } from '@/lib/payload'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -96,14 +99,14 @@ export async function sendCartReminder(
 
   const baseUrl = (process.env['NEXT_PUBLIC_APP_URL'] ?? '').trim().replace(/\/$/, '')
   const token = createCampaignUnsubscribeToken(customer.id, process.env['PAYLOAD_SECRET'] ?? '')
-  const unsubscribeUrl = `${baseUrl}/newsletter/unsubscribe?token=${encodeURIComponent(token)}`
+  const { unsubscribeUrl, headers: unsubscribeHeaders } = unsubscribeLinks(baseUrl, token)
   const sent = await new Resend(process.env['RESEND_API_KEY'] ?? '').emails.send(
     {
       from: process.env['EMAIL_FROM'] ?? '',
       to: email,
       replyTo: process.env['CONTACT_EMAIL'] || undefined,
       subject: 'Still thinking it over? Your bag at The Good Opal Co',
-      headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
+      headers: unsubscribeHeaders,
       react: SavedBagEmail({
         lines: available,
         baseUrl,

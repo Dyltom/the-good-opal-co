@@ -1,7 +1,10 @@
 import type { ReactElement } from 'react'
 import { Resend } from 'resend'
 import { ReviewRequestEmail } from '@/emails/review-request'
-import { createCampaignUnsubscribeToken } from '@/lib/newsletter/campaign-unsubscribe-token'
+import {
+  createCampaignUnsubscribeToken,
+  unsubscribeLinks,
+} from '@/lib/newsletter/campaign-unsubscribe-token'
 import { optedOut } from '@/lib/newsletter/opted-out'
 import { getPayload } from '@/lib/payload'
 import type { Order } from '@/types/payload-types'
@@ -60,14 +63,14 @@ export async function sendReviewRequests(now = new Date()): Promise<ReviewReques
           data: { email, name: order.customer.name, source: 'checkout', subscribedToNewsletter: false },
         }))
       const token = createCampaignUnsubscribeToken(customer.id, process.env['PAYLOAD_SECRET'] ?? '')
-      const unsubscribeUrl = `${baseUrl}/newsletter/unsubscribe?token=${encodeURIComponent(token)}`
+      const { unsubscribeUrl, headers: unsubscribeHeaders } = unsubscribeLinks(baseUrl, token)
       const result = await resend.emails.send(
         {
           from: process.env['EMAIL_FROM'] ?? '',
           to: email,
           replyTo: supportEmail || undefined,
           subject: 'How did your opal arrive?',
-          headers: { 'List-Unsubscribe': `<${unsubscribeUrl}>` },
+          headers: unsubscribeHeaders,
           react: ReviewRequestEmail({
             firstName: firstName(order.customer.name),
             orderNumber: order.orderNumber,

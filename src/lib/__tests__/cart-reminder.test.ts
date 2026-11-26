@@ -88,10 +88,12 @@ describe('bag reminder email', () => {
     expect(html).toContain('https://goodopalco.com/cart')
     expect(html).toContain('Cowra NSW')
     expect(html).not.toContain('Crystal Pendant')
-    const unsubscribe = message.headers['List-Unsubscribe'].slice(1, -1)
-    expect(html).toContain(unsubscribe.replaceAll('&', '&amp;'))
-    const token = decodeURIComponent(new URL(unsubscribe).searchParams.get('token') ?? '')
+    const oneClick = new URL(message.headers['List-Unsubscribe'].slice(1, -1))
+    expect(oneClick.pathname).toBe('/api/newsletter/unsubscribe')
+    expect(message.headers['List-Unsubscribe-Post']).toBe('List-Unsubscribe=One-Click')
+    const token = oneClick.searchParams.get('token') ?? ''
     expect(readCampaignUnsubscribeToken(token, 'secret')).toBe('99')
+    expect(html).toContain(`/newsletter/unsubscribe?token=${encodeURIComponent(token)}`)
     expect(m.create).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'customers',
