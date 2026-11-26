@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
-import { headers } from 'next/headers'
 import { Redis } from '@upstash/redis'
+import { clientIp } from './client-ip.ts'
 
 type LocalCounter = { count: number; expiresAt: number }
 type RuntimeEnvironment = Readonly<Record<string, string | undefined>>
@@ -43,10 +43,12 @@ export function getRedis(): Redis | null {
 }
 
 export async function getRequestIdentifier(identity?: string): Promise<string> {
-  const requestHeaders = await headers()
-  const forwardedFor = requestHeaders.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const address = forwardedFor || requestHeaders.get('x-real-ip') || 'unknown'
-  return hash(`${address}:${identity?.trim().toLowerCase() ?? ''}`)
+  const { headers } = await import('next/headers')
+  return requestIdentifier(await headers(), identity)
+}
+
+export function requestIdentifier(requestHeaders: Headers, identity?: string): string {
+  return hash(`${clientIp(requestHeaders)}:${identity?.trim().toLowerCase() ?? ''}`)
 }
 
 export async function checkRateLimit({

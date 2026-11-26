@@ -139,14 +139,6 @@ export function requestCountry(headers: Headers): string | undefined {
   return country && /^[A-Z]{2}$/.test(country) && country !== 'XX' ? country : undefined
 }
 
-export function requestIp(headers: Headers): string {
-  return (
-    headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    headers.get('x-real-ip')?.trim() ||
-    'unknown'
-  )
-}
-
 export function hashVisitor(salt: string, ip: string, userAgent: string): string {
   return createHash('sha256').update(`${salt}|${ip}|${userAgent}`).digest('hex').slice(0, 32)
 }

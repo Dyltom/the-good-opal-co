@@ -15,13 +15,21 @@ export async function trackOrder(_prevState: unknown, formData: FormData) {
       orderNumber: formData.get('orderNumber'),
       email: formData.get('email')
     })
-    const identifier = await getRequestIdentifier(data.email)
-    const allowed = await checkRateLimit({
-      scope: 'order-tracking',
-      identifier,
-      limit: 10,
-      windowSeconds: 15 * 60,
-    })
+    const [emailAllowed, addressAllowed] = await Promise.all([
+      checkRateLimit({
+        scope: 'order-tracking',
+        identifier: await getRequestIdentifier(data.email),
+        limit: 10,
+        windowSeconds: 15 * 60,
+      }),
+      checkRateLimit({
+        scope: 'order-tracking-ip',
+        identifier: await getRequestIdentifier(),
+        limit: 30,
+        windowSeconds: 15 * 60,
+      }),
+    ])
+    const allowed = emailAllowed && addressAllowed
     if (!allowed) {
       return { error: 'Too many attempts. Please try again later.', order: null }
     }

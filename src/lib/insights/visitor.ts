@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto'
 import { headers } from 'next/headers'
 import { getRateLimitNamespace, getRedis } from '@/lib/rate-limit'
-import { hashVisitor, requestIp } from './ingest'
+import { clientIp } from '@/lib/client-ip'
+import { hashVisitor } from './ingest'
 
 const SALT_TTL_SECONDS = 60 * 60 * 48
 
@@ -32,7 +33,7 @@ async function dailySalt(day: string): Promise<string> {
 
 export async function visitorKey(requestHeaders: Headers, now = new Date()): Promise<string> {
   const salt = await dailySalt(now.toISOString().slice(0, 10))
-  return hashVisitor(salt, requestIp(requestHeaders), requestHeaders.get('user-agent') ?? '')
+  return hashVisitor(salt, clientIp(requestHeaders), requestHeaders.get('user-agent') ?? '')
 }
 
 export async function requestVisitorKey(): Promise<string | undefined> {
