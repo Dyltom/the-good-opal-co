@@ -133,9 +133,10 @@ function populatedTags(tags: (number | Tag)[] | null | undefined): Tag[] {
 }
 
 function withBrand(title: string): string {
-  return title.toLocaleLowerCase('en-AU').includes(APP_NAME.toLocaleLowerCase('en-AU'))
+  const branded = `${title} | ${APP_NAME}`
+  return title.toLocaleLowerCase('en-AU').includes(APP_NAME.toLocaleLowerCase('en-AU')) || branded.length > 65
     ? title
-    : `${title} | ${APP_NAME}`
+    : branded
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {

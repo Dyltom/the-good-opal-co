@@ -26,7 +26,7 @@ import { CHRISTMAS_DELIVERY, promotionsPending } from '@/lib/promotions'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
-  description: `Tracked Australia Post delivery from Cowra NSW at Australia Post's published price, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia, insured and signed for on orders over ${EXTRA_COVER_INCLUDED} AUD. Dispatch and delivery times for every order.`,
+  description: `Tracked Australia Post delivery from Cowra NSW, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia. Insured and signed for over ${EXTRA_COVER_INCLUDED} AUD.`,
   alternates: { canonical: '/shipping' },
 }
 

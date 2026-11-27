@@ -64,7 +64,7 @@ export default async function CollectedPage() {
           aria-label="Sold pieces"
           className="mt-5 grid grid-cols-2 gap-x-2 gap-y-5 sm:grid-cols-[repeat(auto-fill,minmax(196px,1fr))] sm:gap-x-3 sm:gap-y-[22px]"
         >
-          {docs.map((product) => {
+          {docs.map((product, index) => {
             const first = product.images?.[0]?.image
             const image =
               (typeof first === 'object' && first ? resolveMediaUrl(first.url) : undefined) ??
@@ -86,6 +86,7 @@ export default async function CollectedPage() {
                         alt={product.name}
                         fill
                         sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 300px"
+                        priority={index < 4}
                         className="object-cover"
                       />
                     ) : null}
