@@ -135,7 +135,7 @@ The buyer is emailed "Your order OPAL-... has shipped" with the tracking details
 
 1. Open **Orders** and click **Download Australia Post labels CSV**. It holds every paid Australian order still at **Processing**. Overseas orders are left out; post those the usual way.
 2. Log in to **MyPost Business**, go to **Send**, then **Import**, and upload the file.
-3. Each order comes in as a small satchel, Parcel Post, 0.5 kg. Orders over $100 already have Extra Cover and Signature on Delivery. Change the parcel size or weight on any order that differs.
+3. Each order comes in as a small satchel, Parcel Post, 0.25 kg. Orders over $100 already have Extra Cover, and orders over $500 Signature on Delivery. Change the parcel size or weight on any order that differs.
 4. Pay and print the labels.
 5. Back in each order here, paste the **Tracking number**, set **Status** to **Shipped** and click **Save**. That sends the buyer their shipping email.
 
