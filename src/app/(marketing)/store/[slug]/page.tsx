@@ -11,7 +11,11 @@ import { ProductImageGallery } from '@/components/product/ProductImageGallery'
 import { RelatedProductsWithSuspense } from '@/components/product/RelatedProducts'
 import { ReviewsSection } from '@/components/reviews/ReviewsSection'
 import { cn, formatCurrency, savePercent } from '@/lib/utils'
-import { cheapestShippingOption, extraCoverCents } from '@/lib/constants/shipping'
+import {
+  cheapestShippingOption,
+  extraCoverCents,
+  needsSignature,
+} from '@/lib/constants/shipping'
 import { getPayload } from '@/lib/payload'
 import { PaymentMethods } from '@/components/trust'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo'
@@ -406,7 +410,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         <span>
                           {isDeposit
                             ? 'No shipping charge on the deposit.'
-                            : `Tracked Australia Post shipping at its published price: from $${(cheapestShippingOption('AU', product.price).cents / 100).toFixed(2)} AUD in Australia${extraCoverCents('AU', product.price) > 0 ? ', insured for its value and signed for on delivery,' : ''} and from $${(cheapestShippingOption('NZ', product.price).cents / 100).toFixed(2)} AUD overseas.`}{' '}
+                            : `Tracked Australia Post shipping at its published price: from $${(cheapestShippingOption('AU', product.price).cents / 100).toFixed(2)} AUD in Australia${extraCoverCents('AU', product.price) > 0 ? `, insured for its value${needsSignature('AU', product.price) ? ' and signed for on delivery' : ''},` : ''} and from $${(cheapestShippingOption('NZ', product.price).cents / 100).toFixed(2)} AUD overseas.`}{' '}
                           <Link href="/shipping" className="text-ink underline underline-offset-4">
                             Rates
                           </Link>

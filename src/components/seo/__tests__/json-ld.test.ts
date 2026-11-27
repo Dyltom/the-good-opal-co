@@ -40,7 +40,7 @@ describe('structured data', () => {
     })
   })
 
-  test('publishes the insured, signed-for Australian rate a $500 piece really pays', () => {
+  test('publishes the insured Australian rate a $500 piece really pays', () => {
     const data = productStructuredData(catalogProduct({ price: 500, category: 'opal-rings' }))
 
     const details = (
@@ -55,7 +55,7 @@ describe('structured data', () => {
       details.find((detail) => detail.shippingDestination[0]?.addressCountry === country)
         ?.shippingRate.value
     expect(details).toHaveLength(4)
-    expect(rate('AU')).toBe(23.15)
+    expect(rate('AU')).toBe(20.2)
     expect(rate('SG')).toBe(20.6)
   })
 
@@ -91,7 +91,7 @@ describe('structured data', () => {
         shippingDetails: expect.arrayContaining([
           expect.objectContaining({
             shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: 'AU' }],
-            shippingRate: { '@type': 'MonetaryAmount', value: 18.15, currency: 'AUD' },
+            shippingRate: { '@type': 'MonetaryAmount', value: 15.2, currency: 'AUD' },
           }),
           expect.objectContaining({
             shippingDestination: [{ '@type': 'DefinedRegion', addressCountry: 'SG' }],

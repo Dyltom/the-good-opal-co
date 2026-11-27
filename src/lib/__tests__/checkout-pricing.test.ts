@@ -13,10 +13,14 @@ describe('Australia Post shipping options', () => {
     ])
   })
 
-  test('insures every Australian order over $100 with Extra Cover and signature on delivery', () => {
+  test('insures every Australian order over $100, adding signature on delivery only over $500', () => {
     expect(prices('AU', 150)).toEqual([
-      ['Parcel Post with Extra Cover for $150 and signature', 1020 + 250 + 295],
-      ['Express Post with Extra Cover for $150 and signature', 1320 + 250 + 295],
+      ['Parcel Post with Extra Cover for $150', 1020 + 250],
+      ['Express Post with Extra Cover for $150', 1320 + 250],
+    ])
+    expect(prices('AU', 500)).toEqual([
+      ['Parcel Post with Extra Cover for $500', 1020 + 4 * 250],
+      ['Express Post with Extra Cover for $500', 1320 + 4 * 250],
     ])
     expect(prices('AU', 650)).toEqual([
       ['Parcel Post with Extra Cover for $650 and signature', 1020 + 6 * 250 + 295],
@@ -46,8 +50,8 @@ describe('checkout pricing', () => {
   test('estimates the total with the cheapest insured option', () => {
     const pricing = calculateCheckoutPricing([{ price: 250, quantity: 2 }])
 
-    expect(pricing.shippingCents).toBe(1020 + 4 * 250 + 295)
-    expect(pricing.totalCents).toBe(50000 + 2315)
+    expect(pricing.shippingCents).toBe(1020 + 4 * 250)
+    expect(pricing.totalCents).toBe(50000 + 2020)
     expect(pricing.shippingOptions).toHaveLength(2)
   })
 

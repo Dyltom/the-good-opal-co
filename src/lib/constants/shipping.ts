@@ -85,12 +85,17 @@ export const EXTRA_COVER_INCLUDED = 100
 export const EXTRA_COVER_MAX = 5000
 export const EXTRA_COVER_CENTS_PER_100 = 250
 export const SIGNATURE_ON_DELIVERY_CENTS = 295
+export const SIGNATURE_REQUIRED_OVER = 500
+
+export function needsSignature(country: ShippingCountry, value: number): boolean {
+  return country === 'AU' && value > SIGNATURE_REQUIRED_OVER
+}
 
 export function extraCoverCents(country: ShippingCountry, value: number): number {
   const coveredCents = Math.min(Math.round(value * 100), EXTRA_COVER_MAX * 100)
   if (country !== 'AU' || coveredCents <= EXTRA_COVER_INCLUDED * 100) return 0
   const cover = Math.ceil((coveredCents - EXTRA_COVER_INCLUDED * 100) / 10000) * EXTRA_COVER_CENTS_PER_100
-  return cover + SIGNATURE_ON_DELIVERY_CENTS
+  return cover + (needsSignature(country, value) ? SIGNATURE_ON_DELIVERY_CENTS : 0)
 }
 
 export function shippingOptions(country: ShippingCountry, subtotal: number): ShippingOption[] {
@@ -99,7 +104,7 @@ export function shippingOptions(country: ShippingCountry, subtotal: number): Shi
   if (coverCents === 0) return [...services]
   const covered = Math.ceil(Math.min(subtotal, EXTRA_COVER_MAX)).toLocaleString('en-AU')
   return services.map((service) => ({
-    label: `${service.label} with Extra Cover for $${covered} and signature`,
+    label: `${service.label} with Extra Cover for $${covered}${needsSignature(country, subtotal) ? ' and signature' : ''}`,
     cents: service.cents + coverCents,
     days: service.days,
   }))

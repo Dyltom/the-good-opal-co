@@ -1,4 +1,4 @@
-import { EXTRA_COVER_INCLUDED, EXTRA_COVER_MAX } from '@/lib/constants/shipping'
+import { EXTRA_COVER_INCLUDED, EXTRA_COVER_MAX, needsSignature } from '@/lib/constants/shipping'
 import { PUBLIC_CONTACT_EMAIL } from '@/lib/constants/social'
 import type { Order } from '@/types/payload-types'
 
@@ -106,7 +106,7 @@ function row(order: LabelOrder): string[] {
     DEFAULT_WEIGHT_KG,
     'NO',
     '',
-    cover > 0 ? 'YES' : 'NO',
+    needsSignature('AU', order.subtotal) ? 'YES' : 'NO',
     cover > 0 ? String(cover) : '',
   ]
 }
