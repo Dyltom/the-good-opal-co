@@ -7,7 +7,7 @@ function order(overrides: Partial<Input> = {}): Input {
   return {
     orderNumber: 'OPAL-1',
     status: 'processing',
-    total: 80,
+    subtotal: 80,
     customer: { email: 'jo@example.com', name: 'Jo Citizen', phone: '+61 412 345 678' },
     shippingAddress: {
       line1: '1 Main St',
@@ -37,11 +37,11 @@ describe('MyPost labels CSV', () => {
     expect(buildMyPostCsv([]).split('\r\n')[0]).toBe(MYPOST_HEADERS.join(','))
   })
 
-  it('adds Extra Cover for the full rounded-up total and signature only over $100', () => {
+  it('adds Extra Cover for the rounded-up goods value and signature only over $100', () => {
     const [big, small] = parse(
       buildMyPostCsv([
-        order({ orderNumber: 'OPAL-BIG', total: 250.4 }),
-        order({ orderNumber: 'OPAL-SMALL', total: 99 }),
+        order({ orderNumber: 'OPAL-BIG', subtotal: 250.4 }),
+        order({ orderNumber: 'OPAL-SMALL', subtotal: 99 }),
       ])
     )
     expect(big).toMatchObject({
@@ -53,7 +53,13 @@ describe('MyPost labels CSV', () => {
   })
 
   it('caps Extra Cover at 5000', () => {
-    expect(parse(buildMyPostCsv([order({ total: 7200 })]))[0]?.['Extra Cover Amount']).toBe('5000')
+    expect(parse(buildMyPostCsv([order({ subtotal: 7200 })]))[0]?.['Extra Cover Amount']).toBe(
+      '5000'
+    )
+  })
+
+  it('declares a weight in the up-to-250g band the shop charges postage for', () => {
+    expect(Number(parse(buildMyPostCsv([order()]))[0]?.['Item Weight'])).toBeLessThanOrEqual(0.25)
   })
 
   it('exports only paid, unshipped Australian orders', () => {
