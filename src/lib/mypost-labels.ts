@@ -15,7 +15,7 @@ export const SEND_FROM = {
 
 export const DEFAULT_PACKAGING_TYPE = 'AP_SATCHEL_S'
 export const DEFAULT_DELIVERY_SERVICE = 'PP'
-export const DEFAULT_WEIGHT_KG = '0.5'
+export const DEFAULT_WEIGHT_KG = '0.25'
 
 export const MYPOST_HEADERS = [
   'Additional Label Information 1',
@@ -52,7 +52,10 @@ export const MYPOST_HEADERS = [
   'Extra Cover Amount',
 ] as const
 
-type LabelOrder = Pick<Order, 'orderNumber' | 'status' | 'total' | 'customer' | 'shippingAddress'>
+type LabelOrder = Pick<
+  Order,
+  'orderNumber' | 'status' | 'subtotal' | 'customer' | 'shippingAddress'
+>
 
 function cell(value: string): string {
   return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
@@ -71,7 +74,7 @@ function isLabelReady(order: LabelOrder): boolean {
 function row(order: LabelOrder): string[] {
   const address = order.shippingAddress
   const cover =
-    order.total > EXTRA_COVER_INCLUDED ? Math.min(Math.ceil(order.total), EXTRA_COVER_MAX) : 0
+    order.subtotal > EXTRA_COVER_INCLUDED ? Math.min(Math.ceil(order.subtotal), EXTRA_COVER_MAX) : 0
   return [
     cut(order.orderNumber, 50),
     cut(SEND_FROM.name, 35),
