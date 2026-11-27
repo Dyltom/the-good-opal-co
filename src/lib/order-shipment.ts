@@ -32,6 +32,21 @@ interface ResendSender {
   }
 }
 
+type DispatchFields = Partial<Pick<Order, 'status' | 'trackingNumber' | 'shippingCarrier'>>
+
+export function markShippedOnTracking<T extends DispatchFields>(
+  data: T,
+  originalDoc: DispatchFields | undefined
+): T {
+  const trackingAdded = data.trackingNumber?.trim() && !originalDoc?.trackingNumber?.trim()
+  if (!trackingAdded || (data.status ?? originalDoc?.status) !== 'processing') return data
+  return {
+    ...data,
+    status: 'shipped',
+    shippingCarrier: data.shippingCarrier ?? originalDoc?.shippingCarrier ?? 'australia-post',
+  }
+}
+
 export function shouldSendShipmentNotification(order: Order): boolean {
   return Boolean(
     (order.source === 'stripe' || order.source === 'paypal') &&

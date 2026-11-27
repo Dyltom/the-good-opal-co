@@ -1,6 +1,10 @@
 import { describe, expect, test, vi } from 'vitest'
 import type { Order } from '@/types/payload-types'
-import { sendShipmentNotification, shouldSendShipmentNotification } from '@/lib/order-shipment'
+import {
+  markShippedOnTracking,
+  sendShipmentNotification,
+  shouldSendShipmentNotification,
+} from '@/lib/order-shipment'
 
 function order(overrides: Partial<Order> = {}): Order {
   return {
@@ -40,6 +44,33 @@ describe('shipment notifications', () => {
     expect(
       shouldSendShipmentNotification(order({ shipmentEmailSentAt: '2026-07-12T01:00:00.000Z' }))
     ).toBe(false)
+  })
+
+  test('pasting tracking into a processing order marks it shipped by Australia Post', () => {
+    const processing = { status: 'processing' as const, trackingNumber: null }
+
+    expect(markShippedOnTracking({ ...processing, trackingNumber: ' 33ABC ' }, processing)).toEqual(
+      {
+        status: 'shipped',
+        trackingNumber: ' 33ABC ',
+        shippingCarrier: 'australia-post',
+      }
+    )
+    expect(
+      markShippedOnTracking({ trackingNumber: 'DHL1', shippingCarrier: 'dhl' as const }, processing)
+    ).toMatchObject({ status: 'shipped', shippingCarrier: 'dhl' })
+    expect(markShippedOnTracking({ trackingNumber: 'X1' }, { status: 'pending' })).toEqual({
+      trackingNumber: 'X1',
+    })
+    expect(
+      markShippedOnTracking(
+        { trackingNumber: 'X2' },
+        { status: 'processing', trackingNumber: 'X1' }
+      )
+    ).toEqual({ trackingNumber: 'X2' })
+    expect(markShippedOnTracking({ trackingNumber: '  ' }, processing)).toEqual({
+      trackingNumber: '  ',
+    })
   })
 
   test('uses customer, tracking, carrier, and a stable idempotency key', async () => {
