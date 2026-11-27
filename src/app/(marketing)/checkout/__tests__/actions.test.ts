@@ -284,7 +284,7 @@ describe('checkout Server Action', () => {
     ])
   })
 
-  test('sends Stripe only insured, signed-for options for an Australian order over $100', async () => {
+  test('sends Stripe only insured options for an Australian order over $100', async () => {
     getCart.mockResolvedValue({
       items: [{ productId: '1', slug: 'opal-ring', name: 'Opal ring', price: 500, quantity: 1 }],
       total: 500,
@@ -298,14 +298,14 @@ describe('checkout Server Action', () => {
     expect(params.shipping_options).toEqual([
       expect.objectContaining({
         shipping_rate_data: expect.objectContaining({
-          display_name: 'Parcel Post with Extra Cover for $500 and signature',
-          fixed_amount: { amount: 2315, currency: 'aud' },
+          display_name: 'Parcel Post with Extra Cover for $500',
+          fixed_amount: { amount: 2020, currency: 'aud' },
         }),
       }),
       expect.objectContaining({
         shipping_rate_data: expect.objectContaining({
-          display_name: 'Express Post with Extra Cover for $500 and signature',
-          fixed_amount: { amount: 2615, currency: 'aud' },
+          display_name: 'Express Post with Extra Cover for $500',
+          fixed_amount: { amount: 2320, currency: 'aud' },
         }),
       }),
     ])

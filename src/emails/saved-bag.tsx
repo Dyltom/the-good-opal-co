@@ -112,7 +112,7 @@ export function SavedBagEmail({ lines, baseUrl, supportEmail, unsubscribeUrl }: 
       <ul style={{ ...emailText.body, margin: '0 0 14px', paddingLeft: '20px' }}>
         <li style={{ marginBottom: '6px' }}>Pay with {paymentMethods}.</li>
         <li style={{ marginBottom: '6px' }}>
-          Tracked Australia Post delivery. AU orders over $100 are insured and signed for.
+          Tracked Australia Post delivery. AU orders over $100 are insured, and over $500 signed for.
         </li>
         <li>
           Read our{' '}

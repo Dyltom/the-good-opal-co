@@ -28,6 +28,7 @@ import { giftVoucherAppliedCents } from '@/lib/gift-voucher-rules'
 import type { Cart, CartItem } from '@/lib/cart'
 import {
   extraCoverCents,
+  needsSignature,
   POSTAGE,
   publishedShippingOptions,
   type Postage,
@@ -238,7 +239,11 @@ export function CartPageContent({
                   })}
                   {coverCents > 0 ? (
                     <p className="pb-2 text-[12.5px] leading-5 text-ink-2">
-                      Includes Extra Cover and a signature on delivery.
+                      Includes Extra Cover
+                      {needsSignature(country, pricing.shippedSubtotal)
+                        ? ' and a signature on delivery'
+                        : ''}
+                      .
                     </p>
                   ) : null}
                 </fieldset>

@@ -37,18 +37,20 @@ describe('MyPost labels CSV', () => {
     expect(buildMyPostCsv([]).split('\r\n')[0]).toBe(MYPOST_HEADERS.join(','))
   })
 
-  it('adds Extra Cover for the rounded-up goods value and signature only over $100', () => {
-    const [big, small] = parse(
+  it('adds Extra Cover for the rounded-up goods value over $100 and signature only over $500', () => {
+    const [big, mid, small] = parse(
       buildMyPostCsv([
-        order({ orderNumber: 'OPAL-BIG', subtotal: 250.4 }),
+        order({ orderNumber: 'OPAL-BIG', subtotal: 650.4 }),
+        order({ orderNumber: 'OPAL-MID', subtotal: 250 }),
         order({ orderNumber: 'OPAL-SMALL', subtotal: 99 }),
       ])
     )
     expect(big).toMatchObject({
       'Additional Label Information 1': 'OPAL-BIG',
-      'Extra Cover Amount': '251',
+      'Extra Cover Amount': '651',
       'Signature On Delivery': 'YES',
     })
+    expect(mid).toMatchObject({ 'Extra Cover Amount': '250', 'Signature On Delivery': 'NO' })
     expect(small).toMatchObject({ 'Extra Cover Amount': '', 'Signature On Delivery': 'NO' })
   })
 

@@ -14,6 +14,7 @@ import {
   SHIPPING_COUNTRIES,
   SHIPPING_COUNTRY_NAMES,
   SIGNATURE_ON_DELIVERY_CENTS,
+  SIGNATURE_REQUIRED_OVER,
   shippingCountryList,
 } from '@/lib/constants/shipping'
 
@@ -26,7 +27,7 @@ import { CHRISTMAS_DELIVERY, promotionsPending } from '@/lib/promotions'
 
 export const metadata: Metadata = {
   title: 'Shipping & Delivery | The Good Opal Co',
-  description: `Tracked Australia Post delivery from Cowra NSW, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia. Insured and signed for over ${EXTRA_COVER_INCLUDED} AUD.`,
+  description: `Tracked Australia Post delivery from Cowra NSW, from ${audPrice(AUSTRALIA[0]?.cents ?? 0)} AUD within Australia. Insured over ${EXTRA_COVER_INCLUDED} AUD, signed for over ${SIGNATURE_REQUIRED_OVER} AUD.`,
   alternates: { canonical: '/shipping' },
 }
 
@@ -85,8 +86,9 @@ export default function ShippingPage() {
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
             <h2 className="text-[1.375rem] leading-[1.15]">Insured delivery</h2>
             <p className="mt-2 text-sm leading-6 text-ink-2">
-              Within Australia, every order over ${EXTRA_COVER_INCLUDED} is insured for its value and
-              signed for on delivery. The cost is part of the shipping price in checkout.
+              Within Australia, every order over ${EXTRA_COVER_INCLUDED} is insured for its value, and
+              orders over ${SIGNATURE_REQUIRED_OVER} are signed for on delivery. The cost is part of
+              the shipping price in checkout.
             </p>
           </div>
           <div className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l">
@@ -137,11 +139,11 @@ export default function ShippingPage() {
           <p className="mt-3 max-w-[65ch] text-sm leading-6 text-ink-2">
             Every order over ${EXTRA_COVER_INCLUDED}{' '}
             within Australia ships with Australia Post Extra Cover, which insures the parcel for your order&apos;s value, up to $
-            {EXTRA_COVER_MAX.toLocaleString('en-AU')}, against loss or damage in transit. Someone
-            must sign for it on delivery. Australia Post charges nothing for the first $
+            {EXTRA_COVER_MAX.toLocaleString('en-AU')}, against loss or damage in transit. Orders
+            over ${SIGNATURE_REQUIRED_OVER} must be signed for on delivery. Australia Post charges nothing for the first $
             {EXTRA_COVER_INCLUDED} of cover, then {audPrice(EXTRA_COVER_CENTS_PER_100)} for each
             further $100 or part of it, plus {audPrice(SIGNATURE_ON_DELIVERY_CENTS)} for the
-            signature, and we add it to the postage at that price. A $650 order, for example, adds{' '}
+            signature over ${SIGNATURE_REQUIRED_OVER}, and we add it to the postage at that price. A $650 order, for example, adds{' '}
             {audPrice(extraCoverCents('AU', 650))}. For an overseas order you want insured,{' '}
             <Link
               href="/contact?subject=shipping"

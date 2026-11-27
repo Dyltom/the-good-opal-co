@@ -123,7 +123,7 @@ export default function TermsOfServicePage() {
                 <li>Every order pays the shipping charge shown at checkout</li>
                 <li>
                   Orders within Australia over $100 AUD ship with Australia Post Extra Cover for the
-                  order&apos;s value and signature on delivery, included in that charge
+                  order&apos;s value, plus signature on delivery over $500 AUD, included in that charge
                 </li>
                 <li>Available international destinations are shown at checkout</li>
               </ul>

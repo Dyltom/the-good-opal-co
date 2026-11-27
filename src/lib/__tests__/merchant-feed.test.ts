@@ -92,7 +92,7 @@ describe('Google Merchant feed', () => {
     expect(feed).not.toContain('<g:id>DEPOSIT</g:id>')
   })
 
-  test('quotes the real per-country shipping charge, with Extra Cover and signature in Australia over $100', () => {
+  test('quotes the real per-country shipping charge, with Extra Cover in Australia over $100', () => {
     const feed = buildGoogleMerchantFeed([
       catalogProduct({ sku: 'LOW', price: 90 }),
       catalogProduct({ sku: 'HIGH', price: 500 }),
@@ -105,7 +105,7 @@ describe('Google Merchant feed', () => {
     expect(shipping('LOW', 'AU')).toBe('10.20 AUD')
     expect(shipping('LOW', 'NZ')).toBe('17.90 AUD')
     expect(shipping('LOW', 'US')).toBe('23.05 AUD')
-    expect(shipping('HIGH', 'AU')).toBe('23.15 AUD')
+    expect(shipping('HIGH', 'AU')).toBe('20.20 AUD')
     expect(shipping('HIGH', 'US')).toBe('23.05 AUD')
   })
 
