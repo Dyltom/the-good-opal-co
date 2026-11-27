@@ -395,7 +395,7 @@ function QuickChips({ query, counts, totals }: { query: StoreQuery; counts: Coun
         const inner = (
           <>
             {label}
-            <Count count={count} className="text-[11.5px] opacity-70" />
+            <Count count={count} className="text-[11.5px]" />
           </>
         )
         if (count === 0 && !selected) {
