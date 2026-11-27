@@ -65,7 +65,7 @@ function cut(value: string | null | undefined, max: number): string {
   return (value ?? '').trim().slice(0, max)
 }
 
-function isLabelReady(order: LabelOrder): boolean {
+export function isLabelReady(order: Pick<Order, 'status' | 'shippingAddress'>): boolean {
   return (
     order.status === 'processing' && order.shippingAddress.country.trim().toUpperCase() === 'AU'
   )

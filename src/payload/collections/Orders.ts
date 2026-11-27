@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { randomBytes } from 'node:crypto'
 import { isAdmin } from '../../lib/payload-access.ts'
 import {
+  markShippedOnTracking,
   sendShipmentNotification,
   shouldSendShipmentNotification,
 } from '../../lib/order-shipment.ts'
@@ -453,7 +454,8 @@ export const Orders: CollectionConfig = {
       name: 'trackingNumber',
       type: 'text',
       admin: {
-        description: 'Shipping carrier tracking number',
+        description:
+          'Paste the tracking number and save. A Processing order becomes Shipped (Australia Post unless another carrier is chosen) and the buyer is emailed.',
       },
     },
     {
@@ -501,7 +503,7 @@ export const Orders: CollectionConfig = {
             orderNumber: `OPAL-${timestamp}-${random}`,
           }
         }
-        return data
+        return operation === 'update' && data ? markShippedOnTracking(data, originalDoc) : data
       },
     ],
     afterChange: [

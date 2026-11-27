@@ -125,19 +125,21 @@ A piece with an open checkout hold cannot be deleted.
 
 1. Open **Orders** and click the order.
 2. Pack and post it.
-3. Set **Status** to **Shipped**.
-4. Choose the **Shipping carrier** (Australia Post, StarTrack, DHL, FedEx or Other) and enter the **Tracking number**.
-5. Click **Save**.
+3. Paste the **Tracking number** and click **Save**. A **Processing** order turns **Shipped** by itself, with Australia Post as the carrier. If you used another carrier, choose it in **Shipping carrier** before saving.
 
 The buyer is emailed "Your order OPAL-... has shipped" with the tracking details. This email goes once only, and only when the status is Shipped and a tracking number is filled in. If sending fails, the error shows on the order; saving again retries it.
 
-### Australia Post labels for several orders at once
+### Australia Post labels
+
+Every "New order" email for an Australian order has that order's label file attached. In **MyPost Business**, go to **Send**, then **Import**, upload the file, then pay and print. Paste the tracking number into the order here and save.
+
+For several orders at once:
 
 1. Open **Orders** and click **Download Australia Post labels CSV**. It holds every paid Australian order still at **Processing**. Overseas orders are left out; post those the usual way.
 2. Log in to **MyPost Business**, go to **Send**, then **Import**, and upload the file.
 3. Each order comes in as a small satchel, Parcel Post, 0.25 kg. Orders over $100 already have Extra Cover, and orders over $500 Signature on Delivery. Change the parcel size or weight on any order that differs.
 4. Pay and print the labels.
-5. Back in each order here, paste the **Tracking number**, set **Status** to **Shipped** and click **Save**. That sends the buyer their shipping email.
+5. Back in each order here, paste the **Tracking number** and click **Save**. That marks it shipped and sends the buyer their shipping email.
 
 Buyers can also check their order at goodopalco.com/order-tracking using their order number and email.
 

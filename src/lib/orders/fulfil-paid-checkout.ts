@@ -5,6 +5,7 @@ import { OrderConfirmationEmail } from '@/emails/order-confirmation'
 import { captureGiftVoucherHold } from '@/lib/gift-vouchers'
 import { recordCheckoutInsight } from '@/lib/insights/record'
 import { reservationMatchesCheckoutItems } from '@/lib/inventory-reservations'
+import { buildMyPostCsv, isLabelReady } from '@/lib/mypost-labels'
 import { subscribeCheckoutBuyer } from '@/lib/newsletter/checkout-buyer'
 import { getPayload } from '@/lib/payload'
 import type { Order } from '@/types/payload-types'
@@ -153,6 +154,13 @@ function ownerOrderEmailText(order: Order): string {
     address.country,
     ...(order.notes ? ['', `Notes: ${order.notes}`] : []),
     '',
+    ...(isLabelReady(order)
+      ? [
+          'Australia Post label: in MyPost Business go to Send, then Import, upload the attached file, then pay and print.',
+          'Then paste the tracking number into the order and save. The order is marked shipped and the buyer is emailed.',
+          '',
+        ]
+      : []),
     `Open the order: ${adminUrl}`,
   ].join('\n')
 }
@@ -167,6 +175,16 @@ export async function sendOwnerOrderNotification(order: Order): Promise<void> {
       replyTo: order.customer.email,
       subject: `${order.status === 'pending' ? 'Inventory review required' : 'New order'} - ${order.orderNumber}`,
       text: ownerOrderEmailText(order),
+      ...(isLabelReady(order)
+        ? {
+            attachments: [
+              {
+                filename: `australia-post-label-${order.orderNumber}.csv`,
+                content: Buffer.from(buildMyPostCsv([order])),
+              },
+            ],
+          }
+        : {}),
     },
     { idempotencyKey: `owner-order/${order.id}` }
   )
