@@ -4,6 +4,14 @@ import { resolve } from 'path'
 
 const read = (rel: string) => readFileSync(resolve(__dirname, '..', '..', rel), 'utf-8')
 
+const hasClassNameWithAll = (source: string, classes: string) => {
+  const wanted = classes.split(' ')
+  return [...source.matchAll(/className="([^"]*)"/g)].some((match) => {
+    const present = new Set(match[1]?.split(/\s+/))
+    return wanted.every((name) => present.has(name))
+  })
+}
+
 describe('buying flow UI/UX safeguards', () => {
   test('product cards expose purchase actions on touch and keyboard focus', () => {
     const source = read('src/components/product/ProductCard.tsx')
@@ -70,8 +78,8 @@ describe('buying flow UI/UX safeguards', () => {
     expect(source).toContain('env(safe-area-inset-bottom)')
     expect(source).toContain('min-h-[44px]')
     expect(source).toContain('min-w-[44px]')
-    expect(source).toContain('h-11 w-11 min-h-[44px] min-w-[44px]')
-    expect(source).toContain('flex flex-col gap-3 sm:flex-row')
+    expect(hasClassNameWithAll(source, 'h-11 w-11 min-h-[44px] min-w-[44px]')).toBe(true)
+    expect(hasClassNameWithAll(source, 'flex flex-col gap-3 sm:flex-row')).toBe(true)
     expect(source).not.toContain('scale:')
   })
 
@@ -329,7 +337,9 @@ describe('buying flow UI/UX safeguards', () => {
     expect(policySource).toContain('Microsoft Clarity')
     expect(policySource).toContain('checkout-feedback-asked')
     expect(policySource).toContain('We do not use')
-    expect(policySource).toContain('remarketing, personalised advertising, or social-media tracking pixels')
+    expect(policySource).toContain(
+      'remarketing, personalised advertising, or social-media tracking pixels'
+    )
     expect(policySource).not.toContain('Facebook Pixel')
     expect(policySource).not.toContain('Wishlist')
   })

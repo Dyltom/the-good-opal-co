@@ -70,7 +70,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
-    "framer-motion": "^12.23.25",
     "graphql": "^16.11.0",
     "lucide-react": "^0.546.0",
     "marked": "15.0.12",

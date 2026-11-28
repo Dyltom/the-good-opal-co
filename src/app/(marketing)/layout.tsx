@@ -14,6 +14,7 @@ const sans = Schibsted_Grotesk({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
+  preload: false,
 })
 
 const serif = Bodoni_Moda({
@@ -21,6 +22,7 @@ const serif = Bodoni_Moda({
   style: ['normal', 'italic'],
   variable: '--font-serif',
   display: 'swap',
+  preload: false,
 })
 
 export const metadata: Metadata = {
