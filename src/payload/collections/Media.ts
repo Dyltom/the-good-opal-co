@@ -1,4 +1,5 @@
 import { after } from 'next/server'
+import { retrySerializableTransaction } from '@/lib/postgres-retry'
 import type {
   CollectionAfterChangeHook,
   CollectionBeforeValidateHook,
@@ -87,7 +88,9 @@ const describeNewPhoto: CollectionAfterChangeHook<MediaDoc> = ({
         if (!alt) return
         const current = await req.payload.findByID({ collection: 'media', id: doc.id, depth: 0 })
         if ((current.alt ?? '') !== altWhenUploaded) return
-        await req.payload.update({ collection: 'media', id: doc.id, data: { alt } })
+        await retrySerializableTransaction(() =>
+          req.payload.update({ collection: 'media', id: doc.id, data: { alt } })
+        )
       } catch (error: unknown) {
         warn(error)
       }
