@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Container } from '@/components/layout'
-import { MarketingShell, PageHeader } from '@/components/marketing'
+import { EditableHeading, MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
+import { getPageContent } from '@/lib/site-content'
 import { GiftVoucherForm } from './gift-voucher-form'
 
 export const metadata: Metadata = {
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
   alternates: { canonical: '/gift-vouchers' },
 }
 
-export default function GiftVouchersPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function GiftVouchersPage() {
+  const content = await getPageContent('giftVouchers')
   return (
     <MarketingShell>
       <BreadcrumbJsonLd
@@ -23,8 +27,8 @@ export default function GiftVouchersPage() {
       />
       <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
         <PageHeader
-          title="Gift vouchers."
-          description="Let them choose their own opal. The voucher is emailed with your message and can be spent across more than one order."
+          title={<EditableHeading heading={content.heroHeading} />}
+          description={content.heroText}
         />
         <div className="mt-10 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-[clamp(32px,5vw,80px)]">
           <GiftVoucherForm />
@@ -37,7 +41,10 @@ export default function GiftVouchersPage() {
               <li>Not redeemable for cash.</li>
             </ul>
             <p className="mt-4">
-              <Link href="/legal/terms#gift-vouchers" className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink">
+              <Link
+                href="/legal/terms#gift-vouchers"
+                className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
+              >
                 Gift voucher terms
               </Link>
             </p>

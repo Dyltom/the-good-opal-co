@@ -1878,6 +1878,101 @@ export interface SiteContent {
       alt?: string | null
     }
   }
+  courses?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+    heroImage1?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    heroImage2?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    pillars?:
+      | {
+          title?: string | null
+          body?: string | null
+          id?: string | null
+        }[]
+      | null
+    courseImage1?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    courseImage2?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+  }
+  faq?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+    heroImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    questions?:
+      | {
+          category?: string | null
+          question?: string | null
+          answer?: string | null
+          id?: string | null
+        }[]
+      | null
+    closingHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    closingText?: string | null
+    closingImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+  }
+  gifts?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+    closingHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    closingText?: string | null
+    closingImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+  }
+  giftVouchers?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+  }
+  contact?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+  }
+  blog?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+  }
   updatedAt?: string | null
   createdAt?: string | null
 }
@@ -1996,6 +2091,143 @@ export interface SiteContentSelect<T extends boolean = true> {
               image?: T
               alt?: T
             }
+      }
+  courses?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+        heroImage1?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        heroImage2?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        pillars?:
+          | T
+          | {
+              title?: T
+              body?: T
+              id?: T
+            }
+        courseImage1?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        courseImage2?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+      }
+  faq?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+        heroImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        questions?:
+          | T
+          | {
+              category?: T
+              question?: T
+              answer?: T
+              id?: T
+            }
+        closingHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        closingText?: T
+        closingImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+      }
+  gifts?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+        closingHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        closingText?: T
+        closingImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+      }
+  giftVouchers?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+      }
+  contact?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+      }
+  blog?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
       }
   updatedAt?: T
   createdAt?: T

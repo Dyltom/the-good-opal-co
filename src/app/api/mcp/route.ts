@@ -16,23 +16,27 @@ import {
 import { getPayload } from '@/lib/payload'
 import { extractPlainText } from '@/lib/rich-text'
 import {
+  isPicture,
   resolvePageContent,
   SITE_CONTENT_DEFAULTS,
-  type Heading,
-  type Picture,
+  SITE_PAGES,
+  type ContentValue,
   type SitePage,
 } from '@/lib/site-content'
 import { wordpressHtmlToLexical } from '@/lib/wordpress/content-import'
 import { Orders } from '@/payload/collections/Orders'
 import { Products } from '@/payload/collections/Products'
-import type { Media, Order, Post, Product, SiteContent, User } from '@/types/payload-types'
+import type { Course, Media, Order, Post, Product, SiteContent, User } from '@/types/payload-types'
+
+const PAGE_LIST = SITE_PAGES.join(', ')
 
 const INSTRUCTIONS = `Tools for running The Good Opal Co shop (goodopalco.com) on behalf of its owner, Steph.
 Everything you create is a draft. Steph reviews and publishes in the admin; you cannot publish, delete, email customers or change a live product or post.
 Never invent a price, stone fact, measurement, review or story. Ask Steph for anything you do not know.
 Photos: once a listing draft exists, call photo_upload_link with its id and give Steph the link. She opens it on her phone or computer, picks the photos, and they are added to the draft unchanged, in the order she picks them. Then call find_products to see them and reorder with update_product_draft if the lead photo is not the clearest face-up shot. Never recolour, brighten, saturate or filter a stone photo.
 If a draft needs changes after it is saved, update it with update_product_draft or update_post_draft rather than creating another draft.
-Page text and photos on the home, about and services pages: read them with get_site_content and change them with update_site_content. That changes the live site straight away (the admin keeps every earlier version), so show Steph the new wording and get her yes first. For a new page photo, call photo_upload_link without a product, then pass the new media id to update_site_content.
+Page text, lists and photos on these pages: ${PAGE_LIST}. Read them with get_site_content and change them with update_site_content. That changes the live site straight away (the admin keeps every earlier version), so show Steph the new wording and get her yes first. For a new page photo, call photo_upload_link without a product, then pass the new media id to update_site_content.
+Courses on the /courses page: read them with find_courses and change a course's photo or text with update_course (live straight away, so get Steph's yes first).
 If a tool says the shop sign-in has expired, Steph opens the Good Opal shop connector in Claude's settings and clicks Connect.`
 
 function selectValues(collection: CollectionConfig, name: string): [string, ...string[]] {
@@ -376,12 +380,6 @@ function postSummary(post: Post) {
   }
 }
 
-const SITE_PAGES = ['home', 'about', 'services'] as const satisfies SitePage[]
-
-function isPictureDefault(value: string | Heading | Picture): value is Picture {
-  return typeof value === 'object' && 'src' in value
-}
-
 const headingChange = z
   .object({
     text: z.string().trim().max(120).optional(),
@@ -404,15 +402,30 @@ const paragraphChange = z
   .max(600)
   .describe('Empty string brings back the original wording')
 
+function listChange(fallback: Record<string, string>[]) {
+  const item = Object.fromEntries(
+    Object.keys(fallback[0] ?? {}).map((key) => [key, z.string().trim().max(1500)])
+  )
+  return z
+    .array(z.object(item).strict())
+    .max(60)
+    .describe(
+      'Replaces the whole list, in order. Read the current list first and send every item to keep. An empty list brings back the original list.'
+    )
+}
+
+function changeSchema(fallback: ContentValue) {
+  if (typeof fallback === 'string') return paragraphChange
+  if (Array.isArray(fallback)) return listChange(fallback)
+  if (isPicture(fallback)) return pictureChange
+  return headingChange
+}
+
 function pageChangeSchema(page: SitePage) {
-  const fields = Object.entries(SITE_CONTENT_DEFAULTS[page]).map(([key, fallback]) => [
+  const defaults: Record<string, ContentValue> = SITE_CONTENT_DEFAULTS[page]
+  const fields = Object.entries(defaults).map(([key, fallback]) => [
     key,
-    (typeof fallback === 'string'
-      ? paragraphChange
-      : isPictureDefault(fallback)
-        ? pictureChange
-        : headingChange
-    ).optional(),
+    changeSchema(fallback).optional(),
   ])
   return z.object(Object.fromEntries(fields)).strict().optional()
 }
@@ -426,14 +439,14 @@ function mergePage(
   stored: StoredPage,
   changes: Record<string, unknown>
 ): StoredPage {
-  const defaults: Record<string, string | Heading | Picture> = SITE_CONTENT_DEFAULTS[page]
+  const defaults: Record<string, ContentValue> = SITE_CONTENT_DEFAULTS[page]
   const merged: StoredPage = { ...stored }
   for (const [key, change] of Object.entries(changes)) {
     const fallback = defaults[key]
     if (change === undefined || fallback === undefined) continue
     const existing = (stored[key] ?? {}) as Record<string, unknown>
-    if (typeof fallback === 'string') merged[key] = change
-    else if (isPictureDefault(fallback)) {
+    if (typeof fallback === 'string' || Array.isArray(fallback)) merged[key] = change
+    else if (isPicture(fallback)) {
       const picture = change as PictureChange
       merged[key] = {
         image:
@@ -458,12 +471,26 @@ function changedMediaIds(changes: Record<string, unknown>): number[] {
   )
 }
 
+function courseSummary(course: Course) {
+  return {
+    id: course.id,
+    title: course.title,
+    status: course.status,
+    summary: course.summary,
+    introduction: course.introduction,
+    duration: course.duration ?? null,
+    featuredImageId: relationId(course.featuredImage),
+    adminUrl: adminUrl('courses', course.id),
+    url: course.status === 'published' ? `${APP_URL}/courses/${course.slug}` : null,
+  }
+}
+
 function sitePageSummary(page: SitePage, stored: SiteContent[SitePage] | undefined) {
-  const content: Record<string, string | Heading | Picture> = resolvePageContent(page, stored)
+  const content: Record<string, ContentValue> = resolvePageContent(page, stored)
   const values: Record<string, unknown> = stored ?? {}
   return Object.fromEntries(
     Object.entries(content).map(([key, value]) => {
-      if (!isPictureDefault(value)) return [key, value]
+      if (!isPicture(value)) return [key, value]
       const image = (values[key] as { image?: number | Media | null } | undefined)?.image
       return [
         key,
@@ -535,6 +562,20 @@ function shopServer(payload: Payload, user: User): McpServer {
       { description, inputSchema, annotations: { readOnlyHint: readOnly, destructiveHint: false } },
       callback as unknown as ToolCallback<Shape>
     )
+  }
+
+  async function assertPhotos(mediaIds: number[]) {
+    if (mediaIds.length === 0) return
+    const found = await payload.find({
+      collection: 'media',
+      where: { and: [{ id: { in: mediaIds } }, { mimeType: { contains: 'image/' } }] },
+      limit: mediaIds.length,
+      depth: 0,
+      ...access,
+    })
+    const missing = mediaIds.filter((id) => !found.docs.some((doc) => doc.id === id))
+    if (missing.length > 0)
+      throw new Error(`No photo with media id ${missing.join(', ')}. Check list_recent_media.`)
   }
 
   tool(
@@ -841,7 +882,7 @@ function shopServer(payload: Payload, user: User): McpServer {
 
   tool(
     'get_site_content',
-    "Shows the current headings, text and photos on the home, about and services pages, with each chosen photo's media id and a thumbnail.",
+    `Shows the current headings, text, lists and photos on these pages: ${PAGE_LIST}. Includes each chosen photo's media id and a thumbnail.`,
     {},
     true,
     async () =>
@@ -853,7 +894,7 @@ function shopServer(payload: Payload, user: User): McpServer {
 
   tool(
     'update_site_content',
-    'Changes headings, text or photos on the home, about or services page. This changes the LIVE site straight away; every earlier version stays restorable in the admin. Pass only the fields to change, under the page they belong to; other fields are kept. For a new photo, call photo_upload_link without a product so it lands in the media library, then pass its media id here.',
+    `Changes headings, text, lists or photos on one of these pages: ${PAGE_LIST}. This changes the LIVE site straight away; every earlier version stays restorable in the admin. Pass only the fields to change, under the page they belong to; other fields are kept. For a new photo, call photo_upload_link without a product so it lands in the media library, then pass its media id here.`,
     Object.fromEntries(SITE_PAGES.map((page) => [page, pageChangeSchema(page)])) as Record<
       SitePage,
       ReturnType<typeof pageChangeSchema>
@@ -871,18 +912,7 @@ function shopServer(payload: Payload, user: User): McpServer {
       const mediaIds = [
         ...new Set(changes.flatMap(([, pageChanges]) => changedMediaIds(pageChanges))),
       ]
-      if (mediaIds.length > 0) {
-        const found = await payload.find({
-          collection: 'media',
-          where: { and: [{ id: { in: mediaIds } }, { mimeType: { contains: 'image/' } }] },
-          limit: mediaIds.length,
-          depth: 0,
-          ...access,
-        })
-        const missing = mediaIds.filter((id) => !found.docs.some((doc) => doc.id === id))
-        if (missing.length > 0)
-          throw new Error(`No photo with media id ${missing.join(', ')}. Check list_recent_media.`)
-      }
+      await assertPhotos(mediaIds)
       const current = await payload.findGlobal({ slug: 'site-content', depth: 0, ...access })
       const data = Object.fromEntries(
         SITE_PAGES.map((page) => {
@@ -898,6 +928,53 @@ function shopServer(payload: Payload, user: User): McpServer {
         ...access,
       })
       return siteContentSummary(payload, updated)
+    }
+  )
+
+  tool(
+    'find_courses',
+    'Lists the courses on the /courses page with their text, status and photo media id.',
+    {},
+    true,
+    async () => {
+      const found = await payload.find({
+        collection: 'courses',
+        limit: 30,
+        depth: 0,
+        sort: '-publishedAt',
+        ...access,
+      })
+      return { courses: found.docs.map(courseSummary) }
+    }
+  )
+
+  tool(
+    'update_course',
+    'Changes a course’s photo or text. Published courses change on the LIVE /courses page straight away, so show Steph the change and get her yes first. For a new photo, call photo_upload_link without a product, then pass its media id as featuredImageId (null brings back the built-in photo).',
+    {
+      id: z.number().int().positive(),
+      title: z.string().trim().min(3).max(120).optional(),
+      summary: z.string().trim().min(1).max(420).optional(),
+      introduction: z.string().trim().min(1).max(4000).optional(),
+      duration: z.string().trim().max(80).optional(),
+      featuredImageId: z.number().int().positive().nullable().optional(),
+    },
+    false,
+    async ({ id, featuredImageId, ...text }) => {
+      if (featuredImageId === undefined && Object.keys(text).length === 0)
+        throw new Error('Nothing to change: name the fields to change.')
+      if (featuredImageId) await assertPhotos([featuredImageId])
+      const updated = await payload.update({
+        collection: 'courses',
+        id,
+        data: {
+          ...text,
+          ...(featuredImageId !== undefined && { featuredImage: featuredImageId }),
+        },
+        depth: 0,
+        ...access,
+      })
+      return courseSummary(updated)
     }
   )
 
