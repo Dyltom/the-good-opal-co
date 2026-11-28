@@ -234,7 +234,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage collection sections use gallery restraint instead of template glow', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('Walk the <i>collection</i>')
     expect(source).not.toContain('text-gradient-prismatic')
     expect(source).not.toContain('bg-clip-text')
     expect(source).not.toContain('Sparkles')
@@ -307,7 +306,6 @@ describe('buying flow UI/UX safeguards', () => {
   test('homepage language avoids leftover template phrases in feature sections', () => {
     const source = read('src/app/(marketing)/page.tsx')
 
-    expect(source).toContain('Design your own <i>ring</i>')
     expect(source).not.toContain('Where dreams become reality.')
     expect(source).not.toContain(
       'Fresh from our workshop - discover new masterpieces crafted with passion'

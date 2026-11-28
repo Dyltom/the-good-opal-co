@@ -56,6 +56,7 @@ import * as migration_20261121_090100_flag_per_unit_and_triplet_products from '.
 import * as migration_20261122_090000_users_api_keys from './20261122_090000_users_api_keys'
 import * as migration_20261123_090000_gift_vouchers from './20261123_090000_gift_vouchers'
 import * as migration_20261123_090000_audit_events_and_product_trash from './20261123_090000_audit_events_and_product_trash'
+import * as migration_20261128_090000_site_content from './20261128_090000_site_content'
 
 export const migrations = [
   {
@@ -347,5 +348,10 @@ export const migrations = [
     up: migration_20261123_090000_audit_events_and_product_trash.up,
     down: migration_20261123_090000_audit_events_and_product_trash.down,
     name: '20261123_090000_audit_events_and_product_trash',
+  },
+  {
+    up: migration_20261128_090000_site_content.up,
+    down: migration_20261128_090000_site_content.down,
+    name: '20261128_090000_site_content',
   },
 ]

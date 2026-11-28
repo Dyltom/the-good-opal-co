@@ -62,6 +62,10 @@ The photos skill only crops, quarter-turns, centres, pads with the photo's own e
 | `find_posts`           | Search posts by title or id, drafts included; by id includes the full text    |
 | `create_post_draft`    | Blog post saved as a draft                                                    |
 | `update_post_draft`    | Refuses published posts                                                       |
+| `get_site_content`     | Home, about and services headings, text and photos, with thumbnails           |
+| `update_site_content`  | Changes those fields live; partial merge; checks media ids exist              |
+
+Page content is the `site-content` Payload global (`src/payload/globals/SiteContent.ts`). Pages read it through `getPageContent` in `src/lib/site-content.ts`, which also holds the original wording and photos used for any empty field. The global keeps versions, so a live change from Claude can be restored in the admin. A new page photo goes through `photo_upload_link` with no product, then `update_site_content` with its media id.
 
 Product spec rows are written as "Label: value" description lines, which the product page already shows as its details table. The product page now also uses the product's SEO title and description when they are set.
 

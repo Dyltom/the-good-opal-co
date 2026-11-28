@@ -34,7 +34,9 @@ The "Good Opal shop" connector lets Claude:
 - list recent orders: number, date, status, buyer's name, items and total. It cannot see emails, phone numbers or addresses.
 - list categories, stone types, origins, metals and blog authors
 
-It cannot publish, archive, delete, change a live product, change an order, issue refunds or send email. Steph does all of those in the admin or Stripe.
+It can also read and change the headings, short paragraphs and photos on the home, about and services pages (`get_site_content`, `update_site_content`). Those changes go live straight away, so show Steph the exact new wording or photo and get her yes before saving; every earlier version can be restored in the admin under **Page content**. For a new page photo, call `photo_upload_link` with no product, then pass the new media id to `update_site_content`.
+
+Apart from page content, it cannot publish, archive, delete, change a live product, change an order, issue refunds or send email. Steph does all of those in the admin or Stripe.
 
 ## Never
 

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { linkArrow, MarketingShell } from '@/components/marketing'
+import { EditableHeading, linkArrow, MarketingShell } from '@/components/marketing'
 import { Button } from '@/components/ui/button'
 import { LivingWall, type WallPiece } from '@/components/sections/LivingWall'
 import { ClosingBand } from '@/components/sections/ClosingBand'
@@ -11,6 +11,7 @@ import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { opalFire } from '@/lib/opal-fire'
+import { getPageContent } from '@/lib/site-content'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { withSalePrice } from '@/lib/promotions'
 import {
@@ -37,7 +38,16 @@ const WALL_SIZE = 15
 
 type ListedProduct = Pick<
   Product,
-  'name' | 'slug' | 'price' | 'featured' | 'category' | 'stoneType' | 'stoneOrigin' | 'weight' | 'weightUnit' | 'images'
+  | 'name'
+  | 'slug'
+  | 'price'
+  | 'featured'
+  | 'category'
+  | 'stoneType'
+  | 'stoneOrigin'
+  | 'weight'
+  | 'weightUnit'
+  | 'images'
 >
 
 type Listing = {
@@ -93,7 +103,9 @@ function hangWall(listings: Listing[]): WallPiece[] {
     .sort(byFire)
   const wall: Listing[] = []
   for (let slot = 0; slot < WALL_SIZE; slot++) {
-    const next = FINISHED_SLOTS.includes(slot) ? finished.shift() ?? loose.shift() : loose.shift() ?? finished.shift()
+    const next = FINISHED_SLOTS.includes(slot)
+      ? (finished.shift() ?? loose.shift())
+      : (loose.shift() ?? finished.shift())
     if (next) wall.push(next)
   }
   return wall.map(toWallPiece)
@@ -175,7 +187,7 @@ function pieceCount(count: number) {
 }
 
 export default async function HomePage() {
-  const listings = await loadInStock()
+  const [listings, content] = await Promise.all([loadInStock(), getPageContent('home')])
   const wall = hangWall(listings)
   const kinds = walkTheCollection(listings, new Set(wall.map((piece) => piece.slug)))
 
@@ -190,7 +202,7 @@ export default async function HomePage() {
           {FACTS.map(([term, detail]) => (
             <div
               key={term}
-              className="py-3.5 pr-3 even:border-l even:border-rule even:pl-3.5 last:col-span-2 last:border-l-0 last:pl-0 [&:nth-child(n+3)]:border-t [&:nth-child(n+3)]:border-rule min-[901px]:py-[18px] min-[901px]:pr-5 min-[901px]:last:col-span-1 min-[901px]:[&:nth-child(n+2)]:border-l min-[901px]:[&:nth-child(n+2)]:pl-5 min-[901px]:[&:nth-child(n+3)]:border-t-0"
+              className="py-3.5 pr-3 last:col-span-2 last:border-l-0 last:pl-0 even:border-l even:border-rule even:pl-3.5 min-[901px]:py-[18px] min-[901px]:pr-5 min-[901px]:last:col-span-1 min-[901px]:[&:nth-child(n+2)]:border-l min-[901px]:[&:nth-child(n+2)]:pl-5 [&:nth-child(n+3)]:border-t [&:nth-child(n+3)]:border-rule min-[901px]:[&:nth-child(n+3)]:border-t-0"
             >
               <dt className="mb-[5px] text-xs uppercase tracking-[0.06em] text-ink-3">{term}</dt>
               <dd className="text-[14.5px] leading-[1.45] text-ink">{detail}</dd>
@@ -202,7 +214,7 @@ export default async function HomePage() {
           <section aria-labelledby="kinds-heading" className="px-gut pt-sec">
             <div className="mb-[22px] flex items-end justify-between gap-5">
               <h2 id="kinds-heading" className="text-[clamp(30px,3.4vw,52px)] leading-[1.02]">
-                Walk the <i>collection</i>
+                <EditableHeading heading={content.collectionHeading} />
               </h2>
               <Link href="/store" className={`${linkArrow} shrink-0`}>
                 All pieces
@@ -211,7 +223,11 @@ export default async function HomePage() {
             </div>
             <div className="grid grid-cols-2 items-start gap-x-2 gap-y-4 md:grid-cols-[1.5fr_1fr_1fr] md:gap-[clamp(10px,1.4vw,20px)]">
               {kinds.map((kind) => (
-                <Link key={kind.title} href={kind.href} className="group block text-ink no-underline first:col-span-2 md:first:col-span-1">
+                <Link
+                  key={kind.title}
+                  href={kind.href}
+                  className="group block text-ink no-underline first:col-span-2 md:first:col-span-1"
+                >
                   <div className="relative aspect-[4/5] overflow-hidden bg-plinth group-first:aspect-[5/4] md:aspect-auto md:h-[clamp(300px,36vw,540px)] md:group-first:aspect-auto">
                     {kind.cover ? (
                       <Image
@@ -243,8 +259,8 @@ export default async function HomePage() {
           <div className="grid gap-5 border-t border-rule pt-[clamp(14px,1.4vw,20px)] md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] md:items-center md:gap-[clamp(20px,4vw,72px)]">
             <div className="relative aspect-[16/10] overflow-hidden bg-plinth md:aspect-[4/3]">
               <Image
-                src="/images/products/shell-freeform-bezel-opal-ring.jpg"
-                alt="Opal ring in a freeform silver bezel, worn on a finger"
+                src={content.customImage.src}
+                alt={content.customImage.alt}
                 fill
                 sizes="(max-width: 767px) 100vw, 40vw"
                 className="object-cover"
@@ -252,11 +268,9 @@ export default async function HomePage() {
             </div>
             <div>
               <h2 id="custom-heading" className="text-[clamp(30px,3.4vw,52px)] leading-[1.02]">
-                Design your own <i>ring</i>
+                <EditableHeading heading={content.customHeading} />
               </h2>
-              <p className="mt-2 max-w-[48ch] text-[15px] text-ink-2">
-                Sketch it in 3D. Steph quotes it before any work begins.
-              </p>
+              <p className="mt-2 max-w-[48ch] text-[15px] text-ink-2">{content.customText}</p>
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <Button asChild>
                   <Link href="/services/design">
@@ -272,21 +286,13 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <ReviewsSection title="In their words." className="px-gut pt-sec" />
+        <ReviewsSection title={content.reviewsHeading} className="px-gut pt-sec" />
 
         <ClosingBand
           id="sourced-heading"
-          heading={
-            <>
-              Chosen by hand, <i>one stone at a time.</i>
-            </>
-          }
-          line="Stephanie Caruana buys opal direct from Australian miners, mostly from Lightning Ridge and Coober Pedy."
-          image={{
-            src: '/images/studio/steph-palm-opals.jpg',
-            alt: 'An open palm holding about thirty cut Australian opals, black, white and crystal',
-            position: '45% 55%',
-          }}
+          heading={<EditableHeading heading={content.closingHeading} />}
+          line={content.closingText}
+          image={content.closingImage}
           action={{ href: '/about', label: 'Our story' }}
         />
       </MarketingShell>

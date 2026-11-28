@@ -35,6 +35,7 @@ import { audited } from './payload/audit-log.ts'
 import { recordAdminError } from './payload/record-admin-error.ts'
 import { signedInAccessEndpoint } from './payload/access-endpoint.ts'
 import { GiftVouchers } from './payload/collections/GiftVouchers.ts'
+import { SiteContent } from './payload/globals/SiteContent.ts'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -178,6 +179,7 @@ export default buildConfig({
   ]
     .map(duplicateSafe)
     .map(audited),
+  globals: [SiteContent],
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,

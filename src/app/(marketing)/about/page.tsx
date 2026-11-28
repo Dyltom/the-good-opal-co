@@ -3,11 +3,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
-import { linkArrow, MarketingShell } from '@/components/marketing'
+import { EditableHeading, linkArrow, MarketingShell } from '@/components/marketing'
 import { BreadcrumbJsonLd, founderId, JsonLd, OrganizationJsonLd } from '@/components/seo'
 import { ClosingBand } from '@/components/sections/ClosingBand'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
+import { getPageContent } from '@/lib/site-content'
 
 export const metadata: Metadata = {
   title: 'Our Story | The Good Opal Co',
@@ -16,21 +17,6 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about' },
 }
 export const dynamic = 'force-dynamic'
-
-const aboutHeroImages = [
-  {
-    src: '/images/products/20210819_102749.jpg',
-    alt: 'A white opal in a beaded silver halo ring, worn on a finger',
-  },
-  {
-    src: '/images/products/20211129_164004-1-1.jpg',
-    alt: 'A polished black opal with green and orange fire',
-  },
-  {
-    src: '/images/products/20211104_231959.jpg',
-    alt: 'A polished white opal with green fire, held between two fingers',
-  },
-]
 
 const GUIDE = {
   text: 'Opal is mysterious and wonderful. I don\u2019t think the uniqueness of opal is matched by many other things in this world\u2026',
@@ -50,7 +36,8 @@ async function isPublished(slug: string): Promise<boolean> {
 }
 
 export default async function AboutPage() {
-  const guideLive = await isPublished(GUIDE.post)
+  const [guideLive, content] = await Promise.all([isPublished(GUIDE.post), getPageContent('about')])
+  const heroImages = [content.heroImage1, content.heroImage2, content.heroImage3]
 
   return (
     <MarketingShell>
@@ -78,19 +65,19 @@ export default async function AboutPage() {
         <header className="grid items-center gap-[18px] pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
           <div>
             <h1 className="max-w-[12ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
-              A closer look at <i>Australian opal.</i>
+              <EditableHeading heading={content.heroHeading} />
             </h1>
             <p className="mt-3 max-w-[46ch] text-[15px] leading-[1.6] text-ink-2 md:mt-5 md:text-base">
-              A small Australian opal studio. Every stone is chosen by hand and shown as it is.
+              {content.heroText}
             </p>
           </div>
           <ul
             aria-label="Pieces from the studio"
             className="grid grid-cols-3 items-end gap-1.5 md:gap-2"
           >
-            {aboutHeroImages.map((image, index) => (
+            {heroImages.map((image, index) => (
               <li
-                key={image.src}
+                key={index}
                 className="relative aspect-[4/5] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(240px,25vw,380px)]"
               >
                 <Image
@@ -124,17 +111,9 @@ export default async function AboutPage() {
 
       <ClosingBand
         id="founder-heading"
-        heading={
-          <>
-            Stephanie Caruana, <i>founder and cutter.</i>
-          </>
-        }
-        line="She buys opal direct from Australian miners, mostly from Lightning Ridge and Coober Pedy, and has written about cutting it since 2020."
-        image={{
-          src: '/images/studio/steph-at-the-wheel.jpg',
-          alt: 'Fingers holding a freshly cut white opal in front of the cutting wheel',
-          position: '40% 35%',
-        }}
+        heading={<EditableHeading heading={content.closingHeading} />}
+        line={content.closingText}
+        image={content.closingImage}
         action={{ href: '/store', label: 'Browse the collection' }}
       />
     </MarketingShell>
