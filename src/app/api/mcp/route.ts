@@ -669,6 +669,32 @@ function shopServer(payload: Payload, user: User): McpServer {
   )
 
   tool(
+    'describe_photos',
+    'Sets the description (alt text) of photos already in the media library, by id. Look at the photos first, then write one plain sentence each saying what the photo shows.',
+    {
+      photos: z
+        .array(
+          z.object({
+            id: z.number().int().positive(),
+            alt: z.string().trim().min(1).max(200).describe('What the photo shows'),
+          })
+        )
+        .min(1)
+        .max(50),
+    },
+    false,
+    async ({ photos }) => {
+      const updated = []
+      for (const { id, alt } of photos) {
+        updated.push(
+          photoSummary(await payload.update({ collection: 'media', id, data: { alt }, ...access }))
+        )
+      }
+      return { updated }
+    }
+  )
+
+  tool(
     'photo_upload_link',
     'Makes a private link, valid for 24 hours, where Steph picks photos from her phone or computer to add to the shop unchanged. With productId, the photos are appended to that draft listing in the order she picks them. Give her the link and ask her to tell you when they are uploaded.',
     {

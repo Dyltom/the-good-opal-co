@@ -45,6 +45,7 @@
     "photos:studio": "node --env-file-if-exists=.env --env-file-if-exists=.env.local --import tsx src/scripts/apply-studio-photos.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
     "@hookform/resolvers": "^5.2.2",
     "@modelcontextprotocol/sdk": "1.32.2",
     "@payloadcms/db-postgres": "^3.86.0",

@@ -68,7 +68,10 @@ Optional:
 NEXT_PUBLIC_GA_MEASUREMENT_ID
 NEXT_PUBLIC_CLARITY_PROJECT_ID
 RING_REFERENCE_AUDIT_ENABLED
+ANTHROPIC_API_KEY
 ```
+
+With `ANTHROPIC_API_KEY` set, a photo uploaded without a description gets one written by Claude from the photo a few seconds after the upload; a typed description is never replaced, and a failed call leaves the filename or listing-name fallback. Without the key, only the fallback is used.
 
 `NEXT_PUBLIC_APP_URL` must be the canonical HTTPS origin without a trailing slash. Generate separate `PAYLOAD_SECRET`, `QUOTE_LINK_SECRET`, and `CRON_SECRET` values from at least 32 random bytes each; never reuse them. `EMAIL_FROM` must use a Resend-verified domain, for example `The Good Opal Co <orders@example.com>`. `CONTACT_EMAIL` must be a monitored inbox. `MYPOST_SENDER_ADDRESS` and `MYPOST_SENDER_PHONE` fill the sender street and phone in the Australia Post labels CSV, which MyPost requires; they stay out of the repo because they are the owner's own details. Keep `EMAIL_DELIVERY_VERIFIED=false` until that sender reaches a real recipient outside Resend, then set it to `true`. Production readiness also requires a live-mode Stripe key and the matching endpoint signing secret. `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` (32 random bytes, base64, available at build time) must stay the same across deploys: Next.js derives server action IDs from it, so a new key on every build breaks admin and shop tabs that were open during a deploy. The Docker build refuses to run without it.
 

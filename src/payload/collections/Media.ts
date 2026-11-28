@@ -1,4 +1,11 @@
-import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
+import { after } from 'next/server'
+import type {
+  CollectionAfterChangeHook,
+  CollectionBeforeValidateHook,
+  CollectionConfig,
+} from 'payload'
+import type { Media as MediaDoc } from '../../types/payload-types.ts'
+import { describePhoto, photoDescriberEnabled } from '../../lib/describe-photo.ts'
 import { isAdmin } from '../../lib/payload-access.ts'
 import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 import { invalidateBuilderMappingsForMediaReplacement } from '../../lib/custom-builder/media-mapping-invalidation.ts'
@@ -32,12 +39,63 @@ export function altFromFilename(filename: string | undefined): string {
   return describesThePhoto ? name : ''
 }
 
+export const DESCRIBE_PHOTO_CONTEXT = 'describePhoto'
+
+export interface DescribePhotoRequest {
+  productName?: string
+}
+
+function describePhotoRequest(value: unknown): DescribePhotoRequest | null {
+  if (!value || typeof value !== 'object') return null
+  const productName = Reflect.get(value, 'productName')
+  return typeof productName === 'string' ? { productName } : {}
+}
+
 const fillMissingAlt: CollectionBeforeValidateHook = ({ data, operation, req }) => {
   if (!data) return data
   const alt = typeof data['alt'] === 'string' ? data['alt'].trim() : data['alt']
-  if (operation === 'create' && !alt) return { ...data, alt: altFromFilename(req.file?.name) }
+  if (operation === 'create' && !alt) {
+    req.context[DESCRIBE_PHOTO_CONTEXT] ??= {}
+    return { ...data, alt: altFromFilename(req.file?.name) }
+  }
   if (alt === null) return { ...data, alt: '' }
   return data
+}
+
+const describeNewPhoto: CollectionAfterChangeHook<MediaDoc> = ({
+  context,
+  doc,
+  operation,
+  req,
+}) => {
+  const request = describePhotoRequest(context[DESCRIBE_PHOTO_CONTEXT])
+  const image = req.file?.data
+  if (operation !== 'create' || !request || !image?.byteLength) return doc
+  if (!doc.mimeType?.startsWith('image/') || !photoDescriberEnabled()) return doc
+
+  const altWhenUploaded = doc.alt ?? ''
+  const warn = (error: unknown) =>
+    req.payload.logger.warn({
+      msg: 'Photo description failed; the upload keeps its fallback description',
+      mediaId: doc.id,
+      error: error instanceof Error ? error.message : String(error),
+    })
+  try {
+    after(async () => {
+      try {
+        const alt = await describePhoto(image, request.productName)
+        if (!alt) return
+        const current = await req.payload.findByID({ collection: 'media', id: doc.id, depth: 0 })
+        if ((current.alt ?? '') !== altWhenUploaded) return
+        await req.payload.update({ collection: 'media', id: doc.id, data: { alt } })
+      } catch (error: unknown) {
+        warn(error)
+      }
+    })
+  } catch (error: unknown) {
+    warn(error)
+  }
+  return doc
 }
 
 export const Media: CollectionConfig = {
@@ -54,7 +112,7 @@ export const Media: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [fillMissingAlt],
-    afterChange: [invalidateBuilderMappingsForMediaReplacement],
+    afterChange: [invalidateBuilderMappingsForMediaReplacement, describeNewPhoto],
   },
   upload: {
     staticDir: 'media',
@@ -110,7 +168,7 @@ export const Media: CollectionConfig = {
       label: 'Description',
       admin: {
         description:
-          'Optional. What the photo shows, for search engines and screen readers. Left blank, the listing name is used.',
+          'Optional. What the photo shows, for search engines and screen readers. Left blank, it is filled in for you.',
       },
     },
     {

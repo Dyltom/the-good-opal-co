@@ -6,6 +6,7 @@ import { getPayload } from '@/lib/payload'
 import { escapeHtml, page } from '@/lib/plain-page'
 import { isSameOriginRequest } from '@/lib/same-origin'
 import type { Media, Product, User } from '@/types/payload-types'
+import { DESCRIBE_PHOTO_CONTEXT } from '@/payload/collections/Media'
 
 const MEGABYTE = 1024 * 1024
 const MAX_PHOTO_MB = 30
@@ -168,6 +169,7 @@ async function savePhotos(
     const media = await payload.create({
       collection: 'media',
       data: { alt },
+      context: { [DESCRIBE_PHOTO_CONTEXT]: { productName: product?.name } },
       file: {
         data,
         mimetype: type.mimetype,
