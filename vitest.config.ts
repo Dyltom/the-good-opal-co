@@ -8,11 +8,25 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: [],
-    exclude: [
-      '**/node_modules/**',
-      '**/e2e/**',
-      '**/tests/**',
-      '**/*.e2e.*',
+    exclude: ['**/node_modules/**', '**/e2e/**', '**/tests/**', '**/*.e2e.*'],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          exclude: [
+            '**/node_modules/**',
+            '**/e2e/**',
+            '**/tests/**',
+            '**/*.e2e.*',
+            '**/*.db.test.ts',
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: { name: 'db', include: ['src/**/*.db.test.ts'], environment: 'node' },
+      },
     ],
     coverage: {
       provider: 'v8',

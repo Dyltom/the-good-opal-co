@@ -179,7 +179,7 @@ export interface Media {
   id: number
   legacyWordPressId?: number | null
   legacySourceUrl?: string | null
-  alt: string
+  alt?: string | null
   caption?: string | null
   tenantId?: string | null
   updatedAt: string

@@ -1,0 +1,18 @@
+http:
+  middlewares:
+    goodopal-retry:
+      retry:
+        attempts: 4
+        initialInterval: 250ms
+  routers:
+    goodopal-https-retry:
+      entryPoints:
+        - https
+      rule: Host(`goodopalco.com`)
+      priority: 1000
+      middlewares:
+        - goodopal-retry
+        - gzip-sse@docker
+      service: https-0-xgjgcplckgyapjips5nuzjed@docker
+      tls:
+        certResolver: letsencrypt

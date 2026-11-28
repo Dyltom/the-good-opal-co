@@ -11,6 +11,13 @@
 
 Payload media and ring assets live in `UPLOAD_DIR/media` and `UPLOAD_DIR/ring-assets`.
 
+Deploys are rolling: Coolify starts the new container, waits for it to be healthy, then
+stops the old one, which finishes its in-flight requests first. Traefik keeps routing to
+the old container until it exits, so `deploy/traefik-goodopal.yaml` (copied to
+`/data/coolify/proxy/dynamic/goodopal-retry.yaml` on the VPS) overrides the site's router
+with a retry, which moves a refused request to the new container instead of returning 502.
+If the Coolify application is recreated, update the service name in that file.
+
 Generated ring-builder opal faces live in the same volume at the input-addressed
 path `UPLOAD_DIR/builder/opal-faces/v{generatorVersion}/{inputHash}.png`;
 `inputHash` covers the source-image hash, approved contour, crop, aspect, size,
