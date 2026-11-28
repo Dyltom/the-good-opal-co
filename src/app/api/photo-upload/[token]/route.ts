@@ -7,13 +7,29 @@ import { escapeHtml, page } from '@/lib/plain-page'
 import { isSameOriginRequest } from '@/lib/same-origin'
 import type { Media, Product, User } from '@/types/payload-types'
 
-const MAX_PHOTO_BYTES = 15 * 1024 * 1024
+const MEGABYTE = 1024 * 1024
+const MAX_PHOTO_MB = 30
+const MAX_UPLOAD_MB = 90
 const MAX_PHOTOS_PER_UPLOAD = 12
 const PHOTO_TYPES: Record<string, { mimetype: string; extension: string }> = {
   jpeg: { mimetype: 'image/jpeg', extension: 'jpg' },
   png: { mimetype: 'image/png', extension: 'png' },
   webp: { mimetype: 'image/webp', extension: 'webp' },
 }
+
+const UPLOAD_SCRIPT = `
+const form = document.querySelector('form')
+const tooBig = document.getElementById('too-big')
+form.addEventListener('submit', (event) => {
+  const total = [...form.photos.files].reduce((sum, file) => sum + file.size, 0)
+  tooBig.hidden = total <= ${MAX_UPLOAD_MB * MEGABYTE}
+  if (!tooBig.hidden) return event.preventDefault()
+  const button = form.querySelector('button')
+  button.disabled = true
+  button.textContent = 'Uploading, keep this page open...'
+})
+form.photos.addEventListener('change', () => { tooBig.hidden = true })
+`
 
 type UploadTarget = { admin: ShopAdmin; product: Product | null }
 type RouteContext = { params: Promise<{ token: string }> }
@@ -89,8 +105,10 @@ ${thumbnails}
 <form method="post" enctype="multipart/form-data">
 <label for="photos">Photos</label>
 <input id="photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple required>
+<p class="error" role="alert" id="too-big" hidden>Those photos add up to more than ${MAX_UPLOAD_MB} MB. Pick fewer, add them, then add the rest.</p>
 <button type="submit">Add photos</button>
-</form>`,
+</form>
+<script>${UPLOAD_SCRIPT}</script>`,
     status
   )
 }
@@ -115,9 +133,12 @@ async function readPhotos(
   if (files.length === 0) return 'Pick at least one photo.'
   if (files.length > MAX_PHOTOS_PER_UPLOAD)
     return `Pick up to ${MAX_PHOTOS_PER_UPLOAD} photos at a time, then add the rest.`
+  const total = files.reduce((sum, file) => sum + file.size, 0)
+  if (total > MAX_UPLOAD_MB * MEGABYTE)
+    return `Those photos add up to more than ${MAX_UPLOAD_MB} MB. Pick fewer, add them, then add the rest.`
   const photos = []
   for (const file of files) {
-    if (file.size > MAX_PHOTO_BYTES) return `${file.name} is over 15 MB.`
+    if (file.size > MAX_PHOTO_MB * MEGABYTE) return `${file.name} is over ${MAX_PHOTO_MB} MB.`
     const data = Buffer.from(await file.arrayBuffer())
     const format = (
       await sharp(data)

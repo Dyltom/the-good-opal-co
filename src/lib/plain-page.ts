@@ -23,6 +23,7 @@ label{display:block;margin:0 0 6px;font-weight:600;font-size:14px}
 input{display:block;width:100%;margin:0 0 16px;padding:12px;font:inherit;border:1px solid #cfc7bb;border-radius:8px;background:#fff;color:inherit}
 input:focus{outline:2px solid #7a5c24;outline-offset:1px}
 button,.button{display:block;width:100%;padding:13px 16px;font:600 16px/1.2 inherit;font-family:inherit;text-align:center;text-decoration:none;border:0;border-radius:8px;background:#1c1813;color:#fff;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
 .secondary{display:block;margin-top:14px;text-align:center;color:#544c42;font-size:14px}
 .error{padding:12px;border-radius:8px;background:#fbeaea;color:#8a1f1f}
 .who{padding:12px;border-radius:8px;background:#f5f2ec;color:#1c1813}
