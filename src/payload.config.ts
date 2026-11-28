@@ -32,6 +32,7 @@ import { Reviews } from './payload/collections/Reviews.ts'
 import { AuditEvents } from './payload/collections/AuditEvents.ts'
 import { duplicateSafe } from './payload/duplicate-safe.ts'
 import { audited } from './payload/audit-log.ts'
+import { edgeCached, edgeCachedGlobal } from './lib/edge-cache.ts'
 import { recordAdminError } from './payload/record-admin-error.ts'
 import { signedInAccessEndpoint } from './payload/access-endpoint.ts'
 import { GiftVouchers } from './payload/collections/GiftVouchers.ts'
@@ -178,8 +179,9 @@ export default buildConfig({
     AuditEvents,
   ]
     .map(duplicateSafe)
-    .map(audited),
-  globals: [SiteContent],
+    .map(audited)
+    .map(edgeCached),
+  globals: [SiteContent].map(edgeCachedGlobal),
   editor: lexicalEditor({}),
   email: resendAdapter({
     defaultFromAddress: emailSender.address,
