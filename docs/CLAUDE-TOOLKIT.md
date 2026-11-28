@@ -76,21 +76,21 @@ Product spec rows are written as "Label: value" description lines, which the pro
 
 ## Steph: set up Claude
 
-You need a Claude account (any plan), your shop login and about 10 minutes.
+You need a Claude account (any plan), your shop login and about 5 minutes.
 
 ### 1. Add the shop connector
 
 1. Open claude.ai (or the Claude Desktop app) and sign in.
-2. Open **Customize**, then **Connectors**.
-3. Click **+ Add**, then **Add custom connector**.
+2. Open **Customize**, then **Connectors**. If an older Good Opal connector is listed, open it and choose **⋯ > Remove** first: the old address no longer works.
+3. Click **Add connector**, then **Add custom connector**.
 4. Fill in:
    - Name: `Good Opal shop`
-   - URL: `https://goodopalco.com/api/mcp`
-   - Leave everything under **Advanced settings** empty.
-5. Click **Add**, then **Connect**.
-6. A Good Opal Co page opens. Sign in with the email and password you use for the shop admin and click **Sign in and allow Claude** (or **Allow Claude** if you are already signed in). It takes you back to Claude, and the connector shows its tools.
+   - MCP server URL: `https://goodopalco.com/api/mcp`
+5. Click **Continue**. Claude checks the shop and picks the sign-in settings itself (**Sign in now**, **Register automatically**). Leave them as they are and add no headers.
+6. Click **Add**, then **Connect**.
+7. A Good Opal Co page opens. Sign in with the email and password you use for the shop admin and click **Sign in and allow Claude** (or just **Allow Claude** if you are already signed in to the shop admin). It takes you back to Claude, which shows "Connected" and the shop's 8 tools.
 
-If you added the connector before with a different URL, remove that one first (**⋯ > Remove**).
+It stays connected for a year. If you change your shop password, Claude disconnects; open the connector and click **Connect** again.
 
 ### 2. Add the skills
 
