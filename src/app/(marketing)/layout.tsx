@@ -13,6 +13,7 @@ import {
   APP_URL,
   DEFAULT_LOCALE,
   SHARE_IMAGE_URL,
+  SITE_OPEN_GRAPH,
 } from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
 
@@ -45,19 +46,7 @@ export const metadata: Metadata = {
       'application/rss+xml': `${APP_URL}/feed.xml`,
     },
   },
-  openGraph: {
-    siteName: APP_NAME,
-    type: 'website',
-    locale: DEFAULT_LOCALE.replace('-', '_'),
-    images: [
-      {
-        url: SHARE_IMAGE_URL,
-        width: 1200,
-        height: 630,
-        alt: 'Opal rings and stones from The Good Opal Co',
-      },
-    ],
-  },
+  openGraph: SITE_OPEN_GRAPH,
   twitter: {
     card: 'summary_large_image',
     images: [SHARE_IMAGE_URL],

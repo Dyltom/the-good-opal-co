@@ -8,20 +8,13 @@ import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
 import { Button } from '@/components/ui/button'
 import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 import { cn } from '@/lib/utils'
-
-const DESCRIPTION =
-  'Notes on Australian opal: the fields it comes from, how it is cut and set, and what to check before you buy.'
 
 export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
   const { category } = await searchParams
-  return {
-    title: 'Journal | The Good Opal Co',
-    description: DESCRIPTION,
-    alternates: { canonical: '/blog' },
-    ...(category ? { robots: { index: false, follow: true } } : {}),
-  }
+  const metadata = await pageMetadata('blog', '/blog')
+  return category ? { ...metadata, robots: { index: false, follow: true } } : metadata
 }
 
 export const dynamic = 'force-dynamic'
@@ -71,7 +64,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           '@type': 'CollectionPage',
           '@id': `${APP_URL}/blog#collection`,
           name: 'Journal',
-          description: DESCRIPTION,
+          description: content.seo.description,
           url: `${APP_URL}/blog`,
           isPartOf: { '@type': 'WebSite', '@id': `${APP_URL}/#website` },
           mainEntity: {

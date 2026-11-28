@@ -11,7 +11,7 @@ import { OrganizationJsonLd, WebsiteJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
 import { opalFire } from '@/lib/opal-fire'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { withSalePrice } from '@/lib/promotions'
 import {
@@ -22,11 +22,8 @@ import {
 import { caratWeight, storeLabel } from '@/app/(marketing)/store/store-query'
 import type { Product } from '@/types/payload-types'
 
-export const metadata: Metadata = {
-  title: 'Australian Opals, Chosen by Hand | The Good Opal Co',
-  description:
-    'Shop one-of-a-kind Australian opals and handcrafted jewellery with clear origin, authenticity, delivery, and care details.',
-  alternates: { canonical: '/' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('home', '/')
 }
 
 export const dynamic = 'force-dynamic'

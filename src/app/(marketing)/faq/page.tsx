@@ -5,13 +5,10 @@ import { Container } from '@/components/layout'
 import { EditableHeading, MarketingShell } from '@/components/marketing'
 import { ClosingBand } from '@/components/sections/ClosingBand'
 import { BreadcrumbJsonLd, FaqJsonLd } from '@/components/seo'
-import { getPageContent, type ListItem } from '@/lib/site-content'
+import { getPageContent, type ListItem, pageMetadata } from '@/lib/site-content'
 
-export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | The Good Opal Co',
-  description:
-    'Clear answers about Australian opals, product details, delivery, eligible returns, payment, care, and custom work.',
-  alternates: { canonical: '/faq' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('faq', '/faq')
 }
 
 function groupByCategory(items: ListItem[]) {

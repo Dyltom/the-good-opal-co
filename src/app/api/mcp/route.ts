@@ -15,8 +15,12 @@ import {
 } from '@/lib/mcp-oauth'
 import { getPayload } from '@/lib/payload'
 import { extractPlainText } from '@/lib/rich-text'
+import { markdownToLexical } from '@/lib/markdown'
 import {
+  isDate,
   isPicture,
+  isRichBody,
+  isSeo,
   resolvePageContent,
   SITE_CONTENT_DEFAULTS,
   SITE_PAGES,
@@ -35,7 +39,7 @@ Everything you create is a draft. Steph reviews and publishes in the admin; you 
 Never invent a price, stone fact, measurement, review or story. Ask Steph for anything you do not know.
 Photos: once a listing draft exists, call photo_upload_link with its id and give Steph the link. She opens it on her phone or computer, picks the photos, and they are added to the draft unchanged, in the order she picks them. Then call find_products to see them and reorder with update_product_draft if the lead photo is not the clearest face-up shot. Never recolour, brighten, saturate or filter a stone photo.
 If a draft needs changes after it is saved, update it with update_product_draft or update_post_draft rather than creating another draft.
-Page text, lists and photos on these pages: ${PAGE_LIST}. Read them with get_site_content and change them with update_site_content. That changes the live site straight away (the admin keeps every earlier version), so show Steph the new wording and get her yes first. For a new page photo, call photo_upload_link without a product, then pass the new media id to update_site_content.
+Page text, lists, photos, search titles and descriptions on these pages: ${PAGE_LIST}. Read them with get_site_content and change them with update_site_content. That changes the live site straight away (the admin keeps every earlier version), so show Steph the new wording and get her yes first. For a new page photo, call photo_upload_link without a product, then pass the new media id to update_site_content.
 Courses on the /courses page: read them with find_courses and change a course's photo or text with update_course (live straight away, so get Steph's yes first).
 If a tool says the shop sign-in has expired, Steph opens the Good Opal shop connector in Claude's settings and clicks Connect.`
 
@@ -402,6 +406,33 @@ const paragraphChange = z
   .max(600)
   .describe('Empty string brings back the original wording')
 
+const seoChange = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .max(120)
+      .optional()
+      .describe('Page title shown in Google and link previews'),
+    description: z
+      .string()
+      .trim()
+      .max(300)
+      .optional()
+      .describe('One or two sentences shown under the title in Google'),
+  })
+  .describe('Empty strings bring back the original title and description')
+const dateChange = z
+  .union([z.string().date(), z.literal('')])
+  .describe('The "last updated" date as YYYY-MM-DD. Empty string brings back the original date.')
+const bodyChange = z
+  .string()
+  .trim()
+  .max(60000)
+  .describe(
+    'The whole page text as markdown: blank lines between paragraphs, ## for section headings, - for bullet points, [text](https://...) for links. Replaces the entire page text, so send every section, not just the change. Empty string brings back the original page.'
+  )
+
 function listChange(fallback: Record<string, string>[]) {
   const item = Object.fromEntries(
     Object.keys(fallback[0] ?? {}).map((key) => [key, z.string().trim().max(1500)])
@@ -415,9 +446,12 @@ function listChange(fallback: Record<string, string>[]) {
 }
 
 function changeSchema(fallback: ContentValue) {
+  if (isRichBody(fallback)) return bodyChange
   if (typeof fallback === 'string') return paragraphChange
   if (Array.isArray(fallback)) return listChange(fallback)
   if (isPicture(fallback)) return pictureChange
+  if (isSeo(fallback)) return seoChange
+  if (isDate(fallback)) return dateChange
   return headingChange
 }
 
@@ -445,7 +479,9 @@ function mergePage(
     const fallback = defaults[key]
     if (change === undefined || fallback === undefined) continue
     const existing = (stored[key] ?? {}) as Record<string, unknown>
-    if (typeof fallback === 'string' || Array.isArray(fallback)) merged[key] = change
+    if (isRichBody(fallback)) merged[key] = change ? markdownToLexical(change as string) : null
+    else if (isDate(fallback)) merged[key] = change || null
+    else if (typeof fallback === 'string' || Array.isArray(fallback)) merged[key] = change
     else if (isPicture(fallback)) {
       const picture = change as PictureChange
       merged[key] = {
@@ -490,6 +526,12 @@ function sitePageSummary(page: SitePage, stored: SiteContent[SitePage] | undefin
   const values: Record<string, unknown> = stored ?? {}
   return Object.fromEntries(
     Object.entries(content).map(([key, value]) => {
+      if (isRichBody(value))
+        return [
+          key,
+          value ? { text: extractPlainText(value), original: false } : { original: true },
+        ]
+      if (isDate(value)) return [key, value.date]
       if (!isPicture(value)) return [key, value]
       const image = (values[key] as { image?: number | Media | null } | undefined)?.image
       return [
@@ -529,7 +571,7 @@ async function siteContentSummary(payload: Payload, global: SiteContent) {
     {
       pages,
       adminUrl: `${APP_URL}/admin/globals/site-content`,
-      note: 'Photos with original: true are the built-in site photos; the pictures below are the ones Steph has chosen.',
+      note: `Photos with original: true are the built-in site photos; the pictures below are the ones Steph has chosen. A policy page body with original: true shows the built-in legal text: read it at ${APP_URL}/legal/terms, /legal/privacy, /legal/cookies, /shipping or /returns before rewriting it.`,
     },
     await thumbnails(payload, media, labels)
   )
@@ -894,7 +936,7 @@ function shopServer(payload: Payload, user: User): McpServer {
 
   tool(
     'update_site_content',
-    `Changes headings, text, lists or photos on one of these pages: ${PAGE_LIST}. This changes the LIVE site straight away; every earlier version stays restorable in the admin. Pass only the fields to change, under the page they belong to; other fields are kept. For a new photo, call photo_upload_link without a product so it lands in the media library, then pass its media id here.`,
+    `Changes headings, text, lists or photos on one of these pages: ${PAGE_LIST}. This changes the LIVE site straight away; every earlier version stays restorable in the admin. Pass only the fields to change, under the page they belong to; other fields are kept. seo sets the page title and description shown in Google and link previews. The terms, privacy, cookies, shipping and returns pages take a heading, a lastUpdated date and the whole page text as markdown in body; never change legal wording Steph has not approved. For a new photo, call photo_upload_link without a product so it lands in the media library, then pass its media id here.`,
     Object.fromEntries(SITE_PAGES.map((page) => [page, pageChangeSchema(page)])) as Record<
       SitePage,
       ReturnType<typeof pageChangeSchema>

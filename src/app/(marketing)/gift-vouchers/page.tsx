@@ -3,14 +3,11 @@ import Link from 'next/link'
 import { Container } from '@/components/layout'
 import { EditableHeading, MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd } from '@/components/seo'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 import { GiftVoucherForm } from './gift-voucher-form'
 
-export const metadata: Metadata = {
-  title: 'Gift Vouchers | The Good Opal Co',
-  description:
-    'Give a Good Opal Co gift voucher from $25 to $2000, emailed straight to the recipient and valid for three years on natural Australian opals and opal jewellery.',
-  alternates: { canonical: '/gift-vouchers' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('giftVouchers', '/gift-vouchers')
 }
 
 export const dynamic = 'force-dynamic'

@@ -221,6 +221,46 @@ describe('Claude shop MCP endpoint', () => {
       expect(call.data.home).toEqual(stored.home)
     })
 
+    test('offers search titles and every policy page for editing', async () => {
+      const response = await rpc('tools/list')
+      const body = await response.json()
+      const tool = body.result.tools.find(
+        (candidate: { name: string }) => candidate.name === 'update_site_content'
+      )
+
+      expect(Object.keys(tool.inputSchema.properties)).toEqual(
+        expect.arrayContaining(['home', 'terms', 'privacy', 'cookies', 'shipping', 'returns'])
+      )
+    })
+
+    test('stores a policy written in markdown as rich text, and an empty one as the original page', async () => {
+      const result = await callTool('update_site_content', {
+        terms: {
+          body: '## Orders\n\nWe confirm every order by email.\n\n- Tracked post\n- [Returns](/returns)',
+          lastUpdated: '2026-12-01',
+        },
+        privacy: { body: '' },
+        faq: { seo: { title: 'Opal questions' } },
+      })
+
+      expect(result.isError).toBeUndefined()
+      const { data } = mocks.updateGlobal.mock.calls[0][0]
+      const blocks = data.terms.body.root.children
+      expect(blocks.map((block: { type: string }) => block.type)).toEqual([
+        'heading',
+        'paragraph',
+        'list',
+      ])
+      expect(blocks[0].children[0].text).toBe('Orders')
+      expect(blocks[2].children[1].children[0].children[0]).toMatchObject({
+        type: 'link',
+        fields: { url: '/returns' },
+      })
+      expect(data.terms.lastUpdated).toBe('2026-12-01')
+      expect(data.privacy.body).toBeNull()
+      expect(data.faq.seo).toEqual({ title: 'Opal questions' })
+    })
+
     test('refuses a customer account', async () => {
       mocks.auth.mockResolvedValue({ user: { ...admin, role: 'user' } })
 

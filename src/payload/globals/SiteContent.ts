@@ -1,4 +1,4 @@
-import type { Field, GlobalAfterChangeHook, GlobalConfig } from 'payload'
+import type { Field, GlobalAfterChangeHook, GlobalConfig, Tab } from 'payload'
 import { revalidatePath } from 'next/cache'
 import { isAdmin } from '../../lib/payload-access.ts'
 
@@ -12,6 +12,11 @@ export const SITE_CONTENT_PATHS = [
   '/gift-vouchers',
   '/contact',
   '/blog',
+  '/legal/terms',
+  '/legal/privacy',
+  '/legal/cookies',
+  '/shipping',
+  '/returns',
 ] as const
 
 function heading(name: string, label: string): Field {
@@ -94,9 +99,59 @@ function closing(): Field[] {
   ]
 }
 
+function seo(): Field {
+  return {
+    name: 'seo',
+    label: 'Search and sharing',
+    type: 'group',
+    admin: {
+      description:
+        'What Google and link previews show. Leave empty to keep the current title and description.',
+    },
+    fields: [
+      { name: 'title', label: 'Page title', type: 'text' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+    ],
+  }
+}
+
+function policy(name: string, label: string): Tab {
+  return {
+    name,
+    label,
+    fields: [
+      {
+        name: 'heading',
+        label: 'Heading',
+        type: 'text',
+        admin: { description: 'Leave empty to keep the current heading.' },
+      },
+      {
+        name: 'lastUpdated',
+        label: 'Last updated',
+        type: 'date',
+        admin: {
+          date: { pickerAppearance: 'dayOnly', displayFormat: 'd MMMM yyyy' },
+          description: 'Leave empty to keep the current date.',
+        },
+      },
+      {
+        name: 'body',
+        label: 'Page text',
+        type: 'richText',
+        admin: {
+          description:
+            'Leave empty to keep the current page. Once filled, this replaces the whole page text, so include every section.',
+        },
+      },
+    ],
+  }
+}
+
 const revalidatePages: GlobalAfterChangeHook = ({ req }) => {
   try {
     for (const page of SITE_CONTENT_PATHS) revalidatePath(page)
+    revalidatePath('/courses/[slug]', 'page')
   } catch (error) {
     req.payload.logger.warn({
       msg: 'Page content saved outside Next; pages not revalidated',
@@ -132,6 +187,7 @@ export const SiteContent: GlobalConfig = {
             paragraph('customText', 'Design your own ring text'),
             { name: 'reviewsHeading', label: 'Reviews heading', type: 'text' },
             ...closing(),
+            seo(),
           ],
         },
         {
@@ -144,6 +200,7 @@ export const SiteContent: GlobalConfig = {
             picture('heroImage2', 'Top photo 2'),
             picture('heroImage3', 'Top photo 3'),
             ...closing(),
+            seo(),
           ],
         },
         {
@@ -155,6 +212,7 @@ export const SiteContent: GlobalConfig = {
             picture('heroImage', 'Top photo'),
             heading('processHeading', 'How it works heading'),
             ...closing(),
+            seo(),
           ],
         },
         {
@@ -170,6 +228,8 @@ export const SiteContent: GlobalConfig = {
             ]),
             picture('courseImage1', 'Photo for a course without its own photo'),
             picture('courseImage2', 'Second photo for a course without its own photo'),
+            picture('detailImage', 'Photo on a course’s own page when it has no photo'),
+            seo(),
           ],
         },
         {
@@ -184,28 +244,47 @@ export const SiteContent: GlobalConfig = {
               { name: 'answer', label: 'Answer', long: true },
             ]),
             ...closing(),
+            seo(),
           ],
         },
         {
           name: 'gifts',
           label: 'Gifts',
-          fields: [...hero(), ...closing()],
+          fields: [...hero(), ...closing(), seo()],
         },
         {
           name: 'giftVouchers',
           label: 'Gift vouchers',
-          fields: hero(),
+          fields: [...hero(), seo()],
         },
         {
           name: 'contact',
           label: 'Contact',
-          fields: hero(),
+          fields: [
+            ...hero(),
+            paragraph('customIntro', 'Top text when arriving from a custom ring link'),
+            paragraph('courseIntro', 'Top text when arriving from a course link'),
+            { name: 'tipsHeading', label: 'Tips heading', type: 'text' },
+            paragraph('tipsText', 'Tips text'),
+            {
+              name: 'courseTipsHeading',
+              label: 'Tips heading when arriving from a course link',
+              type: 'text',
+            },
+            paragraph('courseTipsText', 'Tips text when arriving from a course link'),
+            seo(),
+          ],
         },
         {
           name: 'blog',
           label: 'Journal',
-          fields: hero(),
+          fields: [...hero(), seo()],
         },
+        policy('terms', 'Terms'),
+        policy('privacy', 'Privacy'),
+        policy('cookies', 'Cookies'),
+        policy('shipping', 'Shipping'),
+        policy('returns', 'Returns'),
       ],
     },
   ],

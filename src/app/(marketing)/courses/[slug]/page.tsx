@@ -8,6 +8,7 @@ import { Container } from '@/components/layout'
 import { MarketingShell } from '@/components/marketing'
 import { CourseCurriculum, CourseInterestPanel } from '@/components/education'
 import { BreadcrumbJsonLd, CourseJsonLd } from '@/components/seo'
+import { getPageContent } from '@/lib/site-content'
 import { APP_NAME, APP_URL, SHARE_IMAGE_URL } from '@/lib/constants'
 import { courseFormatLabels, courseLevelLabels, courseOutlineStats } from '@/lib/courses'
 import { getPayload } from '@/lib/payload'
@@ -69,7 +70,7 @@ export async function generateMetadata({ params }: CoursePageProps): Promise<Met
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const { slug } = await params
-  const course = await getPublishedCourse(slug)
+  const [course, content] = await Promise.all([getPublishedCourse(slug), getPageContent('courses')])
   if (!course) notFound()
   const featured = mediaObject(course.featuredImage)
   const imageUrl = resolveMediaUrl(featured?.url)
@@ -131,8 +132,8 @@ export default async function CoursePage({ params }: CoursePageProps) {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(260px,27vw,400px)]">
             <Image
-              src={imageUrl ?? '/images/customs/custom-2.jpg'}
-              alt={featured?.alt || 'Four Australian opals showing varied colour and pattern'}
+              src={imageUrl ?? content.detailImage.src}
+              alt={featured?.alt || content.detailImage.alt}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 52vw"
