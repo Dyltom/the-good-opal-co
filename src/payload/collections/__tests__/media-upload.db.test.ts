@@ -58,4 +58,14 @@ describe.skipIf(!databaseUrl)('media uploads against Postgres', () => {
     })
     expect(cleared.alt).toBe('')
   })
+
+  it('saves the upload with its fallback when the photo describer cannot run', async () => {
+    process.env.ANTHROPIC_API_KEY = 'sk-ant-test'
+    try {
+      const media = await upload('opal-pendant.jpg')
+      expect(media.alt).toBe('opal pendant')
+    } finally {
+      delete process.env.ANTHROPIC_API_KEY
+    }
+  })
 })

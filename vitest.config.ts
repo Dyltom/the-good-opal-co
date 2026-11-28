@@ -25,7 +25,12 @@ export default defineConfig({
       },
       {
         extends: true,
-        test: { name: 'db', include: ['src/**/*.db.test.ts'], environment: 'node' },
+        test: {
+          name: 'db',
+          include: ['src/**/*.db.test.ts'],
+          environment: 'node',
+          env: { PAYLOAD_DB_PUSH: 'false' },
+        },
       },
     ],
     coverage: {
