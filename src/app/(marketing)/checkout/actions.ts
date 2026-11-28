@@ -22,6 +22,7 @@ import {
   MARKETING_CONSENT_METADATA_KEY,
 } from '@/lib/marketing-consent'
 import { recordServerError } from '@/lib/insights/record'
+import { scrubErrorMessage } from '@/lib/scrub-error'
 import { requestVisitorKey } from '@/lib/insights/visitor'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
 import {
@@ -329,7 +330,7 @@ export async function createCheckoutSession(input: {
       try {
         if (session.status === 'open') await stripe.checkout.sessions.expire(session.id)
       } catch (expireError) {
-        console.error('Failed to expire unreserved Stripe session:', expireError)
+        console.error(`Failed to expire unreserved Stripe session: ${scrubErrorMessage(expireError)}`)
       }
       throw error
     }
@@ -340,10 +341,10 @@ export async function createCheckoutSession(input: {
       url: session.url,
     }
   } catch (error) {
-    console.error('Stripe checkout error:', error)
+    console.error(`Stripe checkout error: ${scrubErrorMessage(error)}`)
     if (heldVoucherFor) {
       await releaseGiftVoucherHold(heldVoucherFor).catch((releaseError: unknown) =>
-        console.error('Failed to release gift voucher hold:', releaseError)
+        console.error(`Failed to release gift voucher hold: ${scrubErrorMessage(releaseError)}`)
       )
     }
 
@@ -445,7 +446,7 @@ export async function createPayPalCheckout(input: {
     await setCheckoutHold(checkoutAttemptId, expiresAt)
     return { success: true, url }
   } catch (error) {
-    console.error('PayPal checkout error:', error)
+    console.error(`PayPal checkout error: ${scrubErrorMessage(error)}`)
     if (error instanceof InventoryUnavailableError) return { success: false, error: PIECES_TAKEN }
     await recordServerError({ kind: 'checkout', path: '/checkout', error })
     return { success: false, error: CHECKOUT_FAILED }

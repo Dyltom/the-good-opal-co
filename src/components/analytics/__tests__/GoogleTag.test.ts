@@ -26,6 +26,23 @@ describe('Google tag', () => {
     ])
     expect(calls).toContainEqual(['config', 'G-TEST'])
     expect(window.dataLayer?.length).toBe(calls.length + 1)
+  })
+
+  test('downloads gtag.js only once the visitor accepts analytics', () => {
+    const gtagScript = () => document.querySelector('script[src*="gtag/js?id=G-TEST"]')
+    runTag()
+    expect(gtagScript()).toBeNull()
+
+    window.localStorage.setItem('cookie-consent', JSON.stringify({ necessary: true, analytics: true }))
+    window.dispatchEvent(new Event('cookie-consent-updated'))
+
+    expect(gtagScript()).not.toBeNull()
+  })
+
+  test('downloads gtag.js straight away for a visitor who accepted earlier', () => {
+    window.localStorage.setItem('cookie-consent', JSON.stringify({ necessary: true, analytics: true }))
+    runTag()
+
     expect(document.querySelector('script[src*="gtag/js?id=G-TEST"]')).not.toBeNull()
   })
 

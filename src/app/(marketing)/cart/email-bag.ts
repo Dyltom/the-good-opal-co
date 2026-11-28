@@ -5,6 +5,7 @@ import { Resend } from 'resend'
 import { z } from 'zod'
 import { SavedBagEmail } from '@/emails/saved-bag'
 import { getCart } from '@/lib/cart'
+import { scrubErrorMessage } from '@/lib/scrub-error'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 
 export interface EmailBagState {
@@ -62,7 +63,7 @@ export async function emailMyBag(
     })
     .catch((error: unknown) => ({ error: { message: String(error) } }))
   if (sent.error) {
-    console.error(`Saved bag email rejected: ${sent.error.message}`)
+    console.error(`Saved bag email rejected: ${scrubErrorMessage(sent.error.message)}`)
     return { success: false, message: 'We could not send that just now. Please try again.' }
   }
   return { success: true, message: SENT }

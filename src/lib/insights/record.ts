@@ -2,6 +2,7 @@ import { getPayload } from '@/lib/payload'
 import type { InsightEvent } from '@/types/payload-types'
 import type { ServerInsightEvent } from './events'
 import { normalisePath } from './ingest'
+import { scrubErrorMessage, scrubSecrets } from '@/lib/scrub-error'
 
 export type InsightEventData = Omit<InsightEvent, 'id'>
 
@@ -66,17 +67,27 @@ export type ServerErrorKind =
   | 'stripe_webhook'
   | 'admin'
 
-export function scrubErrorMessage(error: unknown): string {
-  const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Unknown error'
+function topStackFrames(error: unknown): string | undefined {
+  if (!(error instanceof Error) || !error.stack) return undefined
+  const frames = error.stack
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('at '))
+    .slice(0, 3)
+  return frames.length > 0 ? scrubSecrets(frames.join('\n')).slice(0, 500) : undefined
+}
+
+const CLIENT_DISCONNECT_MESSAGES = new Set(['aborted', 'failed to pipe response'])
+
+function isRequestNoise(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  const code = 'code' in error ? error.code : undefined
   return (
-    raw
-      .replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, '[email]')
-      .replace(/\b[a-z][a-z0-9+.-]*:\/\/\S+/gi, '[url]')
-      .replace(/\b(sk|pk|rk|whsec|re)_[A-Za-z0-9_]+/g, '[key]')
-      .replace(/(?=[A-Za-z0-9_-]*\d)[A-Za-z0-9_-]{24,}/g, '[token]')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 300) || 'No message'
+    CLIENT_DISCONNECT_MESSAGES.has(error.message) ||
+    error.message.startsWith('Failed to find Server Action') ||
+    error.name === 'AbortError' ||
+    code === 'ECONNRESET' ||
+    code === 'ERR_STREAM_PREMATURE_CLOSE'
   )
 }
 
@@ -85,14 +96,21 @@ export async function recordServerError({
   path,
   error,
   digest,
+  reference,
 }: {
   kind: ServerErrorKind
   path: string
   error: unknown
-  digest?: string
+  digest?: string | undefined
+  reference?: string | undefined
 }): Promise<void> {
+  if (isRequestNoise(error)) return
   const detail: Record<string, string> = { kind, message: scrubErrorMessage(error) }
+  if (error instanceof Error && error.name !== 'Error') detail.name = error.name.slice(0, 60)
+  const stack = topStackFrames(error)
+  if (stack) detail.stack = stack
   if (digest) detail.digest = digest.slice(0, 40)
+  if (reference) detail.reference = reference.slice(0, 80)
   try {
     await saveInsight({
       name: 'server_error' satisfies ServerInsightEvent,
@@ -101,6 +119,6 @@ export async function recordServerError({
       detail,
     })
   } catch (saveError) {
-    console.error('Server error insight not recorded:', saveError)
+    console.error(`Server error insight not recorded: ${scrubErrorMessage(saveError)}`)
   }
 }

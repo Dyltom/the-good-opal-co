@@ -5,6 +5,7 @@ import { APP_URL } from '@/lib/constants'
 import { GIFT_VOUCHER_PURCHASE_METADATA_KEY } from '@/lib/gift-vouchers'
 import { checkRateLimit, getRequestIdentifier } from '@/lib/rate-limit'
 import { recordServerError } from '@/lib/insights/record'
+import { scrubErrorMessage } from '@/lib/scrub-error'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
 import { requestVisitorKey } from '@/lib/insights/visitor'
 import { getConfiguredStripeSecretKey } from '@/lib/stripe-config'
@@ -75,7 +76,7 @@ export async function createGiftVoucherCheckout(input: GiftVoucherOrder): Promis
     if (!session.url) throw new Error('Stripe returned a gift voucher session without a URL')
     return { success: true, url: session.url }
   } catch (error) {
-    console.error('Gift voucher checkout error:', error)
+    console.error(`Gift voucher checkout error: ${scrubErrorMessage(error)}`)
     await recordServerError({ kind: 'checkout', path: '/gift-vouchers', error })
     return { success: false, error: 'Payment could not be started. Please try again or contact us.' }
   }

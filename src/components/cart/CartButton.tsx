@@ -24,7 +24,7 @@ export function CartButton() {
     <AnimatedCartDrawer>
       <button
         type="button"
-        aria-label={`Bag, ${count} ${count === 1 ? 'item' : 'items'}`}
+        aria-label={`Bag ${count} ${count === 1 ? 'item' : 'items'}`}
         className="inline-flex min-h-9 items-center gap-2 whitespace-nowrap rounded-sm border border-rule-2 px-2.5 py-1.5 text-[13.5px] text-ink transition-colors hover:border-ink-2 md:px-3 md:py-[7px]"
       >
         <span className="hidden md:inline">Bag</span>
