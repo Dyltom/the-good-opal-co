@@ -12,6 +12,7 @@ export type ClientAuthMethod = (typeof CLIENT_AUTH_METHODS)[number]
 const CODE_SECONDS = 5 * 60
 const ACCESS_SECONDS = 30 * 24 * 60 * 60
 const REFRESH_SECONDS = 365 * 24 * 60 * 60
+const PHOTO_UPLOAD_SECONDS = 24 * 60 * 60
 const CLAUDE_CALLBACKS = new Set([
   'https://claude.ai/api/mcp/auth_callback',
   'https://claude.com/api/mcp/auth_callback',
@@ -22,7 +23,8 @@ type ClientClaims = { typ: 'client'; ru: string[] }
 type CodeClaims = { typ: 'code'; uid: number; cid: string; ru: string; cc: string; exp: number }
 type AccessClaims = { typ: 'access'; uid: number; sv: string; exp: number }
 type RefreshClaims = { typ: 'refresh'; uid: number; cid: string; sv: string; exp: number }
-type Claims = ClientClaims | CodeClaims | AccessClaims | RefreshClaims
+type PhotoUploadClaims = { typ: 'photos'; uid: number; sv: string; pid?: number; exp: number }
+type Claims = ClientClaims | CodeClaims | AccessClaims | RefreshClaims | PhotoUploadClaims
 
 function signingKey(): Buffer {
   const secret = process.env['PAYLOAD_SECRET'] ?? ''
@@ -166,6 +168,24 @@ export function readRefreshToken(
 export function readAccessToken(token: string): { userId: number; sessionVersion: string } | null {
   const claims = verify(token, 'access')
   return claims ? { userId: claims.uid, sessionVersion: claims.sv } : null
+}
+
+export function photoUploadUrl({ user, sessionVersion: sv }: ShopAdmin, productId?: number) {
+  const exp = nowSeconds() + PHOTO_UPLOAD_SECONDS
+  const token = sign({ typ: 'photos', uid: user.id, sv, ...(productId && { pid: productId }), exp })
+  return {
+    url: `${APP_URL}/api/photo-upload/${token}`,
+    expiresAt: new Date(exp * 1000).toISOString(),
+  }
+}
+
+export function readPhotoUploadToken(
+  token: string
+): { userId: number; sessionVersion: string; productId: number | null } | null {
+  const claims = verify(token, 'photos')
+  return claims
+    ? { userId: claims.uid, sessionVersion: claims.sv, productId: claims.pid ?? null }
+    : null
 }
 
 export async function findShopAdmin(

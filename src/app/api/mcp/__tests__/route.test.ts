@@ -145,4 +145,13 @@ describe('Claude shop MCP endpoint', () => {
     expect(text).not.toContain('0400000000')
     expect(text).not.toContain('Opal St')
   })
+
+  test('will not edit a blog post that is already live', async () => {
+    mocks.findByID.mockResolvedValue({ id: 7, title: 'Opal care', _status: 'published' })
+
+    const result = await callTool('update_post_draft', { id: 7, title: 'Caring for opal' })
+
+    expect(result.isError).toBe(true)
+    expect(mocks.update).not.toHaveBeenCalled()
+  })
 })

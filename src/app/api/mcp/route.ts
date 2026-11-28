@@ -1,13 +1,15 @@
 import { McpServer, type ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js'
 import type { ShapeOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 import type { CollectionConfig, Payload, Where } from 'payload'
-import sharp from 'sharp'
 import { z } from 'zod'
 import { APP_URL } from '@/lib/constants'
 import {
   findShopAdmin,
   looksLikeOAuthToken,
+  photoUploadUrl,
   PROTECTED_RESOURCE_METADATA_URL,
   readAccessToken,
 } from '@/lib/mcp-oauth'
@@ -16,19 +18,14 @@ import { extractPlainText } from '@/lib/rich-text'
 import { wordpressHtmlToLexical } from '@/lib/wordpress/content-import'
 import { Orders } from '@/payload/collections/Orders'
 import { Products } from '@/payload/collections/Products'
-import type { Order, Product, User } from '@/types/payload-types'
-
-const MAX_IMAGE_BYTES = 15 * 1024 * 1024
-const IMAGE_TYPES: Record<string, string> = {
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-}
+import type { Media, Order, Post, Product, User } from '@/types/payload-types'
 
 const INSTRUCTIONS = `Tools for running The Good Opal Co shop (goodopalco.com) on behalf of its owner, Steph.
-Everything you create is a draft. Steph reviews and publishes in the admin; you cannot publish, delete, email customers or change a live product.
+Everything you create is a draft. Steph reviews and publishes in the admin; you cannot publish, delete, email customers or change a live product or post.
 Never invent a price, stone fact, measurement, review or story. Ask Steph for anything you do not know.
-Photos: upload them unchanged in colour. Never recolour, brighten, saturate or filter a stone photo.`
+Photos: once a listing draft exists, call photo_upload_link with its id and give Steph the link. She opens it on her phone or computer, picks the photos, and they are added to the draft unchanged, in the order she picks them. Then call find_products to see them and reorder with update_product_draft if the lead photo is not the clearest face-up shot. Never recolour, brighten, saturate or filter a stone photo.
+If a draft needs changes after it is saved, update it with update_product_draft or update_post_draft rather than creating another draft.
+If a tool says the shop sign-in has expired, Steph opens the Good Opal shop connector in Claude's settings and clicks Connect.`
 
 function selectValues(collection: CollectionConfig, name: string): [string, ...string[]] {
   const field = collection.fields.find(
@@ -241,20 +238,47 @@ function orderSummary(order: Order) {
   }
 }
 
-async function imageBytes(input: { url?: string; base64?: string }): Promise<Buffer> {
-  if (input.base64) return Buffer.from(input.base64.replace(/^data:[^,]*,/, ''), 'base64')
-  const url = new URL(input.url ?? '')
-  if (url.protocol !== 'https:') throw new Error('Only https image links can be uploaded.')
-  const response = await fetch(url, { signal: AbortSignal.timeout(20_000) })
-  if (!response.ok) throw new Error(`The image link answered ${response.status}.`)
-  if (Number(response.headers.get('content-length') ?? 0) > MAX_IMAGE_BYTES) {
-    throw new Error('That image is over 15 MB.')
-  }
-  return Buffer.from(await response.arrayBuffer())
+type Thumbnail = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
+
+class WithPhotos {
+  constructor(
+    readonly value: unknown,
+    readonly photos: Thumbnail[]
+  ) {}
 }
 
-function result(value: unknown) {
-  return { content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }] }
+function result(output: unknown) {
+  const value = output instanceof WithPhotos ? output.value : output
+  const photos = output instanceof WithPhotos ? output.photos : []
+  return { content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }, ...photos] }
+}
+
+async function thumbnails(payload: Payload, media: Media[]): Promise<Thumbnail[]> {
+  const upload = payload.collections.media.config.upload
+  const directory = typeof upload === 'object' ? upload.staticDir : undefined
+  const files = await Promise.all(
+    media.map(async ({ id, sizes, mimeType }, index): Promise<Thumbnail[]> => {
+      const filename = sizes?.thumbnail?.filename
+      const data =
+        directory && filename
+          ? await readFile(path.join(directory, filename)).catch(() => null)
+          : null
+      if (!data) return []
+      return [
+        { type: 'text', text: `Photo ${index + 1}: media id ${id}` },
+        {
+          type: 'image',
+          data: data.toString('base64'),
+          mimeType: sizes?.thumbnail?.mimeType ?? mimeType ?? 'image/jpeg',
+        },
+      ]
+    })
+  )
+  return files.flat()
+}
+
+function photoSummary({ id, alt, filename, width, height, url, createdAt }: Media) {
+  return { id, alt, filename, width, height, url, createdAt }
 }
 
 function failure(error: unknown) {
@@ -268,6 +292,76 @@ function failure(error: unknown) {
       ? ` ${JSON.stringify(error.data)}`
       : ''
   return { isError: true, content: [{ type: 'text' as const, text: `${message}${details}` }] }
+}
+
+const postCore = {
+  title: z.string().trim().min(3).max(140),
+  contentHtml: z
+    .string()
+    .min(1)
+    .max(60000)
+    .describe(
+      'Post body as simple HTML: <p>, <h2>, <h3>, <ul><li>, <ol><li>, <a href="/store/...">. Replaces the whole post body.'
+    ),
+  excerpt: z.string().trim().max(300).optional(),
+  authorId: z.number().int().positive().describe('From list_categories authors'),
+  categoryIds: z
+    .array(z.number().int().positive())
+    .min(1)
+    .max(5)
+    .describe('From list_categories blogCategories'),
+  featuredImageId: z.number().int().positive().optional(),
+  seoTitle: z.string().trim().max(70).optional(),
+  seoDescription: z.string().trim().max(170).optional(),
+  keywords: z.array(z.string().trim().min(1).max(60)).max(10).optional(),
+}
+
+type PostInput = { [K in keyof typeof postCore]?: z.infer<(typeof postCore)[K]> }
+
+function postData(input: PostInput): Partial<Post> {
+  const data: Partial<Post> = {}
+  if (input.title !== undefined) data.title = input.title
+  if (input.contentHtml !== undefined)
+    data.content = wordpressHtmlToLexical(input.contentHtml) as unknown as Post['content']
+  if (input.excerpt !== undefined) data.excerpt = input.excerpt
+  if (input.authorId !== undefined) data.author = input.authorId
+  if (input.categoryIds !== undefined) data.categories = input.categoryIds
+  if (input.featuredImageId !== undefined) data.featuredImage = input.featuredImageId
+  if (
+    input.seoTitle !== undefined ||
+    input.seoDescription !== undefined ||
+    input.keywords !== undefined
+  ) {
+    data.seo = {
+      ...(input.seoTitle !== undefined && { title: input.seoTitle }),
+      ...(input.seoDescription !== undefined && { description: input.seoDescription }),
+      ...(input.keywords !== undefined && { keywords: input.keywords }),
+    }
+  }
+  return data
+}
+
+function relationId(value: number | { id: number } | null | undefined): number | null {
+  return typeof value === 'object' && value ? value.id : (value ?? null)
+}
+
+function postSummary(post: Post) {
+  return {
+    id: post.id,
+    title: post.title,
+    slug: post.slug,
+    status: post._status ?? 'draft',
+    excerpt: post.excerpt ?? null,
+    authorId: relationId(post.author),
+    categoryIds: (post.categories ?? []).map(relationId),
+    featuredImageId: relationId(post.featuredImage),
+    seoTitle: post.seo?.title ?? null,
+    seoDescription: post.seo?.description ?? null,
+    keywords: post.seo?.keywords ?? [],
+    adminUrl: adminUrl('posts', post.id),
+    blogUrl: post._status === 'published' ? `${APP_URL}/blog/${post.slug}` : null,
+    updatedAt: post.updatedAt,
+  }
 }
 
 function shopServer(payload: Payload, user: User): McpServer {
@@ -323,7 +417,7 @@ function shopServer(payload: Payload, user: User): McpServer {
 
   tool(
     'find_products',
-    'Searches products by name, or fetches one by id. Includes drafts.',
+    'Searches products by name, or fetches one by id. Includes drafts. Fetching by id also shows its photos, lead photo first.',
     {
       id: z.number().int().positive().optional(),
       query: z.string().trim().max(100).optional().describe('Words in the product name'),
@@ -343,11 +437,17 @@ function shopServer(payload: Payload, user: User): McpServer {
         collection: 'products',
         where,
         limit: limit ?? 20,
-        depth: 0,
+        depth: id ? 1 : 0,
         sort: '-updatedAt',
         ...access,
       })
-      return { totalDocs: found.totalDocs, products: found.docs.map(productSummary) }
+      const summary = { totalDocs: found.totalDocs, products: found.docs.map(productSummary) }
+      const [product] = found.docs
+      if (!id || !product) return summary
+      const gallery = (product.images ?? []).flatMap(({ image }) =>
+        typeof image === 'object' && image ? [image] : []
+      )
+      return new WithPhotos(summary, await thumbnails(payload, gallery))
     }
   )
 
@@ -407,65 +507,54 @@ function shopServer(payload: Payload, user: User): McpServer {
   )
 
   tool(
-    'upload_image',
-    'Adds one photo to the media library from an https link or base64 data, unchanged. Returns the media id to use in imageIds. For big photos, ask Steph to upload them in Admin > Media and use list_recent_media instead.',
-    {
-      alt: z.string().trim().min(3).max(200).describe('What the photo shows, for screen readers'),
-      filename: z.string().trim().min(1).max(100),
-      url: z.string().url().optional(),
-      base64: z.string().optional(),
-    },
-    false,
-    async ({ alt, filename, url, base64 }) => {
-      if (Boolean(url) === Boolean(base64)) throw new Error('Send either url or base64, not both.')
-      const data = await imageBytes({ url, base64 })
-      if (data.byteLength > MAX_IMAGE_BYTES) throw new Error('That image is over 15 MB.')
-      const metadata = await sharp(data)
-        .metadata()
-        .catch(() => null)
-      const mimetype = metadata?.format ? IMAGE_TYPES[metadata.format] : undefined
-      if (!mimetype || !metadata?.format)
-        throw new Error('That file is not a JPEG, PNG or WebP image.')
-      const name = `${slugify(filename.replace(/\.[a-z0-9]+$/i, ''))}.${metadata.format === 'jpeg' ? 'jpg' : metadata.format}`
-      const media = await payload.create({
-        collection: 'media',
-        data: { alt },
-        file: { data, mimetype, name, size: data.byteLength },
-        ...access,
-      })
-      return {
-        id: media.id,
-        filename: media.filename,
-        width: media.width,
-        height: media.height,
-        url: media.url,
-      }
-    }
-  )
-
-  tool(
     'list_recent_media',
-    'Lists the newest photos in the media library, for example ones Steph just uploaded in the admin, with their ids.',
-    { limit: z.number().int().min(1).max(30).optional() },
+    'Shows the newest photos in the media library, newest first, with their ids, for example ones Steph just uploaded.',
+    { limit: z.number().int().min(1).max(20).optional() },
     true,
     async ({ limit }) => {
       const found = await payload.find({
         collection: 'media',
         where: { mimeType: { contains: 'image/' } },
         sort: '-createdAt',
-        limit: limit ?? 10,
+        limit: limit ?? 8,
         depth: 0,
         ...access,
       })
-      return found.docs.map(({ id, alt, filename, width, height, url, createdAt }) => ({
-        id,
-        alt,
-        filename,
-        width,
-        height,
-        url,
-        createdAt,
-      }))
+      return new WithPhotos(found.docs.map(photoSummary), await thumbnails(payload, found.docs))
+    }
+  )
+
+  tool(
+    'photo_upload_link',
+    'Makes a private link, valid for 24 hours, where Steph picks photos from her phone or computer to add to the shop unchanged. With productId, the photos are appended to that draft listing in the order she picks them. Give her the link and ask her to tell you when they are uploaded.',
+    {
+      productId: z
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .describe('A draft product to add the photos to. Leave out for a blog photo.'),
+    },
+    false,
+    async ({ productId }) => {
+      if (productId) {
+        const product = await payload.findByID({
+          collection: 'products',
+          id: productId,
+          depth: 0,
+          ...access,
+        })
+        if (product.status !== 'draft')
+          throw new Error(
+            `"${product.name}" is ${product.status}, not a draft. Steph adds photos to it in the admin.`
+          )
+      }
+      const admin = await findShopAdmin(payload, user.id)
+      if (!admin) throw new Error('Only a shop admin can add photos.')
+      return {
+        ...photoUploadUrl(admin, productId),
+        next: 'Give Steph this link. When she says the photos are uploaded, check them with find_products (or list_recent_media for a blog photo).',
+      }
     }
   )
 
@@ -491,59 +580,92 @@ function shopServer(payload: Payload, user: User): McpServer {
   )
 
   tool(
+    'find_posts',
+    'Searches blog posts by title, or fetches one by id with its full text. Includes drafts.',
+    {
+      id: z.number().int().positive().optional(),
+      query: z.string().trim().max(100).optional().describe('Words in the title'),
+      status: z.enum(['draft', 'published']).optional(),
+      limit: z.number().int().min(1).max(30).optional(),
+    },
+    true,
+    async ({ id, query, status, limit }) => {
+      const found = await payload.find({
+        collection: 'posts',
+        where: {
+          and: [
+            ...(id ? [{ id: { equals: id } }] : []),
+            ...(query ? [{ title: { like: query } }] : []),
+            ...(status ? [{ _status: { equals: status } }] : []),
+          ],
+        },
+        draft: true,
+        limit: limit ?? 10,
+        depth: 0,
+        sort: '-updatedAt',
+        ...access,
+      })
+      return {
+        totalDocs: found.totalDocs,
+        posts: found.docs.map((post) => ({
+          ...postSummary(post),
+          ...(id && { content: extractPlainText(post.content) }),
+        })),
+      }
+    }
+  )
+
+  tool(
     'create_post_draft',
     'Creates a blog post as a DRAFT. Steph reviews and publishes it in the admin.',
-    {
-      title: z.string().trim().min(3).max(140),
-      contentHtml: z
-        .string()
-        .min(1)
-        .max(60000)
-        .describe(
-          'Post body as simple HTML: <p>, <h2>, <h3>, <ul><li>, <ol><li>, <a href="/store/...">'
-        ),
-      excerpt: z.string().trim().max(300).optional(),
-      authorId: z.number().int().positive().describe('From list_categories authors'),
-      categoryIds: z
-        .array(z.number().int().positive())
-        .min(1)
-        .max(5)
-        .describe('From list_categories blogCategories'),
-      featuredImageId: z.number().int().positive().optional(),
-      seoTitle: z.string().trim().max(70).optional(),
-      seoDescription: z.string().trim().max(170).optional(),
-      keywords: z.array(z.string().trim().min(1).max(60)).max(10).optional(),
-    },
+    postCore,
     false,
     async (input) => {
       const post = await payload.create({
         collection: 'posts',
         draft: true,
         data: {
+          ...postData(input),
           title: input.title,
-          slug: await uniqueSlug(payload, 'posts', slugify(input.title)),
-          excerpt: input.excerpt,
-          content: wordpressHtmlToLexical(input.contentHtml) as unknown as Product['description'],
+          content: wordpressHtmlToLexical(input.contentHtml) as unknown as Post['content'],
           author: input.authorId,
           categories: input.categoryIds,
-          featuredImage: input.featuredImageId,
-          seo: {
-            title: input.seoTitle,
-            description: input.seoDescription,
-            keywords: input.keywords,
-          },
+          slug: await uniqueSlug(payload, 'posts', slugify(input.title)),
           _status: 'draft',
         },
         ...access,
       })
       return {
-        id: post.id,
-        title: post.title,
-        slug: post.slug,
-        status: post._status,
-        adminUrl: adminUrl('posts', post.id),
+        ...postSummary(post),
         next: 'Steph reviews this draft in the admin and publishes it herself.',
       }
+    }
+  )
+
+  tool(
+    'update_post_draft',
+    'Changes fields on a blog post that is not live. Refuses published posts. Cannot publish.',
+    {
+      id: z.number().int().positive(),
+      ...Object.fromEntries(
+        Object.entries(postCore).map(([name, schema]) => [name, schema.optional()])
+      ),
+    } as { id: z.ZodNumber } & {
+      [K in keyof typeof postCore]: z.ZodOptional<(typeof postCore)[K]>
+    },
+    false,
+    async ({ id, ...input }) => {
+      const live = await payload.findByID({ collection: 'posts', id, depth: 0, ...access })
+      if (live._status === 'published')
+        throw new Error(`"${live.title}" is live. Steph changes it in the admin.`)
+      const updated = await payload.update({
+        collection: 'posts',
+        id,
+        draft: true,
+        data: postData(input),
+        ...access,
+      })
+      return postSummary(updated)
     }
   )
 

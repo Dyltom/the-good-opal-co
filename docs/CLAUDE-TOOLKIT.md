@@ -44,7 +44,7 @@ Every tool runs through the Payload local API as the signed-in user with `overri
 
 ### Photos and image upload
 
-`upload_image` takes a public https URL or base64. Claude writes base64 into the tool call as output text, so it only suits small images (well under 1 MB). For full-size phone photos the flow is: Claude prepares the photos with the photos skill, Steph downloads them and uploads them in **Admin > Media**, and Claude finds them with `list_recent_media`.
+Claude cannot pass a photo Steph shares in chat to a tool: it would have to write the file out as base64 text, which only works for tiny images. So `photo_upload_link` returns a signed link to `/api/photo-upload/<token>` (`src/app/api/photo-upload/[token]/route.ts`), valid for 24 hours. Steph opens it on her phone or computer and picks up to 12 JPEG, PNG or WebP photos (15 MB each). They are saved unchanged with alt text "<product name>, photo N" and appended to the draft's gallery; if the product is no longer a draft they only go into Media. The link carries the same password fingerprint as the access token, so a password change kills it too. `find_products` by id and `list_recent_media` return the thumbnails as images, each labelled with its media id, so Claude can check the photos and reorder them with `imageIds`.
 
 The photos skill only crops, quarter-turns, centres, pads with the photo's own edge colour and resizes. `prepare_photo.py` checks that the stone pixels were copied exactly and that the average colour inside the stone box moved no more than 2/255 after resizing and saving; if not it deletes the output.
 
@@ -56,10 +56,12 @@ The photos skill only crops, quarter-turns, centres, pads with the photo's own e
 | `find_products`        | Search by name or id, drafts included                                         |
 | `create_product_draft` | Always status Draft, whatever is asked                                        |
 | `update_product_draft` | Refuses products that are not drafts; never changes status                    |
-| `upload_image`         | Adds a JPEG, PNG or WebP to Media                                             |
-| `list_recent_media`    | Recent uploads, to attach to a draft                                          |
+| `photo_upload_link`    | 24-hour link where Steph uploads photos onto a draft (or into Media)          |
+| `list_recent_media`    | Recent uploads with thumbnails, to attach to a draft or post                  |
 | `list_recent_orders`   | Number, date, status, buyer name, items, total                                |
+| `find_posts`           | Search posts by title or id, drafts included; by id includes the full text    |
 | `create_post_draft`    | Blog post saved as a draft                                                    |
+| `update_post_draft`    | Refuses published posts                                                       |
 
 Product spec rows are written as "Label: value" description lines, which the product page already shows as its details table. The product page now also uses the product's SEO title and description when they are set.
 

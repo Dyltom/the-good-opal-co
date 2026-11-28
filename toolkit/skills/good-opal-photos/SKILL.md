@@ -44,11 +44,14 @@ Use `prepare_photo.py` in this skill folder. It needs Python with Pillow and num
    - `stone_mean_drift` is how far the average colour in the box moved after resizing and JPEG saving, out of 255. It must be 2 or less.
    - `passed` must be `true`. If not, the script deletes the output. Do not work around it.
 5. Show Steph each prepared photo beside its original and ask if the framing is right. Adjust the box if not.
-6. Give her the files to download, or upload them with `upload_image` if they are small enough. For anything over about 1 MB, ask her to upload them in **Admin > Media** and then find them with `list_recent_media`.
+6. Give her the files to download. Then call `photo_upload_link` with the draft's product id and give her the link: she picks the files, they go onto the end of that draft, and she tells you when they are in. With no product id the photos go into Media only.
+7. Check them with `find_products` (by id), which shows each photo with its media id. Reorder with `update_product_draft` and `imageIds`, lead photo first.
+
+If her photos are already framed well, skip the preparing: she can upload the originals from her phone through the same link.
 
 ## Alt text
 
-Every photo needs alt text describing what it shows, for example "Lightning Ridge black opal, face up, green and blue flashes". Describe what is visible; do not add claims.
+The upload link gives each photo plain alt text: the piece's name and a number. Better alt text describes what the photo shows, for example "Lightning Ridge black opal, face up, green and blue flashes". Suggest it to Steph; she can edit Alt on the photo in the admin. Describe what is visible; do not add claims.
 
 ## Lead photo
 

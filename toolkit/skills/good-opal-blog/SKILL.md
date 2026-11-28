@@ -44,7 +44,8 @@ Use two to four internal links where they help the reader. Do not link to drafts
 ## Saving
 
 1. Show Steph the draft in full and make her changes.
-2. Call `create_post_draft` with the title, `contentHtml`, excerpt, `authorId`, `categoryIds`, SEO fields, and `featuredImageId` if she has a photo in Media.
-3. Give her the `adminUrl` and say it is a draft: she checks it in the admin and clicks **Publish changes** when ready.
+2. Call `create_post_draft` with the title, `contentHtml`, excerpt, `authorId`, `categoryIds`, SEO fields, and `featuredImageId` if she has a photo in Media. For a new photo, give her a `photo_upload_link` with no product id and find it with `list_recent_media`.
+3. For changes after saving, call `update_post_draft` with the post id instead of making a second draft. `find_posts` finds earlier drafts and shows their text.
+4. Give her the `adminUrl` and say it is a draft: she checks it in the admin and clicks **Publish changes** when ready.
 
 Never publish, and never edit a published post. If she wants a live post changed, tell her what to change in the admin.
