@@ -88,7 +88,7 @@ function resolvePicture(stored: StoredPicture | undefined, fallback: Picture): P
   if (!src || typeof media !== 'object' || !media) {
     return filled(stored?.alt) ? { ...fallback, alt: stored.alt } : fallback
   }
-  return { src, alt: filled(stored?.alt) ? stored.alt : media.alt }
+  return { src, alt: filled(stored?.alt) ? stored.alt : (media.alt ?? '') }
 }
 
 function isPicture(value: string | Heading | Picture): value is Picture {
