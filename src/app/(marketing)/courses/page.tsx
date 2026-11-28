@@ -132,6 +132,7 @@ export default async function CoursesPage() {
                       }
                       alt={image?.alt || 'Australian opals selected for cutting practice'}
                       fill
+                      loading={index === 0 ? 'eager' : undefined}
                       sizes="(max-width: 768px) 100vw, 52vw"
                       className="object-cover transition-transform duration-700 ease-gallery group-hover:scale-[1.02]"
                     />
