@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { recordServerError } from '@/lib/insights/record'
+import { scrubErrorMessage } from '@/lib/scrub-error'
 import {
   findReservationByReference,
   holdReservationForCapture,
@@ -78,9 +79,9 @@ async function alertOwner(
       },
       { idempotencyKey: `paypal-${kind}/${orderId}` }
     )
-    if (error) console.error(`PayPal owner alert rejected for ${orderId}:`, error.message)
+    if (error) console.error(`PayPal owner alert rejected for ${orderId}: ${scrubErrorMessage(error.message)}`)
   } catch (error) {
-    console.error(`PayPal owner alert failed for ${orderId}:`, error)
+    console.error(`PayPal owner alert failed for ${orderId}: ${scrubErrorMessage(error)}`)
   }
 }
 
@@ -89,8 +90,8 @@ async function paymentNeedsChecking(
   problem: string,
   error: unknown
 ): Promise<string> {
-  console.error(`PayPal order ${orderId} ${problem}:`, error)
-  await recordServerError({ kind: 'checkout', path: RETURN_PATH, error })
+  console.error(`PayPal order ${orderId} ${problem}: ${scrubErrorMessage(error)}`)
+  await recordServerError({ kind: 'checkout', path: RETURN_PATH, error, reference: orderId })
   await alertOwner(orderId, 'unfulfilled', [
     `PayPal order ${orderId}: ${problem}`,
     '',
@@ -211,8 +212,8 @@ export async function completePayPalReturn(orderId: string, now = new Date()): P
   try {
     if (await completeExistingOrder(reference)) return paypalSuccessPath(orderId)
   } catch (error) {
-    console.error(`PayPal order ${orderId} emails failed:`, error)
-    await recordServerError({ kind: 'checkout', path: RETURN_PATH, error })
+    console.error(`PayPal order ${orderId} emails failed: ${scrubErrorMessage(error)}`)
+    await recordServerError({ kind: 'checkout', path: RETURN_PATH, error, reference: orderId })
     return paypalSuccessPath(orderId)
   }
 
@@ -220,8 +221,8 @@ export async function completePayPalReturn(orderId: string, now = new Date()): P
   try {
     order = await getOrder(orderId)
   } catch (error) {
-    console.error(`PayPal order ${orderId} could not be read:`, error)
-    await recordServerError({ kind: 'checkout', path: RETURN_PATH, error })
+    console.error(`PayPal order ${orderId} could not be read: ${scrubErrorMessage(error)}`)
+    await recordServerError({ kind: 'checkout', path: RETURN_PATH, error, reference: orderId })
     return cartNotice('failed')
   }
   if (order.status === 'COMPLETED') return settleCapture(order)

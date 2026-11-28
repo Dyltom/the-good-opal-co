@@ -252,7 +252,11 @@ export function trackGalleryFullscreen(productName: string) {
   captureInsight('gallery_fullscreen', { detail: { product: productName.slice(0, 120) } })
 }
 
+const BROWSER_INJECTED_ERROR =
+  /window\.ethereum|__firefox__|DarkReader|__gCrWeb|webkit\.messageHandlers|(chrome|moz|safari-web)-extension:\/\//
+
 export function trackClientError(message: string, source?: string) {
+  if (BROWSER_INJECTED_ERROR.test(message) || (source && BROWSER_INJECTED_ERROR.test(source))) return
   captureInsight('js_error', {
     detail: source
       ? { message: message.slice(0, 300), source: source.slice(0, 300) }

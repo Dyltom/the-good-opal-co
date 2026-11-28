@@ -14,6 +14,8 @@ import {
 import type { RingConfig } from '@/components/custom-builder/config'
 import { contactCustomerMutation } from '@/lib/contact-customer'
 import { newEnquiryReference } from '@/lib/enquiry-reference'
+import { recordServerError } from '@/lib/insights/record'
+import { scrubErrorMessage } from '@/lib/scrub-error'
 import type { Enquiry } from '@/types/payload-types'
 
 export type ContactActionResult =
@@ -191,7 +193,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     }
 
     if (supportError) {
-      console.error('Failed to send email to support:', supportError)
+      console.error(`Owner email failed for ${reference}: ${scrubErrorMessage(supportError.message)}`)
       deliveryErrors.push(`Owner email: ${supportError.message}`)
     } else {
       ownerEmailSentAt = new Date().toISOString()
@@ -265,7 +267,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
     }
 
     if (customerError) {
-      console.error('Failed to send confirmation email:', customerError)
+      console.error(`Customer email failed for ${reference}: ${scrubErrorMessage(customerError.message)}`)
       deliveryErrors.push(`Customer email: ${customerError.message}`)
     } else {
       customerEmailSentAt = new Date().toISOString()
@@ -282,7 +284,7 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
         },
       })
     } catch (updateError) {
-      console.error(`Failed to update email delivery state for ${reference}:`, updateError)
+      console.error(`Email delivery state not saved for ${reference}: ${scrubErrorMessage(updateError)}`)
     }
 
     return {
@@ -291,14 +293,15 @@ export async function sendContactEmail(data: unknown): Promise<ContactActionResu
       confirmationDelayed: deliveryErrors.length > 0 || undefined,
     }
   } catch (error) {
-    console.error('Contact form error:', error)
-
     if (error instanceof z.ZodError) {
       return {
         success: false,
         error: 'Invalid form data. Please check your input.',
       }
     }
+
+    console.error(`Contact form failed: ${scrubErrorMessage(error)}`)
+    await recordServerError({ kind: 'action', path: '/contact', error })
 
     return {
       success: false,

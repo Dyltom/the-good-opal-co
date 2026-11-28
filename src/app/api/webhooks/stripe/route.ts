@@ -34,6 +34,7 @@ import {
   type CheckoutInsightItem,
   type CheckoutInsightSource,
 } from '@/lib/insights/record'
+import { scrubErrorMessage } from '@/lib/scrub-error'
 import { INSIGHTS_VISITOR_METADATA_KEY } from '@/lib/insights/events'
 import { completeExistingOrder, fulfilPaidCheckout } from '@/lib/orders/fulfil-paid-checkout'
 
@@ -115,7 +116,7 @@ async function chosenShippingService(session: Stripe.Checkout.Session): Promise<
   try {
     return (await stripe.shippingRates.retrieve(rate)).display_name ?? undefined
   } catch (error) {
-    console.error('Could not read the chosen shipping service:', error)
+    console.error(`Could not read the chosen shipping service for ${session.id}: ${scrubErrorMessage(error)}`)
     return undefined
   }
 }
@@ -140,7 +141,7 @@ async function abandonedCheckoutItems(sessionId: string): Promise<CheckoutInsigh
       }
     })
   } catch (error) {
-    console.error(`Line items unavailable for abandoned checkout ${sessionId}:`, error)
+    console.error(`Line items unavailable for abandoned checkout ${sessionId}: ${scrubErrorMessage(error)}`)
     return []
   }
 }
@@ -560,7 +561,7 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('Webhook signature verification failed:', message)
+    console.error(`Webhook signature verification failed: ${scrubErrorMessage(message)}`)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -583,7 +584,9 @@ export async function POST(request: NextRequest) {
       const expired = event.data.object
       await getCheckoutItems(expired.id)
         .then((items) => sendCartReminder(expired, items))
-        .catch((error: unknown) => console.error('Cart reminder failed:', error))
+        .catch((error: unknown) =>
+          console.error(`Cart reminder failed for ${expired.id}: ${scrubErrorMessage(error)}`)
+        )
     }
     return NextResponse.json({ received: true, inventoryReleased: true })
   }
@@ -617,8 +620,13 @@ export async function POST(request: NextRequest) {
         await sendQuoteDepositConfirmation(result.quoteId)
         return NextResponse.json({ received: true, quoteDeposit: true, ...result })
       } catch (error) {
-        console.error('Error reconciling custom quote deposit:', error)
-        await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })
+        console.error(`Quote deposit not reconciled for ${event.id} ${session.id}: ${scrubErrorMessage(error)}`)
+        await recordServerError({
+          kind: 'stripe_webhook',
+          path: '/api/webhooks/stripe',
+          error,
+          reference: session.id,
+        })
         return NextResponse.json({ error: 'Failed to reconcile quote deposit' }, { status: 500 })
       }
     }
@@ -640,8 +648,13 @@ export async function POST(request: NextRequest) {
         await sendGiftVoucherPurchaseEmails(await getPayload(), voucher.id)
         return NextResponse.json({ received: true, giftVoucherId: voucher.id, duplicate: !created })
       } catch (error) {
-        console.error('Error issuing gift voucher:', error)
-        await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })
+        console.error(`Gift voucher not issued for ${event.id} ${session.id}: ${scrubErrorMessage(error)}`)
+        await recordServerError({
+          kind: 'stripe_webhook',
+          path: '/api/webhooks/stripe',
+          error,
+          reference: session.id,
+        })
         return NextResponse.json({ error: 'Failed to issue gift voucher' }, { status: 500 })
       }
     }
@@ -722,8 +735,13 @@ export async function POST(request: NextRequest) {
         orderNumber: order.orderNumber,
       })
     } catch (error) {
-      console.error('Error processing checkout.session.completed:', error)
-      await recordServerError({ kind: 'stripe_webhook', path: '/api/webhooks/stripe', error })
+      console.error(`Order not created for ${event.id} ${session.id}: ${scrubErrorMessage(error)}`)
+      await recordServerError({
+        kind: 'stripe_webhook',
+        path: '/api/webhooks/stripe',
+        error,
+        reference: session.id,
+      })
       return NextResponse.json({ error: 'Failed to process order' }, { status: 500 })
     }
   }
@@ -731,7 +749,7 @@ export async function POST(request: NextRequest) {
   // Handle other event types
   if (event.type === 'payment_intent.payment_failed') {
     const paymentIntent = event.data.object as Stripe.PaymentIntent
-    console.log(`Payment failed for intent: ${paymentIntent.id}`)
+    console.warn(`Payment failed for ${paymentIntent.id}: ${paymentIntent.last_payment_error?.code ?? 'no code'}`)
   }
 
   if (event.type === 'charge.refunded') {
