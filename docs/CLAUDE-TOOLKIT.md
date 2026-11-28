@@ -4,14 +4,16 @@ Lets Steph run everyday shop jobs from the Claude app (claude.ai or Claude Deskt
 
 Two parts:
 
-- **The Good Opal shop connector**: an MCP endpoint at `https://goodopalco.com/api/mcp/<key>` (`src/app/api/mcp/[[...key]]/route.ts`).
+- **The Good Opal shop connector**: an MCP endpoint at `https://goodopalco.com/api/mcp` (`src/app/api/mcp/route.ts`), with an OAuth sign-in under `src/app/api/oauth/` and `src/app/.well-known/`.
 - **Four skills** in `toolkit/skills/`: `good-opal-listing`, `good-opal-photos`, `good-opal-blog` and `good-opal-site-guide`.
 
 ## Design
 
 ### How Claude reaches the shop
 
-A claude.ai **custom connector** pointing at the site's MCP endpoint, with the API key as the last part of the URL. claude.ai's request-header option is a beta that most accounts don't have; without it the connector sends no key, gets a 401 and tries an OAuth sign-in the shop doesn't offer ("Couldn't reach Good Opal shop"). A key in the URL works on every plan. Custom connectors work on Free, Pro, Max, Team and Enterprise plans, in claude.ai and Claude Desktop, and sync between them. Claude calls the connector from Anthropic's cloud, so the endpoint has to be public, which goodopalco.com already is.
+A claude.ai **custom connector** pointing at `https://goodopalco.com/api/mcp`. When Steph clicks **Connect**, Claude opens the shop's sign-in page, she signs in with her normal shop login (or is already signed in to the admin) and clicks **Allow Claude**. Custom connectors work on Free, Pro, Max, Team and Enterprise plans, in claude.ai and Claude Desktop, and sync between them. Claude calls the connector from Anthropic's cloud, so the endpoint has to be public, which goodopalco.com already is.
+
+The first version put a Payload API key at the end of the URL. Every attempt Steph made failed: the admin shows a freshly generated key before it is saved, the setup notes mentioned a copy button that does not exist, and a mistyped key fell through to claude.ai's OAuth discovery, which then 404ed ("Couldn't reach Good Opal shop"). The sign-in removes the key from her setup entirely.
 
 A `.mcpb` desktop extension was rejected: it needs Claude Desktop, a local process on Steph's computer and a reinstall for every change. The connector is one URL, and it updates when the site deploys.
 
@@ -28,9 +30,17 @@ The upgrade to 3.94.1 was tried in a throwaway worktree: install worked, the loc
 
 ### Auth
 
-Payload's own `useAPIKey` on the Users collection. The route takes the key from the URL (`/api/mcp/<key>`) or from `Authorization: Bearer <key>` (Claude Code and other header-capable clients), looks the key up through Payload's API-key strategy, and refuses with 401 for a missing or unknown key (or a session cookie) and 403 for any non-Admin user. Every tool runs through the Payload local API as that user with `overrideAccess: false`, so the collections' own access rules still apply.
+OAuth 2.1 as claude.ai expects it, kept stateless so there is no table or migration:
 
-**Know this before issuing a key:** a Users API key is also accepted by Payload's REST API (`Authorization: users API-Key <key>`), where an Admin can do anything, including publishing and deleting. The connector's limits keep Claude to drafts; the key itself is as powerful as an admin password. That is why the key belongs to its own user, so it can be revoked without touching Steph's login, and why it is shared only between Dylan and Steph's Claude settings.
+- `POST /api/mcp` without a token answers 401 with `WWW-Authenticate: Bearer resource_metadata=".../.well-known/oauth-protected-resource/api/mcp"`.
+- `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server` describe the endpoints. Claude registers itself at `/api/oauth/register` (dynamic client registration). Only Claude's callbacks (`https://claude.ai/api/mcp/auth_callback`, `https://claude.com/api/mcp/auth_callback`) and loopback callbacks (Claude Code) are accepted.
+- `/api/oauth/authorize` shows the consent page and requires PKCE (S256). It takes the admin session cookie or the email and password of a shop login, and only an Admin can allow access.
+- `/api/oauth/token` swaps the code for an access token (30 days) and a refresh token (1 year). Claude refreshes on its own.
+- Client ids, codes and tokens are HMAC-signed with a key derived from `PAYLOAD_SECRET` (`src/lib/mcp-oauth.ts`). Each token carries a fingerprint of the user's password salt, so **changing that user's password disconnects Claude**, and every request re-checks that the user is still an Admin.
+
+Header-capable clients such as Claude Code can also send a Payload API key as `Authorization: Bearer <key>` (Users > Enable API Key). Such a key is also accepted by Payload's REST API, where an Admin can do anything, so it is as powerful as an admin password. Steph does not need one.
+
+Every tool runs through the Payload local API as the signed-in user with `overrideAccess: false`, so the collections' own access rules still apply. The Activity log records connector changes as "Claude connector".
 
 ### Photos and image upload
 
@@ -55,36 +65,18 @@ Product spec rows are written as "Label: value" description lines, which the pro
 
 ## Dylan: release
 
-1. Before deploying, apply migration `20261122_090000_users_api_keys` to prod, either with `pnpm payload migrate` (see `docs/DEPLOYMENT.md`) or by hand:
+1. Merge and deploy. No migration.
+2. Build the skill zips: `toolkit/package-skills.sh ~/Downloads/good-opal-skills`. It writes one zip per skill and bundles `docs/OWNER-GUIDE.md` into the site guide.
 
-   ```sql
-   ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "enable_a_p_i_key" boolean;
-   ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "api_key" varchar;
-   ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "api_key_index" varchar;
-   INSERT INTO "payload_migrations" ("name", "batch", "updated_at", "created_at")
-   SELECT '20261122_090000_users_api_keys', COALESCE(MAX("batch"), 0) + 1, now(), now() FROM "payload_migrations";
-   ```
+## Dylan: disconnect Claude
 
-2. Deploy.
-3. Build the skill zips: `toolkit/package-skills.sh ~/Downloads/good-opal-skills`. It writes one zip per skill and bundles `docs/OWNER-GUIDE.md` into the site guide.
-
-## Dylan: issue Steph's key
-
-1. In https://goodopalco.com/admin go to **Users > Create New**.
-2. Email: an address only used for this (it never receives mail from the connector), Name: `Claude for Steph`, Role: **Admin**, and a long random password nobody needs to know.
-3. Tick **Enable API Key** and **Save**. Payload fills in a key.
-4. Click the eye icon beside **API Key** to show it, or the copy icon to copy it.
-5. Get it to Steph's Claude settings without email or chat history: set the connector up with her on her computer, or use a password manager share.
-
-## Dylan: revoke or replace the key
-
-- **Revoke:** open the `Claude for Steph` user, untick **Enable API Key**, **Save**. The connector stops working on the next request.
-- **Replace:** Payload 3.86 does not show a "generate new key" button, and re-ticking Enable API Key brings back the same key. To issue a fresh key, create a new user as above, remove and re-add the connector with the new URL, then untick Enable API Key on the old user (or delete it).
+- Steph removes the connector in Claude (**Customize > Connectors**), or
+- change the password of the shop login she connected with: every token it issued stops working on the next request.
 - The site logs every tool call with the tool name, so `docker logs` on the app container shows what Claude did and when.
 
 ## Steph: set up Claude
 
-You need a Claude account (any plan) and about 10 minutes. Dylan gives you the key.
+You need a Claude account (any plan), your shop login and about 10 minutes.
 
 ### 1. Add the shop connector
 
@@ -93,11 +85,12 @@ You need a Claude account (any plan) and about 10 minutes. Dylan gives you the k
 3. Click **+ Add**, then **Add custom connector**.
 4. Fill in:
    - Name: `Good Opal shop`
-   - URL: `https://goodopalco.com/api/mcp/` followed straight away by the key Dylan gave you, with no space. For example, if the key were `abc-123`, the URL would be `https://goodopalco.com/api/mcp/abc-123`.
-   - Leave the OAuth and request header fields empty.
+   - URL: `https://goodopalco.com/api/mcp`
+   - Leave everything under **Advanced settings** empty.
+5. Click **Add**, then **Connect**.
+6. A Good Opal Co page opens. Sign in with the email and password you use for the shop admin and click **Sign in and allow Claude** (or **Allow Claude** if you are already signed in). It takes you back to Claude, and the connector shows its tools.
 
-   The URL now works like a password: don't share or screenshot it.
-5. Click **Add**. The connector shows its tools when it connects.
+If you added the connector before with a different URL, remove that one first (**⋯ > Remove**).
 
 ### 2. Add the skills
 
@@ -121,4 +114,4 @@ Start a new chat. Click **+** under the message box and check **Good Opal shop**
 - "Write a blog post draft about how to care for opal jewellery." Claude asks for your notes first.
 - "What orders came in this week?"
 
-Claude cannot publish, delete, change a live piece, change prices you have not given it, change photo colours or email anyone. You do those in the admin. If the connector says the key is not valid, ask Dylan.
+Claude cannot publish, delete, change a live piece, change prices you have not given it, change photo colours or email anyone. You do those in the admin. If the connector stops working, open **Customize > Connectors**, click **Good Opal shop** and click **Connect** again.

@@ -5,6 +5,12 @@ import type { CollectionConfig, Payload, Where } from 'payload'
 import sharp from 'sharp'
 import { z } from 'zod'
 import { APP_URL } from '@/lib/constants'
+import {
+  findShopAdmin,
+  looksLikeOAuthToken,
+  PROTECTED_RESOURCE_METADATA_URL,
+  readAccessToken,
+} from '@/lib/mcp-oauth'
 import { getPayload } from '@/lib/payload'
 import { extractPlainText } from '@/lib/rich-text'
 import { wordpressHtmlToLexical } from '@/lib/wordpress/content-import'
@@ -544,20 +550,30 @@ function shopServer(payload: Payload, user: User): McpServer {
   return server
 }
 
-type Authentication = { user: User } | { status: 401 | 403; message: string }
+type Authentication =
+  | { user: User }
+  | { status: 401 | 403; message: string; invalidToken?: boolean }
 
-async function authenticate(
-  payload: Payload,
-  request: Request,
-  pathKey: string | undefined
-): Promise<Authentication> {
-  const key =
-    pathKey ?? request.headers.get('authorization')?.match(/^Bearer\s+(\S+)\s*$/i)?.[1]
+async function authenticateOAuth(payload: Payload, token: string): Promise<Authentication> {
+  const access = readAccessToken(token)
+  const admin = access && (await findShopAdmin(payload, access.userId, access.sessionVersion))
+  if (!admin)
+    return {
+      status: 401,
+      message: 'The shop sign-in has expired. Reconnect the connector in Claude.',
+      invalidToken: true,
+    }
+  return { user: admin.user }
+}
+
+async function authenticate(payload: Payload, request: Request): Promise<Authentication> {
+  const key = request.headers.get('authorization')?.match(/^Bearer\s+(\S+)\s*$/i)?.[1]
   if (!key)
     return {
       status: 401,
-      message: 'Add the shop API key to the end of the connector URL: /api/mcp/<key>.',
+      message: 'Connect this connector in Claude and sign in with your shop login.',
     }
+  if (looksLikeOAuthToken(key)) return authenticateOAuth(payload, key)
   const { user } = await payload.auth({
     headers: new Headers({ authorization: `users API-Key ${key}` }),
     canSetHeaders: false,
@@ -569,20 +585,23 @@ async function authenticate(
   return { user }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ key?: string[] }> }
-): Promise<Response> {
-  const { key = [] } = await params
-  if (key.length > 1) return new Response(null, { status: 404 })
+function challenge(invalidToken: boolean | undefined): string {
+  const error = invalidToken ? ', error="invalid_token"' : ''
+  return `Bearer resource_metadata="${PROTECTED_RESOURCE_METADATA_URL}"${error}`
+}
+
+export async function POST(request: Request): Promise<Response> {
   const payload = await getPayload()
-  const authentication = await authenticate(payload, request, key[0])
+  const authentication = await authenticate(payload, request)
   if (!('user' in authentication)) {
     return Response.json(
       { jsonrpc: '2.0', error: { code: -32001, message: authentication.message }, id: null },
       {
         status: authentication.status,
-        headers: authentication.status === 401 ? { 'WWW-Authenticate': 'Bearer' } : undefined,
+        headers:
+          authentication.status === 401
+            ? { 'WWW-Authenticate': challenge(authentication.invalidToken) }
+            : undefined,
       }
     )
   }

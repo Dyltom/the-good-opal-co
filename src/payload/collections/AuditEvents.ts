@@ -40,7 +40,7 @@ export const AuditEvents: CollectionConfig = {
       required: true,
       options: [
         { label: 'Admin', value: 'admin' },
-        { label: 'API key (Claude connector)', value: 'api-key' },
+        { label: 'Claude connector', value: 'api-key' },
         { label: 'System', value: 'system' },
       ],
       admin: readOnly,

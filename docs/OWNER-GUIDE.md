@@ -26,7 +26,7 @@ The menu down the left side groups everything:
 - **E-commerce**: Orders, and Inventory Reservations (pieces held while someone is paying). Commerce Import Runs is a technical record of the move from the old shop.
 - **CRM**: Customers, Enquiries and Custom Quotes. Custom Quote Events is a history log you never need to edit.
 - **Education**: Courses.
-- **Insights**: Insight Events, the raw visit records behind Store insights, and the Activity log: who created, changed, deleted or restored what, when, and whether it was done in the admin, by the Claude connector (API key) or by the system. Open an entry to see which fields changed.
+- **Insights**: Insight Events, the raw visit records behind Store insights, and the Activity log: who created, changed, deleted or restored what, when, and whether it was done in the admin, by the Claude connector or by the system. Open an entry to see which fields changed.
 - **Help > Owner guide**: this guide.
 - **Reports**: Store insights, your shop dashboard (see section 11).
 
