@@ -13,6 +13,7 @@ import {
   PROTECTED_RESOURCE_METADATA_URL,
   readAccessToken,
 } from '@/lib/mcp-oauth'
+import { recordServerError } from '@/lib/insights/record'
 import { getPayload } from '@/lib/payload'
 import { extractPlainText } from '@/lib/rich-text'
 import {
@@ -550,10 +551,11 @@ function shopServer(payload: Payload, user: User): McpServer {
     run: (input: ShapeOutput<Shape>) => Promise<unknown>
   ) {
     const callback = async (input: ShapeOutput<Shape>) => {
-      payload.logger.info({ msg: 'Claude shop tool', tool: name, userId: user.id })
+      payload.logger.info({ msg: `Claude shop tool ${name}`, tool: name, userId: user.id })
       try {
         return result(await run(input))
       } catch (error) {
+        await recordServerError({ kind: 'claude', path: MCP_PATH, error, reference: name })
         return failure(error)
       }
     }
@@ -1021,7 +1023,44 @@ function challenge(invalidToken: boolean | undefined): string {
   return `Bearer resource_metadata="${PROTECTED_RESOURCE_METADATA_URL}"${error}`
 }
 
-export async function POST(request: Request): Promise<Response> {
+const MCP_PATH = '/api/mcp'
+
+async function rpcMethods(request: Request): Promise<string> {
+  try {
+    const body: unknown = JSON.parse(await request.text())
+    const messages = Array.isArray(body) ? body : [body]
+    return messages
+      .map((message) => {
+        const { method, params } = (message ?? {}) as {
+          method?: unknown
+          params?: { name?: unknown }
+        }
+        const tool =
+          method === 'tools/call' && typeof params?.name === 'string' ? ` ${params.name}` : ''
+        return typeof method === 'string' ? `${method}${tool}` : 'response'
+      })
+      .join(', ')
+  } catch {
+    return 'unreadable body'
+  }
+}
+
+async function recordRejectedRequest(request: Request, response: Response): Promise<void> {
+  const body = (await response
+    .clone()
+    .json()
+    .catch(() => null)) as { error?: { message?: unknown } } | null
+  const message = typeof body?.error?.message === 'string' ? body.error.message : 'No message'
+  const version = request.headers.get('mcp-protocol-version') ?? 'none'
+  await recordServerError({
+    kind: 'claude',
+    path: MCP_PATH,
+    error: new Error(`HTTP ${response.status}: ${message}`),
+    reference: `${await rpcMethods(request)} (protocol ${version})`,
+  })
+}
+
+async function handle(request: Request): Promise<Response> {
   const payload = await getPayload()
   const authentication = await authenticate(payload, request)
   if (!('user' in authentication)) {
@@ -1049,6 +1088,15 @@ export async function POST(request: Request): Promise<Response> {
   } finally {
     await server.close()
   }
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const copy = request.clone()
+  const response = await handle(request)
+  const signInPrompt =
+    response.status === 401 && !response.headers.get('WWW-Authenticate')?.includes('invalid_token')
+  if (response.status >= 400 && !signInPrompt) await recordRejectedRequest(copy, response)
+  return response
 }
 
 export function GET(): Response {

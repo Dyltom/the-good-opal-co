@@ -43,6 +43,13 @@ async function callTool(name: string, args: Record<string, unknown>) {
   return body.result as { isError?: boolean; content: { text: string }[] }
 }
 
+function recordedErrors() {
+  return mocks.create.mock.calls
+    .map(([options]) => options)
+    .filter((options) => options.collection === 'insight-events')
+    .map((options) => options.data.detail)
+}
+
 const draftInput = {
   name: 'Lightning Ridge black opal ring',
   price: 1450,
@@ -123,6 +130,46 @@ describe('Claude shop MCP endpoint', () => {
 
     expect(result.isError).toBe(true)
     expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  test('records a failed tool call with the tool name for later investigation', async () => {
+    mocks.findByID.mockResolvedValue({ id: 5, name: 'Live ring', status: 'published' })
+
+    await callTool('update_product_draft', { id: 5, price: 1 })
+
+    expect(recordedErrors()).toEqual([
+      expect.objectContaining({ kind: 'claude', reference: 'update_product_draft' }),
+    ])
+  })
+
+  test('records a request the MCP transport rejects, with its method and protocol version', async () => {
+    const response = await POST(
+      new Request('https://example.com/api/mcp', {
+        method: 'POST',
+        headers: {
+          accept: 'application/json, text/event-stream',
+          'content-type': 'application/json',
+          authorization: 'Bearer shop-key',
+          'mcp-protocol-version': '1999-01-01',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
+      })
+    )
+
+    expect(response.status).toBe(400)
+    expect(recordedErrors()).toEqual([
+      expect.objectContaining({
+        kind: 'claude',
+        message: expect.stringContaining('HTTP 400: Bad Request: Unsupported protocol version'),
+        reference: 'tools/list (protocol 1999-01-01)',
+      }),
+    ])
+  })
+
+  test('does not record the sign-in prompt Claude gets before connecting', async () => {
+    await rpc('tools/list', {}, null)
+
+    expect(recordedErrors()).toEqual([])
   })
 
   test('lists orders without customer contact details', async () => {

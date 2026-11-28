@@ -66,6 +66,7 @@ export type ServerErrorKind =
   | 'checkout'
   | 'stripe_webhook'
   | 'admin'
+  | 'claude'
 
 function topStackFrames(error: unknown): string | undefined {
   if (!(error instanceof Error) || !error.stack) return undefined
