@@ -293,7 +293,11 @@ People looking at a sold piece can leave their email to hear about similar piece
 
 ### Change page text and pictures
 
-The main headings, short paragraphs and photos on the home, About, Services, Courses, FAQ, Gifts, Gift vouchers, Contact and Journal pages live under **Page content** in the admin menu. The Courses tab also holds the three "what the course covers" items, and the FAQ tab holds every question and answer.
+The main headings, short paragraphs and photos on the home, About, Services, Courses, FAQ, Gifts, Gift vouchers, Contact and Journal pages live under **Page content** in the admin menu. The Courses tab also holds the three "what the course covers" items and the photo on a course's own page when it has none, the FAQ tab holds every question and answer, and the Contact tab holds the wording shown to people arriving from the custom ring or course links.
+
+Each of those tabs also has **Search and sharing**: the page title and description Google and link previews show.
+
+The Terms, Privacy, Cookies, Shipping and Returns tabs hold those policy pages: a heading, a **Last updated** date and the **Page text**. While Page text is empty the page shows its current wording. Once you write in it, it replaces the whole page text, so include every section. Check any legal change before saving it.
 
 1. Open **Page content** and pick the page's tab.
 2. Type new words into a heading or paragraph. Headings have two boxes: the second is shown in italics.
@@ -308,9 +312,6 @@ These are still written into the site itself and cannot be edited in the admin:
 
 - the jeweller quotes and the facts strip on the home page
 - the story quote on About and the steps on Services
-- the long policy pages (terms, privacy, cookies, shipping, returns)
-- FAQ
-- Shipping, Returns, Privacy and Terms
 - the ring designer
 
 Send Dylan the new wording and he will update them. The postage prices and the free-postage threshold also need Dylan.

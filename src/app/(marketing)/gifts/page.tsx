@@ -9,16 +9,13 @@ import { ClosingBand } from '@/components/sections/ClosingBand'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { getPayload } from '@/lib/payload'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 import { CHRISTMAS_DELIVERY, withSalePrice } from '@/lib/promotions'
 import type { Product } from '@/types/payload-types'
 import { EMPTY_STORE_QUERY, storeUrl } from '../store/store-query'
 
-export const metadata: Metadata = {
-  title: 'Opal Gifts by Budget | The Good Opal Co',
-  description:
-    'Natural Australian opals and opal jewellery grouped by budget: under $100, $100 to $250, and $250 and over. Tracked delivery from Cowra NSW.',
-  alternates: { canonical: '/gifts' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('gifts', '/gifts')
 }
 export const dynamic = 'force-dynamic'
 

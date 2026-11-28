@@ -37,6 +37,19 @@ export const ISO_DATE_FORMAT = 'yyyy-MM-dd' as const
  * Localization defaults
  */
 export const DEFAULT_LOCALE = 'en-AU' as const
+export const SITE_OPEN_GRAPH = {
+  siteName: APP_NAME,
+  type: 'website' as const,
+  locale: DEFAULT_LOCALE.replace('-', '_'),
+  images: [
+    {
+      url: SHARE_IMAGE_URL,
+      width: 1200,
+      height: 630,
+      alt: 'Opal rings and stones from The Good Opal Co',
+    },
+  ],
+}
 export const DEFAULT_TIMEZONE = 'Australia/Sydney' as const
 export const DEFAULT_CURRENCY = 'AUD' as const
 

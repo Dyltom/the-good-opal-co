@@ -1825,6 +1825,10 @@ export interface SiteContent {
       image?: (number | null) | Media
       alt?: string | null
     }
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   about?: {
     heroHeading?: {
@@ -1853,6 +1857,10 @@ export interface SiteContent {
       image?: (number | null) | Media
       alt?: string | null
     }
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   services?: {
     heroHeading?: {
@@ -1876,6 +1884,10 @@ export interface SiteContent {
     closingImage?: {
       image?: (number | null) | Media
       alt?: string | null
+    }
+    seo?: {
+      title?: string | null
+      description?: string | null
     }
   }
   courses?: {
@@ -1907,6 +1919,14 @@ export interface SiteContent {
       image?: (number | null) | Media
       alt?: string | null
     }
+    detailImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   faq?: {
     heroHeading?: {
@@ -1935,6 +1955,10 @@ export interface SiteContent {
       image?: (number | null) | Media
       alt?: string | null
     }
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   gifts?: {
     heroHeading?: {
@@ -1951,6 +1975,10 @@ export interface SiteContent {
       image?: (number | null) | Media
       alt?: string | null
     }
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   giftVouchers?: {
     heroHeading?: {
@@ -1958,6 +1986,10 @@ export interface SiteContent {
       italic?: string | null
     }
     heroText?: string | null
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   contact?: {
     heroHeading?: {
@@ -1965,6 +1997,16 @@ export interface SiteContent {
       italic?: string | null
     }
     heroText?: string | null
+    customIntro?: string | null
+    courseIntro?: string | null
+    tipsHeading?: string | null
+    tipsText?: string | null
+    courseTipsHeading?: string | null
+    courseTipsText?: string | null
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
   }
   blog?: {
     heroHeading?: {
@@ -1972,6 +2014,105 @@ export interface SiteContent {
       italic?: string | null
     }
     heroText?: string | null
+    seo?: {
+      title?: string | null
+      description?: string | null
+    }
+  }
+  terms?: {
+    heading?: string | null
+    lastUpdated?: string | null
+    body?: {
+      root: {
+        type: string
+        children: {
+          type: any
+          version: number
+          [k: string]: unknown
+        }[]
+        direction: ('ltr' | 'rtl') | null
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+        indent: number
+        version: number
+      }
+      [k: string]: unknown
+    } | null
+  }
+  privacy?: {
+    heading?: string | null
+    lastUpdated?: string | null
+    body?: {
+      root: {
+        type: string
+        children: {
+          type: any
+          version: number
+          [k: string]: unknown
+        }[]
+        direction: ('ltr' | 'rtl') | null
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+        indent: number
+        version: number
+      }
+      [k: string]: unknown
+    } | null
+  }
+  cookies?: {
+    heading?: string | null
+    lastUpdated?: string | null
+    body?: {
+      root: {
+        type: string
+        children: {
+          type: any
+          version: number
+          [k: string]: unknown
+        }[]
+        direction: ('ltr' | 'rtl') | null
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+        indent: number
+        version: number
+      }
+      [k: string]: unknown
+    } | null
+  }
+  shipping?: {
+    heading?: string | null
+    lastUpdated?: string | null
+    body?: {
+      root: {
+        type: string
+        children: {
+          type: any
+          version: number
+          [k: string]: unknown
+        }[]
+        direction: ('ltr' | 'rtl') | null
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+        indent: number
+        version: number
+      }
+      [k: string]: unknown
+    } | null
+  }
+  returns?: {
+    heading?: string | null
+    lastUpdated?: string | null
+    body?: {
+      root: {
+        type: string
+        children: {
+          type: any
+          version: number
+          [k: string]: unknown
+        }[]
+        direction: ('ltr' | 'rtl') | null
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | ''
+        indent: number
+        version: number
+      }
+      [k: string]: unknown
+    } | null
   }
   updatedAt?: string | null
   createdAt?: string | null
@@ -2012,6 +2153,12 @@ export interface SiteContentSelect<T extends boolean = true> {
           | {
               image?: T
               alt?: T
+            }
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
             }
       }
   about?:
@@ -2055,6 +2202,12 @@ export interface SiteContentSelect<T extends boolean = true> {
               image?: T
               alt?: T
             }
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
       }
   services?:
     | T
@@ -2090,6 +2243,12 @@ export interface SiteContentSelect<T extends boolean = true> {
           | {
               image?: T
               alt?: T
+            }
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
             }
       }
   courses?:
@@ -2133,6 +2292,18 @@ export interface SiteContentSelect<T extends boolean = true> {
               image?: T
               alt?: T
             }
+        detailImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
       }
   faq?:
     | T
@@ -2171,6 +2342,12 @@ export interface SiteContentSelect<T extends boolean = true> {
               image?: T
               alt?: T
             }
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
       }
   gifts?:
     | T
@@ -2195,6 +2372,12 @@ export interface SiteContentSelect<T extends boolean = true> {
               image?: T
               alt?: T
             }
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
       }
   giftVouchers?:
     | T
@@ -2206,6 +2389,12 @@ export interface SiteContentSelect<T extends boolean = true> {
               italic?: T
             }
         heroText?: T
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
       }
   contact?:
     | T
@@ -2217,6 +2406,18 @@ export interface SiteContentSelect<T extends boolean = true> {
               italic?: T
             }
         heroText?: T
+        customIntro?: T
+        courseIntro?: T
+        tipsHeading?: T
+        tipsText?: T
+        courseTipsHeading?: T
+        courseTipsText?: T
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
       }
   blog?:
     | T
@@ -2228,6 +2429,47 @@ export interface SiteContentSelect<T extends boolean = true> {
               italic?: T
             }
         heroText?: T
+        seo?:
+          | T
+          | {
+              title?: T
+              description?: T
+            }
+      }
+  terms?:
+    | T
+    | {
+        heading?: T
+        lastUpdated?: T
+        body?: T
+      }
+  privacy?:
+    | T
+    | {
+        heading?: T
+        lastUpdated?: T
+        body?: T
+      }
+  cookies?:
+    | T
+    | {
+        heading?: T
+        lastUpdated?: T
+        body?: T
+      }
+  shipping?:
+    | T
+    | {
+        heading?: T
+        lastUpdated?: T
+        body?: T
+      }
+  returns?:
+    | T
+    | {
+        heading?: T
+        lastUpdated?: T
+        body?: T
       }
   updatedAt?: T
   createdAt?: T

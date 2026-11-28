@@ -8,16 +8,13 @@ import { CourseInterestPanel } from '@/components/education'
 import { CourseListJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 import { courseFormatLabels, courseLevelLabels } from '@/lib/courses'
 import type { Course, Media } from '@/types/payload-types'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = {
-  title: 'Opal cutting courses | The Good Opal Co',
-  description:
-    "Explore Steph's public outline for Australian opal anatomy, cutting, polishing, and valuation.",
-  alternates: { canonical: '/courses' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('courses', '/courses')
 }
 
 export const dynamic = 'force-dynamic'

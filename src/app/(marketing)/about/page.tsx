@@ -8,13 +8,10 @@ import { BreadcrumbJsonLd, founderId, JsonLd, OrganizationJsonLd } from '@/compo
 import { ClosingBand } from '@/components/sections/ClosingBand'
 import { APP_NAME, APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 
-export const metadata: Metadata = {
-  title: 'Our Story | The Good Opal Co',
-  description:
-    'Meet The Good Opal Co, an Australian opal studio focused on clear product details, thoughtful selection, and personal guidance.',
-  alternates: { canonical: '/about' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('about', '/about')
 }
 export const dynamic = 'force-dynamic'
 

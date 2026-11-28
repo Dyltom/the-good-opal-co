@@ -4,7 +4,7 @@ import { ArrowUpRight, Mail } from 'lucide-react'
 import { Container } from '@/components/layout'
 import { EditableHeading, MarketingShell } from '@/components/marketing'
 import { CONTACT_INFO } from '@/lib/constants/contact'
-import { getPageContent } from '@/lib/site-content'
+import { getPageContent, pageMetadata } from '@/lib/site-content'
 import { ContactForm } from './contact-form'
 import {
   cleanContactContext,
@@ -13,11 +13,8 @@ import {
   resolveInquiryType,
 } from './contact-intent'
 
-export const metadata: Metadata = {
-  title: 'Contact | The Good Opal Co',
-  description:
-    'Ask about an Australian opal, custom piece, order, course, or private product viewing.',
-  alternates: { canonical: '/contact' },
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata('contact', '/contact')
 }
 
 interface ContactPageProps {
@@ -42,9 +39,9 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
           </h1>
           <p className="max-w-[52ch] text-[15px] leading-[1.6] text-ink-2 md:text-base">
             {isCustomIntent
-              ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
+              ? content.customIntro
               : isCourseIntent
-                ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
+                ? content.courseIntro
                 : content.heroText}
           </p>
         </header>
@@ -52,12 +49,10 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
         <div className="mt-8 grid gap-10 border-t border-rule-2 pt-6 md:mt-[clamp(32px,3.5vw,56px)] lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] lg:gap-[clamp(32px,4vw,72px)]">
           <aside className="lg:sticky lg:top-[calc(theme(spacing.mast)+24px)] lg:self-start">
             <h2 className="text-[1.75rem] leading-[1.1]">
-              {isCourseIntent ? 'What helps us reply' : 'A useful first message'}
+              {isCourseIntent ? content.courseTipsHeading : content.tipsHeading}
             </h2>
             <p className="mt-3 max-w-[48ch] text-sm leading-6 text-ink-2">
-              {isCourseIntent
-                ? 'Share your current experience, the cutting method you want to learn, and any tools you already use. Leave anything unknown blank.'
-                : 'Include a product name or link, your approximate budget, and any date that matters. Leave anything unknown blank.'}
+              {isCourseIntent ? content.courseTipsText : content.tipsText}
             </p>
 
             <div className="mt-6 flex gap-3 border-y border-rule py-5">

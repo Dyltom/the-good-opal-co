@@ -1,4 +1,9 @@
+import { cache } from 'react'
+import type { Metadata } from 'next'
+import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
+import { SITE_OPEN_GRAPH } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
+import { extractPlainText } from '@/lib/rich-text'
 import { resolveMediaUrl } from '@/lib/media-url'
 import type { Media, SiteContent } from '@/types/payload-types'
 import { FAQ_DEFAULTS } from '@/lib/faq-defaults'
@@ -6,7 +11,16 @@ import { FAQ_DEFAULTS } from '@/lib/faq-defaults'
 export type Heading = { text: string; italic: string }
 export type Picture = { src: string; alt: string; position?: string }
 export type ListItem = Record<string, string>
-export type ContentValue = string | Heading | Picture | ListItem[]
+export type Seo = { title: string; description: string }
+export type DateValue = { date: string }
+export type RichBody = SerializedEditorState | null
+export type ContentValue = string | Heading | Picture | ListItem[] | Seo | DateValue | RichBody
+
+const NO_BODY: RichBody = null
+
+function seo(title: string, description: string): Seo {
+  return { title, description }
+}
 
 export const SITE_CONTENT_DEFAULTS = {
   home: {
@@ -26,6 +40,10 @@ export const SITE_CONTENT_DEFAULTS = {
       alt: 'An open palm holding about thirty cut Australian opals, black, white and crystal',
       position: '45% 55%',
     },
+    seo: seo(
+      'Australian Opals, Chosen by Hand | The Good Opal Co',
+      'Shop one-of-a-kind Australian opals and handcrafted jewellery with clear origin, authenticity, delivery, and care details.'
+    ),
   },
   about: {
     heroHeading: { text: 'A closer look at', italic: 'Australian opal.' },
@@ -50,6 +68,10 @@ export const SITE_CONTENT_DEFAULTS = {
       alt: 'Fingers holding a freshly cut white opal in front of the cutting wheel',
       position: '40% 35%',
     },
+    seo: seo(
+      'Our Story | The Good Opal Co',
+      'Meet The Good Opal Co, an Australian opal studio focused on clear product details, thoughtful selection, and personal guidance.'
+    ),
   },
   services: {
     heroHeading: { text: 'Begin with', italic: 'the stone.' },
@@ -67,6 +89,10 @@ export const SITE_CONTENT_DEFAULTS = {
       src: '/images/customs/custom-1.jpg',
       alt: 'Three heart-shaped Australian opals considered for a personal piece',
     },
+    seo: seo(
+      'Custom Opal Jewellery | The Good Opal Co',
+      'Start with an Australian opal, an idea, or an occasion. Enquire about a one-of-a-kind custom jewellery piece.'
+    ),
   },
   courses: {
     heroHeading: { text: 'Learn what the stone can become.', italic: '' },
@@ -102,6 +128,14 @@ export const SITE_CONTENT_DEFAULTS = {
       src: '/images/customs/custom-3.jpg',
       alt: 'Australian opals selected for cutting practice',
     },
+    detailImage: {
+      src: '/images/customs/custom-2.jpg',
+      alt: 'Four Australian opals showing varied colour and pattern',
+    },
+    seo: seo(
+      'Opal cutting courses | The Good Opal Co',
+      "Explore Steph's public outline for Australian opal anatomy, cutting, polishing, and valuation."
+    ),
   },
   faq: {
     heroHeading: { text: 'Clear answers', italic: 'before you choose.' },
@@ -119,6 +153,10 @@ export const SITE_CONTENT_DEFAULTS = {
       alt: 'A hand holding a rough opal up to a small torch in a dark room',
       position: '50% 55%',
     },
+    seo: seo(
+      'Frequently Asked Questions | The Good Opal Co',
+      'Clear answers about Australian opals, product details, delivery, eligible returns, payment, care, and custom work.'
+    ),
   },
   gifts: {
     heroHeading: { text: 'Opal gifts, by budget.', italic: '' },
@@ -130,27 +168,80 @@ export const SITE_CONTENT_DEFAULTS = {
       src: '/images/customs/custom-3.jpg',
       alt: 'Six polished Australian opals with blue, green and pink colour play',
     },
+    seo: seo(
+      'Opal Gifts by Budget | The Good Opal Co',
+      'Natural Australian opals and opal jewellery grouped by budget: under $100, $100 to $250, and $250 and over. Tracked delivery from Cowra NSW.'
+    ),
   },
   giftVouchers: {
     heroHeading: { text: 'Gift vouchers.', italic: '' },
     heroText:
       'Let them choose their own opal. The voucher is emailed with your message and can be spent across more than one order.',
+    seo: seo(
+      'Gift Vouchers | The Good Opal Co',
+      'Give a Good Opal Co gift voucher from $25 to $2000, emailed straight to the recipient and valid for three years on natural Australian opals and opal jewellery.'
+    ),
   },
   contact: {
     heroHeading: { text: 'Let’s talk', italic: 'opals.' },
     heroText:
       'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest topic and share what matters.',
+    customIntro:
+      'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.',
+    courseIntro:
+      'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.',
+    tipsHeading: 'A useful first message',
+    tipsText:
+      'Include a product name or link, your approximate budget, and any date that matters. Leave anything unknown blank.',
+    courseTipsHeading: 'What helps us reply',
+    courseTipsText:
+      'Share your current experience, the cutting method you want to learn, and any tools you already use. Leave anything unknown blank.',
+    seo: seo(
+      'Contact | The Good Opal Co',
+      'Ask about an Australian opal, custom piece, order, course, or private product viewing.'
+    ),
   },
   blog: {
     heroHeading: { text: 'Journal', italic: '' },
     heroText:
       'Notes on Australian opal: the fields it comes from, how it is cut and set, and what to check before you buy.',
+    seo: seo(
+      'Journal | The Good Opal Co',
+      'Notes on Australian opal: the fields it comes from, how it is cut and set, and what to check before you buy.'
+    ),
+  },
+  terms: {
+    heading: 'Terms of Service',
+    lastUpdated: { date: '2026-11-25' },
+    body: NO_BODY,
+  },
+  privacy: {
+    heading: 'Privacy Policy',
+    lastUpdated: { date: '2026-11-25' },
+    body: NO_BODY,
+  },
+  cookies: {
+    heading: 'Cookie Policy',
+    lastUpdated: { date: '2026-11-25' },
+    body: NO_BODY,
+  },
+  shipping: {
+    heading: 'Shipping, without surprises.',
+    lastUpdated: { date: '' },
+    body: NO_BODY,
+  },
+  returns: {
+    heading: 'A clear way to make things right.',
+    lastUpdated: { date: '' },
+    body: NO_BODY,
   },
 } satisfies Record<string, Record<string, ContentValue>>
 
 export type SitePage = keyof typeof SITE_CONTENT_DEFAULTS
 export const SITE_PAGES = Object.keys(SITE_CONTENT_DEFAULTS) as SitePage[]
 export type PageContent<P extends SitePage> = (typeof SITE_CONTENT_DEFAULTS)[P]
+
+export const POLICY_PAGES = ['terms', 'privacy', 'cookies', 'shipping', 'returns'] as const
 
 type StoredHeading = { text?: string | null; italic?: string | null }
 type StoredPicture = { image?: number | Media | null; alt?: string | null }
@@ -174,7 +265,50 @@ function resolvePicture(stored: StoredPicture | undefined, fallback: Picture): P
 }
 
 export function isPicture(value: ContentValue): value is Picture {
-  return typeof value === 'object' && 'src' in value
+  return typeof value === 'object' && value !== null && 'src' in value
+}
+
+export function isRichBody(value: ContentValue): value is RichBody {
+  return value === null || (typeof value === 'object' && 'root' in value)
+}
+
+export function isSeo(value: ContentValue): value is Seo {
+  return typeof value === 'object' && value !== null && 'description' in value
+}
+
+export function isDate(value: ContentValue): value is DateValue {
+  return typeof value === 'object' && value !== null && 'date' in value
+}
+
+export function formatDate(value: DateValue): string {
+  if (!value.date) return ''
+  return new Date(value.date).toLocaleDateString('en-AU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Australia/Sydney',
+  })
+}
+
+function resolveSeo(
+  stored: Partial<Record<keyof Seo, string | null>> | undefined,
+  fallback: Seo
+): Seo {
+  return {
+    title: filled(stored?.title) ? stored.title.trim() : fallback.title,
+    description: filled(stored?.description) ? stored.description.trim() : fallback.description,
+  }
+}
+
+function resolveDate(stored: unknown, fallback: DateValue): DateValue {
+  return typeof stored === 'string' && !Number.isNaN(Date.parse(stored))
+    ? { date: stored }
+    : fallback
+}
+
+function resolveBody(stored: unknown): RichBody {
+  if (!stored || typeof stored !== 'object' || !('root' in stored)) return null
+  return extractPlainText(stored) ? (stored as SerializedEditorState) : null
 }
 
 function resolveList(stored: unknown, fallback: ListItem[]): ListItem[] {
@@ -202,20 +336,28 @@ export function resolvePageContent<P extends SitePage>(
   const resolved = Object.fromEntries(
     Object.entries(defaults).map(([key, fallback]) => {
       const value = values[key]
+      if (isRichBody(fallback)) return [key, resolveBody(value)]
       if (typeof fallback === 'string')
         return [key, typeof value === 'string' && filled(value) ? value.trim() : fallback]
       if (Array.isArray(fallback)) return [key, resolveList(value, fallback)]
       if (isPicture(fallback)) return [key, resolvePicture(value as StoredPicture, fallback)]
+      if (isSeo(fallback)) return [key, resolveSeo(value as Partial<Seo>, fallback)]
+      if (isDate(fallback)) return [key, resolveDate(value, fallback)]
       return [key, resolveHeading(value as StoredHeading, fallback)]
     })
   )
   return resolved as PageContent<P>
 }
 
+const readSiteContent = cache(async () => {
+  const payload = await getPayload()
+  return payload.findGlobal({ slug: 'site-content', depth: 1 })
+})
+
 export async function getPageContent<P extends SitePage>(page: P): Promise<PageContent<P>> {
   const payload = await getPayload()
   try {
-    const global = await payload.findGlobal({ slug: 'site-content', depth: 1 })
+    const global = await readSiteContent()
     return resolvePageContent(page, global[page])
   } catch (error) {
     payload.logger.error({
@@ -223,5 +365,22 @@ export async function getPageContent<P extends SitePage>(page: P): Promise<PageC
       error,
     })
     return SITE_CONTENT_DEFAULTS[page]
+  }
+}
+
+type SeoPage = { [P in SitePage]: PageContent<P> extends { seo: Seo } ? P : never }[SitePage]
+
+export async function pageMetadata(page: SeoPage, canonical: string): Promise<Metadata> {
+  const { seo: values } = await getPageContent(page)
+  return {
+    title: values.title,
+    description: values.description,
+    alternates: { canonical },
+    openGraph: {
+      ...SITE_OPEN_GRAPH,
+      title: values.title,
+      description: values.description,
+      url: canonical,
+    },
   }
 }
