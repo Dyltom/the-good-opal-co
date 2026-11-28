@@ -88,7 +88,7 @@ function uploadPage({ product }: UploadTarget, notice = '', status = 200): Respo
     ? `<p>On this listing now (${gallery.length}):</p><div class="photos">${gallery
         .map(
           (media) =>
-            `<img src="${escapeHtml(media.sizes?.thumbnail?.url ?? media.url ?? '')}" alt="${escapeHtml(media.alt)}">`
+            `<img src="${escapeHtml(media.sizes?.thumbnail?.url ?? media.url ?? '')}" alt="${escapeHtml(media.alt ?? '')}">`
         )
         .join('')}</div>`
     : ''

@@ -78,7 +78,7 @@ export function productImageUrls(product: Product): string[] {
   const cmsImages = (product.images ?? []).flatMap((entry) => {
     const image = typeof entry.image === 'object' && entry.image ? entry.image : null
     const url = resolveMediaUrl(image?.url)
-    return url ? [{ url, alt: image?.alt ?? product.name }] : []
+    return url ? [{ url, alt: image?.alt || product.name }] : []
   })
   const owned = ownedProductImageUrl(product.slug)
   const gallery = mergeProductGallery(

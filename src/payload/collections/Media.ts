@@ -1,7 +1,44 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeValidateHook, CollectionConfig } from 'payload'
 import { isAdmin } from '../../lib/payload-access.ts'
 import { SHOP_TENANT_ID } from '../../lib/tenant.ts'
 import { invalidateBuilderMappingsForMediaReplacement } from '../../lib/custom-builder/media-mapping-invalidation.ts'
+
+const CAMERA_FILENAME_WORDS = new Set([
+  'img',
+  'dsc',
+  'dscn',
+  'dscf',
+  'pxl',
+  'image',
+  'photo',
+  'screenshot',
+  'edited',
+  'copy',
+  'jpg',
+  'jpeg',
+  'heic',
+  'png',
+  'webp',
+])
+
+export function altFromFilename(filename: string | undefined): string {
+  const name = (filename ?? '')
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[-_\s]+/g, ' ')
+    .trim()
+  const describesThePhoto = name
+    .split(/[^a-z]+/i)
+    .some((word) => word.length >= 3 && !CAMERA_FILENAME_WORDS.has(word.toLowerCase()))
+  return describesThePhoto ? name : ''
+}
+
+const fillMissingAlt: CollectionBeforeValidateHook = ({ data, operation, req }) => {
+  if (!data) return data
+  const alt = typeof data['alt'] === 'string' ? data['alt'].trim() : data['alt']
+  if (operation === 'create' && !alt) return { ...data, alt: altFromFilename(req.file?.name) }
+  if (alt === null) return { ...data, alt: '' }
+  return data
+}
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -12,10 +49,11 @@ export const Media: CollectionConfig = {
     delete: isAdmin,
   },
   admin: {
-    useAsTitle: 'alt',
-    defaultColumns: ['alt', 'filename', 'mimeType', 'filesize', 'updatedAt'],
+    useAsTitle: 'filename',
+    defaultColumns: ['filename', 'alt', 'filesize', 'updatedAt'],
   },
   hooks: {
+    beforeValidate: [fillMissingAlt],
     afterChange: [invalidateBuilderMappingsForMediaReplacement],
   },
   upload: {
@@ -52,6 +90,7 @@ export const Media: CollectionConfig = {
       admin: {
         description: 'Stable attachment ID imported from the legacy WordPress site',
         readOnly: true,
+        condition: (data) => Boolean(data?.['legacyWordPressId']),
       },
     },
     {
@@ -62,12 +101,17 @@ export const Media: CollectionConfig = {
       admin: {
         description: 'Original URL for a safely imported legacy asset',
         readOnly: true,
+        condition: (data) => Boolean(data?.['legacySourceUrl']),
       },
     },
     {
       name: 'alt',
       type: 'text',
-      required: true,
+      label: 'Description',
+      admin: {
+        description:
+          'Optional. What the photo shows, for search engines and screen readers. Left blank, the listing name is used.',
+      },
     },
     {
       name: 'caption',
