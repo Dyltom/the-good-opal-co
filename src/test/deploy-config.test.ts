@@ -62,7 +62,11 @@ describe('deployment config', () => {
     ] as const
 
     for (const [file, canonical] of publicPages) {
-      expect(read(file), file).toContain(`alternates: { canonical: '${canonical}' }`)
+      expect(read(file), file).toMatch(
+        new RegExp(
+          `alternates: \\{ canonical: '${canonical}' \\}|pageMetadata\\('[a-zA-Z]+', '${canonical}'\\)`
+        )
+      )
     }
 
     for (const file of [
@@ -126,7 +130,8 @@ describe('deployment config', () => {
     const layout = read('src/app/(marketing)/layout.tsx')
 
     expect(layout).toContain("'application/rss+xml': `${APP_URL}/feed.xml`")
-    expect(layout).toContain('url: SHARE_IMAGE_URL')
+    expect(layout).toContain('openGraph: SITE_OPEN_GRAPH')
+    expect(read('src/lib/constants.ts')).toContain('url: SHARE_IMAGE_URL')
     expect(layout).toContain("'max-image-preview': 'large'")
     expect(layout).toContain("'max-snippet': -1")
   })
@@ -135,7 +140,11 @@ describe('deployment config', () => {
     const path = resolve(__dirname, '..', '..', 'public/images/share-card.jpg')
     const { width, height, orientation, size } = await sharp(path).metadata()
 
-    expect({ width, height, orientation }).toEqual({ width: 1200, height: 630, orientation: undefined })
+    expect({ width, height, orientation }).toEqual({
+      width: 1200,
+      height: 630,
+      orientation: undefined,
+    })
     expect(size ?? readFileSync(path).length).toBeLessThan(300_000)
   })
 
@@ -153,7 +162,9 @@ describe('deployment config', () => {
     expect(config).toContain('createContentSecurityPolicy()')
     expect(config).toContain("key: 'X-Content-Type-Options'")
     expect(config).toContain("{ key: 'Strict-Transport-Security', value: 'max-age=31536000' }")
-    expect(config).toContain("{ key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' }")
+    expect(config).toContain(
+      "{ key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' }"
+    )
     expect(config).not.toContain('Cross-Origin-Embedder-Policy')
 
     const policy = read('src/lib/content-security-policy.ts')
