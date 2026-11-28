@@ -1,8 +1,16 @@
 import type { Instrumentation } from 'next'
 
 const MAX_PER_MINUTE = 30
+const OLD_CONTAINER_DRAIN_MS = 120_000
 let windowStart = 0
 let recorded = 0
+
+export async function register() {
+  if (process.env.NEXT_RUNTIME !== 'nodejs') return
+  const { purgeEdgeCache } = await import('@/lib/edge-cache')
+  purgeEdgeCache(console)
+  setTimeout(() => purgeEdgeCache(console), OLD_CONTAINER_DRAIN_MS)
+}
 
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return

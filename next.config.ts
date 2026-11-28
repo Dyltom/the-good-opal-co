@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 import { withPayload } from '@payloadcms/next/withPayload'
 import { createContentSecurityPolicy } from './src/lib/content-security-policy'
+import { edgeCacheHeaders } from './src/lib/edge-cache'
 
 const contentSecurityPolicy = createContentSecurityPolicy()
 
@@ -27,6 +28,7 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      ...edgeCacheHeaders(),
       {
         source: '/quote/:path*',
         headers: [
