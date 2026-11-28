@@ -118,6 +118,8 @@ interface AuditEntry {
   user?: Doc
 }
 
+const CLAUDE_CONNECTOR_STRATEGIES = new Set(['api-key', 'claude-oauth'])
+
 async function record(
   req: PayloadRequest,
   { action, collectionSlug, doc, changes, user }: AuditEntry
@@ -130,7 +132,11 @@ async function record(
         occurredAt: new Date().toISOString(),
         user: actor && typeof actor.id === 'number' ? actor.id : null,
         userEmail: actor && typeof actor.email === 'string' ? actor.email : null,
-        how: !actor ? 'system' : actor._strategy === 'api-key' ? 'api-key' : 'admin',
+        how: !actor
+          ? 'system'
+          : CLAUDE_CONNECTOR_STRATEGIES.has(String(actor._strategy))
+            ? 'api-key'
+            : 'admin',
         action,
         collectionSlug,
         documentId: doc.id === undefined ? null : String(doc.id),

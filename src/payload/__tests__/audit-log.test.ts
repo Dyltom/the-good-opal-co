@@ -64,6 +64,24 @@ describe('audit log', () => {
     })
   })
 
+  it('credits changes made through the Claude sign-in to the Claude connector', async () => {
+    const { req, create } = requestFor({
+      id: 3,
+      email: 'steph@example.com',
+      collection: 'users',
+      _strategy: 'claude-oauth',
+    })
+
+    await update(
+      Products,
+      { id: 41, name: 'Boulder opal', price: 100, status: 'draft', stock: 1 },
+      { id: 41, name: 'Boulder opal', price: 150, status: 'draft', stock: 1 },
+      req
+    )
+
+    expect(create.mock.calls[0][0].data.how).toBe('api-key')
+  })
+
   it('never stores secret values or rich text bodies, only that they changed', async () => {
     const fields: Field[] = [
       { name: 'name', type: 'text' },
