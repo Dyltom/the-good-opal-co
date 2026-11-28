@@ -76,7 +76,7 @@ export function ProductCard({ product, index = 0, priority = false }: ProductCar
                   alt={product.name}
                   fill
                   priority={priority && index < 4}
-                  fetchPriority={priority && index < 2 ? 'high' : undefined}
+                  fetchPriority={priority && index < 4 ? 'high' : undefined}
                   sizes="(max-width: 760px) 50vw, (max-width: 1280px) 25vw, 300px"
                   className="object-cover transition-transform duration-[900ms] ease-gallery group-hover:scale-[1.025] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                 />
