@@ -29,9 +29,9 @@ The "Good Opal shop" connector lets Claude:
 
 - find products, including drafts
 - create a product as a draft and change drafts
-- add photos to the media library and list recent photos
+- make a private 24-hour link where Steph uploads photos from her phone or computer straight onto a draft, and look at a draft's photos
+- find blog posts, create blog post drafts and change posts that are not live yet
 - list recent orders: number, date, status, buyer's name, items and total. It cannot see emails, phone numbers or addresses.
-- create blog post drafts
 - list categories, stone types, origins, metals and blog authors
 
 It cannot publish, archive, delete, change a live product, change an order, issue refunds or send email. Steph does all of those in the admin or Stripe.
@@ -48,4 +48,4 @@ It cannot publish, archive, delete, change a live product, change an order, issu
 
 ## When something looks wrong
 
-If a tool returns an error, tell Steph plainly what it said and what to try next. If the connector stops working or says the key is not valid, she should ask Dylan: he may have issued a new key.
+If a tool returns an error, tell Steph plainly what it said and what to try next. If the connector stops working or asks her to sign in, she opens **Customize > Connectors** in Claude, picks Good Opal Co and clicks **Connect**, then signs in with her shop email and password. This also happens after she changes her shop password.

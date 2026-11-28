@@ -58,13 +58,14 @@ Labels start with a capital letter and use letters and spaces only. Values are u
 
 **seoDescription**: 120 to 155 characters, one plain sentence with the stone, origin and the most useful fact.
 
-**imageIds**: the media ids of her photos, lead photo first. Prepare photos with the good-opal-photos skill. Then either upload them with `upload_image`, or, for large photos, ask Steph to upload them in **Admin > Media** and find them with `list_recent_media`.
+**Photos**: save the draft first, then call `photo_upload_link` with its id and give Steph the link. She picks her photos on her phone or computer and they are added to the draft in the order she picks them. When she says they are in, call `find_products` with the id to see them, and set `imageIds` with `update_product_draft` if the lead photo (the clearest straight-on shot of the face) is not first. To reframe photos first, use the good-opal-photos skill.
 
 ## Saving
 
 1. Show Steph the finished listing in a short, readable form (name, price, description, spec rows, category, SEO title and description). Wait for her OK.
 2. Call `create_product_draft`. For changes to a draft, call `update_product_draft` with the product id; send `descriptionHtml` again whenever you change `specs`.
-3. Give her the `adminUrl` and say: "It is saved as a draft. Have a look in the admin and set Status to Published when you are happy."
+3. Offer her a photo link (see **Photos**) if the draft has none yet.
+4. Give her the `adminUrl` and say: "It is saved as a draft. Have a look in the admin and set Status to Published when you are happy."
 
 ## Never
 

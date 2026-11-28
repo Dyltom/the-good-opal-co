@@ -186,6 +186,7 @@ export default buildConfig({
   }),
   secret: getPayloadSecret(),
   typescript: {
+    autoGenerate: false,
     outputFile: path.resolve(dirname, 'types', 'payload-types.ts'),
   },
   db: postgresAdapter({

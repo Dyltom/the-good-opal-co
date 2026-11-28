@@ -14,6 +14,7 @@ vi.mock('@/lib/payload', () => ({ getPayload: mocks.getPayload }))
 import { GET as protectedResource } from '../../../.well-known/oauth-protected-resource/[[...resource]]/route'
 import { GET as authorizationServer } from '../../../.well-known/oauth-authorization-server/route'
 import { POST as mcp } from '../../mcp/route'
+import { GET as photoPage } from '../../photo-upload/[token]/route'
 import { GET as authorizePage, POST as approve } from '../authorize/route'
 import { POST as register } from '../register/route'
 import { POST as token } from '../token/route'
@@ -109,6 +110,31 @@ function listTools(accessToken?: string) {
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
     })
   )
+}
+
+async function photoLink(accessToken: string): Promise<string> {
+  const response = await mcp(
+    new Request(`${SHOP}/api/mcp`, {
+      method: 'POST',
+      headers: {
+        accept: 'application/json, text/event-stream',
+        'content-type': 'application/json',
+        authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: { name: 'photo_upload_link', arguments: {} },
+      }),
+    })
+  )
+  return JSON.parse((await response.json()).result.content[0].text).url
+}
+
+function openPhotoLink(url: string) {
+  const token = new URL(url).pathname.split('/').pop() ?? ''
+  return photoPage(new NextRequest(url), { params: Promise.resolve({ token }) })
 }
 
 beforeEach(() => {
@@ -248,5 +274,30 @@ describe('Claude connector sign-in', () => {
 
     expect(response.status).toBe(403)
     expect(await returnedTo(response)).toBeNull()
+  })
+
+  test('a photo link from Claude opens for Steph and stops working after a password change', async () => {
+    const { tokens } = await connect()
+    const url = await photoLink(tokens.access_token)
+
+    const opened = await openPhotoLink(url)
+    steph['salt'] = 'salt-after'
+    const afterPasswordChange = await openPhotoLink(url)
+
+    expect(opened.status).toBe(200)
+    expect(await opened.text()).toContain('Add photos to your shop')
+    expect(afterPasswordChange.status).toBe(410)
+  })
+
+  test('an edited photo link is refused', async () => {
+    const { tokens } = await connect()
+    const url = await photoLink(tokens.access_token)
+    const [body, signature] = (new URL(url).pathname.split('/').pop() ?? '').split('.')
+    const claims = JSON.parse(Buffer.from(body ?? '', 'base64url').toString())
+    const forged = Buffer.from(JSON.stringify({ ...claims, exp: claims.exp + 3600 })).toString('base64url')
+
+    const response = await openPhotoLink(`${SHOP}/api/photo-upload/${forged}.${signature}`)
+
+    expect(response.status).toBe(410)
   })
 })
