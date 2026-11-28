@@ -208,6 +208,19 @@ describe('Claude shop MCP endpoint', () => {
       expect(mocks.updateGlobal).not.toHaveBeenCalled()
     })
 
+    test('replaces a page list such as the course pillars as a whole', async () => {
+      const pillars = [{ title: 'Read the rough', body: 'Bars, potch and host rock.' }]
+
+      const result = await callTool('update_site_content', {
+        courses: { pillars, heroImage1: { mediaId: 30 } },
+      })
+
+      expect(result.isError).toBeUndefined()
+      const call = mocks.updateGlobal.mock.calls[0][0]
+      expect(call.data.courses).toEqual({ pillars, heroImage1: { image: 30, alt: null } })
+      expect(call.data.home).toEqual(stored.home)
+    })
+
     test('refuses a customer account', async () => {
       mocks.auth.mockResolvedValue({ user: { ...admin, role: 'user' } })
 
@@ -218,6 +231,46 @@ describe('Claude shop MCP endpoint', () => {
 
       expect(response.status).toBe(403)
       expect(mocks.updateGlobal).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('courses', () => {
+    beforeEach(() => {
+      mocks.update.mockImplementation(async ({ id, data }) => ({
+        id,
+        title: 'Opal cutting',
+        slug: 'opal-cutting',
+        status: 'published',
+        summary: 'Learn to cut opal.',
+        introduction: 'An outline.',
+        ...data,
+      }))
+    })
+
+    test('sets a course photo from the media library as the signed-in admin', async () => {
+      mocks.find.mockResolvedValue({ docs: [{ id: 30, mimeType: 'image/jpeg' }] })
+
+      const result = await callTool('update_course', { id: 4, featuredImageId: 30 })
+
+      expect(result.isError).toBeUndefined()
+      const call = mocks.update.mock.calls[0][0]
+      expect(call).toMatchObject({
+        collection: 'courses',
+        id: 4,
+        data: { featuredImage: 30 },
+        user: admin,
+        overrideAccess: false,
+      })
+      expect(JSON.parse(result.content[0]!.text).featuredImageId).toBe(30)
+    })
+
+    test('refuses a course photo that is not in the media library', async () => {
+      mocks.find.mockResolvedValue({ docs: [] })
+
+      const result = await callTool('update_course', { id: 4, featuredImageId: 999 })
+
+      expect(result.isError).toBe(true)
+      expect(mocks.update).not.toHaveBeenCalled()
     })
   })
 })

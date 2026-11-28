@@ -283,7 +283,7 @@ Custom work and its deposit are not covered by change-of-mind returns; the quote
 
 ### Courses
 
-Course outlines live under **Courses**. Set each one to Accepting interest enquiries, Coming soon or Closed. Interest comes in through the contact form as "Course or workshop interest".
+Course outlines live under **Courses**. Each course's **Featured image** is the photo on the Courses page; a course without one shows the photo set under **Page content**, Courses tab. Set each one to Accepting interest enquiries, Coming soon or Closed. Interest comes in through the contact form as "Course or workshop interest".
 
 ### Newsletter
 
@@ -293,9 +293,9 @@ People looking at a sold piece can leave their email to hear about similar piece
 
 ### Change page text and pictures
 
-The main headings, short paragraphs and photos on the home, About and Services pages live under **Page content** in the admin menu.
+The main headings, short paragraphs and photos on the home, About, Services, Courses, FAQ, Gifts, Gift vouchers, Contact and Journal pages live under **Page content** in the admin menu. The Courses tab also holds the three "what the course covers" items, and the FAQ tab holds every question and answer.
 
-1. Open **Page content** and pick the **Home**, **About** or **Services** tab.
+1. Open **Page content** and pick the page's tab.
 2. Type new words into a heading or paragraph. Headings have two boxes: the second is shown in italics.
 3. To change a photo, choose one from Media or upload a new one. Add a **Photo description** for people who use screen readers, or leave it empty to use the photo's own description.
 4. Click **Save**. The change is live straight away.
@@ -308,6 +308,7 @@ These are still written into the site itself and cannot be edited in the admin:
 
 - the jeweller quotes and the facts strip on the home page
 - the story quote on About and the steps on Services
+- the long policy pages (terms, privacy, cookies, shipping, returns)
 - FAQ
 - Shipping, Returns, Privacy and Terms
 - the ring designer

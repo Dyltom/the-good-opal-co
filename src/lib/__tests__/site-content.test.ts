@@ -28,4 +28,27 @@ describe('page content', () => {
     })
     expect(content.closingImage).toEqual(SITE_CONTENT_DEFAULTS.services.closingImage)
   })
+
+  test('an empty or blank list shows today’s list', () => {
+    expect(resolvePageContent('faq', { questions: [] }).questions).toEqual(
+      SITE_CONTENT_DEFAULTS.faq.questions
+    )
+    expect(
+      resolvePageContent('courses', { pillars: [{ title: ' ', body: null }] }).pillars
+    ).toEqual(SITE_CONTENT_DEFAULTS.courses.pillars)
+  })
+
+  test('a saved list replaces today’s list in its order', () => {
+    const content = resolvePageContent('courses', {
+      pillars: [
+        { title: 'Polish', body: 'Felt wheels.', id: 'a' },
+        { title: 'Cut', body: null, id: 'b' },
+      ],
+    })
+
+    expect(content.pillars).toEqual([
+      { title: 'Polish', body: 'Felt wheels.' },
+      { title: 'Cut', body: '' },
+    ])
+  })
 })

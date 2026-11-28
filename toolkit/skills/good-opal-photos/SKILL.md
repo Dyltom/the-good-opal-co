@@ -47,7 +47,7 @@ Use `prepare_photo.py` in this skill folder. It needs Python with Pillow and num
 6. Give her the files to download. Then call `photo_upload_link` with the draft's product id and give her the link: she picks the files, they go onto the end of that draft, and she tells you when they are in. With no product id the photos go into Media only.
 7. Check them with `find_products` (by id), which shows each photo with its media id. Reorder with `update_product_draft` and `imageIds`, lead photo first.
 
-For a photo on the home, about or services page, call `photo_upload_link` with no product id so it lands in Media, find it with `list_recent_media`, then set it with `update_site_content` after Steph agrees. That changes the live page straight away.
+For a photo on a main page (home, about, services, courses, FAQ, gifts and the rest `get_site_content` lists), call `photo_upload_link` with no product id so it lands in Media, find it with `list_recent_media`, then set it with `update_site_content` after Steph agrees. A course's own photo is set with `update_course` and `featuredImageId`. That changes the live page straight away.
 
 If her photos are already framed well, skip the preparing: she can upload the originals from her phone through the same link.
 

@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowUpRight, Mail } from 'lucide-react'
 import { Container } from '@/components/layout'
-import { MarketingShell } from '@/components/marketing'
+import { EditableHeading, MarketingShell } from '@/components/marketing'
 import { CONTACT_INFO } from '@/lib/constants/contact'
+import { getPageContent } from '@/lib/site-content'
 import { ContactForm } from './contact-form'
 import {
   cleanContactContext,
@@ -24,7 +25,7 @@ interface ContactPageProps {
 }
 
 export default async function ContactPage({ searchParams }: ContactPageProps) {
-  const query = await searchParams
+  const [query, content] = await Promise.all([searchParams, getPageContent('contact')])
   const initialInquiry = resolveInquiryType(query.subject)
   const initialProduct = cleanContactContext(query.product)
   const initialMessage = cleanContactMessage(query.message)
@@ -37,14 +38,14 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
       <Container className="pb-sec">
         <header className="grid gap-3 pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-end md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
           <h1 className="text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
-            Let&apos;s talk <i>opals.</i>
+            <EditableHeading heading={content.heroHeading} />
           </h1>
           <p className="max-w-[52ch] text-[15px] leading-[1.6] text-ink-2 md:text-base">
             {isCustomIntent
               ? 'Tell us the piece, stone, budget, and occasion you have in mind. A rough idea is enough to begin.'
               : isCourseIntent
                 ? 'Tell us what you want to learn and your current experience. We will share the confirmed format, timing, and availability when they are ready. This is an interest enquiry only.'
-                : 'Ask about a piece, request a closer viewing, or get help with an existing order. Choose the closest topic and share what matters.'}
+                : content.heroText}
           </p>
         </header>
 

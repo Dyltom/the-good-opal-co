@@ -3,11 +3,12 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { BlogCard, toBlogCardPost } from '@/components/blog/BlogCard'
 import { Container } from '@/components/layout'
-import { MarketingShell, PageHeader } from '@/components/marketing'
+import { EditableHeading, MarketingShell, PageHeader } from '@/components/marketing'
 import { BreadcrumbJsonLd, JsonLd } from '@/components/seo'
 import { Button } from '@/components/ui/button'
 import { APP_URL } from '@/lib/constants'
 import { getPayload } from '@/lib/payload'
+import { getPageContent } from '@/lib/site-content'
 import { cn } from '@/lib/utils'
 
 const DESCRIPTION =
@@ -35,6 +36,7 @@ const topicLink =
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { category: categoryParam } = await searchParams
   const payload = await getPayload()
+  const content = await getPageContent('blog')
   const { docs: posts } = await payload.find({
     collection: 'posts',
     limit: 100,
@@ -92,7 +94,10 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       />
       <Container className="pb-sec pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
         <div className="lg:flex lg:items-end lg:justify-between lg:gap-10">
-          <PageHeader title="Journal" description={DESCRIPTION} />
+          <PageHeader
+            title={<EditableHeading heading={content.heroHeading} />}
+            description={content.heroText}
+          />
 
           {topics.length > 1 ? (
             <nav

@@ -2,7 +2,17 @@ import type { Field, GlobalAfterChangeHook, GlobalConfig } from 'payload'
 import { revalidatePath } from 'next/cache'
 import { isAdmin } from '../../lib/payload-access.ts'
 
-export const SITE_CONTENT_PATHS = ['/', '/about', '/services'] as const
+export const SITE_CONTENT_PATHS = [
+  '/',
+  '/about',
+  '/services',
+  '/courses',
+  '/faq',
+  '/gifts',
+  '/gift-vouchers',
+  '/contact',
+  '/blog',
+] as const
 
 function heading(name: string, label: string): Field {
   return {
@@ -53,6 +63,29 @@ function picture(name: string, label: string): Field {
   }
 }
 
+function list(
+  name: string,
+  label: string,
+  fields: { name: string; label: string; long?: boolean }[]
+): Field {
+  return {
+    name,
+    label,
+    type: 'array',
+    admin: { description: 'Leave empty to keep the current list.' },
+    fields: fields.map(
+      (field): Field =>
+        field.long
+          ? { name: field.name, label: field.label, type: 'textarea' }
+          : { name: field.name, label: field.label, type: 'text' }
+    ),
+  }
+}
+
+function hero(): Field[] {
+  return [heading('heroHeading', 'Top heading'), paragraph('heroText', 'Top text')]
+}
+
 function closing(): Field[] {
   return [
     heading('closingHeading', 'Closing band heading'),
@@ -81,7 +114,7 @@ export const SiteContent: GlobalConfig = {
   },
   admin: {
     description:
-      'Text and photos on the home, about and services pages. Empty fields keep the current wording or photo.',
+      'Text and photos on the main pages of the site. Empty fields keep the current wording or photo.',
   },
   versions: { max: 50 },
   hooks: { afterChange: [revalidatePages] },
@@ -123,6 +156,55 @@ export const SiteContent: GlobalConfig = {
             heading('processHeading', 'How it works heading'),
             ...closing(),
           ],
+        },
+        {
+          name: 'courses',
+          label: 'Courses',
+          fields: [
+            ...hero(),
+            picture('heroImage1', 'Top photo 1'),
+            picture('heroImage2', 'Top photo 2'),
+            list('pillars', 'What the course covers', [
+              { name: 'title', label: 'Title' },
+              { name: 'body', label: 'Text', long: true },
+            ]),
+            picture('courseImage1', 'Photo for a course without its own photo'),
+            picture('courseImage2', 'Second photo for a course without its own photo'),
+          ],
+        },
+        {
+          name: 'faq',
+          label: 'FAQ',
+          fields: [
+            ...hero(),
+            picture('heroImage', 'Top photo'),
+            list('questions', 'Questions and answers', [
+              { name: 'category', label: 'Group' },
+              { name: 'question', label: 'Question' },
+              { name: 'answer', label: 'Answer', long: true },
+            ]),
+            ...closing(),
+          ],
+        },
+        {
+          name: 'gifts',
+          label: 'Gifts',
+          fields: [...hero(), ...closing()],
+        },
+        {
+          name: 'giftVouchers',
+          label: 'Gift vouchers',
+          fields: hero(),
+        },
+        {
+          name: 'contact',
+          label: 'Contact',
+          fields: hero(),
+        },
+        {
+          name: 'blog',
+          label: 'Journal',
+          fields: hero(),
         },
       ],
     },

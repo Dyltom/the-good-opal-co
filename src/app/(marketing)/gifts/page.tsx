@@ -2,13 +2,14 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
-import { MarketingShell, PageHeader } from '@/components/marketing'
+import { EditableHeading, MarketingShell, PageHeader } from '@/components/marketing'
 import { ProductCard } from '@/components/product'
 import { toProductCardProduct } from '@/components/product/RelatedProducts'
 import { ClosingBand } from '@/components/sections/ClosingBand'
 import { BreadcrumbJsonLd } from '@/components/seo'
 import { LISTED_PRODUCTS } from '@/lib/catalog-visibility'
 import { getPayload } from '@/lib/payload'
+import { getPageContent } from '@/lib/site-content'
 import { CHRISTMAS_DELIVERY, withSalePrice } from '@/lib/promotions'
 import type { Product } from '@/types/payload-types'
 import { EMPTY_STORE_QUERY, storeUrl } from '../store/store-query'
@@ -32,7 +33,11 @@ async function loadGiftProducts(): Promise<Product[]> {
   const { docs } = await payload.find({
     collection: 'products',
     where: {
-      and: [LISTED_PRODUCTS, { stock: { greater_than: 0 } }, { category: { not_equals: 'custom-commissions' } }],
+      and: [
+        LISTED_PRODUCTS,
+        { stock: { greater_than: 0 } },
+        { category: { not_equals: 'custom-commissions' } },
+      ],
     },
     sort: ['-featured', '-createdAt'],
     limit: 500,
@@ -60,7 +65,7 @@ const linkClass =
   'inline-flex min-h-11 shrink-0 items-center gap-1.5 text-sm font-medium text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink md:min-h-0'
 
 export default async function GiftsPage() {
-  const products = await loadGiftProducts()
+  const [products, content] = await Promise.all([loadGiftProducts(), getPageContent('gifts')])
   const christmas = new Date() < CHRISTMAS_DELIVERY.endsAt
 
   return (
@@ -73,17 +78,20 @@ export default async function GiftsPage() {
       />
       <Container className="pt-[18px] md:pt-[clamp(20px,2.4vw,36px)]">
         <PageHeader
-          title="Opal gifts, by budget."
-          description="Natural Australian opals and opal jewellery, grouped by budget. Every order ships tracked from Cowra NSW."
+          title={<EditableHeading heading={content.heroHeading} />}
+          description={content.heroText}
         />
 
         {christmas ? (
           <div className="mt-6 max-w-[65ch] border-l-2 border-accent pl-4 text-sm leading-6 text-ink-2">
             <p>
-              <strong className="font-medium text-ink">Christmas delivery in Australia:</strong> order by{' '}
-              {CHRISTMAS_DELIVERY.orderBy}, or by {CHRISTMAS_DELIVERY.remoteOrderBy} for WA, NT and
-              Tasmania.{' '}
-              <Link href="/shipping#christmas" className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink">
+              <strong className="font-medium text-ink">Christmas delivery in Australia:</strong>{' '}
+              order by {CHRISTMAS_DELIVERY.orderBy}, or by {CHRISTMAS_DELIVERY.remoteOrderBy} for
+              WA, NT and Tasmania.{' '}
+              <Link
+                href="/shipping#christmas"
+                className="text-ink underline decoration-rule-2 underline-offset-4 hover:decoration-ink"
+              >
                 Shipping details
               </Link>
             </p>
@@ -114,29 +122,30 @@ export default async function GiftsPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-x-2.5 gap-y-7 md:grid-cols-4 md:gap-x-4">
-                {rankGiftPicks(inBand).slice(0, 4).map((product, index) => (
-                  <ProductCard key={product.id} product={toProductCardProduct(product)} index={index} />
-                ))}
+                {rankGiftPicks(inBand)
+                  .slice(0, 4)
+                  .map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={toProductCardProduct(product)}
+                      index={index}
+                    />
+                  ))}
               </div>
             </section>
           )
         })}
-
       </Container>
 
       <ClosingBand
         id="unsure-heading"
-        heading={
-          <>
-            Not sure <i>which one?</i>
-          </>
-        }
-        line="Tell us who it is for and your budget, and we will suggest a few pieces."
-        image={{
-          src: '/images/customs/custom-3.jpg',
-          alt: 'Six polished Australian opals with blue, green and pink colour play',
+        heading={<EditableHeading heading={content.closingHeading} />}
+        line={content.closingText}
+        image={content.closingImage}
+        action={{
+          href: `/contact?message=${encodeURIComponent(GIFT_MESSAGE)}`,
+          label: 'Ask for suggestions',
         }}
-        action={{ href: `/contact?message=${encodeURIComponent(GIFT_MESSAGE)}`, label: 'Ask for suggestions' }}
         links={[
           { href: '/gift-vouchers', label: 'Give a gift voucher' },
           { href: '/services/design', label: 'Design a ring' },

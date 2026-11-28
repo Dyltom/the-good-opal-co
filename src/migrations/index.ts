@@ -57,6 +57,7 @@ import * as migration_20261122_090000_users_api_keys from './20261122_090000_use
 import * as migration_20261123_090000_gift_vouchers from './20261123_090000_gift_vouchers'
 import * as migration_20261123_090000_audit_events_and_product_trash from './20261123_090000_audit_events_and_product_trash'
 import * as migration_20261128_090000_site_content from './20261128_090000_site_content'
+import * as migration_20261128_120000_site_content_more_pages from './20261128_120000_site_content_more_pages'
 
 export const migrations = [
   {
@@ -353,5 +354,10 @@ export const migrations = [
     up: migration_20261128_090000_site_content.up,
     down: migration_20261128_090000_site_content.down,
     name: '20261128_090000_site_content',
+  },
+  {
+    up: migration_20261128_120000_site_content_more_pages.up,
+    down: migration_20261128_120000_site_content_more_pages.down,
+    name: '20261128_120000_site_content_more_pages',
   },
 ]

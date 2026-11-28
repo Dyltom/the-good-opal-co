@@ -3,11 +3,12 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { ArrowRight } from 'lucide-react'
 import { Container } from '@/components/layout'
-import { MarketingShell } from '@/components/marketing'
+import { EditableHeading, MarketingShell } from '@/components/marketing'
 import { CourseInterestPanel } from '@/components/education'
 import { CourseListJsonLd } from '@/components/seo'
 import { getPayload } from '@/lib/payload'
 import { resolveMediaUrl } from '@/lib/media-url'
+import { getPageContent } from '@/lib/site-content'
 import { courseFormatLabels, courseLevelLabels } from '@/lib/courses'
 import type { Course, Media } from '@/types/payload-types'
 import { Button } from '@/components/ui/button'
@@ -35,6 +36,7 @@ export default async function CoursesPage() {
     depth: 1,
   })
   const courses = docs as Course[]
+  const content = await getPageContent('courses')
 
   return (
     <MarketingShell>
@@ -51,11 +53,10 @@ export default async function CoursesPage() {
         <header className="grid items-center gap-[18px] pt-[18px] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:gap-[clamp(20px,3vw,56px)] md:pt-[clamp(20px,2.4vw,36px)]">
           <div>
             <h1 className="max-w-[12ch] text-[2.375rem] leading-[0.98] tracking-[-0.025em] md:text-[clamp(2.5rem,4.6vw,4.75rem)]">
-              Learn what the stone can become.
+              <EditableHeading heading={content.heroHeading} />
             </h1>
             <p className="mt-3 max-w-[52ch] text-[15px] leading-[1.6] text-ink-2 md:mt-5 md:text-base">
-              Steph&apos;s course starts with opal anatomy, then moves through low-cost hand
-              cutting, rotary tools, cabbing machines, polishing, and valuation.
+              {content.heroText}
             </p>
           </div>
           <ul
@@ -64,8 +65,8 @@ export default async function CoursesPage() {
           >
             <li className="relative aspect-[4/5] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(220px,22vw,340px)]">
               <Image
-                src="/images/customs/custom-1.jpg"
-                alt="Three pale Australian opals cut into heart shapes"
+                src={content.heroImage1.src}
+                alt={content.heroImage1.alt}
                 fill
                 priority
                 sizes="(max-width: 768px) 48vw, 26vw"
@@ -74,8 +75,8 @@ export default async function CoursesPage() {
             </li>
             <li className="relative aspect-[4/5] overflow-hidden bg-plinth md:aspect-auto md:h-[clamp(240px,25vw,380px)]">
               <Image
-                src="/images/customs/custom-3.jpg"
-                alt="Six bright Australian opals showing varied shapes and colour"
+                src={content.heroImage2.src}
+                alt={content.heroImage2.alt}
                 fill
                 sizes="(max-width: 768px) 48vw, 26vw"
                 className="object-cover"
@@ -85,20 +86,7 @@ export default async function CoursesPage() {
         </header>
 
         <ul className="mt-10 grid border-t border-rule md:mt-14 md:grid-cols-3 md:border-b">
-          {[
-            {
-              title: 'Understand the rough',
-              body: 'Colour bars, potch, host rock, origin, and opal types.',
-            },
-            {
-              title: 'Choose a cutting method',
-              body: 'Sandpaper, rotary tool, and cabbing-machine pathways.',
-            },
-            {
-              title: 'Build valuation judgment',
-              body: 'Brightness, pattern, weight, inclusions, and market factors.',
-            },
-          ].map(({ title, body }) => (
+          {content.pillars.map(({ title, body }) => (
             <li
               key={title}
               className="border-b border-rule py-5 md:border-b-0 md:px-6 md:pb-[26px] md:pt-[22px] md:first:pl-0 md:[&:not(:first-child)]:border-l"
@@ -114,6 +102,7 @@ export default async function CoursesPage() {
             {courses.map((course, index) => {
               const image = populatedMedia(course.featuredImage)
               const imageUrl = resolveMediaUrl(image?.url)
+              const fallback = index % 2 === 0 ? content.courseImage1 : content.courseImage2
               return (
                 <article
                   key={course.id}
@@ -124,13 +113,8 @@ export default async function CoursesPage() {
                     className="group relative aspect-[4/3] overflow-hidden bg-plinth"
                   >
                     <Image
-                      src={
-                        imageUrl ??
-                        (index % 2 === 0
-                          ? '/images/customs/custom-2.jpg'
-                          : '/images/customs/custom-3.jpg')
-                      }
-                      alt={image?.alt || 'Australian opals selected for cutting practice'}
+                      src={imageUrl ?? fallback.src}
+                      alt={imageUrl ? image?.alt || fallback.alt : fallback.alt}
                       fill
                       loading={index === 0 ? 'eager' : undefined}
                       sizes="(max-width: 768px) 100vw, 52vw"
