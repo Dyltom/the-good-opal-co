@@ -1,5 +1,6 @@
 export { MarketingShell } from './MarketingShell'
 export { PageHeader } from './PageHeader'
 export { linkArrow } from './linkArrow'
+export { EditableHeading } from './EditableHeading'
 export type { MarketingShellProps } from './MarketingShell'
 export type { PageHeaderProps } from './PageHeader'

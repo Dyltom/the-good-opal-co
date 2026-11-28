@@ -15,16 +15,24 @@ import {
 } from '@/lib/mcp-oauth'
 import { getPayload } from '@/lib/payload'
 import { extractPlainText } from '@/lib/rich-text'
+import {
+  resolvePageContent,
+  SITE_CONTENT_DEFAULTS,
+  type Heading,
+  type Picture,
+  type SitePage,
+} from '@/lib/site-content'
 import { wordpressHtmlToLexical } from '@/lib/wordpress/content-import'
 import { Orders } from '@/payload/collections/Orders'
 import { Products } from '@/payload/collections/Products'
-import type { Media, Order, Post, Product, User } from '@/types/payload-types'
+import type { Media, Order, Post, Product, SiteContent, User } from '@/types/payload-types'
 
 const INSTRUCTIONS = `Tools for running The Good Opal Co shop (goodopalco.com) on behalf of its owner, Steph.
 Everything you create is a draft. Steph reviews and publishes in the admin; you cannot publish, delete, email customers or change a live product or post.
 Never invent a price, stone fact, measurement, review or story. Ask Steph for anything you do not know.
 Photos: once a listing draft exists, call photo_upload_link with its id and give Steph the link. She opens it on her phone or computer, picks the photos, and they are added to the draft unchanged, in the order she picks them. Then call find_products to see them and reorder with update_product_draft if the lead photo is not the clearest face-up shot. Never recolour, brighten, saturate or filter a stone photo.
 If a draft needs changes after it is saved, update it with update_product_draft or update_post_draft rather than creating another draft.
+Page text and photos on the home, about and services pages: read them with get_site_content and change them with update_site_content. That changes the live site straight away (the admin keeps every earlier version), so show Steph the new wording and get her yes first. For a new page photo, call photo_upload_link without a product, then pass the new media id to update_site_content.
 If a tool says the shop sign-in has expired, Steph opens the Good Opal shop connector in Claude's settings and clicks Connect.`
 
 function selectValues(collection: CollectionConfig, name: string): [string, ...string[]] {
@@ -253,11 +261,15 @@ function result(output: unknown) {
   return { content: [{ type: 'text' as const, text: JSON.stringify(value, null, 2) }, ...photos] }
 }
 
-async function thumbnails(payload: Payload, media: Media[]): Promise<Thumbnail[]> {
+async function thumbnails(
+  payload: Payload,
+  media: Media[],
+  labels = media.map(({ id }, index) => `Photo ${index + 1}: media id ${id}`)
+): Promise<Thumbnail[]> {
   const upload = payload.collections.media.config.upload
   const directory = typeof upload === 'object' ? upload.staticDir : undefined
   const files = await Promise.all(
-    media.map(async ({ id, sizes, mimeType }, index): Promise<Thumbnail[]> => {
+    media.map(async ({ sizes, mimeType }, index): Promise<Thumbnail[]> => {
       const filename = sizes?.thumbnail?.filename
       const data =
         directory && filename
@@ -265,7 +277,7 @@ async function thumbnails(payload: Payload, media: Media[]): Promise<Thumbnail[]
           : null
       if (!data) return []
       return [
-        { type: 'text', text: `Photo ${index + 1}: media id ${id}` },
+        { type: 'text', text: labels[index] ?? '' },
         {
           type: 'image',
           data: data.toString('base64'),
@@ -362,6 +374,138 @@ function postSummary(post: Post) {
     blogUrl: post._status === 'published' ? `${APP_URL}/blog/${post.slug}` : null,
     updatedAt: post.updatedAt,
   }
+}
+
+const SITE_PAGES = ['home', 'about', 'services'] as const satisfies SitePage[]
+
+function isPictureDefault(value: string | Heading | Picture): value is Picture {
+  return typeof value === 'object' && 'src' in value
+}
+
+const headingChange = z
+  .object({
+    text: z.string().trim().max(120).optional(),
+    italic: z.string().trim().max(120).optional().describe('Words shown in italics after text'),
+  })
+  .describe('Empty strings for both bring back the original wording')
+const pictureChange = z.object({
+  mediaId: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .describe('A photo in the media library. null brings back the original photo.'),
+  alt: z.string().trim().max(200).optional().describe('Photo description for screen readers'),
+})
+const paragraphChange = z
+  .string()
+  .trim()
+  .max(600)
+  .describe('Empty string brings back the original wording')
+
+function pageChangeSchema(page: SitePage) {
+  const fields = Object.entries(SITE_CONTENT_DEFAULTS[page]).map(([key, fallback]) => [
+    key,
+    (typeof fallback === 'string'
+      ? paragraphChange
+      : isPictureDefault(fallback)
+        ? pictureChange
+        : headingChange
+    ).optional(),
+  ])
+  return z.object(Object.fromEntries(fields)).strict().optional()
+}
+
+type StoredPage = Record<string, unknown>
+type PictureChange = z.infer<typeof pictureChange>
+type HeadingChange = z.infer<typeof headingChange>
+
+function mergePage(
+  page: SitePage,
+  stored: StoredPage,
+  changes: Record<string, unknown>
+): StoredPage {
+  const defaults: Record<string, string | Heading | Picture> = SITE_CONTENT_DEFAULTS[page]
+  const merged: StoredPage = { ...stored }
+  for (const [key, change] of Object.entries(changes)) {
+    const fallback = defaults[key]
+    if (change === undefined || fallback === undefined) continue
+    const existing = (stored[key] ?? {}) as Record<string, unknown>
+    if (typeof fallback === 'string') merged[key] = change
+    else if (isPictureDefault(fallback)) {
+      const picture = change as PictureChange
+      merged[key] = {
+        image:
+          picture.mediaId === undefined
+            ? relationId(existing['image'] as number | null)
+            : picture.mediaId,
+        alt: picture.alt ?? existing['alt'] ?? null,
+      }
+    } else merged[key] = { ...existing, ...(change as HeadingChange) }
+  }
+  return merged
+}
+
+function changedMediaIds(changes: Record<string, unknown>): number[] {
+  return Object.values(changes).flatMap((change) =>
+    change &&
+    typeof change === 'object' &&
+    'mediaId' in change &&
+    typeof change.mediaId === 'number'
+      ? [change.mediaId]
+      : []
+  )
+}
+
+function sitePageSummary(page: SitePage, stored: SiteContent[SitePage] | undefined) {
+  const content: Record<string, string | Heading | Picture> = resolvePageContent(page, stored)
+  const values: Record<string, unknown> = stored ?? {}
+  return Object.fromEntries(
+    Object.entries(content).map(([key, value]) => {
+      if (!isPictureDefault(value)) return [key, value]
+      const image = (values[key] as { image?: number | Media | null } | undefined)?.image
+      return [
+        key,
+        {
+          mediaId: relationId(image),
+          src: value.src,
+          alt: value.alt,
+          original: !relationId(image),
+        },
+      ]
+    })
+  )
+}
+
+function pagePhotos(global: SiteContent): { media: Media[]; labels: string[] } {
+  const media: Media[] = []
+  const labels: string[] = []
+  for (const page of SITE_PAGES) {
+    for (const [key, value] of Object.entries(global[page] ?? {})) {
+      const image = value && typeof value === 'object' && 'image' in value ? value.image : null
+      if (typeof image === 'object' && image) {
+        media.push(image)
+        labels.push(`${page}.${key}: media id ${image.id}`)
+      }
+    }
+  }
+  return { media, labels }
+}
+
+async function siteContentSummary(payload: Payload, global: SiteContent) {
+  const pages = Object.fromEntries(
+    SITE_PAGES.map((page) => [page, sitePageSummary(page, global[page])])
+  )
+  const { media, labels } = pagePhotos(global)
+  return new WithPhotos(
+    {
+      pages,
+      adminUrl: `${APP_URL}/admin/globals/site-content`,
+      note: 'Photos with original: true are the built-in site photos; the pictures below are the ones Steph has chosen.',
+    },
+    await thumbnails(payload, media, labels)
+  )
 }
 
 function shopServer(payload: Payload, user: User): McpServer {
@@ -666,6 +810,68 @@ function shopServer(payload: Payload, user: User): McpServer {
         ...access,
       })
       return postSummary(updated)
+    }
+  )
+
+  tool(
+    'get_site_content',
+    "Shows the current headings, text and photos on the home, about and services pages, with each chosen photo's media id and a thumbnail.",
+    {},
+    true,
+    async () =>
+      siteContentSummary(
+        payload,
+        await payload.findGlobal({ slug: 'site-content', depth: 1, ...access })
+      )
+  )
+
+  tool(
+    'update_site_content',
+    'Changes headings, text or photos on the home, about or services page. This changes the LIVE site straight away; every earlier version stays restorable in the admin. Pass only the fields to change, under the page they belong to; other fields are kept. For a new photo, call photo_upload_link without a product so it lands in the media library, then pass its media id here.',
+    Object.fromEntries(SITE_PAGES.map((page) => [page, pageChangeSchema(page)])) as Record<
+      SitePage,
+      ReturnType<typeof pageChangeSchema>
+    >,
+    false,
+    async (input) => {
+      const changes = SITE_PAGES.flatMap((page) => {
+        const pageChanges = input[page] as Record<string, unknown> | undefined
+        return pageChanges && Object.keys(pageChanges).length > 0
+          ? [[page, pageChanges] as const]
+          : []
+      })
+      if (changes.length === 0)
+        throw new Error('Nothing to change: name a page and the fields to change.')
+      const mediaIds = [
+        ...new Set(changes.flatMap(([, pageChanges]) => changedMediaIds(pageChanges))),
+      ]
+      if (mediaIds.length > 0) {
+        const found = await payload.find({
+          collection: 'media',
+          where: { and: [{ id: { in: mediaIds } }, { mimeType: { contains: 'image/' } }] },
+          limit: mediaIds.length,
+          depth: 0,
+          ...access,
+        })
+        const missing = mediaIds.filter((id) => !found.docs.some((doc) => doc.id === id))
+        if (missing.length > 0)
+          throw new Error(`No photo with media id ${missing.join(', ')}. Check list_recent_media.`)
+      }
+      const current = await payload.findGlobal({ slug: 'site-content', depth: 0, ...access })
+      const data = Object.fromEntries(
+        SITE_PAGES.map((page) => {
+          const pageChanges = changes.find(([changed]) => changed === page)?.[1]
+          const stored = (current[page] ?? {}) as StoredPage
+          return [page, pageChanges ? mergePage(page, stored, pageChanges) : stored]
+        })
+      )
+      const updated = await payload.updateGlobal({
+        slug: 'site-content',
+        data,
+        depth: 1,
+        ...access,
+      })
+      return siteContentSummary(payload, updated)
     }
   )
 

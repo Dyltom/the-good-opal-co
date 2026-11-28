@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   find: vi.fn(),
   findByID: vi.fn(),
+  findGlobal: vi.fn(),
+  updateGlobal: vi.fn(),
   getPayload: vi.fn(),
   update: vi.fn(),
 }))
@@ -56,7 +58,10 @@ beforeEach(() => {
     create: mocks.create,
     find: mocks.find,
     findByID: mocks.findByID,
+    findGlobal: mocks.findGlobal,
+    updateGlobal: mocks.updateGlobal,
     update: mocks.update,
+    collections: { media: { config: { upload: {} } } },
     logger: { info: vi.fn() },
   })
   mocks.auth.mockResolvedValue({ user: admin })
@@ -153,5 +158,66 @@ describe('Claude shop MCP endpoint', () => {
 
     expect(result.isError).toBe(true)
     expect(mocks.update).not.toHaveBeenCalled()
+  })
+
+  describe('page content', () => {
+    const stored = {
+      id: 1,
+      home: {
+        customText: 'Steph quotes every ring.',
+        customHeading: { text: 'Make your own', italic: 'ring' },
+        closingImage: { image: 12, alt: 'Steph at the bench' },
+      },
+      about: { heroText: 'A small studio.' },
+      services: {},
+    }
+
+    beforeEach(() => {
+      mocks.findGlobal.mockResolvedValue(stored)
+      mocks.updateGlobal.mockImplementation(async ({ data }) => ({ id: 1, ...data }))
+      mocks.find.mockResolvedValue({ docs: [{ id: 30, mimeType: 'image/jpeg' }] })
+    })
+
+    test('changes only the named fields and keeps the rest of every page', async () => {
+      const result = await callTool('update_site_content', {
+        home: { customHeading: { italic: 'opal ring' }, customImage: { mediaId: 30 } },
+      })
+
+      expect(result.isError).toBeUndefined()
+      const call = mocks.updateGlobal.mock.calls[0][0]
+      expect(call.overrideAccess).toBe(false)
+      expect(call.user).toBe(admin)
+      expect(call.data.home).toEqual({
+        customText: 'Steph quotes every ring.',
+        customHeading: { text: 'Make your own', italic: 'opal ring' },
+        closingImage: { image: 12, alt: 'Steph at the bench' },
+        customImage: { image: 30, alt: null },
+      })
+      expect(call.data.about).toEqual({ heroText: 'A small studio.' })
+    })
+
+    test('refuses a photo that is not in the media library', async () => {
+      mocks.find.mockResolvedValue({ docs: [] })
+
+      const result = await callTool('update_site_content', {
+        about: { heroImage1: { mediaId: 999 } },
+      })
+
+      expect(result.isError).toBe(true)
+      expect(result.content[0]!.text).toContain('999')
+      expect(mocks.updateGlobal).not.toHaveBeenCalled()
+    })
+
+    test('refuses a customer account', async () => {
+      mocks.auth.mockResolvedValue({ user: { ...admin, role: 'user' } })
+
+      const response = await rpc('tools/call', {
+        name: 'update_site_content',
+        arguments: { home: { customText: 'Hacked' } },
+      })
+
+      expect(response.status).toBe(403)
+      expect(mocks.updateGlobal).not.toHaveBeenCalled()
+    })
   })
 })

@@ -291,15 +291,26 @@ People who sign up are emailed a confirmation link, and they count as subscriber
 
 People looking at a sold piece can leave their email to hear about similar pieces. They confirm by email like any other sign-up, and their customer record gets a tag such as `alert:opal-rings`. When you list a new piece in that category, or put one back in stock, they get one email the next morning (about 9:30 am) showing up to four new pieces.
 
+### Change page text and pictures
+
+The main headings, short paragraphs and photos on the home, About and Services pages live under **Page content** in the admin menu.
+
+1. Open **Page content** and pick the **Home**, **About** or **Services** tab.
+2. Type new words into a heading or paragraph. Headings have two boxes: the second is shown in italics.
+3. To change a photo, choose one from Media or upload a new one. Add a **Photo description** for people who use screen readers, or leave it empty to use the photo's own description.
+4. Click **Save**. The change is live straight away.
+
+Any box left empty shows the site's original wording or photo, so emptying a box puts the original back. Every save is kept: open the **Versions** tab at the top to see or restore an earlier one. You can also ask Claude to make these changes through the shop connector.
+
 ### Pages that need Dylan
 
-These pages are written into the site itself and cannot be edited in the admin:
+These are still written into the site itself and cannot be edited in the admin:
 
-- the home page text and the jeweller quotes on it
-- About
+- the jeweller quotes and the facts strip on the home page
+- the story quote on About and the steps on Services
 - FAQ
 - Shipping, Returns, Privacy and Terms
-- Services and the ring designer
+- the ring designer
 
 Send Dylan the new wording and he will update them. The postage prices and the free-postage threshold also need Dylan.
 

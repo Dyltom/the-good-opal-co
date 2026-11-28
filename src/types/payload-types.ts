@@ -118,8 +118,12 @@ export interface Config {
     defaultIDType: number
   }
   fallbackLocale: null
-  globals: {}
-  globalsSelect: {}
+  globals: {
+    'site-content': SiteContent
+  }
+  globalsSelect: {
+    'site-content': SiteContentSelect<false> | SiteContentSelect<true>
+  }
   locale: null
   widgets: {
     collections: CollectionsWidget
@@ -1794,6 +1798,208 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T
   updatedAt?: T
   createdAt?: T
+}
+export interface SiteContent {
+  id: number
+  home?: {
+    collectionHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    customImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    customHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    customText?: string | null
+    reviewsHeading?: string | null
+    closingHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    closingText?: string | null
+    closingImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+  }
+  about?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+    heroImage1?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    heroImage2?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    heroImage3?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    closingHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    closingText?: string | null
+    closingImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+  }
+  services?: {
+    heroHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    heroText?: string | null
+    heroImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+    processHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    closingHeading?: {
+      text?: string | null
+      italic?: string | null
+    }
+    closingText?: string | null
+    closingImage?: {
+      image?: (number | null) | Media
+      alt?: string | null
+    }
+  }
+  updatedAt?: string | null
+  createdAt?: string | null
+}
+export interface SiteContentSelect<T extends boolean = true> {
+  home?:
+    | T
+    | {
+        collectionHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        customImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        customHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        customText?: T
+        reviewsHeading?: T
+        closingHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        closingText?: T
+        closingImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+      }
+  about?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+        heroImage1?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        heroImage2?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        heroImage3?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        closingHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        closingText?: T
+        closingImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+      }
+  services?:
+    | T
+    | {
+        heroHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        heroText?: T
+        heroImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+        processHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        closingHeading?:
+          | T
+          | {
+              text?: T
+              italic?: T
+            }
+        closingText?: T
+        closingImage?:
+          | T
+          | {
+              image?: T
+              alt?: T
+            }
+      }
+  updatedAt?: T
+  createdAt?: T
+  globalType?: T
 }
 export interface CollectionsWidget {
   data?: {
