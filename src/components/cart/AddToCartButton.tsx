@@ -2,7 +2,6 @@
 
 import { useState, useTransition, useCallback } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingBag, Check, Loader2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ToastAction } from '@/components/ui/toast'
@@ -32,7 +31,9 @@ interface AddToCartButtonProps {
 async function bagLimitReached(productId: string): Promise<number | null> {
   const { data } = await fetchCart()
   const line = data?.items.find((item) => item.productId === productId)
-  return line?.maxQuantity !== undefined && line.quantity >= line.maxQuantity ? line.maxQuantity : null
+  return line?.maxQuantity !== undefined && line.quantity >= line.maxQuantity
+    ? line.maxQuantity
+    : null
 }
 
 export function AddToCartButton({
@@ -50,49 +51,55 @@ export function AddToCartButton({
   const [isSuccess, setIsSuccess] = useState(false)
   const { toast } = useToast()
 
-  const handleClick = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleClick = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
 
-    startTransition(async () => {
-      const result = await addToCart(product.id, quantity)
+      startTransition(async () => {
+        const result = await addToCart(product.id, quantity)
 
-      if (result.success) {
-        setIsSuccess(true)
-        trackAddToCart({
-          id: product.id,
-          name: product.name,
-          price: product.price,
-        }, quantity)
-        window.dispatchEvent(new CustomEvent('cart-updated'))
-        onAdded?.()
-        window.dispatchEvent(new CustomEvent('cart-open'))
-        setTimeout(() => setIsSuccess(false), 2000)
-      } else {
-        const limit = await bagLimitReached(product.id)
-        if (limit === null) {
+        if (result.success) {
+          setIsSuccess(true)
+          trackAddToCart(
+            {
+              id: product.id,
+              name: product.name,
+              price: product.price,
+            },
+            quantity
+          )
+          window.dispatchEvent(new CustomEvent('cart-updated'))
+          onAdded?.()
+          window.dispatchEvent(new CustomEvent('cart-open'))
+          setTimeout(() => setIsSuccess(false), 2000)
+        } else {
+          const limit = await bagLimitReached(product.id)
+          if (limit === null) {
+            toast({
+              title: "Couldn't add to bag",
+              description: result.error ?? 'Please try again in a moment.',
+              variant: 'destructive',
+            })
+            return
+          }
           toast({
-            title: "Couldn't add to bag",
-            description: result.error ?? 'Please try again in a moment.',
-            variant: 'destructive',
+            title: 'Already in your bag',
+            description:
+              limit > 1
+                ? `All ${limit} available of ${product.name} are already in your bag.`
+                : `${product.name} is one of a kind and is already in your bag.`,
+            action: (
+              <ToastAction altText="View bag" asChild className="min-h-11">
+                <Link href="/cart">View bag</Link>
+              </ToastAction>
+            ),
           })
-          return
         }
-        toast({
-          title: 'Already in your bag',
-          description:
-            limit > 1
-              ? `All ${limit} available of ${product.name} are already in your bag.`
-              : `${product.name} is one of a kind and is already in your bag.`,
-          action: (
-            <ToastAction altText="View bag" asChild className="min-h-11">
-              <Link href="/cart">View bag</Link>
-            </ToastAction>
-          ),
-        })
-      }
-    })
-  }, [product, toast, quantity, onAdded])
+      })
+    },
+    [product, toast, quantity, onAdded]
+  )
 
   const sizeClasses = {
     sm: 'min-h-[44px] h-11 px-4 text-sm sm:min-h-9 sm:h-9 sm:px-3',
@@ -112,16 +119,16 @@ export function AddToCartButton({
     lg: 20,
   }
 
-  const withForm = (button: ReactNode, tapScale: number) => {
-    const form = (
+  const tapClass = animated && 'active:scale-[0.98]'
+
+  const withForm = (button: ReactNode) => {
+    return (
       <form action={addToCartFormAction} className="contents">
         <input type="hidden" name="productId" value={product.id} />
         <input type="hidden" name="quantity" value={quantity} />
         {button}
       </form>
     )
-
-    return animated ? <motion.div whileTap={{ scale: tapScale }}>{form}</motion.div> : form
   }
 
   if (variant === 'icon') {
@@ -132,46 +139,32 @@ export function AddToCartButton({
         disabled={disabled || isPending}
         aria-label={`Add ${product.name} to bag`}
         className={cn(
-          "relative flex items-center justify-center rounded-full border border-rule bg-bg text-ink shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
+          'relative flex items-center justify-center overflow-hidden rounded-full border border-rule bg-bg text-ink shadow-md transition-all hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50',
           iconSizeClasses[size],
+          animated && 'active:scale-95',
           className
         )}
       >
-        <AnimatePresence mode="wait">
-          {isSuccess ? (
-            <motion.div
-              key="success"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              className="absolute inset-0 bg-success flex items-center justify-center"
-            >
-              <Check className="text-white" size={iconSize[size]} />
-            </motion.div>
-          ) : isPending ? (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <Loader2 className="animate-spin" size={iconSize[size]} />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="default"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <ShoppingBag size={iconSize[size]} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {isSuccess ? (
+          <div
+            key="success"
+            className="animate-fade-in absolute inset-0 flex items-center justify-center bg-success"
+          >
+            <Check className="text-white" size={iconSize[size]} />
+          </div>
+        ) : isPending ? (
+          <div key="loading" className="animate-fade-in">
+            <Loader2 className="animate-spin" size={iconSize[size]} />
+          </div>
+        ) : (
+          <div key="default" className="animate-fade-in">
+            <ShoppingBag size={iconSize[size]} />
+          </div>
+        )}
       </button>
     )
 
-    return withForm(button, 0.95)
+    return withForm(button)
   }
 
   if (variant === 'minimal') {
@@ -181,49 +174,32 @@ export function AddToCartButton({
         onClick={handleClick}
         disabled={disabled || isPending}
         className={cn(
-          "relative flex items-center gap-2 font-medium text-ink hover:text-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+          'relative flex items-center gap-2 font-medium text-ink transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-50',
           sizeClasses[size],
+          tapClass,
           className
         )}
       >
-        <AnimatePresence mode="wait">
-          {isSuccess ? (
-            <motion.span
-              key="success"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              className="flex items-center gap-2 text-success"
-            >
-              <Check size={iconSize[size]} />
-              Added
-            </motion.span>
-          ) : isPending ? (
-            <motion.span
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2"
-            >
-              <Loader2 className="animate-spin" size={iconSize[size]} />
-              Adding…
-            </motion.span>
-          ) : (
-            <motion.span
-              key="default"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2"
-            >
-              <ShoppingBag size={iconSize[size]} />
-              {children || 'Add to bag'}
-            </motion.span>
-          )}
-        </AnimatePresence>
+        {isSuccess ? (
+          <span key="success" className="animate-fade-in flex items-center gap-2 text-success">
+            <Check size={iconSize[size]} />
+            Added
+          </span>
+        ) : isPending ? (
+          <span key="loading" className="animate-fade-in flex items-center gap-2">
+            <Loader2 className="animate-spin" size={iconSize[size]} />
+            Adding…
+          </span>
+        ) : (
+          <span key="default" className="animate-fade-in flex items-center gap-2">
+            <ShoppingBag size={iconSize[size]} />
+            {children || 'Add to bag'}
+          </span>
+        )}
       </button>
     )
 
-    return withForm(button, 0.98)
+    return withForm(button)
   }
 
   const button = (
@@ -232,60 +208,41 @@ export function AddToCartButton({
       onClick={handleClick}
       disabled={disabled || isPending}
       className={cn(
-        "relative flex items-center justify-center gap-2 font-semibold rounded-sm bg-ink text-bg shadow-md hover:bg-[#3a332b] hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden",
+        'relative flex items-center justify-center gap-2 overflow-hidden rounded-sm bg-ink font-semibold text-bg shadow-md transition-all hover:bg-[#3a332b] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50',
         sizeClasses[size],
+        tapClass,
         className
       )}
     >
-      {animated && (
-        <AnimatePresence>
-          {isPending && (
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: "100%" }}
-              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-            />
-          )}
-        </AnimatePresence>
+      {animated && isPending && (
+        <div className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       )}
 
-      <AnimatePresence mode="wait">
-        {isSuccess ? (
-          <motion.div
-            key="success"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -20, opacity: 0 }}
-            className="absolute inset-0 bg-success flex items-center justify-center gap-2"
-          >
-            <Check size={iconSize[size]} />
-            <span>Added</span>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="default"
-            initial={{ y: 0 }}
-            animate={{ y: 0 }}
-            exit={{ y: -20, opacity: 0 }}
-            className="flex items-center gap-2"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="animate-spin" size={iconSize[size]} />
-                <span>Adding…</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag size={iconSize[size]} />
-                <span>{children || 'Add to bag'}</span>
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isSuccess ? (
+        <div
+          key="success"
+          className="animate-rise-in absolute inset-0 flex items-center justify-center gap-2 bg-success"
+        >
+          <Check size={iconSize[size]} />
+          <span>Added</span>
+        </div>
+      ) : (
+        <div key="default" className="flex items-center gap-2">
+          {isPending ? (
+            <>
+              <Loader2 className="animate-spin" size={iconSize[size]} />
+              <span>Adding…</span>
+            </>
+          ) : (
+            <>
+              <ShoppingBag size={iconSize[size]} />
+              <span>{children || 'Add to bag'}</span>
+            </>
+          )}
+        </div>
+      )}
     </button>
   )
 
-  return withForm(button, 0.98)
+  return withForm(button)
 }

@@ -1,7 +1,6 @@
 import { MarketingShell } from '@/components/marketing'
 import { getCart } from '@/lib/cart'
 import { CartPageContent } from './cart-content'
-import { PageTransition } from '@/components/layout/PageTransition'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
@@ -28,7 +27,7 @@ export default async function CartPage({
   const initialCountry = isShippingCountry(savedCountry) ? savedCountry : 'AU'
 
   return (
-    <PageTransition>
+    <div className="animate-fade-in">
       <MarketingShell>
         {cart.items.length === 0 ? (
           <div className="px-gut pb-sec pt-5 md:pt-8">
@@ -37,7 +36,10 @@ export default async function CartPage({
                 Your bag is empty
               </h1>
               {notice ? (
-                <p role="status" className="mt-5 max-w-2xl bg-plinth px-4 py-3 text-sm leading-6 text-ink">
+                <p
+                  role="status"
+                  className="mt-5 max-w-2xl bg-plinth px-4 py-3 text-sm leading-6 text-ink"
+                >
                   {notice}
                 </p>
               ) : null}
@@ -67,6 +69,6 @@ export default async function CartPage({
           />
         )}
       </MarketingShell>
-    </PageTransition>
+    </div>
   )
 }

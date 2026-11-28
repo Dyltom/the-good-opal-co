@@ -169,3 +169,37 @@ html.vt-inspect * {
 main:has(> .closing-band:last-child) + footer {
   margin-top: 0;
 }
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out both;
+}
+
+.animate-rise-in {
+  animation: rise-in 0.25s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1s linear infinite;
+}
