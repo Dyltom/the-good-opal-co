@@ -50,7 +50,7 @@ export const Media: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'filename',
-    defaultColumns: ['alt', 'filename', 'mimeType', 'filesize', 'updatedAt'],
+    defaultColumns: ['filename', 'alt', 'filesize', 'updatedAt'],
   },
   hooks: {
     beforeValidate: [fillMissingAlt],
@@ -90,6 +90,7 @@ export const Media: CollectionConfig = {
       admin: {
         description: 'Stable attachment ID imported from the legacy WordPress site',
         readOnly: true,
+        condition: (data) => Boolean(data?.['legacyWordPressId']),
       },
     },
     {
@@ -100,6 +101,7 @@ export const Media: CollectionConfig = {
       admin: {
         description: 'Original URL for a safely imported legacy asset',
         readOnly: true,
+        condition: (data) => Boolean(data?.['legacySourceUrl']),
       },
     },
     {
