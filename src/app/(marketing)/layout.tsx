@@ -7,7 +7,13 @@ import { Torch } from '@/components/brand/Torch'
 import { AnalyticsConsentGate } from '@/components/analytics/AnalyticsConsentGate'
 import { GoogleTag } from '@/components/analytics/GoogleTag'
 import { InsightsTracker } from '@/components/analytics/InsightsTracker'
-import { APP_DESCRIPTION, APP_NAME, APP_URL, DEFAULT_LOCALE, SHARE_IMAGE_URL } from '@/lib/constants'
+import {
+  APP_DESCRIPTION,
+  APP_NAME,
+  APP_URL,
+  DEFAULT_LOCALE,
+  SHARE_IMAGE_URL,
+} from '@/lib/constants'
 import { getTextDirection } from '@/lib/i18n'
 
 const sans = Schibsted_Grotesk({
@@ -15,6 +21,8 @@ const sans = Schibsted_Grotesk({
   variable: '--font-sans',
   display: 'swap',
   preload: false,
+  adjustFontFallback: false,
+  fallback: ['Schibsted Grotesk Fallback', 'system-ui', 'sans-serif'],
 })
 
 const serif = Bodoni_Moda({
@@ -23,6 +31,8 @@ const serif = Bodoni_Moda({
   variable: '--font-serif',
   display: 'swap',
   preload: false,
+  adjustFontFallback: false,
+  fallback: ['Bodoni Moda Fallback', 'serif'],
 })
 
 export const metadata: Metadata = {
@@ -65,11 +75,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function MarketingLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang={DEFAULT_LOCALE}
